@@ -307,7 +307,7 @@ fn tc_1254_provenance_names_the_pinned_quire_rs_and_frontend_versions_from_the_l
         .expect("the frontend is in the lock");
     assert_eq!(record.frontend.name, FRONTEND_CRATE);
     assert_eq!(record.frontend.version, frontend.version);
-    assert_eq!(record.semantic_core.version, "0.2.0");
+    assert_eq!(record.semantic_core.version, "0.3.0");
     assert_eq!(record.source.identity, "ix://agent-ix/config-service/spec");
 
     // The revision is at or after a874fb6 (quire-rs#411, load_module_set).

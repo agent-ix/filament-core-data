@@ -12,7 +12,7 @@
 # `Pre:`/`Post:` contract lines (quire-rs#454) or the vendored FR-035 schema that
 # validates `immutable` (quire-rs#456) or `CellRole::PartOwner` admitting a
 # composite type as a systems `part`'s owner (quire-rs#461, fixed by #462), at
-# 2823a93; `serde`/`serde_json` through the workspace's own
+# 92dbebc (Quire 0.47.1, semantic-core 0.3.0); `serde`/`serde_json` through the workspace's own
 # exact pins; the rest with `=`. No `jsonschema` is declared: validation and
 # canonical bytes come from `agent-ix-semantic-ir` (FR-097).
 [package]
@@ -33,7 +33,7 @@ name = "extraction-frontend"
 path = "src/main.rs"
 
 [dependencies]
-quire-rs = { git = "https://github.com/agent-ix/quire-rs", rev = "2823a93bd3797c970c1d389afae9b893dea6f232" }
+quire-rs = { git = "https://github.com/agent-ix/quire-rs", rev = "92dbebc49f354f7a3d5050b94cd2d57d9084d99f" }
 agent-ix-semantic-ir = { path = "../semantic-ir" }
 serde = { workspace = true }
 serde_json = { workspace = true }

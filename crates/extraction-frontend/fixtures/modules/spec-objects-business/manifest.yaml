@@ -4,7 +4,7 @@ version: 0.7.0
 description: 'Filament Module: tier-2 business ObjectTypes (DDD: domain, entity, value_object, aggregate_root, nested_entity, repository, event, state_machine, process, enumeration, population)'
 semantic:
   contract_version: 1.0.0
-  semantic_core: 0.2.0
+  semantic_core: 0.3.0
   package: agent-ix/spec-objects-business
   exports:
   - domain
@@ -71,7 +71,7 @@ object_types:
     contains: [entity, aggregate_root, value_object, repository, event, state_machine, process, enumeration]
   data_schema:
     schema: schemas/Domain.json
-    digest: sha256:1b3b31c48e9b1a08a5c5c1efc129b66d0048ae1dd997bb934a05be1ff9a96c69
+    digest: sha256:d631ce774d22323090f7bc8f15c44c226dad05480bc8610e72e867bbc57a0982
   body_extraction:
     yield_pattern:
       match:
@@ -135,7 +135,7 @@ object_types:
     references: [entity, aggregate_root, enumeration]
   data_schema:
     schema: schemas/Entity.json
-    digest: sha256:9ea5de6a19cc4800fcb2b32e0d33573125e997338d14d4d54b2c658ec28e904a
+    digest: sha256:2ab5f17ccf655e4b2bfb562851985c9239bbf0b687f2a90abd5b11beb951b627
   body_extraction:
     yield_pattern:
       match:
@@ -170,7 +170,7 @@ object_types:
     references: [enumeration]
   data_schema:
     schema: schemas/ValueObject.json
-    digest: sha256:c79f9137e3e68ca62ea65bba0843e26ef19be3cb2140f500ef3753de160c9090
+    digest: sha256:5e7d8e70a65b8ca30ebc1c970254aa53edf23e241bc4236a561deb23b67ed828
   body_extraction:
     yield_pattern:
       match:
@@ -207,7 +207,7 @@ object_types:
     references: [aggregate_root, enumeration]
   data_schema:
     schema: schemas/AggregateRoot.json
-    digest: sha256:381e15bce2598f01a6816ddebdc8fccd90de83925d8adfa46fb3e71def4a79fb
+    digest: sha256:6433f623f814dea10c3d830d761184820ac186e97673b8be970a146cdf58525c
   body_extraction:
     yield_pattern:
       match:
@@ -251,7 +251,7 @@ object_types:
     references: [enumeration]
   data_schema:
     schema: schemas/NestedEntity.json
-    digest: sha256:85a5bc535a536a76f745a04a0d9a52fb602d81389b90078156d098bb0b4cbdd5
+    digest: sha256:54ce3c1b0de49412695b655c59aa89b2513d39e55e2fa5f44feebab44ed1b193
   body_extraction:
     yield_pattern:
       match:
@@ -284,7 +284,7 @@ object_types:
     references: [data_schema]
   data_schema:
     schema: schemas/Repository.json
-    digest: sha256:773c125abf6215c11b4cb38a5878e55f838a6ac35ecb30245311fdba04240f21
+    digest: sha256:6ed73717d5cf86726edc8f02376d4b56087e0ec05cfb48a11f2eaa4ccaec01e7
   body_extraction:
     yield_pattern:
       match:
@@ -316,7 +316,7 @@ object_types:
     references: [aggregate_root, enumeration]
   data_schema:
     schema: schemas/Event.json
-    digest: sha256:1de329840d8b7b3a4368516f737c874c3e1faef1112b275b9ba1fdbc7424be54
+    digest: sha256:b36d161b3ed9ff2dfb250b998474ad0d3ed5b4a11a6b8791a8495092a44f4675
   body_extraction:
     yield_pattern:
       match:
@@ -352,7 +352,7 @@ object_types:
     references: [enumeration]
   data_schema:
     schema: schemas/StateMachine.json
-    digest: sha256:0841ac99ad93fe95d669400067fa6767e0e4215435e27d2e3e19ba2e2e5f2762
+    digest: sha256:25b166fd479807f23ec48e2b05af6e4bb635009ad55a3c43cb230adb37f401cc
   body_extraction:
     yield_pattern:
       match:
@@ -405,7 +405,7 @@ object_types:
     operates_on: [domain-object]
   data_schema:
     schema: schemas/Process.json
-    digest: sha256:cdda9ff5eeebae4d710a87901004037d10cb03c4e6ac07346e8953e4667f0072
+    digest: sha256:adc38e6eb4b830f0bfe688591960c525a2b54f5ce3270f97576ea032a0fb1533
   body_extraction:
     yield_pattern:
       match:
@@ -460,7 +460,7 @@ object_types:
     references: [enumeration]
   data_schema:
     schema: schemas/Enumeration.json
-    digest: sha256:44f6850485348a57caffa7bfc386192bce94eaf2013887589b4254a8f39258a8
+    digest: sha256:ce71b87828aa4563dc555b5a913c2fa84b8a46102a75433f41e7c769abb75a94
   body_extraction:
     yield_pattern:
       match:
@@ -485,7 +485,7 @@ object_types:
     references: [entity, aggregate_root, nested_entity, value_object, event, process]
   data_schema:
     schema: schemas/Population.json
-    digest: sha256:15e619f44ef725fead7e65a903f4e2d2c32739d42524f4c4364a75c860e7cd4d
+    digest: sha256:9c77e4906d6a6be43fb57eb9bcdbbbc1990f72a51c794b8eefdcfe1ed36bc8af
   body_extraction:
     yield_pattern:
       match:

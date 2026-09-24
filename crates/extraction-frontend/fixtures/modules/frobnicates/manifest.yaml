@@ -4,7 +4,7 @@ version: 0.1.0
 description: One entity object type whose allowed_links lists frobnicates while no loaded edge_types declares it (FR-094-AC-4)
 semantic:
   contract_version: 1.0.0
-  semantic_core: 0.1.0
+  semantic_core: 0.3.0
   package: agent-ix/frobnicates
   exports:
   - entity
@@ -25,7 +25,7 @@ object_types:
     references: [entity]
   data_schema:
     schema: schemas/Entity.json
-    digest: sha256:f916aa2887de70ea96edac7e6c32be1af0b3c0f85dd3b2a85987c93d7db0c18c
+    digest: sha256:ff1a5f1f88f307ad156ab935d3d9f6687aaf5de8b92c5f3307668ddcaaa12064
   body_extraction:
     yield_pattern:
       match:

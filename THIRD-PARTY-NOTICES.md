@@ -80,6 +80,7 @@ register that NFR-033-AC-6 checks against the same lock. `quire-rs` and
 
 | Crate | Version | SPDX | Upstream | Licence text |
 |---|---|---|---|---|
+| `agent-ix-semantic-schema` | 0.1.0 | `AGPL-3.0-or-later` | https://github.com/agent-ix/filament-core-data | `LICENSE` in the repository at the pinned tag |
 | `ahash` | 0.8.12 | `MIT OR Apache-2.0` | https://github.com/tkaitchuck/ahash | licence files in the published crate archive |
 | `aho-corasick` | 1.1.5 | `Unlicense OR MIT` | https://github.com/BurntSushi/aho-corasick | licence files in the published crate archive |
 | `anstream` | 1.0.0 | `MIT OR Apache-2.0` | https://github.com/rust-cli/anstyle.git | licence files in the published crate archive |
@@ -184,7 +185,9 @@ register that NFR-033-AC-6 checks against the same lock. `quire-rs` and
 | `proc-macro2` | 1.0.107 | `MIT OR Apache-2.0` | https://github.com/dtolnay/proc-macro2 | licence files in the published crate archive |
 | `proptest` | 1.11.0 | `MIT OR Apache-2.0` | https://github.com/proptest-rs/proptest | licence files in the published crate archive |
 | `quick-error` | 1.2.3 | `MIT/Apache-2.0` | http://github.com/tailhook/quick-error | licence files in the published crate archive |
-| `quire-rs` | 0.46.0 | `AGPL-3.0-or-later` | https://github.com/agent-ix/quire-rs | `LICENSE` in the repository at the pinned revision |
+| `quire-code-parse` | 0.1.0 | `AGPL-3.0-or-later` | https://github.com/agent-ix/quire-code-rs | `LICENSE` in the repository at the pinned revision |
+| `quire-rs` | 0.47.1 | `AGPL-3.0-or-later` | https://github.com/agent-ix/quire-rs | `LICENSE` in the repository at the pinned revision |
+| `quire-rust-extraction` | 0.1.0 | `AGPL-3.0-or-later` | https://github.com/agent-ix/quire-rs | `LICENSE` in the repository at the pinned revision |
 | `quote` | 1.0.47 | `MIT OR Apache-2.0` | https://github.com/dtolnay/quote | licence files in the published crate archive |
 | `r-efi` | 5.3.0 | `MIT OR Apache-2.0 OR LGPL-2.1-or-later` | https://github.com/r-efi/r-efi | licence files in the published crate archive |
 | `r-efi` | 6.0.0 | `MIT OR Apache-2.0 OR LGPL-2.1-or-later` | https://github.com/r-efi/r-efi | licence files in the published crate archive |
@@ -215,6 +218,7 @@ register that NFR-033-AC-6 checks against the same lock. `quire-rs` and
 | `slab` | 0.4.12 | `MIT` | https://github.com/tokio-rs/slab | licence files in the published crate archive |
 | `smallvec` | 1.16.0 | `MIT OR Apache-2.0` | https://github.com/servo/rust-smallvec | licence files in the published crate archive |
 | `stable_deref_trait` | 1.2.1 | `MIT OR Apache-2.0` | https://github.com/storyyeller/stable_deref_trait | licence files in the published crate archive |
+| `streaming-iterator` | 0.1.9 | `MIT OR Apache-2.0` | https://github.com/sfackler/streaming-iterator | licence files in the published crate archive |
 | `strsim` | 0.11.1 | `MIT` | https://github.com/rapidfuzz/strsim-rs | licence files in the published crate archive |
 | `syn` | 2.0.119 | `MIT OR Apache-2.0` | https://github.com/dtolnay/syn | licence files in the published crate archive |
 | `syn` | 3.0.5 | `MIT OR Apache-2.0` | https://github.com/dtolnay/syn | licence files in the published crate archive |
@@ -233,6 +237,11 @@ register that NFR-033-AC-6 checks against the same lock. `quire-rs` and
 | `tracing-core` | 0.1.36 | `MIT` | https://github.com/tokio-rs/tracing | licence files in the published crate archive |
 | `tracing-log` | 0.2.0 | `MIT` | https://github.com/tokio-rs/tracing | licence files in the published crate archive |
 | `tracing-subscriber` | 0.3.23 | `MIT` | https://github.com/tokio-rs/tracing | licence files in the published crate archive |
+| `tree-sitter` | 0.26.13 | `MIT` | https://github.com/tree-sitter/tree-sitter | licence files in the published crate archive |
+| `tree-sitter-language` | 0.1.8 | `MIT` | https://github.com/tree-sitter/tree-sitter | licence files in the published crate archive |
+| `tree-sitter-python` | 0.25.0 | `MIT` | https://github.com/tree-sitter/tree-sitter-python | licence files in the published crate archive |
+| `tree-sitter-rust` | 0.24.2 | `MIT` | https://github.com/tree-sitter/tree-sitter-rust | licence files in the published crate archive |
+| `tree-sitter-typescript` | 0.23.2 | `MIT` | https://github.com/tree-sitter/tree-sitter-typescript | licence files in the published crate archive |
 | `typenum` | 1.20.1 | `MIT OR Apache-2.0` | https://github.com/paholg/typenum | licence files in the published crate archive |
 | `unarray` | 0.1.4 | `MIT OR Apache-2.0` | https://github.com/cameron1024/unarray | licence files in the published crate archive |
 | `unicode-ident` | 1.0.24 | `(MIT OR Apache-2.0) AND Unicode-3.0` | https://github.com/dtolnay/unicode-ident | licence files in the published crate archive |

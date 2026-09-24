@@ -204,6 +204,7 @@ class _Classes:
                     self.title[identity] = chosen
                     break
         self.imported: set[tuple[str, str]] = set()
+        self.native_imports: set[str] = set()
 
     def name(self, identity: str) -> str:
         return self.title.get(identity, identity)
@@ -217,6 +218,21 @@ class _Classes:
         return self.field_names.get(identity, identity)
 
     def annotation(self, identity: str) -> str:
+        native = {
+            "ix://quire/native/UUID": "UUID",
+            "ix://quire/native/Boolean": "bool",
+            "ix://quire/native/Integer": "int",
+            "ix://quire/native/Decimal": "Decimal",
+            "ix://quire/native/String": "str",
+            "ix://quire/native/Timestamp": "datetime",
+            "ix://quire/native/Duration": "timedelta",
+            "ix://quire/native/Bytes": "bytes",
+            "ix://quire/native/JsonObject": "Any",
+        }.get(identity)
+        if native is not None:
+            if native in {"UUID", "Decimal", "datetime", "timedelta", "Any"}:
+                self.native_imports.add(native)
+            return native
         found = self.by_identity.get(identity)
         if found is None:
             msg = f"no generated class for {identity}"
@@ -504,9 +520,7 @@ def render(
                 _literal(
                     (
                         population["extent"],
-                        tuple(
-                            classes.name(member) for member in population["members"]
-                        ),
+                        tuple(classes.name(member) for member in population["members"]),
                     )
                 ),
             )
@@ -554,8 +568,22 @@ def render(
         "from __future__ import annotations",
         "",
     ]
+    temporal = classes.native_imports & {"datetime", "timedelta"}
+    if temporal:
+        lines.append(f"from datetime import {', '.join(sorted(temporal))}")
+    if "Decimal" in classes.native_imports:
+        lines.append("from decimal import Decimal")
+    if "UUID" in classes.native_imports:
+        lines.append("from uuid import UUID")
+    if classes.native_imports:
+        lines.append("")
+    typing_imports = set()
+    if "Any" in classes.native_imports:
+        typing_imports.add("Any")
     if any(line.endswith("(Protocol):") for line in body):
-        lines.extend(["from typing import Protocol", ""])
+        typing_imports.add("Protocol")
+    if typing_imports:
+        lines.extend([f"from typing import {', '.join(sorted(typing_imports))}", ""])
     if classes.imported:
         lines.extend(
             f"from .{module} import {name}" for module, name in sorted(classes.imported)

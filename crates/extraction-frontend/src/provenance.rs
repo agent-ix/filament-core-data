@@ -164,7 +164,7 @@ pub struct Provenance {
 
 /// The vendored semantic-core version: the newest bundle the engine embeds.
 pub fn semantic_core_version() -> String {
-    quire_rs::semantic::vendored::SEMANTIC_CORE_VERSIONS
+    quire_rs::semantic::embedded::SEMANTIC_CORE_VERSIONS
         .last()
         .map(|v| (*v).to_string())
         .unwrap_or_default()

@@ -173,7 +173,12 @@ fn documents(dir: &Path, stop: &dyn Fn(&Path) -> bool) -> Vec<String> {
 /// `fixtures/`-relative names.
 fn provenanced_dirs() -> Vec<PathBuf> {
     fn walk(dir: &Path, out: &mut Vec<PathBuf>) {
-        if dir.join("PROVENANCE.json").is_file() {
+        // A case-insensitive filesystem also resolves `provenance.json` here;
+        // only the authored upper-case fixture marker is a provenance root.
+        if fs::read_dir(dir)
+            .expect("read_dir")
+            .any(|entry| entry.expect("entry").file_name() == "PROVENANCE.json")
+        {
             out.push(dir.to_path_buf());
         }
         let mut entries: Vec<PathBuf> = fs::read_dir(dir)

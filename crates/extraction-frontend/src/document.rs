@@ -18,16 +18,10 @@ use crate::canonical::sort_node_lists;
 use crate::envelope::Envelope;
 use crate::lower::TypeDefinition;
 
-/// `ordered` and `unique` as concrete booleans, `false` when the row that
-/// produced `multiplicity` named neither (QSpec model-complete.md, owner
-/// ruling 2026-09-19T15:39:32Z on FCD #199). `quire_rs::semantic::Multiplicity`
-/// — vendored, not this crate's to change — leaves both `Option<bool>`; every
-/// site in this crate that turns a `Multiplicity` the engine handed it into
-/// part of this frontend's own emitted document calls this once, at
-/// construction, rather than relying on a later document-wide repair.
-pub(crate) fn normalized_multiplicity(mut multiplicity: Multiplicity) -> Multiplicity {
-    multiplicity.ordered = Some(multiplicity.ordered.unwrap_or(false));
-    multiplicity.unique = Some(multiplicity.unique.unwrap_or(false));
+/// Quire 0.47.1 carries `ordered` and `unique` as concrete booleans. The
+/// frontend retains this normalization seam so all callers use the engine's
+/// declared multiplicity without inventing a second defaulting policy.
+pub(crate) fn normalized_multiplicity(multiplicity: Multiplicity) -> Multiplicity {
     multiplicity
 }
 

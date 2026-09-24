@@ -4,7 +4,7 @@ version: 0.1.0
 description: One object type (Thing) exported by the foreign package acme/other (FR-092-AC-5)
 semantic:
   contract_version: 1.0.0
-  semantic_core: 0.1.0
+  semantic_core: 0.3.0
   package: acme/other
   exports:
   - Thing
@@ -24,7 +24,7 @@ object_types:
     references: [Thing]
   data_schema:
     schema: schemas/Thing.json
-    digest: sha256:2d97ab4d7b090599aa310dc1d32573212743f498ed70ea83f10ad70c72ec3340
+    digest: sha256:1bd73579dfea4ea5c91de7dbf16bda42c57b5baa03ca94472ae610bfeac5913d
   body_extraction:
     yield_pattern:
       match:
