@@ -204,6 +204,7 @@ class _Classes:
                     self.title[identity] = chosen
                     break
         self.imported: set[tuple[str, str]] = set()
+        self.native_imports: set[str] = set()
 
     def name(self, identity: str) -> str:
         return self.title.get(identity, identity)
@@ -229,6 +230,8 @@ class _Classes:
             "ix://quire/native/JsonObject": "dict[str, object]",
         }.get(identity)
         if native is not None:
+            if native in {"UUID", "Decimal", "datetime", "timedelta"}:
+                self.native_imports.add(native)
             return native
         found = self.by_identity.get(identity)
         if found is None:
@@ -564,11 +567,16 @@ def render(
         "",
         "from __future__ import annotations",
         "",
-        "from datetime import datetime, timedelta",
-        "from decimal import Decimal",
-        "from uuid import UUID",
-        "",
     ]
+    temporal = classes.native_imports & {"datetime", "timedelta"}
+    if temporal:
+        lines.append(f"from datetime import {', '.join(sorted(temporal))}")
+    if "Decimal" in classes.native_imports:
+        lines.append("from decimal import Decimal")
+    if "UUID" in classes.native_imports:
+        lines.append("from uuid import UUID")
+    if classes.native_imports:
+        lines.append("")
     if any(line.endswith("(Protocol):") for line in body):
         lines.extend(["from typing import Protocol", ""])
     if classes.imported:
