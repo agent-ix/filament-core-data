@@ -118,7 +118,7 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
     let module = bundle
         .semantic_module("spec-objects-business")
         .expect("the vendored module carries a semantic block");
-    assert_eq!(module.semantic_core, "0.2.0");
+    assert_eq!(module.semantic_core, "0.3.0");
     assert_eq!(
         bundle.module_version("spec-objects-business"),
         Some("0.7.0")
@@ -154,7 +154,7 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
     );
     assert_eq!(
         fr006.schema_digest.as_deref(),
-        Some("sha256:9ea5de6a19cc4800fcb2b32e0d33573125e997338d14d4d54b2c658ec28e904a"),
+        Some("sha256:2ab5f17ccf655e4b2bfb562851985c9239bbf0b687f2a90abd5b11beb951b627"),
         "the module's reference-form data_schema digest is passed through"
     );
     assert_eq!(
@@ -169,7 +169,7 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
     );
     assert_eq!(fr005.fields.as_deref().map(<[_]>::len), Some(2));
     // The only diagnostic is the engine's non-blocking advisory that the `ocl`
-    // clause on FR-006 is carried unchecked (semantic_core 0.2.0).
+    // clause on FR-006 is carried unchecked (semantic_core 0.3.0).
     let messages: Vec<&str> = out.diagnostics.iter().map(|d| d.message.as_str()).collect();
     assert_eq!(
         messages,

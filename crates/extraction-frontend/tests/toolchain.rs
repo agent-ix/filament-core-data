@@ -449,8 +449,8 @@ fn tc_1322_every_dependency_is_exact_reviewed_and_inside_the_workspace() {
     );
     assert_eq!(
         quire.rev.as_deref(),
-        Some("2823a93bd3797c970c1d389afae9b893dea6f232"),
-        "quire-rs rev is at or after a874fb6 (quire-rs#462, fixing #461's FR-152 owner-kind bug)"
+        Some("92dbebc49f354f7a3d5050b94cd2d57d9084d99f"),
+        "quire-rs rev is pinned to the reviewed semantic-core 0.3 baseline"
     );
     assert_eq!(
         normal["agent-ix-semantic-ir"].path.as_deref(),
@@ -567,8 +567,9 @@ fn tc_1329_locked_offline_build_succeeds_from_a_warm_cache() {
 // Task-138: the whole-crate gates (NFR-033-AC-2, AC-4, AC-5, AC-7, AC-8)
 // ---------------------------------------------------------------------------
 
-/// The `extraction-frontend` block of the root Makefile, from its section
-/// header to the next section header or the end of the file.
+/// The `extraction-frontend` targets of the root Makefile. The dependency
+/// audit targets follow the spec-to-targets section rather than the original
+/// extraction-frontend block.
 fn makefile_block() -> Vec<String> {
     let makefile = read(&workspace_dir().join("Makefile"));
     let lines: Vec<&str> = makefile.lines().collect();
@@ -584,7 +585,13 @@ fn makefile_block() -> Vec<String> {
         .position(|l| l.starts_with("# ----"))
         .map(|i| i + start + 3)
         .unwrap_or(lines.len());
-    lines[start..end].iter().map(|l| l.to_string()).collect()
+    let mut block: Vec<String> = lines[start..end].iter().map(|l| l.to_string()).collect();
+    let audit_start = lines
+        .iter()
+        .position(|l| *l == ".PHONY: extraction-frontend-deny")
+        .expect("the dependency audit targets");
+    block.extend(lines[audit_start..].iter().map(|l| l.to_string()));
+    block
 }
 
 /// `make -C <workspace> <target> <VAR=value>...`.
