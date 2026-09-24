@@ -105,7 +105,7 @@ impl EnumValuesConstraint {
     ) -> Result<Self, crate::support::ValidationError> {
         {
             let items = &values;
-            if items.len() < 1usize {
+            if items.is_empty() {
                 return Err(crate::support::ValidationError::new(
                     "ix://agent-ix/semantic-core/EnumValuesConstraint/values",
                     "multiplicity.lower",
