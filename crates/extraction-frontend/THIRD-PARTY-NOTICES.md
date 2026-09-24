@@ -18,6 +18,7 @@ features; this crate declares no `jsonschema` dependency of its own
 
 | Crate | Version | Licence | Source |
 |---|---|---|---|
+| `agent-ix-semantic-schema` | `0.1.0` | AGPL-3.0-or-later | https://github.com/agent-ix/filament-core-data |
 | `ahash` | `0.8.12` | MIT OR Apache-2.0 | crates.io |
 | `aho-corasick` | `1.1.5` | Unlicense OR MIT | crates.io |
 | `anstream` | `1.0.0` | MIT OR Apache-2.0 | crates.io |
@@ -96,7 +97,9 @@ features; this crate declares no `jsonschema` dependency of its own
 | `potential_utf` | `0.1.6` | Unicode-3.0 | crates.io |
 | `powerfmt` | `0.2.0` | MIT OR Apache-2.0 | crates.io |
 | `proc-macro2` | `1.0.107` | MIT OR Apache-2.0 | crates.io |
-| `quire-rs` | `0.46.0` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-rs?rev=08d39ea#08d39ea2 |
+| `quire-code-parse` | `0.1.0` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-code-rs |
+| `quire-rs` | `0.47.1` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-rs?rev=92dbebc#92dbebc4 |
+| `quire-rust-extraction` | `0.1.0` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-rs |
 | `quote` | `1.0.47` | MIT OR Apache-2.0 | crates.io |
 | `rayon` | `1.12.0` | MIT OR Apache-2.0 | crates.io |
 | `rayon-core` | `1.13.0` | MIT OR Apache-2.0 | crates.io |
@@ -113,6 +116,7 @@ features; this crate declares no `jsonschema` dependency of its own
 | `sha2` | `0.10.9` | MIT OR Apache-2.0 | crates.io |
 | `smallvec` | `1.16.0` | MIT OR Apache-2.0 | crates.io |
 | `stable_deref_trait` | `1.2.1` | MIT OR Apache-2.0 | crates.io |
+| `streaming-iterator` | `0.1.9` | MIT OR Apache-2.0 | crates.io |
 | `strsim` | `0.11.1` | MIT | crates.io |
 | `syn` | `2.0.119` | MIT OR Apache-2.0 | crates.io |
 | `syn` | `3.0.5` | MIT OR Apache-2.0 | crates.io |
@@ -125,6 +129,11 @@ features; this crate declares no `jsonschema` dependency of its own
 | `tinystr` | `0.8.4` | Unicode-3.0 | crates.io |
 | `tinyvec` | `1.13.2` | Zlib OR Apache-2.0 OR MIT | crates.io |
 | `tinyvec_macros` | `0.1.1` | MIT OR Apache-2.0 OR Zlib | crates.io |
+| `tree-sitter` | `0.26.13` | MIT | crates.io |
+| `tree-sitter-language` | `0.1.8` | MIT | crates.io |
+| `tree-sitter-python` | `0.25.0` | MIT | crates.io |
+| `tree-sitter-rust` | `0.24.2` | MIT | crates.io |
+| `tree-sitter-typescript` | `0.23.2` | MIT | crates.io |
 | `typenum` | `1.20.1` | MIT OR Apache-2.0 | crates.io |
 | `unicode-ident` | `1.0.24` | (MIT OR Apache-2.0) AND Unicode-3.0 | crates.io |
 | `unicode-normalization` | `0.1.25` | MIT OR Apache-2.0 | crates.io |

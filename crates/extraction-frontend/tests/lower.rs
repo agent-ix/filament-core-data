@@ -860,8 +860,8 @@ fn tc_1227_one_to_many_is_required_and_star_is_optional_with_one_declared_loss_e
     let m = |lower: u64, upper: Option<u64>| quire_rs::semantic::Multiplicity {
         lower,
         upper,
-        ordered: None,
-        unique: None,
+        ordered: false,
+        unique: false,
     };
     assert_eq!(Presence::of(&m(1, None)), Presence::Required);
     assert_eq!(Presence::of(&m(0, None)), Presence::Optional);

@@ -217,6 +217,19 @@ class _Classes:
         return self.field_names.get(identity, identity)
 
     def annotation(self, identity: str) -> str:
+        native = {
+            "ix://quire/native/UUID": "UUID",
+            "ix://quire/native/Boolean": "bool",
+            "ix://quire/native/Integer": "int",
+            "ix://quire/native/Decimal": "Decimal",
+            "ix://quire/native/String": "str",
+            "ix://quire/native/Timestamp": "datetime",
+            "ix://quire/native/Duration": "timedelta",
+            "ix://quire/native/Bytes": "bytes",
+            "ix://quire/native/JsonObject": "dict[str, object]",
+        }.get(identity)
+        if native is not None:
+            return native
         found = self.by_identity.get(identity)
         if found is None:
             msg = f"no generated class for {identity}"
@@ -504,9 +517,7 @@ def render(
                 _literal(
                     (
                         population["extent"],
-                        tuple(
-                            classes.name(member) for member in population["members"]
-                        ),
+                        tuple(classes.name(member) for member in population["members"]),
                     )
                 ),
             )
@@ -552,6 +563,10 @@ def render(
         'the backend seam."""',
         "",
         "from __future__ import annotations",
+        "",
+        "from datetime import datetime, timedelta",
+        "from decimal import Decimal",
+        "from uuid import UUID",
         "",
     ]
     if any(line.endswith("(Protocol):") for line in body):

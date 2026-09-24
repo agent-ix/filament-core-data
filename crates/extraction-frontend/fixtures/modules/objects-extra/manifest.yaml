@@ -4,7 +4,7 @@ version: 0.1.0
 description: One extra object type (widget) loaded beside the vendored module (FR-095-AC-11)
 semantic:
   contract_version: 1.0.0
-  semantic_core: 0.1.0
+  semantic_core: 0.3.0
   package: agent-ix/objects-extra
   exports:
   - widget
@@ -24,7 +24,7 @@ object_types:
     references: [widget]
   data_schema:
     schema: schemas/Widget.json
-    digest: sha256:205efa11fed10ab8e131452319ed7321a672d250d67825e57f356a05a4cd9135
+    digest: sha256:240b3dbfb3cfcb1803edc75115a09724688d7a60251aec285ebdbee5097a842c
   body_extraction:
     yield_pattern:
       match:

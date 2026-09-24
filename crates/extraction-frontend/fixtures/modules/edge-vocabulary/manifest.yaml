@@ -4,7 +4,7 @@ version: 0.2.0
 description: The edge_types and roles registries of spec-artifacts-iso 0.2.0 (revision 6686f11), loaded beside spec-objects-business so the frontend can categorise its verbs (FR-094)
 semantic:
   contract_version: 1.0.0
-  semantic_core: 0.1.0
+  semantic_core: 0.3.0
   package: agent-ix/edge-vocabulary
   exports: []
   imports: {}

@@ -2113,6 +2113,10 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		"    /// contract declares on its members. Deserialization routes through",
 		"    /// this constructor.",
 	);
+	if (parameters.length > 7) {
+		// Public constructor arity follows the authored record exactly.
+		lines.push("    #[allow(clippy::too_many_arguments)]");
+	}
 	lines.push(
 		...signature(
 			"    ",
@@ -2317,7 +2321,9 @@ function renderFieldChecks(field) {
 		);
 	if (multiplicity.lower > 0) {
 		body.push(
-			`            if items.len() < ${multiplicity.lower}usize {`,
+			multiplicity.lower === 1
+				? "            if items.is_empty() {"
+				: `            if items.len() < ${multiplicity.lower}usize {`,
 			...boundFailure(
 				"multiplicity.lower",
 				rustString(String(multiplicity.lower)),
