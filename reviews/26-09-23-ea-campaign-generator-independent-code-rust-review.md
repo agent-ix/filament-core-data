@@ -37,3 +37,9 @@ did not complete a fresh byte-for-byte campaign regeneration.
 ## Disposition
 
 **CONDITIONAL** for this scoped generator review pending correction and a generated-package test of the JSON value annotation. This does not accept EA's 0.5 matrix.
+
+## Remediation recheck — 2026-09-23
+
+FCD commit `9ef44b34dc80c825f625e04e5264d6c0c0952e31` maps native `JsonObject` to `Any`, imports it only when used, and adds a generated Protocol test that compiles and resolves both parameter and return type hints to `typing.Any`. A direct stdlib execution of that rendering and type-hint path passes; Node syntax checking of the Rust backend passes. Focused pytest remains unavailable on this host because Poetry and system pytest are absent.
+
+**FND-001 closed. Recheck verdict: PASS for the reviewed generator finding.** EA's 0.5 matrix remains a separate, unaccepted candidate.
