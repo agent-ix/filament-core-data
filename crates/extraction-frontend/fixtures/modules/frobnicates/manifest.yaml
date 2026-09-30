@@ -25,7 +25,6 @@ object_types:
     references: [entity]
   data_schema:
     schema: schemas/Entity.json
-    digest: sha256:ff1a5f1f88f307ad156ab935d3d9f6687aaf5de8b92c5f3307668ddcaaa12064
   body_extraction:
     yield_pattern:
       match:
