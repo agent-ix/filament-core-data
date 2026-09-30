@@ -17,7 +17,7 @@
 # canonical bytes come from `agent-ix-semantic-ir` (FR-097).
 [package]
 name = "agent-ix-extraction-frontend"
-version = "0.0.0"
+version = "0.1.0"
 description = "Lifts a quire spec bundle into the Filament semantic IR."
 edition = "2021"
 rust-version.workspace = true
