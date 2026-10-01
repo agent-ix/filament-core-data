@@ -39,8 +39,7 @@ be backed out by reverting this work alone.
 
 ## Rationale
 
-`package.json` is prohibited for a reason that is the whole point of this
-requirement. Adding a kernel package to `exports` or `files` is the act of
+Adding a kernel package to `exports` or `files` is the act of
 publishing it from this repository, and that act is behind `agent-ix/quoin#290`,
 a human sign-off that has not been given. The gate is kept mechanically as well
 as by rule: the generated Rust manifest carries `publish = false`

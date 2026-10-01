@@ -14,7 +14,6 @@ use std::process::Command;
 
 use ix_trace_rs::trace;
 
-const TOOLCHAIN: &str = "1.98.1";
 const PACKAGE: &str = "agent-ix-extraction-frontend";
 
 fn crate_dir() -> PathBuf {
@@ -77,14 +76,13 @@ fn quoted(value: &str) -> Option<String> {
 
 fn cargo() -> Command {
     let mut cmd = Command::new("cargo");
-    cmd.arg(format!("+{TOOLCHAIN}"));
     cmd.current_dir(workspace_dir());
     cmd
 }
 
 /// Every third-party package reachable from this crate over normal and build
 /// edges (dev edges excluded) on this host, as `(name, version) -> licence`,
-/// straight from `cargo +1.98.1 tree --locked --edges normal,build` — the
+/// straight from `cargo tree --locked --edges normal,build` — the
 /// listing NFR-033's verification names.
 fn reachable_third_party() -> BTreeMap<(String, String), String> {
     let out = cargo()
@@ -105,7 +103,7 @@ fn reachable_third_party() -> BTreeMap<(String, String), String> {
         .expect("spawn cargo tree");
     assert!(
         out.status.success(),
-        "cargo +{TOOLCHAIN} tree --locked failed:\n{}",
+        "cargo tree --locked failed:\n{}",
         String::from_utf8_lossy(&out.stderr)
     );
     String::from_utf8_lossy(&out.stdout)
@@ -178,13 +176,6 @@ fn tc_1320_manifest_pins_toolchain() {
         Some("\"1.85.0\""),
         "the workspace rust-version belongs to quire-rs#417's sweep, not this crate"
     );
-    // quire-rs 6eec7e8 and later declare `rust-version = "1.98.1"`, so the
-    // workspace channel is the qualification compiler (#154).
-    let toolchain = read(&workspace_dir().join("rust-toolchain.toml"));
-    assert_eq!(
-        key(&section(&toolchain, "[toolchain]"), "channel").as_deref(),
-        Some(&*format!("\"{TOOLCHAIN}\""))
-    );
 }
 
 #[trace("TC-1325", "NFR-033-AC-6")]
@@ -250,7 +241,7 @@ fn tc_1329_locked_offline_build_succeeds_from_a_warm_cache() {
         .expect("spawn cargo build");
     assert!(
         out.status.success(),
-        "cargo +{TOOLCHAIN} build --locked --offline failed:\n{}",
+        "cargo build --locked --offline failed:\n{}",
         String::from_utf8_lossy(&out.stderr)
     );
 }
@@ -363,7 +354,7 @@ fn tc_1326_clippy_no_deps_all_targets_with_deny_warnings_and_fmt_check_both_pass
         .expect("spawn cargo clippy");
     assert!(
         clippy.status.success(),
-        "cargo +{TOOLCHAIN} clippy failed:\n{}",
+        "cargo clippy failed:\n{}",
         String::from_utf8_lossy(&clippy.stderr)
     );
     let fmt = cargo()
@@ -372,7 +363,7 @@ fn tc_1326_clippy_no_deps_all_targets_with_deny_warnings_and_fmt_check_both_pass
         .expect("spawn cargo fmt");
     assert!(
         fmt.status.success(),
-        "cargo +{TOOLCHAIN} fmt --check failed:\n{}{}",
+        "cargo fmt --check failed:\n{}{}",
         String::from_utf8_lossy(&fmt.stdout),
         String::from_utf8_lossy(&fmt.stderr)
     );

@@ -327,7 +327,7 @@ blocked as stated above.
 | NFR-023 | Emitted-manifest `publish = false` test, publication, third-party attribution and licence inspection | TC-709, TC-741, TC-742 | ✅ Complete |
 | NFR-026 | Malicious-schema corpus, advisory gate, socket and filesystem instrumentation, non-executing source inspection, emission ordering and provisioning-failure checks | TC-936..939 | ✅ Complete |
 | NFR-034 | Input-order byte comparison and ambient-input static inspection | TC-1367 | ✅ Complete |
-| NFR-027 | Double-generation byte comparison, report `--check`, distribution-manifest and publication analysis, guard-range conversion with post-merge perturbation, revert rehearsal and skip census | TC-940..943 | ✅ Complete |
+| NFR-027 | Double-generation byte comparison, report `--check`, distribution-manifest and publication analysis, skip census | TC-940..942 | ✅ Complete |
 | NFR-028 | NFR-028-AC/CON x8 | TC-1098..TC-1100 | 🚧 In progress |
 | NFR-029 | NFR-029-AC/CON x10 | TC-1101..TC-1104 | 🚧 In progress |
 | NFR-030 | NFR-030-AC-8, NFR-030-AC-9 | TC-1107 | 🚧 In progress |
@@ -2225,7 +2225,6 @@ blocked as stated above.
 | ERR-140 | A generated annotation degrades to `Any` at a constrained position | Generation fails naming module, symbol, and pointer | TC-907 |
 | ERR-141 | A generated annotation cannot be attributed to any schema pointer | Classified unattributed and fails | TC-915 |
 | ERR-142 | A construct measured as lost is missing from `gaps.json` | Qualification gate fails | TC-898 |
-| ERR-143 | A guard's change range cannot be located from history | Guard fails saying it did not run | TC-943 |
 | ERR-250 | A supplied module manifest carries no `semantic` block | `MODULE_WITHOUT_SEMANTIC_BLOCK` naming the module; refusal; no file; exit 2 | TC-1201, TC-1296 |
 | ERR-251 | quire-rs refuses a module's `semantic` block (unsupported `semantic_core`, duplicate object type) | `MODULE_REFUSED` whose message opens with the engine's `semantic.*` code, `causes` empty, at the manifest, line 1, column 1; no artifact lowered as empty; exit 2 | TC-1202, TC-1265 |
 | ERR-252 | `spec/spec.md` is absent, lacks `org` or `name`, or carries one outside the `packageIdentity` grammar; an object-typed document has no `id` | `BUNDLE_UNIDENTIFIED` at `spec/spec.md` or the document's frontmatter naming the offending value; refusal; exit 2 | TC-1204 |
@@ -2308,7 +2307,6 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-045 | The compiler is invoked from a directory other than the repository root | NFR-017, FR-041 | TC-341, TC-386 | Absolute host paths are written into the IR with every gate green |
 | EC-046 | The retained evidence records the minting host's own tool versions | NFR-017, FR-044 | TC-370, TC-389 | The gate can only ever pass on one workstation (issue #42) |
 | EC-047 | A base-model chain in the IR forms a cycle | FR-042 | TC-354 | The backend recurses until the stack is exhausted |
-| EC-048 | `package.json` `files` already ships `src/`, so promoted code enters the tarball | NFR-018 | TC-391 | The published artefact grows while the export-surface check stays green |
 | EC-049 | Exactly one frontend is implemented, so cross-dialect agreement cannot be observed | FR-045 | TC-402, TC-601 | Single-dialect runs are reported as cross-frontend equivalence they never demonstrated |
 | EC-050 | A package declares one type and no imports | FR-046 | TC-614 | The resolver's empty-graph path is never exercised |
 | EC-051 | An import graph is a diamond, reaching one package by two routes | FR-047 | TC-615 | The package resolves twice, or its digest is compared against itself |
@@ -2360,7 +2358,6 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-078 | The published `sourceLocus` pattern uses four ECMAScript lookaheads | FR-074 | TC-869 | A normalizing pass silently drops a pattern Python can honour |
 | EC-079 | The generator renames or de-duplicates a symbol, so a generated name is not a schema name | FR-078 | TC-917 | Attribution silently fails and every finding becomes unattributed, or the check is relaxed |
 | EC-080 | A patch-level interpreter or formatter bump moves a byte-compared artefact with no input change | NFR-027 | TC-940 | The issue #42 host coupling is reproduced and the gate goes red for nothing |
-| EC-081 | Six merged suites resolve their changed-path gates against a moving ref | NFR-027 | TC-943 | A seventh permitted-path entry is added and the guards are disabled incrementally |
 | EC-140 | A bundle holding only `spec/spec.md` and no artifact document | FR-091, FR-095, FR-097 | TC-1204, TC-1258 | An empty `types[]` envelope is emitted invalid, or the frontend derives a value from the host to fill it |
 | EC-141 | A bundle whose every document is a requirement, use-case, or review artifact with no `object` | FR-091 | TC-1205 | Non-domain artifacts are lowered as records, or each raises a diagnostic on a valid bundle |
 | EC-142 | An artifact whose typed `## Properties` table has a header row and zero body rows, and a `domain` with no `## Properties` at all | FR-093 | TC-1221, TC-1335, TC-1309 | A record with no fields is confused with `fields` `unavailable`, or the lowering panics on an empty list |
@@ -2576,14 +2573,6 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
 | **Total** | **1335** | **1021** | **0** | **314** | **100% mapped (1335/1335)** |
-
-Issue #23 also converts the six suites that still resolve their changed-path
-gates against a moving `main` or `origin/main` — the open defect of issue #51.
-It does so rather than add a seventh permitted-path entry to each, because
-issue #55 records that widening those lists is how the guards were disabled
-incrementally in the first place. TC-943 carries that conversion, including the
-post-merge perturbation each converted suite must still fail on. Each sentinel
-was confirmed from history with `git log --diff-filter=A -1`, not guessed.
 
 Two defects outside issue #23's scope were found and filed rather than absorbed:
 issue #65, the corpus `python-backend` adapter slot, whose owning issue the

@@ -17,9 +17,8 @@ relationships:
 
 ## Statement
 
-The extraction frontend SHALL build, lint, and test on exactly Rust 1.98.1
-through `cargo +1.98.1` — the qualification compiler, named once in the
-`Makefile` — while declaring the workspace's supported minimum
+The extraction frontend SHALL build, lint, and test on exactly Rust 1.98.1,
+while declaring the workspace's supported minimum
 (`rust-version.workspace = true`) in its manifest so that a `--workspace`
 build on the workspace channel still compiles it, with every dependency
 declared at an exact, reviewed, licence-compatible version and its own licence
@@ -42,8 +41,7 @@ of what it produces.
   workspace channel is that same `1.98.1`. The
   claim "qualified on 1.98.1" covers this crate alone.
 - Operational context: an authoring host with `1.98.1-x86_64-unknown-linux-gnu`
-  installed through `rustup` beside the workspace channel; every gate for this
-  crate invokes `cargo +1.98.1` explicitly.
+  installed through `rustup` beside the workspace channel.
 
 ## Rationale
 
@@ -67,14 +65,6 @@ compiles on the workspace channel is measured, not assumed: `cargo check` on
 that channel is a gate of this crate (NFR-033-AC-11), so a language feature
 newer than the supported minimum surfaces as a red gate rather than as a
 broken `make test`.
-
-Two cargos touch one lockfile. The workspace `Cargo.lock` was resolved under
-the `rust-toolchain.toml` channel; this crate's additions are resolved
-under `cargo +1.98.1`, and every gate of this crate passes `--locked`, so a
-resolver or lockfile-format difference between the two cargos surfaces as a
-red gate with a `Cargo.lock` diff rather than as a silent rewrite. The first
-plan task proves `cargo +1.98.1 build --locked` leaves every lock entry not
-reachable only from this crate byte-unchanged.
 
 The dependency posture follows the Phase 0 gate. `quire-rs` is the extraction
 contract this crate consumes in-process; FR-091 loads modules only through
@@ -141,7 +131,7 @@ row is promised.
 | `rust-version` declared by the crate manifest | `rust-version.workspace = true` | exact | Manifest inspection |
 | `cargo check -p agent-ix-extraction-frontend --locked --offline` failures on the `rust-toolchain.toml` channel | 0 | 0 | Check on the workspace channel |
 | Changes to the workspace `rust-version` and `rust-toolchain.toml` | 0 | 0 | Change-set diff |
-| `Cargo.lock` entries of other workspace members moved by `cargo +1.98.1 --locked` | 0 | 0 | Lock diff against the range's base |
+| `Cargo.lock` entries of other workspace members moved by `cargo --locked` | 0 | 0 | Lock diff against the range's base |
 | Dependencies declared with a caret, tilde, wildcard, or branch specifier | 0 | 0 | Manifest inspection |
 | `quire-rs` pinned other than by exact `rev` at or after `a874fb6` (or an exact `tag` once quire-rs#417 cuts one) | 0 | 0 | Manifest inspection |
 | `path` dependencies on crates outside this workspace; `file:` or `link:` dependencies anywhere | 0 | 0 | Manifest inspection against the workspace `members` |
@@ -151,8 +141,8 @@ row is promised.
 | `cargo audit` advisories against the resolved graph | 0 | 0 | `make extraction-frontend-audit` |
 | Third-party crates reachable from this crate without an entry in the crate's `THIRD-PARTY-NOTICES.md` | 0 | 0 | Lock-to-notices comparison |
 | Crate manifests without `license = "AGPL-3.0-or-later"` and `publish = false` | 0 | 0 | Manifest inspection |
-| `cargo +1.98.1 clippy --no-deps --all-targets -- -D warnings` warnings | 0 | 0 | Clippy run |
-| `cargo +1.98.1 fmt --check` diffs | 0 | 0 | Formatter check |
+| `cargo clippy --no-deps --all-targets -- -D warnings` warnings | 0 | 0 | Clippy run |
+| `cargo fmt --check` diffs | 0 | 0 | Formatter check |
 | Requirement tests without a `#[trace("TC-NNNN", "…-AC-N")]` marker and a `tc_NNNN_` name | 0 | 0 | Source scan |
 | `#[trace]` markers naming a TC id absent from `spec/tests.md` | 0 | 0 | Cross-check against the matrix |
 
@@ -165,11 +155,11 @@ Read `rust-version` from the crate manifest and confirm it is
 this crate against the range's base; inspect every `[dependencies]` and `[dev-dependencies]`
 specifier against the workspace `members` list; run `make extraction-frontend-deny`
 and `make extraction-frontend-audit`; list every third-party crate in
-`cargo +1.98.1 tree --locked --edges normal,build` and confirm each has a
+`cargo tree --locked --edges normal,build` and confirm each has a
 notices entry, and confirm no `jsonschema` crate is declared under
 `[dependencies]` or `[dev-dependencies]`; run
-`cargo +1.98.1 clippy --no-deps --all-targets --locked -- -D warnings` and
-`cargo +1.98.1 fmt --check`; scan every test under the crate for the trace
+`cargo clippy --no-deps --all-targets --locked -- -D warnings` and
+`cargo fmt --check`; scan every test under the crate for the trace
 marker and the name convention, and cross-check each named TC id against
 `spec/tests.md`. A gate whose tool is missing fails saying which, and never
 reports the metric it could not measure.
@@ -178,16 +168,16 @@ reports the metric it could not measure.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version.workspace = true`, `license = "AGPL-3.0-or-later"`, `publish = false`, and `edition = "2021"`; the workspace `rust-version` is byte-unchanged, `rust-toolchain.toml` pins channel `1.98.1`, and every `Cargo.lock` entry of the range's base is byte-unchanged after `cargo +1.98.1 build --locked` except the entries of crates reachable only from this crate: computed from the base lock, those this crate reaches and no other workspace member reaches (a member's own entry, and a crate another member also reaches, never move). | Analysis (TC-1320) |
+| NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version.workspace = true`, `license = "AGPL-3.0-or-later"`, `publish = false`, and `edition = "2021"`; the workspace `rust-version` is byte-unchanged, and every `Cargo.lock` entry of the range's base is byte-unchanged after `cargo build --locked` except the entries of crates reachable only from this crate: computed from the base lock, those this crate reaches and no other workspace member reaches (a member's own entry, and a crate another member also reaches, never move). | Analysis (TC-1320) |
 | NFR-033-AC-3 | `quire-rs` is declared as a git dependency with an exact `rev` at or after `a874fb6`, `08d39ea`, and no `branch`; `ix-trace-rs` is a dev-dependency at tag `v0.1.1`; `agent-ix-semantic-ir` is a `path` dependency on `../semantic-ir`; `serde` and `serde_json` are the workspace's exact pins; `sha2` and `clap` are exact; no `jsonschema` crate is declared; no `path` dependency names a crate outside the workspace `members`, and no `file:` or `link:` dependency exists | Analysis (TC-1322) |
 | NFR-033-AC-4 | `make extraction-frontend-deny` passes with zero errors against a `deny.toml` whose licence allowlist is exactly the set the program permits, and `quire-rs`'s `AGPL-3.0-or-later` is admitted by an explicit entry. | Static (TC-1323) |
 | NFR-033-AC-5 | `make extraction-frontend-audit` reports zero advisories against the locked graph. | Static (TC-1324) |
 | NFR-033-AC-6 | Every third-party crate reachable from this crate in `Cargo.lock` has an entry in `crates/extraction-frontend/THIRD-PARTY-NOTICES.md` naming its version and licence, and the crate ships a `LICENSE` file carrying AGPL-3.0-or-later. | Analysis (TC-1325) |
-| NFR-033-AC-7 | `cargo +1.98.1 clippy --no-deps --all-targets --locked -- -D warnings` and `cargo +1.98.1 fmt --check` both pass. | Test (TC-1326) |
+| NFR-033-AC-7 | `cargo clippy --no-deps --all-targets --locked -- -D warnings` and `cargo fmt --check` both pass. | Test (TC-1326) |
 | NFR-033-AC-8 | Every requirement test in the crate carries `#[trace("TC-NNNN", "<FR or NFR>-AC-N")]` and is named `tc_NNNN_…`, and every named TC id exists in `spec/tests.md`, which carries TC-1200 through TC-1329 before the first traced test lands. | Analysis (TC-1327) |
 | NFR-033-AC-9 | With `quire coverage --scope . --json` confirmed to bind the Rust `#[trace]` form, removing both the `#[trace]` marker and the `tc_NNNN_` name prefix from one test turns its matrix row into a status lie under `quire coverage` (the `rust-test-name-id` form still binds through the name alone), proving the binding is by symbol rather than by row. | Static (TC-1328) |
-| NFR-033-AC-10 | `cargo +1.98.1 build --locked --offline` succeeds from a warm cache, proving every dependency is resolvable without a network. | Test (TC-1329) |
-| NFR-033-AC-11 | `cargo check -p agent-ix-extraction-frontend --locked --offline` on the `rust-toolchain.toml` channel (`cargo +1.98.1`) exits zero, proving a `--workspace` build on the workspace channel still compiles the crate and `make rust-build` and `make rust-test` are not broken by it. | Test (TC-1350) |
+| NFR-033-AC-10 | `cargo build --locked --offline` succeeds from a warm cache, proving every dependency is resolvable without a network. | Test (TC-1329) |
+| NFR-033-AC-11 | `cargo check -p agent-ix-extraction-frontend --locked --offline` on the `rust-toolchain.toml` channel exits zero, proving a `--workspace` build on the workspace channel still compiles the crate and `make rust-build` and `make rust-test` are not broken by it. | Test (TC-1350) |
 
 ## Dependencies
 
