@@ -41,7 +41,7 @@ const nextMinorVersion = (() => {
 /**
  * Issue #35 (semantic-core L3 declaration grammar) matrix trace inventory:
  * TC-248, TC-249, TC-250, TC-251, TC-252, TC-253, TC-254, TC-255, TC-256,
- * TC-257, TC-258, TC-259, TC-260, TC-261, TC-262, TC-263, TC-264, TC-265,
+ * TC-257, TC-258, TC-259, TC-260, TC-261, TC-262, TC-263, TC-264,
  * TC-266, TC-267, TC-268, TC-269, TC-270, TC-271, TC-272, TC-273, TC-275,
  * TC-276, TC-277, TC-278, TC-279.
  * TC-274 is a manual inspection of the two doc amendments.
@@ -501,15 +501,6 @@ function fieldDecls(): JsonObject {
 	);
 }
 
-function toolchain(): JsonObject {
-	return object(
-		JSON.parse(
-			readFileSync(resolve(packageRoot, "generated/toolchain.json"), "utf8"),
-		),
-		"toolchain",
-	);
-}
-
 describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 	/** Traces: TC-261; FR-033-AC-1. */
 	it("emits one absolute-$id schema per inventory declaration", () => {
@@ -624,22 +615,8 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 		}
 	});
 
-	/** Traces: TC-265, TC-266; FR-033-AC-5, FR-033-CON-2. */
-	it("pins the toolchain to the lockfile and isolates the #31 normalization", () => {
-		const record = toolchain();
-		const lock = readFileSync(resolve(root, "pnpm-lock.yaml"), "utf8");
-		for (const key of ["compiler", "emitter"]) {
-			const entry = object(record[key], key);
-			expect(lock).toContain(`${String(entry.name)}@${String(entry.version)}`);
-		}
-		const normalization = object(record.normalization, "normalization");
-		expect(normalization.name).toBe("issue-31-absolute-id");
-		expect(normalization.issue).toContain("issues/31");
-		expect(normalization.applied).toBe(false);
-		expect(String(normalization.note)).toContain("no-op");
-		const annotation = object(record.identityAnnotation, "identityAnnotation");
-		expect(annotation.name).toBe("fr-137-semantic-identity");
-		expect(annotation.issue).toContain("issues/132");
+	/** Traces: TC-266; FR-033-CON-2. */
+	it("isolates the #31 normalization to one function and one call", () => {
 		const script = readFileSync(
 			resolve(packageRoot, "scripts/generate.mjs"),
 			"utf8",

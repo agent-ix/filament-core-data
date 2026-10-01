@@ -15,9 +15,8 @@ export interface GeneratedFile {
 	readonly identities: readonly string[];
 }
 
-/** The rendered module bodies, the licence text, and the IR fingerprint. */
+/** The rendered module bodies and the licence text. */
 export interface PackageParts {
-	readonly fingerprint: string;
 	readonly license: string;
 	readonly types: string;
 	readonly validators: string;

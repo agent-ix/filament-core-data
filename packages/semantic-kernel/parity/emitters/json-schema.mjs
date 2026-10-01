@@ -17,7 +17,6 @@ import Ajv2020 from "ajv/dist/2020.js";
 import { loadGolden, REPO_ROOT } from "../golden.mjs";
 import { unknownFateOf } from "../project.mjs";
 
-const BASE = "https://schemas.agent-ix.org/semantic-core/0.3.1/";
 const INDEX = resolve(
 	REPO_ROOT,
 	"packages/semantic-kernel/json-schema/index.json",
@@ -31,14 +30,14 @@ function compile() {
 			JSON.parse(readFileSync(resolve(dirname(INDEX), document.path), "utf8")),
 		);
 	}
-	return ajv;
+	return { ajv, base: index.base };
 }
 
 /** One answer per golden document, in corpus order. */
 export function decide(golden = loadGolden()) {
-	const ajv = compile();
+	const { ajv, base } = compile();
 	return golden.map((document) => {
-		const validate = ajv.getSchema(`${BASE}${document.declaration}.json`);
+		const validate = ajv.getSchema(`${base}${document.declaration}.json`);
 		if (!validate) {
 			return { id: document.id, resultState: "undecided" };
 		}

@@ -28,7 +28,6 @@ import {
 } from "../../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
 import { SCHEMA_FILES, admitIr } from "./admit.mjs";
-import { fingerprintIrForTarget } from "./canonical.mjs";
 import { LOSS_CODES, refusesGeneration, representability } from "./loss.mjs";
 import { auditRenderedNodes, renderIdentity } from "./metadata.mjs";
 import { buildModel } from "./model.mjs";
@@ -219,9 +218,7 @@ export const typescriptBackend = Object.freeze({
 			};
 		}
 
-		const fingerprint = fingerprintIrForTarget(request.ir);
 		const rendered = renderPackage(model, {
-			fingerprint,
 			license: read("LICENSE"),
 			types: renderTypes(model),
 			validators: renderValidators(model),

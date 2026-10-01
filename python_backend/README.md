@@ -5,7 +5,7 @@ Requirements: FR-072..FR-080, NFR-026, NFR-027. Plan:
 `plan/Plan-012-python-pydantic-backend/`.
 
 This directory is **not** a Python code generator. The generator is the MIT
-`datamodel-code-generator`, pinned at `0.76.0`, above both published advisory
+`datamodel-code-generator`, held above both published advisory
 floors. What lives here is the smallest AGPL surface that makes that generator
 trustworthy, plus the measured evidence for what it does and does not carry.
 
@@ -13,7 +13,6 @@ trustworthy, plus the measured evidence for what it does and does not carry.
 
 | Path | What it is |
 |---|---|
-| `toolchain.json` | The **declared** pins: generator, Pydantic, msgspec, type checker, and the Python *minor* series. No patch-level interpreter version and no formatter entry — a host reading inside a byte-compared artefact is the issue #42 coupling |
 | `advisories.json` | GHSA-386q-5hp3-95m9 and GHSA-5578-w22f-pfx9, their ranges, their first-patched versions, and the derived floor `0.64.0` |
 | `profiles.json` | One immutable profile per output family; `options` is the complete argument vector |
 | `refusals.json` | The closed refusal register: five executable schema keys, four reference shapes, three argument classes |

@@ -158,10 +158,10 @@ generate-typescript:
 
 .PHONY: generate-typescript-check
 generate-typescript-check:
-	@scratch=$$(mktemp -d) ; \
-	trap 'rm -rf "$$scratch"' EXIT ; \
-	node src/compiler/cli.mjs generate --ir $(GENERATE_IR) --target $(GENERATE_TARGET) --out-root "$$scratch" --manifest "$$scratch/output-manifest.json" ; \
-	diff -ru $(GENERATE_FIXTURE) "$$scratch"
+	@scratch=$(mktemp -d) ; manifests=$(mktemp -d) ; \
+	trap 'rm -rf "$scratch" "$manifests"' EXIT ; \
+	node src/compiler/cli.mjs generate --ir $(GENERATE_IR) --target $(GENERATE_TARGET) --out-root "$scratch" --manifest "$manifests/output-manifest.json" ; \
+	diff -ru $(GENERATE_FIXTURE) "$scratch"
 
 # -----------------------------------------------------------------------------
 # Contract compiler (issue #19)

@@ -35,7 +35,7 @@ type-checks but accepts invalid data is caught.
 ## Behavior
 
 - The gate SHALL run the type checker over every emitted module and every example under `strict` settings, with no per-file ignore and no `type: ignore` comment in generated or example source.
-- The gate SHALL run the type checker at the exact version `toolchain.json` records, failing with a provisioning message rather than skipping when it is absent.
+- The gate SHALL run the type checker at the version the `python-backend` Poetry group resolves, failing with a provisioning message rather than skipping when it is absent.
 - The gate SHALL cover only demonstrated profiles, recording each undemonstrated family in `validation.json` as not emitted rather than as passing, because a `not-qualified` family has no emitted tree.
 - The gate SHALL exercise every generated type in a profile whose `runtimeValidation` is `validating` with a value built from that type's own schema node and a value the contract forbids.
 - The gate SHALL name in `validation.json`, with the reason, every type it could not exercise.

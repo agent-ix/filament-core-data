@@ -45,12 +45,6 @@ export interface ConstraintDescriptor {
 	readonly operands: unknown;
 }
 
-/** The banner every emitted file carries; the caller prepends it. */
-export declare function bannerFor(
-	model: ResolvedModel,
-	fingerprint: string,
-): string;
-
 /** The body of the generated `identity.ts`. Pure; writes no file. */
 export declare function renderIdentity(model: ResolvedModel): string;
 

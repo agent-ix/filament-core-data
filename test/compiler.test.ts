@@ -14,10 +14,6 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import {
-	DATAMODEL_CODEGEN_VERSION,
-	PYDANTIC_VERSION,
-} from "../src/compiler/backends/python-pins.mjs";
 import type {
 	SemanticIrDocument,
 	SemanticIrType,
@@ -38,7 +34,7 @@ import {
  * TC-338, TC-339, TC-340, TC-341, TC-342, TC-343, TC-344, TC-345, TC-346,
  * TC-347, TC-348, TC-349, TC-350, TC-351, TC-352, TC-353, TC-354, TC-355,
  * TC-356, TC-357, TC-358, TC-359, TC-360, TC-361, TC-362, TC-363, TC-364,
- * TC-365, TC-366, TC-367, TC-368, TC-369, TC-371, TC-372, TC-373, TC-374,
+ * TC-365, TC-366, TC-367, TC-369, TC-371, TC-372, TC-373, TC-374,
  * TC-375, TC-376, TC-377, TC-378, TC-379, TC-380, TC-381, TC-383, TC-384,
  * TC-385, TC-386, TC-387, TC-388, TC-389, TC-390, TC-391, TC-392, TC-393,
  * TC-394, TC-395, TC-396, TC-397.
@@ -138,7 +134,6 @@ const ENUMERATED_COMPONENTS = [
 	"typescript-backend",
 	"rust-serde-backend",
 	"python-json-schema-adapter",
-	"python-generator-pins",
 	"determinism-helpers",
 	"python-virtualenv-bootstrap",
 	"golden-consumer-programs",
@@ -432,10 +427,6 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 		// repository does not typecheck `.mjs`, so the sets are compared here.
 		const pairs: [string, string][] = [
 			["../src/compiler/index.mjs", "src/compiler/index.d.mts"],
-			[
-				"../src/compiler/backends/python-pins.mjs",
-				"src/compiler/backends/python-pins.d.mts",
-			],
 			[
 				"../src/compiler/emitters/semantic-ir/index.mjs",
 				"src/compiler/emitters/semantic-ir/index.d.mts",
@@ -805,7 +796,6 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 			"backends/rust.mjs",
 			"backends/type-names.mjs",
 			"backends/python-schema.mjs",
-			"backends/python-pins.mjs",
 		];
 		for (const path of walk(compilerRoot)) {
 			const isPrototype =
@@ -1170,19 +1160,6 @@ describe("Python generation adapter (FR-043)", () => {
 		const second = normalizeJsonSchemaForPython(bundle);
 		expect(first).toEqual(second);
 		expect(JSON.stringify(bundle)).toBe(before);
-	});
-
-	/** Traces: TC-368; FR-043-AC-7. */
-	it("pins the generator versions the evidence records", () => {
-		const tools = (
-			readJson(resolve(spike, "evidence/toolchain.json")) as {
-				tools: { name: string; version: string }[];
-			}
-		).tools;
-		const version = (name: string) =>
-			tools.find((tool) => tool.name === name)?.version;
-		expect(DATAMODEL_CODEGEN_VERSION).toBe(version("datamodel-code-generator"));
-		expect(PYDANTIC_VERSION).toBe(version("Pydantic"));
 	});
 });
 

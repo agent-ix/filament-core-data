@@ -1,6 +1,6 @@
 # agent-ix-conformance
 
-Generated Rust/Serde declarations for the semantic contract `agent-ix/conformance` at version `1.0.0`.
+Generated Rust/Serde declarations for the semantic contract `agent-ix/conformance`.
 
 This crate is generated. Edit the contract, not this crate: the next
 generation overwrites every file here, and a hand edit is invisible to the

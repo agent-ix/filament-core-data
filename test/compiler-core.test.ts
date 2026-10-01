@@ -211,7 +211,6 @@ const FROZEN_PROTOTYPE_BACKENDS = [
 	"backends/rust.mjs",
 	"backends/type-names.mjs",
 	"backends/python-schema.mjs",
-	"backends/python-pins.mjs",
 ];
 
 /** The declared closed code registers: the one place a code is a string. */
@@ -5888,18 +5887,13 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 
 		const declaration = {
 			documents: ["A.json"],
-			semanticCore: "0.1.0",
-			inventoryCounts: { models: 1 },
 		};
 
 		// KERNEL_INVENTORY_MISMATCH.
 		note(
-			bundle.checkKernelBundle(
-				declaration,
-				{ models: [1, 2] },
-				{ files: ["B.json"] },
-				{ version: "9.9.9" },
-			) as readonly Diagnostic[],
+			bundle.checkKernelBundle(declaration, {
+				models: ["B"],
+			}) as readonly Diagnostic[],
 		);
 
 		// UNSUPPORTED_SCHEMA_KEYWORD: a keyword outside the closed set.

@@ -49,18 +49,6 @@
 			"limitation": "Carries the issue #31 workaround, including a hard-coded RecordString.json alias and a name-keyed unevaluatedProperties rewrite. Duplicate $id collapse and non-unique derived titles are unhandled and belong to issue #23. Requires pinned local tooling, TypeSpec JSON Schema URI normalization, extension rejection, and sandboxed generation"
 		},
 		{
-			"component": "python-generator-pins",
-			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (pydanticVersion, datamodelCodegenVersion, pythonGeneratorArguments)",
-			"capability": "python-pydantic-consumer",
-			"disposition": "rewrite",
-			"targets": [
-				"src/compiler/backends/python-pins.mjs",
-				"src/compiler/backends/python-pins.d.mts"
-			],
-			"evidence": "The pins become exported constants checked against evidence/toolchain.json; FR-043-AC-7, TC-368.",
-			"limitation": "Only the version pins are promoted. The datamodel-code-generator argv and its virtualenv remain with the caller, so issue #23 still owns a supported Python generation route; no module under src/compiler/ spawns a process (TC-369). Requires pinned local tooling, TypeSpec JSON Schema URI normalization, extension rejection, and sandboxed generation"
-		},
-		{
 			"component": "determinism-helpers",
 			"source": "spikes/typespec-feasibility/scripts/run-experiment.mjs (canonical, fingerprint)",
 			"capability": "deterministic-regeneration",

@@ -21,11 +21,10 @@ reject every executable schema extension rather than pass it to the generator.
 - The committed official bundle `spikes/typespec-feasibility/generated/official/json-schema/semantic.json`
 - The committed adapter output `spikes/typespec-feasibility/generated/custom/python/input.schema.json`
 - The committed codegen-confidence goldens `spikes/typespec-feasibility/generated/custom/python/models.py` and `models_dataclass.py`
-- The pinned `datamodel-code-generator` 0.76.0 and `pydantic` 2.12.5 versions the issue #4 evidence records
 
 ## Outputs
 
-- `src/compiler/backends/python-schema.mjs` exporting `normalizeJsonSchemaForPython(schema)` and the pinned constants `DATAMODEL_CODEGEN_VERSION` and `PYDANTIC_VERSION`
+- `src/compiler/backends/python-schema.mjs` exporting `normalizeJsonSchemaForPython(schema)`
 - The preserved issue #31 `$id` defect evidence: the committed official bundle, which carries the relative `RecordString.json` `$id`, and the committed adapter output that works around it
 
 ## Behavior
@@ -61,7 +60,6 @@ reject every executable schema extension rather than pass it to the generator.
 | FR-043-AC-4 | The `RecordString` entry carries `additionalProperties` and no `unevaluatedProperties`, and no `$ref` to `RecordString.json` survives. | Test |
 | FR-043-AC-5 | Calling the adapter twice returns deep-equal documents and leaves the input document deep-equal to its pre-call state. | Test |
 | FR-043-AC-6 | The committed official bundle, the committed adapter output, and both committed `models*.py` goldens are unchanged from `origin/main` on the branch. | Analysis |
-| FR-043-AC-7 | `DATAMODEL_CODEGEN_VERSION` equals `0.76.0` and `PYDANTIC_VERSION` equals `2.12.5`, matching `spikes/typespec-feasibility/evidence/toolchain.json`. | Test |
 | FR-043-AC-8 | No module under `src/compiler/` spawns a process, so the generator invocation is demonstrably not promoted. | Test |
 
 ## Dependencies

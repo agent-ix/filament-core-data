@@ -1,4 +1,4 @@
-"""Declared pins and the advisory floor (FR-072).
+"""The advisory floor (FR-072).
 
 The floor is a version comparison, not a membership test: a version below the
 greatest first-patched version fails even when it falls outside every published
@@ -12,14 +12,13 @@ patch version into a committed artefact — that is the issue #42 coupling.
 from __future__ import annotations
 
 import json
-import sys
 from dataclasses import dataclass
 from importlib import metadata
 from typing import Any
 
 from python_backend import DEPENDENCY_GROUP, ROOT
 
-TOOLCHAIN_PATH = ROOT / "toolchain.json"
+GENERATOR_DISTRIBUTION = "datamodel-code-generator"
 ADVISORIES_PATH = ROOT / "advisories.json"
 
 
@@ -34,10 +33,6 @@ class AdvisoryError(RuntimeError):
 def _read(path: Any) -> dict[str, Any]:
     loaded: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
     return loaded
-
-
-def toolchain() -> dict[str, Any]:
-    return _read(TOOLCHAIN_PATH)
 
 
 def advisories() -> dict[str, Any]:
@@ -138,12 +133,10 @@ def check_version(version: str) -> AdvisoryVerdict:
 def assert_generator_admissible() -> AdvisoryVerdict:
     """Read the installed generator's own metadata and decide it.
 
-    The installed distribution is the authority, never `toolchain.json`: a
-    record that is believed rather than checked is a record that goes stale.
+    The installed distribution is the authority.
     """
 
-    distribution = toolchain()["generator"]["distribution"]
-    verdict = check_version(installed_version(distribution))
+    verdict = check_version(installed_version(GENERATOR_DISTRIBUTION))
     if not verdict.admissible:
         raise AdvisoryError(verdict.reason)
     return verdict
@@ -159,11 +152,12 @@ def resolved_extras() -> set[str]:
     installed is what matters.
     """
 
-    distribution = toolchain()["generator"]["distribution"]
     try:
-        dist = metadata.distribution(distribution)
+        dist = metadata.distribution(GENERATOR_DISTRIBUTION)
     except metadata.PackageNotFoundError as error:
-        raise ProvisioningError(str(installed_version(distribution))) from error
+        raise ProvisioningError(
+            str(installed_version(GENERATOR_DISTRIBUTION))
+        ) from error
     present: set[str] = set()
     for requirement in dist.requires or []:
         if "extra ==" not in requirement:
@@ -176,7 +170,3 @@ def resolved_extras() -> set[str]:
             continue
         present.add(extra)
     return present
-
-
-def python_minor() -> str:
-    return "%d.%d" % sys.version_info[:2]
