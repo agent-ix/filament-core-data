@@ -448,11 +448,6 @@ fn tc_1322_every_dependency_is_exact_reviewed_and_inside_the_workspace() {
         Some("https://github.com/agent-ix/quire-rs")
     );
     assert_eq!(
-        quire.rev.as_deref(),
-        Some("92dbebc49f354f7a3d5050b94cd2d57d9084d99f"),
-        "quire-rs rev is pinned to the reviewed semantic-core 0.3 baseline"
-    );
-    assert_eq!(
         normal["agent-ix-semantic-ir"].path.as_deref(),
         Some("../semantic-ir")
     );

@@ -168,7 +168,6 @@ impl fmt::Debug for ObjectType {
         f.debug_struct("ObjectType")
             .field("module", &self.module)
             .field("name", &self.archetype.name)
-            .field("digest", &self.archetype.semantic_schema_digest)
             .field("construct", &self.construct)
             .finish()
     }

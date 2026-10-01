@@ -76,7 +76,7 @@ pub fn extract(bundle: &Bundle) -> Extractions {
         let extraction = extract_semantic(
             document.raw(),
             &context,
-            object_type.archetype.semantic_schema_digest.as_deref(),
+            None,
             &required,
         );
         for diagnostic in &extraction.diagnostics {
