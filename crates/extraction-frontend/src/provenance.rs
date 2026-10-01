@@ -120,8 +120,7 @@ pub struct SourceProvenance {
     pub identity: String,
 }
 
-/// One loaded module: how a test joins the record to the vendored module's
-/// `PROVENANCE.json` (FR-095-AC-15).
+/// One loaded module.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ModuleProvenance {

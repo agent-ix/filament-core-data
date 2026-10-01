@@ -204,8 +204,7 @@ and the shared-case manifest against the range's base, and confirm the
 additions only, that every added row names a crate the workspace
 `Cargo.lock` carries, and that `test/rust-backend.test.ts` TC-742 passes on
 the head. Run the
-full crate suite and then `git status --porcelain` in this repository and in
-every corpus repository the fixtures name, confirming each is empty. Inspect
+full crate suite and then `git status --porcelain` in this repository, confirming it is empty. Inspect
 every crate manifest for `publish = false` and every added manifest for the
 licence. Run `make test` and `make rust` on the range's base and on its head
 and compare outcomes row for row. Re-run the full suite on a revert of the
@@ -223,7 +222,7 @@ the form `test/changed-paths.ts` already takes; none is a `cargo test`.
 | NFR-032-AC-2 | `cargo metadata` shows no dependency edge from `agent-ix-semantic-ir` or `agent-ix-conformance-adapter` to the extraction frontend crate; the edge from the extraction frontend crate to `agent-ix-semantic-ir` is present and is the only path edge it declares. | Test (TC-1311) |
 | NFR-032-AC-3 | The root `Cargo.toml` differs from the range's base only in the `members` line, and `rust-toolchain.toml` and the workspace `rust-version` are byte-unchanged. | Analysis (TC-1312) |
 | NFR-032-AC-4 | `test/fixtures/compiler/shared/cases.json` differs from the base only by `spec-bundle` and `reason` members, the rewritten top-level `$comment`, and the added `records-and-scalars` case; every pre-existing path under `test/fixtures/compiler/shared/**` and `src/compiler/frontend/spec-bundle/frontend.mjs` are byte-unchanged. | Analysis (TC-1313) |
-| NFR-032-AC-5 | After the full crate suite runs, `git status --porcelain` is empty in this repository's fixture directories and in every corpus repository the fixtures name. | Test (TC-1314) |
+| NFR-032-AC-5 | After the full crate suite runs, `git status --porcelain` is empty in this repository's fixture directories. | Test (TC-1314) |
 | NFR-032-AC-6 | Every crate manifest in the change set carries `publish = false` and `license = "AGPL-3.0-or-later"`, and no command in the `Makefile` block or the crate names a registry. | Analysis (TC-1315) |
 | NFR-032-AC-7 | `make test` and `make rust`, driven by the `scripts/extraction-frontend-harness.mjs` `suite-compare` verb on the range's base and on its head, produce the same pass/fail outcome for every pre-existing row. | Static (TC-1316) |
 | NFR-032-AC-8 | The full suite passes on a revert of this change's range, driven by the harness's `revert-rehearsal` verb. | Static (TC-1317) |

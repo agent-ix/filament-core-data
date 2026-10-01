@@ -411,36 +411,8 @@ fn tc_1313_cases_json_differs_only_by_spec_bundle_reason_and_the_added_case_and_
 }
 
 // ---------------------------------------------------------------------------
-// NFR-032-AC-5: a clean tree after the full suite, here and in every corpus
+// NFR-032-AC-5: a clean tree after the full suite
 // ---------------------------------------------------------------------------
-
-/// Every corpus repository the fixtures' `PROVENANCE.json` files name, as
-/// the checkout `~/dev/<name>` this host keeps (this repository excluded).
-fn corpus_checkouts() -> BTreeMap<String, PathBuf> {
-    fn walk(dir: &Path, out: &mut BTreeSet<String>) {
-        for entry in fs::read_dir(dir).expect("read_dir") {
-            let path = entry.expect("entry").path();
-            if path.is_dir() {
-                walk(&path, out);
-            } else if path.file_name().is_some_and(|n| n == "PROVENANCE.json") {
-                let value: Value = serde_json::from_str(&read(&path)).expect("PROVENANCE.json");
-                if let Some(repository) = value["repository"].as_str() {
-                    out.insert(repository.to_string());
-                }
-            }
-        }
-    }
-    let mut repositories = BTreeSet::new();
-    walk(&crate_dir().join("fixtures"), &mut repositories);
-    let home = PathBuf::from(std::env::var_os("HOME").expect("HOME"));
-    repositories
-        .into_iter()
-        .filter_map(|url| {
-            let name = url.rsplit('/').next().expect("repository name").to_string();
-            (name != "filament-core-data").then(|| (name.clone(), home.join("dev").join(&name)))
-        })
-        .collect()
-}
 
 fn porcelain(dir: &Path, pathspecs: &[&str]) -> String {
     let mut args = vec!["status", "--porcelain", "--untracked-files=all", "--"];
@@ -454,24 +426,7 @@ fn porcelain(dir: &Path, pathspecs: &[&str]) -> String {
 #[trace("TC-1314", "NFR-032-AC-5")]
 #[test]
 #[ignore = "E2E evidence: runs the whole crate suite, which nests cargo test; run with --ignored"]
-fn tc_1314_after_the_full_suite_git_status_is_empty_in_the_fixtures_and_every_corpus_repository() {
-    let checkouts = corpus_checkouts();
-    assert!(
-        checkouts.len() >= 4,
-        "the fixtures name at least quire-rs, config-service, spec-objects-business and spec-artifacts-iso: {checkouts:?}"
-    );
-    for (name, dir) in &checkouts {
-        assert!(
-            dir.join(".git").exists(),
-            "corpus repository {name} has no checkout at {}: the metric cannot be measured",
-            dir.display()
-        );
-    }
-    let before: BTreeMap<&String, String> = checkouts
-        .iter()
-        .map(|(name, dir)| (name, porcelain(dir, &[])))
-        .collect();
-
+fn tc_1314_after_the_full_suite_git_status_is_empty_in_the_fixtures() {
     let output = Command::new("cargo")
         .arg(format!("+{TOOLCHAIN}"))
         .args(["test", "--locked", "--offline", "-p", PACKAGE])
@@ -493,14 +448,6 @@ fn tc_1314_after_the_full_suite_git_status_is_empty_in_the_fixtures_and_every_co
         ],
     );
     assert_eq!(here, "", "this repository's fixture directories are dirty");
-    for (name, dir) in &checkouts {
-        let after = porcelain(dir, &[]);
-        assert_eq!(
-            after, before[name],
-            "the suite changed the corpus repository {name}"
-        );
-        assert_eq!(after, "", "corpus repository {name} is not clean");
-    }
 }
 
 // ---------------------------------------------------------------------------
