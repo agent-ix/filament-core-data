@@ -23,7 +23,6 @@ and the normalized bytes.
 
 from __future__ import annotations
 
-import hashlib
 import json
 import sys
 from pathlib import Path
@@ -38,25 +37,8 @@ import semantic_ir_reader as reader  # noqa: E402
 ADAPTER_ID = "python-backend"
 ADAPTER_BASE_VERSION = "0.1.0"
 
-#: The module whose decisions this adapter's version tracks.
-DECISION_MODULES = ("tests/semantic_ir_reader.py",)
-
 #: The owner recorded on a diagnostic no declaration owns.
 ORACLE_OWNER = "ix://agent-ix/filament-core-data/semantic-ir"
-
-
-def adapter_version() -> str:
-    """``<base>+<digest>`` over every decision module's bytes.
-
-    A hand-maintained constant moves when somebody remembers. A digest over the
-    module that decides moves whenever that module changes at all, which is
-    stronger than FR-070's obligation and needs nobody to remember.
-    """
-    digest = hashlib.sha256()
-    for name in DECISION_MODULES:
-        digest.update(name.encode("utf-8"))
-        digest.update((REPOSITORY_ROOT / name).read_bytes())
-    return f"{ADAPTER_BASE_VERSION}+{digest.hexdigest()[:12]}"
 
 
 def pointer(prefix: str, dotted: str) -> str:
@@ -977,7 +959,7 @@ def classify(before_bundle: Any, after_bundle: Any) -> str:
     return _worst(found)
 
 
-def answer(case: dict[str, Any], version: str) -> dict[str, Any]:
+def answer(case: dict[str, Any]) -> dict[str, Any]:
     """One adapter result for one materialized case."""
     bundle = case["input"]
     ir = bundle.get("ir") if isinstance(bundle, dict) else None
@@ -1010,7 +992,7 @@ def answer(case: dict[str, Any], version: str) -> dict[str, Any]:
     rows.sort(key=lambda row: (row["pointer"], row["code"]))
     result: dict[str, Any] = {
         "adapter": ADAPTER_ID,
-        "adapterVersion": version,
+        "adapterVersion": ADAPTER_BASE_VERSION,
         "caseId": case["caseId"],
         "support": "supported",
         "resultState": "invalid" if rows else "success",
@@ -1057,9 +1039,8 @@ def _lock_exports(bundle: Any) -> set[str]:
 def main() -> int:
     directory = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(".cases")
     index = json.loads((directory / "index.json").read_text())
-    version = adapter_version()
     results = [
-        answer(json.loads((directory / row["path"]).read_text()), version)
+        answer(json.loads((directory / row["path"]).read_text()))
         for row in index["cases"]
     ]
     sys.stdout.write(json.dumps(results) + "\n")

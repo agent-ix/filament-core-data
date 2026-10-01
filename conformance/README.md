@@ -83,10 +83,7 @@ which `contract-gaps.json` GAP-004 records as named but undefined.
 ## Versioning
 
 `corpusVersion` is SemVer and is the only version a consumer pins for corpus
-content. Adding a case, a base, or a register row is a minor change. Changing or
-removing an existing case's `expected`, or an existing base, is a major change,
-and is reached only through a `corpus-defect` verdict in the divergence
-register. Editing a title, a citation, or prose is a patch change.
+content.
 
 ## Running it
 

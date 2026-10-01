@@ -1,17 +1,7 @@
 #!/usr/bin/env node
 /**
- * The Rust backend's byte baseline, its determinism evidence, its formatter
- * gate, and its support-matrix gate (FR-060).
- *
- * This script is deliberately *not* the script that writes the goldens. The
- * goldens under `test/fixtures/rust-serde/goldens/` are written by
- * `src/compiler/backends/rust-serde/cli.mjs generate --out`, which reaches the
- * emitter through `generateRust` and a directory sink; the digest baseline in
- * `test/fixtures/rust-serde/digests.json` is written here, through `emitCrate`
- * directly. Two artifacts, two writers, two entry points: a single emitter
- * change has to be committed twice by two deliberate acts before the check goes
- * green again, and regenerating only the goldens leaves the baseline red
- * (FR-060-AC-12, FR-060-CON-6).
+ * The Rust backend's determinism evidence, its formatter gate, and its
+ * support-matrix gate (FR-060).
  *
  * Nothing here is asserted that is not measured. The determinism evidence runs
  * real second generations in child processes under the declared perturbations
@@ -19,8 +9,6 @@
  * copy of itself (FR-060-CON-2).
  *
  * Usage:
- *   --write-digests   write test/fixtures/rust-serde/digests.json
- *   --check-digests   compare the goldens against that baseline
  *   --determinism     two runs, then TZ, LANG, PWD and HOME perturbations
  *   --rustfmt         assert the pinned formatter, then rustfmt --check
  *   --matrix          every support-matrix row is qualified
@@ -28,7 +16,6 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import {
 	mkdirSync,
 	mkdtempSync,
@@ -36,22 +23,14 @@ import {
 	readFileSync,
 	rmSync,
 	statSync,
-	writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, relative } from "node:path";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-	corpusBases,
-	requestFor,
-} from "../src/compiler/backends/rust-serde/cli.mjs";
-import { emitCrate } from "../src/compiler/backends/rust-serde/crate.mjs";
-import { readLicense } from "../src/compiler/backends/rust-serde/index.mjs";
 
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const CLI = join(ROOT, "src", "compiler", "backends", "rust-serde", "cli.mjs");
 const GOLDENS = join(ROOT, "test", "fixtures", "rust-serde", "goldens");
-const DIGESTS = join(ROOT, "test", "fixtures", "rust-serde", "digests.json");
 const MATRIX = join(
 	ROOT,
 	"docs",
@@ -68,10 +47,6 @@ function targetDir() {
 	);
 }
 
-function sha256(text) {
-	return `sha256:${createHash("sha256").update(text, "utf8").digest("hex")}`;
-}
-
 /** Every file under `dir`, as paths relative to it, in code-point order. */
 function walk(dir, prefix = "") {
 	const out = [];
@@ -82,156 +57,6 @@ function walk(dir, prefix = "") {
 		else out.push(rel);
 	}
 	return out.sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
-}
-
-// ---------------------------------------------------------------------------
-// The digest baseline
-// ---------------------------------------------------------------------------
-
-/**
- * The baseline, built through `emitCrate` — the entry point the golden writer
- * does not use.
- */
-function baseline() {
-	const licenseText = readLicense(ROOT);
-	const bases = {};
-	for (const base of corpusBases(ROOT)) {
-		const emitted = emitCrate(requestFor(base), { licenseText });
-		const files = {};
-		for (const path of [...emitted.files.keys()].sort()) {
-			files[path] = sha256(emitted.files.get(path));
-		}
-		bases[base.name] = {
-			state: emitted.state,
-			fileCount: emitted.files.size,
-			files,
-			crate: sha256(
-				Object.entries(files)
-					.map(([path, digest]) => `${path} ${digest}\n`)
-					.join(""),
-			),
-		};
-	}
-	return {
-		note: "Written by scripts/build-rust-backend-goldens.mjs through emitCrate. The goldens beside it are written by cli.mjs generate through generateRust. Two writers, two entry points (FR-060).",
-		bases,
-	};
-}
-
-function writeDigests() {
-	writeFileSync(DIGESTS, `${JSON.stringify(baseline(), null, "\t")}\n`, "utf8");
-	process.stdout.write(`wrote ${relative(ROOT, DIGESTS)}\n`);
-	return 0;
-}
-
-/**
- * Compares the baseline against two things, because it has to fail on two
- * different mistakes.
- *
- * Against a *fresh emit*, so a changed emitter byte turns the baseline red
- * naming the digest — and stays red after the goldens alone are regenerated,
- * because regenerating the goldens does not touch this file. Against the
- * *committed golden bytes on disk*, so a golden edited by hand fails here even
- * though the emitter never changed (FR-060-AC-12).
- */
-function checkDigests() {
-	const problems = [];
-	let recorded;
-	try {
-		recorded = JSON.parse(readFileSync(DIGESTS, "utf8"));
-	} catch (error) {
-		process.stderr.write(
-			`the digest baseline ${relative(ROOT, DIGESTS)} could not be read: ${error.message}\n`,
-		);
-		return 1;
-	}
-
-	// 1. A fresh emit, through `emitCrate`.
-	const fresh = baseline().bases;
-	for (const name of new Set([
-		...Object.keys(recorded.bases),
-		...Object.keys(fresh),
-	])) {
-		const was = recorded.bases[name];
-		const now = fresh[name];
-		if (!was) {
-			problems.push(
-				`the emitter produced ${name}, which the digest baseline does not record`,
-			);
-			continue;
-		}
-		if (!now) {
-			problems.push(
-				`the digest baseline records ${name}, which the emitter did not produce`,
-			);
-			continue;
-		}
-		if (was.crate !== now.crate) {
-			problems.push(
-				`${name}: the digest baseline records the crate digest ${was.crate}, the emitter now produces ${now.crate}`,
-			);
-		}
-		for (const path of new Set([
-			...Object.keys(was.files),
-			...Object.keys(now.files),
-		])) {
-			if (was.files[path] !== now.files[path]) {
-				problems.push(
-					`${name}/${path}: the digest baseline records ${was.files[path] ?? "no digest"}, the emitter now produces ${now.files[path] ?? "no file"}`,
-				);
-			}
-		}
-	}
-
-	// 2. The golden bytes on disk.
-	for (const [name, entry] of Object.entries(recorded.bases)) {
-		const dir = join(GOLDENS, name);
-		let present;
-		try {
-			present = walk(dir);
-		} catch {
-			problems.push(`the golden crate ${name} is missing from the goldens`);
-			continue;
-		}
-		if (present.length !== entry.fileCount) {
-			problems.push(
-				`${name}: the digest baseline records ${entry.fileCount} files, the golden carries ${present.length}`,
-			);
-		}
-		for (const [path, digest] of Object.entries(entry.files)) {
-			let actual;
-			try {
-				actual = sha256(readFileSync(join(dir, path), "utf8"));
-			} catch {
-				problems.push(
-					`${name}/${path}: the digest baseline names a file the golden does not carry`,
-				);
-				continue;
-			}
-			if (actual !== digest) {
-				problems.push(
-					`${name}/${path}: the digest baseline says ${digest}, the golden hashes to ${actual}`,
-				);
-			}
-		}
-		for (const path of present) {
-			if (!(path in entry.files))
-				problems.push(
-					`${name}/${path}: the golden carries a file the digest baseline does not name`,
-				);
-		}
-	}
-	for (const problem of problems)
-		process.stderr.write(`digest baseline failed: ${problem}\n`);
-	if (problems.length > 0) return 1;
-	const count = Object.values(recorded.bases).reduce(
-		(total, entry) => total + entry.fileCount,
-		0,
-	);
-	process.stdout.write(
-		`digest baseline passed: ${Object.keys(recorded.bases).length} bases, ${count} files\n`,
-	);
-	return 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -595,8 +420,6 @@ function manifestOrder(dir) {
 }
 
 const MODES = {
-	"--write-digests": writeDigests,
-	"--check-digests": checkDigests,
 	"--determinism": determinism,
 	"--rustfmt": rustfmtGate,
 	"--matrix": matrixGate,

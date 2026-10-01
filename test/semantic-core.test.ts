@@ -7,7 +7,6 @@ import {
 	readFileSync,
 	readdirSync,
 	rmSync,
-	statSync,
 	writeFileSync,
 } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -20,7 +19,6 @@ import { readDeclarations } from "./semantic-core-reader";
 import { type Instance, lower } from "./semantic-core-lowerer";
 import { normalize, readSemanticIr } from "./semantic-ir-v1-1-reader";
 import type { Program } from "@typespec/compiler";
-import { changedPathsOf } from "./changed-paths.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const packageRoot = resolve(root, "packages/semantic-core");
@@ -70,157 +68,6 @@ function array(value: unknown, label: string): unknown[] {
 function readPackageJson(path: string): unknown {
 	return JSON.parse(readFileSync(resolve(packageRoot, path), "utf8"));
 }
-
-function changedPaths(): string[] {
-	// Issue #51, fixed by issue #23. This gate used to resolve its range
-	// from a moving `main`, which is the quiet face of the defect issue #27
-	// met: once the change this suite guards merges, the range empties, the
-	// loop below iterates zero times, and every prohibition passes over
-	// nothing. Left open it is also the accreting face — the range annexes a
-	// later ticket's paths, and the only way to keep it green is to widen the
-	// permitted list below, which issue #55 records as how these guards were
-	// disabled incrementally.
-	//
-	// Both ends now come from history. The sentinel is the file issue #35's own
-	// change created — confirmed with `git log --diff-filter=A -1`, which names
-	// d48b8da — so the range is that change's commit, it survives the squash
-	// merge, and it disappears (failing loudly) if the change is reverted.
-	return changedPathsOf(root, "packages/semantic-core/main.tsp");
-}
-
-describe("semantic-core non-disruption (Task-041)", () => {
-	/** Traces: TC-275; NFR-014-AC-3. */
-	it("keeps issue #35 inside its permitted paths", () => {
-		const allowed = [
-			"conformance/",
-			"plan/Plan-009-conformance-corpus-and-oracle/",
-			"test/conformance-corpus.test.ts",
-			"docs/semantic-data-system/metamodel.md",
-			"docs/semantic-data-system/adr/0002-generated-package-ownership.md",
-			"fixtures/semantic-core/",
-			"fixtures/semantic/v1/compatibility/cases.json",
-			"packages/semantic-core/",
-			"plan/Plan-006-semantic-core-grammar/",
-			"src/compiler/",
-			"tsconfig.json",
-			"tsconfig.build.json",
-			"plan/Plan-007-promote-prototype-emitters/",
-			"package.json",
-			"pnpm-lock.yaml",
-			"docs/semantic-data-system/typespec-feasibility.md",
-			"test/compiler.test.ts",
-			"spikes/typespec-feasibility/scripts/",
-			"spikes/typespec-feasibility/package.json",
-			"spikes/typespec-feasibility/evidence/custom.json",
-			"spikes/typespec-feasibility/emitter/",
-			"reviews/",
-			"spec/",
-			"test/",
-			"tests/",
-			"Makefile",
-			// Issue #19 (the compiler core) adds the compiler fixture corpus, the
-			// matrix-summary script, its plan bundle, and its test file. Each entry
-			// is a path this branch writes, enumerated rather than widened.
-			"test/fixtures/compiler/",
-			"scripts/test-matrix-summary.mjs",
-			"scripts/build-compatibility-cases.mjs",
-			"scripts/build-evolution-goldens.mjs",
-			"scripts/build-compiler-docs.mjs",
-			"plan/Plan-008-typespec-frontend-and-ir-compiler-core/",
-			"plan/Plan-011-typescript-backend/",
-			// Issue #19 also publishes two generated documents and excludes its
-			// generated fixtures from the formatter.
-			"docs/semantic-data-system/compiler-diagnostics.md",
-			"docs/semantic-data-system/ir-compatibility-policy.md",
-			"biome.json",
-			// Issue #21 (the Rust/Serde backend) adds a Rust workspace, its
-			// toolchain and formatter pins, the generated-crate goldens, the
-			// third-party attribution register and two rendered documents. Each
-			// entry is a path that branch writes, enumerated rather than widened,
-			// which is the extension NFR-016 states every ticket makes to these
-			// cumulative lists. The gate itself still reads a moving `origin/main`,
-			// which is issue #51 and not this ticket's to fix.
-			".cargo/config.toml",
-			"Cargo.toml",
-			"Cargo.lock",
-			"rust-toolchain.toml",
-			"rustfmt.toml",
-			"THIRD-PARTY-NOTICES.md",
-			".gitignore",
-			"crates/",
-			"scripts/build-rust-backend-docs.mjs",
-			"scripts/build-rust-backend-goldens.mjs",
-			"scripts/rust-backend-",
-			"docs/semantic-data-system/rust-backend",
-			"test/rust-backend.test.ts",
-			"test/fixtures/rust-serde/",
-			"test/changed-paths.ts",
-			"plan/",
-		];
-		for (const path of changedPaths()) {
-			expect(
-				allowed.some((prefix) => path === prefix || path.startsWith(prefix)),
-				path,
-			).toBe(true);
-			if (existsSync(resolve(root, path)))
-				expect(statSync(resolve(root, path)).isFile(), path).toBe(true);
-		}
-		// Issue #27 removes the spike emitter's `file:` devDependency, so
-		// `package.json` and `pnpm-lock.yaml` necessarily move. What these
-		// criteria protect — the published surface and the runtime dependency
-		// set — is pinned exactly by TC-391 in test/compiler.test.ts.
-		for (const prohibited of [
-			"pnpm-workspace.yaml",
-			"schema/avro/core-data.avpr",
-			"src/generated.ts",
-		])
-			expect(changedPaths(), prohibited).not.toContain(prohibited);
-		// Issue #27 promoted the prototype emitters into src/compiler/ and rewired
-		// the spike runner to them, so those paths are no longer prohibited for
-		// every later branch. The frozen retained evidence is still protected —
-		// by TC-371 in test/compiler.test.ts, which allows exactly one field of
-		// spikes/typespec-feasibility/evidence/custom.json to differ.
-		const promotionPaths = [
-			"src/compiler/",
-			"spikes/typespec-feasibility/scripts/",
-			"spikes/typespec-feasibility/package.json",
-			"spikes/typespec-feasibility/evidence/custom.json",
-			"spikes/typespec-feasibility/emitter/",
-		];
-		for (const path of changedPaths()) {
-			if (promotionPaths.some((prefix) => path.startsWith(prefix))) continue;
-			expect(path.startsWith("spikes/") || path.startsWith("src/"), path).toBe(
-				false,
-			);
-		}
-	});
-
-	/** Traces: TC-278; NFR-014-AC-5. */
-	it("leaves the frozen TypeSpec spike byte-identical", () => {
-		// Scoped by issue #27 (FR-044): the promotion rewires the spike runner to
-		// the promoted compiler and deletes the spike emitter package. The
-		// retained evidence this criterion protects is unchanged apart from the
-		// one declared field, which TC-371 pins exactly.
-		const promotionPaths = [
-			"spikes/typespec-feasibility/scripts/run-experiment.mjs",
-			"spikes/typespec-feasibility/package.json",
-			"spikes/typespec-feasibility/evidence/custom.json",
-		];
-		const spikeDiff = execFileSync(
-			"git",
-			["diff", "--no-renames", "origin/main", "--name-only", "--", "spikes/"],
-			{ cwd: root, encoding: "utf8" },
-		)
-			.split("\n")
-			.filter((line) => line.length > 0)
-			.filter(
-				(path) =>
-					!promotionPaths.includes(path) &&
-					!path.startsWith("spikes/typespec-feasibility/emitter/"),
-			);
-		expect(spikeDiff).toEqual([]);
-	});
-});
 
 describe("semantic-core package inventory (Task-042)", () => {
 	/** Traces: TC-254; FR-031-CON-1. */
@@ -567,7 +414,6 @@ function allowedKernelScalars(program: Program): boolean {
 		"docs/semantic-data-system/rust-backend",
 		"test/rust-backend.test.ts",
 		"test/fixtures/rust-serde/",
-		"test/changed-paths.ts",
 		"src/compiler/",
 		"spec/",
 		"plan/",

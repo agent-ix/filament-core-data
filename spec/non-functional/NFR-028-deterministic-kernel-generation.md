@@ -68,8 +68,8 @@ noise, and the usual response to a noisy gate is to stop reading it.
 Determinism also carries the review property. A generated tree is committed, so
 a reviewer's question is "does this tree follow from that contract" — answerable
 by regenerating and comparing, and unanswerable otherwise. `#21` demonstrated the
-converse: its two byte-freeze artifacts, `test/fixtures/rust-serde/goldens/**`
-and `test/fixtures/rust-serde/digests.json`, are both stale against `crate.mjs`
+converse: its byte-freeze artifact, `test/fixtures/rust-serde/goldens/**`,
+is stale against `crate.mjs`
 on `main` today, and the emitter's real output was invisible until something
 regenerated it.
 

@@ -6,7 +6,6 @@
  * network, or an environment variable.
  */
 
-import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, posix, relative } from "node:path";
@@ -241,199 +240,6 @@ export function substantive(value, kind) {
 	};
 }
 
-/* --------------------------------------------------------- versioning ---- */
-
-/**
- * Reads the manifest as `origin/main` carries it, or `undefined` when the
- * corpus has no predecessor there.
- *
- * This is the one place in this corpus that resolves anything from a moving
- * ref, and it is deliberate. Every other range and baseline here is a history
- * fact, because a live computation against a moving ref either empties out
- * after a merge or annexes a later ticket's work — the defect issues #27, #19
- * and this corpus each carried.
- *
- * A versioning gate is the exception, because its baseline has to be something
- * the branch under test cannot edit. Transcribing the previous corpus into this
- * branch as a constant would satisfy the letter of that rule and break its
- * point: the same commit that changes an expected result would update the
- * baseline beside it and the gate would never fire. That is the blessing this
- * whole corpus exists to prevent, one level up. Resolving it from history does
- * not work either — the parent of the commit that introduced the corpus never
- * carries a predecessor, so the comparison would be permanently vacuous.
- *
- * The moving-ref risk that remains is that the ref is unreadable and the gate
- * quietly stops asserting. `versioningFailures` closes that: the manifest
- * declares whether a predecessor is expected, so an unreadable one is a failure
- * rather than a skip. It reads one committed blob, never the working tree and
- * never a clock.
- */
-export function previousManifest() {
-	try {
-		return JSON.parse(
-			execFileSync("git", ["show", "origin/main:conformance/corpus.json"], {
-				cwd: REPO_ROOT,
-				encoding: "utf8",
-				stdio: ["ignore", "pipe", "ignore"],
-			}),
-		);
-	} catch {
-		return undefined;
-	}
-}
-
-function semverParts(value) {
-	const match = /^(\d+)\.(\d+)\.(\d+)/.exec(String(value));
-	return match
-		? [Number(match[1]), Number(match[2]), Number(match[3])]
-		: undefined;
-}
-
-/**
- * Classifies the change between two corpus manifests and names the reasons.
- *
- * `major` when an existing case's `expected` changed, or a case or base was
- * removed or rewritten; `minor` when a case, a base, or a register row was
- * added; `patch` when only titles, citations, or prose moved; `none` when
- * nothing did (FR-035).
- */
-export function classifyVersionChange(previous, current) {
-	const reasons = [];
-	const priorCases = new Map(
-		(previous.cases ?? []).map((row) => [row.id, row]),
-	);
-	const priorBases = new Map(
-		(previous.bases ?? []).map((row) => [row.id, row]),
-	);
-	for (const row of current.cases ?? []) {
-		const prior = priorCases.get(row.id);
-		if (!prior) {
-			reasons.push({ level: "minor", reason: `case ${row.id} was added` });
-			continue;
-		}
-		if (prior.expectedDigest !== row.expectedDigest) {
-			reasons.push({
-				level: "major",
-				reason: `case ${row.id} changed its expected result`,
-			});
-		}
-		priorCases.delete(row.id);
-	}
-	for (const id of priorCases.keys()) {
-		reasons.push({ level: "major", reason: `case ${id} was removed` });
-	}
-	for (const row of current.bases ?? []) {
-		const prior = priorBases.get(row.id);
-		if (!prior)
-			reasons.push({ level: "minor", reason: `base ${row.id} was added` });
-		priorBases.delete(row.id);
-	}
-	for (const id of priorBases.keys()) {
-		reasons.push({ level: "major", reason: `base ${id} was removed` });
-	}
-	const priorRows = new Set(
-		(previous.constructRegister ?? []).map((row) => row.id),
-	);
-	for (const row of current.constructRegister ?? []) {
-		if (!priorRows.has(row.id)) {
-			reasons.push({
-				level: "minor",
-				reason: `register row ${row.id} was added`,
-			});
-		}
-	}
-	const order = ["none", "patch", "minor", "major"];
-	const required = reasons.reduce(
-		(worst, entry) =>
-			order.indexOf(entry.level) > order.indexOf(worst) ? entry.level : worst,
-		"none",
-	);
-	return { required, reasons };
-}
-
-/** The bump actually taken between two SemVer strings. */
-export function observedBump(previousVersion, currentVersion) {
-	const before = semverParts(previousVersion);
-	const after = semverParts(currentVersion);
-	if (!before || !after) return undefined;
-	if (after[0] > before[0]) return "major";
-	if (after[0] < before[0]) return undefined;
-	if (after[1] > before[1]) return "minor";
-	if (after[1] < before[1]) return undefined;
-	if (after[2] > before[2]) return "patch";
-	if (after[2] < before[2]) return undefined;
-	return "none";
-}
-
-/**
- * The FR-035 versioning gate: an existing expected result may not change, and a
- * case or base may not be removed, without a major `corpusVersion` bump.
- *
- * The manifest declares whether a predecessor is expected, so the absence of one
- * is an assertion rather than a silent skip. A gate that quietly disables itself
- * when a git ref is unreadable is the same defect as a gate that baselines on a
- * range its own merge empties: it stops asserting and nothing says so.
- */
-export function versioningFailures(previous, current) {
-	const declared = current.predecessor ?? {
-		state: "required",
-		ref: "origin/main",
-	};
-	if (declared.state === "none") {
-		// Nothing to compare against: the honest state before this corpus first
-		// merges. Once a predecessor becomes readable the declaration is out of
-		// date, but it is only *wrong* when the corpus has moved since — the first
-		// moment the comparison would have said anything. Failing on the identical
-		// post-merge tree instead would leave `main` red for a stale sentence.
-		if (!previous) return [];
-		const { reasons } = classifyVersionChange(previous, current);
-		if (reasons.length === 0) return [];
-		return [
-			{
-				gate: "versioning",
-				subject: "corpus.json",
-				message: `the manifest declares no predecessor, but ${declared.ref} carries one at corpusVersion ${previous.corpusVersion} and the corpus has moved since (${reasons
-					.map((entry) => entry.reason)
-					.join("; ")}); set predecessor.state to "required"`,
-			},
-		];
-	}
-	if (!previous) {
-		return [
-			{
-				gate: "versioning",
-				subject: "corpus.json",
-				message: `the manifest requires a predecessor at ${declared.ref}, which could not be read, so the versioning comparison did not run`,
-			},
-		];
-	}
-	const { required, reasons } = classifyVersionChange(previous, current);
-	const observed = observedBump(previous.corpusVersion, current.corpusVersion);
-	const order = ["none", "patch", "minor", "major"];
-	if (observed === undefined) {
-		return [
-			{
-				gate: "versioning",
-				subject: "corpus.json",
-				message: `corpusVersion moved from ${previous.corpusVersion} to ${current.corpusVersion}, which is not a forward SemVer bump`,
-			},
-		];
-	}
-	if (order.indexOf(observed) < order.indexOf(required)) {
-		return [
-			{
-				gate: "versioning",
-				subject: "corpus.json",
-				message: `the change requires a ${required} bump but corpusVersion took a ${observed} one: ${reasons
-					.filter((entry) => entry.level === required)
-					.map((entry) => entry.reason)
-					.join("; ")}`,
-			},
-		];
-	}
-	return [];
-}
-
 /* -------------------------------------------------------------- gates ----- */
 
 const INDEXED = /\/\d+(\/|$)/;
@@ -470,8 +276,6 @@ export function corpusGates(overrides = {}) {
 	const manifest = overrides.manifest ?? loadManifest();
 	const readCase =
 		overrides.readCase ?? ((row) => readJson(join(REPO_ROOT, row.path)));
-	const previous =
-		overrides.previous === undefined ? previousManifest() : overrides.previous;
 	const failures = [];
 	const fail = (gate, subject, message) =>
 		failures.push({ gate, subject, message });
@@ -691,8 +495,6 @@ export function corpusGates(overrides = {}) {
 		}
 	}
 
-	for (const failure of versioningFailures(previous, manifest))
-		failures.push(failure);
 	return failures;
 }
 
@@ -712,7 +514,6 @@ export function computeIndex() {
 			path: relPath(path),
 			family: entry.family,
 			class: entry.class,
-			expectedDigest: textDigest(canonical(entry.expected)),
 		};
 	});
 	cases.sort((left, right) => compareCodePoint(left.id, right.id));

@@ -7,8 +7,8 @@
 # `rust-version` under `--workspace` and a member-level 1.98.1 broke
 # `make rust-build` on the workspace channel (CR-036-1). Every dependency is an exact pin:
 # `quire-rs` by git `rev` because no release tag contains `Registry::load_module_set`
-# (quire-rs#411 at a874fb6) or `SemanticContext::with_body_extraction`
-# (quire-rs#443 at d86f7d6) or `CompiledArchetype::construct` (quire-rs#445) and
+# (quire-rs#411) or `SemanticContext::with_body_extraction`
+# (quire-rs#443) or `CompiledArchetype::construct` (quire-rs#445) and
 # `Pre:`/`Post:` contract lines (quire-rs#454) or the vendored FR-035 schema that
 # validates `immutable` (quire-rs#456) or `CellRole::PartOwner` admitting a
 # composite type as a systems `part`'s owner (quire-rs#461, fixed by #462),

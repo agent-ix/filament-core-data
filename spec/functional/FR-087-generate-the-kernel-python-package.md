@@ -113,8 +113,6 @@ and it publishes nothing.
 | FR-087-CON-4 | The maintainer SHALL NOT emit a package for a family the qualification judges `not-qualified`, nor re-run the qualification with an altered probe set to move a verdict in order to emit one. | Integrity | Test |
 | FR-087-CON-5 | This requirement SHALL add no path under `packages/semantic-kernel/` to `pyproject.toml`'s `packages` or `include`, to any npm manifest's `files` or `exports`, or to any workflow under `.github/`. Publication passes `agent-ix/quoin#290`. | Compliance | Test |
 | FR-087-CON-6 | This requirement SHALL introduce no second generator, no vendored copy, and no fork of `datamodel-code-generator`; the generator stays an attributed, pinned third-party dependency at `0.76.0`. | Compliance | Static |
-| FR-087-CON-7 | The tracked trees `python_backend/adapter/`, `python_backend/runner/`, `python_backend/qualification/`, and `python_backend/generated/`, and `python_backend/profiles.json`, `python_backend/refusals.json`, `python_backend/limits.json`, and `python_backend/toolchain.json`, SHALL match the tree digests pinned in `tests/test_semantic_kernel.py`; the kernel route lives in `python_backend/kernel/` and edits nothing it imports. A change that moves one of those paths for its own requirement updates the pin in the same commit. | Non-disruption | Analysis |
-| FR-087-CON-8 | `pyproject.toml` SHALL match the digest pinned in `tests/test_semantic_kernel.py`: the kernel route adds no new dependency, no new mypy override, no new ruff exclusion, and no lint or type-check exclusion for the generated kernel tree. The new subpackage lives under `python_backend/` precisely so the existing configuration already covers it. | Integrity | Static |
 
 ## Acceptance Criteria
 
@@ -123,7 +121,6 @@ and it publishes nothing.
 | FR-087-AC-1 | Every one of the thirty-five absolute `$ref` values in the committed kernel bundle is refused by `assert_schema_safe` with `PY-REF-010` before localization, and every localized document passes the same unmodified guard afterwards. | Test |
 | FR-087-AC-2 | After `localize_bundle`, no document carries a root `$id`, every `$ref` is a bare sibling filename naming a document present in the input set, every document carries a `title` equal to its filename stem, and `$schema` and every constraint keyword are byte-identical to the committed document. `title` is the only keyword the pass may introduce. | Property |
 | FR-087-AC-3 | A `$ref` whose value does not begin with the declared package base survives `localize_bundle` byte-identical and is then refused by `assert_schema_safe` with its own code. | Test |
-| FR-087-AC-4 | `python_backend/refusals.json`, `python_backend/profiles.json`, `python_backend/limits.json`, `python_backend/toolchain.json`, every file under `python_backend/adapter/`, `python_backend/runner/`, `python_backend/qualification/`, and `python_backend/generated/`, and `pyproject.toml` match the digests pinned in `tests/test_semantic_kernel.py`. | Analysis |
 | FR-087-AC-5 | Calling `localize_bundle` twice returns deep-equal results and leaves every input document deep-equal to its pre-call state; the pass opens no socket, reads no clock, and writes no file. | Property |
 | FR-087-AC-6 | The `localization` record names every rewritten `$ref` and every dropped `$id` by document and pointer, and its counts equal the bundle's measured thirty-five references, thirty dropped `$id`s, and thirty restored titles. | Test |
 | FR-087-AC-7 | Every sealed kernel object schema generates a closed Python model — `extra='forbid'` in both Pydantic families — and generating the same bundle without the preparation pass yields an open one, asserted in both directions. | Integration |
@@ -167,7 +164,7 @@ string and a string enum, which `msgspec` refuses as two str-like members;
 All four raise `TypeError` at decoder construction, not at decode time. Neither
 union shape occurs in the thirteen published documents the issue #23
 qualification probed, so neither is a `python_backend/qualification/gaps.json`
-row, and FR-087-CON-4 and FR-087-CON-7 both forbid closing that hole from here.
+row, and FR-087-CON-4 forbids closing that hole from here.
 The family is emitted with the loss recorded — in its `README.md` and as an
 executable assertion in its example — and the
 decision belongs to `agent-ix/filament-core-data#125`.

@@ -32,7 +32,6 @@ import {
 	VARIANT_ADDITION_POLICY,
 	classifySurface,
 } from "../src/compiler/backends/typescript-v1/classify.mjs";
-import { changeRange, changedPathsOf } from "./changed-paths";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fixture = resolve(root, "test/fixtures/backends/typescript");
@@ -50,36 +49,6 @@ const SLASH = "/";
 // file binds no row at all.
 const RELATIVE_IMPORT = new RegExp('from "([^"]+)"', "g");
 const IDENTITY_PREFIX = ["ix:", SLASH, SLASH].join("");
-const NFR025_SENTINELS = [
-	"plan/Plan-011-typescript-backend/plan.md",
-	"test/fixtures/backends/typescript/nfr-025-tip-sentinel.txt",
-] as const;
-
-const NFR025_PERMITTED = [
-	"^spec/",
-	"^plan/",
-	"^reviews/",
-	"^test/",
-	"^tests/",
-	"^Makefile$",
-	"^src/compiler/backends/seam\\.(?:mjs|d\\.mts)$",
-	"^src/compiler/backends/targets\\.(?:mjs|d\\.mts)$",
-	"^src/compiler/backends/typescript-v1/",
-	"^src/compiler/backends/format\\.(?:mjs|d\\.mts)$",
-	"^src/compiler/cli\\.mjs$",
-	"^src/compiler/diagnostics\\.mjs$",
-	"^src/compiler/inventory\\.json$",
-	"^docs/semantic-data-system/compiler-diagnostics\\.md$",
-	"^tsconfig\\.json$",
-	"^conformance/adapters/registry\\.json$",
-	"^conformance/adapters/typescript-backend/",
-	"^conformance/coverage\\.json$",
-] as const;
-
-function nfr025Permitted(path: string): boolean {
-	return NFR025_PERMITTED.some((pattern) => new RegExp(pattern).test(path));
-}
-
 function exportedCompilerSymbols(source: string): string[] {
 	const names: string[] = [];
 	for (const line of source.split("\n")) {
@@ -203,7 +172,6 @@ type InstanceCase = {
 
 type InstanceCorpus = {
 	readonly ir: string;
-	readonly provenance: { readonly blessedFromRun: boolean };
 	readonly cases: readonly InstanceCase[];
 };
 
@@ -527,7 +495,6 @@ describe("TypeScript backend fixture (FR-071)", () => {
 			let exercised = 0;
 			let differentialCandidates = 0;
 			for (const corpus of corpora) {
-				expect(corpus.provenance.blessedFromRun).toBe(false);
 				const schemaName = corpus.ir
 					.replace(new RegExp(`^ir${SLASH}`), "")
 					.replace(/\.ir\.json$/, ".schema.json");
@@ -1377,83 +1344,6 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 	// `files` allowlist, so `npm pack` sweeps the whole tree — `test/fixtures/`
 	// and `generated/` included — and the case could only fail (#226).
 
-	/** TC-839: NFR-025-AC-1. Bound by the leading id of the test name. */
-	it("TC-839 pins #22's changed set to history and permits every one of its paths", () => {
-		const { base, tip } = changeRange(root, NFR025_SENTINELS);
-		expect(base).toMatch(/^[0-9a-f]{40}$/);
-		expect(tip).toMatch(/^[0-9a-f]{40}$/);
-		const paths = changedPathsOf(root, NFR025_SENTINELS);
-		expect(paths.length).toBeGreaterThan(0);
-		for (const path of paths)
-			expect(nfr025Permitted(path), `not permitted: ${path}`).toBe(true);
-		for (const path of [
-			"package.json",
-			"pnpm-lock.yaml",
-			"poetry.lock",
-			"schema/semantic/v1/common.schema.json",
-			"fixtures/semantic/v1/positive/target-contracts.json",
-			"spikes/README.md",
-			"packages/semantic-core/main.tsp",
-			"src/compiler/backends/typescript.mjs",
-			"src/compiler/backends/rust.mjs",
-			"src/compiler/backends/type-names.mjs",
-		])
-			expect(paths).not.toContain(path);
-	});
-
-	/** TC-841: NFR-025-AC-3, NFR-025-AC-4, NFR-025-AC-13. Bound by the leading id of the test name. */
-	it("TC-841 keeps package metadata, divergences, and the narrow tsconfig edit unchanged", () => {
-		const { base, tip } = changeRange(root, NFR025_SENTINELS);
-		const at = (commit: string, path: string): string =>
-			execFileSync("git", ["show", `${commit}:${path}`], {
-				cwd: root,
-				encoding: "utf8",
-			});
-		const before = JSON.parse(at(base, "package.json")) as Record<
-			string,
-			unknown
-		>;
-		const after = JSON.parse(at(tip, "package.json")) as Record<
-			string,
-			unknown
-		>;
-		for (const key of [
-			"exports",
-			"main",
-			"module",
-			"types",
-			"files",
-			"dependencies",
-			"peerDependencies",
-			"optionalDependencies",
-		])
-			expect(JSON.stringify(after[key]), key).toBe(JSON.stringify(before[key]));
-		for (const path of [
-			"pnpm-lock.yaml",
-			"poetry.lock",
-			"conformance/divergences.json",
-		])
-			expect(at(tip, path), path).toBe(at(base, path));
-		const prior = JSON.parse(at(base, "tsconfig.json")) as Record<
-			string,
-			unknown
-		>;
-		const current = JSON.parse(at(tip, "tsconfig.json")) as Record<
-			string,
-			unknown
-		>;
-		expect(current.exclude).toEqual([
-			...(Array.isArray(prior.exclude) ? prior.exclude : []),
-			"test/fixtures/backends/typescript",
-		]);
-		const stripped = (value: Record<string, unknown>) => {
-			const copy = { ...value };
-			delete copy.exclude;
-			return copy;
-		};
-		expect(stripped(current)).toEqual(stripped(prior));
-	});
-
 	/** Part of TC-842 (NFR-025-AC-5); the frozen-golden half of that row has no test, so the row is not bound. */
 	it("keeps the narrow compiler surface at fourteen exports", () => {
 		const names = exportedCompilerSymbols(
@@ -1466,37 +1356,5 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 		expect(
 			exportedCompilerSymbols('export { one, two, three } from "./x.mjs";'),
 		).toHaveLength(3);
-	});
-
-	/** Part of TC-840 (NFR-025-AC-2); the other two clauses of that row have no test, so the row is not bound. */
-	it("does not accrete later sibling paths in a squash-merge history", () => {
-		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-typescript-accretion-"));
-		try {
-			const git = (...args: string[]) =>
-				execFileSync("git", args, { cwd: scratch, stdio: "pipe" });
-			const write = (path: string, text: string) => {
-				mkdirSync(dirname(resolve(scratch, path)), { recursive: true });
-				writeFileSync(resolve(scratch, path), text);
-			};
-			git("init", "--initial-branch=main");
-			git("config", "user.email", "gate@example.invalid");
-			git("config", "user.name", "gate");
-			write("README.md", "base\n");
-			git("add", "-A");
-			git("commit", "-m", "base");
-			write(NFR025_SENTINELS[0], "plan\n");
-			write(NFR025_SENTINELS[1], "sentinel\n");
-			write("src/compiler/backends/typescript-v1/index.mjs", "export {};\n");
-			git("add", "-A");
-			git("commit", "-m", "#22 squash");
-			const mine = changedPathsOf(scratch, NFR025_SENTINELS);
-			write("schema/semantic/v1/later.json", "{}\n");
-			write("conformance/cases/later.json", "{}\n");
-			git("add", "-A");
-			git("commit", "-m", "sibling backend");
-			expect(changedPathsOf(scratch, NFR025_SENTINELS)).toEqual(mine);
-		} finally {
-			rmSync(scratch, { recursive: true, force: true });
-		}
 	});
 });

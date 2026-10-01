@@ -7,7 +7,7 @@ reached by import and is not edited, forked or vendored.
 
 This subpackage sits under `python_backend/` so the repository's existing
 `mypy`, `ruff` and `black` configuration already reaches it; `pyproject.toml`
-needs no edit, which is what FR-087-CON-8 requires.
+needs no edit.
 """
 
 from __future__ import annotations

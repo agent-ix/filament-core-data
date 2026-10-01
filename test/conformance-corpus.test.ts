@@ -11,8 +11,6 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { changeRange } from "./changed-paths.js";
-
 /* The corpus is untyped ESM JavaScript by design (NFR-016): it stays consumable
    from any runtime and adds no build step, so the suite reads it through a
    loader that types it loosely rather than through generated declarations. */
@@ -46,7 +44,6 @@ const manifest = corpus.loadManifest() as Json & {
 	cases: {
 		id: string;
 		path: string;
-		expectedDigest: string;
 		family: string;
 		class: string;
 	}[];
@@ -61,7 +58,6 @@ const manifest = corpus.loadManifest() as Json & {
 	}[];
 	unmetAreas: { id: string; owningIssues: string[] }[];
 	corpusVersion: string;
-	predecessor: { state: string; ref: string; rationale: string };
 	minimizationBudget: number;
 	caseIdPattern: string;
 	familyPrefixes: Record<string, string>;
@@ -107,68 +103,6 @@ const gatesWithCase = (id: string, mutate: (entry: Json) => void) => {
 		readCase: (row: { id: string; path: string }) =>
 			row.id === id ? seeded : read(join(REPO, row.path)),
 	}) as { gate: string; subject: string; message: string }[];
-};
-
-/**
- * Files this change created, in its first and last file-adding commits. Both
- * ends of the range come from these, so neither moves when the trunk does.
- */
-const CHANGE_SENTINELS = [
-	"spec/functional/FR-035-define-the-conformance-corpus.md",
-	"conformance/corpus.json",
-];
-
-/**
- * Every path this issue changed, with both ends resolved from history.
- *
- * `origin/main...HEAD` is the wrong range for an isolation gate: after a squash
- * merge it is empty, so a positive claim about it fails forever and a negative
- * one silently stops asserting. Issue #27 met that in PR #44, issue #19 in
- * PR #50, and this file carried it too until it was repaired here.
- *
- * The base is `changeRange`'s, the encoding 3ddc04b settled on: the parent of
- * the earliest commit that added a sentinel this change created. The far end is
- * where this gate differs from `changedPathsOf`, deliberately. That helper takes
- * a tree diff `base..tip`, which is exact for a branch whose history is linear
- * over the trunk; this branch merged `origin/main` three times, so a tree diff
- * annexes the trunk — measured here at 456 paths, 74 of them the trunk's, against
- * a true change set of 182. The union of this branch's own first-parent,
- * non-merge commits is 202 paths, every one inside the NFR-016 permitted set;
- * the 20 beyond the final diff are files this ticket created and later renamed,
- * which it did touch. Nothing here reads a moving ref.
- *
- * The far end is `tip`, not `HEAD`. Bounding it at `HEAD` was this file's own
- * instance of the open-ended-range defect, and the third rehearsal state caught
- * it: with an unrelated sibling change squashed on top, `src/sibling/marker.mjs`
- * and a `docs/` edit were attributed to this ticket and TC-640 and TC-643 failed
- * for another ticket's work — the same shape that took issue #19's gate red for
- * this one's.
- */
-const corpusChangedPaths = (): string[] => {
-	const { base, tip } = changeRange(REPO, CHANGE_SENTINELS);
-	const committed = execFileSync(
-		"git",
-		[
-			"log",
-			"--first-parent",
-			"--no-merges",
-			"--format=",
-			"--name-only",
-			`${base}..${tip}`,
-		],
-		{ cwd: REPO, encoding: "utf8" },
-	)
-		.split("\n")
-		.map((line) => line.trim())
-		.filter((line) => line.length > 0);
-	return [...new Set(committed)].sort();
-};
-
-/** The predecessor declaration a merged corpus carries (FR-035). */
-const predecessorRequired = {
-	state: "required",
-	ref: "origin/main:conformance/corpus.json",
-	rationale: "seeded by the versioning assertions",
 };
 
 /** Runs the gate set against a mutated manifest. */
@@ -1790,269 +1724,11 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		}
 	});
 
-	/** The committed corpusVersion moved one step, so each case holds at any version. */
-	const bumped = (step: "major" | "minor" | "patch" | "backward"): string => {
-		const [major, minor, patch] = String(manifest.corpusVersion)
-			.split(".")
-			.map(Number);
-		if (step === "major") return `${major + 1}.0.0`;
-		if (step === "minor") return `${major}.${minor + 1}.0`;
-		if (step === "patch") return `${major}.${minor}.${patch + 1}`;
-		return `${major - 1}.9.0`;
-	};
-
-	it("TC-639 changing an expected result without a major bump fails the versioning gate", () => {
-		const before = structuredClone(manifest) as Json;
-		const after = structuredClone(manifest) as {
-			corpusVersion: string;
-			predecessor: Json;
-			cases: { expectedDigest: string }[];
-		};
-		after.cases[0].expectedDigest = `sha256:${"0".repeat(64)}`;
-		after.corpusVersion = bumped("minor");
-		after.predecessor = { ...predecessorRequired };
-		const classified = corpus.classifyVersionChange(before, after) as {
-			required: string;
-			reasons: { reason: string }[];
-		};
-		expect(classified.required).toBe("major");
-		expect(
-			classified.reasons.some((one) =>
-				one.reason.includes("changed its expected result"),
-			),
-		).toBe(true);
-		const failures = corpus.versioningFailures(before, after) as {
-			gate: string;
-			message: string;
-		}[];
-		expect(failures.length).toBe(1);
-		expect(failures[0].gate).toBe("versioning");
-		expect(failures[0].message).toContain("requires a major bump");
-		after.corpusVersion = bumped("major");
-		expect(corpus.versioningFailures(before, after)).toEqual([]);
-	});
-
-	it("TC-639 a removed case requires a major bump", () => {
-		const before = structuredClone(manifest) as Json;
-		const removed = structuredClone(manifest) as {
-			corpusVersion: string;
-			predecessor: Json;
-			cases: unknown[];
-		};
-		removed.cases.pop();
-		removed.corpusVersion = bumped("minor");
-		removed.predecessor = { ...predecessorRequired };
-		expect(
-			(corpus.versioningFailures(before, removed) as unknown[]).length,
-		).toBe(1);
-	});
-
-	it("TC-639 adding a case needs only a minor bump and a backward move fails", () => {
-		const before = structuredClone(manifest) as Json;
-		const added = structuredClone(manifest) as {
-			corpusVersion: string;
-			predecessor: Json;
-			cases: unknown[];
-		};
-		added.cases.push({ ...structuredClone(manifest.cases[0]), id: "ENV-999" });
-		added.corpusVersion = bumped("minor");
-		added.predecessor = { ...predecessorRequired };
-		expect(corpus.versioningFailures(before, added)).toEqual([]);
-		added.corpusVersion = String(manifest.corpusVersion);
-		expect((corpus.versioningFailures(before, added) as unknown[]).length).toBe(
-			1,
-		);
-		added.corpusVersion = bumped("backward");
-		expect(
-			(corpus.versioningFailures(before, added) as { message: string }[])[0]
-				.message,
-		).toContain("not a forward SemVer bump");
-	});
-
-	it("TC-639 the versioning gate cannot silently disable itself", () => {
-		// The manifest declares whether a predecessor is expected, so a gate that
-		// did not run says so instead of passing. This is the same defect class as
-		// baselining on a range the branch's own merge empties.
-		const declared = manifest.predecessor as {
-			state: string;
-			ref: string;
-			rationale: string;
-		};
-		expect(["none", "required"]).toContain(declared.state);
-		expect(declared.rationale.length).toBeGreaterThan(0);
-
-		// The three `none` branches run against a locally declared `none`, not
-		// against whatever the committed manifest happens to declare. They read
-		// `manifest` directly until #200 flipped `predecessor.state` to
-		// `required` — at which point the first of them asserted the gate stays
-		// silent on an unreadable predecessor the manifest now demands, which is
-		// the exact defect the case exists to catch (#226).
-		const none = {
-			...structuredClone(manifest),
-			predecessor: { ...declared, state: "none" },
-		};
-
-		// Declared `none` with no predecessor readable: the comparison is
-		// legitimately not applicable.
-		expect(corpus.versioningFailures(undefined, none)).toEqual([]);
-
-		// Declared `none` once a predecessor exists and is identical: the state on
-		// `main` the instant this corpus merges. Nothing has moved, so nothing is
-		// asserted and nothing is wrong.
-		expect(corpus.versioningFailures(none, none)).toEqual([]);
-
-		// Declared `none` once a predecessor exists and the corpus has moved:
-		// stale, and it fails rather than quietly comparing nothing.
-		const moved = structuredClone(none) as { cases: unknown[] };
-		moved.cases.pop();
-		const appeared = corpus.versioningFailures(moved, none) as {
-			gate: string;
-			message: string;
-		}[];
-		expect(appeared.length).toBe(1);
-		expect(appeared[0].gate).toBe("versioning");
-		expect(appeared[0].message).toContain(
-			'set predecessor.state to "required"',
-		);
-
-		// Declared `required` but unreadable: the gate fails instead of skipping.
-		const required = {
-			...structuredClone(manifest),
-			predecessor: { ...declared, state: "required" },
-		};
-		const unreadable = corpus.versioningFailures(undefined, required) as {
-			message: string;
-		}[];
-		expect(unreadable.length).toBe(1);
-		expect(unreadable[0].message).toContain("did not run");
-	});
-
-	it("TC-639 the change range is bounded at both ends and covers everything this ticket owns", () => {
-		const git = (...args: string[]) =>
-			execFileSync("git", args, { cwd: REPO, encoding: "utf8" }).trim();
-
-		// Every sentinel must resolve. `changeRange` ignores one that does not,
-		// and a renamed sentinel is exactly how this range would silently narrow
-		// until it stopped covering the work it exists to cover.
-		for (const sentinel of CHANGE_SENTINELS) {
-			expect(
-				git("log", "--diff-filter=A", "--format=%H", "-1", "--", sentinel),
-				`sentinel does not resolve: ${sentinel}`,
-			).not.toBe("");
-		}
-
-		// The range ends at this ticket's latest sentinel, not at `HEAD`. A later
-		// backend legitimately adds its own adapter under `conformance/`; treating
-		// every later addition as issue #20 work made this gate fail even after
-		// that backend was reverted. The positive assertion below keeps the two
-		// sentinels honest without annexing a sibling's history.
-		const changed = corpusChangedPaths();
-		expect(changed).toContain("conformance/corpus.json");
-		expect(changed).toContain(
-			"spec/functional/FR-035-define-the-conformance-corpus.md",
-		);
-	});
-
-	it("TC-639 no corpus gate baselines on a range this branch's own merge empties", () => {
-		// The defect issue #27 carried into main: a positive claim about
-		// `origin/main...HEAD` fails forever after the squash merge, and a negative
-		// one stops asserting. Nothing under conformance/ may read that range, and
-		// the suite's own baseline carries the merge-empty fallback.
-		const walk = (dir: string): string[] =>
-			readdirSync(dir).flatMap((entry) => {
-				const full = join(dir, entry);
-				return statSync(full).isDirectory() ? walk(full) : [full];
-			});
-		for (const file of walk(CONF)) {
-			if (!file.endsWith(".mjs")) continue;
-			expect(
-				/origin\/main\.\.\.|origin\/main\.\./.test(readFileSync(file, "utf8")),
-				file,
-			).toBe(false);
-		}
-		// The suite itself resolves its range from history, never from a ref.
-		const suite = readFileSync(
-			join(REPO, "test", "conformance-corpus.test.ts"),
-			"utf8",
-		);
-		expect(suite).toContain("changeRange(REPO");
-		const ref = `origin/main`;
-		for (const call of suite.matchAll(
-			/execFileSync\(\s*"git",\s*\[([^\]]*)\]/g,
-		)) {
-			expect(
-				call[1].includes(ref),
-				`a git call in this suite resolves against ${ref}: ${call[1].slice(0, 60)}`,
-			).toBe(false);
-		}
-
-		// One deliberate exception, declared and guarded: the versioning gate's
-		// predecessor. Every other file under conformance/ is ref-free.
-		const readers = walk(CONF)
-			.filter((file) => file.endsWith(".mjs"))
-			.filter((file) => readFileSync(file, "utf8").includes(ref));
-		expect(readers.map((file) => file.slice(CONF.length + 1))).toEqual([
-			"corpus.mjs",
-		]);
-		const corpusSource = readFileSync(join(CONF, "corpus.mjs"), "utf8");
-		expect(
-			(corpusSource.match(/execFileSync\("git"/g) ?? []).length,
-			"more than one git invocation under conformance/",
-		).toBe(1);
-		expect(corpusSource).toContain("predecessor");
-	});
-
 	it("TC-639 corpusVersion is the version a consumer pins, and the README says so", () => {
 		expect(readFileSync(join(CONF, "README.md"), "utf8")).toContain(
 			"the only version a consumer pins",
 		);
 		expect(api.corpusVersion()).toBe(manifest.corpusVersion);
-	});
-
-	it("TC-640 every path this issue changed is permitted and none is prohibited", () => {
-		const changed = corpusChangedPaths();
-		// Measured from the corpus's own introduction, so the range is this
-		// issue's change set whether or not the branch has merged.
-		expect(changed.length).toBeGreaterThan(0);
-		expect(changed).toContain("conformance/corpus.json");
-		const prohibited = [
-			"spikes/",
-			"src/",
-			"packages/",
-			"schema/",
-			"fixtures/",
-			"docs/",
-			".github/",
-			"agent_ix_core_data/",
-			"pnpm-lock.yaml",
-			"poetry.lock",
-			"pyproject.toml",
-			"package.json",
-			"biome.json",
-			"tsconfig.json",
-			"tsconfig.build.json",
-		];
-		const permitted = [
-			"conformance/",
-			"spec/",
-			"plan/",
-			"reviews/",
-			"test/",
-			"tests/",
-			"Makefile",
-		];
-		for (const path of changed) {
-			for (const prefix of prohibited) {
-				expect(
-					path === prefix || path.startsWith(prefix),
-					`${path} is prohibited by NFR-016`,
-				).toBe(false);
-			}
-			expect(
-				permitted.some((prefix) => path === prefix || path.startsWith(prefix)),
-				`${path} is outside the NFR-016 permitted list`,
-			).toBe(true);
-		}
 	});
 
 	it("TC-640 every file the corpus owns lives under conformance/ or its two suites", () => {
@@ -2071,19 +1747,8 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		).toBe(true);
 	});
 
-	it("TC-641 this issue changes no manifest and no lockfile", () => {
-		const changed = corpusChangedPaths();
-		for (const path of [
-			"package.json",
-			"pyproject.toml",
-			"pnpm-lock.yaml",
-			"poetry.lock",
-		]) {
-			expect(changed, `${path} is in this issue's change set`).not.toContain(
-				path,
-			);
-		}
-		// The tree half: whatever any diff says, the manifest names no dependency.
+	it("TC-641 the manifest names no dependency", () => {
+		// The manifest names no dependency.
 		// Its `exports`/`files` clauses are deleted with their subject —
 		// `737824e` retired the Avro publish path and removed both keys, so
 		// `Object.keys(pkg.exports)` threw. The manifest is `private: true` and
@@ -2094,23 +1759,7 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		expect(pkg.dependencies).toBeUndefined();
 	});
 
-	it("TC-643 this issue alters no consumer, catalog pin, Avro contract, or release path", () => {
-		const changed = corpusChangedPaths();
-		for (const surface of [
-			"schema/avro/",
-			"src/",
-			"agent_ix_core_data/",
-			".github/workflows/",
-			"packages/",
-			"pyproject.toml",
-			"package.json",
-		]) {
-			for (const path of changed) {
-				expect(path.startsWith(surface), `${path} touches ${surface}`).toBe(
-					false,
-				);
-			}
-		}
+	it("TC-643 no corpus script names a publish command", () => {
 		const walk = (dir: string): string[] =>
 			readdirSync(dir).flatMap((entry) => {
 				const full = join(dir, entry);

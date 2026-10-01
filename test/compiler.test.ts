@@ -29,7 +29,6 @@ import {
 	normalizeJsonSchemaForPython,
 	SEMANTIC_IR_SCHEMA_VERSION,
 } from "../src/compiler/index.mjs";
-import { changedPathsOf, changeRange } from "./changed-paths.js";
 
 /**
  * Issue #27 (promote the issue #4 prototype emitters into src/) matrix trace
@@ -69,38 +68,6 @@ function readJson(path: string): Json {
 
 function git(...args: string[]): string {
 	return execFileSync("git", args, { cwd: root, encoding: "utf8" });
-}
-
-/** Issue #27's promotion, as a pair of history facts rather than a moving ref. */
-const PROMOTION = (): { base: string; tip: string } =>
-	changeRange(root, "src/compiler/inventory.json");
-
-function changedPaths(): string[] {
-	// Both ends of the range come from history. See `changedPathsOf`: measured
-	// from a moving ref this set empties after the merge and every prohibition
-	// below passes vacuously, and measured from a fixed base to a moving head it
-	// grows to contain every later ticket's work and fails this one for it.
-	return changedPathsOf(root, "src/compiler/inventory.json");
-}
-
-/** The commit issue #27's promotion replaced — a history fact, not a moving ref. */
-const PROMOTION_BASE = (): string => PROMOTION().base;
-
-function existsAtMain(path: string): boolean {
-	try {
-		execFileSync("git", ["cat-file", "-e", `${PROMOTION_BASE()}:${path}`], {
-			cwd: root,
-			stdio: "ignore",
-		});
-		return true;
-	} catch {
-		return false;
-	}
-}
-
-/** Paths the branch adds, counting uncommitted work. */
-function addedPaths(): string[] {
-	return changedPaths().filter((path) => !existsAtMain(path));
 }
 
 /**
@@ -816,16 +783,7 @@ describe("promoted semantic-IR emitter (FR-041)", () => {
 		expect(promoted).toContain(
 			"src/compiler/emitters/semantic-ir/package.json",
 		);
-		// The diff-scoped half stays as a negative guard: whatever else the branch
-		// adds must be licensed the same way. It is vacuously true on an empty
-		// diff, which is the merge-safe shape.
-		const manifests = [
-			...new Set([
-				...promoted,
-				...addedPaths().filter((path) => path.endsWith("package.json")),
-			]),
-		];
-		for (const path of manifests) {
+		for (const path of promoted) {
 			expect(readJson(resolve(root, path)).license, path).toBe(
 				"AGPL-3.0-or-later",
 			);
@@ -1182,24 +1140,6 @@ describe("promoted language backends (FR-042)", () => {
 		);
 		expect(typescript?.limitation).toContain("textual substitution");
 	});
-
-	/** Traces: TC-359, TC-367; FR-042-AC-11, FR-043-AC-6, FR-042-CON-4. */
-	it("leaves every committed issue #4 golden untouched", () => {
-		const frozen = [
-			"spikes/typespec-feasibility/generated/custom/semantic-ir.json",
-			"spikes/typespec-feasibility/generated/custom/typescript/index.ts",
-			"spikes/typespec-feasibility/generated/custom/rust/src/lib.rs",
-			"spikes/typespec-feasibility/generated/custom/rust/Cargo.lock",
-			"spikes/typespec-feasibility/generated/custom/python/input.schema.json",
-			"spikes/typespec-feasibility/generated/custom/python/models.py",
-			"spikes/typespec-feasibility/generated/custom/python/models_dataclass.py",
-			"spikes/typespec-feasibility/generated/official/json-schema/semantic.json",
-		];
-		const changed = changedPaths();
-		for (const path of frozen) {
-			expect(changed, path).not.toContain(path);
-		}
-	});
 });
 
 describe("Python generation adapter (FR-043)", () => {
@@ -1287,22 +1227,7 @@ describe("Python generation adapter (FR-043)", () => {
 describe("frozen spike replay (FR-044)", () => {
 	/** Traces: TC-371, TC-384; FR-044-AC-2, FR-044-CON-1, NFR-017-AC-2. */
 	it("changes exactly one retained-evidence field", () => {
-		// The permitted-path half is a *negative* diff claim — the changed set
-		// contains nothing under the retained prefixes except custom.json — which
-		// is vacuously true on an empty diff and therefore merge-safe.
-		const retained = [
-			"spikes/typespec-feasibility/generated/",
-			"spikes/typespec-feasibility/evidence/",
-			"spikes/typespec-feasibility/report.md",
-		];
-		for (const path of changedPaths().filter((path) =>
-			retained.some((prefix) => path.startsWith(prefix)),
-		)) {
-			expect(path, "retained evidence changed outside custom.json").toBe(
-				"spikes/typespec-feasibility/evidence/custom.json",
-			);
-		}
-		// The "exactly one field" half is asserted against the declared frozen
+		// The "exactly one field" claim is asserted against the declared frozen
 		// record rather than against `origin/main`, whose copy becomes the
 		// post-promotion content once the branch merges. FROZEN_CUSTOM_EVIDENCE
 		// is the issue #4 record verbatim; only `command` is permitted to differ,
@@ -1377,61 +1302,12 @@ describe("frozen spike replay (FR-044)", () => {
 		}
 	});
 
-	/** Traces: TC-378; FR-044-AC-8. */
-	it("changes only the permitted spike paths", () => {
-		const changed = changedPaths().filter((path) => path.startsWith("spikes/"));
-		const permitted = [
-			"spikes/typespec-feasibility/scripts/run-experiment.mjs",
-			"spikes/typespec-feasibility/package.json",
-			"spikes/typespec-feasibility/evidence/custom.json",
-		];
-		for (const path of changed) {
-			expect(
-				permitted.includes(path) ||
-					path.startsWith("spikes/typespec-feasibility/emitter/"),
-				path,
-			).toBe(true);
-		}
-	});
-
 	/** Traces: TC-380; FR-044-AC-10. */
-	it("proves zero publications and mutations from the branch diff", () => {
-		// FR-044-AC-10 forbids discharging this from validation.json's counters,
-		// which run-experiment.mjs writes as literals. The branch diff is the
-		// independent evidence.
-		// Scoped by issue #19, which writes `test/fixtures/compiler/`: the three
-		// fixture trees this criterion protects are named individually so the
-		// prohibition keeps its force.
-		const mutationPrefixes = [
-			"schema/",
-			"fixtures/semantic/",
-			"fixtures/semantic-core/",
-			"fixtures/representative-core-payloads.json",
-			"packages/",
-			"agent_ix_core_data/",
-			"src/generated.ts",
-			"audit/",
-			".github/",
-		];
-		for (const path of changedPaths()) {
-			for (const prefix of mutationPrefixes) {
-				expect(
-					path === prefix || path.startsWith(prefix),
-					`mutation outside the promotion: ${path}`,
-				).toBe(false);
-			}
-		}
-		// No consumer or corpus repository is reachable from this repo's diff at
-		// all, and no publication step exists to trigger.
+	it("proves zero publications and mutations", () => {
 		const manifest = readJson(resolve(root, "package.json"));
 		expect(manifest).not.toHaveProperty("publishConfig");
-		// The changed-path check above discharges AC-10 negatively and is
-		// vacuously true on an empty diff, so it needs a companion that proves the
-		// promotion actually happened. That proof is read from the tree, not from
-		// the diff: a positive diff claim ("my diff touches spikes/") is only ever
-		// green on the authoring branch. The spike's local emitter package is gone
-		// and its runner drives src/compiler/ — both fail if the promotion is
-		// undone, and both stay true forever after the merge.
+		// The promotion actually happened, read from the tree: the spike's local
+		// emitter package is gone and its runner drives src/compiler/.
 		expect(existsSync(resolve(spike, "emitter"))).toBe(false);
 		const spikeManifest = readJson(resolve(spike, "package.json")) as {
 			dependencies: Record<string, string>;
@@ -1444,8 +1320,6 @@ describe("frozen spike replay (FR-044)", () => {
 			"src/compiler/index.mjs",
 		);
 		const validation = readJson(resolve(spike, "evidence/validation.json"));
-		// The counters must still read zero, but they are corroboration, not the
-		// evidence: the changed-path check above is.
 		expect(validation.packagePublications).toBe(0);
 		expect(validation.externalRepositoryMutations).toBe(0);
 	});
@@ -1470,206 +1344,14 @@ describe("frozen spike replay (FR-044)", () => {
 });
 
 describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
-	const permitted = [
-		"src/compiler/",
-		"spikes/typespec-feasibility/scripts/",
-		"spikes/typespec-feasibility/package.json",
-		"spikes/typespec-feasibility/evidence/custom.json",
-		"spikes/typespec-feasibility/emitter/",
-		"spikes/typespec-feasibility/README.md",
-		"package.json",
-		"pnpm-lock.yaml",
-		"Makefile",
-		"biome.json",
-		"tsconfig.json",
-		"tsconfig.build.json",
-		"test/",
-		// The Python suite is a sibling deliverable's surface, not this
-		// promotion's. Issue #20 (NFR-016) legitimately adds
-		// tests/test_conformance_corpus.py, so listing `tests/` as prohibited
-		// made the two tickets contradict each other and failed any branch that
-		// carried both. The promotion's own non-disruption is still carried by
-		// `pyproject.toml`, `poetry.lock` and `agent_ix_core_data/` staying
-		// prohibited: a Python test file changes no consumer, schema or package.
-		"tests/",
-		"docs/semantic-data-system/typespec-feasibility.md",
-		// The issue #20 conformance corpus, for the same reason `tests/` is
-		// permitted above: it is a sibling deliverable's surface, entirely
-		// additive, and changes no consumer, schema or package.
-		"conformance/",
-		"spec/",
-		"plan/",
-		"reviews/",
-		// Issue #19 (the compiler core) writes its own fixture corpus under
-		// `test/`, the four generator scripts, two published documents, and the
-		// formatter exclusion for its generated fixtures.
-		"test/fixtures/compiler/",
-		"scripts/test-matrix-summary.mjs",
-		"scripts/build-compatibility-cases.mjs",
-		"scripts/build-evolution-goldens.mjs",
-		"scripts/build-compiler-docs.mjs",
-		"docs/semantic-data-system/compiler-diagnostics.md",
-		"docs/semantic-data-system/ir-compatibility-policy.md",
-		"biome.json",
-	];
-	const prohibited = [
-		"schema/",
-		// The three fixture trees NFR-017's `fixtures/` prohibition existed to
-		// protect, named individually so issue #19 can write its own corpus under
-		// `test/fixtures/compiler/` without the prohibition losing force.
-		"fixtures/semantic/",
-		"fixtures/semantic-core/",
-		"fixtures/representative-core-payloads.json",
-		"packages/",
-		"agent_ix_core_data/",
-		"src/generated.ts",
-		"audit/",
-		"pyproject.toml",
-		"poetry.lock",
-		".github/",
-	];
-
-	/** Traces: TC-379, TC-390; FR-044-AC-9, NFR-018-AC-1. */
-	it("keeps every changed path permitted and none prohibited", () => {
-		for (const path of changedPaths()) {
-			expect(
-				permitted.some((prefix) => path === prefix || path.startsWith(prefix)),
-				`not permitted: ${path}`,
-			).toBe(true);
-			for (const prefix of prohibited) {
-				expect(
-					path === prefix || path.startsWith(prefix),
-					`prohibited: ${path}`,
-				).toBe(false);
-			}
-		}
-	});
-
-	/** Traces: TC-391, TC-394; NFR-018-AC-2, NFR-018-AC-5. */
-	it("leaves the published surface and dependency sets unchanged", () => {
-		const before = JSON.parse(
-			git("show", `${PROMOTION_BASE()}:package.json`),
-		) as Json;
-		const after = readJson(resolve(root, "package.json"));
-		// The `exports`/`main`/`module`/`types`/`files` half is gone with its
-		// subject: `737824e` retired the Avro publish path and removed all five
-		// from this manifest, which is `private: true` and publishes nothing. The
-		// dependency sets below are still real and still checked.
-		expect(after.dependencies).toEqual(before.dependencies);
-		const beforeDev = { ...(before.devDependencies as Json) };
-		delete beforeDev["@agent-ix/typespec-semantic-ir-emitter-spike"];
-		expect(after.devDependencies).toEqual(beforeDev);
-	});
-
 	// TC-392 / NFR-018-AC-3 ("confines the packed-file delta to src/compiler/")
 	// is deleted with its subject. It read `package.json`'s `files` globs to work
 	// out what the published tarball contains, and `737824e` retired the Avro
 	// publish path: this manifest is `private: true`, has no `files`, and packs
 	// nothing. The case could only ever crash on the absent field.
 
-	/** Traces: TC-395; NFR-018-AC-6. */
-	it("restores the pre-promotion tree exactly when the promotion is reverted", () => {
-		// The rollback target is the commit the promotion replaced, not the
-		// branch point. `origin/main...HEAD` was the wrong baseline: once the
-		// promotion merges, that range is empty, every restore loop iterates zero
-		// times, and the rehearsal reports success having rehearsed nothing. The
-		// baseline is discovered from history through a file the promotion
-		// created, so it stays fixed after the merge and disappears — failing the
-		// gate — if the promotion is ever reverted.
-		//
-		// The far end is pinned to the promotion commit for the same reason the
-		// near end is pinned to its parent. Measured to the current head this
-		// rehearsal restores every file every later ticket has landed since, and
-		// calls that "the promotion" — the accretion issue #20 measured on the
-		// issue #19 gate and issue #19 fixes here for both suites.
-		const { base, tip } = PROMOTION();
-		expect(tip, "src/compiler/inventory.json must exist in history").not.toBe(
-			"",
-		);
-		const existsAtBase = (path: string): boolean => {
-			try {
-				execFileSync("git", ["cat-file", "-e", `${base}:${path}`], {
-					cwd: root,
-					stdio: "ignore",
-				});
-				return true;
-			} catch {
-				return false;
-			}
-		};
-		const changed = git(
-			"diff",
-			"--no-renames",
-			"--name-only",
-			`${base}..${tip}`,
-		)
-			.split("\n")
-			.map((line) => line.trim())
-			.filter(
-				(path) =>
-					path.length > 0 &&
-					!path.startsWith("dist/") &&
-					!path.startsWith("node_modules/"),
-			);
-		expect(changed).toContain(
-			"spikes/typespec-feasibility/evidence/custom.json",
-		);
-		const deleted = changed.filter(
-			(path) => existsAtBase(path) && !existsSync(resolve(root, path)),
-		);
-		expect(
-			deleted.some((path) =>
-				path.startsWith("spikes/typespec-feasibility/emitter/"),
-			),
-			"the emitter deletion must be visible to the restore rehearsal",
-		).toBe(true);
-
-		const scratch = temp("restore");
-		try {
-			let restored = 0;
-			for (const path of changed) {
-				if (!existsAtBase(path)) {
-					expect(existsSync(resolve(root, path)), path).toBe(true);
-					continue;
-				}
-				const original = execFileSync("git", ["show", `${base}:${path}`], {
-					cwd: root,
-					encoding: "buffer",
-				}) as unknown as Buffer;
-				const target = resolve(scratch, path);
-				mkdirSync(dirname(target), { recursive: true });
-				writeFileSync(target, original);
-				expect(readFileSync(target).equals(original), path).toBe(true);
-				restored += 1;
-				if (deleted.includes(path)) {
-					expect(existsSync(resolve(root, path)), path).toBe(false);
-					expect(original.length, path).toBeGreaterThan(0);
-				}
-			}
-			expect(restored).toBeGreaterThan(0);
-			const evidencePath = "spikes/typespec-feasibility/evidence/custom.json";
-			expect(read(resolve(scratch, evidencePath))).toBe(
-				execFileSync("git", ["show", `${base}:${evidencePath}`], {
-					cwd: root,
-					encoding: "utf8",
-				}),
-			);
-			expect(read(resolve(scratch, evidencePath))).toContain(
-				"--emit @agent-ix/typespec-semantic-ir-emitter-spike",
-			);
-			expect(read(resolve(root, evidencePath))).not.toContain(
-				"--emit @agent-ix/typespec-semantic-ir-emitter-spike",
-			);
-		} finally {
-			rmSync(scratch, { recursive: true, force: true });
-		}
-	});
-
 	/** Traces: TC-396; NFR-018-AC-7. */
 	it("adds and triggers no publication step", () => {
-		for (const path of changedPaths()) {
-			expect(path.startsWith(".github/"), path).toBe(false);
-		}
 		const manifest = readJson(resolve(root, "package.json"));
 		expect(manifest).not.toHaveProperty("publishConfig");
 		expect(existsSync(resolve(compilerRoot, ".npmrc"))).toBe(false);

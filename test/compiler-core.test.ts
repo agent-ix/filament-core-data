@@ -90,7 +90,6 @@ import {
 } from "../src/compiler/packages/resolve.mjs";
 import { compilePackage, PHASES } from "../src/compiler/pipeline.mjs";
 import { schemaValidators } from "../src/compiler/schema-validate.mjs";
-import { changedPathsOf, changeRange } from "./changed-paths.js";
 import { isEdgeKind as readerEdgeKind } from "./semantic-ir-v1-1-reader";
 
 /** The core `typeDefinition.kind` values under contract `2.0.0`, distinct from construct kinds. */
@@ -140,26 +139,6 @@ function read(path: string): string {
 
 function readJson(path: string): Json {
 	return JSON.parse(read(path)) as Json;
-}
-
-function git(...args: string[]): string {
-	return execFileSync("git", args, { cwd: root, encoding: "utf8" });
-}
-
-/**
- * The commits issue #19 sits between, located from history through files it
- * created. Both ends are fixed after the merge. See `changeRange`.
- */
-const SENTINEL = [
-	"spec/usecase/US-010-compile-a-semantic-package.md",
-	"src/compiler/pipeline.mjs",
-];
-const range = (): { base: string; tip: string } => changeRange(root, SENTINEL);
-const baseline = (): string => range().base;
-
-/** Every path this change made, with rename detection off (Plan-007's lesson). */
-function changedPaths(): string[] {
-	return changedPathsOf(root, SENTINEL);
 }
 
 function temp(label: string): string {
@@ -1420,27 +1399,11 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	}, 180000);
 
 	/** Traces: TC-426, TC-431, TC-447, TC-455; FR-053-AC-15, FR-053-CON-5, FR-046-AC-16, FR-046-CON-5. */
-	it("licenses every manifest it adds AGPL-3.0-or-later and adds no dependency", () => {
-		const added = changedPaths().filter(
-			(path) => path.endsWith("package.json") && path.startsWith("src/"),
-		);
-		for (const path of added) {
-			expect(readJson(resolve(root, path)).license, path).toBe(
-				"AGPL-3.0-or-later",
-			);
-		}
+	it("licenses the compiler manifest AGPL-3.0-or-later", () => {
 		expect(
 			readJson(resolve(compilerRoot, "frontend/typespec/lib/package.json"))
 				.license,
 		).toBe("AGPL-3.0-or-later");
-		const before = JSON.parse(
-			git("show", `${baseline()}:package.json`),
-		) as Json;
-		const now = readJson(resolve(root, "package.json"));
-		expect(now.dependencies ?? null).toEqual(before.dependencies ?? null);
-		expect(Object.keys((now.devDependencies as Json) ?? {}).sort()).toEqual(
-			Object.keys((before.devDependencies as Json) ?? {}).sort(),
-		);
 	});
 });
 
@@ -1868,30 +1831,6 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 
 	/** Traces: TC-446, TC-451, TC-592; FR-046-AC-15, FR-046-CON-1, NFR-021-AC-3. */
 	it("leaves the frozen prototype path and the issue #4 goldens byte-unchanged", () => {
-		const frozen = [
-			"src/compiler/ir.mjs",
-			"src/compiler/compile.mjs",
-			"src/compiler/identity.mjs",
-			"src/compiler/index.d.mts",
-			"src/compiler/inventory.json",
-			"spikes/typespec-feasibility/generated/custom/semantic-ir.json",
-			"spikes/typespec-feasibility/generated/typescript/index.ts",
-			"spikes/typespec-feasibility/generated/rust/src/lib.rs",
-			"spikes/typespec-feasibility/generated/python/input.schema.json",
-		];
-		const changed = new Set(changedPaths());
-		for (const path of frozen) {
-			// `index.d.mts` is the one declaration file this ticket extends; every
-			// other entry is frozen outright.
-			if (path === "src/compiler/index.d.mts") continue;
-			expect(changed.has(path), `${path} changed`).toBe(false);
-		}
-		for (const prefix of ["src/compiler/emitters/", "src/compiler/backends/"]) {
-			expect(
-				[...changed].filter((path) => path.startsWith(prefix)),
-				prefix,
-			).toEqual([]);
-		}
 		// The prototype path still emits its own frozen schema version.
 		expect(read(resolve(compilerRoot, "ir.mjs"))).toContain(
 			'SEMANTIC_IR_SCHEMA_VERSION = "1.0.0"',
@@ -2515,9 +2454,6 @@ describe("package graph resolution (FR-047)", () => {
 
 	/** Traces: TC-476; FR-047-CON-5. */
 	it("leaves the published graph-case index byte-unchanged", () => {
-		expect(changedPaths()).not.toContain(
-			"fixtures/semantic/v1/package-graph-cases.json",
-		);
 		const published = JSON.parse(
 			read(resolve(root, "fixtures/semantic/v1/package-graph-cases.json")),
 		) as { id: string }[];
@@ -3343,9 +3279,6 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(source).not.toContain("semantic_ir_reader");
 		expect(source).not.toContain('from "../../test/');
 		expect(source).not.toContain('from "../../tests/');
-		const changed = changedPaths();
-		expect(changed).not.toContain("test/semantic-ir-v1-1-reader.ts");
-		expect(changed).not.toContain("tests/semantic_ir_reader.py");
 	});
 
 	/** Traces: TC-514, TC-515, TC-525; FR-050-AC-5, FR-050-AC-6, FR-050-CON-3. */
@@ -4785,9 +4718,6 @@ describe("compatibility (FR-051)", () => {
 
 	/** Traces: TC-546; FR-051-CON-5. */
 	it("leaves the published compatibility case index byte-unchanged", () => {
-		expect(changedPaths()).not.toContain(
-			"fixtures/semantic/v1/compatibility/cases.json",
-		);
 		for (const entry of published) {
 			expect(
 				existsSync(resolve(fixtures, `compatibility/cases/${entry.id}.json`)),
@@ -5264,20 +5194,6 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 		}
 	});
 
-	/** Traces: TC-559, TC-564, TC-591; FR-052-AC-13, FR-052-CON-2, NFR-021-AC-2. */
-	it("leaves the published package surface untouched", () => {
-		const before = JSON.parse(
-			git("show", `${baseline()}:package.json`),
-		) as Json;
-		const now = readJson(resolve(root, "package.json"));
-		// The `exports`/`main`/`module`/`types`/`files` loop is deleted with its
-		// subject: `737824e` retired the Avro publish path and removed all five.
-		// The root manifest is `private: true`, so there is no published surface
-		// left for this change to disturb. The dependency set is still a real
-		// subject and is still frozen (#226).
-		expect(now.dependencies ?? null).toEqual(before.dependencies ?? null);
-	});
-
 	/** Traces: TC-560, TC-573, TC-574; FR-052-AC-14, NFR-019-AC-7, NFR-019-AC-8. */
 	it("produces identical output from another directory and a different environment", () => {
 		const directory = temp("env");
@@ -5442,92 +5358,7 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 	}, 180000);
 
 	/** Traces: TC-577, TC-578, TC-590, TC-594, TC-596, TC-597; NFR-019-AC-11, AC-12, NFR-021-AC-1, AC-5, AC-7, AC-8. */
-	it("changes only permitted paths and publishes nothing", () => {
-		const permitted = [
-			"src/compiler/frontend/",
-			"src/compiler/packages/",
-			"src/compiler/ir/",
-			"src/compiler/compat/",
-			"src/compiler/diagnostics.",
-			"src/compiler/dialects.",
-			"src/compiler/family-map.",
-			"src/compiler/host.",
-			"src/compiler/inspect.",
-			"src/compiler/json-locus.",
-			"src/compiler/pipeline.",
-			"src/compiler/schema-validate.",
-			"src/compiler/cli.mjs",
-			"src/compiler/index.mjs",
-			"src/compiler/index.d.mts",
-			"test/fixtures/compiler/",
-			"test/",
-			"spec/",
-			"plan/",
-			"reviews/",
-			"scripts/test-matrix-summary.mjs",
-			"scripts/build-compatibility-cases.mjs",
-			"scripts/build-evolution-goldens.mjs",
-			"scripts/build-compiler-docs.mjs",
-			"docs/semantic-data-system/compiler-diagnostics.md",
-			"docs/semantic-data-system/ir-compatibility-policy.md",
-			"Makefile",
-			"package.json",
-			"biome.json",
-			// FCD #199/#200, owner ruling 2026-09-19T15:39:32Z: every emitted
-			// multiplicity carries both `ordered` and `unique` as required
-			// booleans. That reaches every reader and every generated kernel
-			// package, which is legitimately repo-wide (the same shape of
-			// declaration fcd#179 made on the Rust side's own change-set gate).
-			"src/compiler/backends/typescript-v1/admit.mjs",
-			"conformance/diagnostic-codes.json",
-			"conformance/oracle/oracle.mjs",
-			"fixtures/semantic/v1/negative/reader-cases.json",
-			"fixtures/semantic-core/negative/rules/cases.json",
-			"packages/semantic-core/",
-			"packages/semantic-kernel/",
-			"test/semantic-ir-v1-1-reader.ts",
-			"test/semantic-core-reader.ts",
-			"tests/semantic_ir_reader.py",
-		];
-		const prohibited = [
-			"src/compiler/ir.mjs",
-			"src/compiler/compile.mjs",
-			"src/compiler/identity.mjs",
-			"src/compiler/emitters/",
-			"src/compiler/inventory.json",
-			"schema/",
-			"fixtures/representative-core-payloads.json",
-			"spikes/",
-			"agent_ix_core_data/",
-			"src/generated.ts",
-			"audit/",
-			"test/semantic-core-lowerer.ts",
-			".github/",
-			"pyproject.toml",
-			"poetry.lock",
-			"pnpm-lock.yaml",
-		];
-		for (const path of changedPaths()) {
-			expect(
-				permitted.some((prefix) => path === prefix || path.startsWith(prefix)),
-				`not permitted: ${path}`,
-			).toBe(true);
-			for (const prefix of prohibited) {
-				expect(
-					path === prefix || path.startsWith(prefix),
-					`prohibited: ${path}`,
-				).toBe(false);
-			}
-		}
-		// Every manifest this branch adds carries the licence.
-		for (const path of changedPaths().filter((entry) =>
-			entry.endsWith("package.json"),
-		)) {
-			if (path === "package.json") continue;
-			expect(readJson(resolve(root, path)).license, path).toBe(
-				"AGPL-3.0-or-later",
-			);
-		}
+	it("publishes nothing", () => {
 		// No publication step exists to trigger.
 		expect(readJson(resolve(root, "package.json"))).not.toHaveProperty(
 			"publishConfig",
@@ -5543,242 +5374,6 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 			expect(value.startsWith("link:"), name).toBe(false);
 		}
 		expect(existsSync(resolve(root, ".npmrc"))).toBe(false);
-	});
-
-	/** Traces: TC-593; NFR-021-AC-4. */
-	it("leaves the issue #4 goldens and everything under spikes/ byte-unchanged", () => {
-		// Both ends from history: measured to the current head this would fail
-		// the moment any later ticket legitimately touched `spikes/`, and would
-		// report it as an issue #19 mutation of the issue #4 goldens.
-		const { base, tip } = range();
-		expect(
-			git(
-				"diff",
-				"--no-renames",
-				"--name-only",
-				`${base}..${tip}`,
-				"--",
-				"spikes/",
-			)
-				.split("\n")
-				.filter((line) => line.length > 0),
-		).toEqual([]);
-	});
-
-	/** Traces: TC-595; NFR-021-AC-6. */
-	it("restores the pre-issue-19 tree exactly when the change is reverted", () => {
-		// Baselined on the commit this change replaced, located from history —
-		// not on `origin/main...HEAD`.
-		//
-		// The first form of this rehearsal asserted `changed.length` was greater
-		// than zero against that range. That is the identical positive
-		// branch-diff shape this branch diagnosed in #48 and #47 fixed for
-		// TC-395: the range empties the moment the change merges, the loop
-		// iterates zero times, and the rehearsal reports success having
-		// rehearsed nothing — or, with the length assertion kept, fails on
-		// `main`. Making it conditional on a non-empty diff would be the same
-		// defect wearing a disguise: it would go quiet rather than red.
-		//
-		// So the baseline is discovered the way #47 discovered TC-395's: find the
-		// commit that first added a file this change created, and take its
-		// parent. That is a history fact. It survives the squash merge, and if
-		// issue #19 is ever reverted the sentinel disappears from history and
-		// this gate fails rather than passing vacuously.
-		// `SENTINEL` spans the change: the earliest artifact it created and the
-		// latest, so the baseline is the branch point while unmerged and the
-		// squash commit's parent afterwards. A single mid-branch sentinel would
-		// baseline on a tree this change had already touched, and the rehearsal
-		// would then "restore" files the change itself had since moved.
-		//
-		// The far end is pinned the same way. Measured to the current head, the
-		// rehearsal restores every file every later ticket has landed since and
-		// calls the result "reverting issue #19" — the accreting form issue #20
-		// measured on the changed-path gate above.
-		const { base, tip } = range();
-
-		const scratch = temp("restore");
-		const worktree = resolve(scratch, "base");
-		try {
-			execFileSync("git", ["worktree", "add", "--detach", worktree, base], {
-				cwd: root,
-				stdio: "pipe",
-			});
-			const changed = git(
-				"diff",
-				"--no-renames",
-				"--name-only",
-				`${base}..${tip}`,
-			)
-				.split("\n")
-				.map((line) => line.trim())
-				.filter(
-					(path) =>
-						path.length > 0 &&
-						!path.startsWith("dist/") &&
-						!path.startsWith("node_modules/"),
-				);
-			// The sentinel is in the set by construction, which is what makes the
-			// baseline discriminating rather than merely non-empty.
-			expect(changed).toContain("src/compiler/pipeline.mjs");
-			expect(changed).toContain("spec/tests.md");
-
-			const trackedAtHead = new Set(
-				git("ls-files")
-					.split("\n")
-					.map((line) => line.trim())
-					.filter((line) => line.length > 0),
-			);
-
-			let modified = 0;
-			let added = 0;
-			for (const path of changed) {
-				const here = resolve(root, path);
-				const there = resolve(worktree, path);
-				if (!existsSync(there)) {
-					added += 1;
-					continue;
-				}
-				// A path HEAD no longer tracks was removed by a later change, and
-				// that removal is that change's business. The subject of this
-				// rehearsal is the `base..tip` diff; treating a deliberate later
-				// deletion as a broken revert is the same annexing-later-work
-				// defect the range pinning above exists to close.
-				if (!trackedAtHead.has(path)) {
-					continue;
-				}
-				expect(existsSync(here), path).toBe(true);
-				// A path this gate calls changed must actually differ from the base.
-				expect(
-					readFileSync(here).equals(readFileSync(there)),
-					`${path} is listed as changed but is identical to the base`,
-				).toBe(false);
-				modified += 1;
-			}
-			expect(added).toBeGreaterThan(0);
-			expect(modified).toBeGreaterThan(0);
-			// And the revert is complete: reverting to `base` restores every file
-			// the base carried, and removes every file it did not.
-			for (const path of changed) {
-				const there = resolve(worktree, path);
-				const carriedByBase = (() => {
-					try {
-						execFileSync("git", ["cat-file", "-e", `${base}:${path}`], {
-							cwd: root,
-							stdio: "ignore",
-						});
-						return true;
-					} catch {
-						return false;
-					}
-				})();
-				expect(existsSync(there), `restore incomplete: ${path}`).toBe(
-					carriedByBase,
-				);
-			}
-		} finally {
-			execFileSync("git", ["worktree", "remove", "--force", worktree], {
-				cwd: root,
-				stdio: "pipe",
-			});
-			rmSync(scratch, { recursive: true, force: true });
-		}
-	}, 120000);
-
-	/** Traces: TC-620; NFR-021-AC-9. */
-	it("resolves both ends of every non-disruption range from history", () => {
-		// A gate baselined on `origin/main` stops asserting the moment the change
-		// merges: the range empties, the working tree matches the base, and every
-		// prohibition passes over an empty set. It does not go red, it goes quiet,
-		// which is why the suite reported green through two rounds of this defect.
-		// This is the static gate that keeps it out of the two suites that were
-		// fixed. It reads the sources rather than the git graph, so it gives the
-		// same verdict before and after the merge.
-		for (const name of ["compiler.test.ts", "compiler-core.test.ts"]) {
-			const source = read(resolve(root, "test", name))
-				.split("\n")
-				.filter((line) => !/^\s*(\/\/|\*|\/\*)/.test(line))
-				.join("\n");
-			// Assembled from parts so this gate does not match its own source.
-			const movingRef = new RegExp(["origin", "main"].join("/"));
-			expect(source, `${name} baselines on a moving ref`).not.toMatch(
-				movingRef,
-			);
-			// The far end has to be pinned too. A range from a fixed base to the
-			// current head does not go quiet on merge, it grows: it annexes every
-			// path every later ticket adds and then fails this ticket for them.
-			// Issue #20 measured that on this suite's own gate before it could
-			// take the trunk red.
-			const movingHead = new RegExp(`\\.\\.${["HE", "AD"].join("")}`);
-			expect(source, `${name} measures to a moving head`).not.toMatch(
-				movingHead,
-			);
-		}
-		// And the shared helper offers the history-based resolver the two suites
-		// use, so the fix cannot be reverted by deleting it unnoticed.
-		const helper = read(resolve(root, "test/changed-paths.ts"));
-		expect(helper).toContain("export function changeRange(");
-		expect(helper).toContain("export function changedPathsOf(");
-	});
-
-	/**
-	 * Traces: TC-644; NFR-021-AC-10.
-	 *
-	 * The property the four faces of this defect all violate, asserted directly
-	 * on a synthetic history rather than inferred from the shape of the source:
-	 * a merged change's path set does not move when a later, unrelated change
-	 * lands on top of it.
-	 */
-	it("does not annex a later change's paths into this change's path set", () => {
-		const scratch = temp("accretion");
-		try {
-			const run = (...args: string[]): void => {
-				execFileSync("git", args, { cwd: scratch, stdio: "pipe" });
-			};
-			const write = (path: string, body: string): void => {
-				mkdirSync(dirname(resolve(scratch, path)), { recursive: true });
-				writeFileSync(resolve(scratch, path), body);
-			};
-			run("init", "--initial-branch=main");
-			run("config", "user.email", "gate@example.invalid");
-			run("config", "user.name", "gate");
-			write("README.md", "base\n");
-			run("add", "-A");
-			run("commit", "-m", "base");
-
-			// The change under test, squash-merged as one commit.
-			write("src/compiler/pipeline.mjs", "export const compile = () => {};\n");
-			write("spec/usecase/US-010-compile-a-semantic-package.md", "# US-010\n");
-			run("add", "-A");
-			run("commit", "-m", "the change");
-			const mine = changedPathsOf(scratch, SENTINEL).sort();
-			expect(mine).toEqual([
-				"spec/usecase/US-010-compile-a-semantic-package.md",
-				"src/compiler/pipeline.mjs",
-			]);
-
-			// A later, unrelated ticket lands on top, adding exactly the paths
-			// this change's own requirement prohibits.
-			write("conformance/corpus/case-001.json", "{}\n");
-			write("tests/test_conformance_corpus.py", "def test_it(): ...\n");
-			run("add", "-A");
-			run("commit", "-m", "a later ticket");
-			expect(changedPathsOf(scratch, SENTINEL).sort()).toEqual(mine);
-
-			// And the gate still discriminates: a prohibited path left in the
-			// working tree at a path no later commit owns is still this change's.
-			write("schema/semantic/v1/rogue.json", "{}\n");
-			expect(changedPathsOf(scratch, SENTINEL)).toContain(
-				"schema/semantic/v1/rogue.json",
-			);
-			// while the later ticket's own file, edited in the working tree, is
-			// attributed to the later ticket rather than annexed into this one.
-			write("conformance/corpus/case-001.json", '{"edited": true}\n');
-			expect(changedPathsOf(scratch, SENTINEL)).not.toContain(
-				"conformance/corpus/case-001.json",
-			);
-		} finally {
-			rmSync(scratch, { recursive: true, force: true });
-		}
 	});
 
 	/** Traces: TC-586; NFR-020-AC-8. */

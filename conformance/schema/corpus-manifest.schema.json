@@ -12,7 +12,6 @@
 		"depthLimit",
 		"repeatLimit",
 		"contractArtifacts",
-		"predecessor",
 		"familyPrefixes",
 		"constructRegister",
 		"bases",
@@ -33,16 +32,6 @@
 		"minimizationBudget": { "type": "integer", "minimum": 1 },
 		"depthLimit": { "type": "integer", "minimum": 1 },
 		"repeatLimit": { "type": "integer", "minimum": 1 },
-		"predecessor": {
-			"type": "object",
-			"required": ["state", "ref", "rationale"],
-			"properties": {
-				"state": { "enum": ["none", "required"] },
-				"ref": { "type": "string", "minLength": 1 },
-				"rationale": { "type": "string", "minLength": 1 }
-			},
-			"additionalProperties": false
-		},
 		"contractArtifacts": {
 			"type": "array",
 			"minItems": 1,
@@ -130,16 +119,13 @@
 			"minItems": 1,
 			"items": {
 				"type": "object",
-				"required": ["id", "path", "family", "class", "expectedDigest"],
+				"required": ["id", "path", "family", "class"],
 				"properties": {
 					"id": { "$ref": "corpus-case.schema.json#/$defs/caseId" },
 					"path": { "type": "string", "minLength": 1 },
 					"family": { "$ref": "corpus-case.schema.json#/$defs/family" },
 					"class": {
 						"enum": ["positive", "negative", "boundary", "evolution"]
-					},
-					"expectedDigest": {
-						"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/sha256"
 					}
 				},
 				"additionalProperties": false

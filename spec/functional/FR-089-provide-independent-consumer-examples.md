@@ -223,7 +223,7 @@ run that omits any one of them SHALL fail:
   clean type-check. Excluding the package would hide the defect in the exact
   artifact the example exists to exercise.
 - This requirement SHALL NOT repair the stale
-  `test/fixtures/rust-serde/goldens/**` and `test/fixtures/rust-serde/digests.json`
+  `test/fixtures/rust-serde/goldens/**`
   that make `make rust-check` red, recorded against
   `agent-ix/filament-core-data#21`; the Rust example is executed by
   `make rust-test` and its result is reported separately from that red gate

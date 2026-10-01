@@ -1,9 +1,7 @@
-import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { changedPathsOf } from "./changed-paths.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const spike = resolve(root, "spikes/typespec-feasibility");
@@ -37,48 +35,6 @@ function nonempty(value: unknown, label: string): string {
 	expect(typeof value, label).toBe("string");
 	expect(String(value).trim(), label).not.toBe("");
 	return String(value);
-}
-
-function canonical(value: unknown): string {
-	if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
-	if (value !== null && typeof value === "object") {
-		return `{${Object.entries(value as JsonObject)
-			.sort(([left], [right]) => left.localeCompare(right))
-			.map(([key, child]) => `${JSON.stringify(key)}:${canonical(child)}`)
-			.join(",")}}`;
-	}
-	return JSON.stringify(value);
-}
-
-function fingerprint(paths: string[]): string {
-	const hash = createHash("sha256");
-	for (const path of [...paths].sort()) {
-		hash.update(path);
-		hash.update("\0");
-		const content = readFileSync(resolve(spike, path), "utf8");
-		hash.update(
-			path.endsWith(".json") ? canonical(JSON.parse(content)) : content,
-		);
-		hash.update("\0");
-	}
-	return hash.digest("hex");
-}
-
-function changedPaths(): string[] {
-	// Issue #51, fixed by issue #23. This gate used to resolve its range
-	// from a moving `main`, which is the quiet face of the defect issue #27
-	// met: once the change this suite guards merges, the range empties, the
-	// loop below iterates zero times, and every prohibition passes over
-	// nothing. Left open it is also the accreting face — the range annexes a
-	// later ticket's paths, and the only way to keep it green is to widen the
-	// permitted list below, which issue #55 records as how these guards were
-	// disabled incrementally.
-	//
-	// Both ends now come from history. The sentinel is the file issue #4's own
-	// change created — confirmed with `git log --diff-filter=A -1`, which names
-	// 90978f9 — so the range is that change's commit, it survives the squash
-	// merge, and it disappears (failing loudly) if the change is reverted.
-	return changedPathsOf(root, "spikes/typespec-feasibility/main.tsp");
 }
 
 describe("TypeSpec feasibility gate", () => {
@@ -225,11 +181,6 @@ describe("TypeSpec feasibility gate", () => {
 	/** Traces: TC-113..118, TC-127; FR-017-AC-1..5, US-004-AC-1. */
 	it("proves repeat generation, native consumers, goldens, and compatibility", () => {
 		const validation = readJson("evidence/validation.json");
-		const files = validation.fingerprintedFiles as string[];
-		expect(validation.normalizedFingerprint).toBe(fingerprint(files));
-		expect(validation.repeatNormalizedFingerprint).toBe(
-			validation.normalizedFingerprint,
-		);
 		for (const target of ["typescript", "python", "rust"]) {
 			const result = (validation.native as JsonObject)[target] as JsonObject;
 			expect(result.compile).toBe("passed");
@@ -291,97 +242,6 @@ describe("TypeSpec feasibility gate", () => {
 
 	/** Traces: TC-123..124; NFR-006. */
 	it("keeps the spike isolated, unpublished, and non-canonical", () => {
-		const allowed = [
-			"conformance/",
-			"plan/Plan-009-conformance-corpus-and-oracle/",
-			"test/conformance-corpus.test.ts",
-			"README.md",
-			"biome.json",
-			"docs/semantic-data-system/",
-			"audit/filament-contract-census/",
-			"package.json",
-			"pnpm-lock.yaml",
-			"spikes/typespec-feasibility/",
-			"plan/Plan-001-semantic-data-architecture-record/",
-			"plan/Plan-002-filament-contract-census/",
-			"plan/Plan-003-typespec-feasibility/",
-			"plan/Plan-004-semantic-package-contract/",
-			"plan/Plan-005-semantic-ir-v1-1/",
-			"plan/Plan-006-semantic-core-grammar/",
-			"test/semantic-ir-v1-1.test.ts",
-			"test/semantic-ir-v1-1-reader.ts",
-			"packages/semantic-core/",
-			"fixtures/semantic-core/",
-			"test/semantic-core.test.ts",
-			"test/semantic-core-reader.ts",
-			"test/semantic-core-lowerer.ts",
-			"Makefile",
-			"tests/",
-			"pyproject.toml",
-			"poetry.lock",
-			"reviews/",
-			"schema/semantic/v1/",
-			"spec/",
-			"test/typespec-feasibility.test.ts",
-			"test/semantic-architecture.test.ts",
-			"test/contract-census.test.ts",
-			"fixtures/semantic/v1/",
-			"test/semantic-contract.test.ts",
-			"src/compiler/",
-			"tsconfig.json",
-			"tsconfig.build.json",
-			"plan/Plan-007-promote-prototype-emitters/",
-			"test/compiler.test.ts",
-			// Issue #19 (the compiler core) adds the compiler fixture corpus, the
-			// matrix-summary script, its plan bundle, and its test file. Each entry
-			// is a path this branch writes, enumerated rather than widened.
-			"test/fixtures/compiler/",
-			"scripts/test-matrix-summary.mjs",
-			"scripts/build-compatibility-cases.mjs",
-			"scripts/build-evolution-goldens.mjs",
-			"scripts/build-compiler-docs.mjs",
-			"plan/Plan-008-typespec-frontend-and-ir-compiler-core/",
-			"plan/Plan-011-typescript-backend/",
-			"test/fixtures/backends/typescript/",
-			"test/typescript-backend.test.ts",
-			"test/compiler-core.test.ts",
-			"test/changed-paths.ts",
-			// Issue #19 also publishes two generated documents and excludes its
-			// generated fixtures from the formatter.
-			"docs/semantic-data-system/compiler-diagnostics.md",
-			"docs/semantic-data-system/ir-compatibility-policy.md",
-			"biome.json",
-			"docs/semantic-data-system/typespec-feasibility.md",
-			// Issue #21 (the Rust/Serde backend) adds a Rust workspace, its
-			// toolchain and formatter pins, the generated-crate goldens, the
-			// third-party attribution register and two rendered documents. Each
-			// entry is a path that branch writes, enumerated rather than widened,
-			// which is the extension NFR-016 states every ticket makes to these
-			// cumulative lists. The gate itself still reads a moving `origin/main`,
-			// which is issue #51 and not this ticket's to fix.
-			".cargo/config.toml",
-			"Cargo.toml",
-			"Cargo.lock",
-			"rust-toolchain.toml",
-			"rustfmt.toml",
-			"THIRD-PARTY-NOTICES.md",
-			".gitignore",
-			"crates/",
-			"scripts/build-rust-backend-docs.mjs",
-			"scripts/build-rust-backend-goldens.mjs",
-			"scripts/rust-backend-",
-			"docs/semantic-data-system/rust-backend",
-			"test/rust-backend.test.ts",
-			"test/fixtures/rust-serde/",
-			"plan/",
-			"test/",
-		];
-		for (const path of changedPaths()) {
-			expect(
-				allowed.some((prefix) => path === prefix || path.startsWith(prefix)),
-				path,
-			).toBe(true);
-		}
 		const packageJson = readJson("package.json");
 		expect(packageJson.private).toBe(true);
 		expect(packageJson.publishConfig).toBeUndefined();

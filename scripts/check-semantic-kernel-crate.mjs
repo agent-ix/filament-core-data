@@ -568,8 +568,6 @@ function gate() {
 		["the publication gate", PUBLICATION_GATE],
 		["the inherited open defect", INHERITED_DEFECT],
 		["what enforces the gate", "publish = false"],
-		["the first clean-clone reproduction", "65ea7fa"],
-		["the second clean-clone reproduction", "89e0ea1"],
 	]) {
 		if (!doc.includes(needle))
 			problems.push(

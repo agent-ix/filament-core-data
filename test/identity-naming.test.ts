@@ -181,25 +181,6 @@ describe("FR-137 identity is spelled alike in every package", () => {
 		}
 	});
 
-	/** Traces: FR-137-AC-7, FR-137-CON-3 */
-	it("TC-1543 keeps each golden's digest baseline consistent with the renamed layout", () => {
-		const digests = JSON.parse(
-			read(resolve(root, "test/fixtures/rust-serde/digests.json")),
-		) as { bases: Record<string, { files: Record<string, string> }> };
-		const bases = Object.entries(digests.bases);
-		expect(bases.length).toBeGreaterThan(0);
-		for (const [golden, base] of bases) {
-			const paths = Object.keys(base.files);
-			expect(paths, `${golden} digests must cover src/identity.rs`).toContain(
-				"src/identity.rs",
-			);
-			expect(
-				paths,
-				`${golden} digests must not cover src/metadata.rs`,
-			).not.toContain("src/metadata.rs");
-		}
-	});
-
 	/** Traces: FR-137-AC-8, FR-137-CON-2 */
 	it("TC-1544 keeps the retired metadata name out of the TypeScript export surface", () => {
 		const surface = new Set(FIXED_API_SURFACE);

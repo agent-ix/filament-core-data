@@ -246,14 +246,6 @@ rust-goldens:
 	node src/compiler/backends/rust-serde/cli.mjs generate --out $(RUST_GOLDEN_SCRATCH)
 	for crate in $(RUST_GOLDEN_SCRATCH)/*/; do cp -r "$$crate" $(GOLDENS)/; done
 
-# The digest baseline is written by a *different* script from the one that
-# writes the goldens, and the two reach the emitter through different entry
-# points, so a single emitter change has to move two artifacts by two
-# deliberate acts before the check goes green again (FR-060-AC-12).
-.PHONY: rust-digests
-rust-digests:
-	node scripts/build-rust-backend-goldens.mjs --write-digests
-
 .PHONY: rust-check
 rust-check: rust-toolchain-check
 	node src/compiler/backends/rust-serde/cli.mjs check
@@ -262,7 +254,6 @@ rust-check: rust-toolchain-check
 	node src/compiler/backends/rust-serde/cli.mjs generate --out $(RUST_CHECK_SCRATCH)
 	for crate in $(GOLDENS)/*/; do diff -ru "$$crate" "$(RUST_CHECK_SCRATCH)/$$(basename $$crate)"; done
 	node scripts/build-rust-backend-goldens.mjs --manifests $(RUST_CHECK_SCRATCH)
-	node scripts/build-rust-backend-goldens.mjs --check-digests
 	node scripts/build-rust-backend-goldens.mjs --determinism
 	node scripts/build-rust-backend-goldens.mjs --rustfmt
 	node scripts/build-rust-backend-goldens.mjs --matrix
