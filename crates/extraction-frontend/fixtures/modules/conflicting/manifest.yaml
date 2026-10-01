@@ -4,7 +4,7 @@ version: 0.2.0
 description: A module sharing fixture-domain's name with a different compatibility posture
 semantic:
   contract_version: 1.0.0
-  semantic_core: 0.3.0
+  semantic_core: 0.3.2
   package: fixture/domain
   exports:
   - entity

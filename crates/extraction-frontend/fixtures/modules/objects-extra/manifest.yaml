@@ -4,7 +4,7 @@ version: 0.1.0
 description: One extra object type (widget) loaded beside fixture-domain (FR-095-AC-11)
 semantic:
   contract_version: 1.0.0
-  semantic_core: 0.3.0
+  semantic_core: 0.3.2
   package: agent-ix/objects-extra
   exports:
   - widget

@@ -1,5 +1,4 @@
 /** JSON Schema 2020-12 generation backend (FR-100). */
-import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -350,9 +349,6 @@ function renderType(ir, type, types, authored) {
 function text(value) {
 	return `${JSON.stringify(value, null, "\t")}\n`;
 }
-function digest(value) {
-	return `sha256:${createHash("sha256").update(value).digest("hex")}`;
-}
 function requiredExtension(ir) {
 	const nodes = [ir, ...(ir.types ?? []), ...(ir.occurrences ?? [])];
 	for (const type of ir.types ?? []) {
@@ -516,7 +512,6 @@ export const jsonSchemaBackend = Object.freeze({
 		}));
 		const index = files.map((file) => ({
 			path: file.path,
-			digest: digest(file.text),
 			identity: file.identities[0],
 			$id: schemaId(ir, types.get(file.identities[0])),
 		}));

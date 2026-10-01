@@ -36,8 +36,8 @@ frontend, a generated programming-language package, or an ambient registry.
 - One `<derived-type-name>.json` schema document for every IR definition, the
   name derived from the definition's `displayName`, or from the last segment
   of its identity where it declares none.
-- One `index.json` document listing each emitted schema path, `$id`, SHA-256
-  digest, and semantic identity.
+- One `index.json` document listing each emitted schema path, `$id`,
+  and semantic identity.
 - `src/compiler/backends/json-schema-v1/index.mjs`, which maps IR values to
   JSON values and does not read a filesystem, clock, environment, or network.
 
