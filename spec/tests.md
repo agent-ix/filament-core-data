@@ -215,7 +215,7 @@ blocked as stated above.
 | FR-030 | FR-030-AC-1..6, FR-030-CON-2 | TC-227..230, TC-246 | ✅ Complete |
 | FR-031 | FR-031-AC-1..7, FR-031-CON-1..2 | TC-248..254, TC-277 | ✅ Complete |
 | FR-032 | FR-032-AC-1..5, FR-032-CON-1 | TC-255..260 | ✅ Complete |
-| FR-033 | FR-033-AC-1..5, FR-033-CON-1..2 | TC-261..266 | ✅ Complete |
+| FR-033 | FR-033-AC-1..4, FR-033-CON-1..2 | TC-261..264, TC-266 | ✅ Complete |
 | FR-034 | FR-034-AC-1..5, FR-034-CON-1 | TC-267..272, TC-279 | ✅ Complete |
 | FR-035 | FR-035-AC-1..3, FR-035-AC-5..10, FR-035-CON-1..3 | TC-280..289 | ✅ Complete |
 | FR-036 | FR-036-AC-1..11, FR-036-CON-1..3 | TC-290..301 | ✅ Complete |
@@ -225,7 +225,7 @@ blocked as stated above.
 | FR-040 | FR-040-AC-1..7, FR-040-CON-1..4 | TC-320..330 | ✅ Complete |
 | FR-041 | FR-041-AC-1..13, FR-041-CON-1..5 | TC-331..348 | ✅ Complete |
 | FR-042 | FR-042-AC-1..11, FR-042-CON-1..5 | TC-349..360 | ✅ Complete |
-| FR-043 | FR-043-AC-1..8, FR-043-CON-1..3 | TC-361..369 | ✅ Complete |
+| FR-043 | FR-043-AC-1..6, FR-043-AC-8, FR-043-CON-1..3 | TC-361..366, TC-369 | ✅ Complete |
 | FR-044 | FR-044-AC-1..12, FR-044-CON-1..5 | TC-370..382, TC-397 | ⚠️ TC-370, TC-382 blocked on issue #42 |
 | FR-045 | FR-045-AC-1..10, FR-045-CON-1..4 | TC-398..TC-411, TC-601 | ✅ Complete |
 | FR-046 | FR-046-AC-1..19, FR-046-CON-1..5 | TC-432..TC-455, TC-598, TC-599, TC-603, TC-614 | ✅ Complete |
@@ -254,7 +254,7 @@ blocked as stated above.
 | FR-060 | FR-060-AC-1..11, FR-060-AC-13..15, FR-060-CON-1..5, FR-060-CON-7 | TC-711..TC-718 | ✅ Complete |
 | FR-061 | FR-061-AC-1..13, FR-061-CON-1..7 | TC-719..TC-724 | ✅ Complete |
 | FR-062 | FR-062-AC-1..15, FR-062-CON-1..7 | TC-725..TC-730, TC-1359 | 🚧 In progress |
-| FR-072 | FR-072-AC-1..10, FR-072-CON-1..4 | TC-845..853, TC-944 | ✅ Complete |
+| FR-072 | FR-072-AC-1..5, FR-072-AC-7, FR-072-AC-10, FR-072-CON-1, FR-072-CON-3..4 | TC-845..853, TC-944 | ✅ Complete |
 | FR-073 | FR-073-AC-1..6, FR-073-AC-8..10, FR-073-CON-1..3 | TC-854..862 | ✅ Complete |
 | FR-074 | FR-074-AC-1..11, FR-074-CON-1..3 | TC-863..872 | ✅ Complete |
 | FR-075 | FR-075-AC-1..11, FR-075-CON-1..3 | TC-873..882 | ✅ Complete |
@@ -605,8 +605,7 @@ blocked as stated above.
 | TC-262 | Every element of the FR-006 `FieldDecl[]` fixture validates against `FieldDecl.json` under Ajv strict mode with no alias | Unit | P0 | FR-033-AC-2, US-007-EX-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-263 | Each negative shape fixture fails against its named model schema; at least one exists per grammar model | Unit | P0 | FR-033-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-264 | Regenerating twice yields byte-identical output; a mutated byte makes the `check` script fail naming the file | Snapshot | P0 | FR-033-AC-4, FR-033-CON-1 | ✅ passed — semantic-core grammar (PR #39) |
-| TC-265 | `toolchain.json` pins compiler, emitter, and normalization versions equal to the lockfile's resolved versions | Static | P0 | FR-033-AC-5 | ✅ passed — semantic-core grammar (PR #39) |
-| TC-266 | The normalization step is isolated (one function, one call site) and records a no-op when no relative `$id` is emitted | Analysis | P1 | FR-033-CON-2 | ✅ passed — semantic-core grammar (PR #39) |
+| TC-266 | The normalization step is isolated (one function, one call site) | Analysis | P1 | FR-033-CON-2 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-267 | `lowering.json` has one row per grammar-model property, every `loss` is `none`, and a `loss` row fails the gate | Unit | P0 | FR-034-AC-1, FR-034-CON-1 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-268 | Reference lowerer mints identities, origins, kernel definitions, alias-per-constrained-field, and clause text per the FR-034 rules on the FR-006 set | Unit | P0 | FR-034-AC-2 | ✅ passed — semantic-core grammar (PR #39) |
 | TC-269 | The lowered FR-006 document equals `config-version-v2.json` in the structural comparison ignoring minted identities and semantic-core extensions | Unit | P0 | FR-034-AC-3 | ✅ passed — semantic-core grammar (PR #39) |
@@ -659,7 +658,7 @@ blocked as stated above.
 | TC-317 | Direct and mutual recursion are accepted; alias and composite cycles are rejected; a package cycle carries a different code from a recursive type graph | Unit | P0 | FR-038-AC-4 | ✅ passed — conformance corpus (PR pending) |
 | TC-318 | Every `documentExpressible` defect row has a reproducing case that fails, and every other row names the static check that detects it | Unit | P0 | FR-038-AC-5, US-008-EX-5 | ✅ passed — conformance corpus (PR pending) |
 | TC-319 | Every register row declares its deciding layer and the layer that produced its cases' diagnostics is the declared one | Unit | P1 | FR-038-AC-6 | ✅ passed — conformance corpus (PR pending) |
-| TC-320 | Inventory holds exactly the fourteen enumerated components with sources | Static | P0 | FR-040-AC-1 | ✅ passed |
+| TC-320 | Inventory holds exactly the thirteen enumerated components with sources | Static | P0 | FR-040-AC-1 | ✅ passed |
 | TC-321 | A missing or extra component name fails the inventory test | Unit | P0 | FR-040-AC-1 | ✅ passed |
 | TC-322 | Every disposition is inside the closed four-value set | Static | P0 | FR-040-AC-2 | ✅ passed |
 | TC-323 | A mutated fifth disposition value is rejected | Unit | P0 | FR-040-AC-2, FR-040-CON-2 | ✅ passed |
@@ -705,7 +704,6 @@ blocked as stated above.
 | TC-364 | Output carries the urn `$id`, no `$defs` `$id`/`$schema`, a title each | Unit | P0 | FR-043-AC-3 | ✅ passed |
 | TC-365 | `RecordString` is localised and carries `additionalProperties` | Unit | P0 | FR-043-AC-4, FR-043-CON-2 | ✅ passed |
 | TC-366 | The adapter is pure and leaves its input document unmutated | Property | P0 | FR-043-AC-5 | ✅ passed |
-| TC-368 | The pinned Python constants equal the recorded evidence versions | Unit | P0 | FR-043-AC-7 | ✅ passed |
 | TC-369 | No module under `src/compiler/` spawns a process | Static | P0 | FR-043-AC-8, FR-043-CON-3 | ✅ passed |
 | TC-370 | `spike:typespec:check` exits zero on a host meeting the issue #42 floor | Integration | P0 | FR-044-AC-1 | 🚧 blocked on issue #42 |
 | TC-371 | No retained-evidence path other than `evidence/custom.json` changes, and the committed file differs from the frozen issue #4 record in `command` alone | Static | P0 | FR-044-AC-2, FR-044-CON-1 | ✅ passed |
@@ -1150,10 +1148,8 @@ blocked as stated above.
 | TC-847 | A synthesized installed version inside either published advisory range fails the gate naming the advisory, the version, and the range | Unit | P0 | FR-072-AC-3, FR-072-CON-1 | ✅ passed |
 | TC-848 | A synthesized version below the derived floor but outside both published ranges still fails, because the floor is compared by version order | Unit | P0 | FR-072-AC-4 | ✅ passed |
 | TC-849 | With the generator distribution absent the advisory gate fails with a provisioning message and does not skip | Unit | P0 | FR-072-AC-5, FR-072-CON-4 | ✅ passed |
-| TC-850 | Every declared version in `toolchain.json` matches the distribution it names, comparing the Python entry by minor series only | Unit | P0 | FR-072-AC-6 | ✅ passed |
 | TC-851 | Neither the `http` nor the `httpx2` generator extra is present in the resolved dependency set | Static | P0 | FR-072-AC-7 | ✅ passed |
-| TC-852 | `DATAMODEL_CODEGEN_VERSION` and `PYDANTIC_VERSION` equal the `toolchain.json` entries and the versions `poetry.lock` resolves | Unit | P0 | FR-072-AC-8 | ✅ passed |
-| TC-853 | `toolchain.json` carries no patch-level interpreter version and no formatter entry, and every advisory vector key appears in the refusal register | Unit | P0 | FR-072-AC-9, FR-072-AC-10 | ✅ passed |
+| TC-853 | Every advisory vector key appears in the refusal register | Unit | P0 | FR-072-AC-10 | ✅ passed |
 | TC-854 | `profiles.json` declares exactly one profile per output family, all five are present, and every id is unique | Unit | P0 | FR-073-AC-1 | ✅ passed |
 | TC-855 | Every profile declares `--disable-timestamp`, `--strict-refs`, `--no-allow-remote-refs`, and `--formatters builtin` | Unit | P0 | FR-073-AC-2 | ✅ passed |
 | TC-856 | Every profile declares the five annotation and nullability options and declares neither `--extra-fields` nor `--use-missing-sentinel` | Unit | P0 | FR-073-AC-3, FR-073-CON-1 | ✅ passed |
@@ -1236,14 +1232,14 @@ blocked as stated above.
 | TC-940 | Two clean generations of every demonstrated profile agree byte-for-byte, and no committed artefact encodes a clock, host, user, absolute path, patch interpreter, or formatter version | Integration | P0 | NFR-027-AC-1, NFR-027-AC-2 | ✅ passed |
 | TC-941 | Re-measuring the qualification report reproduces the committed one, and a mutated committed artefact fails `--check` | Snapshot | P0 | NFR-027-AC-3 | ✅ passed |
 | TC-942 | Nothing was published, and no merged permitted-path list gained an entry | Analysis | P0 | NFR-027-AC-9, NFR-027-AC-11 | ✅ passed |
-| TC-944 | A recorded human review confirms the four irreducibly manual obligations: a version bump re-runs the qualification, probe expectations are derived from the contract, the layout is reconciled with the merged generated-target contract, and non-conforming values are drawn from the contract rather than from what the code rejects | Manual | P0 | FR-072-CON-2, FR-077-CON-2, FR-079-CON-4, FR-080-CON-3 | 🚧 awaiting the program owner's review |
+| TC-944 | A recorded human review confirms the three irreducibly manual obligations: probe expectations are derived from the contract, the layout is reconciled with the merged generated-target contract, and non-conforming values are drawn from the contract rather than from what the code rejects | Manual | P0 | FR-077-CON-2, FR-079-CON-4, FR-080-CON-3 | 🚧 awaiting the program owner's review |
 | TC-945 | The support matrix names every lint the generated `[lints.rust]` table denies, read from a generated `Cargo.toml`, and states the toolchain coupling that denying all warnings creates | Analysis | P0 | FR-060-AC-16 | 🚧 planned |
 | TC-1000 | Edits no file under packages/semantic-core/generated/, schema/semantic/v1/, or fixtures/semantic/v1/. The projection is the pinned official emitter's | Static | P0 | FR-081-CON-1, FR-081-CON-2, FR-081-CON-3 | 🚧 planned |
 | TC-1001 | Edits neither the repository root package.json nor packages/semantic-core/package.json, so no packed surface changes and packages/semantic-kernel/ is | Static | P0 | FR-081-CON-4, FR-081-CON-5, FR-081-CON-6 | 🚧 planned |
 | TC-1002 | Writes only under packages/semantic-kernel/, src/compiler/frontend/json-schema/, scripts/build-semantic-kernel.mjs, test/semantic-kernel.test.ts, src/ | Property | P0 | FR-081-CON-7, FR-081-CON-8, FR-081-AC-1 | 🚧 planned |
-| TC-1003 | The same thirty-member set equals the files array of packages/semantic-core/generated/toolchain.json | Property | P0 | FR-081-AC-2, FR-081-AC-3, FR-081-AC-4 | 🚧 planned |
-| TC-1004 | The declared schema base equals base in generated/toolchain.json and the @jsonSchema argument in packages/semantic-core/main.tsp | Property | P0 | FR-081-AC-5, FR-081-AC-6, FR-081-AC-7 | 🚧 planned |
-| TC-1005 | The declared artifact paths are exactly packages/semantic-kernel/typescript/, packages/semantic-kernel/rust/, packages/semantic-kernel/python/, and pa | Property | P0 | FR-081-AC-8, FR-081-AC-9 | 🚧 planned |
+| TC-1003 | Adding a name to inventory.json without the enumeration, and the reverse, each produce KERNEL_INVENTORY_MISMATCH naming the offending name | Property | P0 | FR-081-AC-3, FR-081-AC-4 | 🚧 planned |
+| TC-1004 | The bundle declares exactly the four targets json-schema, rust, typescript, and python-pydantic-v2, each a member of the published target enum, with python-dataclass recorded out of scope | Property | P0 | FR-081-AC-6, FR-081-AC-7 | 🚧 planned |
+| TC-1005 | The declared artifact paths are exactly packages/semantic-kernel/typescript/, packages/semantic-kernel/rust/, packages/semantic-kernel/python/, and pa | Property | P0 | FR-081-AC-8 | 🚧 planned |
 | TC-1006 | With one byte changed in any committed generated file `make semantic-kernel-check` exits non-zero naming that file; and `packages/semantic-kernel/json-schema/index.json` names all thirty documents by file name, both sets equal to the enumeration | Property | P0 | FR-081-AC-12, FR-081-AC-13 | 🚧 planned |
 | TC-1007 | The branch changes no file under packages/semantic-core/, schema/, fixtures/, conformance/, src/compiler/backends/, src/compiler/frontend/typespec/, o | Property | P0 | FR-081-AC-14, FR-081-AC-15, FR-081-AC-16 | 🚧 planned |
 | TC-1008 | KERNEL_INVENTORY_MISMATCH is a member of DIAGNOSTIC_CODES in src/compiler/diagnostics.mjs | Property | P0 | FR-081-AC-17, FR-081-AC-18 | 🚧 planned |
@@ -1308,8 +1304,8 @@ blocked as stated above.
 | TC-1067 | Change no byte anywhere under packages/semantic-core/. Those documents are the official emitter's output under ADR-0005 and FR-033, and an index that | Static | P0 | FR-088-CON-1, FR-088-CON-2, FR-088-CON-3 | 🚧 planned |
 | TC-1068 | The index names the documents and carries no second `$id` normalization step and no copy of any document body | Static | P0 | FR-088-CON-5, FR-088-CON-6 | 🚧 planned |
 | TC-1069 | No registry publication and no publication workflow change happen here | Unit | P0 | FR-088-CON-7, FR-088-CON-8, FR-088-AC-1 | 🚧 planned |
-| TC-1070 | A document present in packages/semantic-core/generated/json-schema/ and absent from the index | Unit | P0 | FR-088-AC-2, FR-088-AC-3, FR-088-AC-4 | 🚧 planned |
-| TC-1071 | Every document's $id equals the index's base concatenated with its file name | Property | P0 | FR-088-AC-5, FR-088-AC-6, FR-088-AC-7 | 🚧 planned |
+| TC-1070 | A document present in packages/semantic-core/generated/json-schema/ and absent from the index | Unit | P0 | FR-088-AC-2, FR-088-AC-4 | 🚧 planned |
+| TC-1071 | Every document's $id equals the index's base concatenated with its file name | Property | P0 | FR-088-AC-5, FR-088-AC-6 | 🚧 planned |
 | TC-1072 | Every $ref in every document either begins with the declared base and names a listed document, or is a local #-fragment | Property | P0 | FR-088-AC-8, FR-088-AC-9, FR-088-AC-10 | 🚧 planned |
 | TC-1073 | Every document declares https://json-schema.org/draft/2020-12/schema | Snapshot | P0 | FR-088-AC-11, FR-088-AC-12, FR-088-AC-13 | 🚧 planned |
 | TC-1074 | Regenerating the index from unchanged inputs reproduces the committed file byte-for-byte | Snapshot | P0 | FR-088-AC-14, FR-088-AC-15, FR-088-AC-16 | 🚧 planned |
@@ -2001,7 +1997,7 @@ blocked as stated above.
 | current legacy manifest | legacy profile validation | accepted unchanged and advisory | TC-173 |
 | legacy manifest | later human enforcement promotion | native v1 validation may become required in the later ticket | TC-173, TC-198 |
 | semantic-core `v1` | grammar addition under `Versions.v2` | `v1` projection byte-identical; `v2` additive | TC-253 |
-| raw official bundle | #31 normalization applied | absolute `$id` bundle that validates without alias | TC-262, TC-265 |
+| raw official bundle | #31 normalization applied | absolute `$id` bundle that validates without alias | TC-262 |
 | normalized bundle | issue #31 fixed upstream | normalization removed; raw bundle validates | TC-266 |
 | adapter `status: unavailable` | the owning backend ships | `status: available`; every `unavailable` answer now fails | TC-305 |
 | divergence entry open | the owning issue fixes the defect | the entry no longer reproduces and the run fails until it is removed | TC-306 |
@@ -2290,7 +2286,7 @@ blocked as stated above.
 | EC-029 | Two clauses with the same `clauseId` in different languages on one type | FR-028 | TC-241 | Operation pre/post binds to the wrong clause |
 | EC-030 | A v1 fixture already using a free-form keyword | FR-029 | TC-224 | Closing the vocabulary silently invalidates accepted evidence |
 | EC-031 | Target enumeration extended in one schema but not the other | FR-030 | TC-230 | Manifest accepts a target no contract defines |
-| EC-032 | Shared `Record<string>` helper emitted with a relative `$id` (issue #31) | FR-033 | TC-262, TC-265 | Bundle validates on one namespace and fails on another |
+| EC-032 | Shared `Record<string>` helper emitted with a relative `$id` (issue #31) | FR-033 | TC-262 | Bundle validates on one namespace and fails on another |
 | EC-033 | `TypeRef` to a `SemanticId` that names a kernel scalar's own identity | FR-034 | TC-268, TC-271 | Scalar double-declared as reference and kernel type |
 | EC-034 | `OperationDecl` `pre` references a clause the extractor has not yet supplied text for | FR-034 | TC-268 | Lowered document dangles until extraction |
 | EC-035 | Module vocabulary smuggled in as a "support type" | NFR-014 | TC-249, TC-273 | Kernel grows into the generic entity class ARCH-005 forbids |
@@ -2562,17 +2558,17 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 247 | 212 | 0 | 35 | 100% mapped (247/247) |
+| Static | 246 | 211 | 0 | 35 | 100% mapped (246/246) |
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 43 | 26 | 0 | 17 | 100% mapped (43/43) |
 | Property | 124 | 79 | 0 | 45 | 100% mapped (124/124) |
-| Unit | 600 | 499 | 0 | 101 | 100% mapped (600/600) |
+| Unit | 597 | 496 | 0 | 101 | 100% mapped (597/597) |
 | Integration | 154 | 95 | 0 | 59 | 100% mapped (154/154) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1335** | **1021** | **0** | **314** | **100% mapped (1335/1335)** |
+| **Total** | **1331** | **1017** | **0** | **314** | **100% mapped (1331/1331)** |
 
 Two defects outside issue #23's scope were found and filed rather than absorbed:
 issue #65, the corpus `python-backend` adapter slot, whose owning issue the

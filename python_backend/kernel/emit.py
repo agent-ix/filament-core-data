@@ -1,7 +1,7 @@
 """The kernel Python emit driver (FR-087).
 
 This orchestrates a measured route; it does not build a second one. The issue
-#23 pipeline — the pinned MIT `datamodel-code-generator` `0.76.0`, the
+#23 pipeline — the pinned MIT `datamodel-code-generator`, the
 immutable profiles, the closed refusal register, the sandboxed runner, the
 `enforce`-mode inspection and the byte-compared emitter — is reached by import
 and edited nowhere. Exactly one component is new: the pure reference
@@ -53,8 +53,6 @@ from python_backend.runner.qualify import NOT_QUALIFIED, REPORT
 
 REPOSITORY = ROOT.parent
 SCHEMAS = REPOSITORY / "packages/semantic-core/generated/json-schema"
-CORE_TOOLCHAIN = REPOSITORY / "packages/semantic-core/generated/toolchain.json"
-CORE_MANIFEST = REPOSITORY / "packages/semantic-core/package.json"
 PACKAGES = REPOSITORY / "packages/semantic-kernel/python"
 EXAMPLES = REPOSITORY / "packages/semantic-kernel/examples/python"
 
@@ -109,7 +107,7 @@ MSGSPEC_UNION_LOSS = {
 }
 
 #: Measured findings by family. A family's list is what its README and its
-#: `PROVENANCE.json` both state; nothing here is derived from a clock or a host.
+#: package tree both state; nothing here is derived from a clock or a host.
 FINDINGS: dict[str, list[dict[str, Any]]] = {
     "pydantic_v2_basemodel": [STRENUM_SHADOW],
     "pydantic_v2_dataclass": [STRENUM_SHADOW],
@@ -131,20 +129,14 @@ def documents() -> dict[str, dict[str, Any]]:
 
 
 def bundle_identity() -> dict[str, str]:
-    """The exact bundle a package was generated from.
+    """The bundle a package was generated from.
 
-    The base encodes the `@agent-ix/semantic-core` version, and the digest is
-    the emitter's own over the ordered document set, so a package traces to one
-    bundle rather than to a directory that happened to hold those bytes.
+    The base is the one the committed documents already carry in their `$id`s,
+    so a package traces to one bundle without a second copy of the version.
     """
 
-    core = json.loads(CORE_TOOLCHAIN.read_text(encoding="utf-8"))
-    manifest = json.loads(CORE_MANIFEST.read_text(encoding="utf-8"))
-    return {
-        "base": core["base"],
-        "digest": core["digest"],
-        "semanticCoreVersion": manifest["version"],
-    }
+    first = next(iter(documents().values()))["$id"]
+    return {"base": first[: first.rindex("/") + 1]}
 
 
 def localized() -> Localized:
@@ -261,8 +253,7 @@ def _readme(
         f"Qualification verdict: **{verdict['verdict']}**.",
         "",
         "Generated from the semantic kernel bundle",
-        f"`{identity['base']}` (`@agent-ix/semantic-core` "
-        f"{identity['semanticCoreVersion']}, digest `{identity['digest']}`)",
+        f"`{identity['base']}`",
         "through `python_backend/kernel/emit.py`, by the pinned",
         "`datamodel-code-generator`. Do not edit by hand: the tree is",
         "regenerated and byte-compared.",

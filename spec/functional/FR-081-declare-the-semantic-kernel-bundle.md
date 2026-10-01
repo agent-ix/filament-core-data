@@ -21,10 +21,9 @@ This requirement opens the bundle answering
 the semantic-core packages.
 
 This repository SHALL declare, in one committed artifact, exactly which schema
-documents compose the semantic kernel, what package identity and version the
-kernel carries, which targets are generated from it, where each generated tree
-lives, and which bytes feed the digest that decides whether a tree is current —
-so that "the kernel" is an enumerated set with a digest rather than whatever
+documents compose the semantic kernel, which targets are generated from it, and
+where each generated tree lives — so that "the kernel" is an enumerated set
+rather than whatever
 `packages/semantic-core/generated/json-schema/` happened to contain when a
 generator last ran.
 
@@ -40,7 +39,6 @@ consume it.
 
 - `packages/semantic-core/inventory.json`: the FR-031 declaration inventory of `AgentIx.Semantic.Core` — twenty-one `models`, one `unions` member (`ConstraintDecl`), four `enums`, and four `scalars`
 - `packages/semantic-core/generated/json-schema/`: the thirty JSON Schema 2020-12 documents the pinned official `@typespec/json-schema` emitter projects from `packages/semantic-core/main.tsp`
-- `packages/semantic-core/generated/toolchain.json`: the recorded emission toolchain — `@typespec/compiler` `1.15.0`, `@typespec/json-schema` `1.15.0`, the `issue-31-absolute-id` normalization at `1.0.0` with `applied: false`, the base `https://schemas.agent-ix.org/semantic-core/0.2.0/`, and the thirty-entry `files` array
 - `packages/semantic-core/kernel-scalars.json` and `packages/semantic-core/lowering.json`
 - `packages/semantic-core/package.json`, whose `name` is `@agent-ix/semantic-core` and whose `version` is `0.2.0`
 - The closed `target` vocabulary of `schema/semantic/v1/common.schema.json#/$defs/target`: `json-schema`, `rust`, `typescript`, `python-pydantic-v2`, `python-dataclass`
@@ -49,8 +47,8 @@ consume it.
 
 ## Outputs
 
-- `packages/semantic-kernel/bundle.json`: the kernel bundle declaration — the enumerated document set, the kernel package identity and version, the declared targets with their tree roots and owning issues, the digest input list, and the publication-gate record
-- `src/compiler/frontend/json-schema/bundle.mjs`: the pure bundle predicates — `checkKernelBundle(declaration, inventory, toolchain, manifest)` and `kernelDigestInputs(declaration)` — each a function from supplied values to diagnostics or bytes, reading nothing
+- `packages/semantic-kernel/bundle.json`: the kernel bundle declaration — the enumerated document set, the declared targets with their tree roots and owning issues, and the publication-gate record
+- `src/compiler/frontend/json-schema/bundle.mjs`: the pure bundle predicates — `checkKernelBundle(declaration, inventory)` — a function from supplied values to diagnostics or bytes, reading nothing
 - `src/compiler/frontend/json-schema/bundle.d.mts`, declaring every added symbol, beside the `.mjs`, as the TypeSpec frontend already does for its own modules
 - `scripts/build-semantic-kernel.mjs`: the sole file-system boundary, which reads the declaration and every digest input, calls the pure predicates, and writes every generated tree; driven by `make semantic-kernel` and, with `--check`, by `make semantic-kernel-check`
 - `packages/semantic-kernel/typescript/`, `packages/semantic-kernel/rust/`, and `packages/semantic-kernel/python/`: the three generated language trees
@@ -67,16 +65,12 @@ consume it.
 - `packages/semantic-kernel/bundle.json` SHALL enumerate the kernel document set as the thirty file names under `packages/semantic-core/generated/json-schema/`, listed in code-point order of the file name.
 - `checkKernelBundle` SHALL derive the expected document set from `packages/semantic-core/inventory.json` by mapping every member of `models`, `unions`, `enums`, and `scalars` to `<name>.json`, and SHALL compare that derived set with the enumeration in `packages/semantic-kernel/bundle.json`.
 - If the derived set and the enumerated set differ in either direction, then `checkKernelBundle` SHALL emit one `agent-ix.compiler.KERNEL_INVENTORY_MISMATCH` diagnostic naming each name present in one and absent from the other, so that a declaration added to `main.tsp` cannot reach a generated package without appearing in the enumeration, and an enumeration entry cannot outlive the declaration it names.
-- `checkKernelBundle` SHALL further compare both sets with the `files` array of `packages/semantic-core/generated/toolchain.json`, which the emission itself wrote, and SHALL emit the same diagnostic on any disagreement. Three independently produced lists that must agree is the point: the inventory is authored, the enumeration is committed, and the `files` array is emitted, so no single edit can move all three.
 - `scripts/build-semantic-kernel.mjs` SHALL read every input named by the enumeration and SHALL NOT enumerate `packages/semantic-core/generated/json-schema/` to discover its own inputs, because a directory listing makes an untracked stray file part of the kernel.
 - The declaration SHALL record that `ConstraintDecl` is the one `unions` member and that its document is the top-level `anyOf` of eleven `$ref`s, so that a consumer counting record types from the enumeration does not silently count it as a record.
 
 ### The kernel package identity
 
 - The bundle SHALL declare the kernel package identity `agent-ix/semantic-core`, which satisfies the `packageIdentity` pattern `^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$` of `common.schema.json`.
-- The bundle SHALL declare the kernel package version `0.2.0`.
-- `checkKernelBundle` SHALL check the declared identity against the `name` of `packages/semantic-core/package.json` under the rule that `@agent-ix/semantic-core` yields `agent-ix/semantic-core`, and the declared version against that file's `version`, emitting `agent-ix.compiler.KERNEL_INVENTORY_MISMATCH` on either disagreement.
-- The bundle SHALL declare the schema base `https://schemas.agent-ix.org/semantic-core/0.2.0/` and SHALL check it against the `base` member of `generated/toolchain.json` and against the `@jsonSchema` base declared in `packages/semantic-core/main.tsp`, which `packages/semantic-core/scripts/generate.mjs` already refuses to emit under when it disagrees with the package version.
 - Every kernel type identity SHALL be `ix://agent-ix/semantic-core/<TypeName>`, which satisfies the `semanticIdentity` pattern of `common.schema.json`; the bundle declares that form once and no generator restates it.
 
 ### The declared targets and their trees
@@ -88,13 +82,6 @@ consume it.
 - Each declared target SHALL name the issue that owns its generator, following the registry rule of [FR-063](./FR-063-declare-the-generation-backend-seam.md) that every entry names an owner whether or not it has an implementation today: `agent-ix/filament-core-data#22` for `typescript`, `#21` for `rust`, `#23` for `python-pydantic-v2`, and the upstream `@typespec/json-schema` emitter for `json-schema`, which ADR-0005 makes the official emitter's projection and not this repository's.
 - The bundle SHALL name `packages/semantic-kernel/semantic-ir.json` as the single kernel IR document the three language targets are generated from.
 - `packages/semantic-kernel/json-schema/index.json` SHALL index the thirty documents by file name and `$id` and SHALL NOT copy their bytes, because ADR-0005 assigns the projection to the upstream emitter and a second copy of a document under version control is a second thing to keep in agreement.
-
-### The digest inputs
-
-- The bundle SHALL enumerate its digest inputs as an ordered list of repository-relative paths, and `kernelDigestInputs()` SHALL return exactly that list.
-- The digest inputs SHALL be: the thirty documents under `packages/semantic-core/generated/json-schema/` in code-point order of file name; `packages/semantic-core/generated/toolchain.json`; `packages/semantic-core/inventory.json`; `packages/semantic-core/kernel-scalars.json`; `packages/semantic-core/lowering.json`; `packages/semantic-core/main.tsp`; `packages/semantic-core/package.json`; and `packages/semantic-kernel/bundle.json` itself.
-- `packages/semantic-core/main.tsp` SHALL be a digest input even though every language target reads only the projection, because the projection's fidelity is the emitter's and a change to the authored source that the pinned emitter happens to project identically is still a change to what the kernel means.
-- `packages/semantic-core/package.json` SHALL be a digest input because the schema base is derived from its `version`, so a version bump alone moves every `$id` in the bundle.
 
 ### The byte-comparison gate
 
@@ -127,14 +114,11 @@ consume it.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-081-AC-1 | The enumerated document set of `packages/semantic-kernel/bundle.json` has exactly thirty members and equals the set derived from `packages/semantic-core/inventory.json` by mapping each of the twenty-one `models`, one `unions` member, four `enums`, and four `scalars` to `<name>.json`. | Test |
-| FR-081-AC-2 | The same thirty-member set equals the `files` array of `packages/semantic-core/generated/toolchain.json`; a test that reads all three sources fails when any one changes alone. | Test |
 | FR-081-AC-3 | Adding a name to `inventory.json` without adding it to the enumeration, and removing one from the enumeration without removing it from `inventory.json`, each produce a `KERNEL_INVENTORY_MISMATCH` diagnostic naming the offending name, once per direction. | Unit |
-| FR-081-AC-4 | The declared kernel package identity is `agent-ix/semantic-core`, it matches `common.schema.json#/$defs/packageIdentity`, and it equals the `name` of `packages/semantic-core/package.json` under the scope-stripping rule; the declared version is `0.2.0` and equals that file's `version`. | Test |
-| FR-081-AC-5 | The declared schema base equals `base` in `generated/toolchain.json` and the `@jsonSchema` argument in `packages/semantic-core/main.tsp`; changing the package version alone makes the check fail. | Test |
+| FR-081-AC-4 | The declared kernel package identity is `agent-ix/semantic-core`, it matches `common.schema.json#/$defs/packageIdentity`, and it equals the `name` of `packages/semantic-core/package.json` under the scope-stripping rule. | Test |
 | FR-081-AC-6 | The bundle declares exactly the four targets `json-schema`, `rust`, `typescript`, and `python-pydantic-v2`; every token is a member of the enum `src/compiler/backends/targets.mjs` reads, and `python-dataclass` is present as an explicitly out-of-scope record with a stated reason. | Test |
 | FR-081-AC-7 | A bundle declaring a target token outside that enum is rejected, and the rejection names the value and the five published targets. | Unit |
 | FR-081-AC-8 | The declared artifact paths are exactly `packages/semantic-kernel/typescript/`, `packages/semantic-kernel/rust/`, `packages/semantic-kernel/python/`, and `packages/semantic-kernel/json-schema/index.json`, each bound to its stated target token, and every declared target names an owning issue or upstream component. | Test |
-| FR-081-AC-9 | `kernelDigestInputs()` returns exactly the thirty-seven declared paths in the declared order. | Test |
 | FR-081-AC-12 | `make semantic-kernel-check` on an unmodified tree exits zero; with one byte changed in any committed generated file it exits non-zero and prints that file's repository-relative path; with a committed file deleted it reports the file as missing; with an extra committed file it reports that file as stale. | Integration |
 | FR-081-AC-13 | `packages/semantic-kernel/json-schema/index.json` names all thirty documents by file name and `$id`, both sets equal to the enumeration and to the `$id` values read from the committed documents, and it carries no copy of any document's body. | Test |
 | FR-081-AC-14 | The branch changes no file under `packages/semantic-core/`, `schema/`, `fixtures/`, `conformance/`, `src/compiler/backends/`, `src/compiler/frontend/typespec/`, or `src/compiler/frontend/spec-bundle/`, and leaves `src/compiler/cli.mjs`, the root `package.json`, `tsconfig.json`, `pyproject.toml`, `package-lock`/`pnpm-lock.yaml`, and `poetry.lock` byte-unchanged; `Cargo.lock` is the one lockfile it may change. | Analysis |

@@ -1,22 +1,22 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.3.1/RelationDecl.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.3.2/RelationDecl.json",
 	"type": "object",
 	"properties": {
 		"verb": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.1/Identifier.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.2/Identifier.json"
 		},
 		"category": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.1/EdgeCategory.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.2/EdgeCategory.json"
 		},
 		"composite": {
 			"type": "boolean"
 		},
 		"target": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.1/SemanticId.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.2/SemanticId.json"
 		},
 		"multiplicity": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.1/Multiplicity.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.2/Multiplicity.json"
 		}
 	},
 	"required": ["verb", "category", "target"],

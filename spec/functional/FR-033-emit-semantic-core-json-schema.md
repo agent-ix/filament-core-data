@@ -22,13 +22,12 @@ from `data_schema`.
 ## Inputs
 
 - The compiled semantic-core program
-- The pinned `@typespec/json-schema` 1.15.0 emitter
+- The official `@typespec/json-schema` emitter
 - The issue #31 normalization step (rewrites any relative `$id` to an absolute one under the package base)
 
 ## Outputs
 
 - `packages/semantic-core/generated/json-schema/*.json`, one file per model and enum, with absolute `$id` values under `https://schemas.agent-ix.org/semantic-core/<package.json version>/`
-- `packages/semantic-core/generated/toolchain.json` recording compiler, emitter, and normalization versions
 - `fixtures/semantic-core/positive/config-version-field-decls.json` (the FR-006 rows as a `FieldDecl[]` declaration set) and `fixtures/semantic-core/negative/<model>-*.json` (at least one per grammar model)
 - A `check` script (`make semantic-core-check`) that regenerates and fails on any byte difference
 
@@ -36,8 +35,7 @@ from `data_schema`.
 
 - The build SHALL run only the official `@typespec/json-schema` emitter with `seal-object-schemas: true`, with no custom emitter.
 - The emitted bundle SHALL carry an absolute `$id` for every emitted schema after the pinned #31 normalization.
-- When the emitter produces no relative `$id`, the normalization step SHALL record itself as a no-op in `toolchain.json`.
-- The normalization SHALL be a named, versioned post-processing step recorded in `toolchain.json` against the exact TypeSpec and emitter versions.
+- The normalization SHALL be a named post-processing step with one definition and one call site.
 - The emitted `FieldDecl.json` SHALL validate every element of the FR-006 `FieldDecl[]` fixture with Ajv 2020 in strict mode without any further alias.
 - The emitted schemas SHALL reject every negative fixture at its model schema, where negative fixtures exercise shape errors (missing required property, unknown property, wrong type, keyword or category outside the closed set).
 - The sealing option SHALL close every emitted object schema, emitting either `unevaluatedProperties: {not: {}}` or `additionalProperties: false`, and the test accepts either form.
@@ -58,7 +56,6 @@ from `data_schema`.
 | FR-033-AC-2 | Every element of the FR-006 `FieldDecl[]` fixture validates against `FieldDecl.json` under Ajv strict mode with no alias. | Test |
 | FR-033-AC-3 | Each negative fixture fails against its named model schema, and at least one exists per grammar model. | Test |
 | FR-033-AC-4 | Regenerating twice yields byte-identical output; a mutated byte makes the `check` script fail naming the file. | Test |
-| FR-033-AC-5 | `toolchain.json` pins the compiler, emitter, and normalization versions and equals the lockfile's resolved versions. | Analysis |
 
 ## Dependencies
 

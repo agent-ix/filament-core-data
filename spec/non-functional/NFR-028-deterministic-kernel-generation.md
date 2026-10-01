@@ -49,8 +49,7 @@ always a difference in the contract and never a difference in the machine.
   `packages/semantic-core/inventory.json`,
   `packages/semantic-core/kernel-scalars.json`,
   `packages/semantic-core/package.json`,
-  `packages/semantic-core/generated/toolchain.json`, the published schemas under
-  `schema/semantic/v1/`, `LICENSE`, the pinned generator versions the existing
+  the published schemas under `schema/semantic/v1/`, `LICENSE`, the pinned generator versions the existing
   routes already declare, and the kernel bundle declaration this work adds.
   Nothing else is an input.
 - Not applied to: the upstream `@typespec/json-schema` emitter run, which

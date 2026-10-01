@@ -50,7 +50,7 @@ sixteen capability records carry the issue #4 disposition and confidence.
 
 ## Behavior
 
-- The inventory `components` array SHALL hold one record for each of the fourteen components enumerated in Inputs, keyed by that component name.
+- The inventory `components` array SHALL hold one record for each of the thirteen components enumerated in Inputs, keyed by that component name.
 - The inventory SHALL hold no `components` record whose `source` is absent or empty.
 - Every `components` record SHALL carry a `disposition` drawn from the closed set `retain`, `rewrite`, `replace-with-official`, `discard`.
 - Every `retain` and `rewrite` record SHALL name at least one `targets` path that exists under `src/compiler/`.
@@ -74,7 +74,7 @@ sixteen capability records carry the issue #4 disposition and confidence.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-040-AC-1 | `src/compiler/inventory.json` `components` holds exactly the fourteen component names enumerated in Inputs, each with a non-empty `source`; a missing or extra name fails the test. | Test |
+| FR-040-AC-1 | `src/compiler/inventory.json` `components` holds exactly the thirteen component names enumerated in Inputs, each with a non-empty `source`; a missing or extra name fails the test. | Test |
 | FR-040-AC-2 | Every record's `disposition` is in the closed four-value set, and a mutated record carrying a fifth value fails the inventory test. | Test |
 | FR-040-AC-3 | Every `retain`/`rewrite` record names at least one existing `src/compiler/` target and every `replace-with-official`/`discard` record carries an empty `targets` array. | Test |
 | FR-040-AC-4 | Every record carries a non-empty `limitation`, and a mutated record whose `evidence` is only "representative golden passed" is rejected. | Test |

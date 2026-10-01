@@ -24,92 +24,48 @@ function diagnostic(entry, message, locus) {
 }
 
 /**
- * The document set the bundle declares, in the order the declaration states.
- *
- * Order is part of the declaration rather than incidental: the digest is taken
- * over this sequence, so a reordering that changed the digest without changing
- * the content would report a stale bundle for a bundle that had not moved.
- *
- * @param {{ documents?: readonly string[] }} declaration
- * @returns {readonly string[]}
- */
-export function kernelDigestInputs(declaration) {
-	return Object.freeze([...(declaration.documents ?? [])].sort());
-}
-
-/**
  * Checks a bundle declaration against the grammar it claims to package.
  *
- * Returns diagnostics rather than throwing, so one run reports every
- * disagreement instead of the first: a caller fixing them one exception at a
- * time learns the count only by iterating.
+ * The expected document set is derived from the authored inventory, one
+ * `<name>.json` per model, union, enum and scalar, and compared with the
+ * enumeration the bundle declares. Returns diagnostics rather than throwing, so
+ * one run reports every disagreement instead of the first.
  *
  * @param {Record<string, unknown>} declaration
  * @param {Record<string, unknown>} inventory
- * @param {Record<string, unknown>} toolchain
- * @param {Record<string, unknown>} manifest
  * @returns {readonly Diagnostic[]}
  */
-export function checkKernelBundle(declaration, inventory, toolchain, manifest) {
+export function checkKernelBundle(declaration, inventory) {
 	/** @type {Diagnostic[]} */
 	const out = [];
 
-	const declared = kernelDigestInputs(
-		/** @type {{ documents?: readonly string[] }} */ (declaration),
-	);
-	const emitted = Array.isArray(toolchain.files)
-		? [.../** @type {readonly string[]} */ (toolchain.files)].sort()
-		: [];
+	const declared = [
+		.../** @type {readonly string[]} */ (declaration.documents ?? []),
+	].sort();
+	const derived = ["models", "unions", "enums", "scalars"]
+		.flatMap((key) =>
+			Array.isArray(inventory[key])
+				? /** @type {readonly string[]} */ (inventory[key])
+				: [],
+		)
+		.map((name) => `${name}.json`)
+		.sort();
 
-	// The declared set and the emitted set must be the same set, not merely the
-	// same size. A count comparison passes for two sets that differ by a
-	// substitution, which is the case a stale declaration actually produces.
-	const missing = emitted.filter((f) => !declared.includes(f));
-	const extra = declared.filter((f) => !emitted.includes(f));
+	// The two sets must be the same set, not merely the same size. A count
+	// comparison passes for two sets that differ by a substitution, which is the
+	// case a stale declaration actually produces.
+	const missing = derived.filter((f) => !declared.includes(f));
+	const extra = declared.filter((f) => !derived.includes(f));
 	if (missing.length > 0 || extra.length > 0) {
 		out.push(
 			diagnostic(
 				DIAGNOSTIC_CODES.KERNEL_INVENTORY_MISMATCH,
-				`the bundle declares ${declared.length} document(s) and the emitter produced ${emitted.length}: ` +
-					`${missing.length} emitted but undeclared (${missing.slice(0, 3).join(", ")}${missing.length > 3 ? ", …" : ""}), ` +
-					`${extra.length} declared but unemitted (${extra.slice(0, 3).join(", ")}${extra.length > 3 ? ", …" : ""})`,
+				`the bundle declares ${declared.length} document(s) and the inventory derives ${derived.length}: ` +
+					`${missing.length} derived but undeclared (${missing.slice(0, 3).join(", ")}${missing.length > 3 ? ", …" : ""}), ` +
+					`${extra.length} declared but not derived (${extra.slice(0, 3).join(", ")}${extra.length > 3 ? ", …" : ""})`,
 				"/documents",
 			),
 		);
-	}
-
-	// The kernel packages a specific version of the grammar. Packaging one
-	// version while declaring another is the defect a consumer discovers as a
-	// type that does not describe its data.
-	if (declaration.semanticCore !== manifest.version) {
-		out.push(
-			diagnostic(
-				DIAGNOSTIC_CODES.KERNEL_INVENTORY_MISMATCH,
-				`the bundle declares semantic-core ${String(declaration.semanticCore)} but the package manifest is ${String(manifest.version)}`,
-				"/semanticCore",
-			),
-		);
-	}
-
-	// A declared count the inventory contradicts means the bundle is describing
-	// a grammar that is not the one in the tree.
-	const counts = /** @type {Record<string, unknown>} */ (
-		declaration.inventoryCounts ?? {}
-	);
-	for (const key of ["models", "unions", "enums", "scalars"]) {
-		const actual = Array.isArray(inventory[key])
-			? /** @type {readonly unknown[]} */ (inventory[key]).length
-			: undefined;
-		if (actual === undefined) continue;
-		if (counts[key] !== actual) {
-			out.push(
-				diagnostic(
-					DIAGNOSTIC_CODES.KERNEL_INVENTORY_MISMATCH,
-					`the bundle declares ${String(counts[key])} ${key} and the inventory carries ${actual}`,
-					`/inventoryCounts/${key}`,
-				),
-			);
-		}
 	}
 
 	return Object.freeze(out);

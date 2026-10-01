@@ -29,7 +29,7 @@ from python_backend import DEPENDENCY_GROUP, ROOT
 from python_backend.adapter.guard import assert_argv_safe, assert_schema_safe
 from python_backend.adapter.prepare import Prepared
 from python_backend.adapter.profiles import profile_by_id
-from python_backend.runner.toolchain import ProvisioningError, toolchain
+from python_backend.runner.toolchain import GENERATOR_DISTRIBUTION, ProvisioningError
 
 LIMITS_PATH = ROOT / "limits.json"
 
@@ -63,7 +63,7 @@ def _entry_point() -> list[str]:
     shadowing `datamodel-codegen` earlier on `PATH` cannot be selected.
     """
 
-    distribution = toolchain()["generator"]["distribution"]
+    distribution = GENERATOR_DISTRIBUTION
     try:
         dist = metadata.distribution(distribution)
     except metadata.PackageNotFoundError as error:

@@ -415,7 +415,7 @@ function finish(
 // ---------------------------------------------------------------------------
 
 function renderCargoToml(model) {
-	return `# Generated from the semantic contract ${model.package.identity}@${model.package.version}.
+	return `# Generated from the semantic contract ${model.package.identity}.
 #
 # \`publish = false\` is unconditional: the issue #21 safety gate forbids crate
 # publication, and a manifest that permits it is one command away from breaching
@@ -458,7 +458,7 @@ function renderReadme(model) {
 	const lines = [
 		`# ${model.crateName}`,
 		"",
-		`Generated Rust/Serde declarations for the semantic contract \`${model.package.identity}\` at version \`${model.package.version}\`.`,
+		`Generated Rust/Serde declarations for the semantic contract \`${model.package.identity}\`.`,
 		"",
 		"This crate is generated. Edit the contract, not this crate: the next",
 		"generation overwrites every file here, and a hand edit is invisible to the",

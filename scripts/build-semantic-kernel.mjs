@@ -61,20 +61,11 @@ function main(argv) {
 	const inventory = readJson(
 		join(ROOT, "packages/semantic-core/inventory.json"),
 	);
-	const toolchain = readJson(
-		join(ROOT, "packages/semantic-core/generated/toolchain.json"),
-	);
-	const manifest = readJson(join(ROOT, "packages/semantic-core/package.json"));
 
 	// The declaration is checked before anything is generated from it. A build
 	// that generated first and validated afterwards would leave a tree on disk
 	// that its own declaration rejects.
-	const bundleDiagnostics = checkKernelBundle(
-		declaration,
-		inventory,
-		toolchain,
-		manifest,
-	);
+	const bundleDiagnostics = checkKernelBundle(declaration, inventory);
 	const bijection = checkLossBijection();
 	const problems = [
 		...bundleDiagnostics,
@@ -123,7 +114,11 @@ function main(argv) {
 			serialize({
 				$comment:
 					"Issue #11, FR-088. An index over packages/semantic-core/generated/json-schema/, never a copy of it.",
-				base: toolchain.base,
+				// The base is the one the emitted documents already carry.
+				base: documents[0][1].$id.slice(
+					0,
+					documents[0][1].$id.lastIndexOf("/") + 1,
+				),
 				documents: documents.map(([name]) => ({
 					name,
 					path: `../../semantic-core/generated/json-schema/${name}`,

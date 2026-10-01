@@ -47,7 +47,7 @@ Issue #27 promoted the prototype emitters into `src/compiler/`. Every prototype
 component carries a written disposition in
 [`src/compiler/inventory.json`](../../src/compiler/inventory.json), and no
 component was promoted merely because the representative golden passed. The
-fourteen components disposition as: **1 retain**, **4 rewrite**,
+thirteen components disposition as: **1 retain**, **3 rewrite**,
 **1 replace-with-official**, **8 discard**. 5 files under
 `src/compiler/` are recorded as authored by the promotion rather than inherited
 from the prototype.

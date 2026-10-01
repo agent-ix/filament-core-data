@@ -1,15 +1,7 @@
 {
 	"$comment": "Issue #11, FR-081. The kernel bundle declaration: what is generated, where it lands, and how staleness is detected. Read at run time; never restated in a module.",
 	"kernel": {
-		"name": "@agent-ix/semantic-kernel",
-		"version": "0.2.0"
-	},
-	"semanticCore": "0.3.1",
-	"inventoryCounts": {
-		"models": 21,
-		"unions": 1,
-		"enums": 4,
-		"scalars": 4
+		"name": "@agent-ix/semantic-kernel"
 	},
 	"documents": [
 		"ClauseLanguage.json",
@@ -68,12 +60,5 @@
 			"issue": "agent-ix/filament-core-data#23",
 			"form": "generated"
 		}
-	],
-	"digestInputs": [
-		"packages/semantic-core/generated/json-schema/",
-		"packages/semantic-core/inventory.json",
-		"packages/semantic-core/generated/toolchain.json",
-		"packages/semantic-core/kernel-scalars.json",
-		"packages/semantic-core/lowering.json"
 	]
 }

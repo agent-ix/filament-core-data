@@ -33,9 +33,8 @@ and it publishes nothing.
 ## Inputs
 
 - The thirty committed documents of `packages/semantic-core/generated/json-schema/`, produced by the pinned official `@typespec/json-schema` emitter under [FR-033](./FR-033-emit-semantic-core-json-schema.md), byte-gated by `make semantic-core-check`, and indexed by [FR-088](./FR-088-ship-the-modular-kernel-json-schema.md)
-- `packages/semantic-core/generated/toolchain.json`: the emitting compiler and emitter versions, the `base` of `https://schemas.agent-ix.org/semantic-core/0.2.0/`, and the ordered `files` list
 - The kernel bundle declaration and generation manifest of FR-081, which names this bundle as the Python route's input set
-- `python_backend/profiles.json`, `python_backend/refusals.json`, `python_backend/limits.json`, and `python_backend/toolchain.json`, all read and none edited
+- `python_backend/profiles.json`, `python_backend/refusals.json` and `python_backend/limits.json`, all read and none edited
 - `python_backend/qualification/report.json`: the measured verdicts that decide which families emit
 
 ## Outputs
@@ -52,7 +51,7 @@ and it publishes nothing.
 
 ### The localization pass
 
-- `python_backend/adapter/guard.py` refuses a `$ref` carrying any URI scheme with `PY-REF-010`, through `_classify_ref`'s `_SCHEME` match; the kernel bundle `$ref`s exclusively by absolute `$id`, thirty-five of them, every one under `https://schemas.agent-ix.org/semantic-core/0.2.0/`. Every kernel document therefore reaches `assert_schema_safe` as a refusal today, and this pass exists to change the input rather than the refusal.
+- `python_backend/adapter/guard.py` refuses a `$ref` carrying any URI scheme with `PY-REF-010`, through `_classify_ref`'s `_SCHEME` match; the kernel bundle `$ref`s exclusively by absolute `$id`, thirty-five of them, every one under the bundle's `$id` base. Every kernel document therefore reaches `assert_schema_safe` as a refusal today, and this pass exists to change the input rather than the refusal.
 - `localize_bundle` SHALL rewrite a `$ref` whose value begins with the declared package base to the remainder of that value — the bare sibling document filename, optionally followed by its `#`-fragment — leaving a local `#`-pointer untouched.
 - If a `$ref` does not begin with the declared package base, then `localize_bundle` SHALL leave it byte-identical, so an unexpected reference reaches `assert_schema_safe` and is refused there rather than being localized into acceptability.
 - `localize_bundle` SHALL delete the per-document `$id` member, and only the document-root `$id`, because the localized bundle resolves by relative filename and a retained absolute `$id` would re-establish the absolute base the sibling references were just rewritten away from.
@@ -72,7 +71,7 @@ and it publishes nothing.
 - The localized documents SHALL pass `assert_schema_safe` unchanged and unassisted; the guard SHALL NOT be invoked in a relaxed mode, given an exemption list, or skipped for this input set.
 - A guard weakened to admit an input is the failure this requirement exists to avoid: the refusal is correct — an absolute-URI `$ref` does make the generator a fetcher of caller-chosen content — and the kernel bundle is simply not a document the guard's contract permits in that spelling. The repair belongs to the input, in a pass a reader can read and a test can compare, and never to the register.
 - Every existing path under `python_backend/adapter/`, `python_backend/runner/`, `python_backend/qualification/`, and `python_backend/generated/`, and every existing `python_backend/*.json`, SHALL be read and imported by the kernel route, and the kernel route SHALL NOT edit them. Everything this requirement adds on the Python side lives in the new `python_backend/kernel/` subpackage.
-- The kernel route SHALL write no byte under `packages/semantic-core/`; the localization is in memory, the committed bundle equals what `packages/semantic-core/scripts/generate.mjs` emits and records in `toolchain.json`, and the published `$id`s stay published.
+- The kernel route SHALL write no byte under `packages/semantic-core/`; the localization is in memory, the committed bundle equals what `packages/semantic-core/scripts/generate.mjs` emits, and the published `$id`s stay published.
 
 ### Which families emit
 
@@ -97,7 +96,7 @@ and it publishes nothing.
 
 - The emitter SHALL run the `enforce`-mode inspection before writing anything under `packages/semantic-kernel/python/`, so no package that degrades a constraint is written and then imported.
 - Each emitted package SHALL import under the declared interpreter with no exception and no warning, with every forward reference resolved and no unresolved `ForwardRef` on any model.
-- The pinned `mypy` at the version `python_backend/toolchain.json` records SHALL report zero errors over every emitted kernel module and every kernel example under `--strict`. The gate SHALL reach that tree by invoking the pinned checker on the path explicitly, so no `pyproject.toml` member, mypy override, or ruff exclusion is added. There SHALL be no per-module override, no relaxation of `strict`, and no `type: ignore` in generated or example source; a type the checker rejects is a finding, not a configuration problem.
+- The pinned `mypy` at the version the `python-backend` Poetry group resolves SHALL report zero errors over every emitted kernel module and every kernel example under `--strict`. The gate SHALL reach that tree by invoking the pinned checker on the path explicitly, so no `pyproject.toml` member, mypy override, or ruff exclusion is added. There SHALL be no per-module override, no relaxation of `strict`, and no `type: ignore` in generated or example source; a type the checker rejects is a finding, not a configuration problem.
 - Regenerating from the unchanged committed bundle SHALL reproduce the committed kernel tree byte-for-byte, and the `--check` form SHALL fail naming the first differing path when any committed byte is mutated.
 - Two generations from the same bundle, profile, and declared toolchain, each into a fresh scratch root, SHALL produce byte-identical file maps.
 - No PyPI publication, no `poetry publish`, no distribution build, and no tag push happens here. Publication is blocked on `agent-ix/quoin#290`, a human sign-off that has not moved, and on the issue #23 safety gate, and this requirement records that block by name rather than deferring it silently.
@@ -108,7 +107,7 @@ and it publishes nothing.
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-087-CON-1 | The maintainer SHALL NOT widen `python_backend/refusals.json`, relax a guard, add a guard exemption, or add a generator option to make the kernel bundle generate. The localization pass rewrites the input and nothing else; a change under `python_backend/adapter/guard.py` or `python_backend/profiles.json` made in service of this requirement is a defect in this requirement. | Security | Static |
-| FR-087-CON-2 | The committed `packages/semantic-core/generated/json-schema/` bundle SHALL equal what `packages/semantic-core/scripts/generate.mjs` emits, its bytes SHALL match the `files` of `packages/semantic-core/generated/toolchain.json`, and localization and kernel generation SHALL leave those bytes unchanged, so the localization stays an in-memory transform and [FR-088](./FR-088-ship-the-modular-kernel-json-schema.md)'s byte gate stays green. | Integrity | Analysis |
+| FR-087-CON-2 | The committed `packages/semantic-core/generated/json-schema/` bundle SHALL equal what `packages/semantic-core/scripts/generate.mjs` emits, and localization and kernel generation SHALL leave those bytes unchanged, so the localization stays an in-memory transform and [FR-088](./FR-088-ship-the-modular-kernel-json-schema.md)'s byte gate stays green. | Integrity | Analysis |
 | FR-087-CON-3 | The localization pass SHALL remain a schema-to-schema rewrite that post-processes no generated Python source, for the same reason FR-074-CON-1 gives: a text patch over generated code is a hand-written generator by another name. | Integrity | Test |
 | FR-087-CON-4 | The maintainer SHALL NOT emit a package for a family the qualification judges `not-qualified`, nor re-run the qualification with an altered probe set to move a verdict in order to emit one. | Integrity | Test |
 | FR-087-CON-5 | This requirement SHALL add no path under `packages/semantic-kernel/` to `pyproject.toml`'s `packages` or `include`, to any npm manifest's `files` or `exports`, or to any workflow under `.github/`. Publication passes `agent-ix/quoin#290`. | Compliance | Test |

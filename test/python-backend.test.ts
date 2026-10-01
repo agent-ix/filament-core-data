@@ -67,7 +67,6 @@ describe("qualified Python generation route (issue #23)", () => {
 	it("TC-940 encodes no host reading in any committed artefact this change adds", () => {
 		const host = execFileSync("hostname", { encoding: "utf8" }).trim();
 		const user = execFileSync("whoami", { encoding: "utf8" }).trim();
-		const patchVersion = /"\d+\.\d+\.\d+"/;
 		for (const path of walk("python_backend")) {
 			if (path.includes("__pycache__") || path.endsWith(".pyc")) continue;
 			const source = read(path);
@@ -85,10 +84,6 @@ describe("qualified Python generation route (issue #23)", () => {
 				expect(source, path).not.toMatch(new RegExp(`\\b${escaped}@`));
 			}
 		}
-		const toolchain = read("python_backend/toolchain.json");
-		expect(toolchain).toContain('"minor": "3.13"');
-		expect(toolchain).toContain('"formatter": null');
-		expect(JSON.parse(toolchain).python.minor).not.toMatch(patchVersion);
 	});
 
 	/** NFR-026-AC-1, NFR-026-AC-10. */

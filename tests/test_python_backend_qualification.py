@@ -386,8 +386,7 @@ def test_an_absent_type_checker_fails_rather_than_skips() -> None:
     """TC-933: FR-080-AC-7."""
     from python_backend.runner import toolchain as tc  # noqa: PLC0415
 
-    checker = tc.toolchain()["typeChecker"]
-    assert tc.installed_version(checker["distribution"]) == checker["version"]
+    assert tc.installed_version("mypy")
     with pytest.raises(tc.ProvisioningError):
         tc.installed_version("mypy-that-is-not-installed")
 

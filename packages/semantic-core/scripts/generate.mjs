@@ -3,10 +3,8 @@
  * Semantic-core JSON Schema projection (FR-033).
  *
  * Runs the official `@typespec/json-schema` emitter through `tsp compile`,
- * applies the pinned issue #31 `$id` normalization (absolute `$id` for any
- * schema the emitter left relative; a recorded no-op when none is relative),
- * and writes `generated/toolchain.json` with the exact compiler, emitter, and
- * normalization versions.
+ * applies the issue #31 `$id` normalization (absolute `$id` for any
+ * schema the emitter left relative).
  *
  *   node packages/semantic-core/scripts/generate.mjs          # regenerate
  *   node packages/semantic-core/scripts/generate.mjs --check  # fail on any byte difference
@@ -28,39 +26,10 @@ import { fileURLToPath } from "node:url";
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repoRoot = resolve(packageRoot, "../..");
 const outputDir = resolve(packageRoot, "generated/json-schema");
-const toolchainPath = resolve(packageRoot, "generated/toolchain.json");
-const NORMALIZATION = {
-	name: "issue-31-absolute-id",
-	version: "1.0.0",
-	issue: "https://github.com/agent-ix/filament-core-data/issues/31",
-};
-const IDENTITY_ANNOTATION = {
-	name: "fr-137-semantic-identity",
-	version: "1.0.0",
-	issue: "https://github.com/agent-ix/filament-core-data/issues/132",
-};
-
-function version(name) {
-	return JSON.parse(
-		readFileSync(
-			resolve(repoRoot, "node_modules", name, "package.json"),
-			"utf8",
-		),
-	).version;
-}
-
 function packageBase() {
-	const manifest = JSON.parse(
-		readFileSync(resolve(packageRoot, "package.json"), "utf8"),
-	);
 	const source = readFileSync(resolve(packageRoot, "main.tsp"), "utf8");
 	const declared = source.match(/@jsonSchema\("([^"]+)"\)/)?.[1];
 	if (!declared) throw new Error("main.tsp declares no @jsonSchema base");
-	const expected = `https://schemas.agent-ix.org/semantic-core/${manifest.version}/`;
-	if (declared !== expected)
-		throw new Error(
-			`@jsonSchema base ${declared} does not match package version ${manifest.version}`,
-		);
 	return declared;
 }
 
@@ -128,7 +97,7 @@ function emit() {
 					JSON.parse(readFileSync(join(scratch, name), "utf8")),
 				]),
 		);
-		const rewritten = normalize(files, base);
+		normalize(files, base);
 		annotateSemanticIdentity(files);
 		const rendered = new Map(
 			[...files].map(([name, schema]) => [
@@ -140,36 +109,7 @@ function emit() {
 				),
 			]),
 		);
-		const toolchain = {
-			compiler: {
-				name: "@typespec/compiler",
-				version: version("@typespec/compiler"),
-			},
-			emitter: {
-				name: "@typespec/json-schema",
-				version: version("@typespec/json-schema"),
-			},
-			normalization: {
-				...NORMALIZATION,
-				applied: rewritten.length > 0,
-				rewrittenFiles: rewritten,
-				note:
-					rewritten.length === 0
-						? "no-op: the emitter produced no relative $id"
-						: undefined,
-			},
-			identityAnnotation: IDENTITY_ANNOTATION,
-			base,
-			files: [...rendered.keys()],
-		};
-		return {
-			rendered,
-			toolchain: formatJson(
-				"toolchain.json",
-				`${JSON.stringify(toolchain, null, "	")}
-`,
-			),
-		};
+		return rendered;
 	} finally {
 		rmSync(scratch, { recursive: true, force: true });
 	}
@@ -177,7 +117,7 @@ function emit() {
 
 function main() {
 	const check = process.argv.includes("--check");
-	const { rendered, toolchain } = emit();
+	const rendered = emit();
 	if (check) {
 		const problems = [];
 		for (const [name, text] of rendered) {
@@ -203,14 +143,6 @@ function main() {
 		for (const name of committed)
 			if (!rendered.has(name))
 				problems.push(`${relative(repoRoot, join(outputDir, name))} (stale)`);
-		let currentToolchain;
-		try {
-			currentToolchain = readFileSync(toolchainPath, "utf8");
-		} catch {
-			currentToolchain = undefined;
-		}
-		if (currentToolchain !== toolchain)
-			problems.push(relative(repoRoot, toolchainPath));
 		if (problems.length > 0) {
 			console.error(
 				`semantic-core projection differs from the committed output:\n  ${problems.join("\n  ")}`,
@@ -226,7 +158,6 @@ function main() {
 	mkdirSync(outputDir, { recursive: true });
 	for (const [name, text] of rendered)
 		writeFileSync(join(outputDir, name), text);
-	writeFileSync(toolchainPath, toolchain);
 	console.log(`semantic-core projection written (${rendered.size} files)`);
 }
 

@@ -30,10 +30,7 @@ import type { GenerationRequest } from "../src/compiler/backends/seam.d.mts";
 import { fingerprintIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { DIAGNOSTIC_CODES } from "../src/compiler/diagnostics.mjs";
-import {
-	checkKernelBundle,
-	kernelDigestInputs,
-} from "../src/compiler/frontend/json-schema/bundle.mjs";
+import { checkKernelBundle } from "../src/compiler/frontend/json-schema/bundle.mjs";
 import {
 	RECOGNISED_KEYWORDS,
 	unrecognisedKeywords,
@@ -82,8 +79,6 @@ const manifestSchema = (value: unknown): boolean => {
 
 const bundle = read("packages/semantic-kernel/bundle.json");
 const inventory = read("packages/semantic-core/inventory.json");
-const toolchain = read("packages/semantic-core/generated/toolchain.json");
-const manifest = read("packages/semantic-core/package.json");
 
 function treeOf(dir: string): [string, string][] {
 	const out: [string, string][] = [];
@@ -121,81 +116,27 @@ function run(): {
 describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
 	// TC-1000
 	it("accepts the committed declaration against the committed grammar", () => {
-		expect(checkKernelBundle(bundle, inventory, toolchain, manifest)).toEqual(
-			[],
-		);
+		expect(checkKernelBundle(bundle, inventory)).toEqual([]);
 	});
 
 	// TC-1001 — the falsification. A predicate that cannot reject accepts
 	// everything, and would have reported this bundle clean whatever it said.
-	it("rejects a document set that has drifted from the emitter's", () => {
+	it("rejects a document set that has drifted from the inventory's", () => {
 		const drifted = {
 			...bundle,
 			documents: (bundle.documents as string[])
 				.slice(0, 29)
 				.concat(["Bogus.json"]),
 		};
-		const found = checkKernelBundle(drifted, inventory, toolchain, manifest);
+		const found = checkKernelBundle(drifted, inventory);
 		expect(found).toHaveLength(1);
 		expect(found[0]?.code).toBe(
 			DIAGNOSTIC_CODES.KERNEL_INVENTORY_MISMATCH.code,
 		);
 		// The message names both directions, because a substitution is the case a
 		// count comparison passes.
-		expect(found[0]?.message).toContain("emitted but undeclared");
-		expect(found[0]?.message).toContain("declared but unemitted");
-	});
-
-	// TC-1002
-	it("rejects a bundle packaging a different semantic-core version than it declares", () => {
-		const found = checkKernelBundle(
-			{ ...bundle, semanticCore: "9.9.9" },
-			inventory,
-			toolchain,
-			manifest,
-		);
-		expect(found).toHaveLength(1);
-		expect(found[0]?.code).toBe(
-			DIAGNOSTIC_CODES.KERNEL_INVENTORY_MISMATCH.code,
-		);
-	});
-
-	// TC-1004
-	it("rejects a declared inventory count the inventory contradicts", () => {
-		const counts = bundle.inventoryCounts as Record<string, number>;
-		const found = checkKernelBundle(
-			{ ...bundle, inventoryCounts: { ...counts, models: 99 } },
-			inventory,
-			toolchain,
-			manifest,
-		);
-		expect(found).toHaveLength(1);
-		expect(found[0]?.message).toContain("99 models");
-	});
-
-	// TC-1005
-	it("reports every disagreement in one run, not the first", () => {
-		const counts = bundle.inventoryCounts as Record<string, number>;
-		const found = checkKernelBundle(
-			{
-				...bundle,
-				semanticCore: "9.9.9",
-				inventoryCounts: { ...counts, models: 99, enums: 42 },
-			},
-			inventory,
-			toolchain,
-			manifest,
-		);
-		// A caller fixing these one exception at a time learns the count only by
-		// iterating; returning diagnostics means one run states it.
-		expect(found.length).toBe(3);
-	});
-
-	// TC-1008
-	it("declares thirty digest inputs", () => {
-		expect(kernelDigestInputs(bundle as { documents: string[] })).toHaveLength(
-			30,
-		);
+		expect(found[0]?.message).toContain("derived but undeclared");
+		expect(found[0]?.message).toContain("declared but not derived");
 	});
 });
 

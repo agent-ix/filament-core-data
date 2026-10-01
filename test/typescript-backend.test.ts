@@ -1,5 +1,4 @@
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import {
 	cpSync,
 	mkdirSync,
@@ -402,24 +401,6 @@ describe("TypeScript backend fixture (FR-071)", () => {
 			"types.ts:TextList",
 			"types.ts:TextMap",
 		]);
-	});
-
-	it("records a content-addressed artifact listing without ambient npm", () => {
-		const listing = fixtureFiles(expected)
-			.map(({ path, text }) => ({
-				path,
-				size: Buffer.byteLength(text),
-				sha256: createHash("sha256").update(text).digest("hex"),
-			}))
-			.sort((left, right) => left.path.localeCompare(right.path));
-		expect(listing).toEqual(
-			JSON.parse(
-				readFileSync(
-					resolve(fixture, "bundle-surface/archive-listing.json"),
-					"utf8",
-				),
-			),
-		);
 	});
 
 	/**
