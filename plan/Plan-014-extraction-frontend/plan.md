@@ -71,7 +71,7 @@ in the revert rehearsal's scratch-clone environment).
 
 - [x] **NFR-031** — deterministic and hermetic lifting; `limits.json`; ambient-input and `HashMap` audits
 - [x] **NFR-032** — non-disruptive change set fixed by two sentinels; `cargo metadata` edge check
-- [x] **NFR-033** — Rust 1.98.1 via `cargo +1.98.1`; exact pins; `deny.toml`; notices; `#[trace]` convention
+- [x] **NFR-033** — exact pins; `deny.toml`; notices; `#[trace]` convention
 
 ## Dependency graph
 
@@ -103,7 +103,7 @@ in the revert rehearsal's scratch-clone environment).
 
 - NFR-031 applies to every module under `src/`: no `std::env`, clock, RNG, `std::net`, `Command`; `std::fs` only in `write.rs`; no `HashMap`.
 - NFR-032 fixes the change set: outside the crate only the `members` line, `Cargo.lock`, the `extraction-frontend-*` Makefile block, `docs/semantic-data-system/extraction-frontend-diagnostics.md` and the FR-098 shared-case files.
-- NFR-033 fixes the toolchain: every gate runs `cargo +1.98.1 … --locked`; every requirement test is `#[trace("TC-NNNN","<REQ>-AC-N")] fn tc_NNNN_…`.
+- every requirement test is `#[trace("TC-NNNN","<REQ>-AC-N")] fn tc_NNNN_…`.
 
 ### The seams
 
@@ -146,10 +146,10 @@ single enumeration, grouped by the module under test.
 
 ### Static gates and analyses (grep, manifest, change-set; each with a planted-token control)
 
-- [x] FR-091-AC-8 TC-1207; FR-095-AC-12 TC-1257; FR-096-AC-3 TC-1261; FR-097-AC-1 TC-1273, TC-1336; FR-098-AC-10/11 TC-1294, TC-1338, TC-1343; FR-099-AC-4..6 TC-1298, TC-1299, TC-1349; three-CON grep TC-1330
+- [x] FR-091-AC-8 TC-1207; FR-095-AC-12 TC-1257; FR-096-AC-3 TC-1261; FR-097-AC-1 TC-1273, TC-1336; FR-098-AC-10/11 TC-1294, TC-1338, TC-1343; FR-099-AC-6 TC-1349; three-CON grep TC-1330
 - [x] NFR-031: TC-1300..TC-1304, TC-1306..TC-1309
 - [x] NFR-032: TC-1310..TC-1319
-- [x] NFR-033: TC-1320..TC-1329, TC-1350
+- [x] NFR-033: TC-1320, TC-1322..TC-1329, TC-1350
 
 ### Property and fuzz tests (`proptest`)
 

@@ -95,5 +95,5 @@ other than the one previously covered, and observe the gate reports it.
 
 ## Dependencies
 
-- **Upstream**: [NFR-033](./NFR-033-qualified-toolchain-and-licensed-dependencies.md) names the qualification toolchain once, which the lane installs rather than restates
+- **Upstream**: [NFR-033](./NFR-033-qualified-toolchain-and-licensed-dependencies.md)
 - **Downstream**: [FR-060](../functional/FR-060-produce-deterministic-rustfmt-clean-output.md) byte-identical output, whose cross-platform half this requirement makes measurable

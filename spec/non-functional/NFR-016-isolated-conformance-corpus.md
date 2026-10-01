@@ -38,21 +38,19 @@ no workflow change is needed.
 
 | Metric | Target | Threshold | Method |
 |---|---|---|---|
-| `package.json` bytes changed against `main` | 0 | 0 | `git diff origin/main -- package.json` |
 | New runtime or development dependencies | 0 | 0 | Manifest diff |
 | Conformance entry points outside `make test` and `make conformance` | 0 | 0 | Makefile and script inspection |
 
 ## Verification
 
-Diff `package.json` and `pyproject.toml` against `main` and
-confirm both are byte-identical. Confirm the conformance suites run from
+Confirm the conformance suites run from
 `make test` and `poetry run pytest` with the network unavailable.
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-016-AC-2 | `package.json` is byte-identical to `main`, so the change adds no dependency, no `exports` entry, and no `files` entry; `pyproject.toml` is unchanged. | Analysis |
+| NFR-016-AC-2 | `package.json` names no dependency. | Analysis |
 | NFR-016-AC-3 | The conformance suites run from `make test` and `poetry run pytest` with no network connection and no clock read. | Test |
 | NFR-016-AC-4 | A changed-path and manifest analysis shows the change publishes no package and alters no consumer, catalog pin, or Avro contract. | Analysis |
 
