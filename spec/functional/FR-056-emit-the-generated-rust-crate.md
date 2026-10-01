@@ -79,7 +79,7 @@ not restated here.
 ### Crate manifest
 
 - `Cargo.toml` SHALL declare `license = "AGPL-3.0-or-later"`, `publish = false`,
-  `edition` and `rust-version` from the declared support matrix, and exactly one
+  `edition` and the backend's declared `rust-version`, and exactly one
   `[dependencies]` entry, `serde` with `features = ["derive"]` at an exact
   `=` version.
 - The `[package] name` SHALL be `crateName(package.identity)` as
@@ -230,7 +230,7 @@ that decision requires.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-056-AC-1 | Generating from each of the four corpus bases produces a crate that `cargo build --offline` compiles with no warning under `-D warnings`, with `#![deny(missing_docs)]` in force. | Test (TC-666) |
-| FR-056-AC-2 | The emitted `Cargo.toml` declares `AGPL-3.0-or-later`, `publish = false`, exactly one dependency (`serde`) pinned with `=`, and the `rust-version` the support matrix declares. | Analysis (TC-667) |
+| FR-056-AC-2 | The emitted `Cargo.toml` declares `AGPL-3.0-or-later`, `publish = false`, exactly one dependency (`serde`) pinned with `=`, and the `rust-version` the backend declares. | Analysis (TC-667) |
 | FR-056-AC-4 | `SemanticType` has exactly one variant per generated type, and a consumer matching exhaustively over it fails to compile when a type is added. | Test (TC-669) |
 | FR-056-AC-5 | The output manifest names every emitted file, every named file exists, every digest matches the bytes, and no file exists that the manifest does not name. | Test (TC-670) |
 | FR-056-AC-6 | A document that produces a blocking diagnostic emits zero files and at least one diagnostic, and leaves the output root empty. | Test (TC-671) |

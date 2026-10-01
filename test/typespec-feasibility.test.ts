@@ -39,7 +39,7 @@ function nonempty(value: unknown, label: string): string {
 
 describe("TypeSpec feasibility gate", () => {
 	/** Traces: TC-089..096; FR-014-AC-1..3. */
-	it("pins the complete toolchain and representative modular slice", () => {
+	it("carries the representative modular slice", () => {
 		const required = [
 			"package.json",
 			"tspconfig.yaml",
@@ -49,18 +49,10 @@ describe("TypeSpec feasibility gate", () => {
 			"packages/assurance/main.tsp",
 			"packages/wire/main.tsp",
 			"mappings/projections.json",
-			"evidence/toolchain.json",
 		];
 		for (const path of required)
 			expect(existsSync(resolve(spike, path)), path).toBe(true);
 
-		const tools = records(readJson("evidence/toolchain.json").tools, "tools");
-		for (const tool of tools) {
-			nonempty(tool.name, "tool.name");
-			nonempty(tool.version, `${String(tool.name)}.version`);
-			nonempty(tool.command, `${String(tool.name)}.command`);
-			expect(tool.version).not.toMatch(/[x*^~]|latest/i);
-		}
 		const source = [
 			readFileSync(resolve(spike, "packages/semantic-core/main.tsp"), "utf8"),
 			readFileSync(resolve(spike, "packages/assurance/main.tsp"), "utf8"),

@@ -8,7 +8,7 @@
 	},
 	"package": {
 		"identity": "agent-ix/semantic-kernel",
-		"version": "0.2.0",
+		"version": "0.3.0",
 		"manifestDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
 		"mappingVersions": [],
 		"profileVersions": [],

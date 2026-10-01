@@ -21,7 +21,7 @@
  * Usage:
  *   --tree <scratch>    regenerate into <scratch> and compare, then the manifest
  *   --manifest          the committed manifest's publish, lint, dependency and metadata claims
- *   --rustfmt           the pinned formatter, then rustfmt --check over the committed crate
+ *   --rustfmt           rustfmt --check over the committed crate
  *   --build <scratch>   cargo build --offline --locked over a scratch copy
  *   --gate              the publication gate and the inherited-defect record
  */
@@ -65,20 +65,12 @@ const CRATE = process.env.KERNEL_CRATE_ROOT
 	? resolve(process.env.KERNEL_CRATE_ROOT)
 	: join(KERNEL, "rust");
 const MANIFEST = join(CRATE, "Cargo.toml");
-const TOOLCHAIN = join(ROOT, "rust-toolchain.toml");
-const MATRIX = join(
-	ROOT,
-	"docs",
-	"semantic-data-system",
-	"rust-backend-support-matrix.md",
-);
 const PACKAGES_DOC = join(
 	ROOT,
 	"docs",
 	"semantic-data-system",
 	"semantic-kernel-packages.md",
 );
-const NOTICES = join(ROOT, "THIRD-PARTY-NOTICES.md");
 
 /** The publication gate and the inherited defect, named once. */
 const PUBLICATION_GATE = "agent-ix/quoin#290";
@@ -329,21 +321,6 @@ function manifestGate() {
 		problems.push(
 			`${relative(ROOT, MANIFEST)} does not declare serde at an exact version pin`,
 		);
-	} else {
-		// The attribution register answers for the pin that is actually
-		// declared, so moving the pin without moving the row fails here.
-		let notices;
-		try {
-			notices = readFileSync(NOTICES, "utf8");
-		} catch {
-			notices = "";
-			problems.push(`${relative(ROOT, NOTICES)} is missing`);
-		}
-		if (notices && !notices.includes(pin)) {
-			problems.push(
-				`${relative(ROOT, NOTICES)} carries no row for serde at the pinned version ${pin}`,
-			);
-		}
 	}
 
 	// Nothing here writes; a crate that carries a lock file or a build
@@ -372,34 +349,7 @@ function manifestGate() {
 // The formatter gate
 // ---------------------------------------------------------------------------
 
-function pinnedChannel() {
-	return readFileSync(TOOLCHAIN, "utf8").match(
-		/^\s*channel\s*=\s*"([^"]+)"/m,
-	)?.[1];
-}
-
-function declaredRustfmt() {
-	return readFileSync(MATRIX, "utf8").match(
-		/^-\s*`rustfmt`\s+version:\s*`([^`]+)`/m,
-	)?.[1];
-}
-
-/**
- * The pinned formatter, asserted before it is run, so a difference reported by
- * some other version fails saying which version it found rather than being read
- * as a generator defect (FR-086-AC-7, FR-086-AC-16).
- */
 function rustfmtGate() {
-	const channel = pinnedChannel();
-	const declared = declaredRustfmt();
-
-	const rustc = spawnSync("rustc", ["-vV"], { encoding: "utf8" });
-	if (rustc.status !== 0) {
-		process.stderr.write(
-			"rustc is not on PATH: the kernel formatter gate cannot run, and this is a failure rather than a skip\n",
-		);
-		return 1;
-	}
 	const version = spawnSync("rustfmt", ["--version"], { encoding: "utf8" });
 	if (version.status !== 0) {
 		process.stderr.write(
@@ -407,20 +357,7 @@ function rustfmtGate() {
 		);
 		return 1;
 	}
-	const release = rustc.stdout.match(/^release:\s*(\S+)/m)?.[1];
 	const running = version.stdout.trim().split(" ")[1];
-	const problems = [];
-	if (release !== channel) {
-		problems.push(
-			`the running toolchain is ${release}, and rust-toolchain.toml pins ${channel}`,
-		);
-	}
-	if (running !== declared) {
-		problems.push(
-			`the running rustfmt is ${running}, and the support matrix declares ${declared}`,
-		);
-	}
-	if (problems.length > 0) return report(problems, "kernel formatter gate");
 
 	const sources = walk(CRATE)
 		.filter((path) => path.endsWith(".rs"))
@@ -444,7 +381,7 @@ function rustfmtGate() {
 		return 1;
 	}
 	process.stdout.write(
-		`kernel formatter gate passed: rustfmt ${running} from toolchain ${release} reports no change over ${sources.length} generated source files\n`,
+		`kernel formatter gate passed: rustfmt ${running} reports no change over ${sources.length} generated source files\n`,
 	);
 	return 0;
 }

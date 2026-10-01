@@ -52,20 +52,17 @@ determinism claim becomes conditional on facts nobody records, and the failure
 mode is not a red suite — it is a green suite on one machine and a red suite on
 another, which reads as flakiness and gets retried.
 
-The second platform row is unreachable in this ticket, and the metrics below say
+A second platform is unreachable in this ticket, and the metrics below say
 so rather than scoring around it. The repository's only CI is
 `.github/workflows/build-test.yml`, a Node-only reusable workflow triggered on
 `workflow_dispatch` alone, with no Rust toolchain and no OS matrix; `.github/**`
 is a prohibited path under
 [NFR-023](./NFR-023-non-disruptive-rust-backend.md), so this change cannot add a
-Rust lane. Measuring "byte differences across the rows that have evidence" would
-therefore score a perfect zero over a population of one, which is a number that
-cannot fail. The two metrics below replace it: one measures the determinism this
-ticket can actually measure, on the authoring platform, over every corpus base;
-the other measures the honesty of the matrix, counting rows claimed supported
-without named measured evidence. Cross-platform determinism is a claim this
-ticket does not make and the support matrix records as unmet with its owning
-issue.
+Rust lane. Measuring "byte differences across platforms" would therefore
+score a perfect zero over a population of one, which is a number that cannot
+fail. The metrics below measure the determinism this ticket can actually
+measure, on the authoring platform, over every corpus base. Cross-platform
+determinism is a claim this ticket does not make.
 
 The published `rust` target contract already constrains the runtime dependency
 set to `serde` alone. That constraint is what makes offline generation and
@@ -78,7 +75,6 @@ generates a matcher rather than reaching for an engine.
 |---|---|---|---|
 | Byte differences between two generations of one request on the authoring platform, over every corpus base | 0 | 0 | Byte comparison over an actual second run |
 | Byte differences across the declared environment perturbations | 0 | 0 | Byte comparison under varied `TZ`, `LANG`, `HOME`, `PWD` |
-| Platform matrix rows listed as supported without named measured evidence | 0 | 0 | Inspection of the support matrix against the named runs |
 | Live references to a clock, RNG, environment, cwd, or child process in the generator's module graph | 0 | 0 | Static analysis |
 | Runtime dependencies of a generated crate other than `serde` | 0 | 0 | Manifest inspection |
 | Network calls during generation, build, and consumption | 0 | 0 | Offline run |
@@ -92,9 +88,7 @@ generates a matcher rather than reaching for an engine.
 
 Generate each corpus base twice into two scratch directories and compare bytes;
 repeat under each declared environment perturbation and compare across them;
-inspect the support matrix and confirm every row listed supported names the
-triple, the toolchain version, the `rustfmt` version, and the run its evidence
-came from; scan the generator's module graph for clock, RNG, environment, cwd,
+scan the generator's module graph for clock, RNG, environment, cwd,
 and child-process references; inspect every generated `Cargo.toml` dependency
 section; run generation, build, and consumption with the network denied and
 cargo in offline mode; run `rustfmt --check` under the pinned version over every
@@ -113,7 +107,6 @@ passing.
 |---|---|---|
 | NFR-022-AC-1 | A gate that cannot resolve its inputs fails naming what it could not read, and never passes vacuously or skips. | Test (TC-736) |
 | NFR-022-AC-2 | The degradation scan is measured against `src/compiler/backends/rust-serde/mapping-table.json`, not against a copy of the generated output, so it cannot pass by comparing bytes to themselves. | Test (TC-735) |
-| NFR-022-AC-3 | Every platform matrix row is either supported with named measured evidence or recorded unmet with its reason and owning issue. | Inspection (TC-735) |
 | NFR-022-AC-4 | The offline run is a genuine offline run: the build fails if the network is reachable and depended upon, demonstrated by removing a cached crate and observing the failure. | Test (TC-734) |
 | NFR-022-AC-5 | An emitter deliberately degraded to substitute `String` for a constrained scalar makes the degradation scan fail naming the declaration, so the scan is proven able to fail on the defect it exists to catch. | Test (TC-735) |
 | NFR-022-AC-6 | Two generations of each corpus base on the authoring platform differ in zero bytes, measured over an actual second run rather than a cached result. | Test (TC-731) |

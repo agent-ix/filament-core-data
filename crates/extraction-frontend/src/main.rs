@@ -60,7 +60,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     /// Lift one bundle under the named module roots to one document and
-    /// two sidecars, or regenerate every fixture golden.
+    /// one sidecar, or regenerate every fixture golden.
     Lift(LiftArgs),
     /// Decide a written document through the independent reader and list
     /// its types.
@@ -87,8 +87,7 @@ struct LiftArgs {
         conflicts_with = "write_goldens"
     )]
     modules: Vec<PathBuf>,
-    /// The document path; `<out>.fingerprint` and `<out>.diagnostics.json`
-    /// are written beside it.
+    /// The document path; `<out>.diagnostics.json` is written beside it.
     #[arg(
         long,
         value_name = "FILE",

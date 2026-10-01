@@ -38,7 +38,6 @@ invalidating current inputs.
 |---|---|---|
 | FR-026-AC-1 | One fixture is accepted dynamically and through generated Rust, TypeScript, and Python packages with the same semantic fingerprint. | Test |
 | FR-026-AC-2 | A static consumer's unknown-module policy preserves, rejects, or surfaces data exactly as its profile declares. | Test |
-| FR-026-AC-3 | Every current Quoin manifest validates through the legacy profile without being rewritten. | Test |
 | FR-026-AC-4 | Existing Avro positive and negative fixtures cross the bridge without semantic widening. | Test |
 | FR-026-AC-5 | Missing versions, imports, adapters, or contradictory identities fail visibly and emit no empty model. | Test |
 | FR-026-AC-6 | Quire, Quoin, module repositories, compiler, and consumer responsibilities remain consistent with the accepted ownership ADRs. | Inspection |

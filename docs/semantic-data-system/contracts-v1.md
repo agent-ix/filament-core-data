@@ -477,7 +477,7 @@ Dynamic validation and finite generated exports share package, type, field,
 profile, mapping, and fingerprint identities. Static consumers declare whether
 unknown modules and extensions are preserved, rejected, or surfaced.
 
-The retained Quoin manifest inventory and Avro bridge are compatibility
+The Avro bridge and the legacy manifest profile are compatibility
 controls. Missing versions, imports, adapters, contradictory identities, and
 unknown required capabilities fail with diagnostics and no empty-model success.
 Quire retains document parsing/rendering; Quoin retains registry and install

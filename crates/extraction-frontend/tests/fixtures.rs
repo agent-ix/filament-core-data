@@ -455,9 +455,6 @@ fn tc_1286_regenerating_every_golden_into_the_target_directory_reproduces_it_byt
                 "{}",
                 name.display()
             );
-            assert!(committed
-                .join(format!("{GOLDEN_DOCUMENT}.fingerprint"))
-                .is_file());
         }
     }
 
@@ -608,7 +605,7 @@ fn tc_1289_a_lift_leaves_a_committed_copy_of_every_bundle_and_module_root_byte_u
 // Determinism and hygiene over the corpus (FR-095, FR-096)
 // ---------------------------------------------------------------------------
 
-/// The three files of a lift by the built binary of `bundle`, run in `cwd`
+/// The two files of a lift by the built binary of `bundle`, run in `cwd`
 /// with `HOME` set to `home`, as (label, bytes).
 fn lift_by_binary(bundle: &Path, cwd: &Path, home: &Path) -> Vec<(&'static str, Vec<u8>)> {
     let out = tempfile::tempdir().expect("tempdir");
@@ -632,10 +629,6 @@ fn lift_by_binary(bundle: &Path, cwd: &Path, home: &Path) -> Vec<(&'static str, 
     );
     [
         ("semantic-ir.json", GOLDEN_DOCUMENT),
-        (
-            "semantic-ir.json.fingerprint",
-            "semantic-ir.json.fingerprint",
-        ),
         ("semantic-ir.json.diagnostics.json", GOLDEN_DIAGNOSTICS),
     ]
     .into_iter()

@@ -14,9 +14,9 @@ return `FRONTEND_NOT_IMPLEMENTED`. It is a placeholder rather than a shim: it
 spawns nothing and does not know that the implementation exists.
 
 The implementation does exist. `crates/extraction-frontend` loads a repository
-`spec/` tree through the Quire extraction contract and writes four artifacts —
-the semantic IR document, its fingerprint, a diagnostics sidecar and a
-provenance record — atomically, by temp-and-rename. Everything between load and
+`spec/` tree through the Quire extraction contract and writes two artifacts —
+the semantic IR document and a diagnostics sidecar — atomically, by
+temp-and-rename. Everything between load and
 write is in memory. What is missing is the wire between the JavaScript seam and
 that binary.
 

@@ -6,7 +6,7 @@
 //!
 //! ```text
 //! CARGO_TARGET_DIR=$PWD/node_modules/.cache/rust-target \
-//!   cargo +1.98.1 test -p agent-ix-extraction-frontend --test change_set -- --ignored
+//!   cargo test -p agent-ix-extraction-frontend --test change_set -- --ignored
 //! ```
 
 mod common;
@@ -20,7 +20,6 @@ use common::{crate_dir, git, target_dir, workspace_dir};
 use ix_trace_rs::trace;
 use serde_json::Value;
 
-const TOOLCHAIN: &str = "1.98.1";
 const PACKAGE: &str = "agent-ix-extraction-frontend";
 
 fn text(output: &Output) -> String {
@@ -43,7 +42,6 @@ fn read(path: &Path) -> String {
 #[test]
 fn tc_1311_no_edge_from_semantic_ir_or_the_adapter_and_the_only_path_edge_is_semantic_ir() {
     let output = Command::new("cargo")
-        .arg(format!("+{TOOLCHAIN}"))
         .args(["metadata", "--format-version", "1", "--locked", "--offline"])
         .current_dir(workspace_dir())
         .output()
@@ -117,7 +115,6 @@ fn porcelain(dir: &Path, pathspecs: &[&str]) -> String {
 #[ignore = "E2E evidence: runs the whole crate suite, which nests cargo test; run with --ignored"]
 fn tc_1314_after_the_full_suite_git_status_is_empty_in_the_fixtures() {
     let output = Command::new("cargo")
-        .arg(format!("+{TOOLCHAIN}"))
         .args(["test", "--locked", "--offline", "-p", PACKAGE])
         .env("CARGO_TARGET_DIR", target_dir())
         .current_dir(workspace_dir())

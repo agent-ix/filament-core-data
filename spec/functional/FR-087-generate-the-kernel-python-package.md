@@ -19,8 +19,7 @@ relationships:
 ## Description
 
 The repository SHALL generate the semantic kernel's Python packages by running
-the already-qualified issue #23 route — the pinned MIT `datamodel-code-generator`
-`0.76.0`, the immutable profiles of `python_backend/profiles.json`, the closed
+the already-qualified issue #23 route — the pinned MIT `datamodel-code-generator`, the immutable profiles of `python_backend/profiles.json`, the closed
 refusal register of `python_backend/refusals.json`, the sandboxed runner, the
 `enforce`-mode inspection, and the byte-compared emitter — over the thirty
 committed kernel JSON Schema documents of
@@ -111,7 +110,7 @@ and it publishes nothing.
 | FR-087-CON-3 | The localization pass SHALL remain a schema-to-schema rewrite that post-processes no generated Python source, for the same reason FR-074-CON-1 gives: a text patch over generated code is a hand-written generator by another name. | Integrity | Test |
 | FR-087-CON-4 | The maintainer SHALL NOT emit a package for a family the qualification judges `not-qualified`, nor re-run the qualification with an altered probe set to move a verdict in order to emit one. | Integrity | Test |
 | FR-087-CON-5 | This requirement SHALL add no path under `packages/semantic-kernel/` to `pyproject.toml`'s `packages` or `include`, to any npm manifest's `files` or `exports`, or to any workflow under `.github/`. Publication passes `agent-ix/quoin#290`. | Compliance | Test |
-| FR-087-CON-6 | This requirement SHALL introduce no second generator, no vendored copy, and no fork of `datamodel-code-generator`; the generator stays an attributed, pinned third-party dependency at `0.76.0`. | Compliance | Static |
+| FR-087-CON-6 | This requirement SHALL introduce no second generator, no vendored copy, and no fork of `datamodel-code-generator`; the generator stays an attributed, pinned third-party dependency. | Compliance | Static |
 
 ## Acceptance Criteria
 

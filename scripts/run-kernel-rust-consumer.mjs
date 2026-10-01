@@ -7,6 +7,7 @@ import {
 	mkdtempSync,
 	mkdirSync,
 	readFileSync,
+	renameSync,
 	rmSync,
 	writeFileSync,
 } from "node:fs";
@@ -18,7 +19,13 @@ import { execFileSync } from "node:child_process";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const KERNEL = join(ROOT, "packages/semantic-kernel/rust");
 const CONSUMER = join(ROOT, "crates/kernel-consumer");
-const CRATE = "agent-ix-semantic-kernel-0.2.0";
+// `cargo package` names the artifact after the crate's own version, read here
+// from its manifest rather than restated.
+const KERNEL_VERSION = /^version\s*=\s*"([^"]+)"/m.exec(
+	readFileSync(join(KERNEL, "Cargo.toml"), "utf8"),
+)?.[1];
+if (!KERNEL_VERSION) throw new Error("the kernel crate declares no version");
+const CRATE = `agent-ix-semantic-kernel-${KERNEL_VERSION}`;
 const GOLDEN = join(
 	ROOT,
 	"packages/semantic-kernel/parity/golden/PAR-0001.json",
@@ -77,6 +84,8 @@ try {
 	const build = join(scratch, "build");
 	mkdirSync(build, { recursive: true });
 	run("tar", ["-xzf", join(target, "package", `${CRATE}.crate`), "-C", build]);
+	// The consumer names the unpacked crate without its version.
+	renameSync(join(build, CRATE), join(build, "agent-ix-semantic-kernel"));
 	cpSync(CONSUMER, join(build, "kernel-consumer"), { recursive: true });
 	const output = run("cargo", ["test", "--offline"], {
 		cwd: join(build, "kernel-consumer"),

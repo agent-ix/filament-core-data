@@ -12,7 +12,7 @@
 # A consumer pins this crate as a git dependency at a tag (the same pattern
 # `crates/extraction-frontend` already uses for its own `quire-rs` pin), e.g.:
 #
-#   agent-ix-semantic-schema = { git = "https://github.com/agent-ix/filament-core-data", tag = "semantic-schema-v0.1.0" }
+#   agent-ix-semantic-schema = { git = "https://github.com/agent-ix/filament-core-data", tag = "<release tag>" }
 #
 # A git dependency clones the whole repository, so the `include_str!` paths
 # below resolve under the consumer's build exactly as they do here — no
@@ -25,7 +25,7 @@
 # dependency needs no registry publish anyway).
 [package]
 name = "agent-ix-semantic-schema"
-version = "0.2.0"
+version = "0.2.1"
 description = "Compile-time access to filament-core-data's published JSON Schema v1 contract and semantic-core's generated JSON Schema for Rust consumers (e.g. quire-rs)."
 edition.workspace = true
 rust-version.workspace = true

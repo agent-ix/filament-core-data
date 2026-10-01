@@ -34,7 +34,6 @@ without reading a side-car file at run time.
 - Each type's `identity`, `roles[]`, `unknownPolicy`, and `extensions[]`, and, for a `record`, its `fields[]` with their `identity`, `unit`, and `extensions[]`, and its `relationships[]`
 - The resolved model [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md) builds, which carries the minted TypeScript identifier beside each identity
 - The normalized IR fingerprint, computed by the backend through [FR-069](./FR-069-canonicalize-and-classify-the-ir-surface.md), which the document does not carry because a document cannot contain its own digest
-- The backend identity and backend version the target contract of [FR-063](./FR-063-declare-the-generation-backend-seam.md) declares
 
 ## Outputs
 
@@ -86,8 +85,6 @@ without reading a side-car file at run time.
 - `renderMetadata` SHALL emit no working directory and no absolute path.
 - `renderMetadata` SHALL emit no tool path, no interpreter path, and no environment variable value.
 - An `occurrence` carries an `observedAt` timestamp authored in the document, and `renderMetadata` SHALL copy that value verbatim; it is contract data the document supplies rather than a clock the backend read, and the prohibition above is on the latter.
-- The generated banner at the head of every emitted file SHALL name the backend identity, the backend version, and the IR fingerprint.
-- The generated banner SHALL NOT name a clock value.
 
 ## Constraints
 
@@ -109,7 +106,7 @@ without reading a side-car file at run time.
 | FR-067-AC-3 | Both identity maps are ordered by key under code-point comparison, and the order is unchanged under `LC_ALL=tr_TR.UTF-8`. | Property |
 | FR-067-AC-4 | A generated package with one type removed from the identity map fails `tsc --noEmit`, and one with an entry for an unexported name fails likewise. | Compile |
 | FR-067-AC-6 | Two documents differing only in the order of `types`, `fields`, `constraints`, and `extensions` produce the same generated fingerprint; two differing in any semantic value produce different ones. | Property |
-| FR-067-AC-7 | Every emitted file's banner names the backend identity, the backend version, and the fingerprint, and no emitted byte outside a copied `occurrences[].observedAt` value matches a date, time, hostname, user, or absolute-path pattern. | Static |
+| FR-067-AC-7 | No emitted byte outside a copied `occurrences[].observedAt` value matches a date, time, hostname, user, or absolute-path pattern. | Static |
 | FR-067-AC-8 | Generating the same document twice at different wall-clock times produces byte-identical `identity.ts`. | Snapshot |
 | FR-067-AC-9 | `roles[]` is exposed per type as a readonly array equal to the document's, including the empty array for a type declaring none. | Unit |
 | FR-067-AC-10 | A `record` declaring two relationships exposes two descriptors carrying `identity`, `verb`, `category`, `composite`, `target`, and the multiplicity bounds; a `record` declaring none exposes an empty array; and no relationship descriptor appears in `types.ts`. | Unit |

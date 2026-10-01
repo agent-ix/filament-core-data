@@ -16,7 +16,7 @@ const schemaBase = "https://schemas.agent-ix.org/filament-core-data/v1/";
  * TC-139, TC-140, TC-141, TC-142, TC-143, TC-144, TC-145, TC-146, TC-147,
  * TC-148, TC-149, TC-150, TC-151, TC-152, TC-153, TC-154, TC-155, TC-156,
  * TC-157, TC-158, TC-159, TC-160, TC-161, TC-162, TC-163, TC-164, TC-165,
- * TC-166, TC-167, TC-168, TC-169, TC-170, TC-171, TC-172, TC-173, TC-174,
+ * TC-166, TC-167, TC-168, TC-169, TC-170, TC-171, TC-172, TC-174,
  * TC-175, TC-176, TC-177, TC-178, TC-179, TC-180, TC-181, TC-182, TC-183,
  * TC-184, TC-185, TC-186, TC-187, TC-188, TC-189, TC-190, TC-191, TC-192,
  * TC-193, TC-194, TC-195, TC-196, TC-197, TC-198, TC-200, TC-201, TC-202.
@@ -1071,8 +1071,8 @@ describe("semantic package contract v1", () => {
 		).not.toContain("avro-v1");
 	});
 
-	/** Traces: TC-171, TC-172, TC-173, TC-174, TC-175, TC-176, TC-196. */
-	it("keeps dynamic, generated, and Quoin compatibility boundaries explicit", () => {
+	/** Traces: TC-171, TC-172, TC-174, TC-175, TC-176, TC-196. */
+	it("keeps dynamic and generated compatibility boundaries explicit", () => {
 		const policies = array(
 			readJson("positive/consumer-policies.json"),
 			"consumer policies",
@@ -1096,23 +1096,6 @@ describe("semantic package contract v1", () => {
 		expect(fingerprint(sharedValue)).toBe(
 			fingerprint(JSON.parse(JSON.stringify(sharedValue))),
 		);
-
-		const quoin = object(
-			readJson("legacy/quoin-manifests.json"),
-			"Quoin inventory",
-		);
-		const manifests = array(quoin.manifests, "Quoin manifests").map((value) =>
-			object(value, "manifest"),
-		);
-		expect(manifests).toHaveLength(9);
-		expect(new Set(manifests.map((manifest) => manifest.path)).size).toBe(
-			manifests.length,
-		);
-		for (const manifest of manifests) {
-			expect(manifest.digest).toMatch(/^sha256:[0-9a-f]{64}$/);
-			expect(manifest.rewritten).toBe(false);
-			expect(manifest.valid).toBe(true);
-		}
 	});
 
 	/** Traces: TC-177, TC-178, TC-179, TC-180. */

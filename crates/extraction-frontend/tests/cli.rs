@@ -96,18 +96,14 @@ fn tree(root: &Path) -> Vec<(PathBuf, Vec<u8>)> {
 
 #[trace("TC-1295", "FR-099-AC-1")]
 #[test]
-fn tc_1295_lift_writes_three_files_and_the_sidecar_options_rename_them() {
+fn tc_1295_lift_writes_two_files_and_the_sidecar_options_rename_them() {
     let dir = tempfile::tempdir().expect("tempdir");
     let out = dir.path().join(OUT);
     let output = run(&lift_args(&fixture("config-version-table"), &out));
     assert_eq!(code(&output), 0, "stderr:\n{}", stderr(&output));
     assert_eq!(
         files(dir.path()),
-        [
-            "semantic-ir.json",
-            "semantic-ir.json.diagnostics.json",
-            "semantic-ir.json.fingerprint",
-        ]
+        ["semantic-ir.json", "semantic-ir.json.diagnostics.json"]
     );
     // IR v1.2 represents this fixture without a representability loss: the
     // one line is the engine's advisory that FR-006's `ocl` clause is carried
@@ -126,10 +122,7 @@ fn tc_1295_lift_writes_three_files_and_the_sidecar_options_rename_them() {
     args.extend([os("--diagnostics"), os(renamed.path().join("d.json"))]);
     let output = run(&args);
     assert_eq!(code(&output), 0, "stderr:\n{}", stderr(&output));
-    assert_eq!(
-        files(renamed.path()),
-        ["d.json", "semantic-ir.json", "semantic-ir.json.fingerprint"]
-    );
+    assert_eq!(files(renamed.path()), ["d.json", "semantic-ir.json"]);
     assert_eq!(fs::read(&out).expect("doc"), fs::read(&out2).expect("doc"));
     assert_eq!(
         fs::read(dir.path().join("semantic-ir.json.diagnostics.json")).expect("d"),
@@ -246,20 +239,17 @@ fn tc_1297_inspect_lists_every_type_in_order_and_rejects_a_document_without_cont
 fn tc_1268_a_blocking_lift_leaves_out_untouched_and_a_warning_only_lift_writes_it() {
     let blocking = fixture("negatives/UNRESOLVED_TYPE_TOKEN");
 
-    // Fresh `--out`: absent after exit 1, with its fingerprint.
+    // Fresh `--out`: absent after exit 1.
     let dir = tempfile::tempdir().expect("tempdir");
     let out = dir.path().join(OUT);
     let output = run(&lift_args(&blocking, &out));
     assert_eq!(code(&output), 1, "stderr:\n{}", stderr(&output));
     assert_eq!(files(dir.path()), ["semantic-ir.json.diagnostics.json"]);
 
-    // Pre-existing `--out` and fingerprint: byte-unchanged.
+    // Pre-existing `--out`: byte-unchanged.
     let dir = tempfile::tempdir().expect("tempdir");
     let out = dir.path().join(OUT);
-    let stale: [(&str, &[u8]); 2] = [
-        ("semantic-ir.json", b"stale document"),
-        ("semantic-ir.json.fingerprint", b"stale fingerprint"),
-    ];
+    let stale: [(&str, &[u8]); 1] = [("semantic-ir.json", b"stale document")];
     for (name, bytes) in stale {
         fs::write(dir.path().join(name), bytes).expect("write");
     }
@@ -282,7 +272,7 @@ fn tc_1268_a_blocking_lift_leaves_out_untouched_and_a_warning_only_lift_writes_i
         .iter()
         .any(|d| d["blocking"] == Value::Bool(true)));
 
-    // The v1.2 fixture succeeds with all three files and only the advisory
+    // The v1.2 fixture succeeds with both files and only the advisory
     // that its `ocl` clause is carried unchecked.
     let dir = tempfile::tempdir().expect("tempdir");
     let output = run(&lift_args(
@@ -291,5 +281,5 @@ fn tc_1268_a_blocking_lift_leaves_out_untouched_and_a_warning_only_lift_writes_i
     ));
     assert_eq!(code(&output), 0, "stderr:\n{}", stderr(&output));
     assert_eq!(stderr(&output).trim_end(), OCL_UNCHECKED);
-    assert_eq!(files(dir.path()).len(), 3);
+    assert_eq!(files(dir.path()).len(), 2);
 }

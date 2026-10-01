@@ -96,7 +96,6 @@ type without acquiring the rest and no framework enters the dependency closure.
 ### Provenance and typechecking
 
 - Every generated file SHALL carry an `SPDX-License-Identifier: AGPL-3.0-or-later` header.
-- Every generated file SHALL carry a banner naming the backend identity, the backend version, and the IR fingerprint it was generated from.
 - The generated `LICENSE` SHALL be the AGPL-3.0-or-later text this repository already ships, copied rather than restated.
 - The generated package SHALL typecheck with zero errors under `strict`, `exactOptionalPropertyTypes`, `noUnusedLocals`, and `noUnusedParameters`, because `exactOptionalPropertyTypes` is what makes the absent-versus-`undefined` distinction of FR-064 real rather than nominal, and the two unused-symbol rules are what the repository's own configuration already applies to everything it compiles.
 - The authoritative configuration for that typecheck SHALL be `test/fixtures/backends/typescript/tsconfig.json`, named here so that no reader has to infer which of two configurations governs.
@@ -153,7 +152,7 @@ that decision requires.
 | FR-065-AC-7 | No generated module names `react`, `react-dom`, `@tauri-apps/api`, `typeorm`, `prisma`, `sequelize`, `sqlalchemy`, `express`, `axios`, `node-fetch`, or any package in the seven prohibited categories. | Static |
 | FR-065-AC-8 | Every generated package for every conformance-corpus model that FR-068 admits typechecks with zero errors under `test/fixtures/backends/typescript/tsconfig.json`, which sets `strict`, `exactOptionalPropertyTypes`, `noUnusedLocals`, and `noUnusedParameters`, compiled as one program through the TypeScript compiler API. | Compile |
 | FR-065-AC-9 | Assigning `undefined` to an optional-and-not-nullable generated property fails that typecheck, proving `exactOptionalPropertyTypes` is in force. | Compile |
-| FR-065-AC-10 | Every generated file begins with the SPDX header and the banner naming the backend identity, its version, and the IR fingerprint. | Snapshot |
+| FR-065-AC-10 | Every generated file begins with the SPDX header. | Snapshot |
 | FR-065-AC-11 | The generated `LICENSE` is byte-identical to this repository's committed `LICENSE`. | Test |
 | FR-065-AC-12 | The reachable-symbol walk from an entry export of one type and its validator, over a fixture package of ten types, reaches that type's generated symbols and no generated symbol of the other nine; and the walk fails loudly when any one of its four enabling conditions is removed from the fixture, so it cannot pass over a package for which it means nothing. | Integration |
 | FR-065-AC-13 | A model carrying a representability loss yields an empty file map and the loss diagnostics and writes nothing, while a model whose admissibility result is `lossy` and whose constructs are all representable yields the full eight-file map. | Unit |

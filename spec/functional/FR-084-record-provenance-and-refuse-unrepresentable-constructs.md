@@ -19,19 +19,15 @@ relationships:
 ## Description
 
 The kernel IR document SHALL carry a `source` block and a `package` block that
-name exactly which bytes it was produced from, every generated package SHALL
-carry the same fingerprint back out, this requirement SHALL record the two
+name what it was produced from, this requirement SHALL record the two
 representability losses it declares in a closed register with a stable
 diagnostic code apiece, and any construct outside the closed keyword set or
 outside that register SHALL refuse generation rather than be approximated.
 
-A generated package that cannot be traced to the bytes it came from is not
-evidence of anything: a consumer holding a Rust crate and a Pydantic module
-cannot tell whether they were generated from the same kernel unless both carry
-the same digest, and a reviewer cannot tell whether a committed generated tree
-is stale unless the digest it carries can be recomputed from the bundle. That is
-what the `source.digest` and the package fingerprint are for, and it is why both
-are computed over the bundle bytes rather than over a version string.
+The `source` and `package` blocks carry the members the contract requires.
+The digests those blocks require are the all-zero placeholder: the kernel
+document records no digest of its own, and a digest recorded here would be a
+copy of a value the bundle already determines.
 
 The register is closed for the same reason the keyword set is closed. A lowering
 that silently approximates one construct it has no representation for will
@@ -53,7 +49,6 @@ against the contract owner, in that order.
 - `src/compiler/diagnostics.mjs`, the closed `DIAGNOSTIC_CODES` registry [FR-049](./FR-049-emit-stable-source-located-diagnostics.md) owns, which every code this requirement emits must join
 - `crates/semantic-ir/RULES.md`, which documents that contract `2.0.0` authors `presence` independently of `multiplicity.lower` (FR-106); no rule derives one from the other
 - `spec/reviews/21-rust-serde-backend/failure-domain.md` FND-956, which records the adjacent gap that there is no way to say "optional, but non-empty when present"
-- The kernel manifest and lock FR-081 declares, from which the `package` block's digests are read
 
 ## Outputs
 
@@ -70,19 +65,14 @@ against the contract owner, in that order.
 ### The source block
 
 - `source.identity` SHALL be `ix://agent-ix/semantic-core/source/main.tsp`, naming `packages/semantic-core/main.tsp`, the authored source.
-- `source.version` SHALL be `0.2.0`, the version segment the bundle's own `$id`s carry — `https://schemas.agent-ix.org/semantic-core/0.2.0/TypeRef.json` and its twenty-nine siblings — so the IR's declared version and the bundle's declared version cannot disagree without a test failing.
 - `source.dialect` SHALL be `typespec`.
 - The reason SHALL be recorded rather than left implicit: `common.schema.json#/$defs/frontendDialect` admits exactly `typespec` and `spec-bundle` and declares no `json-schema` value, and the JSON Schema bundle is the pinned official `@typespec/json-schema` emitter's deterministic projection of `main.tsp` — the transport this lowering reads, not the source the kernel was authored in. Declaring `typespec` states the authored origin; declaring `spec-bundle` would be false.
 - This requirement SHALL file an issue against the live contract owner asking whether a projection of a declared dialect deserves a dialect value of its own, SHALL record that issue's number beside the `source.dialect` decision, and SHALL NOT edit `common.schema.json` to add one. `agent-ix/filament-core-data#59` records that the closed issue #9 can no longer own the contract-gap register, so the issue is filed against a live owner rather than added to a register with none.
-- `source.digest` SHALL be `sha256:` followed by the lower-case hexadecimal SHA-256 of the FR-048 canonical encoding of the array of `[path, fileDigest]` pairs covering all 30 documents of `packages/semantic-core/generated/json-schema/`, where `path` is repository-root-relative and `fileDigest` is `sha256:` plus the hex SHA-256 of that file's bytes, and the array is ordered by `path` under code-point comparison.
-- The digest SHALL be taken over the bundle bytes and not over `main.tsp`, because the bundle is what this lowering read; the resulting asymmetry — a `source.identity` naming the `.tsp` beside a digest over its projection — SHALL be stated in the same issue as the dialect question rather than hidden by digesting a file the lowering never opened.
-- Changing any byte of any of the 30 documents SHALL change `source.digest`, and `make semantic-core-check`, which gates the bundle byte-for-byte against a fresh emitter run, SHALL be the check that keeps that digest meaningful.
+- `source.digest`, `package.manifestDigest` and `package.lockDigest` SHALL be the all-zero placeholder, `sha256:` followed by sixty-four `0` digits, which `common.schema.json#/$defs/sha256` admits and the schema requires.
 
 ### The package block
 
 - `package.identity` SHALL be `agent-ix/semantic-core`, which matches `common.schema.json#/$defs/packageIdentity`, and SHALL be the same `agent-ix/semantic-core` segment every identity FR-083 mints carries.
-- `package.version` SHALL equal `source.version`, because the kernel package and the kernel source are versioned as one artifact and a divergence between them would be unresolvable by a consumer holding only the IR.
-- `package.manifestDigest` and `package.lockDigest` SHALL be the digests of the kernel manifest and lock FR-081 declares, computed under the FR-048 canonicalization and never restated as constants.
 - `package.mappingVersions` and `package.profileVersions` SHALL be the empty array where the kernel declares no mapping and no profile, which `semantic-ir.schema.json` permits because neither array carries a `minItems`; the empty array SHALL be emitted rather than the member omitted, since both members are `required`.
 - The emitted document SHALL declare `contractVersion` `2.0.0` and SHALL carry `occurrences` and `extensions` as empty arrays, because the root requires both and the kernel declares neither.
 
@@ -142,10 +132,8 @@ against the contract owner, in that order.
 |---|---|---|
 | FR-084-AC-1 | The emitted kernel IR validates against `schema/semantic/v1/semantic-ir.schema.json` at `contractVersion` `2.0.0`, carrying every required member of `source` and `package` and no member `additionalProperties: false` forbids. | Test |
 | FR-084-AC-2 | `source.dialect` is `typespec`, a member of `common.schema.json#/$defs/frontendDialect`; a test asserts that enum still carries no `json-schema` value, so adding one upstream fails here rather than silently changing the meaning of this document. | Test |
-| FR-084-AC-3 | `source.digest` recomputed independently in the test from the 30 files of `packages/semantic-core/generated/json-schema/` equals the value the document carries, and mutating one byte of one document changes it. | Test |
-| FR-084-AC-4 | `source.version`, `package.version`, and the `0.2.0` segment of every `$id` in the bundle are the same string; changing one alone fails. | Unit |
 | FR-084-AC-5 | `package.identity` is `agent-ix/semantic-core`, matches `common.schema.json#/$defs/packageIdentity`, and equals the owner segment of every identity FR-083 mints. | Unit |
-| FR-084-AC-6 | `package.manifestDigest` and `package.lockDigest` equal the FR-048 canonical digests of the kernel manifest and lock recomputed in the test, and `mappingVersions` and `profileVersions` are present as empty arrays. | Test |
+| FR-084-AC-6 | `source.digest`, `package.manifestDigest` and `package.lockDigest` are the all-zero placeholder, and `mappingVersions` and `profileVersions` are present as empty arrays. | Test |
 | FR-084-AC-8 | Generating twice from the same bundle on two working directories with differing paths and cleared environments produces identical fingerprints, and no generated file contains a timestamp, host name, or absolute path. | Integration |
 | FR-084-AC-9 | `KERNEL_LOSSES` has exactly two rows and stands in bijection with the rows of `packages/semantic-kernel/losses.json`, which `scripts/build-semantic-kernel.mjs --check` regenerates and compares byte for byte; a test adding a third row without a registered code, and one adding a code without a row, each fail. | Unit |
 | FR-084-AC-10 | Lowering the committed bundle emits exactly one `agent-ix.compiler.KERNEL_UNCONSTRAINED_VALUE` located at `DefaultDecl.json`'s `value`, naming the minted `DefaultDeclValue` identity, and the emitted type carries `kind: "record"`, `fields: []`, `unknownPolicy: "preserve"`. | Test |
@@ -163,9 +151,9 @@ against the contract owner, in that order.
 
 ## Dependencies
 
-- **Upstream**: FR-081 (the kernel manifest and lock whose digests the `package` block carries), FR-082 (the lowering whose document this requirement stamps and whose closed keyword set it enforces), [FR-083](./FR-083-mint-names-for-anonymous-constructs.md) (the minted identities the register rows and the refusals name), [FR-048](./FR-048-build-and-verify-the-lock-and-fingerprint.md), [FR-049](./FR-049-emit-stable-source-located-diagnostics.md), [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md)
+- **Upstream**: FR-081 (the kernel bundle declaration), FR-082 (the lowering whose document this requirement stamps and whose closed keyword set it enforces), [FR-083](./FR-083-mint-names-for-anonymous-constructs.md) (the minted identities the register rows and the refusals name), [FR-048](./FR-048-build-and-verify-the-lock-and-fingerprint.md), [FR-049](./FR-049-emit-stable-source-located-diagnostics.md), [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md)
 - **Downstream**: FR-085, FR-086, FR-087, FR-088, and FR-090
 - **Constrained by**: NFR-028, NFR-029, NFR-030
 - **Verified by**: `test/semantic-kernel.test.ts`, driven through `scripts/build-semantic-kernel.mjs` and its `--check` verb
 - **Read and never edited**: every document under `schema/**`, every file under `packages/semantic-core/**`, `fixtures/**`, `conformance/**`, `src/compiler/backends/**`, `src/compiler/cli.mjs`, and `package.json`
-- **Open contract questions this requirement records rather than decides**: whether the pinned `@typespec/json-schema` projection of a `typespec` source deserves a `frontendDialect` value of its own, and whether `source.digest` over a projection beside a `source.identity` naming the authored file is the intended reading; the narrowing of an unconstrained value to a `JsonObject`; and the absence of any IR form for a required-but-possibly-empty collection. Each is a filed issue against a live contract owner. `agent-ix/filament-core-data#59` records that the closed issue #9 can no longer own the contract-gap register, which is why none of these is filed there.
+- **Open contract questions this requirement records rather than decides**: whether the pinned `@typespec/json-schema` projection of a `typespec` source deserves a `frontendDialect` value of its own; the narrowing of an unconstrained value to a `JsonObject`; and the absence of any IR form for a required-but-possibly-empty collection. Each is a filed issue against a live contract owner. `agent-ix/filament-core-data#59` records that the closed issue #9 can no longer own the contract-gap register, which is why none of these is filed there.

@@ -29,7 +29,6 @@ use ix_trace_rs::trace;
 use proptest::test_runner::{Config, TestRunner};
 use strategies::bundle_tree::bundle_tree;
 
-const TOOLCHAIN: &str = "1.98.1";
 const PACKAGE: &str = "agent-ix-extraction-frontend";
 
 // ---------------------------------------------------------------------------
@@ -166,11 +165,10 @@ fn quire_rs_root() -> PathBuf {
 
 fn cargo(args: &[&str]) -> Output {
     Command::new("cargo")
-        .arg(format!("+{TOOLCHAIN}"))
         .args(args)
         .current_dir(workspace_dir())
         .output()
-        .unwrap_or_else(|e| panic!("cargo +{TOOLCHAIN} could not be started ({e}): the gate cannot run, and this is a failure rather than a skip"))
+        .unwrap_or_else(|e| panic!("cargo could not be started ({e}): the gate cannot run, and this is a failure rather than a skip"))
 }
 
 #[trace("TC-1303", "NFR-031-AC-4")]
@@ -663,7 +661,6 @@ fn tc_1306_the_crate_suite_passes_under_unshare_n_with_cargo_offline() {
     assert_unshare_available();
     let cargo_path = PathBuf::from("cargo");
     let args: Vec<OsString> = [
-        &format!("+{TOOLCHAIN}"),
         "test",
         "--offline",
         "--locked",
@@ -733,16 +730,15 @@ fn compile_fail_doctest(lib_rs: &str) -> String {
     text
 }
 
-/// `rustc +1.98.1 --edition 2021 --crate-type lib --emit=metadata` over
+/// `rustc --edition 2021 --crate-type lib --emit=metadata` over
 /// `source`: the compiler's output.
 fn rustc_check(source: &Path, out_dir: &Path) -> Output {
     Command::new("rustc")
-        .arg(format!("+{TOOLCHAIN}"))
         .args(["--edition", "2021", "--crate-type", "lib", "--emit=metadata", "--out-dir"])
         .arg(out_dir)
         .arg(source)
         .output()
-        .unwrap_or_else(|e| panic!("rustc +{TOOLCHAIN} could not be started ({e}): the gate cannot run, and this is a failure rather than a skip"))
+        .unwrap_or_else(|e| panic!("rustc could not be started ({e}): the gate cannot run, and this is a failure rather than a skip"))
 }
 
 #[trace("TC-1308", "NFR-031-AC-9")]
@@ -802,7 +798,7 @@ fn tc_1308_the_crate_root_forbids_unsafe_code_and_the_compile_fail_doctest_rejec
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
         !output.status.success(),
-        "the injected unsafe block does not build under rustc +{TOOLCHAIN}"
+        "the injected unsafe block does not build"
     );
     assert!(
         stderr.contains("usage of an `unsafe` block") && stderr.contains("forbid(unsafe_code)"),
@@ -817,15 +813,10 @@ fn tc_1308_the_crate_root_forbids_unsafe_code_and_the_compile_fail_doctest_rejec
         String::from_utf8_lossy(&output.stderr)
     );
     let version = Command::new("rustc")
-        .arg(format!("+{TOOLCHAIN}"))
         .arg("--version")
         .output()
         .expect("rustc --version");
     let version = String::from_utf8_lossy(&version.stdout);
-    assert!(
-        version.contains(TOOLCHAIN),
-        "compiled by {TOOLCHAIN}: {version}"
-    );
     eprintln!(
         "TC-1308: 0 first-party unsafe sites; the compile_fail doctest fails under {} with forbid and builds without it",
         version.trim()

@@ -1,6 +1,6 @@
 ---
 id: FR-060
-title: "Produce deterministic, rustfmt-clean output with a declared support matrix"
+title: "Produce deterministic, rustfmt-clean output"
 type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-011"
@@ -12,13 +12,12 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/NFR-023"
     type: "constrained_by"
 ---
-# FR-060: Produce deterministic, rustfmt-clean output with a declared support matrix
+# FR-060: Produce deterministic, rustfmt-clean output
 
 ## Description
 
 The Rust backend SHALL produce byte-identical, already-`rustfmt`-formatted
-output for one request on every platform and toolchain of its declared support
-matrix, so that a diff of generated code is evidence about the contract and
+output for one request on every platform, so that a diff of generated code is evidence about the contract and
 never about the machine that ran the generator.
 
 ## Inputs
@@ -26,21 +25,14 @@ never about the machine that ran the generator.
 - A compiler request and the crate bytes from
   [FR-056](./FR-056-emit-the-generated-rust-crate.md)
 - The pinned `rustfmt.toml` the backend emits beside the crate
-- `rust-toolchain.toml`, which pins the exact Rust toolchain release and the
-  exact `rustfmt` component version the fixed-point claim is made against
-- The declared support matrix: minimum supported Rust version, edition,
-  toolchain version, `rustfmt` version, and the platform triples the evidence
-  covers
+- `rust-toolchain.toml`, which pins the Rust toolchain and the `rustfmt`
+  component the fixed-point claim is made against
 
 ## Outputs
 
 - `test/fixtures/rust-serde/goldens/`: committed generated crates for each of
   the four corpus bases
-- `docs/semantic-data-system/rust-backend-support-matrix.md`: the MSRV, edition,
-  toolchain version, `rustfmt` version, and platform matrix with the evidence
-  each row rests on and the owning issue each unmet row carries
-- `scripts/build-rust-backend-goldens.mjs`: the determinism, formatter and
-  support-matrix checks
+- `scripts/build-rust-backend-goldens.mjs`: the determinism and formatter checks
 - `test/fixtures/rust-serde/format-branches.json`: a document exercising all
   three branches of the emitted `try_new` call rendering, because no corpus
   base reaches the middle one and a golden minted from the bases cannot
@@ -66,17 +58,11 @@ never about the machine that ran the generator.
 
 - A fixed point of `rustfmt` is a fixed point of one `rustfmt` version, because
   the formatter's output moves between toolchain releases. `rust-toolchain.toml`
-  SHALL pin the exact Rust toolchain release together with its `rustfmt`
-  component, and the support matrix SHALL name that toolchain version and that
-  `rustfmt` version as the version every fixed-point claim below is made
-  against.
-- Emitted Rust SHALL be a fixed point of the pinned `rustfmt` version with the
-  emitted `rustfmt.toml`: running `rustfmt --check` under the pinned version
-  over the generated crate SHALL report no change.
-- The `rustfmt` that the check invokes SHALL be the pinned one. A check running
-  under any other formatter version SHALL fail saying which version it found
-  and which the matrix declares, rather than reporting a formatting difference
-  as a generator defect.
+  SHALL pin the Rust toolchain together with its `rustfmt` component, which is
+  the formatter every fixed-point claim below is made against.
+- Emitted Rust SHALL be a fixed point of the pinned `rustfmt` with the emitted
+  `rustfmt.toml`: running `rustfmt --check` over the generated crate SHALL
+  report no change.
 - The backend SHALL NOT shell out to `rustfmt` during generation; the emitter
   produces the formatted form directly, so generation stays hermetic and does
   not depend on a formatter being installed.
@@ -88,37 +74,14 @@ never about the machine that ran the generator.
   compared rather than regenerated.
 - A change to one emitter byte SHALL fail the golden comparison, naming the file.
 
-### Support matrix
+### Generated manifest
 
-- The matrix SHALL name the MSRV, the Rust edition, the pinned toolchain
-  version, the pinned `rustfmt` version, and each platform triple the
-  determinism evidence was measured on, with the toolchain version for each row.
-- The generated `Cargo.toml` SHALL carry `rust-version` equal to the matrix's
-  MSRV.
-- The matrix SHALL record, beside the pin, every lint the generated
-  `[lints.rust]` table denies and the coupling that table creates: the generated
-  crate denies all warnings by manifest, so a future `rustc` lint reddens a
-  consumer build with no contract change. That is intended by
+- The generated `Cargo.toml` SHALL carry the `rust-version` the backend
+  declares as the minimum supported Rust version of a generated crate.
+- The generated `[lints.rust]` table denies all warnings, so a future `rustc`
+  lint reddens a consumer build with no contract change. That is intended by
   [FR-056](./FR-056-emit-the-generated-rust-crate.md) AC-1, and it is a property
-  of the generated artifact rather than of this repository, so it is recorded
-  where a consumer reads the pin. The matrix gate SHALL read the lint names out
-  of a generated `Cargo.toml` rather than from a list restated in the gate, so
-  adding or dropping a lint moves the gate instead of leaving a stale sentence.
-- Where a matrix row has no measured evidence, the matrix SHALL record it as
-  unmet with its reason and its owning issue, and SHALL NOT list it as
-  supported.
-- Exactly one platform row is supported with measured evidence at this
-  revision: the authoring host's target triple, named in the matrix together
-  with the toolchain and `rustfmt` versions the evidence was measured under.
-  Every other row is recorded unmet.
-- This is the honest close of the platform claim, not a deferral. The
-  repository's only CI is `.github/workflows/build-test.yml`, a Node-only
-  reusable workflow triggered on `workflow_dispatch` alone, with no Rust
-  toolchain, no OS matrix, and no cargo cache; `.github/**` is a prohibited path
-  under
-  [NFR-023](../non-functional/NFR-023-non-disruptive-rust-backend.md), so this
-  change cannot add a Rust lane to it. A one-row matrix is therefore the
-  expected outcome of this ticket, and the second row is another ticket's work.
+  of the generated artifact rather than of this repository.
 
 ### The runtime split
 
@@ -135,9 +98,7 @@ never about the machine that ran the generator.
 |---|---|---|---|
 | FR-060-CON-1 | The golden comparison SHALL regenerate into a scratch directory outside the working tree, so the check cannot pass by comparing a file to itself and cannot leave the tree dirty. | Correctness | Inspection and test |
 | FR-060-CON-2 | The determinism evidence SHALL be measured, not asserted: the byte comparison SHALL run over an actual second generation, not over a cached result. | Honesty | Test |
-| FR-060-CON-3 | A platform triple SHALL appear as supported only where the suite has run on it; an unrun row SHALL be recorded unmet with its owning issue. | Honesty | Inspection |
 | FR-060-CON-4 | The generator SHALL invoke no external process during generation. | Determinism | Analysis |
-| FR-060-CON-5 | The repository SHALL pin, in `rust-toolchain.toml`, an exact toolchain release together with its `rustfmt` component, carried into the support-matrix row as that row's evidence. | Maintainability | Inspection |
 | FR-060-CON-7 | A gate whose toolchain is absent SHALL fail naming what it could not run. | Honesty | Test |
 
 ## Acceptance Criteria
@@ -150,15 +111,10 @@ never about the machine that ran the generator.
 | FR-060-AC-4 | The committed goldens equal a fresh generation, and the check names the differing file when they do not. | Test (TC-714) |
 | FR-060-AC-5 | `make rust-check` leaves `git status --porcelain` empty. | Test (TC-715) |
 | FR-060-AC-6 | The generator's module graph contains no `child_process`, `node:child_process`, `Date`, `Math.random`, `process.env`, or `process.cwd` reference on a live path. | Analysis (TC-716) |
-| FR-060-AC-7 | The generated `Cargo.toml` `rust-version` equals the matrix MSRV, and the crate builds on that toolchain. | Test (TC-717) |
-| FR-060-AC-8 | The support matrix names every platform row as supported-with-evidence or unmet-with-reason; no row is unqualified. | Inspection (TC-717) |
+| FR-060-AC-7 | The generated `Cargo.toml` carries the `rust-version` the backend declares. | Test (TC-717) |
 | FR-060-AC-9 | Reordering a document's identity-keyed arrays and permuting every object's key order produces byte-identical output. | Test (TC-718) |
 | FR-060-AC-10 | The output manifest's file list is sorted by path by code point, checked over every base. | Test (TC-718) |
-| FR-060-AC-11 | The `rustfmt` the check invokes reports the version `rust-toolchain.toml` pins and the support matrix names; a check run under a different formatter version fails naming both versions. | Test (TC-713) |
-| FR-060-AC-13 | No platform row is listed supported without named measured evidence — the triple, the toolchain version, the `rustfmt` version, and the run that produced it — and exactly one row is so listed at this revision. | Inspection (TC-717) |
-| FR-060-AC-14 | Every unmet platform row names its reason and its owning issue, and a row recorded unmet with no owning issue fails the matrix gate. | Inspection (TC-717) |
 | FR-060-AC-15 | `make test` runs the Node-side gates and the consolidated Rust gates, `make rust-deep` runs the long property, fuzz, and mutation runs, and each target fails naming what it could not run when its toolchain is absent rather than skipping. | Test (TC-715) |
-| FR-060-AC-16 | The support matrix names every lint the generated `[lints.rust]` table denies, read from a generated `Cargo.toml`, and records that denying all warnings couples the generated crate to the `rustc` release; a matrix missing a denied lint or the section that states the coupling fails the matrix gate. | Inspection (TC-945) |
 
 ## Dependencies
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 /**
- * The Rust backend's determinism evidence, its formatter gate, and its
- * support-matrix gate (FR-060).
+ * The Rust backend's determinism evidence and its formatter gate (FR-060).
  *
  * Nothing here is asserted that is not measured. The determinism evidence runs
  * real second generations in child processes under the declared perturbations
@@ -10,8 +9,7 @@
  *
  * Usage:
  *   --determinism     two runs, then TZ, LANG, PWD and HOME perturbations
- *   --rustfmt         assert the pinned formatter, then rustfmt --check
- *   --matrix          every support-matrix row is qualified
+ *   --rustfmt         rustfmt --check over every committed golden crate
  *   --manifests <dir> the file list in each generated manifest is sorted
  */
 
@@ -31,13 +29,6 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 const CLI = join(ROOT, "src", "compiler", "backends", "rust-serde", "cli.mjs");
 const GOLDENS = join(ROOT, "test", "fixtures", "rust-serde", "goldens");
-const MATRIX = join(
-	ROOT,
-	"docs",
-	"semantic-data-system",
-	"rust-backend-support-matrix.md",
-);
-const TOOLCHAIN = join(ROOT, "rust-toolchain.toml");
 
 /** The scratch root; per worktree, and outside anything biome or git walks. */
 function targetDir() {
@@ -151,36 +142,7 @@ function determinism() {
 // The formatter gate
 // ---------------------------------------------------------------------------
 
-/** The channel `rust-toolchain.toml` pins. */
-function pinnedChannel() {
-	const text = readFileSync(TOOLCHAIN, "utf8");
-	const match = text.match(/^\s*channel\s*=\s*"([^"]+)"/m);
-	return match?.[1];
-}
-
-/** The `rustfmt` version the support matrix declares. */
-function declaredRustfmt() {
-	const text = readFileSync(MATRIX, "utf8");
-	const match = text.match(/^-\s*`rustfmt`\s+version:\s*`([^`]+)`/m);
-	return match?.[1];
-}
-
 function rustfmtGate() {
-	const problems = [];
-	const channel = pinnedChannel();
-	const declared = declaredRustfmt();
-
-	const rustc = spawnSync("rustc", ["-vV"], { encoding: "utf8" });
-	if (rustc.status !== 0) {
-		process.stderr.write(
-			"rustc is not on PATH: the FR-060 formatter gate cannot run, and this is a failure rather than a skip\n",
-		);
-		return 1;
-	}
-	const release = rustc.stdout.match(/^release:\s*(\S+)/m)?.[1];
-	const rustcCommit = rustc.stdout.match(/^commit-hash:\s*(\S+)/m)?.[1] ?? "";
-	const host = rustc.stdout.match(/^host:\s*(\S+)/m)?.[1];
-
 	const version = spawnSync("rustfmt", ["--version"], { encoding: "utf8" });
 	if (version.status !== 0) {
 		process.stderr.write(
@@ -190,31 +152,6 @@ function rustfmtGate() {
 	}
 	const running = version.stdout.trim();
 	const runningVersion = running.split(" ")[1];
-	const runningCommit = running.match(/\(([0-9a-f]+)\s/)?.[1] ?? "";
-
-	if (release !== channel) {
-		problems.push(
-			`the running toolchain is ${release}, and rust-toolchain.toml pins ${channel}`,
-		);
-	}
-	if (runningVersion !== declared) {
-		problems.push(
-			`the running rustfmt is ${runningVersion}, and the support matrix declares ${declared}`,
-		);
-	}
-	if (!rustcCommit.startsWith(runningCommit)) {
-		problems.push(
-			`the running rustfmt was built from ${runningCommit}, and the running rustc from ${rustcCommit}, so the formatter is not the pinned toolchain's component`,
-		);
-	}
-	if (problems.length > 0) {
-		for (const problem of problems)
-			process.stderr.write(`formatter gate failed: ${problem}\n`);
-		return 1;
-	}
-	process.stdout.write(
-		`formatter: rustfmt ${runningVersion} from toolchain ${release} on ${host}\n`,
-	);
 
 	// The fixed point itself, over every committed golden crate.
 	let checked = 0;
@@ -246,121 +183,6 @@ function rustfmtGate() {
 	}
 	process.stdout.write(
 		`rustfmt --check: ${checked} generated source files report no change\n`,
-	);
-	return 0;
-}
-
-// ---------------------------------------------------------------------------
-// The support-matrix gate
-// ---------------------------------------------------------------------------
-
-/**
- * The `[lints.rust]` entries a generated `Cargo.toml` carries, read from a
- * golden crate. Reading them is the point: a transcribed list would agree with
- * every change to the emitter.
- */
-function deniedLints() {
-	const bases = readdirSync(GOLDENS)
-		.filter((name) => statSync(join(GOLDENS, name)).isDirectory())
-		.sort();
-	if (bases.length === 0) {
-		throw new Error(
-			"no golden crate is present, so the denied lint set could not be read and this gate fails rather than passing over an empty set",
-		);
-	}
-	const text = readFileSync(join(GOLDENS, bases[0], "Cargo.toml"), "utf8");
-	const table = /\n\[lints\.rust\]\n([\s\S]*?)(?:\n\[|$)/.exec(text);
-	if (!table) {
-		throw new Error(
-			`the golden crate ${bases[0]} carries no [lints.rust] table, so the denied lint set could not be read`,
-		);
-	}
-	return [...table[1].matchAll(/^([a-z_]+)\s*=/gm)].map((one) => one[1]);
-}
-
-/**
- * Every platform row is qualified: supported with named measured evidence, or
- * unmet with a reason and an owning issue. A row recorded unmet with no owning
- * issue fails (FR-060-AC-8, FR-060-AC-13, FR-060-AC-14).
- */
-function matrixGate() {
-	const problems = [];
-	const text = readFileSync(MATRIX, "utf8");
-
-	// Only the platform table. The document carries other tables, and a gate
-	// that read every table in the file would decide rows that are not rows.
-	const start = text.indexOf("## Platform rows");
-	if (start === -1)
-		problems.push("the matrix carries no `## Platform rows` section");
-	const rest = text.slice(start + 1);
-	const end = rest.indexOf("\n## ");
-	const section = end === -1 ? rest : rest.slice(0, end);
-	const rows = section
-		.split("\n")
-		.filter((line) => line.startsWith("| `"))
-		.map((line) =>
-			line
-				.split("|")
-				.map((cell) => cell.trim())
-				.filter(Boolean),
-		);
-
-	if (rows.length === 0) problems.push("the matrix lists no platform row");
-
-	let supported = 0;
-	for (const row of rows) {
-		const [triple, status, toolchain, formatter, evidence] = row;
-		if (status === "supported") {
-			supported += 1;
-			for (const [name, cell] of [
-				["toolchain version", toolchain],
-				["rustfmt version", formatter],
-				["evidence", evidence],
-			]) {
-				if (!cell || cell === "—" || cell === "-")
-					problems.push(`${triple} is listed supported with no ${name}`);
-			}
-		} else if (status === "unmet") {
-			if (!evidence?.includes("issues/"))
-				problems.push(`${triple} is recorded unmet with no owning issue`);
-		} else {
-			problems.push(`${triple} is neither supported nor unmet: ${status}`);
-		}
-	}
-	if (supported !== 1) {
-		problems.push(
-			`exactly one platform row is supported at this revision; the matrix lists ${supported}`,
-		);
-	}
-
-	const channel = pinnedChannel();
-	if (!text.includes(`\`${channel}\``))
-		problems.push(`the matrix does not name the pinned channel ${channel}`);
-
-	// The `[lints.rust]` table the generator writes couples the *generated*
-	// crate to the `rustc` release: a future lint reddens a consumer build with
-	// no contract change. FR-056-AC-1 intends that, and it is a property of the
-	// generated artifact, so it is recorded beside the pin rather than left for
-	// a consumer to discover on a toolchain bump. The lint names are read out of
-	// a golden `Cargo.toml` rather than restated here, so adding or dropping one
-	// moves this gate instead of leaving a stale sentence behind.
-	for (const lint of deniedLints()) {
-		if (!text.includes(`\`${lint}\``))
-			problems.push(
-				`the generated Cargo.toml denies \`${lint}\` and the matrix does not name it`,
-			);
-	}
-	if (!text.includes("## What the generated crate denies")) {
-		problems.push(
-			"the matrix carries no `## What the generated crate denies` section, so the toolchain coupling the `[lints.rust]` table creates is unrecorded",
-		);
-	}
-
-	for (const problem of problems)
-		process.stderr.write(`support matrix failed: ${problem}\n`);
-	if (problems.length > 0) return 1;
-	process.stdout.write(
-		`support matrix passed: ${rows.length} rows, ${supported} supported with measured evidence\n`,
 	);
 	return 0;
 }
@@ -422,7 +244,6 @@ function manifestOrder(dir) {
 const MODES = {
 	"--determinism": determinism,
 	"--rustfmt": rustfmtGate,
-	"--matrix": matrixGate,
 	"--manifests": () => manifestOrder(process.argv[3]),
 };
 

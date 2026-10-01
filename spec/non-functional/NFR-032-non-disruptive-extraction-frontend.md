@@ -48,7 +48,7 @@ the crates whose agreement is evidence remain independent of it.
 - Permitted paths: `crates/extraction-frontend/**`, including the vendored
   module fixture under `crates/extraction-frontend/fixtures/modules/**`; the
   `members` line of the root `Cargo.toml` and the `Cargo.lock` entries that
-  line adds, resolved under `cargo +1.98.1 --locked` so that no other member's
+  line adds, resolved under `cargo --locked` so that no other member's
   entry moves (NFR-033); one `extraction-frontend` block in the root
   `Makefile`; additive rows in the root `THIRD-PARTY-NOTICES.md` for exactly
   the crates this change adds to `Cargo.lock` — a row per newly locked package

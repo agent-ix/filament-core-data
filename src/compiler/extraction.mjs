@@ -16,8 +16,7 @@
  *
  * The extraction itself is a Rust workspace member. `crates/extraction-frontend`
  * loads a repository `spec/` tree through the Quire extraction contract and
- * writes the semantic IR document beside a fingerprint, a diagnostics sidecar
- * and a provenance record, atomically. None of that is reimplemented here; this
+ * writes the semantic IR document beside a diagnostics sidecar, atomically. None of that is reimplemented here; this
  * is the wire, and a wire that did any of the work would be a second producer of
  * one artifact.
  *
@@ -37,7 +36,7 @@ import { fileURLToPath } from "node:url";
 /** This repository's root, from this module's own location. */
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-/** The sidecar suffixes the producer writes beside the document (FR-097). */
+/** The sidecar suffix the producer writes beside the document (FR-097). */
 export const DIAGNOSTICS_SUFFIX = ".diagnostics.json";
 
 /** Raised when the producer cannot run at all. */
@@ -128,11 +127,7 @@ export function builtProducer({ binary, root = REPO_ROOT } = {}) {
  * a caller that meant to use a built artifact and silently got a compile
  * instead would be told nothing, and the two have entirely different costs.
  */
-export function cargoProducer({
-	root = REPO_ROOT,
-	toolchain = "1.98.1",
-	profile = "debug",
-} = {}) {
+export function cargoProducer({ root = REPO_ROOT, profile = "debug" } = {}) {
 	let binary;
 	return function lift(request) {
 		if (binary === undefined) {
@@ -140,7 +135,6 @@ export function cargoProducer({
 				execFileSync(
 					"cargo",
 					[
-						`+${toolchain}`,
 						"build",
 						"--locked",
 						"-p",

@@ -42,7 +42,7 @@ acceptance criterion below.
 Both published advisories against this generator are code injection through
 schema content: GHSA-386q-5hp3-95m9 through `default_factory` and
 GHSA-5578-w22f-pfx9 through `x-python-import` and `customTypePath` reaching
-generated import statements. The pinned `0.76.0` is outside both ranges, but the
+generated import statements. The pinned generator is outside both ranges, but the
 mechanism is not a historical accident — the generator's design reads schema
 extensions as Python symbols, and its command line offers custom template
 directories, custom formatters, additional imports, import overrides, type
