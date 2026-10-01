@@ -126,9 +126,8 @@ body-list extraction and on issue #85 for the `json-schema` target.
 Priority is P0 on the compiler track. The principal risk is fixture
 availability: the corpus predates the typed-table contract, so the live
 `config-service` FR-006 lifts to nothing today and the worked example is met by
-the provenance-tracked re-authoring quire-rs vendors, with `relationships:`
-frontmatter added to the crate's own copy and recorded in its
-`PROVENANCE.json`. The second risk is the `json-schema` target, which has no
+the re-authoring quire-rs vendors, with `relationships:`
+frontmatter added to the crate's own copy. The second risk is the `json-schema` target, which has no
 IR-reading backend (#85): the fifth acceptance criterion of #36 is a `Blocked`
 matrix row traced to this story and naming #85, with no test behind it, and
 the FR-098-AC-9 proxy traces to FR-098-AC-9 only. The third is relationship

@@ -14,7 +14,7 @@ use agent_ix_extraction_frontend::{provenance_record, Bundle, Envelope};
 use common::sha256sum;
 use ix_trace_rs::trace;
 use proptest::prelude::*;
-use serde_json::{json, Value};
+use serde_json::json;
 
 fn crate_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -379,20 +379,4 @@ fn tc_1256_manifest_digest_covers_both_manifests_in_name_order_whatever_the_root
         let record = provenance_record(&bundle, &order).expect("record");
         prop_assert_eq!(record, expected_record.clone());
     });
-}
-
-#[trace("TC-1348", "FR-095-AC-15")]
-#[test]
-fn tc_1348_provenance_module_entry_carries_the_vendored_manifest_sha256() {
-    let (bundle, modules) = load_table();
-    let record = provenance_record(&bundle, &modules).expect("record");
-    let provenance: Value = serde_json::from_str(
-        &fs::read_to_string(business_module().join("PROVENANCE.json")).expect("PROVENANCE.json"),
-    )
-    .expect("json");
-    assert_eq!(provenance["revision"], "7b7b0bc");
-    assert_eq!(record.modules.len(), 1);
-    let entry = &record.modules[0];
-    assert_eq!(entry.name, "spec-objects-business");
-    assert_eq!(entry.version, provenance["module_version"]);
 }

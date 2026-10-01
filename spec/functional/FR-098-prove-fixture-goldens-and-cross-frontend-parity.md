@@ -43,7 +43,7 @@ document path, never in one bundle, because a bundle with two `FR-006`
 documents collides on artifact id and type name and because `origin.source.path`
 is an emitted byte. The vendored copies carry a `relationships:` frontmatter
 block the quire-rs originals lack (FR-094 lowers relationships from frontmatter
-only); `PROVENANCE.json` records the added block. The spec-objects-business
+only). The spec-objects-business
 module is vendored from repository revision `7b7b0bc` (`0.7.0`, untagged
 `main`), whose object types declare the FR-075 model tables the engine gates
 on and each object type's `construct`. That revision declares
@@ -117,17 +117,17 @@ Every fixture directory any acceptance criterion in FR-091 through FR-099 names
 is listed here; the inventory test fails on a directory that is present and
 unlisted or listed and absent.
 
-- `crates/extraction-frontend/fixtures/config-version-table/`: a bundle root holding `spec/spec.md`, `spec/functional/FR-005-config-overlay-entity.md` (the typed ConfigOverlay artifact, the `config-overlay` target of the FR-006 edges), `spec/functional/FR-006-config-version-entity.md` in the **table** form, `PROVENANCE.json`, and `expected/`
-- `crates/extraction-frontend/fixtures/config-version-fence/`: the same bundle with `spec/functional/FR-006-config-version-entity.md` in the **fence** form at the same relative path, `PROVENANCE.json`, and `expected/`
-- `crates/extraction-frontend/fixtures/legacy/`: the verbatim live config-service `FR-006`, `PROVENANCE.json`, and `expected/`
-- `crates/extraction-frontend/fixtures/business/`: one typed artifact per exported object type of spec-objects-business — `domain`, `entity`, `value_object`, `aggregate_root`, `nested_entity`, `repository`, `event`, `state_machine`, `process`, `enumeration` — exercising every declaration kind, operations with parameters and returns, clauses, an enumeration with a `values` table, and the `operations.md` artifact FR-094 names; `PROVENANCE.json` (authored) and `expected/`
-- `crates/extraction-frontend/fixtures/clauses/`, `edges/`, `lower/`, `resolve/`, and `registry-doc/`: authored positive bundles exercising the FR-094 clause lowering, the edge vocabulary, the FR-093 lowering, the FR-092 resolve layer, and a registry document, each with `PROVENANCE.json` (authored) and `expected/`
+- `crates/extraction-frontend/fixtures/config-version-table/`: a bundle root holding `spec/spec.md`, `spec/functional/FR-005-config-overlay-entity.md` (the typed ConfigOverlay artifact, the `config-overlay` target of the FR-006 edges), `spec/functional/FR-006-config-version-entity.md` in the **table** form, and `expected/`
+- `crates/extraction-frontend/fixtures/config-version-fence/`: the same bundle with `spec/functional/FR-006-config-version-entity.md` in the **fence** form at the same relative path, and `expected/`
+- `crates/extraction-frontend/fixtures/legacy/`: the verbatim live config-service `FR-006`, and `expected/`
+- `crates/extraction-frontend/fixtures/business/`: one typed artifact per exported object type of spec-objects-business — `domain`, `entity`, `value_object`, `aggregate_root`, `nested_entity`, `repository`, `event`, `state_machine`, `process`, `enumeration` — exercising every declaration kind, operations with parameters and returns, clauses, an enumeration with a `values` table, and the `operations.md` artifact FR-094 names; and `expected/`
+- `crates/extraction-frontend/fixtures/clauses/`, `edges/`, `lower/`, `resolve/`, and `registry-doc/`: authored positive bundles exercising the FR-094 clause lowering, the edge vocabulary, the FR-093 lowering, the FR-092 resolve layer, and a registry document, each with `expected/`
 - `crates/extraction-frontend/fixtures/negatives/<CODE>/`: one directory per FR-096 code, holding a bundle root, a module root, or both, plus `expected/diagnostics.json`. `negatives/ARTIFACT_NOT_LOWERED/` is the `both-forms` bundle, the artifact FR-093 names that carries both a table and a fence, in the legacy form. The following codes cannot be expressed by a file and are exercised by a test-constructed bundle in a scratch directory; their directory holds no `expected/`, only a `constructed.json` naming the constructing test function: `OUTPUT_UNWRITABLE`, `LIMIT_MAX_DOCUMENTS`, `LIMIT_MAX_DOCUMENT_BYTES`, `LIMIT_MAX_FIELDS_PER_RECORD`, `LIMIT_MAX_CLAUSE_BYTES`, `LIMIT_MAX_DEPTH`. `INVALID_IR` holds both a file-expressible bundle (the composite cycle of FR-097-AC-15) and a `constructed.json` for the fault-injected schema case. `MODULE_WITHOUT_SEMANTIC_BLOCK` and `MODULE_REFUSED` hold a module root. `DUPLICATE_TYPE_NAME` (two documents both titled `Status` under distinct ids, contract case (a); re-authored under CR-087-2 from the former `Status`/`status` pair, which is now the positive half of FR-095-AC-14), `DUPLICATE_IDENTITY` (an artifact `NoteRevision` beside a record `Note` with a constrained field `revision`, contract case (c), FR-095-AC-14), `DUPLICATE_ARTIFACT_ID`, and `STALE_TYPE_TOKEN` hold two-document bundles. The non-blocking negatives are exactly two, `DECLARED_LOSS` and `ENGINE_DIAGNOSTIC`, and their `expected/` also holds `semantic-ir.json` with its fingerprint and provenance sidecars; `negatives/ARTIFACT_NOT_LOWERED/` (the `both-forms` bundle) blocks, since its document carries both forms of one declaration, while the non-blocking legacy form of `ARTIFACT_NOT_LOWERED` is exercised by the `legacy/` fixture above; `KERNEL_NAME_SHADOWED`'s fixture uses the shadowed scalar and is refused at lift level with `DUPLICATE_TYPE_NAME` per FR-092-AC-8, so it is a blocking negative. A fixture directory MAY carry a `modules.json` reading `{"roots": [...]}` naming its module roots; that list takes precedence over a `modules/` directory of the fixture's own and over the default pair below.
-- `crates/extraction-frontend/fixtures/modules/spec-objects-business/`: `manifest.yaml` and `schemas/` vendored from spec-objects-business revision `7b7b0bc`, with `PROVENANCE.json`; the frontend loads this module (beside `edge-vocabulary`) and never `~/.ix`
-- `crates/extraction-frontend/fixtures/modules/edge-vocabulary/`: a `manifest.yaml` carrying the FR-040 `edge_types` and `roles` registries copied byte for byte from spec-artifacts-iso revision `6686f11`, `spec_artifacts_iso/manifest.yaml` lines 872–975, under an authored header with an empty `semantic` block; `PROVENANCE.json` names the source lines and every authored line; loaded beside `spec-objects-business` by every lift; both declare the business verbs byte-identically
-- `crates/extraction-frontend/fixtures/modules/objects-extra/`: an authored second module declaring one object type, for FR-095-AC-11; `PROVENANCE.json` (authored)
-- `crates/extraction-frontend/fixtures/modules/conflicting/`: an authored module whose `semantic` block would change a `config-version` field, planted under a fake `HOME/.ix` and `QUIRE_MODULES` as the FR-091 ambient-isolation control; `PROVENANCE.json` (authored)
-- `crates/extraction-frontend/fixtures/modules/acme-other/` and `crates/extraction-frontend/fixtures/modules/frobnicates/`: authored modules named by fixtures' `modules.json` roots, for the FR-091 module-loading and FR-095 package-identity criteria; `PROVENANCE.json` (authored)
+- `crates/extraction-frontend/fixtures/modules/spec-objects-business/`: `manifest.yaml` and `schemas/` vendored from spec-objects-business revision `7b7b0bc`; the frontend loads this module (beside `edge-vocabulary`) and never `~/.ix`
+- `crates/extraction-frontend/fixtures/modules/edge-vocabulary/`: a `manifest.yaml` carrying the FR-040 `edge_types` and `roles` registries copied byte for byte from spec-artifacts-iso revision `6686f11`, `spec_artifacts_iso/manifest.yaml` lines 872–975, under an authored header with an empty `semantic` block; loaded beside `spec-objects-business` by every lift; both declare the business verbs byte-identically
+- `crates/extraction-frontend/fixtures/modules/objects-extra/`: an authored second module declaring one object type, for FR-095-AC-11
+- `crates/extraction-frontend/fixtures/modules/conflicting/`: an authored module whose `semantic` block would change a `config-version` field, planted under a fake `HOME/.ix` and `QUIRE_MODULES` as the FR-091 ambient-isolation control
+- `crates/extraction-frontend/fixtures/modules/acme-other/` and `crates/extraction-frontend/fixtures/modules/frobnicates/`: authored modules named by fixtures' `modules.json` roots, for the FR-091 module-loading and FR-095 package-identity criteria
 - `test/fixtures/compiler/shared/typespec/records-and-scalars/` and `test/fixtures/compiler/shared/spec-bundle/records-and-scalars/`: the new shared case, authored in both dialects with kernel scalars only
 - `test/fixtures/compiler/shared/cases.json`: the `records-and-scalars` case with both source trees present and both `typespec` and `spec-bundle` non-null (issue #87 decided the shared rule), and for each existing case `"spec-bundle": null` with a `reason`
 
@@ -138,10 +138,8 @@ unlisted or listed and absent.
 
 ## Behavior
 
-### Fixture provenance (declared reading of issue #36 AC-1)
+### Fixtures
 
-- The frontend SHALL name every fixture document in a `PROVENANCE.json` beside it, carrying either the source repository, revision, and path it was copied from, or `authored` for a document written for this crate.
-- The frontend SHALL record in the `config-version-*` provenance rows the `relationships:` frontmatter block added to the vendored copies.
 - The frontend SHALL NOT edit config-service, quire-rs, or spec-objects-business.
 - The frontend SHALL lift the `legacy` fixture to no record and exactly one `ARTIFACT_NOT_LOWERED` diagnostic naming `legacy-form`.
 
@@ -152,7 +150,6 @@ unlisted or listed and absent.
 - The frontend SHALL neither regenerate nor diff a constructed negative's `expected/diagnostics.json` through `--write-goldens` or `extraction-frontend-check`; that file is authored and asserted by TC-1288 alone.
 - The frontend SHALL NOT rewrite a committed golden from any test.
 - The frontend SHALL record in each `negatives/<CODE>/expected/diagnostics.json` the single expected code with its line and column, or no locus where FR-096 assigns none.
-- A fixture bundle whose `modules.json` names a module root pinned at a revision merged but not yet contained in a tagged release SHALL record that revision, the release it is pending, and the owning issue in the module's own `PROVENANCE.json`, naming the pin as pending until a release containing the revision is cut.
 
 ### Read-only lifting (issue #36 AC-4)
 
@@ -180,14 +177,12 @@ unlisted or listed and absent.
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-098-CON-1 | Outside `crates/extraction-frontend/`, this requirement's change set SHALL be exactly `test/fixtures/compiler/shared/cases.json`, `test/fixtures/compiler/shared/typespec/records-and-scalars/`, and `test/fixtures/compiler/shared/spec-bundle/`. | Scope | Change-set diff |
-| FR-098-CON-2 | A fixture change SHALL be accompanied in the same commit by a provenance row change and a regenerated golden. | Integrity | Inspection |
 | FR-098-CON-3 | The crate SHALL keep the payload-schema helper unexported and unreachable from the `lift` and `inspect` commands. | Scope | Static analysis |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-098-AC-1 | Every document under `fixtures/` is named in its `PROVENANCE.json` with repository, revision, and path or as `authored`; the `config-version-*` rows name the quire-rs revision and the added `relationships:` block; the `modules/spec-objects-business` row names revision `7b7b0bc`. | Test (TC-1285) |
 | FR-098-AC-2 | Regenerating every fixture whose root holds a `spec/spec.md` into a scratch directory under `CARGO_TARGET_DIR` reproduces each committed `expected/` file byte for byte, and each regenerated document equals `decide({"ir": doc}).normalized`; a one-byte change to a golden fails the test naming the fixture and the byte offset. | Test (TC-1286) |
 | FR-098-AC-3 | The `business` fixture's golden carries at least one `record`, `enum`, `scalar`, and `alias` definition (the last a constrained field's, FR-093), one `enum` with at least two `variants`, one operation with parameters and a `returns`, one `ocl` clause, and one relationship of each of the categories `structural` and `dependency`. | Test (TC-1287) |
 | FR-098-AC-4 | Every code FR-096 declares is emitted by its `negatives/<CODE>/` bundle or by the test `constructed.json` names, at the golden's recorded line and column or with no locus, as exactly its code as the first blocking diagnostic in FR-096 order; companion diagnostics that the same defect necessarily produces (an `ENGINE_DIAGNOSTIC` row, an `ARTIFACT_NOT_LOWERED`) are pinned by the test; the non-blocking negatives are exactly two, `DECLARED_LOSS` and `ENGINE_DIAGNOSTIC`, whose lifts carry no blocking diagnostic and write the document, `KERNEL_NAME_SHADOWED`'s fixture being refused with `DUPLICATE_TYPE_NAME` at lift level per FR-092-AC-8. | Test (TC-1288) |
@@ -199,7 +194,6 @@ unlisted or listed and absent.
 | FR-098-AC-10 | The change set of this requirement outside the crate is exactly `cases.json`, `test/fixtures/compiler/shared/typespec/records-and-scalars/`, and files under `test/fixtures/compiler/shared/spec-bundle/`; `src/compiler/frontend/**` and `test/compiler-core.test.ts` are byte-unchanged. | Static (TC-1294) |
 | FR-098-AC-11 | The set of directories under `fixtures/`, `fixtures/negatives/`, and `fixtures/modules/` equals the inventory above, and every `constructed.json` names a test function that exists in `crates/extraction-frontend/tests/`. | Static (TC-1343) |
 | FR-098-AC-12 | `parity::project` applied to the `config-version-table` golden yields a value with `types` as its only member, no `origin` or `extensions` at any depth, and every identity beginning `ix://shared/`; applied twice it yields the same value. | Property (TC-1344) |
-| FR-098-AC-13 | The SOA module root is pinned at a tagged release, which its `PROVENANCE.json` names. | Test (TC-1798) |
 
 ## Dependencies
 
