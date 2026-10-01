@@ -4,7 +4,7 @@ version: 0.1.0
 description: A synthetic edge-type and role registry the frontend categorises verbs against (FR-094)
 semantic:
   contract_version: 1.0.0
-  semantic_core: 0.3.0
+  semantic_core: 0.3.2
   package: fixture/edges
   exports: []
   imports: {}

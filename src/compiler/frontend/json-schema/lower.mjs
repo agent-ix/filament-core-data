@@ -603,7 +603,7 @@ export function lowerBundle(documents, options = {}) {
 			source,
 			package: options.package ?? {
 				identity: "agent-ix/semantic-kernel",
-				version: "0.3.0",
+				version: "0.3.1",
 				manifestDigest: `sha256:${"0".repeat(64)}`,
 				mappingVersions: [],
 				profileVersions: [],
