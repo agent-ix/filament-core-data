@@ -22,8 +22,8 @@ use serde_json::Value;
 
 use crate::common::{common_schema, crate_dir, diagnostic_schema_violations};
 
-const SOURCE: &str = "ix://agent-ix/config-service/spec";
-const DOC: &str = "spec/functional/FR-006-config-version-entity.md";
+const SOURCE: &str = "ix://agent-ix/docs-service/spec";
+const DOC: &str = "spec/functional/FR-006-snapshot-entity.md";
 
 fn fixture(name: &str) -> PathBuf {
     crate_dir().join("fixtures").join(name)

@@ -57,7 +57,7 @@ repository's existing Cargo workspace.
 
 - **Given** a bundle whose `FR-006` carries `object: entity`, a typed `## Properties` table, a frontmatter `relationships:` entry `belongs_to` → `FR-007`, and an `## Invariants` `ocl` fence
 - **When** the author lifts the bundle
-- **Then** the IR carries one `record` for `ConfigVersion` with its fields, one `belongs_to` relationship to `ConfigOverlay`, and one opaque `ocl` clause with the fence's span; the document passes the independent reader's schema and cross-field rules at lift time; and lifting it a second time produces the committed golden's bytes
+- **Then** the IR carries one `record` for `Snapshot` with its fields, one `belongs_to` relationship to `SnapshotGroup`, and one opaque `ocl` clause with the fence's span; the document passes the independent reader's schema and cross-field rules at lift time; and lifting it a second time produces the committed golden's bytes
 
 ### [US-015-EX-2] The same declaration in two forms is one declaration
 
@@ -125,7 +125,7 @@ body-list extraction and on issue #85 for the `json-schema` target.
 
 Priority is P0 on the compiler track. The principal risk is fixture
 availability: the corpus predates the typed-table contract, so the live
-`config-service` FR-006 lifts to nothing today and the worked example is met by
+`docs-service` FR-006 lifts to nothing today and the worked example is met by
 the re-authoring quire-rs vendors, with `relationships:`
 frontmatter added to the crate's own copy. The second risk is the `json-schema` target, which has no
 IR-reading backend (#85): the fifth acceptance criterion of #36 is a `Blocked`

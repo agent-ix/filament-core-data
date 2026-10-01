@@ -112,9 +112,9 @@ fn engine_head(e: &SemanticDiagnostic) -> String {
 
 #[trace("TC-1200", "FR-091-AC-1")]
 #[test]
-fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction_for_fr_005() {
-    let bundle = load_ok("config-version-table");
-    assert_eq!(bundle.package().identity(), "agent-ix/config-service");
+fn tc_1200_snapshot_table_lifts_seven_fields_for_fr_006_and_one_extraction_for_fr_005() {
+    let bundle = load_ok("snapshot-table");
+    assert_eq!(bundle.package().identity(), "agent-ix/docs-service");
     let module = bundle
         .semantic_module("fixture-domain")
         .expect("the fixture module carries a semantic block");
@@ -151,7 +151,7 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
     );
     assert_eq!(
         out.artifacts["FR-006"].path,
-        "spec/functional/FR-006-config-version-entity.md"
+        "spec/functional/FR-006-snapshot-entity.md"
     );
 
     let fr005 = &out.artifacts["FR-005"].extraction;
@@ -220,7 +220,7 @@ fn tc_1202_unsupported_semantic_core_refuses_with_the_engine_code_and_lowers_not
 fn tc_1203_planted_ambient_module_never_changes_the_explicit_lift() {
     let _env = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     // The baseline: explicit module root, nothing ambient.
-    let baseline = lift_bytes(&extract(&load_ok("config-version-table")));
+    let baseline = lift_bytes(&extract(&load_ok("snapshot-table")));
 
     // Plant the conflicting module everywhere an ambient loader would look.
     let home = tempfile::tempdir().expect("tempdir");
@@ -255,10 +255,10 @@ fn tc_1203_planted_ambient_module_never_changes_the_explicit_lift() {
     std::env::set_var("IX_FILAMENT_MODULES_PATH", &modules_dir);
     std::env::set_var("IX_SCHEMA_PATH", &modules_dir);
 
-    let under_plant = lift_bytes(&extract(&load_ok("config-version-table")));
+    let under_plant = lift_bytes(&extract(&load_ok("snapshot-table")));
     // The control: the conflicting module supplied explicitly.
     let control = lift_bytes(&extract(
-        &Bundle::load(&fixture("config-version-table"), &[&planted]).expect("loads"),
+        &Bundle::load(&fixture("snapshot-table"), &[&planted]).expect("loads"),
     ));
 
     for (k, v) in saved {
@@ -297,7 +297,7 @@ fn tc_1204_bundle_without_org_or_with_malformed_name_refuses_at_spec_md() {
     let dir = tempfile::tempdir().expect("tempdir");
     write(
         &dir.path().join("spec/spec.md"),
-        &spec_md(Some("agent-ix"), "Config Service"),
+        &spec_md(Some("agent-ix"), "Docs Service"),
     );
     let refusal = Bundle::load(dir.path(), &[&business_module()]).expect_err("refused");
     assert_eq!(refusal.code(), Code::BundleUnidentified);
@@ -306,7 +306,7 @@ fn tc_1204_bundle_without_org_or_with_malformed_name_refuses_at_spec_md() {
         "spec/spec.md"
     );
     assert!(
-        refusal.diagnostic.message.contains("Config Service"),
+        refusal.diagnostic.message.contains("Docs Service"),
         "names the offending value: {}",
         refusal.diagnostic.message
     );
@@ -366,16 +366,16 @@ fn tc_1205_unknown_object_type_diagnoses_and_skips_while_no_object_is_silent() {
     let locus = d.locus.as_ref().expect("frontmatter locus");
     assert_eq!(locus.path, "spec/functional/FR-007-widget.md");
     assert_eq!((locus.start_line, locus.start_column), (1, 1));
-    assert_eq!(locus.source_identity, "ix://agent-ix/config-service/spec");
+    assert_eq!(locus.source_identity, "ix://agent-ix/docs-service/spec");
     assert!(d.message.contains("widget"));
 }
 
 #[trace("TC-1206", "FR-091-AC-7")]
 #[test]
 fn tc_1206_bundle_index_names_every_object_by_id_and_title_and_a_title_cell_resolves() {
-    let bundle = load_ok("config-version-table");
+    let bundle = load_ok("snapshot-table");
     let index = bundle.index();
-    assert_eq!(index.package, "agent-ix/config-service");
+    assert_eq!(index.package, "agent-ix/docs-service");
     let entries: BTreeMap<&str, &Vec<String>> = index
         .objects
         .iter()
@@ -383,14 +383,14 @@ fn tc_1206_bundle_index_names_every_object_by_id_and_title_and_a_title_cell_reso
         .collect();
     assert_eq!(
         entries["FR-005"],
-        &vec!["FR-005".to_string(), "ConfigOverlay".to_string()]
+        &vec!["FR-005".to_string(), "SnapshotGroup".to_string()]
     );
     assert_eq!(
         entries["FR-006"],
         &vec![
             "FR-006".to_string(),
-            "ConfigVersion Entity".to_string(),
-            "ConfigVersion".to_string()
+            "Snapshot Entity".to_string(),
+            "Snapshot".to_string()
         ]
     );
     assert_eq!(
@@ -398,7 +398,7 @@ fn tc_1206_bundle_index_names_every_object_by_id_and_title_and_a_title_cell_reso
         11,
         "the module's exports are the import table"
     );
-    // The fixture's `parent | ConfigVersion` cell resolves through the index.
+    // The fixture's `parent | Snapshot` cell resolves through the index.
     let out = extract(&bundle);
     let parent = &out.artifacts["FR-006"]
         .extraction
@@ -408,7 +408,7 @@ fn tc_1206_bundle_index_names_every_object_by_id_and_title_and_a_title_cell_reso
     assert_eq!(parent.name, "parent");
     assert_eq!(
         parent.type_ref.target,
-        "ix://agent-ix/config-service/type/ConfigVersion"
+        "ix://agent-ix/docs-service/type/Snapshot"
     );
 
     // A Type cell naming a sibling by its title.
@@ -526,7 +526,7 @@ fn tc_1207_no_second_declaration_and_the_planted_control_fails_the_gate() {
 #[trace("TC-1208", "FR-091-AC-9")]
 #[test]
 fn tc_1208_every_engine_diagnostic_is_one_engine_diagnostic_with_mapped_severity_and_locus() {
-    for name in ["legacy", "config-version-table", "config-version-fence"] {
+    for name in ["legacy", "snapshot-table", "snapshot-fence"] {
         let bundle = load_ok(name);
         let out = extract(&bundle);
         let wrapped: Vec<&Diagnostic> = out
@@ -573,7 +573,7 @@ fn tc_1208_every_engine_diagnostic_is_one_engine_diagnostic_with_mapped_severity
                     assert_eq!(locus.path, *path);
                     assert_eq!(locus.start_line, line);
                     assert_eq!(locus.start_column, e.column.unwrap_or(1));
-                    assert_eq!(locus.source_identity, "ix://agent-ix/config-service/spec");
+                    assert_eq!(locus.source_identity, "ix://agent-ix/docs-service/spec");
                 }
                 _ => {
                     assert!(w.locus.is_none());
@@ -621,8 +621,8 @@ fn tc_1331_duplicate_id_refuses_at_the_second_path_and_a_line_zero_diagnostic_ha
     let refusal =
         load("negatives/DUPLICATE_ARTIFACT_ID", &[&business_module()]).expect_err("refused");
     assert_eq!(refusal.code(), Code::DuplicateArtifactId);
-    let first = "spec/functional/FR-006-config-version-entity.md";
-    let second = "spec/functional/FR-006-config-version-second.md";
+    let first = "spec/functional/FR-006-snapshot-entity.md";
+    let second = "spec/functional/FR-006-snapshot-second.md";
     let locus = refusal.diagnostic.locus.as_ref().expect("locus");
     assert_eq!(locus.path, second);
     assert!(refusal.diagnostic.message.contains(first));
@@ -648,8 +648,8 @@ fn tc_1331_duplicate_id_refuses_at_the_second_path_and_a_line_zero_diagnostic_ha
         source_span: None,
         section: None,
     };
-    let path = "spec/functional/FR-006-config-version-entity.md";
-    let wrapped = Diagnostic::engine(&engine, "ix://agent-ix/config-service/spec", path);
+    let path = "spec/functional/FR-006-snapshot-entity.md";
+    let wrapped = Diagnostic::engine(&engine, "ix://agent-ix/docs-service/spec", path);
     assert!(wrapped.locus.is_none());
     assert_eq!(wrapped.related.len(), 1);
     assert_eq!(wrapped.related[0].path, path);
@@ -679,7 +679,7 @@ fn tc_1331_duplicate_id_refuses_at_the_second_path_and_a_line_zero_diagnostic_ha
             line: None,
             ..engine.clone()
         },
-        "ix://agent-ix/config-service/spec",
+        "ix://agent-ix/docs-service/spec",
         path,
     );
     assert!(with_line.locus.is_none());

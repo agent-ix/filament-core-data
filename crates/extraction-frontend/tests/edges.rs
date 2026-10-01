@@ -118,19 +118,19 @@ fn copy_tree(from: &Path, to: &Path) {
     }
 }
 
-const FR_006: &str = "spec/functional/FR-006-config-version-entity.md";
+const FR_006: &str = "spec/functional/FR-006-snapshot-entity.md";
 
 #[trace("TC-1231", "FR-094-AC-1")]
 #[test]
 fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_the_frontmatter() {
-    let lift = lift("config-version-table");
+    let lift = lift("snapshot-table");
     assert!(
         !is_blocked(&lift.lowered.diagnostics),
         "{:?}",
         lift.lowered.diagnostics
     );
     let types = types_json(&lift);
-    let record = type_named(&types, "ConfigVersion");
+    let record = type_named(&types, "Snapshot");
     let rels = relationships(record);
     assert_eq!(rels.len(), 1, "{rels:?}");
     let rel = &rels[0];
@@ -140,7 +140,7 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     assert_eq!(rel["direction"], "source-to-target");
     assert_eq!(
         rel["sourceEnd"]["type"],
-        "ix://agent-ix/config-service/FR-006"
+        "ix://agent-ix/docs-service/FR-006"
     );
     assert_eq!(
         rel["sourceEnd"]["multiplicity"],
@@ -151,7 +151,7 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     assert_eq!(rel["targetEnd"].get("role"), None, "{rel}");
     assert_eq!(
         rel["targetEnd"]["type"],
-        "ix://agent-ix/config-service/FR-005"
+        "ix://agent-ix/docs-service/FR-005"
     );
     assert_eq!(
         rel["targetEnd"]["multiplicity"],
@@ -163,7 +163,7 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     );
     assert_eq!(
         rel["identity"],
-        "ix://agent-ix/config-service/relationship/FR-006-references-FR-005"
+        "ix://agent-ix/docs-service/relationship/FR-006-references-FR-005"
     );
     // The pair reached the frontend as the engine's `harvest_edges` returns
     // it: the target reduced to its last segment.
@@ -179,14 +179,14 @@ fn tc_1231_fr_006_references_fr_005_lowers_to_one_traceability_relationship_at_t
     );
     // The business module declares `references` under its own `edge_types`,
     // so the same lift under it alone lowers the same relationship.
-    let alone = lift_at(&fixture("config-version-table"), &[&business_module()]);
+    let alone = lift_at(&fixture("snapshot-table"), &[&business_module()]);
     assert!(
         !is_blocked(&alone.lowered.diagnostics),
         "{:?}",
         alone.lowered.diagnostics
     );
     assert_eq!(
-        relationships(type_named(&types_json(&alone), "ConfigVersion")),
+        relationships(type_named(&types_json(&alone), "Snapshot")),
         rels
     );
 }
@@ -285,7 +285,7 @@ fn tc_1234_frobnicates_allowed_but_undeclared_raises_unknown_edge_verb_at_the_fr
     // The blocked record reaches no document.
     let types = types_json(&lift);
     assert!(
-        types.iter().all(|t| t["displayName"] != "ConfigVersion"),
+        types.iter().all(|t| t["displayName"] != "Snapshot"),
         "{types:?}"
     );
 }
@@ -319,7 +319,7 @@ fn tc_1235_nonesuch_and_a_legacy_form_target_raise_unresolved_relationship_targe
     assert!(is_blocked(&lift.lowered.diagnostics));
     assert!(types_json(&lift)
         .iter()
-        .all(|t| t["displayName"] != "ConfigVersion"));
+        .all(|t| t["displayName"] != "Snapshot"));
 }
 
 #[trace("TC-1236", "FR-094-AC-6")]
@@ -334,7 +334,7 @@ fn tc_1236_artifact_axis_verbs_lower_to_nothing_silently_and_one_references_edge
         lift.extractions.diagnostics
     );
     let types = types_json(&lift);
-    let record = type_named(&types, "ConfigVersion");
+    let record = type_named(&types, "Snapshot");
     assert_eq!(relationships(record), Vec::<Value>::new());
     let document = lift
         .bundle
@@ -370,12 +370,12 @@ fn tc_1236_artifact_axis_verbs_lower_to_nothing_silently_and_one_references_edge
         lift.lowered.diagnostics
     );
     let types = types_json(&lift);
-    let rels = relationships(type_named(&types, "ConfigVersion"));
+    let rels = relationships(type_named(&types, "Snapshot"));
     assert_eq!(rels.len(), 1, "{rels:?}");
     assert_eq!(rels[0]["sourceEnd"]["role"], "references");
     assert_eq!(
         rels[0]["targetEnd"]["type"],
-        "ix://agent-ix/config-service/FR-005"
+        "ix://agent-ix/docs-service/FR-005"
     );
 }
 
@@ -389,17 +389,17 @@ fn tc_1237_same_verb_and_target_dedupe_and_two_verbs_on_one_target_mint_two_iden
         lift.lowered.diagnostics
     );
     let types = types_json(&lift);
-    let rels = relationships(type_named(&types, "ConfigVersion"));
+    let rels = relationships(type_named(&types, "Snapshot"));
     assert_eq!(rels.len(), 3, "{rels:?}");
     let to_colour: Vec<&Value> = rels
         .iter()
-        .filter(|r| r["targetEnd"]["type"] == "ix://agent-ix/config-service/EN_001")
+        .filter(|r| r["targetEnd"]["type"] == "ix://agent-ix/docs-service/EN_001")
         .collect();
     assert_eq!(to_colour.len(), 1, "two entries, one relationship");
     assert_eq!(to_colour[0]["sourceEnd"]["role"], "references");
     let to_overlay: Vec<&Value> = rels
         .iter()
-        .filter(|r| r["targetEnd"]["type"] == "ix://agent-ix/config-service/FR-005")
+        .filter(|r| r["targetEnd"]["type"] == "ix://agent-ix/docs-service/FR-005")
         .collect();
     assert_eq!(to_overlay.len(), 2, "two verbs, two relationships");
     let mut verbs: Vec<&str> = to_overlay
@@ -419,16 +419,16 @@ fn tc_1237_same_verb_and_target_dedupe_and_two_verbs_on_one_target_mint_two_iden
 #[trace("TC-1238", "FR-094-AC-8")]
 #[test]
 fn tc_1238_parent_is_a_field_not_a_relationship() {
-    let lift = lift("config-version-table");
+    let lift = lift("snapshot-table");
     let types = types_json(&lift);
-    let record = type_named(&types, "ConfigVersion");
+    let record = type_named(&types, "Snapshot");
     let parent = record["fields"]
         .as_array()
         .expect("fields")
         .iter()
         .find(|f| f["name"] == "parent")
         .expect("parent is a field");
-    assert_eq!(parent["typeRef"], "ix://agent-ix/config-service/FR-006");
+    assert_eq!(parent["typeRef"], "ix://agent-ix/docs-service/FR-006");
     assert_eq!(
         parent["multiplicity"],
         serde_json::json!({ "lower": 0, "upper": 1, "ordered": false, "unique": false })
@@ -436,19 +436,19 @@ fn tc_1238_parent_is_a_field_not_a_relationship() {
     let ours = relationships(record);
     assert!(
         ours.iter().all(
-            |r| r["targetEnd"]["type"] != "ix://agent-ix/config-service/FR-006"
+            |r| r["targetEnd"]["type"] != "ix://agent-ix/docs-service/FR-006"
                 && !r["identity"].as_str().expect("identity").contains("parent")
         ),
         "no relationship from the parent row: {ours:?}"
     );
 
-    // What remains is one edge to ConfigOverlay, named by its artifact id
+    // What remains is one edge to SnapshotGroup, named by its artifact id
     // (FR-143), not the `belongs_to` verb the removed `## Relationships`
     // bullet grammar once produced.
     assert_eq!(ours.len(), 1);
     assert_eq!(
         ours[0]["targetEnd"]["type"],
-        "ix://agent-ix/config-service/FR-005"
+        "ix://agent-ix/docs-service/FR-005"
     );
     assert_eq!(
         ours[0]["targetEnd"]["multiplicity"],

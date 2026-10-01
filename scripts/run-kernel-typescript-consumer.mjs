@@ -28,7 +28,6 @@ const CONSTRAINT_GOLDEN = join(
 	ROOT,
 	"packages/semantic-kernel/parity/golden/PAR-0027.json",
 );
-const CLOSURES = join(ROOT, "packages/semantic-kernel/examples/closures.json");
 
 function run(command, args, options) {
 	try {
@@ -39,14 +38,6 @@ function run(command, args, options) {
 			`${command} ${args.join(" ")} failed: ${error.message ?? "unknown error"}\n${output}`,
 		);
 	}
-}
-
-function recordClosure(packages) {
-	const current = existsSync(CLOSURES)
-		? JSON.parse(readFileSync(CLOSURES, "utf8"))
-		: { $comment: "FR-089. Written by the consumer execution harnesses." };
-	current.typescript = { packages };
-	writeFileSync(CLOSURES, `${JSON.stringify(current, null, "\t")}\n`);
 }
 
 const scratch = mkdtempSync(join(tmpdir(), "fcd-kernel-ts-consumer-"));
@@ -142,7 +133,6 @@ try {
 	process.stdout.write(
 		run("node", [join(app, "dist", "run.mjs")], { cwd: app }),
 	);
-	recordClosure([{ name: NAME, version: manifest.version }]);
 } finally {
 	rmSync(scratch, { recursive: true, force: true });
 }

@@ -21,6 +21,10 @@ export declare function multiplicityOf(
 /** Lowers the document set, or returns diagnostics and no document. */
 export declare function lowerBundle(
 	documents: readonly (readonly [string, Record<string, unknown>])[],
+	options?: {
+		source?: Record<string, unknown>;
+		package?: Record<string, unknown>;
+	},
 ):
 	| { document: Record<string, unknown>; diagnostics?: undefined }
 	| { diagnostics: readonly LowerDiagnostic[]; document?: undefined };

@@ -42,7 +42,7 @@ requirement restates none of them.
 - `src/compiler/backends/rust-serde/crate.mjs`, whose `emitCrate(request)` is a pure function from a request to bytes, and `src/compiler/backends/rust-serde/index.mjs`, whose `generateRust(request, sink)` is the one module in that backend that writes
 - `src/compiler/backends/rust-serde/cli.mjs`, the pure half of the command line the `make rust-*` targets call, whose `generate --out <dir>` route this requirement reuses with the kernel document in place of the corpus bases. All three modules are read and invoked; `src/compiler/backends/**` is a prohibited path for this issue and no byte of any of them changes here
 - `rust-toolchain.toml`, pinning the channel with the `rustfmt` and `clippy` components — the toolchain every fixed-point and build claim below is measured against
-- The offline dependency supply: a cargo cache or vendor directory already holding `serde` at the exact pinned version `1.0.229` with its `derive` feature and `serde`'s transitive crates. No step of this requirement populates it by reaching a registry.
+- The offline dependency supply: a cargo cache or vendor directory already holding `serde` at the exact version `crate.mjs` pins, with its `derive` feature and `serde`'s transitive crates. No step of this requirement populates it by reaching a registry.
 - `THIRD-PARTY-NOTICES.md`, the third-party attribution register FR-056 owns
 - `test/fixtures/rust-serde/goldens/`, read as the byte-comparison discipline FR-060 established, and as the record of how that discipline was left broken on `main`
 
@@ -107,7 +107,7 @@ is gated on the freshly generated copy in the scratch directory instead.
 
 ### Third-party dependencies, pinned and attributed
 
-- The committed `Cargo.toml` SHALL declare exactly one third-party dependency: `serde = { version = "=1.0.229", features = ["derive"] }`, at an exact pin emitted by `crate.mjs`, and no other.
+- The committed `Cargo.toml` SHALL declare exactly one third-party dependency: `serde` with `features = ["derive"]` at the exact `=` pin `crate.mjs` emits, and no other.
 - The generated crate SHALL declare no `serde_json` dependency. `serde_json` is the JSON front door a *consumer* feeds the crate through and is a consumer's dev-dependency, as FR-061 states; it is never a runtime dependency of a generated crate.
 - `serde` and its transitive crates SHALL be attributed in `THIRD-PARTY-NOTICES.md` with the exact version, the SPDX identifier, and the location of the preserved upstream licence text. This requirement adds no third-party crate, so it adds no register row; if the pin moves, the row moves with it.
 - The committed `Cargo.toml` SHALL carry `license = "AGPL-3.0-or-later"`, `edition = "2021"`, and the `rust-version` `crate.mjs` emits — and the committed `LICENSE` SHALL be byte-identical to this repository's committed `LICENSE`.
@@ -139,7 +139,7 @@ is gated on the freshly generated copy in the scratch directory instead.
 | FR-086-AC-8 | Changing one emitted byte fails the tree comparison naming the file. | Test |
 | FR-086-AC-9 | `make semantic-kernel-check` leaves `git status --porcelain` empty, in the passing case and in each failing case, with no `Cargo.lock` and no `target/` left inside the working tree. | Test |
 | FR-086-AC-10 | This branch leaves `test/fixtures/rust-serde/goldens/**` byte-unchanged, and `make semantic-kernel-check` neither invokes nor depends on `make rust-check` nor shares a scratch directory or `CARGO_TARGET_DIR` with any `rust-*` target; the `agent-ix/filament-core-data#21` redness is recorded with its repair under #21 itself, and is not repaired here. | Analysis |
-| FR-086-AC-11 | The committed `Cargo.toml` declares `serde = { version = "=1.0.229", features = ["derive"] }` and no other dependency, declares no `serde_json`, and carries `license = "AGPL-3.0-or-later"`, `edition = "2021"` and `rust-version = "1.85.0"`. | Analysis |
+| FR-086-AC-11 | The committed `Cargo.toml` declares `serde` with `features = ["derive"]` at the pin `crate.mjs` emits and no other dependency, declares no `serde_json`, and carries `license = "AGPL-3.0-or-later"`, `edition = "2021"` and `rust-version = "1.85.0"`. | Analysis |
 | FR-086-AC-12 | `THIRD-PARTY-NOTICES.md` carries a row for `serde` at the exact pinned version with its SPDX identifier and the location of its preserved upstream licence text, and a pinned crate with no row fails the attribution gate. | Inspection |
 | FR-086-AC-13 | Every build in this requirement runs with the network denied and the cargo offline flag set and still succeeds; removing `serde` from the offline supply makes the build fail rather than fetch it. | Test |
 | FR-086-AC-14 | Two generations of the kernel crate produce byte-identical files and an identical file ordering under `TZ=UTC` against `TZ=Pacific/Kiritimati`, `LANG=C` against `LANG=tr_TR.UTF-8`, two working directories and two `HOME` values. | Test |

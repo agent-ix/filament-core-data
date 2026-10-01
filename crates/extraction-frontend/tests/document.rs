@@ -257,12 +257,12 @@ fn tc_1273_the_manifest_names_semantic_ir_by_path_and_no_direct_jsonschema() {
 #[test]
 fn tc_1274_a_document_missing_unknown_policy_yields_one_invalid_ir_at_the_type_and_writes_only_diagnostics(
 ) {
-    let mut document = assembled("config-version-table");
+    let mut document = assembled("snapshot-table");
     let types = document["types"].as_array_mut().expect("types");
     let index = types
         .iter()
-        .position(|t| t["displayName"] == "ConfigVersion")
-        .expect("ConfigVersion");
+        .position(|t| t["displayName"] == "Snapshot")
+        .expect("Snapshot");
     types[index]
         .as_object_mut()
         .expect("object")
@@ -308,7 +308,7 @@ fn tc_1274_a_document_missing_unknown_policy_yields_one_invalid_ir_at_the_type_a
 #[trace("TC-1275", "FR-097-AC-3")]
 #[test]
 fn tc_1275_written_bytes_equal_decide_normalized_and_reproduce_under_a_second_normalized() {
-    let (_dir, request, outcome) = lift_fixture("config-version-table");
+    let (_dir, request, outcome) = lift_fixture("snapshot-table");
     let bytes = written_bytes(&outcome);
     let on_disk = fs::read(&request.out).expect("read <out>");
     assert_eq!(on_disk, bytes, "the outcome carries the written bytes");
@@ -331,7 +331,7 @@ fn tc_1275_written_bytes_equal_decide_normalized_and_reproduce_under_a_second_no
     assert_eq!(canonical_bytes(&value), bytes);
     assert_eq!(value["contractVersion"], CONTRACT_VERSION);
     // Golden equality (FR-098) lands with Task-136; compare when present.
-    let golden = common::fixture("config-version-table/expected/semantic-ir.json");
+    let golden = common::fixture("snapshot-table/expected/semantic-ir.json");
     if golden.is_file() {
         assert_eq!(fs::read(&golden).expect("golden"), bytes);
     }

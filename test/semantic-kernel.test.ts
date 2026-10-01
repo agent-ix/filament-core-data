@@ -25,6 +25,10 @@ import {
 	DEFAULT_LIMITS as RUST_LIMITS,
 	DEFAULT_PROFILE as RUST_PROFILE,
 } from "../src/compiler/backends/rust-serde/cli.mjs";
+import {
+	CRATE_RUST_VERSION,
+	SERDE_VERSION,
+} from "../src/compiler/backends/rust-serde/crate.mjs";
 import { generateRust } from "../src/compiler/backends/rust-serde/index.mjs";
 import type { GenerationRequest } from "../src/compiler/backends/seam.d.mts";
 import { fingerprintIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
@@ -885,12 +889,12 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		// AC-11. One dependency, at an exact pin, with the declared metadata.
 		const deps = /\n\[dependencies\]\n([\s\S]*?)(?:\n\[|$)/.exec(crateManifest);
 		expect(deps?.[1].trim()).toBe(
-			'serde = { version = "=1.0.229", features = ["derive"] }',
+			`serde = { version = "=${SERDE_VERSION}", features = ["derive"] }`,
 		);
 		expect(crateManifest).not.toContain("serde_json");
 		expect(crateManifest).toContain('license = "AGPL-3.0-or-later"');
 		expect(crateManifest).toContain('edition = "2021"');
-		expect(crateManifest).toContain('rust-version = "1.85.0"');
+		expect(crateManifest).toContain(`rust-version = "${CRATE_RUST_VERSION}"`);
 	}, 120_000);
 
 	/** Traces: TC-1055; FR-086-AC-12, FR-086-AC-13, FR-086-AC-14. */

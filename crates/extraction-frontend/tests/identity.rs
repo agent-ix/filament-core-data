@@ -45,7 +45,7 @@ fn display_name(fm: &serde_json::Map<String, serde_json::Value>) -> String {
 #[trace("TC-1252", "FR-095-AC-7")]
 #[test]
 fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_unsluggable_name() {
-    assert_eq!(slug("Config Version").as_deref(), Ok("Config-Version"));
+    assert_eq!(slug("Snap Shot").as_deref(), Ok("Snap-Shot"));
     assert_eq!(slug("A__B--C").as_deref(), Ok("A-B-C"));
     assert_eq!(
         slug("  Leading and trailing  ").as_deref(),
@@ -62,84 +62,82 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
     assert!(slug("").is_err());
 
     // The closed pattern list: every identity part is case-preserving slugged.
-    let package = PackageIdentity::new("agent-ix", "config-service");
-    assert_eq!(package.package(), "agent-ix/config-service");
-    assert_eq!(package.source(), "ix://agent-ix/config-service/spec");
+    let package = PackageIdentity::new("agent-ix", "docs-service");
+    assert_eq!(package.package(), "agent-ix/docs-service");
+    assert_eq!(package.source(), "ix://agent-ix/docs-service/spec");
     assert_eq!(
-        package.type_identity("ConfigVersion").as_deref(),
-        Ok("ix://agent-ix/config-service/ConfigVersion"),
+        package.type_identity("Snapshot").as_deref(),
+        Ok("ix://agent-ix/docs-service/Snapshot"),
         "a type definition carries no slot segment, only the artifact id"
     );
     assert_eq!(
         package.type_identity("AR_001").as_deref(),
-        Ok("ix://agent-ix/config-service/AR_001"),
+        Ok("ix://agent-ix/docs-service/AR_001"),
         "an artifact id passes through verbatim: `_` is not a separator"
     );
     assert_eq!(
-        package.type_identity("Config Version"),
+        package.type_identity("Snap Shot"),
         Err(Unsluggable {
-            name: "Config Version".to_string()
+            name: "Snap Shot".to_string()
         }),
         "an id carrying a character `semanticIdentity` bars from a segment mints nothing"
     );
     assert_eq!(
         package
-            .field_identity("ConfigVersion", "versionNumber")
+            .field_identity("Snapshot", "versionNumber")
             .as_deref(),
-        Ok("ix://agent-ix/config-service/ConfigVersion/versionNumber"),
+        Ok("ix://agent-ix/docs-service/Snapshot/versionNumber"),
         "a member's identity is its owner's identity, `/`, and its own name"
     );
     assert_eq!(
         package
-            .constraint_identity("ConfigVersion", "createdBy", "maxLength")
+            .constraint_identity("Snapshot", "createdBy", "maxLength")
             .as_deref(),
-        Ok("ix://agent-ix/config-service/constraint/ConfigVersion-createdBy-maxLength")
+        Ok("ix://agent-ix/docs-service/constraint/Snapshot-createdBy-maxLength")
     );
     assert_eq!(
         package
-            .relationship_identity("ConfigVersion", "belongs_to", "ConfigOverlay")
+            .relationship_identity("Snapshot", "belongs_to", "SnapshotGroup")
             .as_deref(),
-        Ok("ix://agent-ix/config-service/relationship/ConfigVersion-belongs-to-ConfigOverlay")
+        Ok("ix://agent-ix/docs-service/relationship/Snapshot-belongs-to-SnapshotGroup")
     );
     assert_eq!(
         package
             .operation_identity("Repository", "find By Id")
             .as_deref(),
-        Ok("ix://agent-ix/config-service/Repository/find-By-Id")
+        Ok("ix://agent-ix/docs-service/Repository/find-By-Id")
     );
     assert_eq!(
         package
             .param_identity("Repository", "findById", "id")
             .as_deref(),
-        Ok("ix://agent-ix/config-service/Repository/findById/id"),
+        Ok("ix://agent-ix/docs-service/Repository/findById/id"),
         "a parameter nests one level deeper than its operation, never under a param/ slot"
     );
     assert_eq!(
         package.variant_identity("EN_001", "MANUAL_STEP").as_deref(),
-        Ok("ix://agent-ix/config-service/variant/EN_001-MANUAL-STEP")
+        Ok("ix://agent-ix/docs-service/variant/EN_001-MANUAL-STEP")
     );
     assert_eq!(
-        package
-            .clause_identity("ConfigVersion", "immutable")
-            .as_deref(),
-        Ok("ix://agent-ix/config-service/clause/ConfigVersion-immutable")
+        package.clause_identity("Snapshot", "immutable").as_deref(),
+        Ok("ix://agent-ix/docs-service/clause/Snapshot-immutable")
     );
     assert_eq!(
         package.state_identity("SM_001", "placed").as_deref(),
-        Ok("ix://agent-ix/config-service/state/SM_001-placed")
+        Ok("ix://agent-ix/docs-service/state/SM_001-placed")
     );
     assert_eq!(
         package
             .transition_identity("SM_001", "placed", "shipped", "advance")
             .as_deref(),
-        Ok("ix://agent-ix/config-service/transition/SM_001-placed-shipped-advance")
+        Ok("ix://agent-ix/docs-service/transition/SM_001-placed-shipped-advance")
     );
     assert_eq!(
         package.step_identity("PR_001", "picked").as_deref(),
-        Ok("ix://agent-ix/config-service/step/PR_001-picked")
+        Ok("ix://agent-ix/docs-service/step/PR_001-picked")
     );
     assert_eq!(
-        package.field_identity("ConfigVersion", "--"),
+        package.field_identity("Snapshot", "--"),
         Err(Unsluggable {
             name: "--".to_string()
         }),
@@ -206,7 +204,7 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
     let locus = diagnostic.locus.as_ref().expect("the declaration's locus");
     assert_eq!(locus.path, path);
     assert_eq!((locus.start_line, locus.start_column), (1, 1));
-    assert_eq!(locus.source_identity, "ix://agent-ix/config-service/spec");
+    assert_eq!(locus.source_identity, "ix://agent-ix/docs-service/spec");
 }
 
 #[trace("TC-1352", "FR-095-AC-16")]

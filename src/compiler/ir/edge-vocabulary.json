@@ -1,0 +1,61 @@
+{
+	"contains": {
+		"category": "structural",
+		"inverse": "part_of"
+	},
+	"aggregates": {
+		"category": "structural",
+		"inverse": "part_of"
+	},
+	"composes": {
+		"category": "structural",
+		"inverse": "composed_by"
+	},
+	"contained_by": {
+		"category": "structural",
+		"inverse": "contains"
+	},
+	"calls": {
+		"category": "behavioral",
+		"inverse": "called_by"
+	},
+	"triggers": {
+		"category": "behavioral"
+	},
+	"reads": {
+		"category": "dataflow"
+	},
+	"writes": {
+		"category": "dataflow"
+	},
+	"publishes": {
+		"category": "dataflow",
+		"inverse": "consumed_by"
+	},
+	"depends_on": {
+		"category": "dependency"
+	},
+	"implements": {
+		"category": "dependency",
+		"inverse": "implemented_by"
+	},
+	"persists": {
+		"category": "dependency"
+	},
+	"operates_on": {
+		"category": "realization"
+	},
+	"references": {
+		"category": "traceability"
+	},
+	"traces_to": {
+		"category": "traceability"
+	},
+	"derives_from": {
+		"category": "traceability",
+		"inverse": "derives_into"
+	},
+	"verifies": {
+		"category": "traceability"
+	}
+}

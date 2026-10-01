@@ -106,7 +106,7 @@ evidence produced by the named targets, not by `cargo test`.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-099-AC-1 | `lift` over the `config-version-table` fixture with its two module roots (`--module fixtures/modules/fixture-domain --module fixtures/modules/fixture-edges`) exits `0` and writes `<out>` and `<out>.diagnostics.json`; with `--diagnostics d.json` it writes `d.json` in its place and the same document bytes. | Test (TC-1295) |
+| FR-099-AC-1 | `lift` over the `snapshot-table` fixture with its two module roots (`--module fixtures/modules/fixture-domain --module fixtures/modules/fixture-edges`) exits `0` and writes `<out>` and `<out>.diagnostics.json`; with `--diagnostics d.json` it writes `d.json` in its place and the same document bytes. | Test (TC-1295) |
 | FR-099-AC-2 | `lift` over `negatives/UNRESOLVED_TYPE_TOKEN` exits `1`, writes the diagnostics sidecar, and writes no document; `lift` without `--module`, `lift` under `negatives/MODULE_WITHOUT_SEMANTIC_BLOCK`, and `lift` with `--out` under the bundle root each exit `2` and write nothing. | Test (TC-1296) |
 | FR-099-AC-3 | `inspect --ir` over a lifted document prints one line per type in `types` order and exits `0`; over a document missing `contractVersion` it prints `INVALID_IR` naming the reader's `SCHEMA_VIOLATION` at `/ir` ("a required member contractVersion is absent") and exits `1`. | Test (TC-1297) |
 | FR-099-AC-6 | `extraction-frontend-deny` exits non-zero when a crate with a licence outside the `deny.toml` allow list is planted in a scratch copy of the manifest, `extraction-frontend-audit` (`--deny yanked`) exits non-zero when a yanked version is planted, and each exits zero on the committed manifest. | Static (TC-1349) |

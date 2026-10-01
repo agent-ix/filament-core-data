@@ -39,6 +39,7 @@ import {
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { CRATE_RUST_VERSION } from "../src/compiler/backends/rust-serde/crate.mjs";
 import {
 	BACKEND as RUST_BACKEND,
 	DEFAULT_LIMITS as RUST_LIMITS,
@@ -287,7 +288,7 @@ function manifestGate() {
 	for (const [key, value] of [
 		["license", "AGPL-3.0-or-later"],
 		["edition", "2021"],
-		["rust-version", "1.85.0"],
+		["rust-version", CRATE_RUST_VERSION],
 	]) {
 		if (!new RegExp(`^${key}\\s*=\\s*"${value}"$`, "m").test(text)) {
 			problems.push(

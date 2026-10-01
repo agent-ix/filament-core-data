@@ -140,13 +140,13 @@ widened at implementation time measures whatever was widened.
 
 ## Verification
 
-Lift the `config-version-table` fixture bundle twice in one process and twice
+Lift the `snapshot-table` fixture bundle twice in one process and twice
 through the command line into two scratch directories and compare every run's
 bytes against the committed golden and against
 `decide({"ir": doc}).normalized`; repeat with a different working directory
 and with `HOME` pointed at an empty directory, `TZ`, `LANG`, `LC_ALL`, and
 `CARGO_TARGET_DIR` set to values a second host would carry, and compare across
-every run; lift the `config-version-table` and `config-version-fence` bundle
+every run; lift the `snapshot-table` and `snapshot-fence` bundle
 roots, whose line-aligned copies of `FR-006` sit at the same bundle-relative
 path, and compare their `types[]` and diagnostics; cite `quire-rs/src/corpus/walk.rs` for path-sorted loading and the
 FR-091-CON-2 gate for the absence of any other read; grep the crate's source
@@ -169,9 +169,9 @@ and a gate that cannot run fails saying so rather than passing.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-031-AC-1 | Two lifts of the `config-version-table` fixture bundle, within one program run and across two program runs, produce IR and diagnostic bytes identical to each other, to the committed `expected/semantic-ir.json` and `expected/diagnostics.json`, and to `decide({"ir": doc}).normalized`. | Test (TC-1300) |
+| NFR-031-AC-1 | Two lifts of the `snapshot-table` fixture bundle, within one program run and across two program runs, produce IR and diagnostic bytes identical to each other, to the committed `expected/semantic-ir.json` and `expected/diagnostics.json`, and to `decide({"ir": doc}).normalized`. | Test (TC-1300) |
 | NFR-031-AC-2 | A lift with the working directory changed, `HOME` pointed at an empty directory, and `TZ`, `LANG`, `LC_ALL`, and `CARGO_TARGET_DIR` set to values differing from the first run produces bytes identical to the committed golden. | Test (TC-1301) |
-| NFR-031-AC-3 | The `config-version-table` and `config-version-fence` bundle roots, each holding one line-aligned copy of `FR-006` at `spec/functional/FR-006-config-version-entity.md`, lift to identical `types[]` and diagnostics bytes; only `source.digest` differs, by construction. | Test (TC-1302) |
+| NFR-031-AC-3 | The `snapshot-table` and `snapshot-fence` bundle roots, each holding one line-aligned copy of `FR-006` at `spec/functional/FR-006-snapshot-entity.md`, lift to identical `types[]` and diagnostics bytes; only `source.digest` differs, by construction. | Test (TC-1302) |
 | NFR-031-AC-4 | The crate enumerates no directory itself: every document and module reaches it through `quire_rs::corpus::load_repo` and `Registry::load_module_set`, whose results are sorted by path (`quire-rs/src/corpus/walk.rs`, TC-473), so enumeration order cannot reach the output. | Analysis (TC-1303) |
 | NFR-031-AC-5 | No module under `crates/extraction-frontend/src/` references `SystemTime`, `Instant`, `std::env`, `env!`, `option_env!`, a hostname API, an RNG, `std::net`, or `std::process::Command`; `std::fs` appears only in `write.rs`, the crate's sole `std::fs` module, whose reads are exactly `<module root>/manifest.yaml` per supplied module root (`write::read_manifest`, called from `lift.rs`, FR-091-CON-2, and from the construct seam in `bundle.rs`, FR-142), the golden walk, and `inspect --ir`, and whose writes are the atomic outputs of FR-097; every other module is `std::fs`-free, and `bundle.rs` reaches the file system only through `quire_rs::corpus::load_repo`, `Registry::load_module_set` and `write::read_manifest`; the exemption list is exactly `write.rs` for `std::fs` and the command-line binary's argument parsing for `std::env`; and the gate fails on a scratch copy with a planted `std::env::var` in `lower.rs`. | Analysis (TC-1304) |
 | NFR-031-AC-6 | `limits.json` declares `maxDocuments`, `maxDocumentBytes`, `maxFieldsPerRecord`, `maxClauseBytes`, and `maxDepth`; for each, a bundle one past the limit yields exactly one blocking `agent-ix.extraction-frontend.LIMIT_*` diagnostic at the offending document, within 512 MiB resident memory and 30 s wall time, and the value the diagnostic names equals the file's. | Test (TC-1305) |

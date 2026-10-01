@@ -387,6 +387,26 @@ function complete(definition, file) {
 	};
 }
 
+/**
+ * The `source` block a bundle names itself by: the version segment of its own
+ * documents' `$id` (`<base>/<version>/<Name>.json`). `undefined` when the
+ * first document's `$id` carries none.
+ */
+function bundleSource(documents) {
+	const id = documents[0]?.[1]?.$id;
+	const version =
+		typeof id === "string"
+			? /\/(\d+\.\d+\.\d+[^/]*)\/[^/]+$/.exec(id)?.[1]
+			: undefined;
+	if (!version) return undefined;
+	return {
+		identity: "ix://agent-ix/semantic-core",
+		version,
+		dialect: "spec-bundle",
+		digest: `sha256:${"0".repeat(64)}`,
+	};
+}
+
 export function lowerBundle(documents, options = {}) {
 	/** @type {{ code: string, message: string, locus: string }[]} */
 	const out = [];
@@ -565,15 +585,22 @@ export function lowerBundle(documents, options = {}) {
 	}
 
 	if (out.length > 0) return { diagnostics: Object.freeze(out) };
+	const source = options.source ?? bundleSource(documents);
+	if (!source) {
+		return {
+			diagnostics: Object.freeze([
+				diag(
+					DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+					"no source was supplied and the bundle's own `$id` carries no version segment to name it by",
+					"/documents",
+				),
+			]),
+		};
+	}
 	return {
 		document: {
 			contractVersion: "2.0.0",
-			source: options.source ?? {
-				identity: "ix://agent-ix/semantic-core",
-				version: "0.2.0",
-				dialect: "spec-bundle",
-				digest: `sha256:${"0".repeat(64)}`,
-			},
+			source,
 			package: options.package ?? {
 				identity: "agent-ix/semantic-kernel",
 				version: "0.3.0",

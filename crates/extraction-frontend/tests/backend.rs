@@ -1,5 +1,5 @@
 //! FR-098 "Backend acceptance": the two backends over the lifted
-//! `config-version-table` golden.
+//! `snapshot-table` golden.
 //!
 //! The Rust half runs the Rust backend's own writer, `generateRust` of
 //! `src/compiler/backends/rust-serde/index.mjs`, the way
@@ -35,7 +35,7 @@ const OUTPUT_ROOT: &str = "lifted";
 
 /// The golden the acceptance runs over.
 fn golden() -> std::path::PathBuf {
-    fixture("config-version-table/expected/semantic-ir.json")
+    fixture("snapshot-table/expected/semantic-ir.json")
 }
 
 /// `scripts/extraction-frontend-harness.mjs rust-generate --ir <golden>
@@ -132,7 +132,7 @@ fn generate(target: &str, out_root: &Path) -> (i32, String, Vec<Value>) {
 
 #[trace("TC-1292", "FR-098-AC-8")]
 #[test]
-fn tc_1292_rust_generate_over_the_config_version_table_golden_exits_zero_with_no_diagnostics() {
+fn tc_1292_rust_generate_over_the_snapshot_table_golden_exits_zero_with_no_diagnostics() {
     let out = tempfile::tempdir().expect("tempdir");
     let (status, log, diagnostics) = rust_generate(out.path());
     assert_eq!(status, 0, "{log}");
@@ -146,8 +146,7 @@ fn tc_1292_rust_generate_over_the_config_version_table_golden_exits_zero_with_no
 
 #[trace("TC-1292", "FR-098-AC-8")]
 #[test]
-fn tc_1292_generate_typescript_over_the_config_version_table_golden_exits_zero_with_no_diagnostics()
-{
+fn tc_1292_generate_typescript_over_the_snapshot_table_golden_exits_zero_with_no_diagnostics() {
     let out_root = tempfile::tempdir().expect("tempdir");
     let (status, stderr, diagnostics) = generate("typescript", out_root.path());
     assert_eq!(status, 0, "{stderr}");

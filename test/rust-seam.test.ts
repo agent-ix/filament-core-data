@@ -367,7 +367,7 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 	/** Traces: TC-1766; FR-055-AC-17. */
 	it("names each generated type by its display name while its identity stays the artifact id", () => {
 		const ir = readJson(
-			"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
+			"crates/extraction-frontend/fixtures/snapshot-table/expected/semantic-ir.json",
 		);
 		const written = new Map<string, string>();
 		generateRust(rustRequest({ ir }), {
@@ -376,13 +376,13 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 				written.set(path, text);
 			},
 		});
-		const version = written.get("src/types/config_version.rs");
+		const version = written.get("src/types/snapshot.rs");
 		expect(version).toBeDefined();
-		expect(version).toContain("pub struct ConfigVersion {");
+		expect(version).toContain("pub struct Snapshot {");
 		expect([...written.keys()].some((path) => /fr_00/.test(path))).toBe(false);
 		const lib = written.get("src/lib.rs") as string;
 		expect(lib).toContain(
-			'SemanticType::ConfigVersion => "ix://agent-ix/config-service/FR-006"',
+			'SemanticType::Snapshot => "ix://agent-ix/docs-service/FR-006"',
 		);
 		expect(lib).not.toMatch(/\bFr00\d/);
 	});

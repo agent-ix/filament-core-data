@@ -13,90 +13,29 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const REPOSITORY_ROOT = resolve(
+const EDGE_VOCABULARY_PATH = resolve(
 	dirname(fileURLToPath(import.meta.url)),
-	"../../..",
-);
-
-const EDGE_VOCABULARY_MANIFEST_PATH = resolve(
-	REPOSITORY_ROOT,
-	"crates/extraction-frontend/fixtures/modules/fixture-edges/manifest.yaml",
+	"edge-vocabulary.json",
 );
 
 /**
- * verb -> `{ category, inverse }` for every `edge_types` entry of
- * `crates/extraction-frontend/fixtures/modules/fixture-edges/manifest.yaml`,
- * the one place both frontends draw the FR-094 edge vocabulary from (H4 of
- * the FCD #199/#200 review). The extraction-frontend reads a project's
- * configured module set at runtime through `bundle.registry().edge_types()`
- * (`crates/extraction-frontend/src/edges.rs`); this compiler has no such
- * per-project module system, so it reads this file directly instead of
- * hand-typing a second copy of the table.
- *
- * This is not a general YAML parser: `edge_types`' rows are one-line flow
- * mappings (`verb: { description: "...", category: cat[, inverse: inv] }`,
- * `manifest.yaml`'s own committed shape, every row, checked by TC-1816), and
- * this reads exactly that shape — nothing here can add a new npm dependency
- * without moving `pnpm-lock.yaml`, a path NFR-019/NFR-021's own gate closes.
- */
-export function parseEdgeVocabulary(source) {
-	const lines = source.split("\n");
-	const start = lines.findIndex((line) => line.trim() === "edge_types:");
-	if (start === -1) {
-		throw new Error(
-			`${EDGE_VOCABULARY_MANIFEST_PATH}: no top-level "edge_types:" key`,
-		);
-	}
-	const rowPattern = /^\s\s([a-z][a-z0-9_]*):\s*\{(.*)\}\s*$/;
-	const fieldPattern = /(category|inverse):\s*([a-z][a-z0-9_]*)/g;
-	const vocabulary = {};
-	const rest = lines.slice(start + 1);
-	for (let offset = 0; offset < rest.length; offset++) {
-		const line = rest[offset];
-		if (line.trim() === "" || line.trim().startsWith("#")) continue;
-		// A line at column 0 (no leading whitespace) is a new top-level key,
-		// which legitimately ends the `edge_types:` block.
-		if (/^\S/.test(line)) break;
-		const row = rowPattern.exec(line);
-		if (!row) {
-			// L2 of the FCD #199/#200 round-3 review: a line still indented
-			// inside the block that does not match the one-line
-			// flow-mapping row shape is legal YAML this hand-rolled parser
-			// does not recognise, not the end of the block. Silently
-			// `break`-ing here dropped every verb after it, admitting a
-			// document the Rust side's real YAML parser still accepts and
-			// mismatching `UNKNOWN_EDGE_VERB` between the two frontends
-			// with no diagnostic. Never hide an error by design: throw,
-			// naming the offending line.
-			throw new Error(
-				`${EDGE_VOCABULARY_MANIFEST_PATH}:${start + offset + 2}: unrecognised edge_types row: ${line}`,
-			);
-		}
-		const [, verb, body] = row;
-		const fields = {};
-		for (const field of body.matchAll(fieldPattern))
-			fields[field[1]] = field[2];
-		if (!fields.category) {
-			throw new Error(
-				`${EDGE_VOCABULARY_MANIFEST_PATH}: edge_types.${verb} declares no category`,
-			);
-		}
-		vocabulary[verb] = Object.freeze({
-			category: fields.category,
-			inverse: fields.inverse,
-		});
-	}
-	return vocabulary;
-}
-
-/**
- * verb -> `{ category, inverse }`, `inverse` `undefined` when the manifest
- * declares none for that verb (FR-094-CON-2: `composite` is exactly whether
- * `inverse` is `"part_of"`; the target end's `role` is exactly `inverse`,
- * omitted when `inverse` is `undefined`).
+ * verb -> `{ category, inverse }` for every verb of `edge-vocabulary.json`,
+ * the FR-094 edge vocabulary this compiler draws its relationship categories
+ * from (FR-094-CON-2: `composite` is exactly whether `inverse` is
+ * `"part_of"`; the target end's `role` is exactly `inverse`, omitted when
+ * `inverse` is `undefined`). The extraction-frontend reads a project's
+ * configured module set at runtime through `bundle.registry().edge_types()`;
+ * this compiler has no such per-project module system, so it owns this data.
  */
 export const EDGE_VOCABULARY = Object.freeze(
-	parseEdgeVocabulary(readFileSync(EDGE_VOCABULARY_MANIFEST_PATH, "utf8")),
+	Object.fromEntries(
+		Object.entries(JSON.parse(readFileSync(EDGE_VOCABULARY_PATH, "utf8"))).map(
+			([verb, row]) => [
+				verb,
+				Object.freeze({ category: row.category, inverse: row.inverse }),
+			],
+		),
+	),
 );
 
 /** The registry `inverse` label that makes a verb composite (FR-094

@@ -35,10 +35,6 @@ const checkMode = process.argv.includes("--check");
 // generated/custom/semantic-ir.json byte-identical to the issue #4 record.
 const spikeGeneratorId = "@agent-ix/typespec-semantic-ir-emitter-spike@0.0.0";
 const irCommand = `node src/compiler/cli.mjs emit-ir --entrypoint spikes/typespec-feasibility/main.tsp --generator ${spikeGeneratorId} --out generated/custom/semantic-ir.json`;
-// "<datamodel-code-generator>/<pydantic>" as installed in the spike's venv,
-// read from the venv when it is provisioned and recorded where the run's
-// output names its tools.
-let pythonToolVersion = "";
 const serdeVersion = "1.0.229";
 const serdeJsonVersion = "1.0.151";
 const experimentRoot = mkdtempSync(join(tmpdir(), "filament-typespec-"));
@@ -94,10 +90,6 @@ function listFiles(directory, prefix = "") {
 			? listFiles(absolute, path)
 			: [path];
 	});
-}
-
-function packageVersion(name) {
-	return json(resolve(root, "node_modules", name, "package.json")).version;
 }
 
 function fixture() {
@@ -384,16 +376,12 @@ function generate(output) {
 			"pnpm exec tsp compile spikes/typespec-feasibility/main.tsp --config spikes/typespec-feasibility/tspconfig.yaml",
 			"protobufjs.parse(generated/official/protobuf/semantic.proto)",
 		],
-		compilerVersion: packageVersion("@typespec/compiler"),
-		jsonSchemaEmitterVersion: packageVersion("@typespec/json-schema"),
-		protobufEmitterVersion: packageVersion("@typespec/protobuf"),
 		result: official.exitCode === 0 ? "passed" : "failed",
 		measurement:
 			"official compile and both emitters complete in less than one second on the recorded workstation",
 	});
 	writeJson(resolve(output, "evidence/custom.json"), {
 		command: irCommand,
-		compilerVersion: packageVersion("@typespec/compiler"),
 		result: custom.exitCode === 0 ? "passed" : "failed",
 		typeCount: ir.types.length,
 		extensionSurface:
@@ -428,7 +416,6 @@ function ensurePython() {
 		]);
 		probe = run(python, probeArguments);
 	}
-	pythonToolVersion = probe.stdout.trim();
 	return python;
 }
 
@@ -449,7 +436,6 @@ function capability(
 	priority,
 	method,
 	command,
-	toolVersion,
 	result,
 	disposition,
 	limitation,
@@ -462,7 +448,6 @@ function capability(
 		priority,
 		method,
 		command,
-		toolVersion,
 		result,
 		disposition,
 		limitation,
@@ -632,7 +617,6 @@ function validate(output) {
 			"P0",
 			"compile",
 			"tsp compile main.tsp",
-			packageVersion("@typespec/compiler"),
 			"Three imported namespaces compile",
 			"pass",
 			"Package metadata remains adjacent JSON",
@@ -645,7 +629,6 @@ function validate(output) {
 			"P0",
 			"official emitter plus AJV",
 			"tsp compile; AJV validate golden with declared URI alias probe",
-			packageVersion("@typespec/json-schema"),
 			"Raw bundle fails shared Record<string> URI resolution; golden passes after explicit namespace aliases",
 			"partial",
 			"The official bundle emits RecordString.json as a relative shared $id while references resolve beneath multiple namespace bases",
@@ -658,7 +641,6 @@ function validate(output) {
 			"P1",
 			"official emitter plus parser",
 			"tsp compile; protobufjs.parse",
-			packageVersion("@typespec/protobuf"),
 			"Proto3 package has explicit and reserved field numbers",
 			"partial",
 			"Native protoc is absent; syntax is parser-validated",
@@ -671,7 +653,6 @@ function validate(output) {
 			"P0",
 			"official compiler",
 			"tsp compile @versioned/@added source",
-			packageVersion("@typespec/versioning"),
 			"Versioned namespace and added field compile",
 			"pass",
 			"Compatibility policy remains an Agent IX rule",
@@ -684,7 +665,6 @@ function validate(output) {
 			"P0",
 			"custom emitter",
 			"tsp compile --emit semantic-ir",
-			packageVersion("@typespec/compiler"),
 			"Deterministic source-located IR emitted",
 			"pass",
 			"IR semantics and stability are Agent IX-owned",
@@ -697,7 +677,6 @@ function validate(output) {
 			"P0",
 			"native compile and execute",
 			"tsc; node consumer.js",
-			packageVersion("typescript"),
 			"Generated types compile and consume the golden",
 			"pass",
 			"Generator is disposable spike code",
@@ -710,7 +689,6 @@ function validate(output) {
 			"P0",
 			"established generator plus native import and execute",
 			"datamodel-codegen normalized JSON Schema; python -B consumer.py",
-			pythonToolVersion,
 			"datamodel-code-generator Pydantic output round-trips the shared golden and stdlib dataclass output imports and constructs",
 			"pass",
 			"Requires pinned local tooling, TypeSpec JSON Schema URI normalization, extension rejection, and sandboxed generation",
@@ -723,7 +701,6 @@ function validate(output) {
 			"P0",
 			"native compile and execute",
 			"cargo check/run --offline --locked",
-			`${serdeVersion}/${serdeJsonVersion}`,
 			"Generated Serde types deserialize the golden",
 			"pass",
 			"Inheritance is flattened in the Rust projection",
@@ -736,7 +713,6 @@ function validate(output) {
 			"P1",
 			"runtime schema construction",
 			"apache-arrow Schema/Field construction",
-			packageVersion("apache-arrow"),
 			"Declared flat schema constructs successfully",
 			"pass",
 			"Recursive graphs and extensions are intentionally lossy",
@@ -749,7 +725,6 @@ function validate(output) {
 			"P0",
 			"mapping inspection",
 			"validate generated markdown mappings",
-			"1.0.0",
 			"Authority, loci, round-trip, loss, and provenance recorded",
 			"pass",
 			"No renderer is included",
@@ -762,7 +737,6 @@ function validate(output) {
 			"P0",
 			"invalid compile",
 			"tsp compile fixtures/invalid --no-emit",
-			packageVersion("@typespec/compiler"),
 			"Invalid reference exits nonzero with source locus",
 			"pass",
 			"Diagnostic wording may vary by compiler version",
@@ -775,7 +749,6 @@ function validate(output) {
 			"P0",
 			"two clean generations",
 			"run experiment twice and fingerprint",
-			"sha256",
 			"Normalized outputs match",
 			"pass",
 			"Tool versions and source loci must stay pinned",
@@ -788,7 +761,6 @@ function validate(output) {
 			"P0",
 			"table-driven classifier",
 			"classify patch/additive/breaking fixtures",
-			"1.0.0",
 			"Three expected changes classify correctly",
 			"pass",
 			"Semantic policy changes need richer rules",
@@ -801,7 +773,6 @@ function validate(output) {
 			"P0",
 			"API surface and ecosystem analysis",
 			"inspect emitter API and official support status",
-			packageVersion("@typespec/compiler"),
 			"Working emitter depends on experimental compiler extension APIs",
 			"partial",
 			"No separate reusable compiler repository, accepted production owner, budget, compatibility matrix, or upgrade SLA exists",
@@ -814,7 +785,6 @@ function validate(output) {
 			"P0",
 			"representative native compile, golden, and review",
 			"compile three generated packages; execute one shared golden",
-			"spike-0.0.0",
 			"Hand-rolled Rust and TypeScript generators plus established Python generation pass the representative slice only",
 			"partial",
 			"No broad conformance corpus, property/fuzz suite, release compatibility matrix, or independent downstream adoption exists",
@@ -827,7 +797,6 @@ function validate(output) {
 			"P0",
 			"diff and package inspection",
 			"git diff; package metadata inspection",
-			"1.0.0",
 			"No runtime export, schema, consumer, catalog, or publication mutation",
 			"pass",
 			"Spike dependencies remain repository dev-only",
@@ -909,7 +878,7 @@ function validate(output) {
 		)
 		.replace(
 			"- Generated TypeScript, Python/Pydantic, and Rust/Serde consumers compile and execute against the same golden values.",
-			"- Generated TypeScript, Python/Pydantic, and Rust/Serde consumers compile and execute against the same golden values. Python is generated by pinned `datamodel-code-generator` 0.76.0 through a security-constrained JSON Schema adapter; the Rust and TypeScript generators remain hand-rolled prototypes. None has passed the full Agent IX conformance, property/fuzz, compatibility, or downstream adoption gates.",
+			"- Generated TypeScript, Python/Pydantic, and Rust/Serde consumers compile and execute against the same golden values. Python is generated by `datamodel-code-generator` through a security-constrained JSON Schema adapter; the Rust and TypeScript generators remain hand-rolled prototypes. None has passed the full Agent IX conformance, property/fuzz, compatibility, or downstream adoption gates.",
 		)
 		.replace(
 			"The custom path requires a named owner for the semantic IR, three native generators",

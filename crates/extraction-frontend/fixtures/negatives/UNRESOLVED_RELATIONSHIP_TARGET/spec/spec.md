@@ -1,6 +1,6 @@
 ---
 type: master-requirements
-name: config-service
+name: docs-service
 org: agent-ix
 title: "Master Requirements Specification"
 ---

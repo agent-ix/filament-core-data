@@ -224,8 +224,8 @@ pub fn bundle_fixtures() -> Vec<String> {
         "architecture",
         "business",
         "clauses",
-        "config-version-fence",
-        "config-version-table",
+        "snapshot-fence",
+        "snapshot-table",
         "edges",
         "legacy",
         "lower",
@@ -252,8 +252,8 @@ pub fn positive_lifts() -> Vec<(String, tempfile::TempDir, LiftRequest, LiftOutc
     let names: Vec<&str> = out.iter().map(|(n, ..)| n.as_str()).collect();
     for core in [
         "business",
-        "config-version-fence",
-        "config-version-table",
+        "snapshot-fence",
+        "snapshot-table",
         "lower/collections",
     ] {
         assert!(

@@ -1,5 +1,5 @@
 //! NFR-031-AC-1..3: repeat-run, varied-environment and cross-root byte
-//! comparisons of the `config-version-*` lifts.
+//! comparisons of the `snapshot-*` lifts.
 //!
 //! Every comparison here has a fixed point outside the code under test:
 //! the committed goldens under `fixtures/<name>/expected/` (FR-098) and
@@ -29,8 +29,8 @@ use common::{
 use ix_trace_rs::trace;
 use serde_json::Value;
 
-const TABLE: &str = "config-version-table";
-const FENCE: &str = "config-version-fence";
+const TABLE: &str = "snapshot-table";
+const FENCE: &str = "snapshot-fence";
 const OUT: &str = "semantic-ir.json";
 
 /// The committed golden bytes of `name`: `(semantic-ir.json, diagnostics.json)`.
@@ -330,7 +330,7 @@ fn without_digest(value: &Value) -> Value {
 #[test]
 fn tc_1302_the_table_and_fence_roots_lift_to_identical_types_and_diagnostics_bytes_differing_only_in_source_digest(
 ) {
-    const RELATIVE: &str = "spec/functional/FR-006-config-version-entity.md";
+    const RELATIVE: &str = "spec/functional/FR-006-snapshot-entity.md";
     // Both roots hold one copy of FR-006 at the same bundle-relative
     // path, line-aligned: the file has the same line count in both.
     let table_text = fs::read_to_string(fixture(TABLE).join(RELATIVE)).expect("table FR-006");
