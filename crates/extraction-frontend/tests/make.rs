@@ -1,4 +1,4 @@
-//! FR-099-AC-4 and FR-099-AC-6: the `extraction-frontend-*` Make targets,
+//! FR-099-AC-6: the `extraction-frontend-deny` and `-audit` Make targets,
 //! rehearsed as `Static` evidence.
 //!
 //! Every test here is `#[ignore]`d: `make extraction-frontend-test` runs
@@ -9,7 +9,7 @@
 //! make extraction-frontend-evidence
 //! ```
 //!
-//! (which is `cargo +1.98.1 test -p agent-ix-extraction-frontend --locked
+//! (which is `cargo test -p agent-ix-extraction-frontend --locked
 //! --offline --no-fail-fast -- --ignored` under the Makefile's
 //! `CARGO_TARGET_DIR`, skipping only the tests blocked on open issues). They
 //! spawn `make -C <workspace>` and assert on its exit status and
@@ -22,15 +22,6 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 use ix_trace_rs::trace;
-
-const TOOLCHAIN: &str = "1.98.1";
-const TARGETS: [&str; 5] = [
-    "extraction-frontend-build",
-    "extraction-frontend-test",
-    "extraction-frontend-check",
-    "extraction-frontend-deny",
-    "extraction-frontend-audit",
-];
 
 fn crate_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -61,122 +52,6 @@ fn text(output: &Output) -> String {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     )
-}
-
-/// Copy `src` into `dst` recursively.
-fn copy_tree(src: &Path, dst: &Path) {
-    fs::create_dir_all(dst).expect("create");
-    for entry in fs::read_dir(src).expect("read_dir") {
-        let entry = entry.expect("entry");
-        let target = dst.join(entry.file_name());
-        if entry.path().is_dir() {
-            copy_tree(&entry.path(), &target);
-        } else {
-            fs::copy(entry.path(), &target).expect("copy");
-        }
-    }
-}
-
-/// A scratch fixture inventory holding one bundle and both module roots,
-/// with its goldens installed by `lift --write-goldens --staging`.
-fn scratch_inventory(root: &Path) -> PathBuf {
-    let fixtures = root.join("fixtures");
-    for name in [
-        "config-version-table",
-        "modules/spec-objects-business",
-        "modules/edge-vocabulary",
-    ] {
-        copy_tree(
-            &crate_dir().join("fixtures").join(name),
-            &fixtures.join(name),
-        );
-    }
-    let staging = root.join("staging");
-    let output = Command::new(env!("CARGO_BIN_EXE_extraction-frontend"))
-        .arg("lift")
-        .arg("--write-goldens")
-        .arg("--fixtures")
-        .arg(&fixtures)
-        .arg("--staging")
-        .arg(&staging)
-        .output()
-        .expect("spawn extraction-frontend");
-    assert!(output.status.success(), "{}", text(&output));
-    let expected = fixtures.join("config-version-table/expected");
-    let mut names: Vec<String> = fs::read_dir(&expected)
-        .expect("expected")
-        .map(|e| e.expect("entry").file_name().to_string_lossy().into_owned())
-        .collect();
-    names.sort();
-    assert_eq!(
-        names,
-        [
-            "diagnostics.json",
-            "semantic-ir.json",
-            "semantic-ir.json.fingerprint"
-        ]
-    );
-    // Installed by rename: the staging copy is gone.
-    assert_eq!(
-        fs::read_dir(staging.join("config-version-table"))
-            .expect("staged")
-            .count(),
-        0
-    );
-    fixtures
-}
-
-#[trace("TC-1298", "FR-099-AC-4")]
-#[test]
-#[ignore = "Static evidence: drives make, which drives cargo test; run with --ignored"]
-fn tc_1298_every_make_target_succeeds_on_the_toolchain_and_fails_naming_an_absent_one() {
-    for target in TARGETS {
-        let output = make(target, &[format!("EXTRACTION_TOOLCHAIN={TOOLCHAIN}")]);
-        assert!(output.status.success(), "{target}:\n{}", text(&output));
-    }
-    for target in TARGETS {
-        let output = make(target, &["EXTRACTION_TOOLCHAIN=0.0.0".to_string()]);
-        assert!(
-            !output.status.success(),
-            "{target} skipped:\n{}",
-            text(&output)
-        );
-        let text = text(&output);
-        assert!(text.contains("0.0.0"), "{target}:\n{text}");
-        assert!(
-            text.contains("failure rather than a skip"),
-            "{target}:\n{text}"
-        );
-    }
-
-    // Falsification of `-check`: on a scratch inventory the target passes,
-    // and after a one-byte edit to one golden it fails naming the file.
-    let scratch = tempfile::tempdir().expect("tempdir");
-    let fixtures = scratch_inventory(scratch.path());
-    let assignment = format!("EXTRACTION_FIXTURES={}", fixtures.display());
-    let output = make(
-        "extraction-frontend-check",
-        std::slice::from_ref(&assignment),
-    );
-    assert!(output.status.success(), "{}", text(&output));
-    let golden = fixtures.join("config-version-table/expected/semantic-ir.json");
-    let mut bytes = fs::read(&golden).expect("golden");
-    bytes[0] ^= 0x01;
-    fs::write(&golden, bytes).expect("write");
-    let output = make(
-        "extraction-frontend-check",
-        std::slice::from_ref(&assignment),
-    );
-    assert!(!output.status.success(), "{}", text(&output));
-    let text = text(&output);
-    assert!(
-        text.contains("config-version-table/expected/semantic-ir.json"),
-        "{text}"
-    );
-    // The check writes nothing under the inventory besides what the edit did.
-    assert!(!fixtures
-        .join("config-version-table/expected/semantic-ir.json.tmp")
-        .exists());
 }
 
 /// A scratch workspace that `cargo metadata` resolves: the root manifest

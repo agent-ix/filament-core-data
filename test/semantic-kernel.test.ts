@@ -442,7 +442,6 @@ describe("TC-1100..1108 determinism and non-disruption (NFR-028, NFR-030)", () =
 		// the passing half; the failing half is the one that was demonstrated.
 	});
 
-	// TC-1105
 	it("produces the same bytes under a changed environment", () => {
 		const before = treeOf(join(root, "packages/semantic-kernel"));
 		execFileSync("node", ["scripts/build-semantic-kernel.mjs"], {

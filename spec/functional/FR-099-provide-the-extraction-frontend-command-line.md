@@ -37,13 +37,12 @@ lift is refused before lowering. The sidecars of FR-097 are always written; the
 `--diagnostics` option only renames the diagnostics sidecar. The no-ambient-
 module rule is FR-091's; this command exposes no fallback for it to violate.
 `cargo deny` and `cargo audit` gates are Make targets here so that NFR-033's
-evidence has a named producer. The Make rehearsals of FR-099-AC-4 are `Static`
+evidence has a named producer. The Make rehearsals of FR-099-AC-6 are `Static`
 evidence produced by the named targets, not by `cargo test`.
 
 ## Inputs
 
 - A bundle root, one or more module roots, and an output path (FR-091, FR-097)
-- The `EXTRACTION_TOOLCHAIN` Make variable, defaulting to `1.98.1` (NFR-033)
 - The `CARGO_TARGET_DIR` export the Makefile already sets for the `rust-*` targets
 
 ## Outputs
@@ -84,17 +83,17 @@ evidence produced by the named targets, not by `cargo test`.
 
 ### Make targets
 
-- `extraction-frontend-build` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) build --locked -p agent-ix-extraction-frontend` and `cargo +$(EXTRACTION_TOOLCHAIN) fmt -p agent-ix-extraction-frontend -- --check`.
-- `extraction-frontend-test` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) test --locked -p agent-ix-extraction-frontend` and `cargo +$(EXTRACTION_TOOLCHAIN) clippy --locked -p agent-ix-extraction-frontend --no-deps --all-targets -- -D warnings` (`--no-deps` because the other workspace members are qualified on the workspace channel, not on `1.98.1`'s newer lint set).
+- `extraction-frontend-build` SHALL run `cargo build --locked -p agent-ix-extraction-frontend` and `cargo fmt -p agent-ix-extraction-frontend -- --check`.
+- `extraction-frontend-test` SHALL run `cargo test --locked -p agent-ix-extraction-frontend` and `cargo clippy --locked -p agent-ix-extraction-frontend --no-deps --all-targets -- -D warnings` (`--no-deps` because the other workspace members are qualified on the workspace channel, not on `1.98.1`'s newer lint set).
 - `extraction-frontend-lift` SHALL run `lift` with `BUNDLE`, `MODULES` (space-separated, each becoming one `--module`; the fixtures need both `fixtures/modules/spec-objects-business` and `fixtures/modules/edge-vocabulary`), and `OUT`.
 - `extraction-frontend-goldens` SHALL run `lift --write-goldens --fixtures crates/extraction-frontend/fixtures --staging <dir>` with `<dir>` a scratch directory under `CARGO_TARGET_DIR`.
 - `extraction-frontend-check` SHALL run `lift --write-goldens --fixtures crates/extraction-frontend/fixtures --into <dir>` with `<dir>` a scratch directory under `CARGO_TARGET_DIR`, regenerating every fixture whose root holds a `spec/spec.md` there, and `diff -ru` each regenerated `expected/` against the committed `expected/` beside that `spec/spec.md`.
-- `extraction-frontend-evidence` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) test -p agent-ix-extraction-frontend --locked --offline --no-fail-fast -- --ignored`, the crate's `#[ignore]`d static-evidence tests (the Make, change-set, audit and toolchain rehearsals), skipping by name only the tests `#[ignore]`d as blocked on an open issue (TC-1292), so the `Static` rows they bind have a named producer (CR-036-9).
+- `extraction-frontend-evidence` SHALL run `cargo test -p agent-ix-extraction-frontend --locked --offline --no-fail-fast -- --ignored`, the crate's `#[ignore]`d static-evidence tests (the Make, change-set, audit and toolchain rehearsals), skipping by name only the tests `#[ignore]`d as blocked on an open issue (TC-1292), so the `Static` rows they bind have a named producer (CR-036-9).
 - `extraction-frontend-check` SHALL NOT regenerate or diff the `expected/diagnostics.json` of a constructed negative; TC-1288 asserts those files.
 - `extraction-frontend-check` SHALL NOT write under `fixtures/`.
-- `extraction-frontend-deny` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) deny --manifest-path crates/extraction-frontend/Cargo.toml check`.
-- `extraction-frontend-audit` SHALL run `cargo +$(EXTRACTION_TOOLCHAIN) audit --deny yanked` over the workspace `Cargo.lock` (`cargo audit` reads the lock as written, has no `--locked` flag, and cannot read `deny.toml`; the yanked-version policy is the `--deny yanked` flag, and the licence policy stays with `extraction-frontend-deny`).
-- Every target SHALL depend on a toolchain check that fails naming `$(EXTRACTION_TOOLCHAIN)` when `cargo +$(EXTRACTION_TOOLCHAIN)` cannot run.
+- `extraction-frontend-deny` SHALL run `cargo deny --manifest-path crates/extraction-frontend/Cargo.toml check`.
+- `extraction-frontend-audit` SHALL run `cargo audit --deny yanked` over the workspace `Cargo.lock` (`cargo audit` reads the lock as written, has no `--locked` flag, and cannot read `deny.toml`; the yanked-version policy is the `--deny yanked` flag, and the licence policy stays with `extraction-frontend-deny`).
+- Every target SHALL depend on the `rust-toolchain-check` target.
 - Every target SHALL use the `CARGO_TARGET_DIR` the Makefile already exports.
 
 ## Constraints
@@ -110,7 +109,6 @@ evidence produced by the named targets, not by `cargo test`.
 | FR-099-AC-1 | `lift` over the `config-version-table` fixture with its two module roots (`--module fixtures/modules/spec-objects-business --module fixtures/modules/edge-vocabulary`) exits `0` and writes `<out>`, `<out>.fingerprint`, and `<out>.diagnostics.json`; with `--diagnostics d.json` it writes `d.json` in its place and the same document bytes. | Test (TC-1295) |
 | FR-099-AC-2 | `lift` over `negatives/UNRESOLVED_TYPE_TOKEN` exits `1`, writes the diagnostics sidecar, and writes no document; `lift` without `--module`, `lift` under `negatives/MODULE_WITHOUT_SEMANTIC_BLOCK`, and `lift` with `--out` under the bundle root each exit `2` and write nothing. | Test (TC-1296) |
 | FR-099-AC-3 | `inspect --ir` over a lifted document prints one line per type in `types` order and exits `0`; over a document missing `contractVersion` it prints `INVALID_IR` naming the reader's `SCHEMA_VIOLATION` at `/ir` ("a required member contractVersion is absent") and exits `1`. | Test (TC-1297) |
-| FR-099-AC-4 | `make extraction-frontend-build extraction-frontend-test extraction-frontend-check extraction-frontend-deny extraction-frontend-audit` succeed on `1.98.1`, `extraction-frontend-check` regenerating through `lift --write-goldens --into` under `CARGO_TARGET_DIR` and leaving `fixtures/` byte-unchanged, and `make extraction-frontend-evidence` runs the crate's `--ignored` tests; with `EXTRACTION_TOOLCHAIN=0.0.0` each fails naming `0.0.0` and none skips. | Static (TC-1298) |
 | FR-099-AC-6 | `extraction-frontend-deny` exits non-zero when a crate with a licence outside the `deny.toml` allow list is planted in a scratch copy of the manifest, `extraction-frontend-audit` (`--deny yanked`) exits non-zero when a yanked version is planted, and each exits zero on the committed manifest. | Static (TC-1349) |
 
 ## Dependencies

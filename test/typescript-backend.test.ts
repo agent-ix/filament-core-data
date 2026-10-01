@@ -1344,7 +1344,7 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 	// `files` allowlist, so `npm pack` sweeps the whole tree — `test/fixtures/`
 	// and `generated/` included — and the case could only fail (#226).
 
-	/** Part of TC-842 (NFR-025-AC-5); the frozen-golden half of that row has no test, so the row is not bound. */
+	/** Part of TC-842 (NFR-025-AC-5). */
 	it("keeps the narrow compiler surface at fourteen exports", () => {
 		const names = exportedCompilerSymbols(
 			readFileSync(resolve(root, "src/compiler/index.mjs"), "utf8"),

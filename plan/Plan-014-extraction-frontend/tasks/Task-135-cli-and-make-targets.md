@@ -16,8 +16,6 @@ relationships:
     type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-1297"
     type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-1298"
-    type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-1349"
     type: verifies
   - target: "ix://agent-ix/filament-core-data/TC-1268"

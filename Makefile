@@ -333,13 +333,6 @@ rust: rust-check rust-build rust-clippy rust-test rust-conformance rust-install-
 .PHONY: test-rust
 test-rust: rust extraction-frontend-test spec-to-targets
 
-# The qualification toolchain, for a CI lane that has to install it before it can
-# run anything. Printed rather than duplicated in the workflow, so the version
-# lives in exactly one place (NFR-033: named once in the Makefile).
-.PHONY: print-extraction-toolchain
-print-extraction-toolchain:
-	@echo $(EXTRACTION_TOOLCHAIN)
-
 .PHONY: rust-deep
 rust-deep: rust-mutate rust-fuzz
 	node scripts/rust-backend-harness.mjs properties --deep
@@ -403,13 +396,8 @@ semantic-kernel-parity-check:
 # -----------------------------------------------------------------------------
 # Spec-bundle extraction frontend (issue #36)
 # -----------------------------------------------------------------------------
-# `crates/extraction-frontend` is qualified on exactly Rust 1.98.1 (NFR-033).
-# `rust-toolchain.toml` pins the same channel since quire-rs 6eec7e8 required
-# it (issue #154), but every gate here still invokes
-# `cargo +$(EXTRACTION_TOOLCHAIN)` explicitly. A gate
-# that ran on whatever `cargo` resolves to would measure the host, not the
-# crate. An absent toolchain is a red gate naming the toolchain — never a skip
-# (FR-099-AC-4, NFR-033-AC-2).
+# `crates/extraction-frontend` is qualified on the Rust channel pinned in
+# `rust-toolchain.toml` (NFR-033).
 #
 # `--locked` on every cargo call, so a resolver difference surfaces as a red
 # gate with a Cargo.lock diff rather than as a silent rewrite.
@@ -419,8 +407,7 @@ semantic-kernel-parity-check:
 # requested package, and `agent-ix-semantic-ir` is linted by the workspace
 # gate `rust-clippy`; NFR-033's "qualified on 1.98.1" covers this crate alone.
 #
-# Task-127 landed the toolchain gate, build and test; Task-135 (FR-099) the
-# rest. `extraction-frontend-lift` takes BUNDLE, MODULES (space-separated,
+# `extraction-frontend-lift` takes BUNDLE, MODULES (space-separated,
 # each one `--module`; the fixtures need both module roots) and OUT.
 # `extraction-frontend-goldens` is the only writer of `fixtures/*/expected/`:
 # it lifts every fixture bundle into a staging directory under
@@ -436,22 +423,17 @@ semantic-kernel-parity-check:
 # check, deny and audit gates at a scratch copy so `tests/make.rs` can
 # falsify them without touching the tree.
 
-EXTRACTION_TOOLCHAIN ?= 1.98.1
 EXTRACTION_CRATE := agent-ix-extraction-frontend
 
-.PHONY: extraction-frontend-toolchain
-extraction-frontend-toolchain:
-	@rustup run $(EXTRACTION_TOOLCHAIN) cargo --version >/dev/null 2>&1 || { echo "Rust toolchain $(EXTRACTION_TOOLCHAIN) is not installed (rustup toolchain install $(EXTRACTION_TOOLCHAIN)): the extraction-frontend gates cannot run, and this is a failure rather than a skip"; exit 1; }
-
 .PHONY: extraction-frontend-build
-extraction-frontend-build: extraction-frontend-toolchain
-	cargo +$(EXTRACTION_TOOLCHAIN) build --locked -p $(EXTRACTION_CRATE)
-	cargo +$(EXTRACTION_TOOLCHAIN) fmt -p $(EXTRACTION_CRATE) -- --check
+extraction-frontend-build: rust-toolchain-check
+	cargo build --locked -p $(EXTRACTION_CRATE)
+	cargo fmt -p $(EXTRACTION_CRATE) -- --check
 
 .PHONY: extraction-frontend-test
-extraction-frontend-test: extraction-frontend-toolchain
-	cargo +$(EXTRACTION_TOOLCHAIN) test --locked -p $(EXTRACTION_CRATE)
-	cargo +$(EXTRACTION_TOOLCHAIN) clippy --locked -p $(EXTRACTION_CRATE) --no-deps --all-targets -- -D warnings
+extraction-frontend-test: rust-toolchain-check
+	cargo test --locked -p $(EXTRACTION_CRATE)
+	cargo clippy --locked -p $(EXTRACTION_CRATE) --no-deps --all-targets -- -D warnings
 
 # `extraction-frontend-evidence` runs the crate's `#[ignore]`d static-evidence
 # tests (the Make, change-set, audit and toolchain rehearsals, which nest
@@ -465,30 +447,30 @@ extraction-frontend-test: extraction-frontend-toolchain
 # the change that unblocks its test. No test is blocked today.
 EXTRACTION_BLOCKED_TESTS :=
 .PHONY: extraction-frontend-evidence
-extraction-frontend-evidence: extraction-frontend-toolchain
-	cargo +$(EXTRACTION_TOOLCHAIN) test -p $(EXTRACTION_CRATE) --locked --offline --no-fail-fast -- --ignored $(foreach test,$(EXTRACTION_BLOCKED_TESTS),--skip $(test))
+extraction-frontend-evidence: rust-toolchain-check
+	cargo test -p $(EXTRACTION_CRATE) --locked --offline --no-fail-fast -- --ignored $(foreach test,$(EXTRACTION_BLOCKED_TESTS),--skip $(test))
 
 EXTRACTION_FIXTURES ?= crates/extraction-frontend/fixtures
 EXTRACTION_MANIFEST ?= crates/extraction-frontend/Cargo.toml
 EXTRACTION_LOCKFILE ?= Cargo.lock
 EXTRACTION_GOLDEN_STAGING := $(CARGO_TARGET_DIR)/extraction-frontend-goldens
 EXTRACTION_CHECK_SCRATCH := $(CARGO_TARGET_DIR)/extraction-frontend-check
-EXTRACTION_RUN := cargo +$(EXTRACTION_TOOLCHAIN) run --locked -p $(EXTRACTION_CRATE) --bin extraction-frontend --
+EXTRACTION_RUN := cargo run --locked -p $(EXTRACTION_CRATE) --bin extraction-frontend --
 MODULES ?= $(EXTRACTION_FIXTURES)/modules/spec-objects-business $(EXTRACTION_FIXTURES)/modules/edge-vocabulary
 
 .PHONY: extraction-frontend-lift
-extraction-frontend-lift: extraction-frontend-toolchain
+extraction-frontend-lift: rust-toolchain-check
 	@test -n "$(BUNDLE)" || { echo "BUNDLE=<bundle root> is required"; exit 2; }
 	@test -n "$(OUT)" || { echo "OUT=<document path> is required"; exit 2; }
 	$(EXTRACTION_RUN) lift --bundle $(BUNDLE) $(foreach module,$(MODULES),--module $(module)) --out $(OUT)
 
 .PHONY: extraction-frontend-goldens
-extraction-frontend-goldens: extraction-frontend-toolchain
+extraction-frontend-goldens: rust-toolchain-check
 	rm -rf $(EXTRACTION_GOLDEN_STAGING)
 	$(EXTRACTION_RUN) lift --write-goldens --fixtures $(EXTRACTION_FIXTURES) --staging $(EXTRACTION_GOLDEN_STAGING)
 
 .PHONY: extraction-frontend-check
-extraction-frontend-check: extraction-frontend-toolchain
+extraction-frontend-check: rust-toolchain-check
 	rm -rf $(EXTRACTION_CHECK_SCRATCH)
 	$(EXTRACTION_RUN) lift --write-goldens --fixtures $(EXTRACTION_FIXTURES) --into $(EXTRACTION_CHECK_SCRATCH)
 	@status=0; for expected in $$(find $(EXTRACTION_FIXTURES) -type d -name expected | sort); do \
@@ -529,7 +511,7 @@ $(error ARCHITECTURE_MODULES is empty; $(EXTRACTION_FIXTURES)/architecture/modul
 endif
 
 .PHONY: spec-to-targets
-spec-to-targets: extraction-frontend-toolchain
+spec-to-targets: rust-toolchain-check
 	rm -rf $(SPEC_PIPELINE_STAGING)
 	mkdir -p $(SPEC_PIPELINE_STAGING)/business $(SPEC_PIPELINE_STAGING)/architecture
 	$(EXTRACTION_RUN) lift --bundle $(SPEC_PIPELINE_BUNDLE) $(foreach module,$(MODULES),--module $(module)) --out $(SPEC_PIPELINE_STAGING)/business/semantic-ir.json
@@ -538,9 +520,9 @@ spec-to-targets: extraction-frontend-toolchain
 	node scripts/spec-to-targets.mjs $(SPEC_PIPELINE_STAGING)/architecture/semantic-ir.json $(SPEC_PIPELINE_STAGING)/architecture --compile
 
 .PHONY: extraction-frontend-deny
-extraction-frontend-deny: extraction-frontend-toolchain
-	cargo +$(EXTRACTION_TOOLCHAIN) deny --manifest-path $(EXTRACTION_MANIFEST) check
+extraction-frontend-deny: rust-toolchain-check
+	cargo deny --manifest-path $(EXTRACTION_MANIFEST) check
 
 .PHONY: extraction-frontend-audit
-extraction-frontend-audit: extraction-frontend-toolchain
-	cargo +$(EXTRACTION_TOOLCHAIN) audit --file $(EXTRACTION_LOCKFILE) --deny yanked
+extraction-frontend-audit: rust-toolchain-check
+	cargo audit --file $(EXTRACTION_LOCKFILE) --deny yanked
