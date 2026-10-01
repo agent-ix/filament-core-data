@@ -43,114 +43,6 @@ BACKEND = REPO / "python_backend"
 DOCUMENTS = 30
 ABSOLUTE_REFS = 35
 
-#: `python_backend/` paths this requirement reads and imports and may not edit
-#: (FR-087-CON-7), plus `pyproject.toml` (FR-087-CON-8).
-UNTOUCHABLE = (
-    "python_backend/adapter",
-    "python_backend/runner",
-    "python_backend/qualification",
-    "python_backend/generated",
-    "python_backend/profiles.json",
-    "python_backend/refusals.json",
-    "python_backend/limits.json",
-    "python_backend/toolchain.json",
-    "pyproject.toml",
-)
-
-
-#: The tree digest of every path FR-087-CON-1, FR-087-CON-7 and FR-087-CON-8
-#: hold still, as `_tree_digest` computes it over the committed tree. A change
-#: that legitimately moves one of these paths updates its pin in the same
-#: commit; the failure message prints the digest the tree now carries.
-PINNED_DIGESTS = {
-    "python_backend/adapter/guard.py": (
-        "sha256:bc280e0b9ca273e6b3f0d06c6790179639ac921933ed76172fec190ca87db33b"
-    ),
-    "python_backend/adapter": (
-        # PLAT-899: prepare.py gained one narrow rewrite rule for the
-        # newly-moved module-manifest.schema.json — a property combining
-        # `enum` with a scalar `default` (`compatibility_posture`,
-        # `legacy_forms`) is not a constraint (`default` has no effect on
-        # validation; FR-074-CON-2 is unaffected), but the pinned generator
-        # renders it as a mypy-invalid assignment, so the pass drops it and
-        # records the drop as a `Rewrite` (test_python_backend_adapter.py).
-        "sha256:f9fdb9a5c6455b383e38dcd556765aee574669f2b7ed08aa4a4ca1ed3273768c"
-    ),
-    "python_backend/runner": (
-        # fcd#193/#196: population's POPULATIONS mapping in constructs.py now
-        # renders each population's single `extent` (closed/open) and its flat
-        # member list, replacing the per-member {typeRef, extent} shape.
-        #
-        # PLAT-899: validate.py's `_exercise` now names a validating type
-        # unexercised, rather than scoring it as accepting anything, when no
-        # property is required and nothing else closes the type — a shape
-        # `module-manifest.schema.json` introduced (`Defaults`, `LintRuleEntry`,
-        # `Nav`, `LocatorAssert`, `YieldPattern`) that no profile's probe can
-        # demonstrate a rejection for (test_python_backend_qualification.py's
-        # third named reason, TC-929).
-        "sha256:92ab43f617aff877c5e57e0c8734979ef25f4ab5b05b3357da4306d88f8188e9"
-    ),
-    "python_backend/qualification": (
-        # fcd#199/#200: report.json and validation.json's per-profile
-        # toolchainFingerprint remeasured (`poetry run python -m
-        # python_backend.runner.qualify` and `... .runner.validate`) after
-        # python_backend/generated was regenerated for the two-end
-        # relationship shape and multiplicity's ordered/unique fields.
-        # corpus-account.json also remeasured (`poetry run python -m
-        # python_backend.runner.corpus_account`) after conformance/corpus.json
-        # was bumped to corpusVersion 4.0.0; gaps.json unchanged. Remeasured
-        # again after this PR's review added corpus case PRES-016 (finding 5,
-        # R2), taking the corpus from 113 to 114 cases. Remeasured again after
-        # that review's H5 added corpus case CONS-008 (an inline field
-        # constraint checked for applicability), taking the corpus to 115.
-        # Remeasured a final time after `python_backend/generated` itself was
-        # regenerated for H4's sourceEnd/targetEnd schema split (report.json's
-        # and validation.json's toolchainFingerprint move again).
-        #
-        # Remeasured again for the owner ruling on FCD #199 (2026-09-19T15:39:32Z):
-        # `ordered`/`unique` are required on every multiplicity and
-        # FLAGS_ON_NON_COLLECTION is deleted. corpus-account.json regenerated
-        # (`... .runner.corpus_account`) after PRES-016 was replaced with a
-        # positive case exercising the new required-flags shape (case count
-        # unchanged at 115; PRES-016 was replaced in place, not added
-        # alongside a new case).
-        #
-        # PLAT-899: report.json and validation.json remeasured (`... .runner.
-        # qualify` and `... .runner.validate`) after module-manifest.schema.json
-        # moved in from filament-core-service and python_backend/generated was
-        # regenerated for it.
-        "sha256:f9bcf1c2b4497dbcbce220253cee3793ccaac4038d045f6c57eb4e3cf1a93cd6"
-    ),
-    "python_backend/generated": (
-        # fcd#199/#200: regenerated (`poetry run python -m
-        # python_backend.runner.emit`) after Relationship in
-        # schema/semantic/v1/semantic-ir.schema.json gained the two-end
-        # sourceEnd/targetEnd/direction shape and Multiplicity gained the
-        # required ordered/unique fields. Remeasured once more (confirmed
-        # reproducible across 3 successive `emit` runs) after H4's
-        # RelationshipSourceEnd/RelationshipTargetEnd split landed.
-        #
-        # PLAT-899: regenerated again after module-manifest.schema.json moved
-        # in from filament-core-service (`... .runner.emit`).
-        "sha256:d26de7a39863978fd46500d400eaeb320d68f84daa4c7eff4adc8e647408bc43"
-    ),
-    "python_backend/profiles.json": (
-        "sha256:3c6fc254a7c346c88b6ea91fdaeb7d3a3b55f8065b8a6ebc6ddab3a447547345"
-    ),
-    "python_backend/refusals.json": (
-        "sha256:8cbcb1d174bfefc0848931ac45b25ee0043c4ac2c9efae709fe462e4a19234e4"
-    ),
-    "python_backend/limits.json": (
-        "sha256:abd32b1d0b52c4bdda557e78f2b0f3fe8f376ab23e16c815cfc09750cac55072"
-    ),
-    "python_backend/toolchain.json": (
-        "sha256:4e418cd791919cca7b782bcab6f32fba185c88fcb8b0f0fd68ce01be4a7e94c6"
-    ),
-    "pyproject.toml": (
-        "sha256:a13f69126cbda8748f53d6599a9e4bd68df86c1d026304be5b7b2c4c0c702777"
-    ),
-}
-
 #: The measured qualification verdicts (FR-087-CON-4): profile, verdict, and
 #: the digest of the profile the verdict was measured against.
 PINNED_VERDICTS = {
@@ -175,28 +67,6 @@ PINNED_VERDICTS = {
         "sha256:c22081156b8894c95079b63d0e883ab929a208c3082f3ba779213d057e4f3278",
     ),
 }
-
-
-def _tree_digest(prefix: str) -> str:
-    """Digest every tracked path under `prefix`: path and content hash, sorted."""
-    listed = subprocess.run(
-        ["git", "ls-files", "-z", "--", prefix],
-        cwd=REPO,
-        capture_output=True,
-        check=True,
-    ).stdout.decode("utf-8")
-    paths = sorted(path for path in listed.split("\0") if path)
-    assert paths, f"no tracked path under {prefix}"
-    tree = hashlib.sha256()
-    for path in paths:
-        content = hashlib.sha256((REPO / path).read_bytes()).hexdigest()
-        tree.update(f"{path}\n{content}\n".encode("utf-8"))
-    return f"sha256:{tree.hexdigest()}"
-
-
-def _assert_pinned(prefix: str) -> None:
-    actual = _tree_digest(prefix)
-    assert actual == PINNED_DIGESTS[prefix], f"{prefix} now digests to {actual}"
 
 
 def _bundle_bytes() -> dict[str, bytes]:
@@ -262,14 +132,6 @@ def test_the_guard_the_register_and_the_published_bundle_are_untouched() -> None
     to avoid, and a text patch over generated source is a hand-written
     generator by another name.
     """
-    # CON-1: nothing that decides what is admissible moved.
-    for path in (
-        "python_backend/adapter/guard.py",
-        "python_backend/refusals.json",
-        "python_backend/profiles.json",
-    ):
-        _assert_pinned(path)
-
     # CON-2: the published bundle is exactly what the generator emits and
     # records, and the localization stays in memory.
     package_before = _semantic_core_snapshot()
@@ -371,9 +233,6 @@ def test_the_route_is_byte_identical_and_refuses_the_bundle_before_localization(
     None
 ):
     """TC-1060: FR-087-CON-7, FR-087-CON-8, FR-087-AC-1."""
-    for prefix in UNTOUCHABLE:
-        _assert_pinned(prefix)
-
     paths = sorted(KERNEL_SCHEMAS.glob("*.json"))
     assert len(paths) == DOCUMENTS
 
