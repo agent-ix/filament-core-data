@@ -1257,7 +1257,7 @@ blocked as stated above.
 | TC-1005 | The declared artifact paths are exactly packages/semantic-kernel/typescript/, packages/semantic-kernel/rust/, packages/semantic-kernel/python/, and pa | Property | P0 | FR-081-AC-8, FR-081-AC-9 | 🚧 planned |
 | TC-1006 | With one byte changed in any committed generated file `make semantic-kernel-check` exits non-zero naming that file; and `packages/semantic-kernel/json-schema/index.json` names all thirty documents by file name, both sets equal to the enumeration | Property | P0 | FR-081-AC-12, FR-081-AC-13 | 🚧 planned |
 | TC-1007 | The branch changes no file under packages/semantic-core/, schema/, fixtures/, conformance/, src/compiler/backends/, src/compiler/frontend/typespec/, o | Property | P0 | FR-081-AC-14, FR-081-AC-15, FR-081-AC-16 | 🚧 planned |
-| TC-1008 | KERNEL_INVENTORY_MISMATCH and KERNEL_BUNDLE_STALE are members of DIAGNOSTIC_CODES in src/compiler/diagnostics.mjs | Property | P0 | FR-081-AC-17, FR-081-AC-18 | 🚧 planned |
+| TC-1008 | KERNEL_INVENTORY_MISMATCH is a member of DIAGNOSTIC_CODES in src/compiler/diagnostics.mjs | Property | P0 | FR-081-AC-17, FR-081-AC-18 | 🚧 planned |
 | TC-1009 | Leave byte-unchanged every file under schema/**, packages/semantic-core/**, fixtures/**, and conformance/**, together with src/compiler/cli.mjs, src/c | Static | P0 | FR-082-CON-1, FR-082-CON-2, FR-082-CON-3 | 🚧 planned |
 | TC-1010 | The lowering compute presence from multiplicity.lower at exactly one call site and at no other, assigning presence from no other module. Two independe | Static | P0 | FR-082-CON-4, FR-082-CON-5, FR-082-CON-6 | 🚧 planned |
 | TC-1011 | The two declared representability losses | Unit | P0 | FR-082-CON-7, FR-082-AC-1, FR-082-AC-2 | 🚧 planned |

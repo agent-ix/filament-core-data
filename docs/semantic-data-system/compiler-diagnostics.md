@@ -56,7 +56,6 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.INVALID_MAPPING` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.INVALID_PROFILE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.INVALID_REQUEST` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
-| `agent-ix.compiler.KERNEL_BUNDLE_STALE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.KERNEL_INVENTORY_MISMATCH` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.KERNEL_REQUIRED_COLLECTION_PRESENCE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.KERNEL_UNCONSTRAINED_VALUE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
