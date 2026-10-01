@@ -72,14 +72,6 @@ def load_profiles() -> list[dict[str, Any]]:
     return copy.deepcopy(_document()["profiles"])
 
 
-def declared_python_version() -> str:
-    return str(_document()["pythonVersion"])
-
-
-def declared_pydantic_version() -> str:
-    return str(_document()["pydanticVersion"])
-
-
 def profile_ids() -> list[str]:
     return [str(profile["id"]) for profile in _document()["profiles"]]
 

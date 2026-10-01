@@ -406,16 +406,16 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 	/** Traces: TC-1769, TC-1770; FR-136-AC-9, FR-078-AC-12. */
 	it("generates both Python targets from the lifted golden, naming each module by its display name", () => {
 		const golden =
-			"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json";
+			"crates/extraction-frontend/fixtures/snapshot-table/expected/semantic-ir.json";
 		const schemas = jsonSchemaBackend.generate({ ir: readJson(golden) }) as {
 			files: readonly { path: string; text: string }[];
 		};
 		const versionSchema = schemas.files.find(
-			(file) => file.path === "ConfigVersion.json",
+			(file) => file.path === "Snapshot.json",
 		);
-		if (!versionSchema) throw new Error("no ConfigVersion.json");
+		if (!versionSchema) throw new Error("no Snapshot.json");
 		expect(JSON.parse(versionSchema.text)["x-agent-ix-semantic-id"]).toBe(
-			"ix://agent-ix/config-service/FR-006",
+			"ix://agent-ix/docs-service/FR-006",
 		);
 		for (const backend of [pythonPydanticBackend, pythonDataclassBackend]) {
 			const result = backend.generate(pythonRequest(backend, golden), {
@@ -430,7 +430,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 				`${backend.target}: ${result.diagnostics.map((d) => d.message).join("; ")}`,
 			).toBe("success");
 			const paths = result.files.map((file) => file.path);
-			expect(paths).toContain("ConfigVersion.py");
+			expect(paths).toContain("Snapshot.py");
 			// Gap 1 of FCD #199/#200: a field typed by a native kernel scalar
 			// used directly (`data`, `ix://quire/native/JsonObject`) names that
 			// reference inline. No `JsonObject.py` module is minted for it.

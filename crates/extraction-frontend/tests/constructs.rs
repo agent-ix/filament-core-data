@@ -396,7 +396,7 @@ fn tc_1743_frame_modifies_admits_a_field_of_an_unrelated_type() {
 //
 // fcd#179 also deleted the two fixtures that used to carry this case's
 // negative half on disk (`semantic-ir.json` at `1.0.0`,
-// `config-version-v1-1.json` at `1.1.0`): NFR-044-AC-1 is a rule about any
+// `snapshot-v1-1.json` at `1.1.0`): NFR-044-AC-1 is a rule about any
 // document declaring the deleted contract, not about those two files staying
 // frozen as evidence of it, so the negative half is now an inline document
 // declaring each deleted `contractVersion` rather than a read of a fixture

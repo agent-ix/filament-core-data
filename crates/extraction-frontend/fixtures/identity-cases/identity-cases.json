@@ -3,58 +3,58 @@
 	"rows": [
 		{
 			"kind": "identity",
-			"package": "agent-ix/config-service",
+			"package": "agent-ix/docs-service",
 			"slot": "type",
-			"parts": ["ConfigVersion"],
-			"identity": "ix://agent-ix/config-service/ConfigVersion"
+			"parts": ["Snapshot"],
+			"identity": "ix://agent-ix/docs-service/Snapshot"
 		},
 		{
 			"kind": "identity",
-			"package": "agent-ix/config-service",
+			"package": "agent-ix/docs-service",
 			"slot": "field",
-			"parts": ["ConfigVersion", "Config Version"],
-			"identity": "ix://agent-ix/config-service/ConfigVersion/Config-Version"
+			"parts": ["Snapshot", "Snap Shot"],
+			"identity": "ix://agent-ix/docs-service/Snapshot/Snap-Shot"
 		},
 		{
 			"kind": "identity",
-			"package": "agent-ix/config-service",
+			"package": "agent-ix/docs-service",
 			"slot": "operation",
 			"parts": ["Repository", "find By Id"],
-			"identity": "ix://agent-ix/config-service/Repository/find-By-Id"
+			"identity": "ix://agent-ix/docs-service/Repository/find-By-Id"
 		},
 		{
 			"kind": "identity",
-			"package": "agent-ix/config-service",
+			"package": "agent-ix/docs-service",
 			"slot": "variant",
-			"parts": ["ConfigVersion", "Config_Version"],
-			"identity": "ix://agent-ix/config-service/variant/ConfigVersion-Config-Version"
+			"parts": ["Snapshot", "Snap_Shot"],
+			"identity": "ix://agent-ix/docs-service/variant/Snapshot-Snap-Shot"
 		},
 		{
 			"kind": "identity",
-			"package": "agent-ix/config-service",
+			"package": "agent-ix/docs-service",
 			"slot": "constraint",
-			"parts": ["ConfigVersion", "versionNumber", "minLength"],
-			"identity": "ix://agent-ix/config-service/constraint/ConfigVersion-versionNumber-minLength"
+			"parts": ["Snapshot", "versionNumber", "minLength"],
+			"identity": "ix://agent-ix/docs-service/constraint/Snapshot-versionNumber-minLength"
 		},
 		{
 			"kind": "diagnosticCode",
 			"package": "agent-ix/core.data",
-			"parts": ["ConfigVersion", "versionNumber"],
+			"parts": ["Snapshot", "versionNumber"],
 			"keyword": "minLength",
-			"code": "agent-ix.core-data.CONFIGVERSION_VERSIONNUMBER_MINLENGTH"
+			"code": "agent-ix.core-data.SNAPSHOT_VERSIONNUMBER_MINLENGTH"
 		},
 		{
 			"kind": "refusal",
-			"package": "agent-ix/config-service",
+			"package": "agent-ix/docs-service",
 			"slot": "type",
 			"parts": ["_"],
 			"refuses": "UNSLUGGABLE_NAME"
 		},
 		{
 			"kind": "refusal",
-			"package": "agent-ix/config-service",
+			"package": "agent-ix/docs-service",
 			"slot": "field",
-			"parts": ["ConfigVersion", "--"],
+			"parts": ["Snapshot", "--"],
 			"refuses": "UNSLUGGABLE_NAME"
 		}
 	]

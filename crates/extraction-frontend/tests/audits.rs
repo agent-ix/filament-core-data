@@ -579,7 +579,7 @@ fn tc_1306_a_lift_under_unshare_n_reproduces_the_golden_and_no_dependency_opens_
 
     // A lift of the fixture in a network namespace with no interfaces:
     // exit 0 and the golden bytes.
-    let bundle = fixture("config-version-table");
+    let bundle = fixture("snapshot-table");
     let scratch = scratch_dir("tc-1306");
     let out = scratch.join("semantic-ir.json");
     let mut args = vec![os("lift"), os("--bundle"), os(&bundle)];

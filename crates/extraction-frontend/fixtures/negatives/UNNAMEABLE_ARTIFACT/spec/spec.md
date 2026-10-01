@@ -1,7 +1,7 @@
 ---
 type: master-requirements
-name: config-service
+name: docs-service
 org: agent-ix
-title: "Config Service"
+title: "Docs Service"
 ---
-# Config Service
+# Docs Service

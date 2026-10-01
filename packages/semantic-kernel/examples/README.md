@@ -10,8 +10,7 @@ tests of their generators.
 | Python | generated `python.pydantic_v2_basemodel` package | `make test-python` |
 
 Each consumer constructs a kernel value, deserializes a shared FR-090 golden,
-names every closed-grammar refusal it checks, and reads generated identity. `closures.json` is written by the language runners from their
-resolved dependency state; it is not a hand-maintained manifest.
+names every closed-grammar refusal it checks, and reads generated identity.
 
 The Rust harness invokes exactly `cargo package --offline --no-verify`, unpacks
 the artifact into a temporary directory, and builds the consumer there. No

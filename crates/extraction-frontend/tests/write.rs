@@ -48,8 +48,8 @@ fn refused_code(outcome: &LiftOutcome) -> (Code, String) {
 #[trace("TC-1279", "FR-097-AC-7")]
 #[test]
 fn tc_1279_two_consecutive_lifts_produce_byte_identical_documents_and_sidecars() {
-    let (_a, request_a, outcome_a) = lift_fixture("config-version-table");
-    let (_b, request_b, outcome_b) = lift_fixture("config-version-table");
+    let (_a, request_a, outcome_a) = lift_fixture("snapshot-table");
+    let (_b, request_b, outcome_b) = lift_fixture("snapshot-table");
     assert!(
         matches!(outcome_a, LiftOutcome::Written { .. }),
         "{outcome_a:?}"
@@ -64,7 +64,7 @@ fn tc_1279_two_consecutive_lifts_produce_byte_identical_documents_and_sidecars()
         assert_eq!(x, y, "{label} differs between two lifts");
     }
     // Against the committed goldens when Task-136 has cut them.
-    let expected = fixture("config-version-table/expected");
+    let expected = fixture("snapshot-table/expected");
     if expected.is_dir() {
         for (label, bytes) in &a {
             let golden = match *label {
@@ -79,7 +79,7 @@ fn tc_1279_two_consecutive_lifts_produce_byte_identical_documents_and_sidecars()
     }
 }
 
-/// The child half of TC-1280: lifts `config-version-table` to the
+/// The child half of TC-1280: lifts `snapshot-table` to the
 /// directory `TC_1280_OUT` names, under whatever environment the parent
 /// set. Ignored so `cargo test` never runs it by itself.
 #[test]
@@ -88,7 +88,7 @@ fn tc_1280_child() {
     let Some(out) = std::env::var_os("TC_1280_OUT") else {
         return;
     };
-    let request = request("config-version-table", Path::new(&out));
+    let request = request("snapshot-table", Path::new(&out));
     let outcome = lift(&request);
     assert!(
         matches!(outcome, LiftOutcome::Written { .. }),
@@ -99,7 +99,7 @@ fn tc_1280_child() {
 #[trace("TC-1280", "FR-097-AC-8")]
 #[test]
 fn tc_1280_a_lift_under_a_different_cwd_home_locale_and_target_dir_produces_the_same_bytes() {
-    let (_dir, request, outcome) = lift_fixture("config-version-table");
+    let (_dir, request, outcome) = lift_fixture("snapshot-table");
     assert!(matches!(outcome, LiftOutcome::Written { .. }));
     let baseline = read_all(&request);
 
@@ -133,14 +133,14 @@ fn tc_1280_a_lift_under_a_different_cwd_home_locale_and_target_dir_produces_the_
     for ((label, x), (_, y)) in baseline.iter().zip(&varied) {
         assert_eq!(x, y, "{label} differs under a varied environment");
     }
-    let golden = fixture("config-version-table/expected/semantic-ir.json");
+    let golden = fixture("snapshot-table/expected/semantic-ir.json");
     if golden.is_file() {
         assert_eq!(fs::read(&golden).expect("golden"), baseline[0].1);
     }
 }
 
 fn request_in(out: &Path) -> LiftRequest {
-    request("config-version-table", out)
+    request("snapshot-table", out)
 }
 
 #[trace("TC-1281", "FR-097-AC-9")]
@@ -189,7 +189,7 @@ fn tc_1281_a_blocking_lift_leaves_a_pre_existing_document_byte_unchanged() {
 fn tc_1282_a_lift_into_a_directory_that_does_not_exist_refuses_with_output_unwritable_naming_it() {
     let dir = tempfile::tempdir().expect("tempdir");
     let missing = dir.path().join("nonesuch");
-    let request = request("config-version-table", &missing);
+    let request = request("snapshot-table", &missing);
     let outcome = lift(&request);
     let (code, message) = refused_code(&outcome);
     assert_eq!(code, Code::OutputUnwritable);
@@ -239,7 +239,7 @@ fn tc_1339_colliding_output_and_sidecar_paths_refuse_naming_both_options_and_wri
     let out = dir.path().join("o.json");
     let same = LiftRequest {
         diagnostics: Some(out.clone()),
-        ..request("config-version-table", dir.path())
+        ..request("snapshot-table", dir.path())
     };
     let same = LiftRequest {
         out: out.clone(),
@@ -300,8 +300,8 @@ fn tc_1340_out_under_the_bundle_root_or_a_module_root_refuses_before_any_documen
 }
 
 /// A bundle that lifts with warnings and nothing blocking: the typed
-/// `ConfigOverlay` of `config-version-table` beside the legacy-form
-/// `ConfigVersion` of `legacy` (one `ARTIFACT_NOT_LOWERED` warning and one
+/// `SnapshotGroup` of `snapshot-table` beside the legacy-form
+/// `Snapshot` of `legacy` (one `ARTIFACT_NOT_LOWERED` warning and one
 /// engine warning). The committed `legacy` bundle alone lifts to an empty
 /// `types`, which the reader's schema refuses (EC-140).
 fn warning_only_bundle(dir: &Path) {
@@ -310,17 +310,14 @@ fn warning_only_bundle(dir: &Path) {
         fs::create_dir_all(to.parent().expect("parent")).expect("mkdir");
         fs::copy(from, &to).expect("copy");
     };
+    copy(&fixture("snapshot-table/spec/spec.md"), "spec/spec.md");
     copy(
-        &fixture("config-version-table/spec/spec.md"),
-        "spec/spec.md",
+        &fixture("snapshot-table/spec/functional/FR-005-snapshot-group-entity.md"),
+        "spec/functional/FR-005-snapshot-group-entity.md",
     );
     copy(
-        &fixture("config-version-table/spec/functional/FR-005-config-overlay-entity.md"),
-        "spec/functional/FR-005-config-overlay-entity.md",
-    );
-    copy(
-        &fixture("legacy/spec/functional/FR-006-config-version-entity.md"),
-        "spec/functional/FR-006-config-version-entity.md",
+        &fixture("legacy/spec/functional/FR-006-snapshot-entity.md"),
+        "spec/functional/FR-006-snapshot-entity.md",
     );
 }
 

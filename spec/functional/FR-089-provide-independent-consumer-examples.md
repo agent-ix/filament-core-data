@@ -75,9 +75,6 @@ and every one of them will compile.
   Python package, following the `python_backend/examples/` precedent
 - `packages/semantic-kernel/examples/README.md`: what each example demonstrates,
   which package it consumes, and which `make` target executes it
-- `packages/semantic-kernel/examples/closures.json`: the measured dependency
-  closure of each example — every package the example resolves, transitively,
-  with its version — written by the run rather than by hand
 
 ## Behavior
 
@@ -172,8 +169,7 @@ run that omits any one of them SHALL fail:
 - The closure SHALL be measured from the resolved lock the example builds
   against — `Cargo.lock` for the Rust example, the pnpm lock entry for the
   TypeScript example, and the resolved environment for the Python example — and
-  written to `packages/semantic-kernel/examples/closures.json` by the run, so
-  that the assertion is over what actually resolved and not over what a manifest
+  asserted by the run, so that the assertion is over what actually resolved and not over what a manifest
   declared it would.
 - Each example SHALL declare, beyond the generated package it consumes, only its
   language's serialization front door: `serde_json` at a pinned exact version as
@@ -234,7 +230,7 @@ run that omits any one of them SHALL fail:
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-089-CON-1 | Each example SHALL import its generated package by that package's public surface only — nothing under `src/compiler/`, nothing under `python_backend/`, nothing under `packages/semantic-core/scripts/`, nothing under `conformance/oracle/`, no package-internal module reached by a deep path, and no file read inside the package directory to obtain a value the surface does not export. An example that reaches into the generator is not an independent consumer. | Integrity | Static analysis |
-| FR-089-CON-2 | The measured transitive closure of each example SHALL contain no persistence, Tauri, user-interface, ORM, or application-framework package, asserted against `packages/semantic-kernel/examples/closures.json` as the run wrote it and never against a hand-maintained list of declared dependencies. | Portability | Dependency-closure test |
+| FR-089-CON-2 | The measured transitive closure of each example SHALL contain no persistence, Tauri, user-interface, ORM, or application-framework package, asserted by the run over the resolved closure and never against a hand-maintained list of declared dependencies. | Portability | Dependency-closure test |
 | FR-089-CON-3 | An example that executes zero assertions for any one of the five demonstrations SHALL fail. A compiling example that asserts nothing is a vacuous pass and is forbidden; the run counts assertions rather than trusting that a file which ran has checked something. | Correctness | Test |
 | FR-089-CON-4 | No example SHALL be skipped, marked expected-to-fail, or disabled by a condition to obtain a green run, and no generated kernel package added to `tsconfig.json` `exclude` or excluded from lint or type-check for the same purpose. | Integrity | Inspection |
 | FR-089-CON-5 | The root `Cargo.toml` workspace SHALL exclude `crates/kernel-consumer/`; that crate SHALL build against the unpacked `cargo package --offline --no-verify` artifact in a scratch directory and declare no `path` dependency resolving outside it. A build that only works in the generator's tree is a failure. | Correctness | Inspection and test |
@@ -254,7 +250,7 @@ run that omits any one of them SHALL fail:
 | FR-089-AC-4 | Each example deserializes at least one positive golden kernel instance document from `packages/semantic-kernel/parity/golden/` and asserts the member values it carries, including at least one nested `TypeRef` target and one `ConstraintDecl` variant, rather than asserting only that no error was raised. | Test |
 | FR-089-AC-5 | Each example is refused, with the error named, on one document per forbidden class: an undeclared member on a `reject` record, a member absent that `multiplicity.lower >= 1` makes required, a `KernelScalar` variant outside the closed enum, a `ConstraintDecl` variant naming no declared keyword, a `pattern` violation, and a value outside a declared `minimum`/`maximum`. Accepting any one of them fails the example. | Test |
 | FR-089-AC-7 | No example's source matches an import of a path under `src/compiler/`, `python_backend/`, `packages/semantic-core/scripts/`, or `conformance/`, nor a deep import into the consumed package below its declared entry point. | Static |
-| FR-089-AC-8 | `packages/semantic-kernel/examples/closures.json` is written by the run from the resolved locks, and the assertion that no persistence, Tauri, user-interface, ORM, or application-framework package appears reads that file; injecting such a package into one example's manifest makes the assertion fail naming the example and the package. | Test |
+| FR-089-AC-8 | The run asserts over the resolved closure that no persistence, Tauri, user-interface, ORM, or application-framework package appears; injecting such a package into one example's manifest makes the assertion fail naming the example and the package. | Test |
 | FR-089-AC-9 | The Rust example declares the generated kernel crate and `serde_json` at a pinned exact version as a dev-dependency and nothing else; the TypeScript example declares no dependency beyond the generated package; the Python example declares only the generated package, `pydantic`, and the standard library. | Analysis |
 | FR-089-AC-10 | `crates/kernel-consumer/` builds offline with `-D warnings` against the unpacked artifact in a scratch directory; its `Cargo.toml` contains no `path` dependency resolving outside that directory, it does not appear in the root `Cargo.toml` workspace members, and a build attempted against the generator's output tree instead of the unpacked artifact fails. | Test |
 | FR-089-AC-11 | Removing an assertion from any one of the five demonstrations in any one example makes the run fail naming that example and that demonstration, so a silently emptied example cannot pass. | Test |
@@ -262,7 +258,7 @@ run that omits any one of them SHALL fail:
 | FR-089-AC-13 | No generated kernel package appears in `tsconfig.json` `exclude`, and the TypeScript example's strict type-check criterion is recorded as failing and blocked on `agent-ix/filament-core-data#22`, naming that issue, rather than reported as passing. | Inspection |
 | FR-089-AC-14 | `crates/kernel-consumer/Cargo.toml` carries `publish = false`, and the recorded command list for this requirement contains `cargo package --offline --no-verify` and contains no `cargo publish`, no `npm publish`, no PyPI upload, no tag push, no `--registry`, no `--index`, and no publish `--dry-run`. | Analysis |
 | FR-089-AC-15 | No example's source matches `Date.now`, `new Date`, `process.env`, `process.cwd`, `datetime.now`, `os.environ`, `std::time`, `std::env`, or any socket API, and two runs of every example produce byte-identical output. | Static |
-| FR-089-AC-16 | `git status --porcelain` is empty after every example runs, except for `packages/semantic-kernel/examples/closures.json` when a closure genuinely changed, which is a reviewed diff rather than a silent rewrite. | Test |
+| FR-089-AC-16 | `git status --porcelain` is empty after every example runs. | Test |
 | FR-089-AC-17 | Nothing under `packages/semantic-kernel/typescript/`, `packages/semantic-kernel/rust/`, `packages/semantic-kernel/python/`, `packages/semantic-core/generated/`, or `conformance/` differs before and after the examples run, compared byte-for-byte. | Test |
 | FR-089-AC-18 | Where the Python package excludes a colliding type name from `__all__`, the example reaches that type as `<module>.<Name>` and no example re-exports the excluded name. | Static |
 

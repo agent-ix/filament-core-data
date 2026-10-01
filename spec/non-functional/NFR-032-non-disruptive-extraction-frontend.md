@@ -80,7 +80,7 @@ the crates whose agreement is evidence remain independent of it.
   `test/*.test.ts`, the repository-root `scripts/**` other than
   `scripts/extraction-frontend-harness.mjs`, and every path of every other
   repository —
-  `config-service` and `quire-rs` are read-only. The `fixtures/**` and
+  `docs-service` and `quire-rs` are read-only. The `fixtures/**` and
   `tests/**` globs are anchored at the repository root and do not match
   `crates/extraction-frontend/fixtures/` or `crates/extraction-frontend/tests/`.
 - `crates/semantic-ir/**` is prohibited for edits and permitted as a
@@ -121,7 +121,7 @@ parity criterion is only a criterion while the two frontends share nothing but
 the IR they emit.
 
 The corpus repositories are prohibited for a reason this ticket measured. The
-Phase 0 gate found that the live `config-service` FR-006 predates the
+Phase 0 gate found that the live `docs-service` FR-006 predates the
 typed-table contract and lifts to nothing, and that no `object: entity`
 artifact anywhere under the authoring host's checkouts is yet in the typed form.
 The temptation to "fix the fixture" is exactly the corpus migration the program

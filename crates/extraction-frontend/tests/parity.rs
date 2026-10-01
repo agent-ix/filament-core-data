@@ -356,7 +356,7 @@ fn shuffled(document: &Value, seed: &[usize]) -> Value {
 #[trace("TC-1344", "FR-098-AC-12")]
 #[test]
 fn tc_1344_project_yields_types_only_no_origin_or_extensions_shared_identities_and_is_idempotent() {
-    let golden = read_json(&fixture("config-version-table/expected/semantic-ir.json"));
+    let golden = read_json(&fixture("snapshot-table/expected/semantic-ir.json"));
     let projected = project(&golden);
     assert_eq!(
         projected
@@ -397,6 +397,6 @@ fn tc_1344_project_yields_types_only_no_origin_or_extensions_shared_identities_a
     identities(&project(&without), &mut kept);
     assert!(kept
         .iter()
-        .all(|i| i.starts_with("ix://agent-ix/config-service/")));
-    let _ = fs::metadata(fixture("config-version-table"));
+        .all(|i| i.starts_with("ix://agent-ix/docs-service/")));
+    let _ = fs::metadata(fixture("snapshot-table"));
 }

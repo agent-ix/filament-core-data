@@ -15,7 +15,7 @@ relationships:
 ## Description
 
 The repository SHALL declare exactly one immutable target profile per supported
-generator output family at the declared Python and Pydantic versions, and every
+generator output family at the Python and Pydantic versions `pyproject.toml` resolves, and every
 generation SHALL take every generator option from exactly one declared profile
 it names.
 
@@ -31,7 +31,7 @@ it names.
 
 ## Behavior
 
-- The declared set SHALL carry exactly one profile per output family, all five families present, at the single declared Python minor version and the single declared Pydantic version of [FR-072](./FR-072-pin-the-python-generation-toolchain.md); a second Python or Pydantic version is a second declared set and a specification amendment.
+- The declared set SHALL carry exactly one profile per output family, all five families present, at the Python and Pydantic versions the `python-backend` Poetry group of [FR-072](./FR-072-pin-the-python-generation-toolchain.md) resolves.
 - Each profile SHALL carry an `id`, the `outputModelType`, the ordered `options` list, a `runtimeValidation` value of `validating` or `static-only`, and the `verdict` [FR-077](./FR-077-qualify-each-python-output-family.md) measured for it.
 - The declared set SHALL cover a family judged unsuitable rather than omit it, so that an unsuitable family is measured and declared instead of forgotten.
 - Each profile's `options` SHALL be a complete argument vector, so that the runner adds, removes, and reorders nothing at call time.
@@ -64,7 +64,7 @@ it names.
 | FR-073-AC-4 | No profile's options contain any member of the FR-073-CON-2 prohibited set, checked by exact option name rather than by substring. | Test |
 | FR-073-AC-5 | A generation request naming an undeclared profile id is refused naming the id and listing the declared ids. | Test |
 | FR-073-AC-6 | A generation request supplying its own generator option is refused, whether the option is prohibited, permitted, or already present in the profile. | Test |
-| FR-073-AC-8 | Every profile's `outputModelType` and the declared Python version are values the installed generator's own option parser accepts, read from the installed distribution rather than from a copy of its choices. | Test |
+| FR-073-AC-8 | Every profile's `outputModelType` and the `--target-python-version` option are values the installed generator's own option parser accepts, read from the installed distribution rather than from a copy of its choices. | Test |
 | FR-073-AC-9 | Mutating the value `load_profiles` returns does not change what a second call returns, for a mutation at any depth of the returned structure. | Property |
 | FR-073-AC-10 | Every declared profile id appears in the qualification report and every verdict in the report names a declared profile; this criterion is measured in the FR-077 step. | Test |
 
