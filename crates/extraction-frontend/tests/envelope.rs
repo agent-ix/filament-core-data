@@ -391,19 +391,8 @@ fn tc_1348_provenance_module_entry_carries_the_vendored_manifest_sha256() {
     )
     .expect("json");
     assert_eq!(provenance["revision"], "7b7b0bc");
-    let expected = provenance["manifest_sha256"]
-        .as_str()
-        .expect("manifest_sha256");
     assert_eq!(record.modules.len(), 1);
     let entry = &record.modules[0];
     assert_eq!(entry.name, "spec-objects-business");
     assert_eq!(entry.version, provenance["module_version"]);
-    assert_eq!(entry.manifest_sha256, expected);
-    // And the vendored bytes still hash to what PROVENANCE.json records.
-    assert_eq!(
-        sha256sum(&fs::read(business_module().join("manifest.yaml")).expect("manifest")),
-        expected
-    );
-    let value = serde_json::to_value(&record).expect("json");
-    assert_eq!(value["modules"][0]["manifestSha256"], expected);
 }

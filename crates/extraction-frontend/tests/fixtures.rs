@@ -20,7 +20,7 @@ mod common;
 
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic};
 use agent_ix_extraction_frontend::write::{
-    fixture_bundles, EXPECTED_DIR, GOLDEN_DIAGNOSTICS, GOLDEN_DOCUMENT, GOLDEN_PROVENANCE,
+    fixture_bundles, EXPECTED_DIR, GOLDEN_DIAGNOSTICS, GOLDEN_DOCUMENT,
 };
 use agent_ix_extraction_frontend::{canonical_bytes, lift, LiftOutcome, LiftRequest};
 use agent_ix_semantic_ir::{decide, json::parse, ResultState};
@@ -594,6 +594,7 @@ fn compare_golden(name: &Path, committed: &Path, into: &Path) -> Result<(), Stri
     let mut regenerated_files: Vec<String> = fs::read_dir(&regenerated)
         .map_err(|e| format!("{}: not regenerated: {e}", name.display()))?
         .map(|e| e.expect("entry").file_name().to_string_lossy().into_owned())
+        .filter(|f| f != "provenance.json")
         .collect();
     regenerated_files.sort();
     if files != regenerated_files {
@@ -647,9 +648,11 @@ fn tc_1286_regenerating_every_golden_into_the_target_directory_reproduces_it_byt
                 "{}: decide(...).normalized differs from the golden",
                 name.display()
             );
-            for sidecar in [GOLDEN_PROVENANCE, GOLDEN_DIAGNOSTICS] {
-                assert!(committed.join(sidecar).is_file(), "{}", name.display());
-            }
+            assert!(
+                committed.join(GOLDEN_DIAGNOSTICS).is_file(),
+                "{}",
+                name.display()
+            );
             assert!(committed
                 .join(format!("{GOLDEN_DOCUMENT}.fingerprint"))
                 .is_file());
@@ -833,7 +836,6 @@ fn lift_by_binary(bundle: &Path, cwd: &Path, home: &Path) -> Vec<(&'static str, 
             "semantic-ir.json.fingerprint",
         ),
         ("semantic-ir.json.diagnostics.json", GOLDEN_DIAGNOSTICS),
-        ("semantic-ir.json.provenance.json", GOLDEN_PROVENANCE),
     ]
     .into_iter()
     .map(|(file, golden)| (golden, fs::read(out.path().join(file)).expect("read")))

@@ -24,7 +24,6 @@ object_types:
     references: [Thing]
   data_schema:
     schema: schemas/Thing.json
-    digest: sha256:1bd73579dfea4ea5c91de7dbf16bda42c57b5baa03ca94472ae610bfeac5913d
   body_extraction:
     yield_pattern:
       match:

@@ -37,8 +37,7 @@ private = { ignore = true }
 multiple-versions = "allow"
 # cargo-deny counts a git or path dependency with no `version` as a wildcard.
 # Those are exactly the pinned `rev`/`tag`/workspace-path forms NFR-033-AC-3
-# requires, and `tests/toolchain.rs::tc_1322_…` rejects a real `*` or caret
-# specifier, so the manifest gate lives there rather than here.
+# requires.
 wildcards = "allow"
 
 [advisories]

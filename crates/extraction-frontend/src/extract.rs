@@ -73,12 +73,7 @@ pub fn extract(bundle: &Bundle) -> Extractions {
             Some(dsl) => context.with_body_extraction(dsl),
             None => context,
         };
-        let extraction = extract_semantic(
-            document.raw(),
-            &context,
-            object_type.archetype.semantic_schema_digest.as_deref(),
-            &required,
-        );
+        let extraction = extract_semantic(document.raw(), &context, &required);
         for diagnostic in &extraction.diagnostics {
             out.diagnostics.push(Diagnostic::engine(
                 diagnostic,

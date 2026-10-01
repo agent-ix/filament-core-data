@@ -153,11 +153,6 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
         ]
     );
     assert_eq!(
-        fr006.schema_digest.as_deref(),
-        Some("sha256:2ab5f17ccf655e4b2bfb562851985c9239bbf0b687f2a90abd5b11beb951b627"),
-        "the module's reference-form data_schema digest is passed through"
-    );
-    assert_eq!(
         out.artifacts["FR-006"].path,
         "spec/functional/FR-006-config-version-entity.md"
     );
