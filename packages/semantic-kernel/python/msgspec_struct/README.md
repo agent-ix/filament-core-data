@@ -55,9 +55,7 @@ refuses with `PY-REF-010` — correctly: an absolute-URI reference does make
 the generator a fetcher of caller-chosen content. The repair is in the
 input, never in the register: `python_backend/kernel/localize.py` rewrites
 each base-prefixed `$ref` to its bare sibling filename and drops the root
-`$id`, and the unmodified guard then admits the result. Every rewrite is
-recorded by document and JSON pointer in `PROVENANCE.json` under
-`localization`.
+`$id`, and the unmodified guard then admits the result.
 
 The same pass restores each document's `title` from its filename. The
 official `@typespec/json-schema` emitter states a model's identity as its
@@ -70,8 +68,7 @@ already carry.
 ## Licence
 
 The generated source is AGPL-3.0-or-later, like the rest of this
-repository. The generator is MIT and is attributed in
-`PROVENANCE.json`.
+repository.
 
 This package is not published. Publication passes
 `agent-ix/quoin#290` and the issue #23 safety gate, and reaches no

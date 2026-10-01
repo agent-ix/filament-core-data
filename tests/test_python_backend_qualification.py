@@ -77,7 +77,6 @@ def test_one_verdict_per_profile_each_citing_its_evidence() -> None:
     for profile in profiles.load_profiles():
         row = VERDICTS[profile["id"]]
         assert row["profileDigest"] == profiles.profile_digest(profile)
-        assert row["toolchainFingerprint"].startswith("sha256:")
 
 
 def test_measured_retention_equals_every_declared_expectation() -> None:
@@ -295,27 +294,6 @@ def test_each_generated_package_imports_cleanly(profile_id: str) -> None:
     assert completed.stderr.strip() == ""
 
 
-@pytest.mark.parametrize("profile_id", sorted(emit.demonstrated()))
-def test_provenance_carries_every_required_field_and_no_host_reading(
-    profile_id: str,
-) -> None:
-    """TC-920: FR-079-AC-3, FR-079-CON-3."""
-    provenance = json.loads(
-        (BACKEND / "generated" / profile_id / "PROVENANCE.json").read_text()
-    )
-    assert provenance["source"]["inputDigest"].startswith("sha256:")
-    assert provenance["profile"]["digest"].startswith("sha256:")
-    assert provenance["toolchainFingerprint"].startswith("sha256:")
-    assert provenance["contentFingerprint"].startswith("sha256:")
-    assert provenance["generator"]["license"] == "MIT"
-    assert "datamodel-code-generator (MIT)" in provenance["generator"]["attribution"]
-    assert provenance["generatedSourceLicense"] == "AGPL-3.0-or-later"
-    assert provenance["published"] is False
-    text = json.dumps(provenance)
-    assert str(REPO) not in text
-    assert sys.version.split()[0] not in text
-
-
 def test_the_generated_tree_regenerates_byte_for_byte() -> None:
     """TC-921: FR-079-AC-4, FR-079-CON-2."""
     assert emit.check() == 0
@@ -372,16 +350,6 @@ def test_no_backend_path_reaches_a_published_manifest() -> None:
     pyproject = (REPO / "pyproject.toml").read_text()
     include = pyproject.split("include = [")[1].split("]")[0]
     assert "python_backend" not in include
-
-
-def test_the_content_fingerprint_moves_only_with_content() -> None:
-    """TC-926: FR-079-AC-9."""
-    profile_id = sorted(emit.demonstrated())[0]
-    first = emit.build(profile_id)
-    second = emit.build(profile_id)
-    assert first == second
-    mutated = dict(first, **{"README.md": first["README.md"] + "\n"})
-    assert emit._content_fingerprint(mutated) != emit._content_fingerprint(first)
 
 
 def test_strict_type_checking_reports_no_error() -> None:

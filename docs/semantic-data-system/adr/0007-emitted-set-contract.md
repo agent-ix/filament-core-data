@@ -20,7 +20,7 @@ has since landed it, and the Status section records what the names are now:
 | validation | `validators.ts` | in the type, via `try_new` and serde | Pydantic |
 | refusals | `errors.ts` | in the crate's diagnostic vocabulary | — |
 | identity | `identity.ts` | `src/identity.rs` | — |
-| metadata | `metadata.ts` | `src/metadata.rs` | `PROVENANCE.json` |
+| metadata | `metadata.ts` | `src/metadata.rs` | — |
 
 The resemblance is a coincidence across the three and a convention inside one.
 `FR-065` fixes an eight-file set for the ESM package only. The generation seam
@@ -48,8 +48,7 @@ TypeScript's `identity` is Rust's `metadata`, and TypeScript's `metadata` is
 Rust's `identity`. A consumer reading two generated packages has to know which
 language it is holding before it can know what `identity` means.
 
-Python is a third shape again: no identity module, provenance as a
-`PROVENANCE.json` sidecar rather than emitted code, and the types produced by a
+Python is a third shape again: no identity module, and the types produced by a
 pinned third-party generator rather than by a backend of this repository's.
 
 There are two ways to read this. One is that the file set is a contract and
@@ -131,8 +130,6 @@ ADR does not make it one.
 - The `identity` / `provenance` repair changes generated file names in at least
   the TypeScript and Rust packages, which is a compatibility change under
   FR-051 and is sequenced as one.
-- `python_backend/`'s `PROVENANCE.json` stops reading as an inconsistency and
-  starts reading as a declared realisation of concept 5.
 - A gate can be written that asserts each backend's specification names all five
   concepts, which no gate can do against a file list that does not exist.
 - The two backends' feature vocabularies — `kind:scalar` against `scalar` for
@@ -153,7 +150,7 @@ backend, and `metadata` is retired as a name for either. As emitted today:
 | | TypeScript | Rust | JSON Schema | Python |
 |---|---|---|---|---|
 | semantic identity | `identity.ts` | `src/identity.rs` | `x-agent-ix-semantic-id`, inline | not carried; declared as a gap in FR-136 |
-| provenance | `provenance.ts`, exporting `PROVENANCE` | `src/provenance.rs` | `index.json` | `PROVENANCE.json` |
+| provenance | `provenance.ts`, exporting `PROVENANCE` | `src/provenance.rs` | `index.json` | — |
 
 JSON Schema and Python already spelled both concepts distinctly and were
 declared rather than changed. The feature-vocabulary defect this decision also

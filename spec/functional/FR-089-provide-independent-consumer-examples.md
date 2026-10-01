@@ -61,9 +61,7 @@ and every one of them will compile.
   dynamic `identity.ts` and `provenance.ts` API of the TypeScript backend, the
   provenance constants of the Rust crate that
   `crates/consumer-runtime/src/lib.rs` reads through
-  `agent_ix_conformance::provenance::PACKAGE_IDENTITY`, and the `PROVENANCE.json`
-  content fingerprint [FR-079](./FR-079-emit-the-python-package-layout.md)
-  requires of every emitted Python package
+  `agent_ix_conformance::provenance::PACKAGE_IDENTITY`
 - The two existing independent consumers read as the shape to match:
   `crates/consumer-compile-time/`, `crates/consumer-runtime/`, and
   `python_backend/examples/`

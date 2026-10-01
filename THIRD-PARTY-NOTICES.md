@@ -44,6 +44,17 @@ crates only. It is never a dependency of the generated crate, and it is never a
 dependency of `crates/semantic-ir` or `crates/conformance-adapter`, which
 declare none at all and carry their own JSON layer.
 
+## Build-time dependency of the Python generation route
+
+| Package | SPDX | Upstream | Licence text |
+|---|---|---|---|
+| `datamodel-code-generator` | `MIT` | https://github.com/koxudaxi/datamodel-code-generator | `LICENSE` in the published distribution |
+
+Copyright (c) 2019 Koudai Takahashi. `datamodel-code-generator` is an attributed,
+pinned third-party dependency of `python_backend/`; its licence is preserved and
+its source is neither vendored nor forked. It is a build-time dependency and
+appears in no emitted package's closure.
+
 ## Crates that are deliberately absent
 
 | Crate | Why it is not here |

@@ -27,9 +27,8 @@ from typing import Any
 
 from python_backend import DEPENDENCY_GROUP, ROOT
 from python_backend.adapter.guard import assert_argv_safe, assert_schema_safe
-from python_backend.adapter.jcs import digest
 from python_backend.adapter.prepare import Prepared
-from python_backend.adapter.profiles import profile_by_id, profile_digest
+from python_backend.adapter.profiles import profile_by_id
 from python_backend.runner.toolchain import ProvisioningError, toolchain
 
 LIMITS_PATH = ROOT / "limits.json"
@@ -51,9 +50,6 @@ def limits() -> dict[str, Any]:
 @dataclass
 class GenerationResult:
     profile_id: str
-    profile_digest: str
-    input_digest: str
-    toolchain_fingerprint: str
     files: dict[str, str]
     preparation: list[dict[str, str]] = field(default_factory=list)
     limits: dict[str, Any] = field(default_factory=dict)
@@ -157,31 +153,6 @@ def _environment(scratch_parent: Path) -> dict[str, str]:
     return env
 
 
-def toolchain_fingerprint(profile: dict[str, Any], input_digest: str) -> str:
-    """Over the DECLARED toolchain only.
-
-    Nothing the host observes enters this. A patch-level interpreter or a
-    formatter bump must not move a byte-compared artefact: that is issue #42's
-    coupling, and it is the reason the declared profiles use the generator's
-    dependency-free `builtin` formatter and `toolchain.json` records a Python
-    minor series.
-    """
-
-    declared = toolchain()
-    return digest(
-        {
-            "generator": declared["generator"]["version"],
-            "runtimes": {
-                row["distribution"]: row["version"] for row in declared["runtimes"]
-            },
-            "typeChecker": declared["typeChecker"]["version"],
-            "python": declared["python"]["minor"],
-            "profileDigest": profile_digest(profile),
-            "inputDigest": input_digest,
-        }
-    )
-
-
 def generate(
     prepared: Prepared,
     profile_id: str,
@@ -213,9 +184,6 @@ def generate(
         )
         raise LimitExceededError(msg)
 
-    input_digest = digest(
-        {name: payload.decode("utf-8") for name, payload in payloads.items()}
-    )
     command = _entry_point()
 
     scratch_parent = Path(tempfile.gettempdir())
@@ -293,9 +261,6 @@ def generate(
 
         return GenerationResult(
             profile_id=profile_id,
-            profile_digest=profile_digest(profile),
-            input_digest=input_digest,
-            toolchain_fingerprint=toolchain_fingerprint(profile, input_digest),
             files=files,
             preparation=prepared.preparation,
             limits={

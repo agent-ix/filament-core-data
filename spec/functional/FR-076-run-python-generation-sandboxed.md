@@ -36,7 +36,7 @@ declared toolchain.
 
 - `python_backend/runner/generate.py` exposing `generate(input_set, profile_id, out_dir)` returning a `GenerationResult`
 - `python_backend/limits.json`: the declared limits — the wall-clock timeout in seconds, the maximum total input size in bytes, and the environment allow-list
-- A `GenerationResult` carrying the generated file map, the profile digest, the input digest, the toolchain fingerprint, the `preparation` record, and the limits in force
+- A `GenerationResult` carrying the generated file map, the `preparation` record, and the limits in force
 
 ## Behavior
 
@@ -50,8 +50,7 @@ declared toolchain.
 - The runner SHALL terminate the subprocess and fail naming the timeout and its value when the declared wall-clock timeout elapses, sending a terminate signal and then a kill signal after a declared grace period.
 - The runner SHALL fail when the generator exits non-zero, emits a diagnostic on standard error the declared allow-list does not name, or writes zero files, so an empty output is never success.
 - The runner SHALL run the subprocess with Python warnings raised as errors, so the pinned version's own future-behaviour warnings surface as failures rather than as noise.
-- The runner SHALL record with each result a toolchain fingerprint computed over the **declared** toolchain of [FR-072](./FR-072-pin-the-python-generation-toolchain.md), the profile digest, and the input digest, and over nothing the host observes, so that a patch-level interpreter move does not change it.
-- The runner SHALL produce byte-identical file maps and an identical fingerprint for two generations from the same input set, profile, and declared toolchain, the second running from a scratch root that shares nothing with the first.
+- The runner SHALL produce byte-identical file maps for two generations from the same input set, profile, and declared toolchain, the second running from a scratch root that shares nothing with the first.
 - The runner SHALL open no network connection, asserted by instrumentation rather than by inspection alone.
 
 ## Constraints
@@ -68,7 +67,7 @@ declared toolchain.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-076-AC-1 | Generating the same prepared input set under the same profile twice, each into a fresh scratch root, yields byte-identical file maps and an identical toolchain fingerprint. | Integration |
+| FR-076-AC-1 | Generating the same prepared input set under the same profile twice, each into a fresh scratch root, yields byte-identical file maps. | Integration |
 | FR-076-AC-2 | No generated file contains a date, a time, an absolute path from the generating host, a user name, or a hostname. | Integration |
 | FR-076-AC-3 | A schema `assert_schema_safe` refuses causes the runner to raise before any subprocess is spawned, asserted by an instrumented spawn counter reading zero. | Test |
 | FR-076-AC-4 | A generation exceeding the declared timeout terminates the subprocess, fails naming the timeout and its value, removes the scratch root, and leaves `out_dir` unchanged. | Integration |

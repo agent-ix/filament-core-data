@@ -97,7 +97,6 @@ that decision requires.
 | Validation | Pydantic's own validation, a property of the wrapped generator's chosen library and a legitimate realisation rather than a gap |
 | Diagnostics | the seam's registry-coded refusals returned with the generation; this target emits no diagnostics module |
 | Semantic identity | **not carried today.** `datamodel-code-generator` drops the `x-agent-ix-semantic-id` annotation the JSON Schema documents carry, so no emitted module declares it. Declared here as a gap owned by this requirement's backend rather than left unstated |
-| Provenance | `PROVENANCE.json` |
 
 ## Constructs (FR-142)
 

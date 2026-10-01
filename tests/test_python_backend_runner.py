@@ -55,7 +55,6 @@ def test_two_generations_agree_byte_for_byte() -> None:
     first = runner.generate(_prepared(), "pydantic_v2_basemodel")
     second = runner.generate(_prepared(), "pydantic_v2_basemodel")
     assert first.files == second.files
-    assert first.toolchain_fingerprint == second.toolchain_fingerprint
 
 
 def test_no_generated_byte_carries_a_host_reading() -> None:

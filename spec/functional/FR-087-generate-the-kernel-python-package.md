@@ -43,11 +43,10 @@ and it publishes nothing.
 - `python_backend/kernel/__init__.py`, a new subpackage that holds everything this requirement adds on the Python side; it sits under `python_backend/` so the repository's existing `mypy`, `ruff`, and `black` configuration already reaches it and `pyproject.toml` needs no edit
 - `python_backend/kernel/localize.py` exposing `localize_bundle(documents, base)`, returning the localized documents and the ordered rewrite record in the `Rewrite` shape `python_backend/adapter/prepare.py` already defines
 - `python_backend/kernel/emit.py`, the kernel emit driver, with a `--check` verb
-- `packages/semantic-kernel/python/<profile-id>/`: one package tree per demonstrated family, each with one module per kernel document, an `__init__.py`, a `README.md`, and a `PROVENANCE.json`
+- `packages/semantic-kernel/python/<profile-id>/`: one package tree per demonstrated family, each with one module per kernel document, an `__init__.py`, and a `README.md`
 - `packages/semantic-kernel/python/NOT-QUALIFIED.md`: the recorded absence of a package for every family the qualification judged `not-qualified`
 - `packages/semantic-kernel/examples/python/<profile-id>.py`: one ordinary consumer per demonstrated family, authored under [FR-089](./FR-089-provide-independent-consumer-examples.md) so every language keeps its examples in one place
 - `tests/test_semantic_kernel.py`, the gate for everything this requirement asserts
-- The `localization` record inside each `PROVENANCE.json`: every rewritten `$ref`, every dropped `$id`, and every restored `title`, by document and JSON pointer
 
 ## Behavior
 
@@ -85,20 +84,14 @@ and it publishes nothing.
 
 ### Reusing the route rather than copying it
 
-- `python_backend/kernel/emit.py` SHALL reach the issue #23 route by importing it — `python_backend.adapter.prepare.prepare_documents`, `python_backend.adapter.profiles.profile_by_id`, `python_backend.adapter.render.render`, `python_backend.adapter.jcs.digest`, `python_backend.runner.generate.generate`, `python_backend.runner.inspect_source.inspect_generated`, `python_backend.runner.toolchain.toolchain`, and `python_backend.runner.emit.collisions` and `demonstrated` — and SHALL NOT fork the route, vendor a copy of it, or edit `python_backend/runner/emit.py`, whose `PUBLISHED` constant names the issue #23 input set and stays as it is.
-- Where a layout rule of `python_backend/runner/emit.py` is reachable only as a module-private function, the kernel driver SHALL re-derive it from the same public helpers, and a gate SHALL assert that the two produce identical `__init__.py` text and an identical content fingerprint for one file map, so the duplication cannot drift silently. A duplicated rule with no equality gate is how two emitters start disagreeing.
+- `python_backend/kernel/emit.py` SHALL reach the issue #23 route by importing it — `python_backend.adapter.prepare.prepare_documents`, `python_backend.adapter.profiles.profile_by_id`, `python_backend.runner.generate.generate`, `python_backend.runner.inspect_source.inspect_generated`, and `python_backend.runner.emit.collisions` and `demonstrated` — and SHALL NOT fork the route, vendor a copy of it, or edit `python_backend/runner/emit.py`, whose `PUBLISHED` constant names the issue #23 input set and stays as it is.
+- Where a layout rule of `python_backend/runner/emit.py` is reachable only as a module-private function, the kernel driver SHALL re-derive it from the same public helpers, and a gate SHALL assert that the two produce identical `__init__.py` text for one file map, so the duplication cannot drift silently. A duplicated rule with no equality gate is how two emitters start disagreeing.
 
 ### The emitted layout and provenance
 
 - The emitted tree SHALL live under `packages/semantic-kernel/python/`, alongside the kernel's other target packages, and SHALL be reachable from no distribution manifest: not from an npm `files` or `exports` entry, not from `pyproject.toml`'s `packages` or `include`, and not from any workflow under `.github/`.
 - The layout SHALL be the declared FR-079 layout: one module per input document, an `__init__.py` whose `__all__` is sorted and complete, and a `README.md` naming the family, the verdict, the conditions, and what the package does not carry — measured at thirty-one modules for `pydantic_v2_basemodel` over this bundle.
-- The FR-079 name-collision rule SHALL apply unchanged, through the imported `collisions`: a name two modules each declare is excluded from `__all__`, stays reachable as `<module>.<Name>`, and is recorded in `PROVENANCE.json` and the README; a name one module declares twice raises.
-- `PROVENANCE.json` SHALL carry the input digest over the localized-and-prepared input set, the profile digest, the toolchain fingerprint computed over the *declared* toolchain, and the content fingerprint over the package's file map excluding `PROVENANCE.json` itself.
-- `PROVENANCE.json` SHALL additionally carry the kernel bundle's identity: the `base` and `digest` of `packages/semantic-core/generated/toolchain.json` and the `@agent-ix/semantic-core` version that base encodes, so a package can be traced to the exact bundle it was generated from.
-- `PROVENANCE.json` SHALL carry the `localization` record and the `preparation` record as separate members, so the two input rewrites are attributable independently.
-- `PROVENANCE.json` SHALL preserve the upstream MIT attribution of `datamodel-code-generator` verbatim, naming its version `0.76.0` and its licence `MIT`, and SHALL declare the generated source `AGPL-3.0-or-later`. The attribution is not replaced by the AGPL header.
-- `PROVENANCE.json` SHALL carry no clock reading and no host-observed version, and SHALL carry `published: false` with `agent-ix/quoin#290` named as the gate.
-- Every committed JSON artefact this requirement writes SHALL be serialized through `python_backend.adapter.render.render`, so the byte comparison and `make lint` agree instead of contradicting each other.
+- The FR-079 name-collision rule SHALL apply unchanged, through the imported `collisions`: a name two modules each declare is excluded from `__all__`, stays reachable as `<module>.<Name>`, and is recorded in the README; a name one module declares twice raises.
 
 ### Type checking, regeneration, and publication
 
@@ -106,7 +99,7 @@ and it publishes nothing.
 - Each emitted package SHALL import under the declared interpreter with no exception and no warning, with every forward reference resolved and no unresolved `ForwardRef` on any model.
 - The pinned `mypy` at the version `python_backend/toolchain.json` records SHALL report zero errors over every emitted kernel module and every kernel example under `--strict`. The gate SHALL reach that tree by invoking the pinned checker on the path explicitly, so no `pyproject.toml` member, mypy override, or ruff exclusion is added. There SHALL be no per-module override, no relaxation of `strict`, and no `type: ignore` in generated or example source; a type the checker rejects is a finding, not a configuration problem.
 - Regenerating from the unchanged committed bundle SHALL reproduce the committed kernel tree byte-for-byte, and the `--check` form SHALL fail naming the first differing path when any committed byte is mutated.
-- Two generations from the same bundle, profile, and declared toolchain, each into a fresh scratch root, SHALL produce byte-identical file maps and an identical toolchain fingerprint.
+- Two generations from the same bundle, profile, and declared toolchain, each into a fresh scratch root, SHALL produce byte-identical file maps.
 - No PyPI publication, no `poetry publish`, no distribution build, and no tag push happens here. Publication is blocked on `agent-ix/quoin#290`, a human sign-off that has not moved, and on the issue #23 safety gate, and this requirement records that block by name rather than deferring it silently.
 - Each kernel example SHALL run under `tests/test_semantic_kernel.py`, importing only the generated package, the standard library, and the family's runtime, constructing a conforming kernel value, round-tripping it, and raising on a value the kernel bundle forbids.
 
@@ -135,15 +128,14 @@ and it publishes nothing.
 | FR-087-AC-6 | The `localization` record names every rewritten `$ref` and every dropped `$id` by document and pointer, and its counts equal the bundle's measured thirty-five references, thirty dropped `$id`s, and thirty restored titles. | Test |
 | FR-087-AC-7 | Every sealed kernel object schema generates a closed Python model — `extra='forbid'` in both Pydantic families — and generating the same bundle without the preparation pass yields an open one, asserted in both directions. | Integration |
 | FR-087-AC-8 | A package tree exists under `packages/semantic-kernel/python/` for exactly the families recorded as `qualified-with-conditions`, `NOT-QUALIFIED.md` records each `not-qualified` family with its verdict and lost constructs, and no tree exists for either. | Test |
-| FR-087-AC-9 | Each emitted kernel package has one module per kernel document and an `__init__.py` whose `__all__` is sorted, complete, and free of every name more than one module declares; those names are reachable as `<module>.<Name>` and listed in `PROVENANCE.json`. | Test |
+| FR-087-AC-9 | Each emitted kernel package has one module per kernel document and an `__init__.py` whose `__all__` is sorted, complete, and free of every name more than one module declares; those names are reachable as `<module>.<Name>` and listed in the README. | Test |
 | FR-087-AC-10 | Each emitted kernel package imports under the declared interpreter with no exception and no warning, and no model retains an unresolved forward reference. | Integration |
-| FR-087-AC-11 | `PROVENANCE.json` carries the input digest, the profile digest, the toolchain fingerprint, the content fingerprint, the kernel bundle base and digest, the `localization` and `preparation` records, the verbatim MIT attribution for `datamodel-code-generator 0.76.0`, `AGPL-3.0-or-later`, `published: false`, and `agent-ix/quoin#290`; and carries no clock reading and no host-observed version. | Test |
 | FR-087-AC-12 | The pinned `mypy` reports zero errors under `--strict` over every module and example under `packages/semantic-kernel/python/`, invoked by path with no configuration change; no generated or example source contains `type: ignore`; and `pyproject.toml` declares no override for that tree. Blocked by finding F1 below. | Analysis |
-| FR-087-AC-13 | Regenerating from the unchanged committed bundle reproduces the kernel tree byte-for-byte, `--check` fails naming a mutated committed file, and two generations into fresh scratch roots agree byte-for-byte and in fingerprint. | Snapshot |
+| FR-087-AC-13 | Regenerating from the unchanged committed bundle reproduces the kernel tree byte-for-byte, `--check` fails naming a mutated committed file, and two generations into fresh scratch roots agree byte-for-byte. | Snapshot |
 | FR-087-AC-14 | No byte under `packages/semantic-core/` changes, and `make semantic-core-check` passes, after a full kernel generation. | Analysis |
 | FR-087-AC-15 | No path under `packages/semantic-kernel/` appears in the packed file list of any distribution this repository builds, checked against the packed list rather than the manifest text alone; and no file under `.github/` names `semantic-kernel`. | Test |
 | FR-087-AC-16 | Each kernel example runs, constructs a conforming kernel value, round-trips it, and raises on a value the kernel bundle forbids. For `msgspec_struct` the conforming value is one of the twenty-six kernel types that family can decode, and the example additionally pins the four it cannot as finding F2 below. | Integration |
-| FR-087-AC-17 | `python_backend/kernel/emit.py` reaches the issue #23 route only by import, and for one file map its `__init__.py` text and content fingerprint are identical to what `python_backend/runner/emit.py` produces. | Test |
+| FR-087-AC-17 | `python_backend/kernel/emit.py` reaches the issue #23 route only by import, and for one file map its `__init__.py` text is identical to what `python_backend/runner/emit.py` produces. | Test |
 | FR-087-AC-18 | No generated kernel file contains a date, a time, an absolute path from the generating host, a user name, or a hostname, and no socket is opened during a kernel generation. | Integration |
 
 ## Findings
@@ -176,8 +168,8 @@ All four raise `TypeError` at decoder construction, not at decode time. Neither
 union shape occurs in the thirteen published documents the issue #23
 qualification probed, so neither is a `python_backend/qualification/gaps.json`
 row, and FR-087-CON-4 and FR-087-CON-7 both forbid closing that hole from here.
-The family is emitted with the loss recorded — in its `README.md`, in its
-`PROVENANCE.json`, and as an executable assertion in its example — and the
+The family is emitted with the loss recorded — in its `README.md` and as an
+executable assertion in its example — and the
 decision belongs to `agent-ix/filament-core-data#125`.
 
 ## Dependencies
