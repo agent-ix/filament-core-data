@@ -22,7 +22,7 @@ fn fixture(name: &str) -> PathBuf {
 }
 
 fn business_module() -> PathBuf {
-    fixture("modules/spec-objects-business")
+    fixture("modules/fixture-domain")
 }
 
 fn extra_module() -> PathBuf {
@@ -198,7 +198,7 @@ fn tc_1249_manifest_digest_and_lock_digest_equal_sha256sum_computed_outside_the_
     let manifest_hex = sha256sum(&manifest);
     assert_eq!(block.manifest_digest, format!("sha256:{manifest_hex}"));
 
-    let lines = format!("agent-ix/spec-objects-business@0.7.0:{manifest_hex}\n");
+    let lines = format!("fixture/domain@0.1.0:{manifest_hex}\n");
     assert_eq!(
         block.lock_digest,
         format!("sha256:{}", sha256sum(lines.as_bytes()))
@@ -211,9 +211,8 @@ fn tc_1249_manifest_digest_and_lock_digest_equal_sha256sum_computed_outside_the_
     );
     let block = envelope::package_block(&bundle, &modules);
     let extra_hex = sha256sum(&fs::read(extra_module().join("manifest.yaml")).expect("manifest"));
-    let lines = format!(
-        "agent-ix/objects-extra@0.1.0:{extra_hex}\nagent-ix/spec-objects-business@0.7.0:{manifest_hex}\n"
-    );
+    let lines =
+        format!("agent-ix/objects-extra@0.1.0:{extra_hex}\nfixture/domain@0.1.0:{manifest_hex}\n");
     assert_eq!(
         block.lock_digest,
         format!("sha256:{}", sha256sum(lines.as_bytes()))
@@ -260,18 +259,18 @@ fn tc_1256_manifest_digest_covers_both_manifests_in_name_order_whatever_the_root
     let block = envelope::package_block(&bundle, &forward);
     assert_eq!(block, envelope::package_block(&bundle, &backward));
 
-    let mut concat = fs::read(extra_module().join("manifest.yaml")).expect("objects-extra");
-    concat.extend(fs::read(business_module().join("manifest.yaml")).expect("business"));
+    let mut concat = fs::read(business_module().join("manifest.yaml")).expect("business");
+    concat.extend(fs::read(extra_module().join("manifest.yaml")).expect("objects-extra"));
     assert_eq!(
         block.manifest_digest,
         format!("sha256:{}", sha256sum(&concat)),
-        "objects-extra sorts before spec-objects-business"
+        "fixture-domain sorts before objects-extra"
     );
     let single = envelope::package_block(&bundle, &forward[..1]);
     assert_ne!(single.manifest_digest, block.manifest_digest);
 
     let names: Vec<String> = bundle.semantic_modules().keys().cloned().collect();
-    assert_eq!(names, ["objects-extra", "spec-objects-business"]);
+    assert_eq!(names, ["fixture-domain", "objects-extra"]);
     assert!(bundle.object_type("widget").is_some());
 
     // Property: any permutation of the caller's module list yields the same

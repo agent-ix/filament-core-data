@@ -1,5 +1,5 @@
-//! FR-094 "Relationships": frontmatter edges lowered under the vendored
-//! business module and the edge-vocabulary registry, over committed
+//! FR-094 "Relationships": frontmatter edges lowered under the fixture
+//! business module and the fixture-edges registry, over committed
 //! fixture bundles. Nothing here reads the environment.
 
 use std::fs;
@@ -27,11 +27,11 @@ fn fixture(name: &str) -> PathBuf {
 }
 
 fn business_module() -> PathBuf {
-    fixture("modules/spec-objects-business")
+    fixture("modules/fixture-domain")
 }
 
 fn edge_vocabulary() -> PathBuf {
-    fixture("modules/edge-vocabulary")
+    fixture("modules/fixture-edges")
 }
 
 fn limits() -> Limits {
@@ -60,7 +60,7 @@ fn lift_at(root: &Path, modules: &[&Path]) -> Lift {
     }
 }
 
-/// A lift under the business module and the edge-vocabulary registry.
+/// A lift under the business module and the fixture-edges registry.
 fn lift(name: &str) -> Lift {
     lift_at(&fixture(name), &[&business_module(), &edge_vocabulary()])
 }
@@ -538,10 +538,10 @@ fn tc_1244_renaming_the_target_moves_only_target_and_identity_and_a_registry_inv
     runner
         .run(&"x_[a-z]{2,8}", |label| {
             let scratch = tempfile::tempdir().expect("tempdir");
-            let module = scratch.path().join("edge-vocabulary");
+            let module = scratch.path().join("fixture-edges");
             copy_tree(&edge_vocabulary(), &module);
             fs::write(module.join("manifest.yaml"), flip(&manifest, &label)).expect("write");
-            let business = scratch.path().join("spec-objects-business");
+            let business = scratch.path().join("fixture-domain");
             copy_tree(&business_module(), &business);
             fs::write(
                 business.join("manifest.yaml"),

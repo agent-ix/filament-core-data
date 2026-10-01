@@ -3,17 +3,17 @@
 // (`type/String`, `type/Integer`, `type/Boolean`, `type/Timestamp`) is one
 // the spec-bundle frontend mints from its typed table too. No package-local
 // `scalar` is declared: the typed table cannot author one. The five roles
-// are the ones the spec-objects-business `entity` object type confers, so
+// are the ones the fixture-domain `entity` object type confers, so
 // both dialects declare the same `roles`.
 using AgentIx.Semantic.Decorators;
 
 namespace AgentIx.Semantic;
 
-@role("business:aggregate-member")
-@role("business:composite-owner")
-@role("business:domain-object")
-@role("business:entity")
-@role("business:persistable")
+@role("fixture-domain:aggregate-member")
+@role("fixture-domain:composite-owner")
+@role("fixture-domain:domain-object")
+@role("fixture-domain:entity")
+@role("fixture-domain:persistable")
 model Note {
   @identityField
   id: string;

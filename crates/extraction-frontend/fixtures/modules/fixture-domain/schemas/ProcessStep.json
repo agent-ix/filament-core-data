@@ -1,0 +1,32 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/domain/0.1.0/ProcessStep.json",
+	"type": "object",
+	"properties": {
+		"name": {
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/Identifier.json"
+		},
+		"kind": {
+			"$ref": "https://schemas.agent-ix.org/fixture/domain/0.1.0/StepKind.json"
+		},
+		"consumes": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/SemanticId.json"
+			}
+		},
+		"emits": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/SemanticId.json"
+			}
+		},
+		"doc": {
+			"type": "string"
+		}
+	},
+	"required": ["name", "kind"],
+	"unevaluatedProperties": {
+		"not": {}
+	}
+}

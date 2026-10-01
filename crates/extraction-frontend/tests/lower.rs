@@ -1,5 +1,5 @@
 //! FR-093: records, fields, constraints, enumerations and the declared
-//! losses, over committed fixture bundles under the vendored business
+//! losses, over committed fixture bundles under the fixture-domain
 //! module. Nothing here reads the environment.
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -40,13 +40,13 @@ fn fixture(name: &str) -> PathBuf {
 }
 
 fn business_module() -> PathBuf {
-    fixture("modules/spec-objects-business")
+    fixture("modules/fixture-domain")
 }
 
 /// The `edge_types` registry FR-094 categorises frontmatter edges by,
 /// declaring the business module's verbs byte-identically.
 fn edge_vocabulary() -> PathBuf {
-    fixture("modules/edge-vocabulary")
+    fixture("modules/fixture-edges")
 }
 
 fn limits() -> Limits {
@@ -295,17 +295,17 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
     let record = type_named(&types, "ConfigVersion");
     assert_eq!(
         record["kind"],
-        json!({"module": "agent-ix/spec-objects-business", "name": "entity"})
+        json!({"module": "fixture/domain", "name": "entity"})
     );
     assert_eq!(record["identity"], "ix://agent-ix/config-service/FR-006");
     assert_eq!(
         record["roles"],
         json!([
-            "business:aggregate-member",
-            "business:composite-owner",
-            "business:domain-object",
-            "business:entity",
-            "business:persistable"
+            "fixture-domain:aggregate-member",
+            "fixture-domain:composite-owner",
+            "fixture-domain:domain-object",
+            "fixture-domain:entity",
+            "fixture-domain:persistable"
         ])
     );
     assert_eq!(record["unknownPolicy"], "reject");
@@ -339,7 +339,7 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
     // Roles are sorted and de-duplicated whatever the manifest order.
     assert_eq!(
         roles(
-            "spec-objects-business",
+            "fixture-domain",
             "entity",
             &[
                 "persistable".into(),
@@ -348,9 +348,9 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
             ]
         ),
         [
-            "business:domain-object",
-            "business:entity",
-            "business:persistable"
+            "fixture-domain:domain-object",
+            "fixture-domain:entity",
+            "fixture-domain:persistable"
         ]
     );
     // Every emitted definition is schema-shaped: the reader accepts it.
@@ -1051,12 +1051,15 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     let status = type_named(&types, "OrderStatus");
     assert_eq!(
         status["kind"],
-        json!({"module": "agent-ix/spec-objects-business", "name": "enumeration"})
+        json!({"module": "fixture/domain", "name": "enumeration"})
     );
     assert_eq!(status["identity"], "ix://agent-ix/orders/EN_001");
     assert_eq!(
         status["roles"],
-        json!(["business:aggregate-member", "business:enumeration"])
+        json!([
+            "fixture-domain:aggregate-member",
+            "fixture-domain:enumeration"
+        ])
     );
     assert_eq!(status["unknownPolicy"], "reject");
     assert_eq!(status["constraints"], json!([]));
@@ -1391,10 +1394,10 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
     let domain = type_named(&types, "Ordering");
     assert_eq!(
         domain["kind"],
-        json!({"module": "agent-ix/spec-objects-business", "name": "domain"})
+        json!({"module": "fixture/domain", "name": "domain"})
     );
     assert!(domain.get("fields").is_none(), "{domain}");
-    assert_eq!(domain["roles"], json!(["business:domain"]));
+    assert_eq!(domain["roles"], json!(["fixture-domain:domain"]));
     assert_eq!(
         lift.extractions.artifacts["DM_001"]
             .extraction

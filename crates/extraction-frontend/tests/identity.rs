@@ -20,7 +20,7 @@ fn fixture(name: &str) -> PathBuf {
 }
 
 fn business_module() -> PathBuf {
-    fixture("modules/spec-objects-business")
+    fixture("modules/fixture-domain")
 }
 
 /// The FR-093 `displayName` of a document: frontmatter `name` when it is an

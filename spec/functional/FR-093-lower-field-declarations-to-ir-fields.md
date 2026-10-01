@@ -52,7 +52,7 @@ form and the fence form of one declaration produce identical `types[]`.
 
 - The frontend SHALL set `displayName` to the artifact's frontmatter `name` when that value is a semantic-core `Identifier`, and otherwise to the artifact's `title` verbatim.
 - If neither the frontmatter `name` nor the `title` is a semantic-core `Identifier`, then the frontend SHALL raise `agent-ix.extraction-frontend.UNNAMEABLE_ARTIFACT` at the frontmatter.
-- The frontend SHALL set `roles` to `<module short name>:<object type>` (for example `business:entity`) followed by each manifest role as `<module short name>:<role>`, sorted and de-duplicated, where the module short name is the manifest `name` with its `spec-objects-` prefix removed (`spec-objects-business` → `business`).
+- The frontend SHALL set `roles` to `<module short name>:<object type>` (for example `domain:entity`) followed by each manifest role as `<module short name>:<role>`, sorted and de-duplicated, where the module short name is the manifest `name` with its `spec-objects-` prefix removed (`spec-objects-domain` → `domain`).
 - The frontend SHALL set `unknownPolicy` to `reject`.
 - The frontend SHALL set the record's `origin.source` to the artifact's `path` at line 1, column 1, with `sourceIdentity` `ix://<org>/<name>/spec`.
 - If `availability.fields.state` is `not_applicable` (the object type requires no `## Properties`), then the frontend SHALL emit the type with `fields: []`, or with no `fields` member where its FR-142 construct carries none.

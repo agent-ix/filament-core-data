@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/agent-ix/spec-objects-business/0.7.0/Entity.json",
+	"$id": "https://schemas.agent-ix.org/fixture/domain/0.2.0/Entity.json",
 	"type": "object",
 	"properties": {
 		"fields": {
@@ -10,7 +10,7 @@
 			},
 			"minItems": 1,
 			"contains": {
-				"$ref": "https://schemas.agent-ix.org/agent-ix/spec-objects-business/0.7.0/IdentityField.json"
+				"$ref": "https://schemas.agent-ix.org/fixture/domain/0.2.0/IdentityField.json"
 			}
 		},
 		"relations": {
@@ -35,6 +35,5 @@
 	"required": ["fields"],
 	"unevaluatedProperties": {
 		"not": {}
-	},
-	"description": "An entity: identified data with its own lifecycle."
+	}
 }

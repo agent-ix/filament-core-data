@@ -1,0 +1,15 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/domain/0.1.0/Term.json",
+	"type": "object",
+	"properties": {
+		"term": {
+			"type": "string",
+			"minLength": 1
+		},
+		"doc": {
+			"type": "string"
+		}
+	},
+	"required": ["term", "doc"]
+}

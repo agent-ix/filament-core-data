@@ -34,7 +34,7 @@ fn fixture(name: &str) -> PathBuf {
 }
 
 fn business_module() -> PathBuf {
-    fixture("modules/spec-objects-business")
+    fixture("modules/fixture-domain")
 }
 
 fn load(bundle: &str, modules: &[&Path]) -> Result<Bundle, Refusal> {
@@ -116,13 +116,10 @@ fn tc_1200_config_version_table_lifts_seven_fields_for_fr_006_and_one_extraction
     let bundle = load_ok("config-version-table");
     assert_eq!(bundle.package().identity(), "agent-ix/config-service");
     let module = bundle
-        .semantic_module("spec-objects-business")
-        .expect("the vendored module carries a semantic block");
+        .semantic_module("fixture-domain")
+        .expect("the fixture module carries a semantic block");
     assert_eq!(module.semantic_core, "0.3.0");
-    assert_eq!(
-        bundle.module_version("spec-objects-business"),
-        Some("0.7.0")
-    );
+    assert_eq!(bundle.module_version("fixture-domain"), Some("0.1.0"));
 
     let out = extract(&bundle);
     let ids: Vec<&String> = out.artifacts.keys().collect();
@@ -197,7 +194,7 @@ fn tc_1201_module_without_semantic_block_refuses_naming_the_module() {
 #[test]
 fn tc_1202_unsupported_semantic_core_refuses_with_the_engine_code_and_lowers_nothing() {
     let root = fixture("negatives/MODULE_REFUSED");
-    let refusal = Bundle::load(&root, &[&root.join("modules/spec-objects-business")])
+    let refusal = Bundle::load(&root, &[&root.join("modules/fixture-domain")])
         .expect_err("refused rather than loaded as an empty model");
     assert_eq!(refusal.code(), Code::ModuleRefused);
     assert!(
@@ -214,7 +211,7 @@ fn tc_1202_unsupported_semantic_core_refuses_with_the_engine_code_and_lowers_not
     );
     assert!(refusal.diagnostic.message.contains("9.9.9"));
     let locus = refusal.diagnostic.locus.as_ref().expect("manifest locus");
-    assert_eq!(locus.path, "spec-objects-business/manifest.yaml");
+    assert_eq!(locus.path, "fixture-domain/manifest.yaml");
     assert_eq!((locus.start_line, locus.start_column), (1, 1));
 }
 
@@ -227,9 +224,7 @@ fn tc_1203_planted_ambient_module_never_changes_the_explicit_lift() {
 
     // Plant the conflicting module everywhere an ambient loader would look.
     let home = tempfile::tempdir().expect("tempdir");
-    let planted = home
-        .path()
-        .join(".ix/filament/modules/spec-objects-business");
+    let planted = home.path().join(".ix/filament/modules/fixture-domain");
     fs::create_dir_all(planted.join("schemas")).expect("mkdir");
     let conflicting = fixture("modules/conflicting");
     fs::copy(
@@ -399,7 +394,7 @@ fn tc_1206_bundle_index_names_every_object_by_id_and_title_and_a_title_cell_reso
         ]
     );
     assert_eq!(
-        index.imports["agent-ix/spec-objects-business"].len(),
+        index.imports["fixture/domain"].len(),
         11,
         "the module's exports are the import table"
     );

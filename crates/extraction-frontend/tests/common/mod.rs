@@ -152,23 +152,23 @@ pub fn fixture(name: &str) -> PathBuf {
 }
 
 pub fn business_module() -> PathBuf {
-    fixture("modules/spec-objects-business")
+    fixture("modules/fixture-domain")
 }
 
 pub fn edge_vocabulary() -> PathBuf {
-    fixture("modules/edge-vocabulary")
+    fixture("modules/fixture-edges")
 }
 
-/// The vendored `spec-objects-architecture` module (FR-143 #188): the
+/// The `fixture-systems` module (FR-143 #188): the
 /// systems-model kinds `part`, `port`, `connection`, `allocation` and
 /// `interface`. Not one of [`module_roots`]: only the systems-lowering tests
 /// load it, alongside [`business_module`] and [`edge_vocabulary`].
 pub fn soa_module() -> PathBuf {
-    fixture("modules/spec-objects-architecture")
+    fixture("modules/fixture-systems")
 }
 
 /// The module roots every lift loads (FR-094: the business objects and the
-/// edge-vocabulary registry).
+/// fixture-edges registry).
 pub fn module_roots() -> Vec<PathBuf> {
     vec![business_module(), edge_vocabulary()]
 }

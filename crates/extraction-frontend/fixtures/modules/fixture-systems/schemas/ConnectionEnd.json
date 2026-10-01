@@ -1,0 +1,17 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/systems/0.1.0/ConnectionEnd.json",
+	"type": "object",
+	"properties": {
+		"type": {
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/SemanticId.json"
+		},
+		"multiplicity": {
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/Multiplicity.json"
+		}
+	},
+	"required": ["type"],
+	"unevaluatedProperties": {
+		"not": {}
+	}
+}

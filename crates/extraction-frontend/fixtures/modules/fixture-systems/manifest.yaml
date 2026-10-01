@@ -1,0 +1,209 @@
+manifest_version: 1.0.0
+name: fixture-systems
+version: 0.1.0
+description: A synthetic systems-modelling module for the extraction frontend's fixtures
+semantic:
+  contract_version: 1.0.0
+  semantic_core: 0.3.0
+  package: fixture/systems
+  exports:
+  - interface
+  - part
+  - port
+  - connection
+  - allocation
+  imports: {}
+  targets: [json-schema]
+  mappings: [typed-table, sysml-fence, ocl-clause, generalization]
+  compatibility_posture: strict
+  legacy_forms: warning
+edge_types:
+  specializes: { description: "The source type specializes the target type and inherits its declarations.", category: structural, inverse: generalizes }
+  owned_by: { description: "A systems element is owned by its owning type or part.", category: structural }
+  typed_by: { description: "A systems element is typed by a type or interface.", category: structural }
+  connects: { description: "A connection joins the ports at its source and target ends.", category: structural }
+  allocates: { description: "An allocation names its source element.", category: realization }
+  allocated_to: { description: "An allocation names its target element.", category: realization }
+roles:
+  systems-part: { description: "A systems part." }
+  systems-port: { description: "A systems port owned by a part." }
+  systems-interface: { description: "An interface a systems port is typed by." }
+archetypes: []
+grammars: []
+artifact_types: []
+lint_rules: []
+object_types:
+- name: interface
+  roles: [systems-interface]
+  allowed_links:
+    specializes: [interface]
+  construct:
+    identity: none
+    shape: interface
+    members:
+      featureOrder: required
+      fields: optional
+      operations: optional
+      supertypes: optional
+      clauses: optional
+      relationships: optional
+    meaning: quire.meaning.systems.interface/v1
+  data_schema:
+    schema: schemas/Interface.json
+  body_extraction:
+    yield_pattern:
+      match:
+        id: &id
+          from: frontmatter_field
+          path: [id]
+          regex: ^([A-Za-z][A-Za-z0-9_]*)$
+          required: true
+        title: &title
+          from: frontmatter_field
+          path: [title]
+          required: true
+        type: &type
+          from: frontmatter_field
+          path: [type]
+          required: true
+        contract_yaml:
+          from: code_block
+          after_heading: Contract
+          language: yaml
+          required: true
+        operations:
+          from: section_body
+          after_heading: Operations
+          required: false
+        features:
+          from: table_row
+          under_section: Features
+          required: true
+          assert:
+            columns: [Feature, Kind]
+            min_rows: 1
+- name: part
+  roles: [systems-part]
+  allowed_links:
+    owned_by: ["*"]
+    typed_by: ["*"]
+  construct:
+    identity: none
+    shape: record
+    members:
+      owner: required
+      declaredType: required
+      multiplicity: required
+      fields: forbidden
+      operations: forbidden
+    meaning: quire.meaning.systems.part/v1
+  data_schema:
+    schema: schemas/Part.json
+  body_extraction:
+    yield_pattern:
+      match:
+        id: *id
+        title: *title
+        type: *type
+        part:
+          from: table_row
+          under_section: Part
+          required: true
+          assert:
+            columns: [Owner, Declared Type, Multiplicity]
+            min_rows: 1
+- name: port
+  roles: [systems-port]
+  allowed_links:
+    owned_by: [systems-part]
+    typed_by: [systems-interface]
+  construct:
+    identity: none
+    shape: record
+    members:
+      owner: required
+      direction: required
+      interfaceType: required
+      multiplicity: required
+      fields: forbidden
+      operations: forbidden
+    references:
+      owner: [systems-part]
+      interfaceType: [systems-interface]
+    meaning: quire.meaning.systems.port/v1
+  data_schema:
+    schema: schemas/Port.json
+  body_extraction:
+    yield_pattern:
+      match:
+        id: *id
+        title: *title
+        type: *type
+        port:
+          from: table_row
+          under_section: Port
+          required: true
+          assert:
+            columns: [Owner, Direction, Interface, Multiplicity]
+            min_rows: 1
+- name: connection
+  allowed_links:
+    connects: [systems-port]
+  construct:
+    identity: none
+    shape: record
+    members:
+      sourceEnd: required
+      targetEnd: required
+      flowDirection: required
+      fields: forbidden
+      operations: forbidden
+    references:
+      sourceEnd: [systems-port]
+      targetEnd: [systems-port]
+    meaning: quire.meaning.systems.connection/v1
+  data_schema:
+    schema: schemas/Connection.json
+  body_extraction:
+    yield_pattern:
+      match:
+        id: *id
+        title: *title
+        type: *type
+        connection:
+          from: table_row
+          under_section: Connection
+          required: true
+          assert:
+            columns: [Source, Source Multiplicity, Target, Target Multiplicity, Direction]
+            min_rows: 1
+- name: allocation
+  allowed_links:
+    allocates: ["*"]
+    allocated_to: [systems-part]
+  construct:
+    identity: none
+    shape: record
+    members:
+      sourceElement: required
+      targetElement: required
+      fields: forbidden
+      operations: forbidden
+    references:
+      targetElement: [systems-part]
+    meaning: quire.meaning.systems.allocation/v1
+  data_schema:
+    schema: schemas/Allocation.json
+  body_extraction:
+    yield_pattern:
+      match:
+        id: *id
+        title: *title
+        type: *type
+        allocation:
+          from: table_row
+          under_section: Allocation
+          required: true
+          assert:
+            columns: [Source, Target]
+            min_rows: 1

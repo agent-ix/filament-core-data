@@ -28,7 +28,7 @@ use serde_json::{json, Value};
 const PREFIX: &str = "ix://agent-ix/orders/";
 
 /// The package of the module declaring the business construct kinds.
-const BUSINESS: &str = "agent-ix/spec-objects-business";
+const BUSINESS: &str = "fixture/domain";
 
 /// One change to an artifact's text.
 type Edit = Box<dyn Fn(&str) -> String>;
@@ -1342,7 +1342,7 @@ fn tc_1752_type_identities_carry_the_artifact_id_and_a_rename_leaves_relationshi
 }
 
 /// Load, extract, resolve and lower the bundle at `root` under the business
-/// and edge-vocabulary modules.
+/// and fixture-edges modules.
 fn lower(root: &Path) -> Lowered {
     let (business, edges) = (business_module(), edge_vocabulary());
     let bundle = Bundle::load(root, &[business.as_path(), edges.as_path()])
@@ -1383,14 +1383,14 @@ fn lower_mutated(mutate: impl Fn(&mut Extractions)) -> Lowered {
 
 /// The module roots [`lower_systems`] and its callers' own [`LiftRequest`]s
 /// both load: the business fixture's own construct kinds, the shared edge
-/// vocabulary, and the vendored `spec-objects-architecture` (the
+/// vocabulary, and the `fixture-systems` (the
 /// systems-model kinds `part`, `port`, `connection`, `allocation` and
 /// `interface`).
 fn systems_module_roots() -> Vec<PathBuf> {
     vec![business_module(), edge_vocabulary(), soa_module()]
 }
 
-/// The business fixture plus the vendored `spec-objects-architecture`
+/// The business fixture plus the `fixture-systems`
 /// module, with the files `write` adds under `spec/functional/`, loaded,
 /// extracted, resolved and lowered under all three modules (FCD-local: no
 /// bundle fixture depends on this module set). Returns the scratch
@@ -1823,11 +1823,11 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
 
     // A population artifact: its `Members` table has no construct member.
     // The engine reads a model table only under the locator key that names
-    // it (quire-rs#449), and the vendored manifest still declares the
+    // it (quire-rs#449), and the fixture manifest still declares the
     // population extent table under `members`, so the key is renamed for
-    // this case (agent-ix/spec-objects-business#18).
+    // this case (the domain module).
     let dir = tempfile::tempdir().expect("tempdir");
-    let module = dir.path().join("spec-objects-business");
+    let module = dir.path().join("fixture-domain");
     copy_tree(&business_module(), &module);
     let manifest = module.join("manifest.yaml");
     let text = fs::read_to_string(&manifest).expect("manifest");
@@ -1921,20 +1921,20 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
 
     // FR-076 relationship rows. Under a module that does not declare the
     // `relationships` mapping the engine itself refuses the table with a
-    // blocking error; under the vendored module, which declares it, the
+    // blocking error; under the fixture module, which declares it, the
     // frontend refuses the artifact (#156 lowers the rows).
     let relationships = |t: &str| {
         format!("{t}\n## Relationships\n\n| Name | Verb | Target | Multiplicity |\n|------|------|--------|--------------|\n| order | references | FR-001 | 1..1 |\n")
     };
     let dir = tempfile::tempdir().expect("tempdir");
-    let module = dir.path().join("spec-objects-business");
+    let module = dir.path().join("fixture-domain");
     copy_tree(&business_module(), &module);
     let manifest = module.join("manifest.yaml");
     let text = fs::read_to_string(&manifest).expect("manifest");
     let undeclared_manifest = text.replacen(", relationships]", "]", 1);
     assert_ne!(
         undeclared_manifest, text,
-        "the vendored manifest declares the relationships mapping"
+        "the fixture manifest declares the relationships mapping"
     );
     fs::write(&manifest, undeclared_manifest).expect("write manifest");
     let root = dir.path().join("business");
@@ -2052,7 +2052,7 @@ fn tc_1799_a_specializes_edge_and_an_abstract_flag_lower_to_supertypes_and_abstr
 }
 
 /// FR-143-AC-11: the five systems-model kinds (QSpec FR-152, SOA
-/// `spec-objects-architecture`) lower `owner`, `declaredType`, `direction`,
+/// `fixture-systems`) lower `owner`, `declaredType`, `direction`,
 /// `interfaceType`, `multiplicity`, `sourceEnd`, `targetEnd`,
 /// `flowDirection`, `sourceElement`, `targetElement` and `featureOrder`
 /// (quire-rs FR-075 `model.part`/`model.port`/`model.connection`/
@@ -2317,14 +2317,14 @@ fn tc_1800_a_systems_reference_member_naming_a_since_refused_type_cascades_the_r
 /// its own object type unknown to the engine). This frontend refuses that
 /// identity by its full text, never rebinding it to a local artifact of the
 /// same bare id: `ix://acme/other/SP_001` never resolves to this bundle's
-/// own local `SP_001`. The vendored SOA module declares no import on its
+/// own local `SP_001`. The `fixture-systems` module declares no import on its
 /// own, so this uses an edited copy declaring one, the same way TC-1801
 /// edits a copy to relax a locator.
 #[trace("TC-1800", "FR-143-AC-11")]
 #[test]
 fn tc_1800_a_systems_reference_member_naming_an_imported_identity_is_refused() {
     let dir = tempfile::tempdir().expect("tempdir");
-    let module = dir.path().join("spec-objects-architecture");
+    let module = dir.path().join("fixture-systems");
     copy_tree(&soa_module(), &module);
     let manifest = module.join("manifest.yaml");
     let text = fs::read_to_string(&manifest).expect("manifest");
@@ -2705,7 +2705,7 @@ fn architecture_document() -> Value {
 /// artifact of each of the five systems kinds (`interface`, `part`, `port`,
 /// `connection`, `allocation`; ports and connections between components
 /// included), every one of them module-qualified
-/// `agent-ix/spec-objects-architecture`, an embedded `constructs` table
+/// `fixture/systems`, an embedded `constructs` table
 /// naming each kind actually used, and `agent_ix_semantic_ir::decide` raises
 /// nothing over it.
 #[trace("TC-1800", "FR-143-AC-11")]
@@ -2750,21 +2750,18 @@ fn tc_1800_the_architecture_fixture_lifts_to_ir_2_0_0_with_module_qualified_syst
     assert_eq!(
         type_kinds,
         [
-            ("Count", "agent-ix/spec-objects-business/value_object"),
-            ("Flow", "agent-ix/spec-objects-architecture/interface"),
-            ("Flow2", "agent-ix/spec-objects-architecture/interface"),
-            ("Pump", "agent-ix/spec-objects-business/entity"),
-            ("Sys", "agent-ix/spec-objects-business/entity"),
-            ("Tank", "agent-ix/spec-objects-business/entity"),
-            ("pipe", "agent-ix/spec-objects-architecture/connection"),
-            (
-                "pump_alloc",
-                "agent-ix/spec-objects-architecture/allocation"
-            ),
-            ("pump_out", "agent-ix/spec-objects-architecture/port"),
-            ("sys_pump", "agent-ix/spec-objects-architecture/part"),
-            ("sys_tank", "agent-ix/spec-objects-architecture/part"),
-            ("tank_in", "agent-ix/spec-objects-architecture/port"),
+            ("Count", "fixture/domain/value_object"),
+            ("Flow", "fixture/systems/interface"),
+            ("Flow2", "fixture/systems/interface"),
+            ("Pump", "fixture/domain/entity"),
+            ("Sys", "fixture/domain/entity"),
+            ("Tank", "fixture/domain/entity"),
+            ("pipe", "fixture/systems/connection"),
+            ("pump_alloc", "fixture/systems/allocation"),
+            ("pump_out", "fixture/systems/port"),
+            ("sys_pump", "fixture/systems/part"),
+            ("sys_tank", "fixture/systems/part"),
+            ("tank_in", "fixture/systems/port"),
         ]
         .map(|(name, kind)| (name.to_string(), kind.to_string()))
     );
@@ -2779,13 +2776,13 @@ fn tc_1800_the_architecture_fixture_lifts_to_ir_2_0_0_with_module_qualified_syst
     assert_eq!(
         kinds,
         [
-            "agent-ix/spec-objects-architecture/allocation",
-            "agent-ix/spec-objects-architecture/connection",
-            "agent-ix/spec-objects-architecture/interface",
-            "agent-ix/spec-objects-architecture/part",
-            "agent-ix/spec-objects-architecture/port",
-            "agent-ix/spec-objects-business/entity",
-            "agent-ix/spec-objects-business/value_object",
+            "fixture/domain/entity",
+            "fixture/domain/value_object",
+            "fixture/systems/allocation",
+            "fixture/systems/connection",
+            "fixture/systems/interface",
+            "fixture/systems/part",
+            "fixture/systems/port",
         ]
     );
 
@@ -2816,7 +2813,7 @@ fn tc_1800_the_architecture_fixture_lifts_to_ir_2_0_0_with_module_qualified_syst
 #[test]
 fn tc_1801_a_required_member_with_its_own_source_table_absent_from_the_artifact_refuses_it() {
     let dir = tempfile::tempdir().expect("tempdir");
-    let module = dir.path().join("spec-objects-architecture");
+    let module = dir.path().join("fixture-systems");
     copy_tree(&soa_module(), &module);
     let manifest = module.join("manifest.yaml");
     let text = fs::read_to_string(&manifest).expect("manifest");
@@ -2873,14 +2870,14 @@ fn tc_1801_a_required_member_with_its_own_source_table_absent_from_the_artifact_
 /// rather than through `shape`'s own blanket check — carried no test of its
 /// own before this one: every other required-member case in this file
 /// exercises a per-artifact source table (`Features`), never `supertypes` or
-/// `abstract`. The vendored business module declares its `enumeration`
+/// `abstract`. The `fixture-domain` module declares its `enumeration`
 /// construct's `supertypes` at FR-142's default (`optional`); this edits a
 /// copy to `required`, and `EN_001` declares no `specializes` edge.
 #[trace("TC-1802", "FR-143-AC-9")]
 #[test]
 fn tc_1802_an_enumeration_construct_requiring_supertypes_with_none_declared_refuses_it() {
     let dir = tempfile::tempdir().expect("tempdir");
-    let module = dir.path().join("spec-objects-business");
+    let module = dir.path().join("fixture-domain");
     copy_tree(&business_module(), &module);
     let manifest = module.join("manifest.yaml");
     let text = fs::read_to_string(&manifest).expect("manifest");
@@ -2938,7 +2935,7 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
     assert_eq!(entries.len(), used.len(), "no kind declared twice");
     for entry in entries {
         assert_eq!(entry["kind"]["module"], BUSINESS, "{entry}");
-        assert_eq!(entry["moduleVersion"], "0.7.0", "{entry}");
+        assert_eq!(entry["moduleVersion"], "0.1.0", "{entry}");
         assert_eq!(entry["manifestDigest"], digest.as_str(), "{entry}");
     }
     let entry = |name: &str| {
@@ -2958,18 +2955,18 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
                 "fields": "required", "identityFields": "required",
                 "clauses": "required", "members": "required"
             },
-            "references": { "members": ["business:aggregate-member"] },
+            "references": { "members": ["fixture-domain:aggregate-member"] },
             "rules": ["identity_field_required", "min_clauses"],
             "meaning": "quire.meaning.model.object-type/v1"
         })
     );
     assert_eq!(
         entry("nested_entity")["construct"]["references"],
-        json!({ "owner": ["business:composite-owner"] })
+        json!({ "owner": ["fixture-domain:composite-owner"] })
     );
     assert_eq!(
         entry("state_machine")["construct"]["references"],
-        json!({ "transitions": ["business:event-like"] })
+        json!({ "transitions": ["fixture-domain:event-like"] })
     );
 
     // The one seam: only `bundle.rs` reads a `construct` declaration, once,
@@ -3044,7 +3041,7 @@ fn tc_1792_a_broken_manifest_declaration_refuses_naming_the_module_and_object_ty
     for (label, broken) in cases {
         assert_ne!(broken, ENTITY, "{label}: the edit applies");
         let dir = tempfile::tempdir().expect("tempdir");
-        let module = dir.path().join("spec-objects-business");
+        let module = dir.path().join("fixture-domain");
         copy_tree(&business_module(), &module);
         fs::write(
             module.join("manifest.yaml"),
@@ -3061,13 +3058,13 @@ fn tc_1792_a_broken_manifest_declaration_refuses_naming_the_module_and_object_ty
         assert!(diagnostic.blocking, "{label}");
         assert!(
             diagnostic.message.starts_with(
-                "module spec-objects-business object type entity declares no valid construct: "
+                "module fixture-domain object type entity declares no valid construct: "
             ),
             "{label}: {}",
             diagnostic.message
         );
         let locus = diagnostic.locus.as_ref().expect("a manifest locus");
-        assert_eq!(locus.path, "spec-objects-business/manifest.yaml", "{label}");
+        assert_eq!(locus.path, "fixture-domain/manifest.yaml", "{label}");
     }
 }
 
@@ -3131,7 +3128,7 @@ fn kind_name_literals(root: &Path, files: &[PathBuf], names: &[String]) -> Vec<S
 #[test]
 fn tc_1787_no_business_kind_name_is_a_literal_in_source() {
     let root = workspace_dir();
-    // The business kinds are the vendored module's object type names.
+    // The business kinds are the `fixture-domain` module's object type names.
     let manifest = fs::read_to_string(business_module().join("manifest.yaml")).expect("manifest");
     let kinds: Vec<String> = manifest
         .lines()
@@ -3218,7 +3215,7 @@ fn tc_1787_no_business_kind_name_is_a_literal_in_source() {
 #[test]
 fn tc_1794_a_construct_requiring_feature_order_refuses_its_artifacts_for_want_of_a_source() {
     let dir = tempfile::tempdir().expect("tempdir");
-    let module = dir.path().join("spec-objects-business");
+    let module = dir.path().join("fixture-domain");
     copy_tree(&business_module(), &module);
     let manifest = module.join("manifest.yaml");
     let text = fs::read_to_string(&manifest).expect("manifest");

@@ -400,7 +400,7 @@ export function scratchCopy(root, label) {
 		"extraction-frontend",
 		"fixtures",
 		"modules",
-		"edge-vocabulary",
+		"fixture-edges",
 		"manifest.yaml",
 	);
 	mkdirSync(dirname(manifest), { recursive: true });
@@ -411,7 +411,7 @@ export function scratchCopy(root, label) {
 			"extraction-frontend",
 			"fixtures",
 			"modules",
-			"edge-vocabulary",
+			"fixture-edges",
 			"manifest.yaml",
 		),
 		manifest,

@@ -1189,7 +1189,19 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		// sample spanning every shape the manifest's rows take, so a change to
 		// the file's format, not just its content, is caught here rather than
 		// by a silent under-parse.
-		expect(Object.keys(EDGE_VOCABULARY).length).toBe(76);
+		const declared = readFileSync(
+			resolve(
+				root,
+				"crates/extraction-frontend/fixtures/modules/fixture-edges/manifest.yaml",
+			),
+			"utf8",
+		)
+			.split("\nedge_types:\n")[1]
+			.split("\nroles:")[0]
+			.split("\n")
+			.filter((line) => /^ {2}[a-z][a-z0-9_]*: \{/.test(line));
+		expect(Object.keys(EDGE_VOCABULARY).length).toBe(declared.length);
+		expect(declared.length).toBeGreaterThan(10);
 		expect(EDGE_VOCABULARY.contains).toEqual({
 			category: "structural",
 			inverse: "part_of",
@@ -1200,16 +1212,14 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		});
 		// A verb with no declared inverse still parses, with `inverse`
 		// `undefined` rather than absent-and-throwing or a stray key.
-		expect(EDGE_VOCABULARY.breaches).toEqual({
-			category: "governance",
+		expect(EDGE_VOCABULARY.triggers).toEqual({
+			category: "behavioral",
 			inverse: undefined,
 		});
 		// The last row of the file: the extractor's end-of-block detection (a
 		// line at column 0 ends it) does not drop it.
-		expect(EDGE_VOCABULARY.covers).toEqual({
-			category: "traceability",
-			inverse: "covered_by",
-		});
+		const lastVerb = /^ {2}([a-z][a-z0-9_]*):/.exec(declared.at(-1) ?? "")?.[1];
+		expect(Object.hasOwn(EDGE_VOCABULARY, String(lastVerb))).toBe(true);
 		// `belongs_to` is the FCD #199/#200 review's own example of a verb the
 		// manifest does not declare (H4's assurance-fixture finding).
 		expect(Object.hasOwn(EDGE_VOCABULARY, "belongs_to")).toBe(false);

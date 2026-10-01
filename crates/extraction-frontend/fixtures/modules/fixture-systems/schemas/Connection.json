@@ -1,0 +1,20 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/systems/0.1.0/Connection.json",
+	"type": "object",
+	"properties": {
+		"sourceEnd": {
+			"$ref": "https://schemas.agent-ix.org/fixture/systems/0.1.0/ConnectionEnd.json"
+		},
+		"targetEnd": {
+			"$ref": "https://schemas.agent-ix.org/fixture/systems/0.1.0/ConnectionEnd.json"
+		},
+		"flowDirection": {
+			"$ref": "https://schemas.agent-ix.org/fixture/systems/0.1.0/ConnectionDirection.json"
+		}
+	},
+	"required": ["sourceEnd", "targetEnd", "flowDirection"],
+	"unevaluatedProperties": {
+		"not": {}
+	}
+}

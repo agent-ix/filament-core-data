@@ -20,12 +20,12 @@ const REPOSITORY_ROOT = resolve(
 
 const EDGE_VOCABULARY_MANIFEST_PATH = resolve(
 	REPOSITORY_ROOT,
-	"crates/extraction-frontend/fixtures/modules/edge-vocabulary/manifest.yaml",
+	"crates/extraction-frontend/fixtures/modules/fixture-edges/manifest.yaml",
 );
 
 /**
  * verb -> `{ category, inverse }` for every `edge_types` entry of
- * `crates/extraction-frontend/fixtures/modules/edge-vocabulary/manifest.yaml`,
+ * `crates/extraction-frontend/fixtures/modules/fixture-edges/manifest.yaml`,
  * the one place both frontends draw the FR-094 edge vocabulary from (H4 of
  * the FCD #199/#200 review). The extraction-frontend reads a project's
  * configured module set at runtime through `bundle.registry().edge_types()`

@@ -1,7 +1,7 @@
 manifest_version: 1.0.0
 name: objects-extra
 version: 0.1.0
-description: One extra object type (widget) loaded beside the vendored module (FR-095-AC-11)
+description: One extra object type (widget) loaded beside fixture-domain (FR-095-AC-11)
 semantic:
   contract_version: 1.0.0
   semantic_core: 0.3.0

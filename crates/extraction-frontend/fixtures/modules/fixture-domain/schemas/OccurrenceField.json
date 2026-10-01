@@ -1,0 +1,11 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/domain/0.1.0/OccurrenceField.json",
+	"type": "object",
+	"properties": {
+		"type": {
+			"$ref": "https://schemas.agent-ix.org/fixture/domain/0.1.0/OccurrenceTypeRef.json"
+		}
+	},
+	"required": ["type"]
+}

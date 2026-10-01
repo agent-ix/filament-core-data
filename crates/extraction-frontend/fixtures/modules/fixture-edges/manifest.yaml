@@ -1,0 +1,43 @@
+manifest_version: 1.0.0
+name: fixture-edges
+version: 0.1.0
+description: A synthetic edge-type and role registry the frontend categorises verbs against (FR-094)
+semantic:
+  contract_version: 1.0.0
+  semantic_core: 0.3.0
+  package: fixture/edges
+  exports: []
+  imports: {}
+  targets: [json-schema]
+  mappings: [frontmatter]
+  compatibility_posture: additive
+  legacy_forms: warning
+archetypes: []
+grammars: []
+artifact_types: []
+lint_rules: []
+object_types: []
+edge_types:
+  contains: { description: "The source owns the target's lifecycle.", category: structural, inverse: part_of }
+  aggregates: { description: "An aggregate root groups member entities.", category: structural, inverse: part_of }
+  composes: { description: "A value object is built from other value objects or enumerations.", category: structural, inverse: composed_by }
+  contained_by: { description: "The source is a child of the target.", category: structural, inverse: contains }
+  calls: { description: "Synchronous invocation.", category: behavioral, inverse: called_by }
+  triggers: { description: "Starts a process or action.", category: behavioral }
+  reads: { description: "Non-mutating data access.", category: dataflow }
+  writes: { description: "Mutating data access.", category: dataflow }
+  publishes: { description: "Asynchronous emission to a channel.", category: dataflow, inverse: consumed_by }
+  depends_on: { description: "Requires the target to exist or function.", category: dependency }
+  implements: { description: "Fulfils an interface or contract.", category: dependency, inverse: implemented_by }
+  persists: { description: "A repository persists an aggregate or entity.", category: dependency }
+  operates_on: { description: "A process manipulates a domain object.", category: realization }
+  references: { description: "Loose, untyped linkage.", category: traceability }
+  traces_to: { description: "Traceability link.", category: traceability }
+  derives_from: { description: "The source is derived or refined from the target.", category: traceability, inverse: derives_into }
+  verifies: { description: "A test artifact verifies a requirement.", category: traceability }
+roles:
+  domain-object: { description: "A domain-model type." }
+  persistable: { description: "May be stored by a repository." }
+  event-like: { description: "A domain event." }
+  externally-exposed: { description: "A surface reachable from outside the system." }
+  measurable: { description: "A target whose health or value is measured." }

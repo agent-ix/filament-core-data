@@ -2,7 +2,7 @@
 //! closed `Resolution`, in two passes, and mint the kernel scalars a bundle
 //! uses once per package.
 //!
-//! Every bundle is a committed fixture under `fixtures/`; the vendored
+//! Every bundle is a committed fixture under `fixtures/`; the fixture
 //! business module is the module root (plus `acme-other` for the import
 //! case). Nothing here reads the environment.
 
@@ -32,7 +32,7 @@ fn fixture(name: &str) -> PathBuf {
 }
 
 fn business_module() -> PathBuf {
-    fixture("modules/spec-objects-business")
+    fixture("modules/fixture-domain")
 }
 
 fn load(name: &str, modules: &[&Path]) -> (Bundle, Extractions) {

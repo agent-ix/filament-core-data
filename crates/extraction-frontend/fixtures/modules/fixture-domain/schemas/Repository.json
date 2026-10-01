@@ -1,0 +1,54 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/domain/0.1.0/Repository.json",
+	"type": "object",
+	"properties": {
+		"operations": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/OperationDecl.json"
+			},
+			"minItems": 1
+		},
+		"persists": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/SemanticId.json"
+			}
+		}
+	},
+	"required": ["operations"],
+	"unevaluatedProperties": {
+		"not": {}
+	},
+	"allOf": [
+		{
+			"properties": {
+				"operations": {
+					"not": {
+						"contains": {
+							"anyOf": [
+								{
+									"required": ["pre"],
+									"properties": {
+										"pre": {
+											"minItems": 1
+										}
+									}
+								},
+								{
+									"required": ["post"],
+									"properties": {
+										"post": {
+											"minItems": 1
+										}
+									}
+								}
+							]
+						}
+					}
+				}
+			}
+		}
+	]
+}

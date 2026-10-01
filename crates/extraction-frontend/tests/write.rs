@@ -276,7 +276,7 @@ fn tc_1340_out_under_the_bundle_root_or_a_module_root_refuses_before_any_documen
     assert!(message.contains("out.json"), "{message}");
     assert_eq!(entries(&unloadable.join("spec")), ["spec.md"]);
 
-    // Under a module root: the vendored module, which stays pristine.
+    // Under a module root: the fixture module, which stays pristine.
     let module = business_module();
     let before = entries(&module);
     let under_module = LiftRequest {

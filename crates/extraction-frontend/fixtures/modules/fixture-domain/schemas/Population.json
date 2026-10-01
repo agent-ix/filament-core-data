@@ -1,0 +1,22 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/domain/0.1.0/Population.json",
+	"type": "object",
+	"properties": {
+		"members": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/fixture/domain/0.1.0/PopulationMember.json"
+			}
+		},
+		"clauses": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/ClauseRef.json"
+			}
+		}
+	},
+	"unevaluatedProperties": {
+		"not": {}
+	}
+}

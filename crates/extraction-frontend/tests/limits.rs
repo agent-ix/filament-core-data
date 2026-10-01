@@ -22,7 +22,7 @@ fn crate_dir() -> PathBuf {
 }
 
 fn business_module() -> PathBuf {
-    crate_dir().join("fixtures/modules/spec-objects-business")
+    crate_dir().join("fixtures/modules/fixture-domain")
 }
 
 fn write(root: &Path, rel: &str, text: &str) {

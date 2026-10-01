@@ -41,7 +41,7 @@ use serde_json::Value;
 /// `negatives/ARTIFACT_NOT_LOWERED`; the rest are the bundles FR-091..FR-097
 /// name in their criteria and FR-098 does not repeat (reported with
 /// Task-136). `architecture` is the filament-core-data#173 bundle: the
-/// spec-objects-architecture systems kinds (part, port, connection,
+/// fixture-systems systems kinds (part, port, connection,
 /// allocation, interface).
 const TOP_LEVEL: [&str; 13] = [
     "architecture",
@@ -63,11 +63,11 @@ const TOP_LEVEL: [&str; 13] = [
 const MODULES: [&str; 7] = [
     "acme-other",
     "conflicting",
-    "edge-vocabulary",
+    "fixture-domain",
+    "fixture-edges",
+    "fixture-systems",
     "frobnicates",
     "objects-extra",
-    "spec-objects-architecture",
-    "spec-objects-business",
 ];
 
 /// The codes FR-096 declares whose emission a committed file cannot

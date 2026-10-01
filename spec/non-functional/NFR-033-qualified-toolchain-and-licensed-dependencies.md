@@ -29,8 +29,8 @@ path, and so that nothing it links can change the licence of what it produces.
 ## Scope
 
 - Applies to: `crates/extraction-frontend/Cargo.toml`, its `deny.toml`,
-  `LICENSE`, `THIRD-PARTY-NOTICES.md`, its test sources, the vendored module
-  fixture under `crates/extraction-frontend/fixtures/modules/`, and every gate
+  `LICENSE`, `THIRD-PARTY-NOTICES.md`, its test sources, the synthetic module
+  fixtures under `crates/extraction-frontend/fixtures/modules/`, and every gate
   the `Makefile` block of FR-099 runs over the crate.
 - Does not apply to: the workspace's other members, which keep the
   workspace's own `rust-version`. The `rust-toolchain.toml` channel is the
@@ -78,9 +78,9 @@ notices file like every other reachable crate. A `path` dependency is permitted 
 and forbidden outside it; `file:` and `link:` specifiers are forbidden
 everywhere, because a path that leaves the workspace is a pin on a checkout.
 
-The module the fixtures are lifted under lives under
-`crates/extraction-frontend/fixtures/modules/spec-objects-business/` (`manifest.yaml`
-and `schemas/`) and is never loaded from `~/.ix`.
+The modules the fixtures are lifted under are synthetic modules authored in
+this repository, `fixture-domain`, `fixture-systems` and `fixture-edges`
+(each a `manifest.yaml` and `schemas/`), and are never loaded from `~/.ix`.
 
 Licence compatibility is a program mandate, not a preference: every original
 source is AGPL-3.0-or-later, and a dependency under an incompatible licence would
