@@ -355,7 +355,6 @@ class LocatorPrimitive:
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
 class DataSchema:
-    digest: Annotated[str, Field(pattern='^sha256:[0-9a-f]{64}$')]
     schema: Annotated[
         str, Field(min_length=1, pattern='^(?!/)(?!.*\\.\\.)[^\\u0000]+\\.json$')
     ]
@@ -418,7 +417,7 @@ class ObjectTypeEntry:
     data_schema: Annotated[
         dict[str, Any] | DataSchema | None,
         Field(
-            description="Inline JSON Schema object, or (quoin FR-073) a reference to the module's emitted schema by module-relative path and sha256 digest. An object carrying schema/digest together with any other key is ambiguous and rejected by the consumer."
+            description="Inline JSON Schema object, or (quoin FR-073) a reference to the module's emitted schema by module-relative path. An object carrying schema together with any other key is ambiguous and rejected by the consumer."
         ),
     ] = None
     description: str | None = None

@@ -369,7 +369,6 @@ class LocatorPrimitive(Struct):
 
 
 class DataSchema(Struct):
-    digest: Annotated[str, Meta(pattern='^sha256:[0-9a-f]{64}$')]
     schema: Annotated[
         str, Meta(min_length=1, pattern='^(?!/)(?!.*\\.\\.)[^\\u0000]+\\.json$')
     ]
@@ -432,7 +431,7 @@ class ObjectTypeEntry(Struct):
         Annotated[
             dict[str, Any] | DataSchema,
             Meta(
-                description="Inline JSON Schema object, or (quoin FR-073) a reference to the module's emitted schema by module-relative path and sha256 digest. An object carrying schema/digest together with any other key is ambiguous and rejected by the consumer."
+                description="Inline JSON Schema object, or (quoin FR-073) a reference to the module's emitted schema by module-relative path. An object carrying schema together with any other key is ambiguous and rejected by the consumer."
             ),
         ]
         | UnsetType

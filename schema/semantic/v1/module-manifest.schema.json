@@ -346,7 +346,7 @@
 					"type": "string"
 				},
 				"data_schema": {
-					"description": "Inline JSON Schema object, or (quoin FR-073) a reference to the module's emitted schema by module-relative path and sha256 digest. An object carrying schema/digest together with any other key is ambiguous and rejected by the consumer.",
+					"description": "Inline JSON Schema object, or (quoin FR-073) a reference to the module's emitted schema by module-relative path. An object carrying schema together with any other key is ambiguous and rejected by the consumer.",
 					"oneOf": [
 						{
 							"type": "object",
@@ -363,17 +363,13 @@
 						},
 						{
 							"type": "object",
-							"required": ["schema", "digest"],
+							"required": ["schema"],
 							"additionalProperties": false,
 							"properties": {
 								"schema": {
 									"type": "string",
 									"minLength": 1,
 									"pattern": "^(?!/)(?!.*\\.\\.)[^\\u0000]+\\.json$"
-								},
-								"digest": {
-									"type": "string",
-									"pattern": "^sha256:[0-9a-f]{64}$"
 								}
 							}
 						}

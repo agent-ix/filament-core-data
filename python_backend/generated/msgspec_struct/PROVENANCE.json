@@ -17,7 +17,7 @@
 			"semantic-ir.schema.json",
 			"target-contract.schema.json"
 		],
-		"inputDigest": "sha256:c6f112b314d714e3f62eda867cac7a7adfee8573dd417352f6bac14aa55712f4",
+		"inputDigest": "sha256:a389e7da9c9a346319e3a106d2103098d720aef042c5f3690cecb4d8a1889807",
 		"preparation": [
 			{
 				"rule": "enum-default-conflict-dropped",
@@ -83,5 +83,5 @@
 		"RoundTrip": ["profile_schema", "representation_schema"]
 	},
 	"published": false,
-	"contentFingerprint": "sha256:b4b283745afa9ef136a604f3e30cca705620b73eb232ff41bdad6768b21b656d"
+	"contentFingerprint": "sha256:e9f97d22a3739502b6ea2a5536d3c09f7eaa1f7c1f87f194e3f56a75600c09c0"
 }
