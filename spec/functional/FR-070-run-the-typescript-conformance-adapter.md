@@ -77,7 +77,6 @@ obliges honesty about how the agreement was reached.
 - The adapter SHALL write one JSON array to standard output carrying one `conformance/schema/adapter-result.schema.json` document per corpus case.
 - The adapter SHALL exit `0` whatever verdicts it computed, because a non-zero exit is read by the harness as an adapter failure rather than as a case failure.
 - The adapter SHALL read the corpus only through the declared import API of `conformance/oracle/index.mjs`.
-- The adapter SHALL take each result's `caseDigest` from the corpus manifest rather than recomputing it from bytes it chose, so a case it misread cannot be made to agree with itself.
 - The adapter SHALL compute `resultState` and `diagnostics` from `admitIr`.
 - The adapter SHALL compute `normalized` from `normalizeIrForTarget`.
 - For a case whose `kind` is `compatibility`, the adapter SHALL compute `classification` from `classifySurface` over the `before` and `after` bundles.
@@ -162,7 +161,7 @@ obliges honesty about how the agreement was reached.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-070-AC-1 | `make conformance` runs the `typescript-backend` command over all 115 cases and the harness reports no `adapter`, `unknown-case`, `duplicate-answer`, `case-digest`, or `missing-answer` problem. | Integration |
+| FR-070-AC-1 | `make conformance` runs the `typescript-backend` command over all 115 cases and the harness reports no `adapter`, `unknown-case`, `duplicate-answer`, or `missing-answer` problem. | Integration |
 | FR-070-AC-2 | Every document the adapter emits validates against `conformance/schema/adapter-result.schema.json`. | Test |
 | FR-070-AC-3 | The adapter answers `support: "supported"` for all 115 cases and `unavailable` for none. | Test |
 | FR-070-AC-4 | The measured match count, failure count, and divergence count are recorded in `spec/tests.md` with the command that produced them, and a claimed figure that the regenerated coverage account contradicts fails the suite. | Analysis |

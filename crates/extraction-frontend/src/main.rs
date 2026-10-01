@@ -28,7 +28,7 @@ use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic};
 use agent_ix_extraction_frontend::limits::Limits;
 use agent_ix_extraction_frontend::write::{
     fixture_bundles, fixture_module_roots, fresh_dir, install_golden, read_json, write_lift,
-    Emission, EXPECTED_DIR, GOLDEN_DIAGNOSTICS, GOLDEN_DOCUMENT, GOLDEN_PROVENANCE,
+    Emission, EXPECTED_DIR, GOLDEN_DIAGNOSTICS, GOLDEN_DOCUMENT,
 };
 use agent_ix_extraction_frontend::{lift, validate_document, LiftOutcome, LiftRequest};
 use clap::{ArgGroup, Args, Parser, Subcommand};
@@ -60,7 +60,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     /// Lift one bundle under the named module roots to one document and
-    /// three sidecars, or regenerate every fixture golden.
+    /// two sidecars, or regenerate every fixture golden.
     Lift(LiftArgs),
     /// Decide a written document through the independent reader and list
     /// its types.
@@ -87,8 +87,8 @@ struct LiftArgs {
         conflicts_with = "write_goldens"
     )]
     modules: Vec<PathBuf>,
-    /// The document path; `<out>.fingerprint`, `<out>.diagnostics.json`
-    /// and `<out>.provenance.json` are written beside it.
+    /// The document path; `<out>.fingerprint` and `<out>.diagnostics.json`
+    /// are written beside it.
     #[arg(
         long,
         value_name = "FILE",
@@ -99,9 +99,6 @@ struct LiftArgs {
     /// Write the diagnostics sidecar here instead of `<out>.diagnostics.json`.
     #[arg(long, value_name = "FILE", conflicts_with = "write_goldens")]
     diagnostics: Option<PathBuf>,
-    /// Write the provenance sidecar here instead of `<out>.provenance.json`.
-    #[arg(long, value_name = "FILE", conflicts_with = "write_goldens")]
-    provenance: Option<PathBuf>,
     /// Regenerate the FR-098 goldens of every fixture bundle under
     /// `--fixtures`, into `--staging` (installed as each fixture's
     /// `expected/`) or `--into` (left there).
@@ -166,7 +163,6 @@ fn lift_one(args: &LiftArgs) -> u8 {
         module_roots: args.modules.clone(),
         out: out.clone(),
         diagnostics: args.diagnostics.clone(),
-        provenance: args.provenance.clone(),
     };
     report(&lift(&request))
 }
@@ -237,7 +233,6 @@ fn write_golden(
         module_roots,
         out: work.join(GOLDEN_DOCUMENT),
         diagnostics: Some(work.join(GOLDEN_DIAGNOSTICS)),
-        provenance: Some(work.join(GOLDEN_PROVENANCE)),
     };
     let outcome = lift(&request);
     let verdict = match &outcome {

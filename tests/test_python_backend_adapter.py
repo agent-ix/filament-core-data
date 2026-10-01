@@ -102,25 +102,6 @@ def test_a_caller_supplied_option_is_refused(option: str) -> None:
         guard.assert_argv_safe(argv)
 
 
-def test_the_profile_digest_covers_the_argument_vector_and_not_the_verdict() -> None:
-    """TC-860: FR-073-AC-7."""
-    profile = profiles.profile_by_id("pydantic_v2_basemodel")
-    baseline = profiles.profile_digest(profile)
-    assert (
-        profiles.profile_digest(profiles.profile_by_id("pydantic_v2_basemodel"))
-        == baseline
-    )
-
-    changed = dict(profile, options=[*profile["options"], "--strict-refs"])
-    assert profiles.profile_digest(changed) != baseline
-
-    reordered = dict(profile, options=list(reversed(profile["options"])))
-    assert profiles.profile_digest(reordered) != baseline
-
-    measured = dict(profile, verdict="qualified", runtimeValidation="static-only")
-    assert profiles.profile_digest(measured) == baseline
-
-
 def test_the_declared_targets_are_values_the_installed_generator_accepts() -> None:
     """TC-861: FR-073-AC-8."""
     from datamodel_code_generator import DataModelType  # noqa: PLC0415

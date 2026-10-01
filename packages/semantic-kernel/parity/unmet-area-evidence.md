@@ -7,7 +7,7 @@ package existed to serialize. All four packages now exist under
 to `agent-ix/filament-core-data#20`, the corpus owner, for closing that row.
 
 This requirement does not edit the row, its `rationale`, its `owningIssues`,
-the `unmetAreas` register, `corpusVersion`, `corpusDigest`, or the
+the `unmetAreas` register, `corpusVersion`, or the
 "What this corpus does not do" section of `conformance/README.md`. Closing the
 area is the corpus owner's act.
 

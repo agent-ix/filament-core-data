@@ -44,7 +44,7 @@ fn golden(name: &str) -> (Vec<u8>, Vec<u8>) {
 
 /// The bytes one lift left at `out` and its diagnostics sidecar.
 fn written(out: &Path) -> (Vec<u8>, Vec<u8>) {
-    let paths = OutputPaths::new(out, None, None);
+    let paths = OutputPaths::new(out, None);
     (
         fs::read(&paths.document).unwrap_or_else(|e| panic!("{}: {e}", paths.document.display())),
         fs::read(&paths.diagnostics)

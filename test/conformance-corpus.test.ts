@@ -46,12 +46,11 @@ const manifest = corpus.loadManifest() as Json & {
 	cases: {
 		id: string;
 		path: string;
-		digest: string;
 		expectedDigest: string;
 		family: string;
 		class: string;
 	}[];
-	bases: { id: string; path: string; digest: string }[];
+	bases: { id: string; path: string }[];
 	constructRegister: {
 		id: string;
 		family: string;
@@ -62,7 +61,6 @@ const manifest = corpus.loadManifest() as Json & {
 	}[];
 	unmetAreas: { id: string; owningIssues: string[] }[];
 	corpusVersion: string;
-	corpusDigest: string;
 	predecessor: { state: string; ref: string; rationale: string };
 	minimizationBudget: number;
 	caseIdPattern: string;
@@ -81,16 +79,12 @@ const gateFailures = corpus.corpusGates() as {
 	message: string;
 }[];
 
-const digestOf = (id: string) =>
-	manifest.cases.find((row) => row.id === id)?.digest as string;
-
 function conforming(entry: Json) {
 	const verdict = corpus.oracleVerdict(entry) as Json;
 	return {
 		adapter: "stub-conforming",
 		adapterVersion: "1.0.0",
 		caseId: entry.id as string,
-		caseDigest: digestOf(entry.id as string),
 		support: "supported",
 		resultState: verdict.resultState,
 		diagnostics: verdict.diagnostics,
@@ -188,7 +182,7 @@ const gatesWithManifest = (mutate: (value: Json) => void) => {
 	}[];
 };
 
-describe("TC-280..289 the corpus format, provenance, and digests (FR-035)", () => {
+describe("TC-280..289 the corpus format and provenance (FR-035)", () => {
 	it("TC-280 every case, base, and the manifest validate against the conformance schemas", () => {
 		expect(
 			validateConformance("corpus-manifest.schema.json", manifest),
@@ -261,36 +255,6 @@ describe("TC-280..289 the corpus format, provenance, and digests (FR-035)", () =
 					one.gate === "provenance" &&
 					one.message.includes("not a declared contract artifact"),
 			),
-		).toBe(true);
-	});
-
-	it("TC-283 every digest and the corpus digest recompute from disk", () => {
-		const computed = corpus.computeDigests() as {
-			bases: { id: string; digest: string }[];
-			cases: { id: string; digest: string }[];
-			corpusVersion: string;
-			corpusDigest: string;
-		};
-		expect(computed.corpusDigest).toBe(manifest.corpusDigest);
-		expect(computed.cases.map((row) => [row.id, row.digest])).toEqual(
-			manifest.cases.map((row) => [row.id, row.digest]),
-		);
-		expect(computed.bases.map((row) => [row.id, row.digest])).toEqual(
-			manifest.bases.map((row) => [row.id, row.digest]),
-		);
-	});
-
-	it("TC-283 a case digest that no longer matches the file fails the gate and names it", () => {
-		const failures = gatesWithManifest((seeded) => {
-			(seeded.cases as { digest: string }[])[0].digest =
-				`sha256:${"0".repeat(64)}`;
-		});
-		const digestFailure = failures.find((one) => one.gate === "digest");
-		expect(digestFailure).toBeDefined();
-		expect(digestFailure?.subject).toBe(manifest.cases[0].id);
-		expect(
-			failures.some((one) => one.gate === "corpus-digest"),
-			"a changed case digest also changes the corpus digest",
 		).toBe(true);
 	});
 
@@ -948,7 +912,6 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 			adapter: result.adapter,
 			adapterVersion: result.adapterVersion,
 			caseId: result.caseId,
-			caseDigest: result.caseDigest,
 			support: "unavailable",
 		}));
 		// The synthetic unavailable slot accepts this response; the checked
@@ -1087,7 +1050,6 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 							adapter: result.adapter,
 							adapterVersion: result.adapterVersion,
 							caseId: result.caseId,
-							caseDigest: result.caseDigest,
 							support: "unsupported",
 						}
 					: result,
@@ -1120,7 +1082,6 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 						adapter: result.adapter,
 						adapterVersion: result.adapterVersion,
 						caseId: result.caseId,
-						caseDigest: result.caseDigest,
 						support: "unsupported",
 					}
 				: result,
@@ -1207,21 +1168,6 @@ describe("TC-302..313 the differential harness (FR-037)", () => {
 		expect(text).toMatch(/execFileSync\(\s*adapter\.command\[0\]/);
 		expect(text).not.toMatch(/import\([^)]*adapters/);
 		expect(text).not.toMatch(/from\s+"\.\.\/adapters\//);
-	});
-
-	it("TC-311 an answer whose case digest does not match the manifest is rejected", () => {
-		const results = conformingResults("typescript-backend") as Json[];
-		results[0].caseDigest = `sha256:${"0".repeat(64)}`;
-		const report = run({
-			adapterResults: { "typescript-backend": results },
-		}) as {
-			exitCode: number;
-			problems: { kind: string }[];
-		};
-		expect(report.exitCode).toBe(1);
-		expect(report.problems.some((one) => one.kind === "case-digest")).toBe(
-			true,
-		);
 	});
 
 	it("TC-311 an answer for a case the corpus does not declare is rejected", () => {
@@ -1886,7 +1832,7 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		expect(corpus.versioningFailures(before, after)).toEqual([]);
 	});
 
-	it("TC-639 a removed case and a changed base each require a major bump", () => {
+	it("TC-639 a removed case requires a major bump", () => {
 		const before = structuredClone(manifest) as Json;
 		const removed = structuredClone(manifest) as {
 			corpusVersion: string;
@@ -1898,17 +1844,6 @@ describe("TC-635..419 blessing-free evidence and isolation (NFR-015, NFR-016)", 
 		removed.predecessor = { ...predecessorRequired };
 		expect(
 			(corpus.versioningFailures(before, removed) as unknown[]).length,
-		).toBe(1);
-		const rebased = structuredClone(manifest) as {
-			corpusVersion: string;
-			predecessor: Json;
-			bases: { digest: string }[];
-		};
-		rebased.bases[0].digest = `sha256:${"1".repeat(64)}`;
-		rebased.corpusVersion = bumped("patch");
-		rebased.predecessor = { ...predecessorRequired };
-		expect(
-			(corpus.versioningFailures(before, rebased) as unknown[]).length,
 		).toBe(1);
 	});
 

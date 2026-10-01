@@ -34,7 +34,7 @@ whether the document was written.
 The exit-code contract is owned here and referenced by FR-096 and FR-097: `0`
 when no diagnostic blocks, `1` when a lowering diagnostic blocks, `2` when the
 lift is refused before lowering. The sidecars of FR-097 are always written; the
-`--diagnostics` and `--provenance` options only rename them. The no-ambient-
+`--diagnostics` option only renames the diagnostics sidecar. The no-ambient-
 module rule is FR-091's; this command exposes no fallback for it to violate.
 `cargo deny` and `cargo audit` gates are Make targets here so that NFR-033's
 evidence has a named producer. The Make rehearsals of FR-099-AC-4 are `Static`
@@ -57,11 +57,10 @@ evidence produced by the named targets, not by `cargo test`.
 
 ### `lift`
 
-- The command SHALL accept `lift --bundle <dir> --module <dir> [--module <dir>]... --out <file> [--diagnostics <file>] [--provenance <file>]`.
+- The command SHALL accept `lift --bundle <dir> --module <dir> [--module <dir>]... --out <file> [--diagnostics <file>]`.
 - The command SHALL load the bundle under exactly the named module roots through FR-091.
 - The command SHALL write the document and sidecars per FR-097.
 - If `--diagnostics <file>` is given, then the command SHALL write the FR-097 diagnostics sidecar at `<file>` instead of `<out>.diagnostics.json`.
-- If `--provenance <file>` is given, then the command SHALL write the FR-097 provenance sidecar at `<file>` instead of `<out>.provenance.json`.
 - The command SHALL print every diagnostic to standard error, one per line, in FR-096 order, on every lift.
 - The command SHALL exit `0` when no diagnostic is blocking.
 - The command SHALL exit `1` when any diagnostic is blocking and the lift was not refused.
@@ -110,7 +109,7 @@ evidence produced by the named targets, not by `cargo test`.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-099-AC-1 | `lift` over the `config-version-table` fixture with its two module roots (`--module fixtures/modules/spec-objects-business --module fixtures/modules/edge-vocabulary`) exits `0` and writes `<out>`, `<out>.fingerprint`, `<out>.diagnostics.json`, and `<out>.provenance.json`; with `--diagnostics d.json --provenance p.json` it writes `d.json` and `p.json` in their place and the same document bytes. | Test (TC-1295) |
+| FR-099-AC-1 | `lift` over the `config-version-table` fixture with its two module roots (`--module fixtures/modules/spec-objects-business --module fixtures/modules/edge-vocabulary`) exits `0` and writes `<out>`, `<out>.fingerprint`, and `<out>.diagnostics.json`; with `--diagnostics d.json` it writes `d.json` in its place and the same document bytes. | Test (TC-1295) |
 | FR-099-AC-2 | `lift` over `negatives/UNRESOLVED_TYPE_TOKEN` exits `1`, writes the diagnostics sidecar, and writes no document; `lift` without `--module`, `lift` under `negatives/MODULE_WITHOUT_SEMANTIC_BLOCK`, and `lift` with `--out` under the bundle root each exit `2` and write nothing. | Test (TC-1296) |
 | FR-099-AC-3 | `inspect --ir` over a lifted document prints one line per type in `types` order and exits `0`; over a document missing `contractVersion` it prints `INVALID_IR` naming the reader's `SCHEMA_VIOLATION` at `/ir` ("a required member contractVersion is absent") and exits `1`. | Test (TC-1297) |
 | FR-099-AC-4 | `make extraction-frontend-build extraction-frontend-test extraction-frontend-check extraction-frontend-deny extraction-frontend-audit` succeed on `1.98.1`, `extraction-frontend-check` regenerating through `lift --write-goldens --into` under `CARGO_TARGET_DIR` and leaving `fixtures/` byte-unchanged, and `make extraction-frontend-evidence` runs the crate's `--ignored` tests; with `EXTRACTION_TOOLCHAIN=0.0.0` each fails naming `0.0.0` and none skips. | Static (TC-1298) |

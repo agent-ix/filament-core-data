@@ -12,8 +12,8 @@ mod common;
 use agent_ix_extraction_frontend::diagnostics::{Code, Diagnostic, WireCode};
 use agent_ix_extraction_frontend::write::OutputPaths;
 use agent_ix_extraction_frontend::{
-    assemble, canonical_bytes, emit, extract, lower_bundle, provenance_record, resolve,
-    sort_node_lists, Bundle, Envelope, LiftOutcome, Limits, ModuleManifest, CONTRACT_VERSION,
+    assemble, canonical_bytes, emit, extract, lower_bundle, resolve, sort_node_lists, Bundle,
+    Envelope, LiftOutcome, Limits, ModuleManifest, CONTRACT_VERSION,
 };
 use agent_ix_semantic_ir::json::parse as parse_json;
 use agent_ix_semantic_ir::normalize::normalized;
@@ -39,7 +39,7 @@ fn with_code(diagnostics: &[Diagnostic], code: Code) -> Vec<&Diagnostic> {
 
 /// The in-memory pipeline up to the assembled document, for fault
 /// injection before the reader.
-fn assembled(name: &str) -> (Value, agent_ix_extraction_frontend::Provenance) {
+fn assembled(name: &str) -> Value {
     let roots = [business_module(), edge_vocabulary()];
     let root_refs: Vec<&std::path::Path> = roots.iter().map(PathBuf::as_path).collect();
     let bundle = Bundle::load(&common::fixture(name), &root_refs).expect("loads");
@@ -55,7 +55,6 @@ fn assembled(name: &str) -> (Value, agent_ix_extraction_frontend::Provenance) {
             ModuleManifest::from_bundle(&bundle, &dir, bytes).expect("loaded")
         })
         .collect();
-    let provenance = provenance_record(&bundle, &modules).expect("provenance");
     let extractions = extract(&bundle);
     let resolutions = resolve(&bundle, &extractions);
     let lowered = lower_bundle(
@@ -70,10 +69,7 @@ fn assembled(name: &str) -> (Value, agent_ix_extraction_frontend::Provenance) {
         "{name} lifts unblocked"
     );
     let envelope = Envelope::new(&bundle, &modules);
-    (
-        assemble(&envelope, &lowered.types, &lowered.constructs).expect("assemble"),
-        provenance,
-    )
+    assemble(&envelope, &lowered.types, &lowered.constructs).expect("assemble")
 }
 
 fn written_bytes(outcome: &LiftOutcome) -> &[u8] {
@@ -261,7 +257,7 @@ fn tc_1273_the_manifest_names_semantic_ir_by_path_and_no_direct_jsonschema() {
 #[test]
 fn tc_1274_a_document_missing_unknown_policy_yields_one_invalid_ir_at_the_type_and_writes_only_diagnostics(
 ) {
-    let (mut document, provenance) = assembled("config-version-table");
+    let mut document = assembled("config-version-table");
     let types = document["types"].as_array_mut().expect("types");
     let index = types
         .iter()
@@ -273,8 +269,8 @@ fn tc_1274_a_document_missing_unknown_policy_yields_one_invalid_ir_at_the_type_a
         .remove("unknownPolicy")
         .expect("was present");
     let dir = tempfile::tempdir().expect("tempdir");
-    let paths = OutputPaths::new(&dir.path().join("semantic-ir.json"), None, None);
-    let outcome = emit(&paths, document, Vec::new(), &provenance);
+    let paths = OutputPaths::new(&dir.path().join("semantic-ir.json"), None);
+    let outcome = emit(&paths, document, Vec::new());
     let LiftOutcome::Blocked { diagnostics } = &outcome else {
         panic!("not blocked: {outcome:?}");
     };
@@ -300,7 +296,6 @@ fn tc_1274_a_document_missing_unknown_policy_yields_one_invalid_ir_at_the_type_a
     );
     assert!(!paths.document.exists());
     assert!(!paths.fingerprint.exists());
-    assert!(!paths.provenance.exists());
     // The sidecar carries that one diagnostic.
     let sidecar: Value =
         serde_json::from_slice(&fs::read(&paths.diagnostics).expect("read")).expect("json");
@@ -548,7 +543,7 @@ fn tc_1342_a_contains_b_and_b_contains_a_refuses_at_lift_time_with_composite_cyc
     );
     // Both edges lowered as composite: the cycle is the reader's finding
     // over a document the frontend considered complete.
-    let (document, _) = assembled("negatives/INVALID_IR");
+    let document = assembled("negatives/INVALID_IR");
     let composite: Vec<&Value> = document["types"]
         .as_array()
         .expect("types")

@@ -19,12 +19,11 @@ trustworthy, plus the measured evidence for what it does and does not carry.
 | `refusals.json` | The closed refusal register: five executable schema keys, four reference shapes, three argument classes |
 | `limits.json` | The timeout, the kill grace, the maximum input size, and the environment allow-list — values, so a constraint against widening one has contents |
 | `adapter/` | Pure: profiles, the `unevaluatedProperties` preparation pass, the two guards, canonical JSON, and the formatter-agreeing renderer. No process, no socket, no clock |
-| `runner/` | Impure: distributions, the sandboxed subprocess, the `ast` inspection, the qualification, the emitter, the validation, the corpus account |
+| `runner/` | Impure: distributions, the sandboxed subprocess, the `ast` inspection, the qualification, the emitter, the validation |
 | `qualification/probes/` | Twenty single-construct probes, each with a detector and an expected retention per family |
 | `qualification/malicious/` | Sixty-seven documents, each carrying one injection construct or one prohibited option |
 | `qualification/report.json` | The measured verdicts. Generated; never hand-edited |
 | `qualification/gaps.json` | One row per construct and affected family, with a severity and a disposition |
-| `qualification/corpus-account.json` | What the generated surface decides about the conformance corpus. **An advisory account, not an adapter result** |
 | `qualification/validation.json` | Per profile: what was exercised, and what is static-only or not emitted |
 | `generated/<profile-id>/` | The emitted packages. Regenerated and byte-compared |
 | `examples/` | Ordinary consumers, executed by the suite |
@@ -66,7 +65,6 @@ catch.
 make test-python                                        # the gates
 poetry run python -m python_backend.runner.qualify      # re-measure the verdicts
 poetry run python -m python_backend.runner.emit         # regenerate the packages
-poetry run python -m python_backend.runner.corpus_account
 poetry run python -m python_backend.runner.validate
 ```
 

@@ -98,23 +98,18 @@ function irOf(bundle) {
 /**
  * One adapter result for one case.
  *
- * `caseDigest` is taken from the corpus manifest, never recomputed from bytes
- * this adapter chose: an adapter that digests its own reading of a case can
- * agree with itself about a case it misread.
- *
  * `suppressions` are deliberately dropped. A suppression records that a rule
  * did not run because its declared input was absent, and the result contract
  * admits no member for one; carrying it as a diagnostic would invent a
  * disagreement the reader did not make.
  */
-function answer(entry, digest, version, schemas) {
+function answer(entry, version, schemas) {
 	const bundle = buildInput(entry);
 	const admission = admitIr(bundle, { schemas });
 	const result = {
 		adapter: ADAPTER_ID,
 		adapterVersion: version,
 		caseId: entry.id,
-		caseDigest: digest,
 		support: "supported",
 		resultState: admission.resultState,
 		diagnostics: admission.diagnostics.map((located) => ({
@@ -136,15 +131,12 @@ function answer(entry, digest, version, schemas) {
 }
 
 function main() {
-	const { manifest, cases } = loadCorpus();
-	const digests = new Map(manifest.cases.map((row) => [row.id, row.digest]));
+	const { cases } = loadCorpus();
 	const version = adapterVersion();
 	// The schemas are read once and reused, so the answer for case 111 is
 	// computed from the same bytes as the answer for case 1.
 	const schemas = SCHEMA_FILES.map(readSchema);
-	const results = cases.map((entry) =>
-		answer(entry, digests.get(entry.id), version, schemas),
-	);
+	const results = cases.map((entry) => answer(entry, version, schemas));
 	process.stdout.write(`${JSON.stringify(results)}\n`);
 }
 

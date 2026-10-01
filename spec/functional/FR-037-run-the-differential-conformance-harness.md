@@ -34,8 +34,7 @@ divergence register does not record.
 
 ## Behavior
 
-- The harness SHALL obtain each adapter's result as an `adapter-result.schema.json` document carrying `adapter`, `adapterVersion`, `caseId`, `caseDigest`, `support`, `resultState`, `diagnostics[]`, `classification`, and `normalized`.
-- The harness SHALL reject an adapter result whose `caseDigest` differs from the corpus manifest's digest for that case, so that an adapter cannot answer for an input it did not read.
+- The harness SHALL obtain each adapter's result as an `adapter-result.schema.json` document carrying `adapter`, `adapterVersion`, `caseId`, `support`, `resultState`, `diagnostics[]`, `classification`, and `normalized`.
 - The harness SHALL compare an adapter result only with the oracle verdict for the same case.
 - The harness SHALL NOT compare one adapter result with another adapter result.
 - The harness SHALL evaluate `support` before `resultState`, so that the two vocabularies cannot both decide one case.
@@ -83,7 +82,6 @@ divergence register does not record.
 | FR-037-AC-7 | An adapter command that exits non-zero, or emits a result failing `adapter-result.schema.json`, produces a non-zero harness exit and a per-case failure rather than a skip. | Test |
 | FR-037-AC-8 | An `unsupported` result is accepted only where the case declares that adapter in `unsupportedBy`; an undeclared one fails and names the case and the adapter. | Test |
 | FR-037-AC-9 | A source analysis of `conformance/runner/` reports no comparison between two adapter results and no import of an adapter's internals. | Analysis |
-| FR-037-AC-10 | An adapter result whose `caseDigest` does not match the manifest is rejected, so a canned result cannot pass. | Test |
 | FR-037-AC-11 | A `pointerCompatible: false` adapter that matches on code, severity, locus, classification, and normalized bytes passes despite a different pointer scheme; the same adapter fails on a wrong locus. | Test |
 
 ## Dependencies

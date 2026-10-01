@@ -12,7 +12,6 @@ import json
 from typing import Any
 
 from python_backend import ROOT
-from python_backend.adapter.jcs import digest
 
 PROFILES_PATH = ROOT / "profiles.json"
 
@@ -95,19 +94,3 @@ def profile_by_id(identifier: str) -> dict[str, Any]:
     )
     raise UnknownProfileError(msg)
 
-
-def profile_digest(profile: dict[str, Any]) -> str:
-    """SHA-256 over the identity and the argument vector alone.
-
-    `verdict` and `runtimeValidation` are excluded on purpose: FR-077 records a
-    measured verdict onto the profile it measured, and a digest that covered it
-    would invalidate the very verdict that cites it.
-    """
-
-    return digest(
-        {
-            "id": profile["id"],
-            "outputModelType": profile["outputModelType"],
-            "options": list(profile["options"]),
-        }
-    )

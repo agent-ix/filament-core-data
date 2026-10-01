@@ -13,7 +13,7 @@
  * classification and no expectation crosses this boundary: an adapter that read
  * the oracle's answer would measure the oracle against itself, which is the one
  * failure mode the corpus exists to prevent. Case metadata is limited to what an
- * adapter must echo (`caseId`, `caseDigest`) or dispatch on (`kind`).
+ * adapter must echo (`caseId`) or dispatch on (`kind`).
  *
  * Usage: `node tools/materialize-cases.mjs [directory]`, from `conformance/`.
  * The default directory is `.cases/`, which is generated and not committed.
@@ -25,10 +25,9 @@ import { join, resolve } from "node:path";
 import { buildBefore, buildInput, loadCorpus, ROOT } from "../corpus.mjs";
 
 /** The members an adapter may see: what it echoes, and what it dispatches on. */
-function row(entry, digest) {
+function row(entry) {
 	const materialized = {
 		caseId: entry.id,
-		caseDigest: digest,
 		kind: entry.kind,
 		contractVersion: entry.contractVersion,
 		input: buildInput(entry),
@@ -48,19 +47,17 @@ function row(entry, digest) {
  */
 export function materializeCases(directory) {
 	const { manifest, cases } = loadCorpus();
-	const digests = new Map(manifest.cases.map((one) => [one.id, one.digest]));
 	rmSync(directory, { recursive: true, force: true });
 	mkdirSync(directory, { recursive: true });
 	const index = [];
 	for (const entry of cases) {
-		const materialized = row(entry, digests.get(entry.id));
+		const materialized = row(entry);
 		writeFileSync(
 			join(directory, `${entry.id}.json`),
 			`${JSON.stringify(materialized, null, "\t")}\n`,
 		);
 		index.push({
 			caseId: entry.id,
-			caseDigest: materialized.caseDigest,
 			kind: entry.kind,
 			path: `${entry.id}.json`,
 		});

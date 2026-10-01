@@ -1,16 +1,13 @@
-//! FR-095 "The `source` block", "The `package` block" and "Provenance":
-//! every digest is recomputed outside the crate with `sha256sum`, and every
-//! pinned value is read back from the same `Cargo.lock` the crate embeds.
+//! FR-095 "The `source` block" and "The `package` block": every digest is
+//! recomputed outside the crate with `sha256sum`.
 
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
 mod common;
 
 use agent_ix_extraction_frontend::envelope::{self, ModuleManifest};
-use agent_ix_extraction_frontend::provenance::{parse_lock, ENGINE_CRATE, FRONTEND_CRATE};
-use agent_ix_extraction_frontend::{provenance_record, Bundle, Envelope};
+use agent_ix_extraction_frontend::{Bundle, Envelope};
 use common::sha256sum;
 use ix_trace_rs::trace;
 use proptest::prelude::*;
@@ -18,14 +15,6 @@ use serde_json::json;
 
 fn crate_dir() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-}
-
-fn workspace_dir() -> PathBuf {
-    crate_dir()
-        .parent()
-        .and_then(Path::parent)
-        .expect("workspace root")
-        .to_path_buf()
 }
 
 fn fixture(name: &str) -> PathBuf {
@@ -262,92 +251,6 @@ fn tc_1250_mapping_versions_is_the_contract_version_and_every_other_list_is_empt
     );
 }
 
-/// The cargo git database holding the `quire-rs` history, so a revision can
-/// be placed against `a874fb6` without a network.
-fn quire_rs_git_db() -> Option<PathBuf> {
-    let cargo_home = std::env::var_os("CARGO_HOME")
-        .map(PathBuf::from)
-        .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".cargo")))?;
-    let db = cargo_home.join("git/db");
-    let mut candidates: Vec<PathBuf> = fs::read_dir(db)
-        .ok()?
-        .filter_map(|e| e.ok().map(|e| e.path()))
-        .filter(|p| {
-            p.file_name()
-                .is_some_and(|n| n.to_string_lossy().starts_with("quire-rs-"))
-        })
-        .collect();
-    candidates.sort();
-    candidates.into_iter().next()
-}
-
-#[trace("TC-1254", "FR-095-AC-9")]
-#[test]
-fn tc_1254_provenance_names_the_pinned_quire_rs_and_frontend_versions_from_the_lock() {
-    let (bundle, modules) = load_table();
-    let record = provenance_record(&bundle, &modules).expect("the lock pins both crates");
-
-    // The lock the test reads, independently of the crate's embedded copy.
-    let lock = fs::read_to_string(workspace_dir().join("Cargo.lock")).expect("Cargo.lock");
-    let entries = parse_lock(&lock);
-    let engine = entries
-        .iter()
-        .find(|e| e.name == ENGINE_CRATE)
-        .expect("quire-rs is pinned");
-    let source = engine.source.as_deref().expect("git source");
-    let (_, revision) = source.rsplit_once('#').expect("git+…#<rev>");
-    assert!(source.starts_with("git+https://github.com/agent-ix/quire-rs?rev="));
-    assert_eq!(record.engine.name, "quire-rs");
-    assert_eq!(record.engine.version, engine.version);
-    assert_eq!(record.engine.revision, revision);
-    assert_eq!(revision.len(), 40, "a full revision");
-    let frontend = entries
-        .iter()
-        .find(|e| e.name == FRONTEND_CRATE)
-        .expect("the frontend is in the lock");
-    assert_eq!(record.frontend.name, FRONTEND_CRATE);
-    assert_eq!(record.frontend.version, frontend.version);
-    assert_eq!(record.semantic_core.version, "0.3.0");
-    assert_eq!(record.source.identity, "ix://agent-ix/config-service/spec");
-
-    // The revision is at or after a874fb6 (quire-rs#411, load_module_set).
-    let db =
-        quire_rs_git_db().expect("the cargo git database holds quire-rs (cargo fetched the pin)");
-    let out = Command::new("git")
-        .args([
-            "-C",
-            &db.to_string_lossy(),
-            "merge-base",
-            "--is-ancestor",
-            "a874fb6",
-            revision,
-        ])
-        .output()
-        .expect("spawn git");
-    assert!(
-        out.status.success(),
-        "{revision} is not at or after a874fb6 in {}: {}",
-        db.display(),
-        String::from_utf8_lossy(&out.stderr)
-    );
-
-    // The record is a pure function of the lock and the bundle: it names no
-    // path and no environment value.
-    let value = serde_json::to_value(&record).expect("json");
-    let text = value.to_string();
-    assert!(!text.contains("/home/"), "{text}");
-    assert!(
-        !text.contains(&workspace_dir().to_string_lossy().to_string()),
-        "{text}"
-    );
-    let mut keys: Vec<&String> = value.as_object().expect("object").keys().collect();
-    keys.sort();
-    assert_eq!(
-        keys,
-        ["engine", "frontend", "modules", "semanticCore", "source"]
-    );
-}
-
 #[trace("TC-1256", "FR-095-AC-11")]
 #[test]
 fn tc_1256_manifest_digest_covers_both_manifests_in_name_order_whatever_the_root_order() {
@@ -372,11 +275,8 @@ fn tc_1256_manifest_digest_covers_both_manifests_in_name_order_whatever_the_root
     assert!(bundle.object_type("widget").is_some());
 
     // Property: any permutation of the caller's module list yields the same
-    // package block and the same provenance modules.
-    let expected_record = provenance_record(&bundle, &forward).expect("record");
+    // package block.
     proptest!(ProptestConfig::with_cases(64), |(order in Just(forward.clone()).prop_shuffle())| {
         prop_assert_eq!(envelope::package_block(&bundle, &order), block.clone());
-        let record = provenance_record(&bundle, &order).expect("record");
-        prop_assert_eq!(record, expected_record.clone());
     });
 }

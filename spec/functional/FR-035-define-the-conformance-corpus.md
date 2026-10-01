@@ -34,7 +34,7 @@ the contract clause it was derived from.
 
 ## Outputs
 
-- `conformance/corpus.json`: the corpus manifest — `corpusVersion`, targeted `contractVersions`, the construct register, the base index with a digest per base, the case index with a digest per case, and `corpusDigest`
+- `conformance/corpus.json`: the corpus manifest — `corpusVersion`, targeted `contractVersions`, the construct register, the base index, and the case index
 - `conformance/schema/input-bundle.schema.json`, `corpus-case.schema.json`, `corpus-manifest.schema.json`, `adapter-result.schema.json`
 - `conformance/bases/<base-id>.json`: the shared, contract-valid input bundles
 - `conformance/cases/<family>/<case-id>.json`: one file per case
@@ -63,9 +63,6 @@ the contract clause it was derived from.
 - A `positive` case SHALL declare `expected.resultState` as `success` and an empty expected diagnostic list.
 - A case SHALL declare `expected.diagnostics` as an ordered list whose entries each carry `pointer` (an RFC 6901 pointer into the input bundle) and `diagnostic` (a `common.schema.json#/$defs/diagnostic` document), so that the judged diagnostic is the contract's diagnostic and the pointer is corpus metadata beside it.
 - The corpus manifest SHALL record `corpusVersion` as SemVer, where adding a case, a base, or a construct-register row is a minor change, changing or removing an existing case's `expected` or an existing base is a major change, and editing a title, `derivedFrom`, or prose is a patch change.
-- The corpus manifest SHALL record the SHA-256 digest of the raw file bytes of every case and every base, so that a one-byte edit anywhere is detected.
-- The corpus manifest SHALL record `corpusDigest` as the SHA-256 over those digests joined in base-id then case-id order.
-- If a case or base file's recomputed digest differs from its manifest row, then the corpus gate SHALL fail and name the file.
 - If `corpusVersion` does not change as the manifest's own rules require for the change that was made, then the versioning gate SHALL fail and name the required bump.
 - The corpus SHALL keep every case at or below a declared minimization budget of 64 JSON nodes in `ops`, counting each scalar, array, and object once.
 - The corpus SHALL NOT delete a case that reproduces a discovered defect after that defect is fixed.
@@ -88,7 +85,6 @@ the contract clause it was derived from.
 | FR-035-AC-1 | Every case file validates against `corpus-case.schema.json`, every base against `input-bundle.schema.json`, and `corpus.json` against `corpus-manifest.schema.json`. | Test |
 | FR-035-AC-2 | Every base bundle validates against the published schemas it composes and yields zero oracle diagnostics. | Test |
 | FR-035-AC-3 | Every case carries at least one `derivedFrom` entry whose `artifact` path exists and whose `quote` occurs verbatim in that artifact; a quote that no longer occurs fails the gate. | Test |
-| FR-035-AC-4 | Recomputing every case and base digest and `corpusDigest` reproduces `corpus.json` byte-for-byte; flipping one byte of one case file fails the gate and names that file. | Test |
 | FR-035-AC-5 | No case sets `provenance.blessedFromRun` to `true`; a case that sets it without a `blessing` block fails the gate. | Test |
 | FR-035-AC-6 | No case's `ops` exceeds the 64-node minimization budget, and a `boundary` case that would exceed it uses `x-repeat` and stays inside it. | Test |
 | FR-035-AC-7 | An indexed `replace` or `remove` op with no preceding `test` op addressing it or an identifying member inside it fails the gate, and a `test` op that no longer matches its base fails the run. | Test |

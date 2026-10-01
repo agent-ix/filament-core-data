@@ -1,5 +1,5 @@
 //! The library entry the `lift` command calls (FR-099): one bundle under
-//! one module set to one document and three sidecars.
+//! one module set to one document and two sidecars.
 //!
 //! The pipeline is FR-091 load → FR-092/093/094 lower → FR-095 envelope →
 //! FR-097 sort, decide, fingerprint, write. The output paths are checked
@@ -20,7 +20,6 @@ use crate::envelope::{Envelope, ModuleManifest};
 use crate::extract::extract;
 use crate::limits::Limits;
 use crate::lower::lower_bundle;
-use crate::provenance::{provenance_record, Provenance};
 use crate::resolve::resolve;
 use crate::scalars::check_library;
 use crate::validate::validate;
@@ -36,18 +35,12 @@ pub struct LiftRequest {
     pub out: PathBuf,
     /// `--diagnostics`, when given.
     pub diagnostics: Option<PathBuf>,
-    /// `--provenance`, when given.
-    pub provenance: Option<PathBuf>,
 }
 
 impl LiftRequest {
-    /// The four output paths of the request.
+    /// The three output paths of the request.
     pub fn paths(&self) -> OutputPaths {
-        OutputPaths::new(
-            &self.out,
-            self.diagnostics.as_deref(),
-            self.provenance.as_deref(),
-        )
+        OutputPaths::new(&self.out, self.diagnostics.as_deref())
     }
 }
 
@@ -60,7 +53,7 @@ pub enum LiftOutcome {
     /// At least one blocking diagnostic: `<out>.diagnostics.json` written,
     /// nothing else touched (exit `1`).
     Blocked { diagnostics: Vec<Diagnostic> },
-    /// No blocking diagnostic: all four files written (exit `0`).
+    /// No blocking diagnostic: all three files written (exit `0`).
     Written {
         diagnostics: Vec<Diagnostic>,
         /// The reader's verdict over the written document.
@@ -120,18 +113,6 @@ pub fn lift(request: &LiftRequest) -> LiftOutcome {
         Ok(modules) => modules,
         Err(refusal) => return LiftOutcome::Refused(refusal),
     };
-    let provenance = match provenance_record(&bundle, &modules) {
-        Ok(provenance) => provenance,
-        Err(error) => {
-            // The embedded lock does not pin what the provenance sidecar
-            // must name: the sidecar cannot be produced, so nothing is.
-            return LiftOutcome::Refused(Refusal::new(Diagnostic::frontend(
-                Code::OutputUnwritable,
-                format!("{} cannot be produced: {error}", paths.provenance.display()),
-                None,
-            )));
-        }
-    };
     let limits = match Limits::declared() {
         Ok(limits) => limits,
         Err(error) => {
@@ -168,19 +149,14 @@ pub fn lift(request: &LiftRequest) -> LiftOutcome {
             )));
         }
     };
-    emit(&paths, document, diagnostics, &provenance)
+    emit(&paths, document, diagnostics)
 }
 
 /// The FR-097 tail of a lift over an assembled `document`: sort, decide,
 /// fingerprint, write. `diagnostics` are the frontend's own findings so far;
 /// when one blocks, the document is not a candidate and only the
 /// diagnostics sidecar is written.
-pub fn emit(
-    paths: &OutputPaths,
-    document: Value,
-    mut diagnostics: Vec<Diagnostic>,
-    provenance: &Provenance,
-) -> LiftOutcome {
+pub fn emit(paths: &OutputPaths, document: Value, mut diagnostics: Vec<Diagnostic>) -> LiftOutcome {
     if is_blocked(&diagnostics) {
         sort_diagnostics(&mut diagnostics);
         return match write_lift(paths, Emission::Blocked, &diagnostics) {
@@ -204,7 +180,6 @@ pub fn emit(
     let emission = Emission::Document {
         document: &valid,
         fingerprint: &fingerprint,
-        provenance,
     };
     match write_lift(paths, emission, &diagnostics) {
         Ok(()) => LiftOutcome::Written {

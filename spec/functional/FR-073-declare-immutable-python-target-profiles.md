@@ -27,7 +27,7 @@ it names.
 ## Outputs
 
 - `python_backend/profiles.json`: the declared profiles
-- `python_backend/adapter/profiles.py` exposing `load_profiles()`, `profile_by_id(id)`, and `profile_digest(profile)`
+- `python_backend/adapter/profiles.py` exposing `load_profiles()`, and `profile_by_id(id)`
 
 ## Behavior
 
@@ -44,7 +44,6 @@ it names.
 - Every profile SHALL declare `--strict-nullable`, because without it a field the schema declares non-nullable with a default renders as `T | None`, which admits a value the contract forbids.
 - No profile SHALL declare `--extra-fields`: measured against the pinned generator, `additionalProperties: false` already yields `extra='forbid'` for both Pydantic families and `closed=True` for `TypedDict`, while `--extra-fields forbid` closes models the schema leaves open, which is a loss in the opposite direction and one no acceptance criterion for closure would catch.
 - No profile SHALL declare `--use-missing-sentinel`: it is the only measured option that distinguishes an absent field from a null one in the Pydantic families, and against Pydantic `2.12.5` it renders `pydantic_core.MISSING` in a type position that the pinned type checker rejects, so it is recorded as a retained gap rather than adopted.
-- `profile_digest` SHALL return the SHA-256 over the profile's `id`, `outputModelType`, and `options` in the repository's `agent-ix-conformance-jcs-v1` canonical form, excluding the `verdict` and `runtimeValidation` members, so that recording a measured verdict does not invalidate the digest that verdict cites.
 - `load_profiles` SHALL return a deep copy of the declared set, performing no network and no clock access, so a caller cannot mutate what a later call returns.
 
 ## Constraints
@@ -65,7 +64,6 @@ it names.
 | FR-073-AC-4 | No profile's options contain any member of the FR-073-CON-2 prohibited set, checked by exact option name rather than by substring. | Test |
 | FR-073-AC-5 | A generation request naming an undeclared profile id is refused naming the id and listing the declared ids. | Test |
 | FR-073-AC-6 | A generation request supplying its own generator option is refused, whether the option is prohibited, permitted, or already present in the profile. | Test |
-| FR-073-AC-7 | `profile_digest` is stable across two calls, differs when any option value changes, differs when option order changes, and is unchanged by recording or changing the profile's `verdict` or `runtimeValidation`. | Property |
 | FR-073-AC-8 | Every profile's `outputModelType` and the declared Python version are values the installed generator's own option parser accepts, read from the installed distribution rather than from a copy of its choices. | Test |
 | FR-073-AC-9 | Mutating the value `load_profiles` returns does not change what a second call returns, for a mutation at any depth of the returned structure. | Property |
 | FR-073-AC-10 | Every declared profile id appears in the qualification report and every verdict in the report names a declared profile; this criterion is measured in the FR-077 step. | Test |

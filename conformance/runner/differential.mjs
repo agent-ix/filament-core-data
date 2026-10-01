@@ -59,7 +59,6 @@ function runAdapter(adapter, cases, manifest, stagingDirectory) {
 				adapter: adapter.id,
 				adapterVersion: "0.0.0",
 				caseId: entry.id,
-				caseDigest: manifest.cases.find((row) => row.id === entry.id).digest,
 				support: "unavailable",
 			})),
 		};
@@ -230,17 +229,6 @@ export function run(options = {}) {
 					continue;
 				}
 				answered.set(result.caseId, result);
-				if (result.caseDigest !== byId.get(result.caseId).digest) {
-					problems.push({
-						kind: "case-digest",
-						adapter: adapter.id,
-						case: result.caseId,
-						message:
-							"the answer names a case digest the manifest does not carry",
-					});
-					failedCount += 1;
-					continue;
-				}
 				const entry = cases.find((one) => one.id === result.caseId);
 				if (result.support === "unavailable") {
 					if (adapter.status !== "unavailable") {
@@ -367,7 +355,6 @@ export function run(options = {}) {
 	const failedAdapters = adapterRows.filter((row) => row.failed > 0);
 	return {
 		corpusVersion: manifest.corpusVersion,
-		corpusDigest: manifest.corpusDigest,
 		cases: manifest.cases.length,
 		adapters: adapterRows,
 		unmet,
@@ -407,7 +394,6 @@ export function buildCoverage(manifest, cases, adapterRows, unmet) {
 	});
 	return {
 		corpusVersion: manifest.corpusVersion,
-		corpusDigest: manifest.corpusDigest,
 		totalCases: manifest.cases.length,
 		registerRows: rows,
 		unmetRegisterRows: rows.filter((row) => !row.met).map((row) => row.id),

@@ -16,8 +16,6 @@ use sha2::{Digest, Sha256};
 use crate::bundle::{Bundle, Document};
 use crate::identity::PackageIdentity;
 
-pub use crate::provenance::provenance_record;
-
 /// The one `frontendDialect` this frontend stamps (FR-095-CON-3).
 pub const DIALECT: &str = "spec-bundle";
 /// `source.version` and `package.version` when `spec.md` carries no
@@ -26,8 +24,8 @@ pub const DEFAULT_VERSION: &str = "0.0.0";
 /// The bundle-root-relative path of the document carrying `version`.
 const SPEC_MD: &str = "spec/spec.md";
 
-/// One loaded module as the envelope and the provenance record see it: its
-/// manifest bytes and the manifest values the digests and the record name.
+/// One loaded module as the envelope sees it: its
+/// manifest bytes and the manifest values the digests name.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModuleManifest {
     /// Manifest `name`.
