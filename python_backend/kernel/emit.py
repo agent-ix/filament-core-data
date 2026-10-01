@@ -24,9 +24,8 @@ input, so what the guard inspects is what the generator receives.
 
 Where a layout rule of `python_backend/runner/emit.py` is reachable only as a
 module-private function, it is re-derived here from the same public helpers —
-`collisions`, `digest` — and `tests/test_semantic_kernel.py` asserts the two
-produce identical `__init__.py` text and an identical content fingerprint for
-one file map. A duplicated rule with no equality gate is how two emitters start
+`collisions` — and `tests/test_semantic_kernel.py` asserts the two
+produce identical `__init__.py` text for one file map. A duplicated rule with no equality gate is how two emitters start
 disagreeing.
 
 Nothing here publishes. Publication passes `agent-ix/quoin#290`, a human
@@ -44,16 +43,13 @@ from pathlib import Path
 from typing import Any
 
 from python_backend import ROOT
-from python_backend.adapter.jcs import digest
 from python_backend.adapter.prepare import Prepared, prepare_documents
 from python_backend.adapter.profiles import profile_by_id
-from python_backend.adapter.render import render
 from python_backend.kernel.localize import Localized, localize_bundle
-from python_backend.runner.emit import UPSTREAM_ATTRIBUTION, collisions, demonstrated
+from python_backend.runner.emit import collisions, demonstrated
 from python_backend.runner.generate import generate
 from python_backend.runner.inspect_source import inspect_generated
 from python_backend.runner.qualify import NOT_QUALIFIED, REPORT
-from python_backend.runner.toolchain import toolchain
 
 REPOSITORY = ROOT.parent
 SCHEMAS = REPOSITORY / "packages/semantic-core/generated/json-schema"
@@ -207,7 +203,7 @@ def init_module(
 
     The name-collision rule is the imported `collisions`, unchanged: a name two
     modules each declare is excluded from `__all__`, stays reachable as
-    `<module>.<Name>`, and is recorded in `PROVENANCE.json` and the README; a
+    `<module>.<Name>`, and is recorded in the README; a
     name one module declares twice raises, because one would shadow the other.
     """
 
@@ -227,8 +223,7 @@ def init_module(
         "",
         "`__all__` carries every type name exactly one module declares. Names",
         "several modules declare are different types that happen to share a",
-        "local name; they are reachable as `<module>.<Name>` and are listed in",
-        '`PROVENANCE.json` under `nameCollisions`."""',
+        'local name; they are reachable as `<module>.<Name>`."""',
         "",
     ]
     for module in sorted(exports):
@@ -244,12 +239,6 @@ def init_module(
     lines.append("]")
     lines.append("")
     return "\n".join(lines)
-
-
-def content_fingerprint(files: dict[str, str]) -> str:
-    return digest(
-        {name: files[name] for name in sorted(files) if name != "PROVENANCE.json"}
-    )
 
 
 def _verdict(profile_id: str) -> dict[str, Any]:
@@ -350,10 +339,7 @@ def _readme(
             " `python_backend/kernel/localize.py` rewrites",
             "each base-prefixed `$ref` to its bare sibling filename and drops the"
             " root",
-            "`$id`, and the unmodified guard then admits the result. Every rewrite"
-            " is",
-            "recorded by document and JSON pointer in `PROVENANCE.json` under",
-            "`localization`.",
+            "`$id`, and the unmodified guard then admits the result.",
             "",
             "The same pass restores each document's `title` from its filename." " The",
             "official `@typespec/json-schema` emitter states a model's identity"
@@ -369,8 +355,7 @@ def _readme(
             "## Licence",
             "",
             "The generated source is AGPL-3.0-or-later, like the rest of this",
-            "repository. The generator is MIT and is attributed in",
-            "`PROVENANCE.json`.",
+            "repository.",
             "",
             "This package is not published. Publication passes",
             f"`{PUBLICATION_GATE}` and the issue #23 safety gate, and reaches no",
@@ -393,7 +378,7 @@ def build(profile_id: str) -> dict[str, str]:
         )
         raise KernelEmitError(msg)
 
-    localization, input_set = prepared()
+    _, input_set = prepared()
     result = generate(
         input_set,
         profile_id,
@@ -406,32 +391,6 @@ def build(profile_id: str) -> dict[str, str]:
     identity = bundle_identity()
     files["__init__.py"] = init_module(exports)
     files["README.md"] = _readme(profile, verdict, shared, identity)
-
-    provenance = {
-        "$comment": "Issue #11, FR-087. Regenerated, never hand-edited.",
-        "source": {
-            "documents": sorted(input_set.documents),
-            "inputDigest": result.input_digest,
-            "bundle": identity,
-            "localization": localization.localization,
-            "preparation": result.preparation,
-        },
-        "profile": {"id": profile_id, "digest": result.profile_digest},
-        "toolchainFingerprint": result.toolchain_fingerprint,
-        "generator": {
-            "distribution": toolchain()["generator"]["distribution"],
-            "version": toolchain()["generator"]["version"],
-            "license": "MIT",
-            "attribution": UPSTREAM_ATTRIBUTION,
-        },
-        "generatedSourceLicense": "AGPL-3.0-or-later",
-        "nameCollisions": shared,
-        "published": False,
-        "publicationGate": PUBLICATION_GATE,
-        "findings": FINDINGS[profile_id],
-        "contentFingerprint": content_fingerprint(files),
-    }
-    files["PROVENANCE.json"] = render(provenance)
     return files
 
 
@@ -475,7 +434,7 @@ def _tree(profile_id: str) -> Path:
     return PACKAGES / profile_id
 
 
-def write_all(root: Path | None = None) -> dict[str, str]:
+def write_all(root: Path | None = None) -> None:
     """Write every demonstrated kernel package under `root`.
 
     `root` exists so two generations can be compared in fresh scratch
@@ -483,7 +442,6 @@ def write_all(root: Path | None = None) -> dict[str, str]:
     """
 
     target_root = PACKAGES if root is None else root
-    fingerprints: dict[str, str] = {}
     if target_root.exists():
         shutil.rmtree(target_root)
     target_root.mkdir(parents=True)
@@ -495,12 +453,10 @@ def write_all(root: Path | None = None) -> dict[str, str]:
             destination = target / name
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_text(text, encoding="utf-8")
-        fingerprints[profile_id] = content_fingerprint(files)
     (target_root / "NOT-QUALIFIED.md").write_text(
         not_qualified_note(), encoding="utf-8"
     )
     (target_root / "__init__.py").write_text(package_init(), encoding="utf-8")
-    return fingerprints
 
 
 def check() -> int:
@@ -544,9 +500,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.check:
         return check()
-    fingerprints = write_all()
-    for profile_id, fingerprint in fingerprints.items():
-        print(f"{profile_id} {fingerprint}")
+    write_all()
     return 0
 
 

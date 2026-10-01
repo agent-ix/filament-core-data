@@ -29,8 +29,7 @@ the targets is explained by a language property, and a name is not.
 Two targets already satisfy this and are changed by nothing here. The JSON
 Schema emission carries semantic identity inline on each schema node as
 `x-agent-ix-semantic-id` and its provenance in the index document's
-`x-agent-ix-*` members; the Python package carries provenance as
-`PROVENANCE.json` and delegates its types to a pinned generator. Both are
+`x-agent-ix-*` members; the Python package delegates its types to a pinned generator. Both are
 declared realisations under ADR-0007, not omissions, and both are named here so
 that "every generated package" is a claim over a stated population rather than
 over whichever targets happened to be inspected.

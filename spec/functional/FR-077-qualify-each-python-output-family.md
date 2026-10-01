@@ -33,7 +33,7 @@ than repair it silently or leave it implied.
 ## Outputs
 
 - `python_backend/qualification/probes/`: one file per probe
-- `python_backend/qualification/report.json`: per family, the verdict, the toolchain fingerprint, the profile digest, the retained constructs, the lost constructs, and the evidence pointer for each
+- `python_backend/qualification/report.json`: per family, the verdict, the profile digest, the retained constructs, the lost constructs, and the evidence pointer for each
 - `python_backend/qualification/gaps.json`: the retained-gap register, one row per construct and affected family
 - `python_backend/qualification/corpus-account.json`: the read-only conformance-corpus account
 
@@ -72,7 +72,7 @@ than repair it silently or leave it implied.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-077-AC-1 | Every construct area the Behavior section names has at least one probe, and every probe declares a detector and an expected retention for all five families. | Test |
-| FR-077-AC-2 | `report.json` carries exactly one verdict per declared profile, each citing the declared-toolchain fingerprint and the profile digest that produced it. | Test |
+| FR-077-AC-2 | `report.json` carries exactly one verdict per declared profile, each citing the profile digest that produced it. | Test |
 | FR-077-AC-3 | The measured retention for every probe and family equals the probe's declared expectation, and a mutated expectation makes the gate red. | Integration |
 | FR-077-AC-4 | Every construct-and-family pair measured as lost has a row in `gaps.json` with a severity, a closability, and a disposition; removing a row makes the gate red. | Test |
 | FR-077-AC-5 | The Pydantic `BaseModel` and Pydantic dataclass artefacts each import, accept a conforming value, and raise on a non-conforming one, over the same fixture. | Integration |

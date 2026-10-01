@@ -85,8 +85,7 @@ strength.
 
 The licence position is not decoration either. Everything original is
 AGPL-3.0-or-later. `serde` is the Rust crate's only third-party dependency, pinned
-exactly. `datamodel-code-generator` is MIT, pinned at `0.76.0`, attributed in the
-emitted `PROVENANCE.json`, and is a **build-time** dependency that appears in no
+exactly. `datamodel-code-generator` is MIT, pinned at `0.76.0`, and is a **build-time** dependency that appears in no
 emitted package's closure.
 
 ## Measurement and Evaluation

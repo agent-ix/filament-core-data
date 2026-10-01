@@ -54,8 +54,7 @@ are stated separately here. Issue #42 records what happens when they are
 conflated: host-observed tool versions inside a byte-compared set make an
 artefact irreproducible off the minting host, and TC-370 and TC-382 are blocked
 on exactly that. This change therefore keeps every host-observed reading out of
-every byte-compared artefact and claims only same-host byte identity plus a
-declared-toolchain fingerprint that a second host can recompute.
+every byte-compared artefact and claims only same-host byte identity.
 
 The non-disruption half is the repository's standing rule, and its four known
 failure shapes are recorded in `test/changed-paths.ts`. Six suites still resolve

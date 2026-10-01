@@ -48,11 +48,10 @@ thing, with no signal that it has changed. The failure is silent by
 construction — both files exist, both parse, both carry real data, and reading
 the wrong one returns a plausible answer to a different question.
 
-Two targets already spell this correctly and are the evidence that the two
+One target already spells this correctly and is the evidence that the two
 spellings are not both defensible. The JSON Schema emission carries semantic
 identity inline as `x-agent-ix-semantic-id` and its provenance in the index
-document; the Python package carries provenance as `PROVENANCE.json`. Neither
-uses `metadata` for either concept, and neither is confusing.
+document. It uses `metadata` for neither concept, and is not confusing.
 
 ## Acceptance Examples (Illustrative)
 

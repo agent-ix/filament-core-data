@@ -3,8 +3,7 @@
 
 `__all__` carries every type name exactly one module declares. Names
 several modules declare are different types that happen to share a
-local name; they are reachable as `<module>.<Name>` and are listed in
-`PROVENANCE.json` under `nameCollisions`."""
+local name; they are reachable as `<module>.<Name>`."""
 
 from .common_schema import Diagnostic, Extension, FilamentSemanticContractCommonTypesV1, FrontendDialect, GeneratedOrigin, ManifestTarget, Origin, Origin1, Origin2, PackageIdentity, RepresentationFormat, ResultState, SemanticIdentity, Semver, Sha256, UnknownPolicy
 from .compatibility_report_schema import AffectedConsumer, Change, ConsumerEvidenceStatus, Disposition, Family, FilamentSemanticCompatibilityReportV1, RequiredGate, RetainedBridge, Surface, TargetResult

@@ -84,7 +84,7 @@ as a disposition rather than decided here.
 
 - **Given** the same input schema and the same profile
 - **When** generation runs twice from a clean state
-- **Then** the two outputs are byte-identical after the declared normalization, and the recorded toolchain fingerprint is identical
+- **Then** the two outputs are byte-identical after the declared normalization
 
 ### [US-013-EX-5] Nothing ships
 
