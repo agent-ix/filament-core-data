@@ -328,6 +328,7 @@ impl Node {
     /// Builds the record, enforcing every bound and uniqueness rule the
     /// contract declares on its members. Deserialization routes through
     /// this constructor.
+    #[allow(clippy::too_many_arguments)]
     pub fn try_new(
         id: crate::Text,
         label: Option<crate::support::Nullable<crate::Text>>,

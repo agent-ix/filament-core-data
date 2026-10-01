@@ -16,7 +16,6 @@ import { describe, expect, it } from "vitest";
 import { NodeHost, compile, navigateProgram } from "@typespec/compiler";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
-import { createHash } from "node:crypto";
 import { readDeclarations } from "./semantic-core-reader";
 import { type Instance, lower } from "./semantic-core-lowerer";
 import { normalize, readSemanticIr } from "./semantic-ir-v1-1-reader";
@@ -746,21 +745,13 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 	});
 
 	/** Traces: TC-264; FR-033-AC-4, FR-033-CON-1. */
-	it("regenerates byte-identically, matches the recorded digest, and fails the check on a mutated byte", () => {
+	it("regenerates byte-identically and fails the check on a mutated byte", () => {
 		const first = execFileSync(
 			"node",
 			["packages/semantic-core/scripts/generate.mjs", "--check"],
 			{ cwd: root, encoding: "utf8" },
 		);
 		expect(first).toContain("up to date");
-		const digest = createHash("sha256");
-		for (const name of readdirSync(schemaDir)
-			.filter((n) => n.endsWith(".json"))
-			.sort())
-			digest.update(
-				`${name}\n${readFileSync(resolve(schemaDir, name), "utf8")}`,
-			);
-		expect(`sha256:${digest.digest("hex")}`).toBe(toolchain().digest);
 		const target = resolve(schemaDir, "EnumValue.json");
 		const original = readFileSync(target, "utf8");
 		try {

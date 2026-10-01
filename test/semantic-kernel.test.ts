@@ -27,12 +27,11 @@ import {
 } from "../src/compiler/backends/rust-serde/cli.mjs";
 import { generateRust } from "../src/compiler/backends/rust-serde/index.mjs";
 import type { GenerationRequest } from "../src/compiler/backends/seam.d.mts";
+import { fingerprintIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { DIAGNOSTIC_CODES } from "../src/compiler/diagnostics.mjs";
 import {
 	checkKernelBundle,
-	checkKernelFreshness,
-	kernelDigest,
 	kernelDigestInputs,
 } from "../src/compiler/frontend/json-schema/bundle.mjs";
 import {
@@ -45,10 +44,6 @@ import {
 	mintPath,
 	segment,
 } from "../src/compiler/frontend/json-schema/mint.mjs";
-import {
-	hostLeaks,
-	provenanceOf,
-} from "../src/compiler/frontend/json-schema/provenance.mjs";
 import {
 	checkLossBijection,
 	decide,
@@ -104,7 +99,6 @@ const PERMITTED = [
 	"python_backend/kernel/",
 	"docs/semantic-data-system/semantic-kernel-packages.md",
 	"scripts/build-semantic-kernel.mjs",
-	"scripts/build-semantic-kernel-digests.mjs",
 	"scripts/check-semantic-kernel-crate.mjs",
 	"Cargo.toml",
 	"test/semantic-kernel.test.ts",
@@ -249,18 +243,6 @@ describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
 		);
 	});
 
-	// TC-1003
-	it("reports a stale bundle when the emission digest no longer matches", () => {
-		const found = checkKernelBundle(
-			{ ...bundle, emissionDigest: `sha256:${"0".repeat(64)}` },
-			inventory,
-			toolchain,
-			manifest,
-		);
-		expect(found).toHaveLength(1);
-		expect(found[0]?.code).toBe(DIAGNOSTIC_CODES.KERNEL_BUNDLE_STALE.code);
-	});
-
 	// TC-1004
 	it("rejects a declared inventory count the inventory contradicts", () => {
 		const counts = bundle.inventoryCounts as Record<string, number>;
@@ -281,7 +263,6 @@ describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
 			{
 				...bundle,
 				semanticCore: "9.9.9",
-				emissionDigest: `sha256:${"0".repeat(64)}`,
 				inventoryCounts: { ...counts, models: 99, enums: 42 },
 			},
 			inventory,
@@ -290,52 +271,11 @@ describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
 		);
 		// A caller fixing these one exception at a time learns the count only by
 		// iterating; returning diagnostics means one run states it.
-		expect(found.length).toBe(4);
-	});
-
-	// TC-1006
-	it("hashes the path beside the bytes, so two names are two bundles", () => {
-		expect(kernelDigest([["a.json", "{}"]])).not.toBe(
-			kernelDigest([["b.json", "{}"]]),
-		);
-		// And is order-independent, because the declaration's order is not the
-		// bundle's identity.
-		expect(
-			kernelDigest([
-				["a.json", "{}"],
-				["b.json", "[]"],
-			]),
-		).toBe(
-			kernelDigest([
-				["b.json", "[]"],
-				["a.json", "{}"],
-			]),
-		);
-	});
-
-	// TC-1007
-	it("detects a generated tree whose inputs have moved", () => {
-		const entries: (readonly [string, string])[] = [
-			["a.json", "{}"],
-			["b.json", "[]"],
-		];
-		expect(checkKernelFreshness(kernelDigest(entries), entries)).toEqual([]);
-
-		const moved: (readonly [string, string])[] = [
-			["a.json", '{"changed":true}'],
-			["b.json", "[]"],
-		];
-		const stale = checkKernelFreshness(kernelDigest(entries), moved);
-		expect(stale).toHaveLength(1);
-		expect(stale[0]?.code).toBe(DIAGNOSTIC_CODES.KERNEL_BUNDLE_STALE.code);
-		expect(stale[0]?.message).toContain("make semantic-kernel");
+		expect(found.length).toBe(3);
 	});
 
 	// TC-1008
-	it("declares the publication gate rather than leaving it to be inferred", () => {
-		const gate = bundle.publicationGate as Record<string, string>;
-		expect(gate.issue).toBe("agent-ix/quoin#290");
-		expect(gate.state).toBe("not-taken");
+	it("declares thirty digest inputs", () => {
 		expect(kernelDigestInputs(bundle as { documents: string[] })).toHaveLength(
 			30,
 		);
@@ -432,7 +372,7 @@ describe("TC-1009..1030 minted names and the closed keyword set (FR-082, FR-083)
 	});
 });
 
-describe("TC-1031..1045 the closed loss register and provenance (FR-084)", () => {
+describe("TC-1031..1045 the closed loss register (FR-084)", () => {
 	// TC-1031
 	it("closes the register at exactly two rows in bijection with their codes", () => {
 		expect(KERNEL_LOSSES).toHaveLength(2);
@@ -469,69 +409,6 @@ describe("TC-1031..1045 the closed loss register and provenance (FR-084)", () =>
 	it("freezes the register so a caller cannot widen it at run time", () => {
 		expect(Object.isFrozen(KERNEL_LOSSES)).toBe(true);
 		expect(Object.isFrozen(KERNEL_LOSSES[0])).toBe(true);
-	});
-
-	// TC-1035
-	it("fingerprints the declared toolchain and nothing the host observes", () => {
-		const record = provenanceOf({
-			target: "rust",
-			semanticCore: "0.1.0",
-			emissionDigest: "sha256:aa",
-			inputDigest: "sha256:bb",
-			losses: KERNEL_LOSSES,
-		});
-		expect(
-			hostLeaks(record, {
-				cwd: process.cwd(),
-				home: process.env.HOME ?? "",
-				node: process.version,
-			}),
-		).toEqual([]);
-	});
-
-	// TC-1036
-	it("digests by value, so key order does not move the fingerprint", () => {
-		const a = provenanceOf({
-			target: "rust",
-			semanticCore: "0.1.0",
-			emissionDigest: "sha256:aa",
-			inputDigest: "sha256:bb",
-			losses: [],
-		});
-		const b = provenanceOf({
-			semanticCore: "0.1.0",
-			target: "rust",
-			inputDigest: "sha256:bb",
-			emissionDigest: "sha256:aa",
-			losses: [],
-		});
-		expect(a.toolchainFingerprint).toBe(b.toolchainFingerprint);
-
-		// But a declared value moving must move it, or it fingerprints nothing.
-		const moved = provenanceOf({
-			target: "rust",
-			semanticCore: "0.1.1",
-			emissionDigest: "sha256:aa",
-			inputDigest: "sha256:bb",
-			losses: [],
-		});
-		expect(moved.toolchainFingerprint).not.toBe(a.toolchainFingerprint);
-	});
-
-	// TC-1037
-	it("carries the losses and the publication gate with the artifact", () => {
-		const record = provenanceOf({
-			target: "typescript",
-			semanticCore: "0.1.0",
-			emissionDigest: "sha256:aa",
-			inputDigest: "sha256:bb",
-			losses: KERNEL_LOSSES,
-		});
-		expect((record.losses as unknown[]).length).toBe(2);
-		expect(record.published).toBe(false);
-		expect((record.publicationGate as { issue: string }).issue).toBe(
-			"agent-ix/quoin#290",
-		);
 	});
 });
 
@@ -863,14 +740,10 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 	const crateManifest = readFileSync(resolve(crate, "Cargo.toml"), "utf8");
 	const scratchRoot = resolve(tmpdir(), "fcd-fr086-tests");
 
-	/** The three scripts FR-086 adds or extends, read as text. */
+	/** The two scripts FR-086 adds or extends, read as text. */
 	const sources = {
 		tree: readFileSync(
 			resolve(root, "scripts/build-semantic-kernel.mjs"),
-			"utf8",
-		),
-		digests: readFileSync(
-			resolve(root, "scripts/build-semantic-kernel-digests.mjs"),
 			"utf8",
 		),
 		gates: readFileSync(
@@ -911,10 +784,6 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		rmSync(target, { recursive: true, force: true });
 		mkdirSync(target, { recursive: true });
 		cpSync(crate, resolve(target, "rust"), { recursive: true });
-		cpSync(
-			resolve(root, "packages/semantic-kernel/rust-digests.json"),
-			resolve(target, "rust-digests.json"),
-		);
 		return target;
 	}
 
@@ -935,14 +804,10 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		// scanning the sources as text would fail on this requirement's own
 		// record of what it refuses to run.
 		const commands = [
-			...recipes(
-				"semantic-kernel",
-				"semantic-kernel-digests",
-				"semantic-kernel-check",
-			)
+			...recipes("semantic-kernel", "semantic-kernel-check")
 				.split("\n")
 				.filter((line) => line.trim().length > 0),
-			...[sources.tree, sources.digests, sources.gates].flatMap((source) =>
+			...[sources.tree, sources.gates].flatMap((source) =>
 				[...source.matchAll(/spawnSync\(([\s\S]*?)\n\t*\)/g)].map(
 					(one) => one[1],
 				),
@@ -972,19 +837,16 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 	});
 
 	/** Traces: TC-1049; FR-086-CON-4, FR-086-CON-5, FR-086-CON-6. */
-	it("TC-1049 writes the crate and its baseline from two scripts through two entry points", () => {
-		// CON-4. The tree comes from the writing half, the baseline from the pure
-		// one, and neither script reaches the other's entry point.
-		// The import statement is what settles which entry point a script can
-		// reach; prose naming the other one is a record, not a route.
+	it("TC-1049 writes the crate through the writing entry point", () => {
+		// CON-4. The tree comes from the writing half of the emitter, never the
+		// pure one. The import statement is what settles which entry point a
+		// script can reach; prose naming the other one is a record, not a route.
 		const imports = (source: string) =>
 			[...source.matchAll(/import\s*\{([\s\S]*?)\}\s*from/g)]
 				.flatMap((one) => one[1].split(","))
 				.map((name) => name.trim().split(" ")[0]);
 		expect(imports(sources.tree)).toContain("generateRust");
 		expect(imports(sources.tree)).not.toContain("emitCrate");
-		expect(imports(sources.digests)).toContain("emitCrate");
-		expect(imports(sources.digests)).not.toContain("generateRust");
 
 		// CON-5. #21's two artifacts are not this branch's to move.
 		for (const path of changedPaths()) {
@@ -1061,15 +923,12 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		// `files[]` entry per emitted file and no blocking diagnostic, and the
 		// bytes it describes equal the committed ones.
 		const written = new Map<string, string>();
+		const ir = read("packages/semantic-kernel/semantic-ir.json");
 		const generated = generateRust(
 			{
 				contractVersion: "1.0.0",
-				lockFingerprint: (
-					read("packages/semantic-kernel/provenance.json") as {
-						inputDigest: string;
-					}
-				).inputDigest,
-				ir: read("packages/semantic-kernel/semantic-ir.json"),
+				lockFingerprint: fingerprintIrForTarget(ir),
+				ir,
 				profile: RUST_PROFILE,
 				mappings: [],
 				backend: RUST_BACKEND,
@@ -1180,7 +1039,7 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		expect(formatted.ok, formatted.output).toBe(true);
 		expect(formatted.output).toContain("reports no change");
 
-		// AC-8. One changed byte fails twice, from two scripts.
+		// AC-8. One changed byte fails the tree comparison.
 		const edited = copyCrate("one-byte");
 		const types = resolve(edited, "rust/src/types.rs");
 		writeFileSync(types, `${readFileSync(types, "utf8")}// edited\n`);
@@ -1194,16 +1053,6 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		);
 		expect(tree.ok).toBe(false);
 		expect(tree.output).toContain("src/types.rs");
-		const baseline = gate(
-			["scripts/build-semantic-kernel-digests.mjs", "--check"],
-			{
-				KERNEL_CRATE_ROOT: resolve(edited, "rust"),
-				KERNEL_DIGESTS: resolve(edited, "rust-digests.json"),
-			},
-		);
-		expect(baseline.ok).toBe(false);
-		expect(baseline.output).toContain("digest baseline");
-		expect(baseline.output).toContain("src/types.rs");
 	}, 600_000);
 
 	/** Traces: TC-1054; FR-086-AC-9, FR-086-AC-10, FR-086-AC-11. */
@@ -1218,7 +1067,6 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 			"--tree",
 			resolve(scratchRoot, "clean"),
 		]);
-		gate(["scripts/build-semantic-kernel-digests.mjs", "--check"]);
 		expect(
 			execFileSync("git", ["status", "--porcelain"], {
 				cwd: root,

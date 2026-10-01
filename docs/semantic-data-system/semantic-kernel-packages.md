@@ -21,15 +21,6 @@ committed, what publishes it, and what is blocking.
 | Kernel IR | `packages/semantic-kernel/semantic-ir.json` | `make semantic-kernel` | [FR-082](../../spec/functional/FR-082-lower-json-schema-to-semantic-ir.md) |
 | TypeScript | `packages/semantic-kernel/typescript/` | `make semantic-kernel` | [FR-085](../../spec/functional/FR-085-generate-the-kernel-typescript-package.md) |
 | Rust crate | `packages/semantic-kernel/rust/` | `make semantic-kernel` | [FR-086](../../spec/functional/FR-086-generate-the-kernel-rust-crate.md) |
-| Rust digest baseline | `packages/semantic-kernel/rust-digests.json` | `make semantic-kernel-digests` | [FR-086](../../spec/functional/FR-086-generate-the-kernel-rust-crate.md) |
-
-The crate and its digest baseline are written by two different scripts reaching
-the emitter through two different entry points — `scripts/build-semantic-kernel.mjs`
-through `index.mjs`'s writing `generateRust`, and
-`scripts/build-semantic-kernel-digests.mjs` through `crate.mjs`'s pure
-`emitCrate`. One emitter change therefore has to be committed twice, by two
-deliberate acts, before `make semantic-kernel-check` goes green again;
-regenerating only the tree leaves the baseline red.
 
 `make semantic-kernel-check` regenerates into a scratch directory outside the
 working tree, compares file by file, runs a real `cargo build --offline --locked`
@@ -82,6 +73,6 @@ does not answer for. #21 remains open for the rest of its scope.
 ## Change rule
 
 The generated packages change when the kernel IR changes. Regenerate with
-`make semantic-kernel`, rewrite the baseline with `make semantic-kernel-digests`,
-and prove both with `make semantic-kernel-check`. A blocked gate recorded here
+`make semantic-kernel`
+and prove it with `make semantic-kernel-check`. A blocked gate recorded here
 without an owning issue fails the check.

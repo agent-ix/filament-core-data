@@ -8,12 +8,6 @@
 //! dependency is available, and this module carries only what a claim needs
 //! that has no JSON in it.
 
-/// The semantic identity of the contract package this consumer exchanges
-/// values with, read back from the generated crate rather than written out.
-pub fn package_identity() -> &'static str {
-    agent_ix_conformance::provenance::PACKAGE_IDENTITY
-}
-
 /// The number of types the generated crate exports.
 pub fn exported_type_count() -> usize {
     agent_ix_conformance::TYPES.len()

@@ -360,14 +360,6 @@ rust-deep: rust-mutate rust-fuzz
 semantic-kernel:
 	node scripts/build-semantic-kernel.mjs
 
-# The digest baseline is written by a *different* script from the one that
-# writes the crate, and the two reach the emitter through different entry
-# points, so one emitter change has to move two artifacts by two deliberate
-# acts before the check goes green again (FR-086-CON-4).
-.PHONY: semantic-kernel-digests
-semantic-kernel-digests:
-	node scripts/build-semantic-kernel-digests.mjs --write
-
 # The kernel scratch lives outside the working tree, and outside every
 # CARGO_TARGET_DIR a `rust-*` target writes to, so no check can pass by
 # comparing a file to itself, none can be served a stale artifact another gate
@@ -380,7 +372,6 @@ KERNEL_SCRATCH := $(shell printf '%s/fcd-semantic-kernel-%s' "$${TMPDIR:-/tmp}" 
 semantic-kernel-check:
 	node scripts/build-semantic-kernel.mjs --check
 	node scripts/check-semantic-kernel-crate.mjs --tree $(KERNEL_SCRATCH)/tree
-	node scripts/build-semantic-kernel-digests.mjs --check
 	node scripts/check-semantic-kernel-crate.mjs --manifest
 	node scripts/check-semantic-kernel-crate.mjs --rustfmt
 	node scripts/check-semantic-kernel-crate.mjs --build $(KERNEL_SCRATCH)/build

@@ -32,10 +32,6 @@
 		"./identity": {
 			"types": "./identity.ts",
 			"default": "./identity.ts"
-		},
-		"./provenance": {
-			"types": "./provenance.ts",
-			"default": "./provenance.ts"
 		}
 	}
 }

@@ -22,16 +22,13 @@ relationships:
 
 The generated package SHALL carry, as ordinary exported readonly data, the
 semantic identity of every type and field it renders, every contract datum of
-the document that the type surface does not itself express, and the provenance
-of the document it was generated from, so that a consumer can name what it is
-holding and prove which contract it came from without reflection, without a
-decorator, and without reading a side-car file at run time.
+the document that the type surface does not itself express, so that a consumer
+can name what it is holding without reflection, without a decorator, and
+without reading a side-car file at run time.
 
 ## Inputs
 
 - A semantic IR document at `contractVersion` `2.0.0`, admitted by [FR-068](./FR-068-decide-and-report-ir-admissibility.md)
-- The document's `source` block: `identity`, `version`, `dialect`, and `digest`
-- The document's `package` block: `identity`, `version`, `manifestDigest`, `mappingVersions`, `profileVersions`, and `lockDigest`
 - The document's `contractVersion`
 - The document's top-level `extensions[]` and `occurrences[]`
 - Each type's `identity`, `roles[]`, `unknownPolicy`, and `extensions[]`, and, for a `record`, its `fields[]` with their `identity`, `unit`, and `extensions[]`, and its `relationships[]`
@@ -41,9 +38,9 @@ decorator, and without reading a side-car file at run time.
 
 ## Outputs
 
-- `src/compiler/backends/typescript-v1/metadata.mjs` exporting `renderIdentity(model)` and `renderProvenance(model)`. The compiler source module keeps its name; ADR-0007 governs the names of generated artifacts, not of the compiler's own modules
-- `src/compiler/backends/typescript-v1/metadata.d.mts` declaring both functions and the generated `Provenance`, `RelationshipDescriptor`, `ExtensionDescriptor`, `OccurrenceDescriptor`, and identity-map shapes
-- The generated `identity.ts` and `provenance.ts` modules of the emitted package
+- `src/compiler/backends/typescript-v1/metadata.mjs` exporting `renderIdentity(model)`. The compiler source module keeps its name; ADR-0007 governs the names of generated artifacts, not of the compiler's own modules
+- `src/compiler/backends/typescript-v1/metadata.d.mts` declaring `renderIdentity` and the generated `RelationshipDescriptor`, `ExtensionDescriptor`, `OccurrenceDescriptor`, and identity-map shapes
+- The generated `identity.ts` module of the emitted package
 
 ## Behavior
 
@@ -79,18 +76,13 @@ decorator, and without reading a side-car file at run time.
 
 ### The metadata module
 
-- `renderMetadata` SHALL emit one exported frozen `as const` object carrying `contractVersion`, `source.identity`, `source.version`, `source.dialect`, `source.digest`, `package.identity`, `package.version`, `package.manifestDigest`, `package.mappingVersions`, `package.profileVersions`, `package.lockDigest`, and the IR fingerprint.
-- `renderProvenance` SHALL compute the IR fingerprint as the canonical digest of the *normalized* document, so two documents differing only in the order of an identity-keyed set carry the same fingerprint.
-- `renderProvenance` SHALL emit `mappingVersions` and `profileVersions` as readonly arrays in the order the document carries them, because those arrays are ordered contract data rather than sets.
-- `renderProvenance` SHALL emit the backend identity and the backend version alongside the provenance, so a consumer can say which generator produced the bytes it is holding.
-- The generated `provenance.ts` SHALL import nothing at all, so a consumer reading provenance alone reaches neither validator nor identity code.
 - The generated `identity.ts` SHALL import nothing from the generated validators, for the same reason.
 
 ### What metadata may not carry
 
-- `renderProvenance` SHALL emit no wall-clock value, no generation timestamp, and no build date.
-- `renderProvenance` SHALL emit no hostname and no machine identifier.
-- `renderProvenance` SHALL emit no user name, no user id, and no home directory.
+- `renderMetadata` SHALL emit no wall-clock value, no generation timestamp, and no build date.
+- `renderMetadata` SHALL emit no hostname and no machine identifier.
+- `renderMetadata` SHALL emit no user name, no user id, and no home directory.
 - `renderMetadata` SHALL emit no working directory and no absolute path.
 - `renderMetadata` SHALL emit no tool path, no interpreter path, and no environment variable value.
 - An `occurrence` carries an `observedAt` timestamp authored in the document, and `renderMetadata` SHALL copy that value verbatim; it is contract data the document supplies rather than a clock the backend read, and the prohibition above is on the latter.
@@ -116,13 +108,11 @@ decorator, and without reading a side-car file at run time.
 | FR-067-AC-2 | The generated field-identity map carries one entry per field of every exported `record`, keyed `<Type>.<field>`. | Test |
 | FR-067-AC-3 | Both identity maps are ordered by key under code-point comparison, and the order is unchanged under `LC_ALL=tr_TR.UTF-8`. | Property |
 | FR-067-AC-4 | A generated package with one type removed from the identity map fails `tsc --noEmit`, and one with an entry for an unexported name fails likewise. | Compile |
-| FR-067-AC-5 | The metadata object carries all eleven provenance values plus the fingerprint, each byte-equal to the document's value or to the computed digest. | Test |
 | FR-067-AC-6 | Two documents differing only in the order of `types`, `fields`, `constraints`, and `extensions` produce the same generated fingerprint; two differing in any semantic value produce different ones. | Property |
 | FR-067-AC-7 | Every emitted file's banner names the backend identity, the backend version, and the fingerprint, and no emitted byte outside a copied `occurrences[].observedAt` value matches a date, time, hostname, user, or absolute-path pattern. | Static |
-| FR-067-AC-8 | Generating the same document twice at different wall-clock times produces byte-identical `identity.ts` and `provenance.ts`. | Snapshot |
+| FR-067-AC-8 | Generating the same document twice at different wall-clock times produces byte-identical `identity.ts`. | Snapshot |
 | FR-067-AC-9 | `roles[]` is exposed per type as a readonly array equal to the document's, including the empty array for a type declaring none. | Unit |
 | FR-067-AC-10 | A `record` declaring two relationships exposes two descriptors carrying `identity`, `verb`, `category`, `composite`, `target`, and the multiplicity bounds; a `record` declaring none exposes an empty array; and no relationship descriptor appears in `types.ts`. | Unit |
-| FR-067-AC-11 | A single-type import of `provenance.ts` reaches no validator symbol, measured by the FR-071 reachable-symbol walk rather than by a bundler. | Analysis |
 | FR-067-AC-12 | Renaming a type's `displayName` while leaving its `identity` unchanged leaves every identity-map value unchanged. | Unit |
 | FR-067-AC-13 | The metadata module typechecks under `tsc --noEmit` with no `any` and no type assertion other than `as const`, and its declared type matches `metadata.d.mts`. | Compile |
 | FR-067-AC-14 | Generating from `conformance/bases/core-2-0.json` and `conformance/bases/package-2-0.json` exposes each document's occurrence, its document-level extension, and the `unit: "ms"` of its declaring field, each byte-equal to the document's value. | Test |

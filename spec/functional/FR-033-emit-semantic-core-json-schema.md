@@ -47,7 +47,7 @@ from `data_schema`.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-033-CON-1 | The emitted output SHALL be reproducible byte-for-byte from the pinned toolchain; the recorded output digest in `toolchain.json` is the cross-host oracle. | Reproducibility | Determinism test and digest comparison |
+| FR-033-CON-1 | The emitted output SHALL be reproducible byte-for-byte from the pinned toolchain. | Reproducibility | Determinism test |
 | FR-033-CON-2 | When issue #31 is fixed upstream, the maintainer SHALL remove the normalization step from the semantic-core build and from the projection backend (issue #24) in one change rather than weaken it. | Integrity | Issue #31 acceptance |
 
 ## Acceptance Criteria
@@ -57,7 +57,7 @@ from `data_schema`.
 | FR-033-AC-1 | One schema file exists per inventory model and enum with an absolute `$id` under the package base. | Analysis |
 | FR-033-AC-2 | Every element of the FR-006 `FieldDecl[]` fixture validates against `FieldDecl.json` under Ajv strict mode with no alias. | Test |
 | FR-033-AC-3 | Each negative fixture fails against its named model schema, and at least one exists per grammar model. | Test |
-| FR-033-AC-4 | Regenerating twice yields byte-identical output equal to the recorded digest; a mutated byte makes the `check` script fail naming the file. | Test |
+| FR-033-AC-4 | Regenerating twice yields byte-identical output; a mutated byte makes the `check` script fail naming the file. | Test |
 | FR-033-AC-5 | `toolchain.json` pins the compiler, emitter, and normalization versions and equals the lockfile's resolved versions. | Analysis |
 
 ## Dependencies

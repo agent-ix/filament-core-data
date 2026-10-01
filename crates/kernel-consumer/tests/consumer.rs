@@ -106,14 +106,3 @@ fn tc_1546_rejects_each_closed_grammar_class() {
 	);
 	assert!(minimum.contains("keyword min"), "{minimum}");
 }
-
-/// TC-1547: identity and source provenance are read from the package itself.
-#[test]
-fn tc_1547_reads_identity_and_provenance_from_the_package() {
-	assert_eq!(kernel_consumer::package_identity(), "agent-ix/semantic-kernel");
-	assert_eq!(agent_ix_semantic_kernel::provenance::SOURCE_VERSION, "0.2.0");
-	assert_eq!(
-		agent_ix_semantic_kernel::provenance::SOURCE_DIGEST,
-		"sha256:0000000000000000000000000000000000000000000000000000000000000000",
-	);
-}

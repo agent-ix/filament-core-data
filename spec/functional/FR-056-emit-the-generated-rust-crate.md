@@ -62,7 +62,7 @@ it came from.
   starting one, and importing `cli.mjs` rather than the other way round
 - A generated crate rooted at the request's `outputRoot`, containing
   `Cargo.toml`, `LICENSE`, `README.md`, `src/lib.rs`, `src/support.rs`,
-  `src/identity.rs`, `src/provenance.rs`, and one module per IR type
+  `src/identity.rs`, and one module per IR type
 - An `output-manifest.schema.json` document naming every emitted file with its
   digest, media type, and the semantic identities it carries
 - `THIRD-PARTY-NOTICES.md`: the third-party attribution register, one entry per
@@ -153,35 +153,6 @@ not restated here.
   these rules, so that two runs over one document emit the same documentation
   bytes.
 
-### Provenance
-
-- `src/identity.rs` SHALL export `SOURCE_IDENTITY`, `SOURCE_VERSION`,
-  `SOURCE_DIGEST`, `PACKAGE_IDENTITY`, `PACKAGE_VERSION`, `MANIFEST_DIGEST`,
-  `LOCK_DIGEST`, `LOCK_FINGERPRINT`, `CONTRACT_VERSION`, `GENERATOR_IDENTITY`,
-  and `GENERATOR_VERSION` as `&'static str` constants, each taken verbatim from
-  the request member this table names and from no other source:
-
-| Constant | Request member |
-|---|---|
-| `SOURCE_IDENTITY` | `ir.source.identity` |
-| `SOURCE_VERSION` | `ir.source.version` |
-| `SOURCE_DIGEST` | `ir.source.digest` |
-| `PACKAGE_IDENTITY` | `ir.package.identity` |
-| `PACKAGE_VERSION` | `ir.package.version` |
-| `MANIFEST_DIGEST` | `ir.package.manifestDigest` |
-| `LOCK_DIGEST` | `ir.package.lockDigest` |
-| `LOCK_FINGERPRINT` | `lockFingerprint`, the request's own member |
-| `CONTRACT_VERSION` | `ir.contractVersion` |
-| `GENERATOR_IDENTITY` | `backend.identity` |
-| `GENERATOR_VERSION` | `backend.version` |
-
-- The correspondence is stated here because `compiler-request.schema.json` is
-  sealed at eight members and carries no `SOURCE_DIGEST`, `MANIFEST_DIGEST`, or
-  `LOCK_DIGEST` of its own; without the table an implementer would have to
-  invent the mapping and the comparison test would have to invent it twice.
-- The backend SHALL NOT write a timestamp, a hostname, a working directory, a
-  user name, or an absolute path into any emitted byte.
-
 ### Output manifest
 
 - The backend SHALL emit one `output-manifest` document whose `files` names
@@ -240,7 +211,6 @@ that decision requires.
 | Validation | `deny_unknown_fields` on each `…Wire` deserializer, the fallible `try_new` constructors, and `validate()`, all in `src/types/<type>.rs` |
 | Diagnostics | `src/support.rs`, which declares the `Diagnostic` type and the closed refusal vocabulary |
 | Semantic identity | `src/identity.rs` — `TypeMeta`, `FieldMeta`, `TYPES`, `OCCURRENCES`, `PACKAGE_EXTENSIONS` |
-| Provenance | `src/provenance.rs` — source, package, contract, generator identity, and the lock and manifest digests |
 
 ## Constraints
 
@@ -261,7 +231,6 @@ that decision requires.
 |---|---|---|
 | FR-056-AC-1 | Generating from each of the four corpus bases produces a crate that `cargo build --offline` compiles with no warning under `-D warnings`, with `#![deny(missing_docs)]` in force. | Test (TC-666) |
 | FR-056-AC-2 | The emitted `Cargo.toml` declares `AGPL-3.0-or-later`, `publish = false`, exactly one dependency (`serde`) pinned with `=`, and the `rust-version` the support matrix declares. | Analysis (TC-667) |
-| FR-056-AC-3 | Every constant in `src/identity.rs` equals the request member the correspondence table names, compared constant by constant against that table rather than against a mapping the test invents. | Test (TC-668) |
 | FR-056-AC-4 | `SemanticType` has exactly one variant per generated type, and a consumer matching exhaustively over it fails to compile when a type is added. | Test (TC-669) |
 | FR-056-AC-5 | The output manifest names every emitted file, every named file exists, every digest matches the bytes, and no file exists that the manifest does not name. | Test (TC-670) |
 | FR-056-AC-6 | A document that produces a blocking diagnostic emits zero files and at least one diagnostic, and leaves the output root empty. | Test (TC-671) |

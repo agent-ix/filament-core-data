@@ -68,12 +68,11 @@ left implicit.
 
 The first is the **static export surface**. Every type the kernel declares is a
 statically analysable export, so a consumer that imports one type bundles one
-type. Dynamic values — the identity map, the constraint descriptors, the
-provenance metadata — remain reachable, but through an explicit, validated API
+type. Dynamic values — the identity map and the constraint descriptors — remain reachable, but through an explicit, validated API
 rather than by reflection over the package. That is the acceptance criterion
 issue #11 states as "finite static exports while dynamic values remain available
 through an explicit validated API", and the TypeScript backend's
-`identity.ts`/`provenance.ts` split already implements it.
+`identity.ts` already implements it.
 
 The second is **runtime validation without a runtime dependency**. Each package
 validates untrusted input against the contract using code it carries, not a
@@ -127,8 +126,8 @@ attribution.
 | NFR-029-AC-5 | Importing each emitted package under an instrumented runtime opens no socket and reads no file. | Test |
 | NFR-029-AC-6 | Every `$ref` in the modular JSON Schema bundle resolves inside the bundle with the network disabled. | Test |
 | NFR-029-AC-7 | Each package's static export surface equals the kernel's declared type set plus the minted types, checked in both directions so a missing export and an unexpected one each fail. | Unit |
-| NFR-029-AC-8 | Every contract value that is not a type — identity, constraints, provenance, occurrence data — is reachable through the declared validated API and through no other route, and a consumer that imports a single type does not pull the whole descriptor table into its bundle. | Analysis |
-| NFR-029-AC-9 | Every emitted source file and every emitted package manifest declares AGPL-3.0-or-later, and every third-party dependency is pinned, licence-compatible, and attributed in the package's own provenance. | Static |
+| NFR-029-AC-8 | Every contract value that is not a type — identity, constraints, occurrence data — is reachable through the declared validated API and through no other route, and a consumer that imports a single type does not pull the whole descriptor table into its bundle. | Analysis |
+| NFR-029-AC-9 | Every emitted source file and every emitted package manifest declares AGPL-3.0-or-later, and every third-party dependency is pinned, licence-compatible, and attributed in `THIRD-PARTY-NOTICES.md`. | Static |
 | NFR-029-AC-10 | Each consumer example of [FR-089](../functional/FR-089-provide-independent-consumer-examples.md) satisfies the same closure assertion as the package it consumes, so an example cannot demonstrate portability while depending on a framework. | Test |
 
 ## Dependencies

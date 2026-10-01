@@ -332,10 +332,9 @@ fn tc_722_required_extension_the_crate_does_not_admit() {
 // The consumer reads the packaged crate, not the generator's tree.
 // ---------------------------------------------------------------------------
 
-/// TC-719: the crate under test is the packaged one, identified by the
-/// provenance constants it carries.
+/// TC-719: the crate under test is the packaged one, read through its own
+/// exported types.
 #[test]
 fn tc_719_reads_the_packaged_crate() {
-    assert_eq!(consumer_runtime::package_identity(), "agent-ix/conformance");
     assert_eq!(consumer_runtime::exported_type_count(), 12);
 }

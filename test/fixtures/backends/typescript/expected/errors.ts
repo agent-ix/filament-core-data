@@ -5,7 +5,7 @@
  * backend: ix://agent-ix/filament-core-data/backend/typescript@0.1.0
  * contract: 2.0.0
  * package: agent-ix/conformance@1.0.0
- * fingerprint: sha256:cf2742a429baf7170b0a9deec5d7d2825def47e9b117c3b7ca42c39338f6b888
+ * fingerprint: sha256:9de1f27497d58febf3990470419d4679a786caf2380f5bff5b4253f84130fc7c
  */
 
 /**

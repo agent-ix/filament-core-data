@@ -57,11 +57,8 @@ and every one of them will compile.
   `packages/semantic-kernel/parity/golden/`; this requirement consumes it from
   one language at a time and never compares languages, which is FR-090's
   obligation
-- The identity and provenance surfaces each package already emits: the validated
-  dynamic `identity.ts` and `provenance.ts` API of the TypeScript backend, the
-  provenance constants of the Rust crate that
-  `crates/consumer-runtime/src/lib.rs` reads through
-  `agent_ix_conformance::provenance::PACKAGE_IDENTITY`
+- The identity surface the TypeScript package already emits: the validated
+  dynamic `identity.ts` API
 - The two existing independent consumers read as the shape to match:
   `crates/consumer-compile-time/`, `crates/consumer-runtime/`, and
   `python_backend/examples/`
@@ -145,12 +142,6 @@ run that omits any one of them SHALL fail:
   `python_backend/examples/pydantic_v2_basemodel.py` does by returning the
   `ValidationError` text, so that a package that rejects everything for the
   wrong reason does not read as a pass.
-- **Read the identity and provenance metadata.** The example SHALL read the
-  package's own semantic identity, the source version, and the source
-  fingerprint back out of the package, and assert them equal to the values
-  recorded for the kernel bundle. A package whose metadata says it was generated
-  from something else is a package no consumer can trace, and that is exactly
-  what this assertion catches.
 
 ### Public surface only
 
@@ -262,7 +253,6 @@ run that omits any one of them SHALL fail:
 | FR-089-AC-3 | Each example constructs a `FieldDecl` carrying a `multiplicity` and asserts its member values; a constructed value omitting `multiplicity` is rejected by the package in each of the three languages. | Test |
 | FR-089-AC-4 | Each example deserializes at least one positive golden kernel instance document from `packages/semantic-kernel/parity/golden/` and asserts the member values it carries, including at least one nested `TypeRef` target and one `ConstraintDecl` variant, rather than asserting only that no error was raised. | Test |
 | FR-089-AC-5 | Each example is refused, with the error named, on one document per forbidden class: an undeclared member on a `reject` record, a member absent that `multiplicity.lower >= 1` makes required, a `KernelScalar` variant outside the closed enum, a `ConstraintDecl` variant naming no declared keyword, a `pattern` violation, and a value outside a declared `minimum`/`maximum`. Accepting any one of them fails the example. | Test |
-| FR-089-AC-6 | Each example reads its package's semantic identity, source version, and source fingerprint back from the package and asserts them equal to the values recorded for the kernel bundle; a package whose recorded fingerprint is altered makes the example fail. | Integration |
 | FR-089-AC-7 | No example's source matches an import of a path under `src/compiler/`, `python_backend/`, `packages/semantic-core/scripts/`, or `conformance/`, nor a deep import into the consumed package below its declared entry point. | Static |
 | FR-089-AC-8 | `packages/semantic-kernel/examples/closures.json` is written by the run from the resolved locks, and the assertion that no persistence, Tauri, user-interface, ORM, or application-framework package appears reads that file; injecting such a package into one example's manifest makes the assertion fail naming the example and the package. | Test |
 | FR-089-AC-9 | The Rust example declares the generated kernel crate and `serde_json` at a pinned exact version as a dev-dependency and nothing else; the TypeScript example declares no dependency beyond the generated package; the Python example declares only the generated package, `pydantic`, and the standard library. | Analysis |

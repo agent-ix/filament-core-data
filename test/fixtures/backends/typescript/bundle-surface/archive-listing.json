@@ -2,17 +2,17 @@
 	{
 		"path": "errors.ts",
 		"size": 8651,
-		"sha256": "1af4878350ed6000160ee21f5d2522af0de0b7e2c5e9019a8d1203528b603011"
+		"sha256": "fcd21f99a2cadf7819d5c0f20f5b19ae8174b42fea401f67bbffd669ef3cecec"
 	},
 	{
 		"path": "identity.ts",
 		"size": 14393,
-		"sha256": "d4ae828465359bac8d5d5877dfb6984c6be7b83bfb50eeff0ba927eed40e8d00"
+		"sha256": "733001893c93e5000c99b92b96fc961a0086206da4a82376eaeb1ba7a6ec3f73"
 	},
 	{
 		"path": "index.ts",
-		"size": 1564,
-		"sha256": "e3e2d49de29ad982be62ffeadaea042f2afe524ac4814a48bd7b406e8ecb4549"
+		"size": 1517,
+		"sha256": "4c53a9e6b58ce9d838f92e9c6fbffdb57807fffd6de39d2164dd25aa06f678ad"
 	},
 	{
 		"path": "LICENSE",
@@ -21,27 +21,22 @@
 	},
 	{
 		"path": "output-manifest.json",
-		"size": 2892,
-		"sha256": "fca0df4bb233857190ab9cfbe0dc0bdc262f3d42cc70a343baa73b9831add084"
+		"size": 2668,
+		"sha256": "dabfab8a78a5dbc94eff0d4ee3fe98b308b344d683cc21f82089f5073c5876a6"
 	},
 	{
 		"path": "package.json",
-		"size": 1006,
-		"sha256": "17090c9e377653603011ecc1617c533889aedb1241d35511d49fb4e7e1592f85"
-	},
-	{
-		"path": "provenance.ts",
-		"size": 1974,
-		"sha256": "c54b05d2f3713f9608038fa6be1b696a6aa348306ee7ff0fe605f2323e194054"
+		"size": 918,
+		"sha256": "27ccb38a06e9d141da65cb80e4ff057f94161efd2050a9881afc8f2739e73c0b"
 	},
 	{
 		"path": "types.ts",
 		"size": 1995,
-		"sha256": "5f71795dd4c93e99658f758185a8554fc0667c9f45fb775cf72eb8f28d152194"
+		"sha256": "0be4c5b69b6a14c661eafacf7fee9a7d948ab5f6d5e630ad274697e87382a296"
 	},
 	{
 		"path": "validators.ts",
 		"size": 28779,
-		"sha256": "3ce5c944c69ff45e50e3167b735b323bb2163552a0b8833c2315f86c51c47ac0"
+		"sha256": "e92bdcab1eefe959a0dc7a486ebb989530a4014377b562318a6cb301da4de608"
 	}
 ]

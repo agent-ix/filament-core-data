@@ -6,16 +6,6 @@ This crate is generated. Edit the contract, not this crate: the next
 generation overwrites every file here, and a hand edit is invisible to the
 determinism gate that compares two generations byte for byte.
 
-## Provenance
-
-- Source identity: `ix://agent-ix/filament-core-data/source/typespec`
-- Source version: `1.0.0`
-- Source digest: `sha256:0000000000000000000000000000000000000000000000000000000000000000`
-- Contract version: `2.0.0`
-
-The same values are exported as `&'static str` constants from
-`src/provenance.rs`, so a consumer can assert against them at run time.
-
 ## Declared gaps
 
 The `format` constraint keyword is registered against no format in this

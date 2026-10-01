@@ -221,5 +221,3 @@ export {
 	TYPE_UNKNOWN_POLICY,
 	TYPE_VARIANTS,
 } from "./identity.js";
-
-export { PROVENANCE } from "./provenance.js";

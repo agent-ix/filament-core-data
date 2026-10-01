@@ -69,7 +69,6 @@ names the backend that will answer it.
 | FR-130-AC-1 | A `rust` target request over an accepted IR document returns state `success` with a non-empty file set and zero blocking diagnostics | Test (TC-1388) |
 | FR-130-AC-2 | The returned manifest names the Rust backend's own identity, not the TypeScript backend's | Test (TC-1389) |
 | FR-130-AC-3 | Generating one document through the seam and through the backend's own command yields byte-identical files at every path | Test (TC-1390) |
-| FR-130-AC-4 | The generated crate's rendered generator identity names the Rust backend when the caller selected the `rust` target | Test (TC-1391) |
 | FR-130-AC-5 | A target with no implementation still returns state `unavailable` carrying `BACKEND_NOT_IMPLEMENTED` and the owning ticket | Test (TC-1392) |
 | FR-130-AC-6 | A `rust` request whose IR declares contract version 1.0.0 returns state `invalid` with an `UNKNOWN_CONTRACT_VERSION` diagnostic naming `1.0.0`, and the backend's own `supportedIrVersions` is `["2.0.0"]` | Test (TC-1393) |
 | FR-130-AC-7 | A `rust` request generated with no injected host returns a diagnostic rather than reading the repository, and writes no file | Test (TC-1394) |

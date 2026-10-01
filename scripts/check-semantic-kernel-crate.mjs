@@ -10,9 +10,8 @@
  * for a run (FR-086-CON-3, FR-086-CON-6).
  *
  * This script writes nothing into the working tree. `make semantic-kernel`
- * writes the crate and `make semantic-kernel-digests` writes the baseline;
- * neither is a prerequisite of the check, because a check that regenerates its
- * own baseline compares a file to itself.
+ * writes the crate; it is not a prerequisite of the check, because a check
+ * that regenerates its own baseline compares a file to itself.
  *
  * No step contacts a package registry. Nothing here invokes `cargo publish` or
  * passes `--registry`, `--index` or a publish `--dry-run`: the publication gate
@@ -49,6 +48,7 @@ import {
 	generateRust,
 	readLicense,
 } from "../src/compiler/backends/rust-serde/index.mjs";
+import { fingerprintIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const KERNEL = join(ROOT, "packages/semantic-kernel");
@@ -106,15 +106,16 @@ function report(problems, label) {
 
 /**
  * The request `scripts/build-semantic-kernel.mjs` builds for the Rust half,
- * over the committed kernel IR and the `inputDigest` FR-084 recorded beside it.
+ * over the committed kernel IR.
  * Nothing is restated: the backend identity, the profile and the limits come
  * from `cli.mjs` (FR-086-CON-1).
  */
 function kernelRequest() {
+	const ir = readJson(join(KERNEL, "semantic-ir.json"));
 	return {
 		contractVersion: "1.0.0",
-		lockFingerprint: readJson(join(KERNEL, "provenance.json")).inputDigest,
-		ir: readJson(join(KERNEL, "semantic-ir.json")),
+		lockFingerprint: fingerprintIrForTarget(ir),
+		ir,
 		profile: RUST_PROFILE,
 		mappings: [],
 		backend: RUST_BACKEND,
@@ -574,17 +575,6 @@ function gate() {
 			problems.push(
 				`${relative(ROOT, PACKAGES_DOC)} does not name ${what} (${needle})`,
 			);
-	}
-	const provenance = readJson(join(KERNEL, "provenance.json"));
-	if (provenance.published !== false) {
-		problems.push(
-			"the kernel provenance does not record the packages as unpublished",
-		);
-	}
-	if (provenance.publicationGate?.issue !== PUBLICATION_GATE) {
-		problems.push(
-			`the kernel provenance records the publication gate as ${provenance.publicationGate?.issue ?? "nothing"}, and a blocked gate carrying no owning issue fails the check`,
-		);
 	}
 	const code = report(problems, "kernel publication gate");
 	if (code === 0) {

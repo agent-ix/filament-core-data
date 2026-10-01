@@ -40,7 +40,7 @@ consume it.
 
 - `packages/semantic-core/inventory.json`: the FR-031 declaration inventory of `AgentIx.Semantic.Core` — twenty-one `models`, one `unions` member (`ConstraintDecl`), four `enums`, and four `scalars`
 - `packages/semantic-core/generated/json-schema/`: the thirty JSON Schema 2020-12 documents the pinned official `@typespec/json-schema` emitter projects from `packages/semantic-core/main.tsp`
-- `packages/semantic-core/generated/toolchain.json`: the recorded emission toolchain — `@typespec/compiler` `1.15.0`, `@typespec/json-schema` `1.15.0`, the `issue-31-absolute-id` normalization at `1.0.0` with `applied: false`, the base `https://schemas.agent-ix.org/semantic-core/0.2.0/`, the thirty-entry `files` array, and the emission digest `sha256:ef79c5dea98c19643b20daa8899951a4782d6248527a0647c114c6f76cca8aea`
+- `packages/semantic-core/generated/toolchain.json`: the recorded emission toolchain — `@typespec/compiler` `1.15.0`, `@typespec/json-schema` `1.15.0`, the `issue-31-absolute-id` normalization at `1.0.0` with `applied: false`, the base `https://schemas.agent-ix.org/semantic-core/0.2.0/`, and the thirty-entry `files` array
 - `packages/semantic-core/kernel-scalars.json` and `packages/semantic-core/lowering.json`
 - `packages/semantic-core/package.json`, whose `name` is `@agent-ix/semantic-core` and whose `version` is `0.2.0`
 - The closed `target` vocabulary of `schema/semantic/v1/common.schema.json#/$defs/target`: `json-schema`, `rust`, `typescript`, `python-pydantic-v2`, `python-dataclass`
@@ -50,7 +50,7 @@ consume it.
 ## Outputs
 
 - `packages/semantic-kernel/bundle.json`: the kernel bundle declaration — the enumerated document set, the kernel package identity and version, the declared targets with their tree roots and owning issues, the digest input list, and the publication-gate record
-- `src/compiler/frontend/json-schema/bundle.mjs`: the pure bundle predicates — `checkKernelBundle(declaration, inventory, toolchain, manifest)`, `kernelDigestInputs(declaration)`, and `kernelDigest(entries)` — each a function from supplied values to diagnostics or bytes, reading nothing
+- `src/compiler/frontend/json-schema/bundle.mjs`: the pure bundle predicates — `checkKernelBundle(declaration, inventory, toolchain, manifest)` and `kernelDigestInputs(declaration)` — each a function from supplied values to diagnostics or bytes, reading nothing
 - `src/compiler/frontend/json-schema/bundle.d.mts`, declaring every added symbol, beside the `.mjs`, as the TypeSpec frontend already does for its own modules
 - `scripts/build-semantic-kernel.mjs`: the sole file-system boundary, which reads the declaration and every digest input, calls the pure predicates, and writes every generated tree; driven by `make semantic-kernel` and, with `--check`, by `make semantic-kernel-check`
 - `packages/semantic-kernel/typescript/`, `packages/semantic-kernel/rust/`, and `packages/semantic-kernel/python/`: the three generated language trees
@@ -93,10 +93,8 @@ consume it.
 
 - The bundle SHALL enumerate its digest inputs as an ordered list of repository-relative paths, and `kernelDigestInputs()` SHALL return exactly that list.
 - The digest inputs SHALL be: the thirty documents under `packages/semantic-core/generated/json-schema/` in code-point order of file name; `packages/semantic-core/generated/toolchain.json`; `packages/semantic-core/inventory.json`; `packages/semantic-core/kernel-scalars.json`; `packages/semantic-core/lowering.json`; `packages/semantic-core/main.tsp`; `packages/semantic-core/package.json`; and `packages/semantic-kernel/bundle.json` itself.
-- `kernelDigest()` SHALL be `digest` over the FR-048 canonical byte form of the pairs `(path, bytes)` in that order, so the digest changes when a byte of any input changes and when the input list itself changes.
 - `packages/semantic-core/main.tsp` SHALL be a digest input even though every language target reads only the projection, because the projection's fidelity is the emitter's and a change to the authored source that the pinned emitter happens to project identically is still a change to what the kernel means.
 - `packages/semantic-core/package.json` SHALL be a digest input because the schema base is derived from its `version`, so a version bump alone moves every `$id` in the bundle.
-- The digest SHALL be recorded on each generated tree as generation provenance, and a tree whose recorded digest differs from `kernelDigest()` SHALL be reported by `agent-ix.compiler.KERNEL_BUNDLE_STALE` naming the tree and both digests.
 
 ### The byte-comparison gate
 
@@ -136,9 +134,7 @@ consume it.
 | FR-081-AC-6 | The bundle declares exactly the four targets `json-schema`, `rust`, `typescript`, and `python-pydantic-v2`; every token is a member of the enum `src/compiler/backends/targets.mjs` reads, and `python-dataclass` is present as an explicitly out-of-scope record with a stated reason. | Test |
 | FR-081-AC-7 | A bundle declaring a target token outside that enum is rejected, and the rejection names the value and the five published targets. | Unit |
 | FR-081-AC-8 | The declared artifact paths are exactly `packages/semantic-kernel/typescript/`, `packages/semantic-kernel/rust/`, `packages/semantic-kernel/python/`, and `packages/semantic-kernel/json-schema/index.json`, each bound to its stated target token, and every declared target names an owning issue or upstream component. | Test |
-| FR-081-AC-9 | `kernelDigestInputs()` returns exactly the thirty-seven declared paths in the declared order, and `kernelDigest()` is stable across two runs in different working directories and under a changed `TZ` and `LANG`. | Test |
-| FR-081-AC-10 | Mutating one byte of any single digest input — including `main.tsp`, `package.json`, and `packages/semantic-kernel/bundle.json` itself — changes `kernelDigest()`, asserted once per input. | Property |
-| FR-081-AC-11 | A generated tree whose recorded provenance digest differs from `kernelDigest()` produces one `KERNEL_BUNDLE_STALE` diagnostic naming the tree and both digests, and `make semantic-kernel-check` exits non-zero. | Test |
+| FR-081-AC-9 | `kernelDigestInputs()` returns exactly the thirty-seven declared paths in the declared order. | Test |
 | FR-081-AC-12 | `make semantic-kernel-check` on an unmodified tree exits zero; with one byte changed in any committed generated file it exits non-zero and prints that file's repository-relative path; with a committed file deleted it reports the file as missing; with an extra committed file it reports that file as stale. | Integration |
 | FR-081-AC-13 | `packages/semantic-kernel/json-schema/index.json` names all thirty documents by file name and `$id`, both sets equal to the enumeration and to the `$id` values read from the committed documents, and it carries no copy of any document's body. | Test |
 | FR-081-AC-14 | The branch changes no file under `packages/semantic-core/`, `schema/`, `fixtures/`, `conformance/`, `src/compiler/backends/`, `src/compiler/frontend/typespec/`, or `src/compiler/frontend/spec-bundle/`, and leaves `src/compiler/cli.mjs`, the root `package.json`, `tsconfig.json`, `pyproject.toml`, `package-lock`/`pnpm-lock.yaml`, and `poetry.lock` byte-unchanged; `Cargo.lock` is the one lockfile it may change. | Analysis |

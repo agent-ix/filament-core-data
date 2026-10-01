@@ -1,18 +1,13 @@
 /**
- * The generated `identity.ts` and `provenance.ts` (FR-067, FR-137, Task-109).
+ * The generated `identity.ts` (FR-067, FR-137, Task-109).
  *
  * This source module keeps the name it was written under; the *generated*
- * artifacts do not. Under ADR-0007 `identity` and `provenance` are two concepts
- * with two names in every target, and `metadata` is retired as a name for
- * either — it meant semantic identity in the generated Rust crate and
- * provenance in the generated TypeScript package, which is the one difference
- * in the emitted set that no language property explains.
+ * artifacts do not. `metadata` is retired as a name in every target.
  *
  * A generated TypeScript type expresses structure and nothing else, so every
  * other contract datum the IR document carries reaches the consumer here:
  * identities, roles, unknown policies, units, relationship descriptors,
- * extensions at all three levels, occurrences, and the provenance of the
- * document itself. Nothing in the document is dropped. That is not a
+ * extensions at all three levels, and occurrences. Nothing in the document is dropped. That is not a
  * precaution — `conformance/bases/core-2-0.json` and `package-2-0.json` each
  * carry an occurrence, a document-level extension and a field declaring
  * `unit: "ms"`, and the committed `typescript` target contract sets
@@ -33,8 +28,6 @@
  * copied verbatim from the document: it is contract data the author wrote, not
  * a clock this backend read.
  */
-
-import { fingerprintIrForTarget } from "./canonical.mjs";
 
 /** The `as const` a generated data module needs, exempted by FR-066 by name. */
 const AS_CONST = " as const";
@@ -367,15 +360,6 @@ export function bannerFor(model, fingerprint) {
 		" */",
 		"",
 	].join("\n");
-}
-
-/** The fingerprint a caller supplied, or the one its document implies. */
-function fingerprintFrom(options) {
-	if (typeof options.fingerprint === "string") return options.fingerprint;
-	if (options.ir !== undefined) return fingerprintIrForTarget(options.ir);
-	throw new TypeError(
-		"renderProvenance needs options.fingerprint or options.ir: the fingerprint is taken over the normalized document, which the resolved model does not carry",
-	);
 }
 
 /**
@@ -816,7 +800,7 @@ ${listDeclaration("POPULATIONS", populations, "readonly PopulationDescriptor[]")
  * The document-level and per-type contract data, appended to `identity.ts`.
  *
  * These declarations were emitted in a module named `metadata.ts` until FR-137.
- * They are not provenance — they are contract the document states — so under
+ * They are contract the document states — so under
  * ADR-0007 they belong beside the semantic identity they qualify, and the name
  * `metadata` is retired rather than re-pointed at one of the two concepts it
  * used to mean. Kept as its own function only because `renderIdentity` is
@@ -910,71 +894,6 @@ ${mapDeclaration("TYPE_CONSTRAINTS", recordLiteral(constraints), "Record<Exporte
  * default the semantic contract declines to substitute.
  */
 ${mapDeclaration("FIELD_DEFAULT", recordLiteral(defaults), "Record<ExportedFieldKey, DefaultDescriptor>")}
-`;
-}
-
-/**
- * The generated `provenance.ts`.
- *
- * One concept, one module, one name. It carries what this package was generated
- * from and by, and nothing else — the contract data that used to share its
- * predecessor `metadata.ts` now sits beside the semantic identity it qualifies,
- * in `identity.ts` (FR-137, ADR-0007).
- *
- * It imports nothing, so a consumer reading provenance alone retains neither
- * validator code nor a descriptor type.
- */
-export function renderProvenance(model, options = {}) {
-	const fingerprint = fingerprintFrom(options);
-	const source = model.source ?? {};
-	const pkg = model.package ?? {};
-
-	const versions = (list) =>
-		Array.isArray(list) && list.length > 0
-			? `[${list.map((entry) => literal(entry)).join(", ")}]`
-			: "[]";
-
-	// Built through `recordLiteral` rather than written inline, so a long digest
-	// is broken by the same rule as every other over-long entry.
-	const provenance = recordLiteral(
-		[
-			["contractVersion", literal(model.contractVersion ?? "")],
-			["sourceIdentity", literal(source.identity ?? "")],
-			["sourceVersion", literal(source.version ?? "")],
-			["sourceDialect", literal(source.dialect ?? "")],
-			["sourceDigest", literal(source.digest ?? "")],
-			["packageIdentity", literal(pkg.identity ?? "")],
-			["packageVersion", literal(pkg.version ?? "")],
-			["packageManifestDigest", literal(pkg.manifestDigest ?? "")],
-			["packageMappingVersions", versions(pkg.mappingVersions)],
-			["packageProfileVersions", versions(pkg.profileVersions)],
-			["packageLockDigest", literal(pkg.lockDigest ?? "")],
-			["fingerprint", literal(fingerprint)],
-			["backendIdentity", literal(model.backend.identity)],
-			["backendVersion", literal(model.backend.version)],
-		],
-		// The provenance object is ordered as the contract states it, not by key:
-		// a reader follows source then package then fingerprint.
-		false,
-	);
-
-	return `/**
- * The provenance of the semantic document this package was generated from.
- *
- * Every value here is copied from the document or computed from it. There is no
- * generation timestamp, no build date, no hostname, no machine identifier, no
- * user name, no user id, no home directory, no working directory, no absolute
- * path, no tool path, no interpreter path and no environment variable value:
- * each of those is a determinism leak, and generating this package twice at
- * different times produces identical bytes because none of them is read.
- *
- * An occurrence's \`observedAt\` is the one timestamp a generated package
- * carries, and it is contract data the document's author wrote. It is declared
- * in \`identity.ts\`, not here.
- */
-
-/** The document's provenance and the fingerprint of its normalized form. */
-export const PROVENANCE = ${provenance}${AS_CONST};
 `;
 }
 

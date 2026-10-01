@@ -6294,7 +6294,6 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 		const declaration = {
 			documents: ["A.json"],
 			semanticCore: "0.1.0",
-			emissionDigest: "sha256:aa",
 			inventoryCounts: { models: 1 },
 		};
 
@@ -6303,7 +6302,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 			bundle.checkKernelBundle(
 				declaration,
 				{ models: [1, 2] },
-				{ files: ["B.json"], digest: "sha256:bb" },
+				{ files: ["B.json"] },
 				{ version: "9.9.9" },
 			) as readonly Diagnostic[],
 		);

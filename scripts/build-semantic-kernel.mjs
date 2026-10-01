@@ -38,13 +38,10 @@ import {
 	readLicense,
 } from "../src/compiler/backends/rust-serde/index.mjs";
 import { biomeFormatter } from "../src/compiler/backends/format.mjs";
+import { fingerprintIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
-import {
-	checkKernelBundle,
-	kernelDigest,
-} from "../src/compiler/frontend/json-schema/bundle.mjs";
+import { checkKernelBundle } from "../src/compiler/frontend/json-schema/bundle.mjs";
 import { lowerBundle } from "../src/compiler/frontend/json-schema/lower.mjs";
-import { provenanceOf } from "../src/compiler/frontend/json-schema/provenance.mjs";
 import {
 	checkLossBijection,
 	KERNEL_LOSSES,
@@ -112,19 +109,7 @@ function main(argv) {
 		return;
 	}
 
-	const inputDigest = kernelDigest(
-		documents.map(([name]) => [
-			name,
-			readFileSync(join(SCHEMA_DIR, name), "utf8"),
-		]),
-	);
-	const jsonSchemaProvenance = provenanceOf({
-		target: "json-schema",
-		semanticCore: manifest.version,
-		emissionDigest: toolchain.digest,
-		inputDigest,
-		losses: KERNEL_LOSSES,
-	});
+	const lockFingerprint = fingerprintIrForTarget(lowered.document);
 
 	/** @type {[string, string][]} */
 	const artifacts = [
@@ -139,15 +124,12 @@ function main(argv) {
 				$comment:
 					"Issue #11, FR-088. An index over packages/semantic-core/generated/json-schema/, never a copy of it.",
 				base: toolchain.base,
-				emissionDigest: toolchain.digest,
-				"x-agent-ix-provenance": jsonSchemaProvenance,
 				documents: documents.map(([name]) => ({
 					name,
 					path: `../../semantic-core/generated/json-schema/${name}`,
 				})),
 			}),
 		],
-		["provenance.json", serialize(jsonSchemaProvenance)],
 	];
 
 	// The TypeScript tree (FR-085). Generated through the backend issue #22
@@ -155,7 +137,7 @@ function main(argv) {
 	// be a second contract, and the corpus judges only the first.
 	const tsRequest = {
 		contractVersion: "1.0.0",
-		lockFingerprint: inputDigest,
+		lockFingerprint,
 		ir: lowered.document,
 		profile: readJson(join(ROOT, "fixtures/semantic/v1/positive/profile.json")),
 		mappings: [],
@@ -215,7 +197,7 @@ function main(argv) {
 	// of a branch being added there (FR-086-CON-1).
 	const rustRequest = {
 		contractVersion: "1.0.0",
-		lockFingerprint: inputDigest,
+		lockFingerprint,
 		ir: lowered.document,
 		profile: RUST_PROFILE,
 		mappings: [],
