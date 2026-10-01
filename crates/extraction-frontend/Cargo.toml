@@ -33,7 +33,7 @@ name = "extraction-frontend"
 path = "src/main.rs"
 
 [dependencies]
-quire-rs = { git = "https://github.com/agent-ix/quire-rs", rev = "2c760f14579fa5d6efa50d125aa6d8b091668c83" }
+quire-rs = { git = "https://github.com/agent-ix/quire-rs", rev = "4f1af2172943f7b40d4f39b18f79e42da1ae9827" }
 agent-ix-semantic-ir = { path = "../semantic-ir" }
 serde = { workspace = true }
 serde_json = { workspace = true }

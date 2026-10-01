@@ -112,7 +112,6 @@ fn scratch_inventory(root: &Path) -> PathBuf {
         names,
         [
             "diagnostics.json",
-            "provenance.json",
             "semantic-ir.json",
             "semantic-ir.json.fingerprint"
         ]
