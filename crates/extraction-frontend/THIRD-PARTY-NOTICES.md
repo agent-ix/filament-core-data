@@ -100,6 +100,7 @@ features; this crate declares no `jsonschema` dependency of its own
 | `powerfmt` | `0.2.0` | MIT OR Apache-2.0 | crates.io |
 | `proc-macro2` | `1.0.107` | MIT OR Apache-2.0 | crates.io |
 | `quire-code-parse` | `0.1.0` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-code-rs |
+| `quire-rs` | `0.48.0` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-rs |
 | `quire-rust-extraction` | `0.1.0` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-rs |
 | `quote` | `1.0.47` | MIT OR Apache-2.0 | crates.io |
 | `rayon` | `1.12.0` | MIT OR Apache-2.0 | crates.io |
