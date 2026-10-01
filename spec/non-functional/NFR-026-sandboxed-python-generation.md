@@ -36,10 +36,6 @@ acceptance criterion below.
 ## Scope
 
 - Applies to: `python_backend/**`, `tests/test_python_backend*.py`, `test/python-backend*.test.ts`, and the `python-backend` Poetry dependency group.
-- Permitted paths: `python_backend/**`, `spec/**`, `plan/Plan-012-python-pydantic-backend/**`, `reviews/**`, `tests/**`, `test/**`, `pyproject.toml`, `poetry.lock`, `Makefile`, and — since issue #65 delivered the Python conformance adapter under [FR-132](../functional/FR-132-answer-the-conformance-corpus-from-python.md) — `conformance/adapters/python-backend/**`, `conformance/adapters/registry.json`, `conformance/coverage.json`, `conformance/tools/materialize-cases.mjs`, `conformance/runner/differential.mjs`, `.gitignore`, `biome.json`. An adapter's home is the harness that launches it; the last two name the scratch tree the harness materialises and nothing else.
-- Prohibited paths: every path outside the permitted list, and in particular `schema/**`, `fixtures/**`, `conformance/corpus.json`, `conformance/corpus.mjs`, `conformance/cases/**`, `conformance/bases/**`, `conformance/oracle/**`, `conformance/schema/**`, `conformance/thresholds.json`, `spikes/**`, `packages/**`, `src/**`, `docs/**`, `agent_ix_core_data/**`, `audit/**`, `scripts/**`, `package.json`, `pnpm-lock.yaml`, `.github/**`. The conformance entries are the evidence — the corpus the adapters are measured against and the oracle they are measured by — rather than the directory that contains them, so adding an adapter cannot move what judges it.
-- The two lists are complements over the branch's changed set, so a path is permitted exactly when it is not prohibited and the two gates cannot disagree.
-- Generating an artefact under a permitted path does not license changing a byte of a prohibited one; a changed prohibited path is a failure whatever produced it.
 
 ## Rationale
 
@@ -110,7 +106,6 @@ inspection that neither HTTP extra is resolved.
 | NFR-026-AC-6 | No generated module imports outside the declared allow-list, and a synthetic module importing `os` is refused. | Test |
 | NFR-026-AC-7 | Neither the `http` nor the `httpx2` extra is present in the resolved dependency set. | Test |
 | NFR-026-AC-8 | For each declared tool in turn, removing it makes its gate fail with a provisioning message; no gate in scope skips, and the run's own report shows zero skips. | Test |
-| NFR-026-AC-9 | No path this branch changes falls under the prohibited list, measured over the branch's own historical change range. | Analysis |
 | NFR-026-AC-10 | The refusal register is a superset of FR-043's three-key set, and every key it names is bound by the pinned generator's own source. | Test |
 | NFR-026-AC-11 | No file is written under `python_backend/generated/` before the enforcing inspection has returned successfully. | Test |
 

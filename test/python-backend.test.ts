@@ -29,7 +29,7 @@ function walk(directory: string): string[] {
 }
 
 describe("qualified Python generation route (issue #23)", () => {
-	/** NFR-027-AC-5, NFR-027-AC-11. */
+	/** NFR-027-AC-11. */
 	it("TC-942 names no python_backend path in the distribution manifest", () => {
 		const manifest = JSON.parse(read("package.json")) as Record<
 			string,

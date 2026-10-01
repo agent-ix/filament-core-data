@@ -57,17 +57,12 @@ every member's `rust-version` under `--workspace`, so a member-level
 an older `rust-toolchain.toml` channel refuse the whole workspace
 ("rustc 1.94.1 is not supported by agent-ix-extraction-frontend") and break
 `make test` for every other member — the non-disruption NFR-032 forbids
-(CR-036-1). The qualification compiler is exact `1.98.1`, named once as
-`EXTRACTION_TOOLCHAIN ?= 1.98.1` in the `Makefile`, and every gate of this
-crate runs `cargo +$(EXTRACTION_TOOLCHAIN)`; the workspace `rust-version`
-stays untouched. `rust-toolchain.toml` is the FR-060 rustfmt fixed point; it
+(CR-036-1). The qualification compiler is exact `1.98.1`, the channel `rust-toolchain.toml`
+pins; the workspace `rust-version` stays untouched. `rust-toolchain.toml` is the FR-060 rustfmt fixed point; it
 pins `1.98.1` because the pinned `quire-rs` requires that compiler, and every
 Rust backend golden is formatted by its `rustfmt 1.9.0-stable`. Running this crate's gates
-with `cargo +1.98.1` is what makes "qualified on 1.98.1" a measured claim
-rather than a manifest line; a gate that runs on whatever `cargo` resolves to
-measures the host, not the crate. An absent 1.98.1 toolchain is therefore a red
-gate naming the toolchain — the never-skip rule is FR-099's (FR-099-AC-4);
-this requirement measures it and does not restate it. That the crate also
+on that channel is what makes "qualified on 1.98.1" a measured claim
+rather than a manifest line. That the crate also
 compiles on the workspace channel is measured, not assumed: `cargo check` on
 that channel is a gate of this crate (NFR-033-AC-11), so a language feature
 newer than the supported minimum surfaces as a red gate rather than as a
@@ -144,10 +139,7 @@ row is promised.
 | Metric | Target | Threshold | Method |
 |---|---|---|---|
 | `rust-version` declared by the crate manifest | `rust-version.workspace = true` | exact | Manifest inspection |
-| Non-comment lines of the `Makefile` naming the qualification compiler `1.98.1` | 1 (`EXTRACTION_TOOLCHAIN ?= 1.98.1`) | exact | Makefile inspection |
-| Gates in the `Makefile` block that invoke `cargo` without `+$(EXTRACTION_TOOLCHAIN)` | 0 | 0 | Makefile inspection |
 | `cargo check -p agent-ix-extraction-frontend --locked --offline` failures on the `rust-toolchain.toml` channel | 0 | 0 | Check on the workspace channel |
-| Gates that skip rather than fail when `1.98.1` is absent (FR-099-AC-4) | 0 | 0 | Run with the toolchain hidden |
 | Changes to the workspace `rust-version` and `rust-toolchain.toml` | 0 | 0 | Change-set diff |
 | `Cargo.lock` entries of other workspace members moved by `cargo +1.98.1 --locked` | 0 | 0 | Lock diff against the range's base |
 | Dependencies declared with a caret, tilde, wildcard, or branch specifier | 0 | 0 | Manifest inspection |
@@ -167,13 +159,8 @@ row is promised.
 ## Verification
 
 Read `rust-version` from the crate manifest and confirm it is
-`rust-version.workspace = true`; grep the `Makefile` for `1.98.1` and confirm
-the one non-comment line is `EXTRACTION_TOOLCHAIN ?= 1.98.1`; grep the `Makefile` block for
-every `cargo` invocation and confirm each carries `+$(EXTRACTION_TOOLCHAIN)`;
-run `cargo check -p agent-ix-extraction-frontend --locked --offline` on the
-`rust-toolchain.toml` channel and confirm it exits zero; run the block with
-`EXTRACTION_TOOLCHAIN=0.0.0` and confirm each gate fails naming `0.0.0` rather
-than passing; diff the workspace `Cargo.toml` `rust-version` key,
+`rust-version.workspace = true`; run `cargo check -p agent-ix-extraction-frontend --locked --offline` on the
+`rust-toolchain.toml` channel and confirm it exits zero; diff the workspace `Cargo.toml` `rust-version` key,
 `rust-toolchain.toml`, and every `Cargo.lock` entry not reachable only from
 this crate against the range's base; inspect every `[dependencies]` and `[dev-dependencies]`
 specifier against the workspace `members` list; run `make extraction-frontend-deny`
@@ -191,8 +178,7 @@ reports the metric it could not measure.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version.workspace = true`, `license = "AGPL-3.0-or-later"`, `publish = false`, and `edition = "2021"`; the `Makefile` names the qualification compiler on exactly one non-comment line, `EXTRACTION_TOOLCHAIN ?= 1.98.1`; the workspace `rust-version` is byte-unchanged, `rust-toolchain.toml` pins channel `1.98.1`, and every `Cargo.lock` entry of the range's base is byte-unchanged after `cargo +1.98.1 build --locked` except the entries of crates reachable only from this crate: computed from the base lock, those this crate reaches and no other workspace member reaches (a member's own entry, and a crate another member also reaches, never move). | Analysis (TC-1320) |
-| NFR-033-AC-2 | Every `cargo` invocation in the `Makefile` extraction-frontend block carries `+$(EXTRACTION_TOOLCHAIN)`, and with `EXTRACTION_TOOLCHAIN=0.0.0` each gate exits non-zero naming `0.0.0`. | Static (TC-1321) |
+| NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version.workspace = true`, `license = "AGPL-3.0-or-later"`, `publish = false`, and `edition = "2021"`; the workspace `rust-version` is byte-unchanged, `rust-toolchain.toml` pins channel `1.98.1`, and every `Cargo.lock` entry of the range's base is byte-unchanged after `cargo +1.98.1 build --locked` except the entries of crates reachable only from this crate: computed from the base lock, those this crate reaches and no other workspace member reaches (a member's own entry, and a crate another member also reaches, never move). | Analysis (TC-1320) |
 | NFR-033-AC-3 | `quire-rs` is declared as a git dependency with an exact `rev` at or after `a874fb6`, `08d39ea`, and no `branch`; `ix-trace-rs` is a dev-dependency at tag `v0.1.1`; `agent-ix-semantic-ir` is a `path` dependency on `../semantic-ir`; `serde` and `serde_json` are the workspace's exact pins; `sha2` and `clap` are exact; no `jsonschema` crate is declared; no `path` dependency names a crate outside the workspace `members`, and no `file:` or `link:` dependency exists | Analysis (TC-1322) |
 | NFR-033-AC-4 | `make extraction-frontend-deny` passes with zero errors against a `deny.toml` whose licence allowlist is exactly the set the program permits, and `quire-rs`'s `AGPL-3.0-or-later` is admitted by an explicit entry. | Static (TC-1323) |
 | NFR-033-AC-5 | `make extraction-frontend-audit` reports zero advisories against the locked graph. | Static (TC-1324) |

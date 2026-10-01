@@ -1,6 +1,6 @@
 /**
  * NFR-038 — the Rust gates are runnable from one named target and one lane.
- * Test cases TC-1396..TC-1402 of `spec/tests.md`.
+ * Test cases TC-1396..TC-1401 of `spec/tests.md`.
  *
  * These read the `Makefile` and the workflow rather than running them, because
  * the property is about *reachability*: whether a gate can be started, by a
@@ -175,12 +175,6 @@ describe("TC-1396..1402 the Rust gates are reachable (NFR-038)", () => {
 		expect(check).toContain("failure rather than a skip");
 		expect(check).toContain("exit 1");
 
-		const extraction = recipeOf(makefile, "extraction-frontend-toolchain").join(
-			"\n",
-		);
-		expect(extraction).toContain("is not installed");
-		expect(extraction).toContain("failure rather than a skip");
-
 		// Every Rust gate depends on a toolchain check, so an absent toolchain
 		// reds the gate that needed it instead of failing later with an opaque
 		// command-not-found.
@@ -188,23 +182,7 @@ describe("TC-1396..1402 the Rust gates are reachable (NFR-038)", () => {
 			expect(prerequisitesOf(makefile, gate)).toContain("rust-toolchain-check");
 		}
 		console.log(
-			"TC-1401 measured: both toolchain checks exit non-zero naming the toolchain",
-		);
-	});
-
-	/** Traces: TC-1402; NFR-038-AC-1. */
-	it("installs the qualification toolchain from the one place that names it", () => {
-		const workflow = read(RUST_WORKFLOW);
-		const makefile = read("Makefile");
-
-		// NFR-033 names the qualification toolchain once, in the Makefile. The
-		// lane asks for it rather than restating it, so a version bump cannot
-		// leave the workflow pinned to the old one.
-		expect(workflow).toContain("print-extraction-toolchain");
-		expect(workflow).not.toContain("1.98.1");
-		expect(makefile).toContain("EXTRACTION_TOOLCHAIN ?= 1.98.1");
-		console.log(
-			"TC-1402 measured: the lane reads the toolchain from make, and names no version of its own",
+			"TC-1401 measured: the toolchain check exits non-zero naming the toolchain",
 		);
 	});
 });

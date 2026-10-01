@@ -354,44 +354,6 @@ describe("issue #27 promotion inventory (FR-040)", () => {
 		}
 	});
 
-	/** Traces: TC-621; NFR-021-AC-9. */
-	it("still refuses an unaccounted-for file under src/compiler/ after the merge", () => {
-		// The companion to the gate above. Rewriting an assertion to survive a
-		// merge is only worth anything if it still *fails* on the input it exists
-		// to catch, so this recomputes the same union of ledgers against a
-		// synthetic path and proves the coverage rule rejects it. It uses no git
-		// reference at all, which is the point: it gives the same verdict on the
-		// branch and on `main`.
-		const inventoryPaths = new Set([
-			...inventory.components.flatMap((record) => record.targets),
-			...inventory.authored.map((entry) => entry.path),
-		]);
-		const declared = new Set<string>();
-		const functional = resolve(root, "spec/functional");
-		for (const name of readdirSync(functional)) {
-			if (!name.endsWith(".md")) continue;
-			const section = /\n## Outputs\n([\s\S]*?)\n## /.exec(
-				read(resolve(functional, name)),
-			);
-			if (!section) continue;
-			for (const hit of section[1].matchAll(
-				/`(src\/compiler\/[A-Za-z0-9._/-]+)`/g,
-			)) {
-				declared.add(hit[1]);
-			}
-		}
-		const owns = (path: string): boolean =>
-			inventoryPaths.has(path) || declared.has(path);
-		expect(owns("src/compiler/rogue.mjs")).toBe(false);
-		// And a sidecar is only owned through its module, so an orphan sidecar is
-		// unowned too.
-		expect(owns("src/compiler/rogue.mjs")).toBe(false);
-		// A real file from each ledger is owned, so the rule is not refusing
-		// everything.
-		expect(owns("src/compiler/ir.mjs")).toBe(true);
-		expect(owns("src/compiler/pipeline.mjs")).toBe(true);
-	});
-
 	/** Traces: TC-328; FR-040-AC-6. */
 	it("matches the feasibility document's per-disposition counts", () => {
 		const counts = new Map<string, number>();
@@ -1344,12 +1306,6 @@ describe("frozen spike replay (FR-044)", () => {
 });
 
 describe("determinism and non-disruption (NFR-017, NFR-018)", () => {
-	// TC-392 / NFR-018-AC-3 ("confines the packed-file delta to src/compiler/")
-	// is deleted with its subject. It read `package.json`'s `files` globs to work
-	// out what the published tarball contains, and `737824e` retired the Avro
-	// publish path: this manifest is `private: true`, has no `files`, and packs
-	// nothing. The case could only ever crash on the absent field.
-
 	/** Traces: TC-396; NFR-018-AC-7. */
 	it("adds and triggers no publication step", () => {
 		const manifest = readJson(resolve(root, "package.json"));

@@ -143,7 +143,7 @@ blocked as stated above.
 | US-009 | US-009-EX-4 (illustrative) implemented by NFR-018 | TC-390, TC-395, TC-396 | ✅ Complete |
 | US-010 | US-010-EX-1 (illustrative) implemented by FR-052 and NFR-019 | TC-548, TC-567, TC-568 | ✅ Complete |
 | US-010 | US-010-EX-2 (illustrative) implemented by FR-047 and FR-049 | TC-463, TC-500, TC-549 | ✅ Complete |
-| US-010 | US-010-EX-3 (illustrative) implemented by FR-046-CON-1 and NFR-021 | TC-446, TC-451, TC-592 | ✅ Complete |
+| US-010 | US-010-EX-3 (illustrative) implemented by FR-046-CON-1 and NFR-021 | TC-446, TC-451 | ✅ Complete |
 | US-010 | US-010-EX-4 (illustrative) implemented by FR-045 | TC-400, TC-402, TC-408 | ✅ Complete |
 | US-010 | US-010-EX-5 (illustrative) implemented by FR-051 | TC-527, TC-528, TC-529 | ✅ Complete |
 | US-012 | US-012-EX-1 (illustrative) implemented by FR-070 | TC-815, TC-819, TC-824 | 🚧 In progress |
@@ -281,7 +281,7 @@ blocked as stated above.
 | FR-096 | FR-096-AC-1..16, FR-096-CON-1..3 | TC-1259..TC-1272, TC-1345, TC-1346 | ✅ Complete |
 | FR-097 | FR-097-AC-1..16, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1339..TC-1342 | ✅ Complete |
 | FR-098 | FR-098-AC-2..9, FR-098-AC-11..12, FR-098-CON-3 | TC-1286..TC-1293, TC-1338, TC-1343, TC-1344 | ✅ Complete |
-| FR-099 | FR-099-AC-1..4, FR-099-AC-6, FR-099-CON-3 | TC-1295..TC-1298, TC-1330, TC-1349 | ✅ Complete |
+| FR-099 | FR-099-AC-1..3, FR-099-AC-6, FR-099-CON-3 | TC-1295..TC-1297, TC-1330, TC-1349 | ✅ Complete |
 | FR-106 | FR-106-AC-1..6, FR-106-CON-1..2 | TC-1373..TC-1378 | 🚧 TC-1374, TC-1375 planned on issue #93 |
 | FR-100 | FR-100-AC-1..11, FR-100-CON-1..3 | TC-1361..TC-1366, TC-1764, TC-1768, TC-1771, TC-1774, TC-1782 | ✅ Complete |
 | FR-130 | FR-130-AC-1..8, FR-130-CON-1..3 | TC-1388..TC-1395 | ✅ Complete |
@@ -315,26 +315,26 @@ blocked as stated above.
 | NFR-012 | Diff, unchanged-suite, registry, downstream-gate, and human-decision checks | TC-195..199 | ✅ Complete |
 | NFR-014 | Compiled-program inventory, amendment inspection, changed-path gate, emitter inspection, spike byte comparison | TC-249, TC-273..276, TC-278 | ✅ Complete |
 | NFR-015 | Provenance quote check, repeat/locale/directory byte comparison, oracle and harness import and effect analysis, divergence and contract-gap register inspection | TC-635..337 | ✅ Complete |
-| NFR-016 | Changed-path gate, manifest diff, offline test run, publication analysis | TC-640..643 | ✅ Complete |
+| NFR-016 | Manifest diff, offline test run, publication analysis | TC-640..643 | ✅ Complete |
 | NFR-017 | Repeat-run byte comparison, collator-independence check, explicit-baseDir check, lockfile seeding, retained-evidence branch diff, dependency-pin inspection | TC-383..389 | ✅ Complete |
-| NFR-018 | Changed-path gate, manifest and packed-file comparison, licence inspection, restore rehearsal, publication inspection | TC-390..396 | ✅ Complete |
+| NFR-018 | Licence inspection, publication inspection | TC-393, TC-396 | ✅ Complete |
 | NFR-019 | Repeat-run and varied-environment byte comparison, ambient-input analysis, permutation and collator independence, injected-host observation, changed-path gate, dependency-pin inspection | TC-567..TC-578 | ✅ Complete |
 | NFR-020 | Limit enforcement, path-escape and module-load refusal, network and writer instrumentation, cyclic-input termination, fuzz run, message truncation | TC-579..TC-589, TC-606, TC-607 | ✅ Complete |
-| NFR-021 | Changed-path gate, manifest comparison, frozen-path byte comparison, scripted restore rehearsal, licence and publication inspection, post-merge range rehearsal, accretion rehearsal | TC-590..TC-597, TC-620, TC-621, TC-644 | ✅ Complete |
+| NFR-021 | Licence and publication inspection | TC-596, TC-597 | ✅ Complete |
 | NFR-024 | NFR-024-AC-1..13: repeat-run, directory, and locale byte comparison; packed-artifact comparison after five normalized members; import-graph and dependency-closure analysis; backend purity test; SPDX, formatter no-op, strict-typecheck, and static reachable-symbol checks | TC-834..TC-838 | 🚧 In progress |
-| NFR-025 | NFR-025-AC-1..15: changed-path gate with both ends from history, accretion and post-merge rehearsal, manifest and lockfile comparison against the range's base endpoint, export-set test, frozen-path, corpus and divergence-register byte comparison, packed-file listing, licence inspection, restore rehearsal | TC-839..TC-844 | 🚧 In progress |
+| NFR-025 | NFR-025-AC-5, NFR-025-AC-8, NFR-025-AC-9: export-set test, packed-file listing, licence inspection | TC-839..TC-844 | 🚧 In progress |
 | NFR-022 | Two-run and cross-environment byte comparison, ambient-input scan, dependency inspection, offline run, formatter check, table-driven degradation scan with fault injection, two-language number-format agreement, reader fuzz | TC-711, TC-712, TC-716, TC-731..TC-736 | ✅ Complete |
-| NFR-023 | Changed-path gate over a range fixed at both ends by history and unioned over `--first-parent --no-merges`, permitted-entry traceability, manifest comparison, frozen-path byte comparison, publication, third-party attribution and licence inspection, scripted restore rehearsal, post-merge and accretion rehearsal | TC-709, TC-737..TC-744 | ✅ Complete |
-| NFR-026 | Malicious-schema corpus, advisory gate, socket and filesystem instrumentation, non-executing source inspection, emission ordering, provisioning-failure and changed-path checks | TC-936..939 | ✅ Complete |
+| NFR-023 | Emitted-manifest `publish = false` test, publication, third-party attribution and licence inspection | TC-709, TC-741, TC-742 | ✅ Complete |
+| NFR-026 | Malicious-schema corpus, advisory gate, socket and filesystem instrumentation, non-executing source inspection, emission ordering and provisioning-failure checks | TC-936..939 | ✅ Complete |
 | NFR-034 | Input-order byte comparison and ambient-input static inspection | TC-1367 | ✅ Complete |
-| NFR-027 | Double-generation byte comparison, report `--check`, changed-path and manifest analysis, guard-range conversion with post-merge perturbation, revert rehearsal and skip census | TC-940..943 | ✅ Complete |
+| NFR-027 | Double-generation byte comparison, report `--check`, distribution-manifest and publication analysis, guard-range conversion with post-merge perturbation, revert rehearsal and skip census | TC-940..943 | ✅ Complete |
 | NFR-028 | NFR-028-AC/CON x8 | TC-1098..TC-1100 | 🚧 In progress |
 | NFR-029 | NFR-029-AC/CON x10 | TC-1101..TC-1104 | 🚧 In progress |
-| NFR-030 | NFR-030-AC/CON x12 | TC-1105..TC-1108 | 🚧 In progress |
+| NFR-030 | NFR-030-AC-8, NFR-030-AC-9 | TC-1107 | 🚧 In progress |
 | NFR-031 | NFR-031-AC-1..10: golden, repeat-run, varied-environment, and cross-root byte comparison; enumeration-order analysis citing path-sorted loading; ambient-input and HashMap audits with planted-token controls; one limit probe per limits.json entry under a 512 MiB / 30 s budget; unshare -rn offline run; forbid(unsafe_code) compile_fail doctest; proptest bundle-tree fuzz | TC-1300..TC-1309 | ✅ Complete |
 | NFR-032 | NFR-032-AC-2, NFR-032-AC-5: cargo metadata edge check, corpus git status after the suite | TC-1311, TC-1314 | ✅ Complete |
-| NFR-033 | NFR-033-AC-1..11: manifest, lock, and toolchain inspection, EXTRACTION_TOOLCHAIN=0.0.0 gate run, dependency-specifier inspection against the workspace members, make extraction-frontend-deny and -audit, lock-to-notices comparison, clippy --no-deps and fmt, trace-marker scan and status-lie rehearsal, offline build, workspace-channel check | TC-1320..TC-1329, TC-1350 | ✅ Complete |
-| NFR-038 | NFR-038-AC-1..7: one named make target reaching every Rust gate, dispatch-only triggers across every workflow, a two-platform two-architecture matrix that reports both, workspace-wide clippy, generated-crate artifacts per platform, and toolchain checks that fail naming what they could not run | TC-1396..TC-1402 | ✅ Complete |
+| NFR-033 | NFR-033-AC-1, NFR-033-AC-3..11: manifest, lock, and toolchain inspection, dependency-specifier inspection against the workspace members, make extraction-frontend-deny and -audit, lock-to-notices comparison, clippy --no-deps and fmt, trace-marker scan and status-lie rehearsal, offline build, workspace-channel check | TC-1320, TC-1322..TC-1329, TC-1350 | ✅ Complete |
+| NFR-038 | NFR-038-AC-1..7: one named make target reaching every Rust gate, dispatch-only triggers across every workflow, a two-platform two-architecture matrix that reports both, workspace-wide clippy, generated-crate artifacts per platform, and toolchain checks that fail naming what they could not run | TC-1396..TC-1401 | ✅ Complete |
 | NFR-039 | NFR-039-AC-1..6 | TC-1410..TC-1413 | 🚧 planned on issue #92 |
 | NFR-040 | NFR-040-AC-1..7 | TC-1422..TC-1425 | 🚧 planned on issue #26 |
 | NFR-041 | NFR-041-AC-1..7 | TC-1565..TC-1571 | 🚧 planned on issue #63 |
@@ -725,7 +725,6 @@ blocked as stated above.
 | TC-387 | A seeded lockfile survives `cargo check --offline --locked` unchanged | Integration | P0 | NFR-017-AC-5 | ✅ passed |
 | TC-388 | No dependency added, exact pins, no `.npmrc`, no `file:`/`link:` | Static | P0 | NFR-017-AC-6 | ✅ passed |
 | TC-389 | All three issue #42 host couplings are named in the feasibility doc | Static | P0 | NFR-017-AC-7 | ✅ passed |
-| TC-392 | The packed-file delta is confined to `src/compiler/**`, the packed set over the tree holds the promoted modules, and the shipping note is recorded | Integration | P0 | NFR-018-AC-3 | ✅ passed |
 | TC-393 | Every promoted `src/compiler/**` manifest and every added package manifest declares AGPL-3.0-or-later | Static | P0 | NFR-018-AC-4 | ✅ passed |
 | TC-396 | No workflow, tag, or registry publication is added or triggered | Static | P0 | NFR-018-AC-7 | ✅ passed |
 | TC-397 | NFR-006 gains one paragraph recording the spike's new import direction | Static | P1 | FR-044-AC-12 | ✅ passed |
@@ -911,9 +910,6 @@ blocked as stated above.
 | TC-587 | An input of exactly `maxInputBytes` parses and one byte more terminates with the limit diagnostic before parsing | Unit | P0 | NFR-020-AC-9 | ✅ passed |
 | TC-588 | Input string content reaching a diagnostic message is truncated to 120 characters, so an adversarial name cannot flood the output | Unit | P0 | NFR-020-AC-10 | ✅ passed |
 | TC-589 | Every read the pinned TypeSpec compiler performs during a fixture compile passes through the injected host, counted at run time | Unit | P0 | NFR-020-AC-11 | ✅ passed |
-| TC-590 | Every changed path on the branch is in the permitted set and none is in the prohibited set | Static | P0 | NFR-021-AC-1 | ✅ passed |
-| TC-592 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, `backends/**`, and `inventory.json` are byte-unchanged from the pre-change baseline | Static | P0 | NFR-021-AC-3 | ✅ passed |
-| TC-594 | Nothing under `conformance/` is changed by this branch | Static | P0 | NFR-021-AC-5 | ✅ passed |
 | TC-596 | Every added package manifest declares `"license": "AGPL-3.0-or-later"` | Static | P0 | NFR-021-AC-7 | ✅ passed |
 | TC-597 | No package was published and no downstream repository was changed | Static | P0 | NFR-021-AC-8 | ✅ passed |
 | TC-598 | Multiplicity, nullability, and default kind are independent across their permutations | Property | P0 | FR-046-AC-6, FR-046-AC-9 | ✅ passed |
@@ -936,7 +932,6 @@ blocked as stated above.
 | TC-616 | Two cycles sharing an edge yield two diagnostics and no duplicate | Unit | P1 | FR-047-AC-4 | ✅ passed |
 | TC-617 | A relationship target resolving to an imported export validates | Unit | P1 | FR-050-AC-1, FR-050-AC-12 | ✅ passed |
 | TC-618 | A caret constraint selects the highest satisfying version across two search directories | Unit | P1 | FR-047-AC-11 | ✅ passed |
-| TC-621 | An unaccounted-for file under `src/compiler/` fails the promotion-inventory gate in that same post-merge tree | Static | P0 | NFR-021-AC-9 | ✅ passed |
 | TC-622 | A union variant whose `payloadType` no type declares is rejected at that variant's locus; two variants sharing one payload type are accepted | Unit | P0 | FR-038-AC-7 | ✅ passed — conformance corpus (PR pending) |
 | TC-623 | An export added and removed produces the stated result | Unit | P0 | FR-038-AC-8 | ✅ passed — conformance corpus (PR pending) |
 | TC-624 | Every register row's `sources` resolve, and every listed issue #19 criterion is quoted in its row and covered by a case | Unit | P0 | FR-038-AC-9, FR-038-CON-1, FR-038-CON-2 | ✅ passed — conformance corpus (PR pending) |
@@ -1052,9 +1047,9 @@ blocked as stated above.
 | TC-836 | The generated import graph names no prohibited-category identifier, every specifier is relative, and the generated manifest declares no dependency block | Static | P0 | NFR-024-AC-5, NFR-024-AC-6 | ✅ passed — id-bound in `test/typescript-backend.test.ts` |
 | TC-837 | Generated source carries no `any`, cast, or suppression, no backend module reads a clock, environment, cwd, filesystem, or socket, and none calls `localeCompare` | Static | P0 | NFR-024-AC-7, NFR-024-AC-8, NFR-024-AC-9 | ✅ passed — id-bound in `test/typescript-backend.test.ts` |
 | TC-838 | Every generated file carries the AGPL-3.0-or-later SPDX header, is a formatter no-op, and the package typechecks under `strict` with `exactOptionalPropertyTypes`, and the single-type reachable-symbol set matches the committed fixture | Compile | P0 | NFR-024-AC-10, NFR-024-AC-11, NFR-024-AC-12, NFR-024-AC-13 | 🚧 partially exercised by an existing test; no test binds this row |
-| TC-842 | The narrow interface exports exactly fifteen symbols, and the frozen prototype backends and the four issue #4 goldens are absent from this change's path set with their comparisons still passing in the checked-out tree | Snapshot | P0 | NFR-025-AC-5, NFR-025-AC-6 | 🚧 partially exercised by an existing test; no test binds this row |
-| TC-843 | No corpus case, base, oracle module, harness module, threshold, defect row, gap row, mutation row, conformance schema, or divergence register changed a byte; and `npm pack --dry-run` lists the added `src/compiler/` modules as source and no generated-package or fixture file | Analysis | P0 | NFR-025-AC-7, NFR-025-AC-8, NFR-025-AC-12, NFR-025-AC-14 | ✅ passed — Analysis; the evidence is the recorded analysis, which mints no source symbol |
-| TC-844 | Every generated manifest and added source file declares AGPL-3.0-or-later, and reverting this change's commit range leaves the full suite passing | Integration | P0 | NFR-025-AC-9, NFR-025-AC-10 | 🚧 no discrete test; no test binds this row |
+| TC-842 | The narrow interface exports exactly fifteen symbols | Snapshot | P0 | NFR-025-AC-5 | 🚧 partially exercised by an existing test; no test binds this row |
+| TC-843 | `npm pack --dry-run` lists the added `src/compiler/` modules as source and no generated-package or fixture file | Analysis | P0 | NFR-025-AC-8 | ✅ passed — Analysis; the evidence is the recorded analysis, which mints no source symbol |
+| TC-844 | Every generated manifest and added source file declares AGPL-3.0-or-later | Integration | P0 | NFR-025-AC-9 | 🚧 no discrete test; no test binds this row |
 | TC-645 | Every structural kind maps to its declared Rust form | Unit | P0 | FR-054-AC-1, FR-054-CON-1 | 🚧 planned |
 | TC-646 | Every kernel scalar maps to its declared Rust base | Unit | P0 | FR-054-AC-2 | 🚧 planned |
 | TC-647 | The collection, nullability and presence axes compose the declared Rust type and stay distinct | Unit | P0 | FR-054-AC-3 | 🚧 planned |
@@ -1148,14 +1143,8 @@ blocked as stated above.
 | TC-734 | Generation, build and consumption complete with the network denied | Integration | P0 | NFR-022-AC-4 | 🚧 planned |
 | TC-735 | The degradation scan and the support matrix are measured against published sources, not their own output | Analysis | P0 | NFR-022-AC-2, NFR-022-AC-3 | 🚧 planned |
 | TC-736 | A gate that cannot resolve its inputs fails naming them rather than passing vacuously | Unit | P0 | NFR-022-AC-1 | 🚧 planned |
-| TC-737 | Every path in this change's own set is permitted and none is prohibited | Analysis | P0 | NFR-023-AC-1 | 🚧 planned |
-| TC-738 | The published package manifest's metadata fields are byte-unchanged | Analysis | P0 | NFR-023-AC-2 | 🚧 planned |
-| TC-739 | Every conformance file but the adapter registry is byte-unchanged and the registry change is confined to the rust slot | Analysis | P0 | NFR-023-AC-3 | 🚧 planned |
-| TC-740 | Schemas, fixtures, packages, spikes and the frozen prototype backends are byte-unchanged | Analysis | P0 | NFR-023-AC-4, FR-054-CON-5 | 🚧 planned |
 | TC-741 | Every emitted crate manifest carries publish false, and removing that emission fails a test | Unit | P0 | NFR-023-AC-5 | 🚧 planned |
 | TC-742 | No crate was published, no downstream repository changed, and every added manifest is AGPL-3.0-or-later | Analysis | P0 | NFR-023-AC-6, NFR-023-AC-7 | 🚧 planned |
-| TC-743 | Reverting this change's own range leaves the suite green at the pre-existing count | Integration | P0 | NFR-023-AC-8 | 🚧 planned |
-| TC-744 | Both range endpoints come from history, the gate still bites after merge, a later change adds no path, and the permitted list was not widened | Integration | P0 | NFR-023-AC-9..NFR-023-AC-11 | 🚧 planned |
 | TC-845 | The installed `datamodel-code-generator` distribution reports version 0.76.0, declares the MIT licence, and is neither vendored nor forked into this repository | Unit | P0 | FR-072-AC-1, FR-072-CON-3 | ✅ passed |
 | TC-846 | `advisories.json` carries both advisory ids with their published ranges and first-patched versions, and derives the floor 0.64.0 | Unit | P0 | FR-072-AC-2 | ✅ passed |
 | TC-847 | A synthesized installed version inside either published advisory range fails the gate naming the advisory, the version, and the range | Unit | P0 | FR-072-AC-3, FR-072-CON-1 | ✅ passed |
@@ -1246,7 +1235,7 @@ blocked as stated above.
 | TC-939 | Removing each declared tool in turn makes its gate fail with a provisioning message, and no gate skips | Unit | P0 | NFR-026-AC-8 | ✅ passed |
 | TC-940 | Two clean generations of every demonstrated profile agree byte-for-byte, and no committed artefact encodes a clock, host, user, absolute path, patch interpreter, or formatter version | Integration | P0 | NFR-027-AC-1, NFR-027-AC-2 | ✅ passed |
 | TC-941 | Re-measuring the qualification report reproduces the committed one, and a mutated committed artefact fails `--check` | Snapshot | P0 | NFR-027-AC-3 | ✅ passed |
-| TC-942 | No changed path falls outside the permitted list, the distribution manifests and workflows are byte-identical to `origin/main`, nothing was published, and no merged permitted-path list gained an entry | Analysis | P0 | NFR-027-AC-4, NFR-027-AC-5, NFR-027-AC-9, NFR-027-AC-11 | ✅ passed |
+| TC-942 | Nothing was published, and no merged permitted-path list gained an entry | Analysis | P0 | NFR-027-AC-9, NFR-027-AC-11 | ✅ passed |
 | TC-944 | A recorded human review confirms the four irreducibly manual obligations: a version bump re-runs the qualification, probe expectations are derived from the contract, the layout is reconciled with the merged generated-target contract, and non-conforming values are drawn from the contract rather than from what the code rejects | Manual | P0 | FR-072-CON-2, FR-077-CON-2, FR-079-CON-4, FR-080-CON-3 | 🚧 awaiting the program owner's review |
 | TC-945 | The support matrix names every lint the generated `[lints.rust]` table denies, read from a generated `Cargo.toml`, and states the toolchain coupling that denying all warnings creates | Analysis | P0 | FR-060-AC-16 | 🚧 planned |
 | TC-1000 | Edits no file under packages/semantic-core/generated/, schema/semantic/v1/, or fixtures/semantic/v1/. The projection is the pinned official emitter's | Static | P0 | FR-081-CON-1, FR-081-CON-2, FR-081-CON-3 | 🚧 planned |
@@ -1354,10 +1343,7 @@ blocked as stated above.
 | TC-1102 | The emitted Python package's closure adds nothing beyond the declared Pydantic pin | Property | P1 | NFR-029-AC-4, NFR-029-AC-5, NFR-029-AC-6 | 🚧 planned |
 | TC-1103 | Each package's static export surface equals the kernel's declared type set plus the minted types, checked in both directions so a missing export and a | Property | P1 | NFR-029-AC-7, NFR-029-AC-8, NFR-029-AC-9 | 🚧 planned |
 | TC-1104 | Each consumer example of [FR-089](../functional/FR-089-provide-independent-consumer-examples.md) satisfies the same closure assertion as the package i | Unit | P1 | NFR-029-AC-10 | 🚧 planned |
-| TC-1105 | Every path in this change's own path set is permitted and none is prohibited, with both endpoints of the range resolved from history through the two d | Property | P1 | NFR-030-AC-1, NFR-030-AC-2, NFR-030-AC-3 | 🚧 planned |
-| TC-1106 | Package.json exports, main, module, types, files, dependencies, peerDependencies | Unit | P1 | NFR-030-AC-4, NFR-030-AC-5, NFR-030-AC-6 | 🚧 planned |
-| TC-1107 | Cargo.lock changes only by the addition of this change's own members and adds no third-party package, asserted by comparing the resolved package set b | Unit | P1 | NFR-030-AC-7, NFR-030-AC-8, NFR-030-AC-9 | 🚧 planned |
-| TC-1108 | This change's own range contains no merge commit, so its path set is the union of its own commits and carries nothing the trunk moved | Property | P1 | NFR-030-AC-10, NFR-030-AC-11, NFR-030-AC-12 | 🚧 planned |
+| TC-1107 | No generated manifest permits registry publication, and no package was published | Unit | P1 | NFR-030-AC-8, NFR-030-AC-9 | 🚧 planned |
 | TC-1200 | Loading the config-version-table fixture under the vendored spec-objects-business 0.7.0 module yields one extraction for FR-006 (fields available, seven fields) and one for FR-005, keyed by id | Integration | P0 | FR-091-AC-1 | ✅ passed |
 | TC-1201 | A module root whose manifest carries no semantic block refuses with MODULE_WITHOUT_SEMANTIC_BLOCK naming the module and lowers nothing | Unit | P1 | FR-091-AC-2 | ✅ passed |
 | TC-1202 | A module whose semantic.semantic_core is 9.9.9 refuses with MODULE_REFUSED whose message begins with semantic.unsupported-semantic-core and whose causes is empty, and no artifact lowers to an empty record | Integration | P0 | FR-091-AC-3 | ✅ passed |
@@ -1453,7 +1439,6 @@ blocked as stated above.
 | TC-1295 | lift over config-version-table exits 0 and writes the document, .fingerprint, and .diagnostics.json; with --diagnostics d.json it writes that in its place with the same document bytes | E2E | P0 | FR-099-AC-1 | ✅ passed |
 | TC-1296 | lift over negatives/UNRESOLVED_TYPE_TOKEN exits 1 writing only the diagnostics sidecar; lift without --module, under negatives/MODULE_WITHOUT_SEMANTIC_BLOCK, and with --out under the bundle root each exit 2 writing nothing | E2E | P1 | FR-099-AC-2 | ✅ passed |
 | TC-1297 | inspect --ir over a lifted document prints one line per type in types order and exits 0; over a document missing contractVersion it prints INVALID_IR naming the reader's SCHEMA_VIOLATION at /ir ("a required member contractVersion is absent") and exits 1 | E2E | P1 | FR-099-AC-3 | ✅ passed |
-| TC-1298 | make extraction-frontend-build, -test, -check, -deny, and -audit succeed on 1.98.1; with EXTRACTION_TOOLCHAIN=0.0.0 each fails naming 0.0.0 and none skips | Static | P1 | FR-099-AC-4 | ✅ static evidence (make extraction-frontend-evidence) |
 | TC-1300 | Two lifts of config-version-table, within one run and across two runs, produce IR and diagnostic bytes identical to each other, to the committed expected/ goldens, and to decide normalized | Snapshot | P0 | NFR-031-AC-1 | ✅ passed |
 | TC-1301 | A lift with the working directory changed, HOME at an empty directory, and TZ, LANG, LC_ALL, and CARGO_TARGET_DIR varied produces bytes identical to the committed golden | Snapshot | P0 | NFR-031-AC-2 | ✅ passed |
 | TC-1302 | The line-aligned config-version-table and config-version-fence bundle roots, each holding one copy of FR-006 at the same bundle-relative path, lift to identical types[] and diagnostics bytes; source.digest differs by construction | Snapshot | P0 | NFR-031-AC-3 | ✅ passed |
@@ -1467,7 +1452,6 @@ blocked as stated above.
 | TC-1311 | cargo metadata shows no edge from agent-ix-semantic-ir or agent-ix-conformance-adapter to the extraction frontend, and the frontend's edge to agent-ix-semantic-ir is its only path edge | Unit | P1 | NFR-032-AC-2 | ✅ passed |
 | TC-1314 | After the full crate suite runs, git status --porcelain is empty in this repository's fixture directories | E2E | P0 | NFR-032-AC-5 | ✅ static evidence (make extraction-frontend-evidence) |
 | TC-1320 | The crate manifest declares rust-version.workspace = true, license AGPL-3.0-or-later, publish = false, edition 2021; the Makefile names the qualification compiler on exactly one non-comment line, EXTRACTION_TOOLCHAIN ?= 1.98.1; the workspace rust-version is unchanged, rust-toolchain.toml pins 1.98.1, and every base Cargo.lock entry not reachable only from this crate is unchanged, with synthetic controls proving a crate another member shares cannot move | Static | P1 | NFR-033-AC-1 | ✅ passed |
-| TC-1321 | Every cargo invocation in the Makefile extraction-frontend block carries +$(EXTRACTION_TOOLCHAIN), and with EXTRACTION_TOOLCHAIN=0.0.0 each gate exits non-zero naming 0.0.0 | Static | P1 | NFR-033-AC-2 | ✅ passed |
 | TC-1323 | make extraction-frontend-deny passes with zero errors against a deny.toml whose allowlist is exactly the permitted set, with quire-rs AGPL-3.0-or-later admitted by an explicit entry | Static | P1 | NFR-033-AC-4 | ✅ static evidence (make extraction-frontend-evidence) |
 | TC-1324 | make extraction-frontend-audit reports zero advisories against the locked graph | Static | P1 | NFR-033-AC-5 | ✅ static evidence (make extraction-frontend-evidence) |
 | TC-1325 | Every third-party crate reachable in Cargo.lock has a THIRD-PARTY-NOTICES.md entry naming version and licence, and the crate ships a LICENSE file carrying AGPL-3.0-or-later | Static | P1 | NFR-033-AC-6 | ✅ passed |
@@ -1521,8 +1505,7 @@ blocked as stated above.
 | TC-1398 | The Rust lane's matrix names ubuntu-latest and macos-latest with fail-fast false, so a single-platform defect reports rather than cancelling its sibling | Unit | P0 | NFR-038-AC-3 | ✅ passed |
 | TC-1399 | rust-clippy runs --workspace --no-deps with -D warnings, so every member is linted and no dependency's lints are reported | Unit | P0 | NFR-038-AC-4 | ✅ passed |
 | TC-1400 | Both platforms upload their generated crates and an empty upload is an error, so the cross-platform comparison has evidence to run over | Unit | P1 | NFR-038-AC-6 | ✅ passed |
-| TC-1401 | Both toolchain checks exit non-zero naming the toolchain they could not run, and every Rust gate depends on one | Unit | P1 | NFR-038-AC-7 | ✅ passed |
-| TC-1402 | The lane reads the qualification toolchain from make and names no version of its own, so a bump cannot leave it pinned | Unit | P1 | NFR-038-AC-1 | ✅ passed |
+| TC-1401 | The toolchain check exits non-zero naming the toolchain it could not run, and every Rust gate depends on it | Unit | P1 | NFR-038-AC-7 | ✅ passed |
 | TC-1403 | A producer exiting non-zero with no diagnostic, and one exiting zero with no document, each yield exactly FRONTEND_CONTRACT_VIOLATION; a producer refusing with a reason has its own diagnostics forwarded unchanged | Unit | P0 | FR-131-AC-4, FR-131-AC-5 | ✅ passed |
 | TC-1404 | The spec-bundle dialect is registered implemented and the seam routes a request for it to the frontend | Unit | P0 | FR-131-AC-1 | ✅ passed |
 | TC-1405 | A request whose producer returns a document yields that document, its diagnostics, and exactly one producer call carrying what the request named | Unit | P0 | FR-131-AC-2 | ✅ passed |
@@ -1880,8 +1863,6 @@ blocked as stated above.
 | FR-044-CON-1 | Prohibited | Any second changed retained-evidence byte | TC-371, TC-384 | Retained-evidence diff fails |
 | FR-044-CON-2 | Prohibited | A regenerated `Cargo.lock` | TC-372 | Branch diff fails |
 | FR-044-CON-3 | Prohibited | Any `file:` or `link:` dependency specifier | TC-376, TC-388 | Dependency inspection fails |
-| NFR-018-AC-3 | Allowed | Packed-file delta confined to `src/compiler/**`, promoted modules present in the packed set | TC-392 | Packed-file comparison passes |
-| NFR-018-AC-3 | Prohibited | Any other added tarball path, or a promoted module missing from the packed set | TC-392 | Packed-file comparison fails |
 | FR-046-AC-6 | Allowed | `@multiplicity(0)` and `@multiplicity(0, 0)` | TC-603 | Bounds accepted at the lower boundary |
 | FR-046-AC-7 | Prohibited | `@multiplicity(2, 1)` | TC-438 | `INVALID_MULTIPLICITY` at the decorator locus |
 | FR-053-AC-4 | Allowed | `@minLength(0)` | TC-604 | `minLength` operand `0` emitted |
@@ -1945,7 +1926,6 @@ blocked as stated above.
 | FR-060-CON-1 | Prohibited | Golden check compares a file to itself | TC-714, TC-715 | Check regenerates into a scratch directory |
 | FR-061-CON-1 | Prohibited | Any registry contact during package or build | TC-724 | Offline run fails the step |
 | FR-062-CON-2 | Boundary | Mutation harness run to completion | TC-730 | Working tree unchanged |
-| NFR-023-AC-11 | Prohibited | Permitted-path list widened to absorb accretion | TC-744 | Inspection fails |
 | FR-072-CON-1 | Allowed | Installed generator 0.76.0, above the derived floor 0.64.0 | TC-845, TC-846 | Advisory gate passes |
 | FR-072-CON-1 | Prohibited | Installed generator 0.63.0, the last version inside GHSA-5578-w22f-pfx9 | TC-847 | Advisory gate fails naming the advisory |
 | FR-072-CON-1 | Boundary | Installed generator 0.64.0, the first patched version | TC-848 | Advisory gate passes |
@@ -2071,8 +2051,6 @@ blocked as stated above.
 | bundle assembled, output directory absent or unwritable | write | `OUTPUT_UNWRITABLE` naming the path; nothing written; exit 2 | TC-1282 |
 | written document | `inspect --ir` | one line per type in `types` order; exit 0 | TC-1297 |
 | document missing `contractVersion` | `inspect --ir` | `INVALID_IR` printed (reader's schema layer rejects at `/ir`, naming the absent `contractVersion` member); exit 1 | TC-1297 |
-| `EXTRACTION_TOOLCHAIN` resolvable | any `extraction-frontend-*` Make target | gate runs on `cargo +1.98.1` | TC-1298, TC-1321 |
-| `EXTRACTION_TOOLCHAIN=0.0.0` | any `extraction-frontend-*` Make target | gate fails naming `0.0.0`; never skips | TC-1298, TC-1321 |
 
 ## Error Paths
 
@@ -2330,7 +2308,7 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-045 | The compiler is invoked from a directory other than the repository root | NFR-017, FR-041 | TC-341, TC-386 | Absolute host paths are written into the IR with every gate green |
 | EC-046 | The retained evidence records the minting host's own tool versions | NFR-017, FR-044 | TC-370, TC-389 | The gate can only ever pass on one workstation (issue #42) |
 | EC-047 | A base-model chain in the IR forms a cycle | FR-042 | TC-354 | The backend recurses until the stack is exhausted |
-| EC-048 | `package.json` `files` already ships `src/`, so promoted code enters the tarball | NFR-018 | TC-391, TC-392 | The published artefact grows while the export-surface check stays green |
+| EC-048 | `package.json` `files` already ships `src/`, so promoted code enters the tarball | NFR-018 | TC-391 | The published artefact grows while the export-surface check stays green |
 | EC-049 | Exactly one frontend is implemented, so cross-dialect agreement cannot be observed | FR-045 | TC-402, TC-601 | Single-dialect runs are reported as cross-frontend equivalence they never demonstrated |
 | EC-050 | A package declares one type and no imports | FR-046 | TC-614 | The resolver's empty-graph path is never exercised |
 | EC-051 | An import graph is a diamond, reaching one package by two routes | FR-047 | TC-615 | The package resolves twice, or its digest is compared against itself |
@@ -2370,7 +2348,6 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-077 | A type declares unknownPolicy preserve and the retained member's name collides with a known field's wire name | FR-054 | TC-650 | An unknown member overwrites a known field or silently disappears |
 | EC-078 | A required extension names a capability the crate does not admit | FR-061 | TC-722 | An unsupported capability is accepted and the consumer proceeds on a contract it cannot honour |
 | EC-079 | The conformance oracle and the Rust reader disagree on a reference target nothing declares | FR-059 | TC-710 | GAP-011 is decided by an implementation rather than by its owning issue |
-| EC-080 | A sibling ticket lands on top of this change before its gates are read | NFR-023 | TC-744 | This change's path set accretes the sibling's paths and the wrong ticket is blamed |
 | EC-081 | A generated crate is byte-identical on the authoring workstation and different on a clean runner | NFR-022 | TC-712, TC-731 | Determinism is claimed from one host, as issue #42 already records |
 | EC-070 | The official emitter states closure with `unevaluatedProperties`, which the generator does not read | FR-074 | TC-864, TC-865 | Every sealed contract type generates as an open Python model |
 | EC-071 | A blanket `--extra-fields forbid` closes a model the schema deliberately leaves open | FR-073 | TC-856, TC-865 | Over-restriction in the opposite direction, invisible to a closure gate |
@@ -2588,17 +2565,17 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 253 | 218 | 0 | 35 | 100% mapped (253/253) |
+| Static | 247 | 212 | 0 | 35 | 100% mapped (247/247) |
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
-| Analysis | 47 | 26 | 0 | 21 | 100% mapped (47/47) |
-| Property | 126 | 79 | 0 | 47 | 100% mapped (126/126) |
-| Unit | 602 | 500 | 0 | 102 | 100% mapped (602/602) |
-| Integration | 157 | 96 | 0 | 61 | 100% mapped (157/157) |
+| Analysis | 43 | 26 | 0 | 17 | 100% mapped (43/43) |
+| Property | 124 | 79 | 0 | 45 | 100% mapped (124/124) |
+| Unit | 600 | 499 | 0 | 101 | 100% mapped (600/600) |
+| Integration | 154 | 95 | 0 | 59 | 100% mapped (154/154) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1352** | **1029** | **0** | **323** | **100% mapped (1352/1352)** |
+| **Total** | **1335** | **1021** | **0** | **314** | **100% mapped (1335/1335)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

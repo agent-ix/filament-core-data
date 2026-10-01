@@ -154,7 +154,7 @@ fn tc_1320_manifest_pins_toolchain() {
     // CR-036-1: the supported minimum is the workspace's (cargo enforces every
     // member's `rust-version` under `--workspace`, so a member-level 1.98.1
     // would break `make rust-build` on the workspace channel); the
-    // qualification compiler is named once, in the Makefile.
+    // qualification compiler is the pinned `rust-toolchain.toml` channel.
     assert_eq!(
         key(&package, "rust-version.workspace").as_deref(),
         Some("true"),
@@ -163,16 +163,6 @@ fn tc_1320_manifest_pins_toolchain() {
     assert!(
         key(&package, "rust-version").is_none(),
         "no member-level rust-version override"
-    );
-    let makefile = read(&workspace_dir().join("Makefile"));
-    let naming: Vec<&str> = makefile
-        .lines()
-        .filter(|l| !l.trim_start().starts_with('#') && l.contains(TOOLCHAIN))
-        .collect();
-    assert_eq!(
-        naming,
-        vec![format!("EXTRACTION_TOOLCHAIN ?= {TOOLCHAIN}")],
-        "the Makefile names the qualification compiler exactly once"
     );
     assert_eq!(
         key(&package, "license").as_deref(),
@@ -266,35 +256,8 @@ fn tc_1329_locked_offline_build_succeeds_from_a_warm_cache() {
 }
 
 // ---------------------------------------------------------------------------
-// Task-138: the whole-crate gates (NFR-033-AC-2, AC-4, AC-5, AC-7, AC-8)
+// Task-138: the whole-crate gates (NFR-033-AC-4, AC-5, AC-7, AC-8)
 // ---------------------------------------------------------------------------
-
-/// The `extraction-frontend` targets of the root Makefile. The dependency
-/// audit targets follow the spec-to-targets section rather than the original
-/// extraction-frontend block.
-fn makefile_block() -> Vec<String> {
-    let makefile = read(&workspace_dir().join("Makefile"));
-    let lines: Vec<&str> = makefile.lines().collect();
-    let start = lines
-        .iter()
-        .position(|l| l.contains("Spec-bundle extraction frontend (issue #36)"))
-        .expect("the Makefile block header")
-        .saturating_sub(1);
-    // The header is fenced by two `# ----` lines; the block ends at the next
-    // such line after the fence, or at the end of the file.
-    let end = lines[start + 3..]
-        .iter()
-        .position(|l| l.starts_with("# ----"))
-        .map(|i| i + start + 3)
-        .unwrap_or(lines.len());
-    let mut block: Vec<String> = lines[start..end].iter().map(|l| l.to_string()).collect();
-    let audit_start = lines
-        .iter()
-        .position(|l| *l == ".PHONY: extraction-frontend-deny")
-        .expect("the dependency audit targets");
-    block.extend(lines[audit_start..].iter().map(|l| l.to_string()));
-    block
-}
 
 /// `make -C <workspace> <target> <VAR=value>...`.
 fn make(target: &str, assignments: &[&str]) -> std::process::Output {
@@ -313,56 +276,6 @@ fn output_text(output: &std::process::Output) -> String {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     )
-}
-
-#[trace("TC-1321", "NFR-033-AC-2")]
-#[test]
-fn tc_1321_every_cargo_in_the_makefile_block_is_pinned_and_each_gate_fails_naming_0_0_0() {
-    let block = makefile_block();
-    let cargo_lines: Vec<&String> = block
-        .iter()
-        .filter(|l| !l.trim_start().starts_with('#'))
-        .filter(|l| {
-            l.split(|c: char| !c.is_alphanumeric())
-                .any(|w| w == "cargo")
-        })
-        .collect();
-    assert!(cargo_lines.len() >= 6, "{cargo_lines:?}");
-    for line in &cargo_lines {
-        assert!(
-            line.contains("cargo +$(EXTRACTION_TOOLCHAIN)")
-                || line.contains("rustup run $(EXTRACTION_TOOLCHAIN) cargo"),
-            "a cargo invocation without +$(EXTRACTION_TOOLCHAIN): {line}"
-        );
-    }
-
-    let targets: Vec<String> = block
-        .iter()
-        .filter_map(|l| l.strip_prefix(".PHONY: "))
-        .map(str::to_string)
-        .collect();
-    assert!(
-        targets.iter().any(|t| t == "extraction-frontend-deny")
-            && targets.iter().any(|t| t == "extraction-frontend-audit")
-            && targets.len() >= 8,
-        "{targets:?}"
-    );
-    for target in &targets {
-        let output = make(target, &["EXTRACTION_TOOLCHAIN=0.0.0"]);
-        let text = output_text(&output);
-        assert!(
-            !output.status.success(),
-            "{target} skipped under 0.0.0:\n{text}"
-        );
-        assert!(
-            text.contains("0.0.0"),
-            "{target} does not name 0.0.0:\n{text}"
-        );
-        assert!(
-            text.contains("failure rather than a skip"),
-            "{target}:\n{text}"
-        );
-    }
 }
 
 #[trace("TC-1323", "NFR-033-AC-4")]

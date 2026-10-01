@@ -1829,7 +1829,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		}
 	});
 
-	/** Traces: TC-446, TC-451, TC-592; FR-046-AC-15, FR-046-CON-1, NFR-021-AC-3. */
+	/** Traces: TC-446, TC-451; FR-046-AC-15, FR-046-CON-1. */
 	it("leaves the frozen prototype path and the issue #4 goldens byte-unchanged", () => {
 		// The prototype path still emits its own frozen schema version.
 		expect(read(resolve(compilerRoot, "ir.mjs"))).toContain(
@@ -5357,7 +5357,7 @@ describe("determinism, safety, and non-disruption (NFR-019..021)", () => {
 		}
 	}, 180000);
 
-	/** Traces: TC-577, TC-578, TC-590, TC-594, TC-596, TC-597; NFR-019-AC-11, AC-12, NFR-021-AC-1, AC-5, AC-7, AC-8. */
+	/** Traces: TC-577, TC-578, TC-596, TC-597; NFR-019-AC-11, AC-12, NFR-021-AC-7, AC-8. */
 	it("publishes nothing", () => {
 		// No publication step exists to trigger.
 		expect(readJson(resolve(root, "package.json"))).not.toHaveProperty(
