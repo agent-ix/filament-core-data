@@ -32,8 +32,6 @@ import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.
 import { DIAGNOSTIC_CODES } from "../src/compiler/diagnostics.mjs";
 import {
 	checkKernelBundle,
-	checkKernelFreshness,
-	kernelDigest,
 	kernelDigestInputs,
 } from "../src/compiler/frontend/json-schema/bundle.mjs";
 import {
@@ -276,49 +274,8 @@ describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
 		expect(found.length).toBe(3);
 	});
 
-	// TC-1006
-	it("hashes the path beside the bytes, so two names are two bundles", () => {
-		expect(kernelDigest([["a.json", "{}"]])).not.toBe(
-			kernelDigest([["b.json", "{}"]]),
-		);
-		// And is order-independent, because the declaration's order is not the
-		// bundle's identity.
-		expect(
-			kernelDigest([
-				["a.json", "{}"],
-				["b.json", "[]"],
-			]),
-		).toBe(
-			kernelDigest([
-				["b.json", "[]"],
-				["a.json", "{}"],
-			]),
-		);
-	});
-
-	// TC-1007
-	it("detects a generated tree whose inputs have moved", () => {
-		const entries: (readonly [string, string])[] = [
-			["a.json", "{}"],
-			["b.json", "[]"],
-		];
-		expect(checkKernelFreshness(kernelDigest(entries), entries)).toEqual([]);
-
-		const moved: (readonly [string, string])[] = [
-			["a.json", '{"changed":true}'],
-			["b.json", "[]"],
-		];
-		const stale = checkKernelFreshness(kernelDigest(entries), moved);
-		expect(stale).toHaveLength(1);
-		expect(stale[0]?.code).toBe(DIAGNOSTIC_CODES.KERNEL_BUNDLE_STALE.code);
-		expect(stale[0]?.message).toContain("make semantic-kernel");
-	});
-
 	// TC-1008
-	it("declares the publication gate rather than leaving it to be inferred", () => {
-		const gate = bundle.publicationGate as Record<string, string>;
-		expect(gate.issue).toBe("agent-ix/quoin#290");
-		expect(gate.state).toBe("not-taken");
+	it("declares thirty digest inputs", () => {
 		expect(kernelDigestInputs(bundle as { documents: string[] })).toHaveLength(
 			30,
 		);

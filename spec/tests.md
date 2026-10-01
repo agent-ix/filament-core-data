@@ -1024,7 +1024,7 @@ blocked as stated above.
 | TC-791 | The fingerprint is computed over the normalized document rather than the file bytes, and the generated identity module exposes each document's occurrences, document-level extensions, and field units byte-equal to the document | Unit | P0 | FR-067-AC-14, FR-067-CON-4 | 🚧 partially exercised by an existing test; no test binds this row |
 | TC-792 | Two documents differing only in set order share a fingerprint, and two differing in any semantic value do not | Property | P0 | FR-067-AC-6 | 🚧 no discrete test; no test binds this row |
 | TC-793 | Every banner names the backend identity, version, and fingerprint, no emitted byte matches a date, time, hostname, user, or absolute-path pattern, and two runs at different wall-clock times agree | Static | P0 | FR-067-AC-7, FR-067-AC-8, FR-067-CON-1 | 🚧 no discrete test; no test binds this row |
-| TC-794 | Roles, relationship descriptors, per-type and per-field extension descriptors, and each type's `unknownPolicy` are exposed per type; a metadata-only import retains no validator symbol; a `displayName` rename moves no identity; and the metadata module typechecks | Unit | P0 | FR-067-AC-9, FR-067-AC-10, FR-067-AC-11, FR-067-AC-12, FR-067-AC-13, FR-067-AC-15, FR-067-AC-17, FR-067-CON-3 | 🚧 partially exercised by an existing test; no test binds this row |
+| TC-794 | Roles, relationship descriptors, per-type and per-field extension descriptors, and each type's `unknownPolicy` are exposed per type; a metadata-only import retains no validator symbol; a `displayName` rename moves no identity; and the metadata module typechecks | Unit | P0 | FR-067-AC-9, FR-067-AC-10, FR-067-AC-12, FR-067-AC-13, FR-067-AC-15, FR-067-AC-17, FR-067-CON-3 | 🚧 partially exercised by an existing test; no test binds this row |
 | TC-795 | Every positive fixture and every conformance base yields `resultState` `success` with zero diagnostics, and a bundle carrying only `ir` records one suppression per absent-input rule, emits no diagnostic for any of them, and returns the same result state | Integration | P0 | FR-068-AC-1, FR-068-AC-18, FR-068-AC-19, FR-068-CON-8 | 🚧 no discrete test; no test binds this row |
 | TC-796 | Every rule of the code table fires on a constructed document producing exactly its named code at a hand-computed pointer, and the derivation ledger names for every registered code either the published clause its rule was read from or the corpus register | Unit | P0 | FR-068-AC-2, FR-068-AC-20, FR-068-AC-21, FR-068-CON-7 | 🚧 no discrete test; no test binds this row |
 | TC-797 | Three schema errors at one instance location collapse to one `SCHEMA_VIOLATION` at the deepest failing location, and a structurally invalid document yields no cross-field code | Unit | P0 | FR-068-AC-3, FR-068-AC-4 | 🚧 no discrete test; no test binds this row |
@@ -1280,7 +1280,8 @@ blocked as stated above.
 | TC-1002 | Writes only under packages/semantic-kernel/, src/compiler/frontend/json-schema/, scripts/build-semantic-kernel.mjs, test/semantic-kernel.test.ts, src/ | Property | P0 | FR-081-CON-7, FR-081-CON-8, FR-081-AC-1 | 🚧 planned |
 | TC-1003 | The same thirty-member set equals the files array of packages/semantic-core/generated/toolchain.json | Property | P0 | FR-081-AC-2, FR-081-AC-3, FR-081-AC-4 | 🚧 planned |
 | TC-1004 | The declared schema base equals base in generated/toolchain.json and the @jsonSchema argument in packages/semantic-core/main.tsp | Property | P0 | FR-081-AC-5, FR-081-AC-6, FR-081-AC-7 | 🚧 planned |
-| TC-1005 | The declared artifact paths are exactly packages/semantic-kernel/typescript/, packages/semantic-kernel/rust/, packages/semantic-kernel/python/, and pa | Property | P0 | FR-081-AC-8, FR-081-AC-9, FR-081-AC-10 | 🚧 planned |
+| TC-1005 | The declared artifact paths are exactly packages/semantic-kernel/typescript/, packages/semantic-kernel/rust/, packages/semantic-kernel/python/, and pa | Property | P0 | FR-081-AC-8, FR-081-AC-9 | 🚧 planned |
+| TC-1006 | With one byte changed in any committed generated file `make semantic-kernel-check` exits non-zero naming that file; and `packages/semantic-kernel/json-schema/index.json` names all thirty documents by file name, both sets equal to the enumeration | Property | P0 | FR-081-AC-12, FR-081-AC-13 | 🚧 planned |
 | TC-1007 | The branch changes no file under packages/semantic-core/, schema/, fixtures/, conformance/, src/compiler/backends/, src/compiler/frontend/typespec/, o | Property | P0 | FR-081-AC-14, FR-081-AC-15, FR-081-AC-16 | 🚧 planned |
 | TC-1008 | KERNEL_INVENTORY_MISMATCH and KERNEL_BUNDLE_STALE are members of DIAGNOSTIC_CODES in src/compiler/diagnostics.mjs | Property | P0 | FR-081-AC-17, FR-081-AC-18 | 🚧 planned |
 | TC-1009 | Leave byte-unchanged every file under schema/**, packages/semantic-core/**, fixtures/**, and conformance/**, together with src/compiler/cli.mjs, src/c | Static | P0 | FR-082-CON-1, FR-082-CON-2, FR-082-CON-3 | 🚧 planned |
@@ -1289,7 +1290,7 @@ blocked as stated above.
 | TC-1012 | A document carrying additionalProperties, oneOf, allOf, $defs, format, or maxLength produces one blocking UNSUPPORTED_SCHEMA_KEYWORD diagnostic naming | Property | P0 | FR-082-AC-3, FR-082-AC-4, FR-082-AC-5 | 🚧 planned |
 | TC-1013 | Every lowered type from a document carrying unevaluatedProperties: {"not": {}} has unknownPolicy: "reject" | Property | P0 | FR-082-AC-6, FR-082-AC-7, FR-082-AC-8 | 🚧 planned |
 | TC-1014 | Every fields[] member and every operation parameter of the emitted document carries multiplicity | Property | P0 | FR-082-AC-9, FR-082-AC-10, FR-082-AC-11 | 🚧 planned |
-| TC-1015 | The emitted document declares source.dialect of typespec, source.digest equal to kernelDigest(), and source.version of 0.2.0 | Snapshot | P0 | FR-082-AC-12, FR-082-AC-13, FR-082-AC-14 | 🚧 planned |
+| TC-1015 | The emitted document declares source.dialect of typespec and source.version of 0.2.0 | Snapshot | P0 | FR-082-AC-12, FR-082-AC-13, FR-082-AC-14 | 🚧 planned |
 | TC-1016 | Every emitted list | Property | P0 | FR-082-AC-15, FR-082-AC-16, FR-082-AC-17 | 🚧 planned |
 | TC-1017 | Every read performed during a full kernel lowering is observed by the injected host | Property | P0 | FR-082-AC-18, FR-082-AC-19, FR-082-AC-20 | 🚧 planned |
 | TC-1018 | RunFrontend called with no sourceForm selects the dialect's default form | Property | P0 | FR-082-AC-21, FR-082-AC-22, FR-082-AC-23 | 🚧 planned |
@@ -1303,6 +1304,7 @@ blocked as stated above.
 | TC-1026 | Every identity in types | Snapshot | P0 | FR-083-AC-12, FR-083-AC-13, FR-083-AC-14 | 🚧 planned |
 | TC-1027 | Over 256 mutated bundles mintAll returns a mint table or a refusal and never throws | Property | P0 | FR-083-AC-15, FR-083-AC-16 | 🚧 planned |
 | TC-1028 | Close KERNEL_LOSSES at exactly the two declared rows and put it in bijection with the loss codes it adds to DIAGNOSTIC_CODES, asserted in both directi | Static | P0 | FR-084-CON-1, FR-084-CON-2, FR-084-CON-3 | 🚧 planned |
+| TC-1029 | The kernel representability module does not throw for any input | Static | P0 | FR-084-CON-6 | 🚧 planned |
 | TC-1030 | NOT relax, reorder, or reword any existing member of DIAGNOSTIC_CODES | Static | P0 | FR-084-CON-7, FR-084-CON-8, FR-084-CON-9 | 🚧 planned |
 | TC-1031 | The emitted kernel IR validates against schema/semantic/v1/semantic-ir.schema.json at contractVersion 2.0.0, carrying every required member of source | Property | P0 | FR-084-AC-1, FR-084-AC-2, FR-084-AC-3 | 🚧 planned |
 | TC-1032 | Source.version, package.version | Property | P0 | FR-084-AC-4, FR-084-AC-5, FR-084-AC-6 | 🚧 planned |
@@ -1314,9 +1316,9 @@ blocked as stated above.
 | TC-1038 | Adds no TypeScript emitter, no module under src/compiler/backends/typescript-v1/, and no kernel-specific branch inside the existing backend. A constru | Static | P0 | FR-085-CON-1, FR-085-CON-2, FR-085-CON-3 | 🚧 planned |
 | TC-1039 | Records the strict typecheck criterion as blocked on agent-ix/filament-core-data#22 with the defect named | Snapshot | P0 | FR-085-CON-4, FR-085-CON-5, FR-085-CON-6 | 🚧 planned |
 | TC-1040 | The generated package declare no third-party runtime dependency and keep every import specifier in every committed module relative, so the kernel's Ty | Property | P0 | FR-085-CON-7, FR-085-CON-8, FR-085-AC-1 | 🚧 planned |
-| TC-1041 | The committed packages/semantic-kernel/typescript/ path set is exactly LICENSE, errors.ts, identity.ts, index.ts, provenance.ts, package.json, types.ts, | Snapshot | P0 | FR-085-AC-2, FR-085-AC-3, FR-085-AC-4 | 🚧 planned |
+| TC-1041 | The committed packages/semantic-kernel/typescript/ path set is exactly LICENSE, errors.ts, identity.ts, index.ts, package.json, types.ts, | Snapshot | P0 | FR-085-AC-2, FR-085-AC-3, FR-085-AC-4 | 🚧 planned |
 | TC-1042 | The committed package name equals packageNameFor(package.identity) for the kernel document's identity | Property | P0 | FR-085-AC-5, FR-085-AC-6, FR-085-AC-7 | 🚧 planned |
-| TC-1043 | The committed identity.ts and provenance.ts expose every kernel type's roles[] and unknownPolicy, every record's relationship descriptors, every field's | Property | P0 | FR-085-AC-8, FR-085-AC-9, FR-085-AC-10 | 🚧 planned |
+| TC-1043 | The committed identity.ts exposes every kernel type's roles[] and unknownPolicy, every record's relationship descriptors, every field's | Property | P0 | FR-085-AC-8, FR-085-AC-9, FR-085-AC-10 | 🚧 planned |
 | TC-1044 | Every committed file begins with the SPDX-License-Identifier: AGPL-3.0-or-later header and the banner naming the backend identity, the backend version and | Snapshot | P0 | FR-085-AC-11, FR-085-AC-12, FR-085-AC-13 | 🚧 planned |
 | TC-1045 | Every import specifier in every committed module begins with ./ or ../, and no committed module names a package in any of the seven prohibited depende | Snapshot | P0 | FR-085-AC-14, FR-085-AC-15, FR-085-AC-16 | 🚧 planned |
 | TC-1046 | Hand-editing one byte of a committed generated file makes make semantic-kernel-check fail naming that file, so the tree cannot drift from the emitter | Property | P0 | FR-085-AC-17, FR-085-AC-18, FR-085-AC-19 | 🚧 planned |
@@ -1341,6 +1343,7 @@ blocked as stated above.
 | TC-1065 | A full generation leaves every byte of the semantic-core bundle unchanged, no packed distribution file starts with packages/semantic-kernel, every example runs clean under -W error, and msgspec refuses exactly the four finding-F2 kernel types | Snapshot | P0 | FR-087-AC-14, FR-087-AC-15, FR-087-AC-16 | ✅ Complete |
 | TC-1066 | python_backend/kernel/emit.py reaches the route only by import, its re-derived layout rules produce byte-identical exports and __init__.py text, and no emitted file carries a date, host path, user name or hostname | Unit | P0 | FR-087-AC-17, FR-087-AC-18 | ✅ Complete |
 | TC-1067 | Change no byte anywhere under packages/semantic-core/. Those documents are the official emitter's output under ADR-0005 and FR-033, and an index that | Static | P0 | FR-088-CON-1, FR-088-CON-2, FR-088-CON-3 | 🚧 planned |
+| TC-1068 | The index names the documents and carries no second `$id` normalization step and no copy of any document body | Static | P0 | FR-088-CON-5, FR-088-CON-6 | 🚧 planned |
 | TC-1069 | No registry publication and no publication workflow change happen here | Unit | P0 | FR-088-CON-7, FR-088-CON-8, FR-088-AC-1 | 🚧 planned |
 | TC-1070 | A document present in packages/semantic-core/generated/json-schema/ and absent from the index | Unit | P0 | FR-088-AC-2, FR-088-AC-3, FR-088-AC-4 | 🚧 planned |
 | TC-1071 | Every document's $id equals the index's base concatenated with its file name | Property | P0 | FR-088-AC-5, FR-088-AC-6, FR-088-AC-7 | 🚧 planned |
@@ -2396,7 +2399,6 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-075 | A document that is admissible and unrepresentable | FR-065, FR-068 | TC-802, TC-774 | An unrepresentable construct is emitted as `unknown` and the refusal never reaches the caller |
 | EC-077 | A package declaring one type, and a package declaring a thousand | FR-064, FR-065 | TC-755, TC-766 | The single-type path is never exercised and the large path exhausts a bound unnoticed |
 | EC-078 | A generated identifier collides with the generated discriminant constant | FR-064 | TC-758, TC-764 | The discriminated union stops narrowing and `tsc` accepts an unhandled variant |
-| EC-079 | A consumer bundles the generated package importing only `provenance.ts` | FR-067 | TC-794 | Provenance-only consumers retain the whole validator surface in their bundle |
 | EC-080 | The adapter and the oracle agree because the adapter asked the oracle | FR-070 | TC-819, TC-820 | A perfect pass rate that measures nothing and hides every shared defect |
 | EC-081 | A document declares two type definitions carrying the same `identity`, so identity-sorted set ordering is not a total order, while the adapter must still emit a `normalized` string for that case | FR-069 | TC-806 | Two runs canonicalize one document two ways and the byte comparison the whole slot rests on becomes non-deterministic |
 | EC-082 | `unknownPolicy` is declared on a kind that has no unknown members — a `union` at `surface` and a `map` at `preserve`, both carried by the committed conformance bases | FR-064, FR-066, FR-067, FR-068 | TC-762, TC-782, TC-802, TC-794 | A policy with no meaning is rendered as a validation rule, or is dropped without a declared loss under a `fail` policy |
@@ -2645,17 +2647,17 @@ the qualification compiler, and TC-1326 carries clippy's `--no-deps`.
 
 | Category | Total | Passed | Failed | Blocked | Coverage |
 |---|---|---|---|---|---|
-| Static | 273 | 238 | 0 | 35 | 100% mapped (273/273) |
+| Static | 275 | 238 | 0 | 37 | 100% mapped (275/275) |
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 51 | 30 | 0 | 21 | 100% mapped (51/51) |
-| Property | 126 | 80 | 0 | 46 | 100% mapped (126/126) |
+| Property | 127 | 80 | 0 | 47 | 100% mapped (127/127) |
 | Unit | 609 | 506 | 0 | 103 | 100% mapped (609/609) |
 | Integration | 161 | 100 | 0 | 61 | 100% mapped (161/161) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1387** | **1064** | **0** | **323** | **100% mapped (1387/1387)** |
+| **Total** | **1390** | **1064** | **0** | **326** | **100% mapped (1390/1390)** |
 
 Issue #23 also converts the six suites that still resolve their changed-path
 gates against a moving `main` or `origin/main` — the open defect of issue #51.

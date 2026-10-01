@@ -127,7 +127,7 @@ attribution.
 | NFR-029-AC-6 | Every `$ref` in the modular JSON Schema bundle resolves inside the bundle with the network disabled. | Test |
 | NFR-029-AC-7 | Each package's static export surface equals the kernel's declared type set plus the minted types, checked in both directions so a missing export and an unexpected one each fail. | Unit |
 | NFR-029-AC-8 | Every contract value that is not a type — identity, constraints, occurrence data — is reachable through the declared validated API and through no other route, and a consumer that imports a single type does not pull the whole descriptor table into its bundle. | Analysis |
-| NFR-029-AC-9 | Every emitted source file and every emitted package manifest declares AGPL-3.0-or-later, and every third-party dependency is pinned, licence-compatible. | Static |
+| NFR-029-AC-9 | Every emitted source file and every emitted package manifest declares AGPL-3.0-or-later, and every third-party dependency is pinned, licence-compatible, and attributed in `THIRD-PARTY-NOTICES.md`. | Static |
 | NFR-029-AC-10 | Each consumer example of [FR-089](../functional/FR-089-provide-independent-consumer-examples.md) satisfies the same closure assertion as the package it consumes, so an example cannot demonstrate portability while depending on a framework. | Test |
 
 ## Dependencies

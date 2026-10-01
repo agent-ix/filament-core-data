@@ -66,7 +66,7 @@ const exportedNames = (source: string): Set<string> => {
 	return names;
 };
 
-describe("FR-137 identity and provenance are spelled alike in every package", () => {
+describe("FR-137 identity is spelled alike in every package", () => {
 	/** Traces: FR-137-AC-2 */
 	it("TC-1538 emits the Rust semantic identity in src/identity.rs and emits no src/metadata.rs", () => {
 		for (const golden of rustGoldens()) {

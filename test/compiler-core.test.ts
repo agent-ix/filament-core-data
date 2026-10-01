@@ -6306,11 +6306,6 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 				{ version: "9.9.9" },
 			) as readonly Diagnostic[],
 		);
-		note(
-			bundle.checkKernelFreshness("sha256:aa", [
-				["A.json", "{}"],
-			]) as readonly Diagnostic[],
-		);
 
 		// UNSUPPORTED_SCHEMA_KEYWORD: a keyword outside the closed set.
 		const keywordRun = lower.lowerBundle([

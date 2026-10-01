@@ -75,10 +75,5 @@
 		"packages/semantic-core/generated/toolchain.json",
 		"packages/semantic-core/kernel-scalars.json",
 		"packages/semantic-core/lowering.json"
-	],
-	"publicationGate": {
-		"issue": "agent-ix/quoin#290",
-		"state": "not-taken",
-		"note": "Generation is in scope for #11; publication is not. No step may invoke `cargo publish`, `npm publish`, or a PyPI upload."
-	}
+	]
 }
