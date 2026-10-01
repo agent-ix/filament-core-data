@@ -20,7 +20,7 @@
 		"version": "1.0.0",
 		"issue": "https://github.com/agent-ix/filament-core-data/issues/132"
 	},
-	"base": "https://schemas.agent-ix.org/semantic-core/0.3.0/",
+	"base": "https://schemas.agent-ix.org/semantic-core/0.3.1/",
 	"files": [
 		"ClauseLanguage.json",
 		"ClauseRef.json",

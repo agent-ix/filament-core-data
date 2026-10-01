@@ -4,7 +4,7 @@
 		"name": "@agent-ix/semantic-kernel",
 		"version": "0.2.0"
 	},
-	"semanticCore": "0.3.0",
+	"semanticCore": "0.3.1",
 	"inventoryCounts": {
 		"models": 21,
 		"unions": 1,
