@@ -1,4 +1,4 @@
-/** Declarations for the generated `identity.ts` and `provenance.ts` (FR-067, FR-137). */
+/** Declarations for the generated `identity.ts` (FR-067, FR-137). */
 import type { ResolvedModel } from "./model.d.mts";
 
 /** One extension the document declares, at any of its three levels. */
@@ -45,24 +45,6 @@ export interface ConstraintDescriptor {
 	readonly operands: unknown;
 }
 
-/** The provenance the generated `provenance.ts` exports as `PROVENANCE`. */
-export interface Provenance {
-	readonly contractVersion: string;
-	readonly sourceIdentity: string;
-	readonly sourceVersion: string;
-	readonly sourceDialect: string;
-	readonly sourceDigest: string;
-	readonly packageIdentity: string;
-	readonly packageVersion: string;
-	readonly packageManifestDigest: string;
-	readonly packageMappingVersions: readonly string[];
-	readonly packageProfileVersions: readonly string[];
-	readonly packageLockDigest: string;
-	readonly fingerprint: string;
-	readonly backendIdentity: string;
-	readonly backendVersion: string;
-}
-
 /** The banner every emitted file carries; the caller prepends it. */
 export declare function bannerFor(
 	model: ResolvedModel,
@@ -71,18 +53,6 @@ export declare function bannerFor(
 
 /** The body of the generated `identity.ts`. Pure; writes no file. */
 export declare function renderIdentity(model: ResolvedModel): string;
-
-/**
- * The body of the generated `provenance.ts`.
- *
- * The fingerprint is taken over the *normalized* document, which the resolved
- * model does not carry, so the caller supplies either the fingerprint or the
- * document it is taken over. Supplying neither is a caller defect and throws.
- */
-export declare function renderProvenance(
-	model: ResolvedModel,
-	options?: { fingerprint?: string; ir?: unknown },
-): string;
 
 /** Return identity-bearing model nodes absent from emitted files and losses. */
 export declare function auditRenderedNodes(

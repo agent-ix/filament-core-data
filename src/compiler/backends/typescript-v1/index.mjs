@@ -30,11 +30,7 @@ import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../../diagnostics.mjs";
 import { SCHEMA_FILES, admitIr } from "./admit.mjs";
 import { fingerprintIrForTarget } from "./canonical.mjs";
 import { LOSS_CODES, refusesGeneration, representability } from "./loss.mjs";
-import {
-	auditRenderedNodes,
-	renderIdentity,
-	renderProvenance,
-} from "./metadata.mjs";
+import { auditRenderedNodes, renderIdentity } from "./metadata.mjs";
 import { buildModel } from "./model.mjs";
 import { renderPackage } from "./package-layout.mjs";
 import { renderTypes } from "./types.mjs";
@@ -231,7 +227,6 @@ export const typescriptBackend = Object.freeze({
 			validators: renderValidators(model),
 			errors: renderErrors(),
 			identity: renderIdentity(model),
-			provenance: renderProvenance(model, { fingerprint }),
 		});
 		const unrendered = auditRenderedNodes(model, rendered.files);
 		if (unrendered.length > 0) {

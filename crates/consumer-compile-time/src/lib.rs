@@ -84,11 +84,6 @@ fn root() -> &'static TypeMeta {
     }
 }
 
-/// One identity constant, read from the generated provenance module.
-pub fn package_identity() -> &'static str {
-    agent_ix_conformance::provenance::PACKAGE_IDENTITY
-}
-
 /// One role, read from the generated type metadata.
 pub fn value_role() -> &'static str {
     match type_meta("ix://agent-ix/conformance/type/Text") {
@@ -139,12 +134,11 @@ mod tests {
         }
     }
 
-    /// TC-720: one identity constant, one role, one relationship, one
+    /// TC-720: one role, one relationship, one
     /// operation and one clause reach the consumer with the values the
     /// contract carries.
     #[test]
     fn tc_720_reads_identity_role_relationship_operation_and_clause() {
-        assert_eq!(package_identity(), "agent-ix/conformance");
         assert_eq!(value_role(), "agent-ix:value");
 
         let relationship = contains_relationship();

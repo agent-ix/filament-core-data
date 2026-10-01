@@ -166,7 +166,6 @@ that decision requires.
 | Validation | the JSON Schema 2020-12 keywords those documents carry, checked by any conforming validator; nothing further is emitted because the document *is* the validator |
 | Diagnostics | the seam's registry-coded refusals returned with the generation; this target emits no diagnostics file, and that is the realisation rather than a gap |
 | Semantic identity | the `x-agent-ix-semantic-id` annotation carried inline on each definition |
-| Provenance | `index.json` |
 
 ## Constraints
 

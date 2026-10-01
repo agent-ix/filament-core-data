@@ -1,14 +1,10 @@
 /**
- * FR-137 — semantic identity and provenance are spelled alike in every
- * generated package. Test cases TC-1537..TC-1544 of `spec/tests.md`.
+ * FR-137 — semantic identity is spelled alike in every generated package.
+ * Test cases TC-1538, TC-1540..TC-1544 of `spec/tests.md`.
  *
- * ADR-0007 rules that the emitted set is a contract over five *concepts*
- * realised idiomatically per language, and that `identity` and `provenance` are
- * two of those concepts and SHALL be spelled distinctly in every backend. Rust
- * and TypeScript used the two names for opposite things: TypeScript's
- * `identity.ts` carried semantic identity while Rust's `src/identity.rs` carried
- * provenance constants, and each language's `metadata` artifact carried the
- * other's `identity`. This file is the gate on the repair.
+ * ADR-0007 rules that the emitted set is a contract over *concepts* realised
+ * idiomatically per language, and that the retired `metadata` name is not
+ * used for any of them. This file is the gate on that.
  *
  * It reads the committed goldens rather than generating into a temporary
  * directory. That is deliberate and is not the stub failure mode: the goldens
@@ -42,22 +38,6 @@ const rustGoldens = (): string[] =>
 		statSync(join(RUST_GOLDENS, name)).isDirectory(),
 	);
 
-/**
- * The provenance constants a generated crate declares. Named here rather than
- * derived from the file under test, so that a rename that moved one back into
- * the identity module would fail rather than pass vacuously.
- */
-const RUST_PROVENANCE_CONSTANTS = [
-	"SOURCE_IDENTITY",
-	"SOURCE_VERSION",
-	"SOURCE_DIGEST",
-	"PACKAGE_IDENTITY",
-	"PACKAGE_VERSION",
-	"CONTRACT_VERSION",
-	"GENERATOR_IDENTITY",
-	"GENERATOR_VERSION",
-];
-
 /** The semantic identity declarations a generated crate carries. */
 const RUST_IDENTITY_DECLARATIONS = ["TypeMeta", "FieldMeta", "TYPES"];
 
@@ -67,7 +47,6 @@ const RUST_IDENTITY_DECLARATIONS = ["TypeMeta", "FieldMeta", "TYPES"];
  * historical fact, not a restatement of what the package exports today.
  */
 const RETIRED_METADATA_EXPORTS = [
-	"SEMANTIC_METADATA",
 	"DOCUMENT_EXTENSIONS",
 	"OCCURRENCES",
 	"TYPE_OPERATIONS",
@@ -76,9 +55,6 @@ const RETIRED_METADATA_EXPORTS = [
 	"TYPE_CONSTRAINTS",
 	"FIELD_DEFAULT",
 ];
-
-/** The one rename FR-137-CON-2 permits in the TypeScript export surface. */
-const RENAMED_EXPORT = { before: "SEMANTIC_METADATA", after: "PROVENANCE" };
 
 const exportedNames = (source: string): Set<string> => {
 	const names = new Set<string>();
@@ -91,28 +67,6 @@ const exportedNames = (source: string): Set<string> => {
 };
 
 describe("FR-137 identity and provenance are spelled alike in every package", () => {
-	/** Traces: FR-137-AC-1 */
-	it("TC-1537 emits the Rust provenance constants in src/provenance.rs and nowhere else", () => {
-		const goldens = rustGoldens();
-		expect(goldens.length).toBeGreaterThan(0);
-		for (const golden of goldens) {
-			const crate = join(RUST_GOLDENS, golden, "src");
-			const provenance = read(join(crate, "provenance.rs"));
-			const identity = read(join(crate, "identity.rs"));
-			for (const constant of RUST_PROVENANCE_CONSTANTS) {
-				expect(
-					provenance,
-					`${golden}: provenance.rs must declare ${constant}`,
-				).toMatch(new RegExp(`^pub const ${constant}\\b`, "m"));
-				expect(
-					identity,
-					`${golden}: identity.rs must not declare ${constant}`,
-				).not.toMatch(new RegExp(`^pub const ${constant}\\b`, "m"));
-			}
-			expect(read(join(crate, "lib.rs"))).toMatch(/^pub mod provenance;$/m);
-		}
-	});
-
 	/** Traces: FR-137-AC-2 */
 	it("TC-1538 emits the Rust semantic identity in src/identity.rs and emits no src/metadata.rs", () => {
 		for (const golden of rustGoldens()) {
@@ -134,19 +88,6 @@ describe("FR-137 identity and provenance are spelled alike in every package", ()
 		}
 	});
 
-	/** Traces: FR-137-AC-3 */
-	it("TC-1539 emits provenance.ts exporting PROVENANCE and emits no metadata.ts", () => {
-		expect(PACKAGE_FILES).toContain("provenance.ts");
-		expect(PACKAGE_FILES).not.toContain("metadata.ts");
-		expect(readdirSync(TS_EXPECTED)).not.toContain("metadata.ts");
-		const provenance = read(join(TS_EXPECTED, "provenance.ts"));
-		expect(provenance).toMatch(/^export const PROVENANCE = \{/m);
-		// Provenance is what the package was generated from and by. It depends on
-		// no sibling module, and importing one would be the first step back to a
-		// module that carries both concepts again.
-		expect(provenance).not.toMatch(/^import\s/m);
-	});
-
 	/** Traces: FR-137-AC-4, FR-137-CON-1 */
 	it("TC-1540 still declares every export the retired metadata.ts carried, under the same name", () => {
 		const declared = new Set<string>();
@@ -156,11 +97,7 @@ describe("FR-137 identity and provenance are spelled alike in every package", ()
 			}
 		}
 		for (const name of RETIRED_METADATA_EXPORTS) {
-			const expected =
-				name === RENAMED_EXPORT.before ? RENAMED_EXPORT.after : name;
-			expect(declared, `${expected} must still be declared`).toContain(
-				expected,
-			);
+			expect(declared, `${name} must still be declared`).toContain(name);
 		}
 	});
 
@@ -186,13 +123,12 @@ describe("FR-137 identity and provenance are spelled alike in every package", ()
 	});
 
 	/** Traces: FR-137-AC-6 */
-	it("TC-1542 names where all five ADR-0007 concepts land, in every implemented backend's specification", () => {
+	it("TC-1542 names where every ADR-0007 concept lands, in every implemented backend's specification", () => {
 		const CONCEPTS = [
 			"Types",
 			"Validation",
 			"Diagnostics",
 			"Semantic identity",
-			"Provenance",
 		];
 		const BACKEND_SPECS = [
 			"spec/functional/FR-056-emit-the-generated-rust-crate.md",
@@ -224,9 +160,9 @@ describe("FR-137 identity and provenance are spelled alike in every package", ()
 		}
 
 		// JSON Schema realizes semantic identity as an annotation keyword on
-		// each delegated schema and realizes provenance in its generated index.
-		// Read the artifacts, not merely the specification that describes them:
-		// otherwise the TypeSpec-emitted tree could silently lose either concept.
+		// each delegated schema. Read the artifacts, not merely the specification
+		// that describes them: otherwise the TypeSpec-emitted tree could silently
+		// lose the concept.
 		const schemas = resolve(
 			root,
 			"packages/semantic-core/generated/json-schema",
@@ -243,14 +179,6 @@ describe("FR-137 identity and provenance are spelled alike in every package", ()
 				`ix://agent-ix/semantic-core/${typeName}`,
 			);
 		}
-		const index = JSON.parse(
-			read(resolve(root, "packages/semantic-kernel/json-schema/index.json")),
-		) as Record<string, unknown>;
-		expect(index["x-agent-ix-provenance"]).toEqual(
-			JSON.parse(
-				read(resolve(root, "packages/semantic-kernel/provenance.json")),
-			),
-		);
 	});
 
 	/** Traces: FR-137-AC-7, FR-137-CON-3 */
@@ -262,9 +190,6 @@ describe("FR-137 identity and provenance are spelled alike in every package", ()
 		expect(bases.length).toBeGreaterThan(0);
 		for (const [golden, base] of bases) {
 			const paths = Object.keys(base.files);
-			expect(paths, `${golden} digests must cover src/provenance.rs`).toContain(
-				"src/provenance.rs",
-			);
 			expect(paths, `${golden} digests must cover src/identity.rs`).toContain(
 				"src/identity.rs",
 			);
@@ -276,12 +201,10 @@ describe("FR-137 identity and provenance are spelled alike in every package", ()
 	});
 
 	/** Traces: FR-137-AC-8, FR-137-CON-2 */
-	it("TC-1544 leaves the TypeScript export surface unchanged but for the one rename", () => {
+	it("TC-1544 keeps the retired metadata name out of the TypeScript export surface", () => {
 		const surface = new Set(FIXED_API_SURFACE);
-		expect(surface).toContain(RENAMED_EXPORT.after);
-		expect(surface).not.toContain(RENAMED_EXPORT.before);
+		expect(surface).not.toContain("SEMANTIC_METADATA");
 		const barrel = read(join(TS_EXPECTED, "index.ts"));
-		expect(barrel).toMatch(/from "\.\/provenance\.js"/);
 		expect(barrel).not.toMatch(/metadata/);
 	});
 });

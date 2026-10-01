@@ -33,7 +33,7 @@ and it publishes nothing.
 ## Inputs
 
 - The thirty committed documents of `packages/semantic-core/generated/json-schema/`, produced by the pinned official `@typespec/json-schema` emitter under [FR-033](./FR-033-emit-semantic-core-json-schema.md), byte-gated by `make semantic-core-check`, and indexed by [FR-088](./FR-088-ship-the-modular-kernel-json-schema.md)
-- `packages/semantic-core/generated/toolchain.json`: the emitting compiler and emitter versions, the `base` of `https://schemas.agent-ix.org/semantic-core/0.2.0/`, the ordered `files` list, and the bundle `digest`
+- `packages/semantic-core/generated/toolchain.json`: the emitting compiler and emitter versions, the `base` of `https://schemas.agent-ix.org/semantic-core/0.2.0/`, and the ordered `files` list
 - The kernel bundle declaration and generation manifest of FR-081, which names this bundle as the Python route's input set
 - `python_backend/profiles.json`, `python_backend/refusals.json`, `python_backend/limits.json`, and `python_backend/toolchain.json`, all read and none edited
 - `python_backend/qualification/report.json`: the measured verdicts that decide which families emit
@@ -108,7 +108,7 @@ and it publishes nothing.
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-087-CON-1 | The maintainer SHALL NOT widen `python_backend/refusals.json`, relax a guard, add a guard exemption, or add a generator option to make the kernel bundle generate. The localization pass rewrites the input and nothing else; a change under `python_backend/adapter/guard.py` or `python_backend/profiles.json` made in service of this requirement is a defect in this requirement. | Security | Static |
-| FR-087-CON-2 | The committed `packages/semantic-core/generated/json-schema/` bundle SHALL equal what `packages/semantic-core/scripts/generate.mjs` emits, its bytes SHALL match the `files` and `digest` of `packages/semantic-core/generated/toolchain.json`, and localization and kernel generation SHALL leave those bytes unchanged, so the localization stays an in-memory transform and [FR-088](./FR-088-ship-the-modular-kernel-json-schema.md)'s byte gate stays green. | Integrity | Analysis |
+| FR-087-CON-2 | The committed `packages/semantic-core/generated/json-schema/` bundle SHALL equal what `packages/semantic-core/scripts/generate.mjs` emits, its bytes SHALL match the `files` of `packages/semantic-core/generated/toolchain.json`, and localization and kernel generation SHALL leave those bytes unchanged, so the localization stays an in-memory transform and [FR-088](./FR-088-ship-the-modular-kernel-json-schema.md)'s byte gate stays green. | Integrity | Analysis |
 | FR-087-CON-3 | The localization pass SHALL remain a schema-to-schema rewrite that post-processes no generated Python source, for the same reason FR-074-CON-1 gives: a text patch over generated code is a hand-written generator by another name. | Integrity | Test |
 | FR-087-CON-4 | The maintainer SHALL NOT emit a package for a family the qualification judges `not-qualified`, nor re-run the qualification with an altered probe set to move a verdict in order to emit one. | Integrity | Test |
 | FR-087-CON-5 | This requirement SHALL add no path under `packages/semantic-kernel/` to `pyproject.toml`'s `packages` or `include`, to any npm manifest's `files` or `exports`, or to any workflow under `.github/`. Publication passes `agent-ix/quoin#290`. | Compliance | Test |

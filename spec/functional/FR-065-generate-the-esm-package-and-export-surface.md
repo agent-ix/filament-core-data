@@ -50,7 +50,7 @@ type without acquiring the rest and no framework enters the dependency closure.
 
 ### The file set
 
-- The emitted file set SHALL be exactly `package.json`, `index.ts`, `types.ts`, `validators.ts`, `errors.ts`, `identity.ts`, `provenance.ts`, and `LICENSE` — eight files. The provenance module was named `metadata.ts` until [FR-137](./FR-137-spell-semantic-identity-and-provenance-alike-in-every-package.md) repaired the ADR-0007 naming swap.
+- The emitted file set SHALL be exactly `package.json`, `index.ts`, `types.ts`, `validators.ts`, `errors.ts`, `identity.ts`, and `LICENSE` — seven files.
 - The generated `errors.ts` SHALL carry the closed structural validation-code register and the `ValidationError` and `ValidationResult` shapes that [FR-066](./FR-066-generate-runtime-validators.md) renders, so that a consumer can switch on a validation code without importing the validators.
 - `renderPackage` SHALL treat that set as closed, so that an added or removed file is a visible change in the output manifest rather than an implementation detail.
 - Every emitted path SHALL be relative to the request's `outputRoot`, carrying no `..` segment, no absolute prefix, and no backslash.
@@ -128,7 +128,6 @@ that decision requires.
 | Validation | `validators.ts` — emitted rather than inferred, because TypeScript types erase at runtime |
 | Diagnostics | `errors.ts` |
 | Semantic identity | `identity.ts` — identity, kind, roles, extensions, relationships, occurrences, and the per-field descriptors |
-| Provenance | `provenance.ts`, exporting `PROVENANCE` |
 
 ## Constraints
 
@@ -145,11 +144,11 @@ that decision requires.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-065-AC-1 | Generating the fixture package emits exactly the eight declared files — `package.json`, `index.ts`, `types.ts`, `validators.ts`, `errors.ts`, `identity.ts`, `provenance.ts`, and `LICENSE` — and no other path. | Integration |
+| FR-065-AC-1 | Generating the fixture package emits exactly the seven declared files — `package.json`, `index.ts`, `types.ts`, `validators.ts`, `errors.ts`, `identity.ts`, and `LICENSE` — and no other path. | Integration |
 | FR-065-AC-2 | The generated `package.json` declares `type`, `sideEffects`, `license`, `version`, and `exports` with the declared values, and parsing it yields no `dependencies`, `peerDependencies`, or `optionalDependencies` member. | Unit |
 | FR-065-AC-3 | Every `exports` entry lists `types` before `default`, asserted over the parsed key order rather than the source text. | Unit |
 | FR-065-AC-4 | The generated package name round-trips: applying the stated inverse to the emitted name reproduces the IR document's `package.identity`. | Property |
-| FR-065-AC-5 | `index.ts` contains no `export *` form, and the set of names it re-exports equals the union of the public names of the five generated source modules — `types.ts`, `validators.ts`, `errors.ts`, `identity.ts`, and `provenance.ts`. | Unit |
+| FR-065-AC-5 | `index.ts` contains no `export *` form, and the set of names it re-exports equals the union of the public names of the four generated source modules — `types.ts`, `validators.ts`, `errors.ts`, and `identity.ts`. | Unit |
 | FR-065-AC-6 | Every `import` specifier in every generated module begins with `./` or `../`, over every fixture model. | Static |
 | FR-065-AC-7 | No generated module names `react`, `react-dom`, `@tauri-apps/api`, `typeorm`, `prisma`, `sequelize`, `sqlalchemy`, `express`, `axios`, `node-fetch`, or any package in the seven prohibited categories. | Static |
 | FR-065-AC-8 | Every generated package for every conformance-corpus model that FR-068 admits typechecks with zero errors under `test/fixtures/backends/typescript/tsconfig.json`, which sets `strict`, `exactOptionalPropertyTypes`, `noUnusedLocals`, and `noUnusedParameters`, compiled as one program through the TypeScript compiler API. | Compile |

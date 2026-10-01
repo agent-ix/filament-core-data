@@ -6,14 +6,13 @@
  * applies the pinned issue #31 `$id` normalization (absolute `$id` for any
  * schema the emitter left relative; a recorded no-op when none is relative),
  * and writes `generated/toolchain.json` with the exact compiler, emitter, and
- * normalization versions plus a digest over the emitted files.
+ * normalization versions.
  *
  *   node packages/semantic-core/scripts/generate.mjs          # regenerate
  *   node packages/semantic-core/scripts/generate.mjs --check  # fail on any byte difference
  */
 
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import {
 	mkdtempSync,
 	mkdirSync,
@@ -141,8 +140,6 @@ function emit() {
 				),
 			]),
 		);
-		const digest = createHash("sha256");
-		for (const [name, text] of rendered) digest.update(`${name}\n${text}`);
 		const toolchain = {
 			compiler: {
 				name: "@typespec/compiler",
@@ -164,7 +161,6 @@ function emit() {
 			identityAnnotation: IDENTITY_ANNOTATION,
 			base,
 			files: [...rendered.keys()],
-			digest: `sha256:${digest.digest("hex")}`,
 		};
 		return {
 			rendered,

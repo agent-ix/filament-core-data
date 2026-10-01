@@ -106,7 +106,6 @@ try {
 			"errors.ts",
 			"identity.ts",
 			"index.ts",
-			"provenance.ts",
 			"types.ts",
 			"validators.ts",
 		],

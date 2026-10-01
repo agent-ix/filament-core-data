@@ -1,7 +1,6 @@
 /** An ordinary, dependency-free TypeScript consumer of the kernel (FR-089). */
 
 import {
-	PROVENANCE,
 	TYPE_IDENTITY,
 	validateConstraintDecl,
 	validateFieldDecl,
@@ -95,12 +94,6 @@ export function run(): number {
 	assert(
 		TYPE_IDENTITY.FieldDecl === "ix://agent-ix/semantic-core/FieldDecl",
 		"the package identity metadata is wrong",
-	);
-	assert(PROVENANCE.sourceVersion === "0.2.0", "the source version is wrong");
-	assert(
-		PROVENANCE.sourceDigest ===
-			"sha256:0000000000000000000000000000000000000000000000000000000000000000",
-		"the source digest is wrong",
 	);
 	assert(assertions > 0, "the consumer executed no assertions");
 	return assertions;

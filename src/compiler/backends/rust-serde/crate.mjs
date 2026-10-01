@@ -323,7 +323,6 @@ export function emitCrate(request, options = {}) {
 	files.push(["README.md", renderReadme(model)]);
 	files.push(["src/identity.rs", renderIdentity(model)]);
 	files.push(["src/lib.rs", renderLib(model)]);
-	files.push(["src/provenance.rs", renderProvenance(request, model)]);
 	files.push(["src/support.rs", renderSupport()]);
 	files.push(["src/types.rs", renderTypesModule(model)]);
 
@@ -465,16 +464,6 @@ function renderReadme(model) {
 		"generation overwrites every file here, and a hand edit is invisible to the",
 		"determinism gate that compares two generations byte for byte.",
 		"",
-		"## Provenance",
-		"",
-		`- Source identity: \`${model.source.identity}\``,
-		`- Source version: \`${model.source.version}\``,
-		`- Source digest: \`${model.source.digest}\``,
-		`- Contract version: \`${model.contractVersion}\``,
-		"",
-		"The same values are exported as `&'static str` constants from",
-		"`src/provenance.rs`, so a consumer can assert against them at run time.",
-		"",
 		"## Declared gaps",
 		"",
 		"The `format` constraint keyword is registered against no format in this",
@@ -513,78 +502,6 @@ function renderReadme(model) {
 		"",
 	];
 	return lines.join("\n");
-}
-
-const PROVENANCE_TABLE = [
-	["SOURCE_IDENTITY", (request) => request.ir.source.identity],
-	["SOURCE_VERSION", (request) => request.ir.source.version],
-	["SOURCE_DIGEST", (request) => request.ir.source.digest],
-	["PACKAGE_IDENTITY", (request) => request.ir.package.identity],
-	["PACKAGE_VERSION", (request) => request.ir.package.version],
-	["MANIFEST_DIGEST", (request) => request.ir.package.manifestDigest],
-	["LOCK_DIGEST", (request) => request.ir.package.lockDigest],
-	["LOCK_FINGERPRINT", (request) => request.lockFingerprint],
-	// fcd#183: copied from the input with no check of its own — `mapDocument`
-	// (called above, before this table is ever read) now throws for any
-	// `request.ir.contractVersion` but `2.0.0`, so this is never reached
-	// carrying a version `backends/seam.mjs` had not already validated.
-	["CONTRACT_VERSION", (request) => request.ir.contractVersion],
-	["GENERATOR_IDENTITY", (request) => request.backend?.identity],
-	["GENERATOR_VERSION", (request) => request.backend?.version],
-];
-
-const PROVENANCE_DOCS = {
-	SOURCE_IDENTITY:
-		"The semantic identity of the source the contract was read from.",
-	SOURCE_VERSION: "The version of the source the contract was read from.",
-	SOURCE_DIGEST: "The digest of the source the contract was read from.",
-	PACKAGE_IDENTITY:
-		"The semantic contract package this crate was generated from.",
-	PACKAGE_VERSION: "The version of the semantic contract package.",
-	MANIFEST_DIGEST: "The digest of the package manifest.",
-	LOCK_DIGEST: "The digest of the package lock.",
-	LOCK_FINGERPRINT: "The lock fingerprint the compiler request carried.",
-	CONTRACT_VERSION: "The IR contract version the document declared.",
-	GENERATOR_IDENTITY:
-		"The semantic identity of the backend that generated this crate.",
-	GENERATOR_VERSION: "The version of the backend that generated this crate.",
-};
-
-function renderProvenance(request, model) {
-	const lines = [
-		"//! Provenance constants, each taken verbatim from the compiler request.",
-		"//!",
-		"//! The correspondence between a constant and the request member it comes",
-		"//! from is published in FR-056 rather than inferred here, because the",
-		"//! request's member set carries no `SOURCE_DIGEST`, `MANIFEST_DIGEST` or",
-		"//! `LOCK_DIGEST` of its own and an implementer would otherwise have to",
-		"//! invent the mapping — and the test comparing them would have to invent it",
-		"//! a second time.",
-		"//!",
-		"//! No timestamp, hostname, working directory, user name or absolute path is",
-		"//! written here or anywhere else in the crate.",
-		"",
-	];
-	for (const [name, read] of PROVENANCE_TABLE) {
-		const value = read(request);
-		lines.push(`/// ${PROVENANCE_DOCS[name]}`);
-		lines.push(
-			...constItem("pub ", name, "&str", atom(rustString(value ?? ""))),
-		);
-		lines.push("");
-	}
-	lines.push(
-		"/// The Cargo package name derived from the contract package identity.",
-	);
-	lines.push(
-		...constItem(
-			"pub ",
-			"CRATE_NAME",
-			"&str",
-			atom(rustString(model.crateName)),
-		),
-	);
-	return `${lines.join("\n")}\n`;
 }
 
 function renderSupport() {
@@ -666,7 +583,6 @@ function renderLib(model) {
 		"//! it should be hand-edited.",
 		"",
 		"pub mod identity;",
-		"pub mod provenance;",
 		"pub mod support;",
 		"pub mod types;",
 		"",
@@ -766,12 +682,6 @@ const IDENTITY_PRELUDE = `//! The semantic identity of everything this crate dec
 //! \`occurrences\` and \`extensions\`. An \`operation\` reaches the crate as
 //! data and never as a Rust function: it has no body in the IR, so a
 //! generated function would have nothing to put in one.
-//!
-//! The crate's *provenance* — what it was generated from and by — is a
-//! different concept and lives in \`provenance.rs\` (FR-137, ADR-0007). The two
-//! were once named \`identity.rs\` and \`metadata.rs\` here and the opposite way
-//! round in the generated TypeScript package, which is the defect that
-//! renaming repairs.
 
 /// A source locus the IR carried.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

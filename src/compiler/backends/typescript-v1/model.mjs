@@ -2,8 +2,8 @@
  * The resolved type model (FR-064, Task-105).
  *
  * This is the one artifact `renderTypes`, `renderValidators`, `renderIdentity`,
- * `renderProvenance` and `renderPackage` all consume. Four requirements named it
- * before it had an owner, which is how five modules end up with five slightly
+ * and `renderPackage` all consume. Four requirements named it
+ * before it had an owner, which is how modules end up with slightly
  * different ideas of the shape they exchange; declaring it once is the point.
  *
  * `buildModel` is also the *only* module of this backend that walks the raw IR

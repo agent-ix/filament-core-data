@@ -5,7 +5,6 @@
 		"version": "0.2.0"
 	},
 	"semanticCore": "0.3.0",
-	"emissionDigest": "sha256:65b4e8d4c71a343e270618c9a8ca7e33687f10324ef5e9fe68d150056101c627",
 	"inventoryCounts": {
 		"models": 21,
 		"unions": 1,

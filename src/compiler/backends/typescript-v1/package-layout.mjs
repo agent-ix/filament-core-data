@@ -2,10 +2,10 @@
  * The generated ESM package: its closed file set, its named export surface, and
  * the walk that proves a single-type import reaches only that type (FR-065).
  *
- * `renderPackage` assembles; it does not render the module bodies. The five
+ * `renderPackage` assembles; it does not render the module bodies. The four
  * source modules come from their owning requirements — `types.ts` from FR-064,
- * `validators.ts` and `errors.ts` from FR-066, `identity.ts` and
- * `provenance.ts` from FR-067 and FR-137 — and arrive here as text. This module owns the manifest, the
+ * `validators.ts` and `errors.ts` from FR-066, `identity.ts` from
+ * FR-067 and FR-137 — and arrive here as text. This module owns the manifest, the
  * barrel, the licence, the headers, and the two static analyses.
  *
  * It writes no file. The caller decides where a package lands, which is what
@@ -40,18 +40,16 @@ export const PACKAGE_FILES = Object.freeze([
 	"identity.ts",
 	"index.ts",
 	"package.json",
-	"provenance.ts",
 	"types.ts",
 	"validators.ts",
 ]);
 
-/** The five generated source modules, in `exports` subpath order. */
+/** The four generated source modules, in `exports` subpath order. */
 const SOURCE_MODULES = Object.freeze([
 	"types",
 	"validators",
 	"errors",
 	"identity",
-	"provenance",
 ]);
 
 /** The prefix half of the package-name rule, stated once so its inverse can be. */
@@ -100,8 +98,7 @@ export function identityFromPackageName(name) {
  * for a map, so the renderer's name is authoritative and this list follows it —
  * `TYPE_IDENTITY` rather than `TYPE_IDENTITIES`, `FIELD_IDENTITY` rather than
  * `FIELD_IDENTITIES`, `TYPE_RELATIONSHIPS` rather than `RELATIONSHIPS`,
- * `FIELD_UNIT` rather than `FIELD_UNITS`, and `PROVENANCE` rather than
- * `SEMANTIC_METADATA`. `ExportedTypeName` is the one name FR-067 does state, in
+ * `FIELD_UNIT` rather than `FIELD_UNITS`. `ExportedTypeName` is the one name FR-067 does state, in
  * its `Record<ExportedTypeName, string>` typing rule, and it is public for that
  * reason.
  *
@@ -143,8 +140,7 @@ export const FIXED_API_SURFACE = Object.freeze([
 	"FIELD_IDENTITY",
 	"FIELD_EXTENSIONS",
 	"FIELD_UNIT",
-	// The provenance and document-level data (FR-067).
-	"PROVENANCE",
+	// The document-level data (FR-067).
 	"DOCUMENT_EXTENSIONS",
 	"OCCURRENCES",
 	"TYPE_OPERATIONS",
@@ -218,7 +214,7 @@ const PER_TYPE_SURFACE = Object.freeze([
 const SPDX = "SPDX-License-Identifier: AGPL-3.0-or-later";
 
 /**
- * The provenance banner. It names the backend, its version and the fingerprint
+ * The generated-file banner. It names the backend, its version and the fingerprint
  * of the document generated from — and no clock value, no host name, no user
  * and no working directory, because each of those is a determinism leak this
  * repository has shipped before (NFR-024, DEF-PROTO-009, DEF-PROTO-014).
@@ -248,7 +244,7 @@ function renderJson(value) {
  * No `dependencies`, `peerDependencies` or `optionalDependencies` member — not
  * an empty one, no member at all, so a parse cannot find one (FR-065-AC-2). The
  * banner rides in `$comment` members because JSON carries no comment syntax and
- * dropping the provenance from one of the eight files would leave a hole in
+ * dropping the banner from one of the seven files would leave a hole in
  * exactly the file a consumer reads first.
  */
 function renderManifest(model, fingerprint) {
@@ -397,7 +393,7 @@ function renderBarrel(model, fingerprint, modules) {
 /**
  * Assembles the package.
  *
- * `parts` carries the five rendered module bodies, the licence text and the IR
+ * `parts` carries the four rendered module bodies, the licence text and the IR
  * fingerprint, and every one of them is required. An earlier draft rendered a
  * refusing placeholder for a part the caller omitted, so that this module could
  * be built before FR-066's and FR-067's renderers landed. That fallback is
