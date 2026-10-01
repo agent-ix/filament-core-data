@@ -72,8 +72,7 @@ performs a publication or contacts a registry.
   needed
 - `conformance/corpus.json` read, never written: `corpusVersion`, the
   twenty-two-row `constructRegister`, the `unmetAreas` register carrying
-  `UA-serialization-parity`, the four bases, the one hundred and eleven cases,
-  and `corpusDigest`
+  `UA-serialization-parity`, the four bases, and the one hundred and eleven cases
 - The corpus comparison form `agent-ix-conformance-jcs-v1`: object members
   ordered by code point, no insignificant whitespace, array order preserved —
   which `conformance/README.md` states is **not** the contract's
@@ -225,7 +224,7 @@ following, and a disagreement on any one is a disagreement:
   and SHALL record that issue's identifier in the evidence document.
 - This requirement SHALL NOT edit the `UA-serialization-parity` row, its
   `rationale`, its `owningIssues`, the `unmetAreas` register, `corpusVersion`,
-  `corpusDigest`, or the "What this corpus does not do" section of
+  or the "What this corpus does not do" section of
   `conformance/README.md`. Editing the record of an unmet area is not the same
   act as meeting it, and a repository where the second can be performed by
   writing the first has no unmet areas it can trust.

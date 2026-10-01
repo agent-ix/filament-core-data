@@ -1012,7 +1012,6 @@ def answer(case: dict[str, Any], version: str) -> dict[str, Any]:
         "adapter": ADAPTER_ID,
         "adapterVersion": version,
         "caseId": case["caseId"],
-        "caseDigest": case["caseDigest"],
         "support": "supported",
         "resultState": "invalid" if rows else "success",
         "diagnostics": render(bundle, rows),

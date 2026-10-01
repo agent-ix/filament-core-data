@@ -5,9 +5,8 @@
 //! directory to `conformance/`, so every path this binary opens is resolved
 //! from there and it reads nothing else — no network, no clock, no environment.
 //!
-//! It answers every case in the manifest exactly once, echoes each case's
-//! `caseDigest` verbatim, buffers the whole array and writes it in one call, and
-//! writes every diagnostic of its own to stderr. A panic is an adapter failure
+//! It answers every case in the manifest exactly once, buffers the whole array
+//! and writes it in one call, and writes every diagnostic of its own to stderr. A panic is an adapter failure
 //! the harness reports, never a truncated array it mis-parses.
 #![forbid(unsafe_code)]
 
@@ -112,10 +111,6 @@ fn run() -> Result<String, String> {
             .get("path")
             .and_then(Json::as_str)
             .ok_or("a case row names no path")?;
-        let digest = row
-            .get("digest")
-            .and_then(Json::as_str)
-            .ok_or("a case row carries no digest")?;
         let case = read_json(&resolve(path))?;
 
         let bundle = build(&case, "base", "ops", &base_of)?;
@@ -137,7 +132,7 @@ fn run() -> Result<String, String> {
         if position > 0 {
             out.push(',');
         }
-        write_result(&mut out, case_id, digest, &verdict, classification);
+        write_result(&mut out, case_id, &verdict, classification);
     }
     out.push(']');
     Ok(out)
@@ -170,7 +165,6 @@ fn build<'a>(
 fn write_result(
     out: &mut String,
     case_id: &str,
-    digest: &str,
     verdict: &agent_ix_semantic_ir::Verdict,
     classification: Option<Classification>,
 ) {
@@ -180,8 +174,6 @@ fn write_result(
     write_string(out, env!("CARGO_PKG_VERSION"));
     out.push_str(",\"caseId\":");
     write_string(out, case_id);
-    out.push_str(",\"caseDigest\":");
-    write_string(out, digest);
     // PROV-002's `unsupportedBy` licenses an `unsupported` answer and does not
     // require one: FR-057 answers the locus pattern exactly, so the licence goes
     // unused and every case is answered `supported`.

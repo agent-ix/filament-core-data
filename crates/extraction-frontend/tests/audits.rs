@@ -907,7 +907,6 @@ fn tc_1309_over_256_proptest_bundle_trees_the_frontend_returns_a_result_or_a_dia
             module_roots: roots.clone(),
             out: root.join("out/semantic-ir.json"),
             diagnostics: None,
-            provenance: None,
         };
         match lift(&request) {
             LiftOutcome::Written { .. } => bump(&written),

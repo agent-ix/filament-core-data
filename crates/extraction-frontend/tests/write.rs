@@ -21,19 +21,18 @@ use common::{
 use ix_trace_rs::trace;
 use serde_json::Value;
 
-/// The four files of a lift at `out`, as `(label, path)`.
-fn four(request: &LiftRequest) -> [(&'static str, PathBuf); 4] {
+/// The three files of a lift at `out`, as `(label, path)`.
+fn three(request: &LiftRequest) -> [(&'static str, PathBuf); 3] {
     let paths = request.paths();
     [
         ("document", paths.document),
         ("fingerprint", paths.fingerprint),
         ("diagnostics", paths.diagnostics),
-        ("provenance", paths.provenance),
     ]
 }
 
 fn read_all(request: &LiftRequest) -> Vec<(&'static str, Vec<u8>)> {
-    four(request)
+    three(request)
         .into_iter()
         .map(|(label, path)| {
             (
@@ -124,7 +123,6 @@ fn tc_1279_two_consecutive_lifts_produce_byte_identical_documents_and_sidecars()
                 "document" => expected.join("semantic-ir.json"),
                 "fingerprint" => expected.join("semantic-ir.json.fingerprint"),
                 "diagnostics" => expected.join("diagnostics.json"),
-                "provenance" => expected.join("provenance.json"),
                 _ => unreachable!(),
             };
             if golden.is_file() {
@@ -200,15 +198,13 @@ fn request_in(out: &Path) -> LiftRequest {
 
 #[trace("TC-1281", "FR-097-AC-9")]
 #[test]
-fn tc_1281_a_blocking_lift_leaves_a_pre_existing_document_fingerprint_and_provenance_byte_unchanged(
-) {
+fn tc_1281_a_blocking_lift_leaves_a_pre_existing_document_and_fingerprint_byte_unchanged() {
     let dir = tempfile::tempdir().expect("tempdir");
     let request = request("negatives/CONSTRAINT_NOT_APPLICABLE", dir.path());
     let paths = request.paths();
     let stale: Vec<(&Path, &[u8])> = vec![
         (&paths.document, b"stale document"),
         (&paths.fingerprint, b"stale fingerprint"),
-        (&paths.provenance, b"stale provenance"),
         (&paths.diagnostics, b"stale diagnostics"),
     ];
     for (path, bytes) in &stale {
@@ -220,7 +216,7 @@ fn tc_1281_a_blocking_lift_leaves_a_pre_existing_document_fingerprint_and_proven
         panic!("not blocked: {outcome:?}");
     };
     assert!(diagnostics.iter().any(|d| d.blocking));
-    for (path, bytes) in &stale[..3] {
+    for (path, bytes) in &stale[..2] {
         assert_eq!(
             fs::read(path).expect("read"),
             *bytes,
@@ -310,25 +306,10 @@ fn tc_1339_colliding_output_and_sidecar_paths_refuse_naming_both_options_and_wri
     assert!(message.contains("o.json"), "{message}");
     assert_eq!(entries(dir.path()), Vec::<String>::new());
 
-    let d = dir.path().join("d.json");
-    let sidecars = LiftRequest {
-        out,
-        diagnostics: Some(d.clone()),
-        provenance: Some(d),
-        ..request("config-version-table", dir.path())
-    };
-    let (code, message) = refused_code(&lift(&sidecars));
-    assert_eq!(code, Code::OutputUnwritable);
-    assert!(message.contains("--diagnostics"), "{message}");
-    assert!(message.contains("--provenance"), "{message}");
-    assert!(message.contains("d.json"), "{message}");
-    assert_eq!(entries(dir.path()), Vec::<String>::new());
-
     // The default sidecar paths never collide with `<out>`.
-    let paths = OutputPaths::new(Path::new("x/o.json"), None, None);
+    let paths = OutputPaths::new(Path::new("x/o.json"), None);
     assert_eq!(paths.fingerprint, Path::new("x/o.json.fingerprint"));
     assert_eq!(paths.diagnostics, Path::new("x/o.json.diagnostics.json"));
-    assert_eq!(paths.provenance, Path::new("x/o.json.provenance.json"));
 }
 
 #[trace("TC-1340", "FR-097-AC-13")]
@@ -400,7 +381,7 @@ fn warning_only_bundle(dir: &Path) {
 
 #[trace("TC-1341", "FR-097-AC-14")]
 #[test]
-fn tc_1341_a_warning_only_lift_writes_exactly_the_four_files() {
+fn tc_1341_a_warning_only_lift_writes_exactly_the_three_files() {
     let scratch = tempfile::tempdir().expect("tempdir");
     let bundle = scratch.path().join("bundle");
     warning_only_bundle(&bundle);
@@ -430,10 +411,9 @@ fn tc_1341_a_warning_only_lift_writes_exactly_the_four_files() {
             "semantic-ir.json",
             "semantic-ir.json.diagnostics.json",
             "semantic-ir.json.fingerprint",
-            "semantic-ir.json.provenance.json",
         ]
     );
-    for (label, path) in four(&request) {
+    for (label, path) in three(&request) {
         assert!(path.is_file(), "{label} at {}", path.display());
     }
     // The diagnostics sidecar is the sorted list the outcome reports.
@@ -442,32 +422,17 @@ fn tc_1341_a_warning_only_lift_writes_exactly_the_four_files() {
             .expect("json");
     let reported: Value = serde_json::to_value(diagnostics).expect("json");
     assert_eq!(sidecar, reported);
-    // The provenance sidecar is the FR-095 record.
-    let provenance: Value =
-        serde_json::from_slice(&fs::read(&request.paths().provenance).expect("read"))
-            .expect("json");
-    assert_eq!(
-        provenance["source"]["identity"],
-        "ix://agent-ix/config-service/spec"
-    );
-    assert_eq!(provenance["modules"].as_array().map(Vec::len), Some(2));
-    // The same bundle with the sidecars redirected writes the four files
+    // The same bundle with the sidecars redirected writes the files
     // at the named paths and nothing at the defaults.
     let redirected_dir = tempfile::tempdir().expect("tempdir");
     let redirected = LiftRequest {
         diagnostics: Some(redirected_dir.path().join("d.json")),
-        provenance: Some(redirected_dir.path().join("p.json")),
         ..common::request_at(&bundle, redirected_dir.path())
     };
     assert!(matches!(lift(&redirected), LiftOutcome::Written { .. }));
     assert_eq!(
         entries(redirected_dir.path()),
-        [
-            "d.json",
-            "p.json",
-            "semantic-ir.json",
-            "semantic-ir.json.fingerprint"
-        ]
+        ["d.json", "semantic-ir.json", "semantic-ir.json.fingerprint"]
     );
     assert_eq!(
         fs::read(redirected_dir.path().join("semantic-ir.json")).expect("read"),

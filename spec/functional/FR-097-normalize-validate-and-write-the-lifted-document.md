@@ -68,8 +68,8 @@ test suite.
 
 - `crates/extraction-frontend/src/validate.rs`: `validate_document(&Value) -> Vec<Diagnostic>`, one `INVALID_IR` per reader diagnostic per FR-096
 - `crates/extraction-frontend/src/canonical.rs`: `sort_node_lists(&mut Value)` and `canonical_bytes(&Value) -> Vec<u8>`, the latter a call to `normalized`
-- `crates/extraction-frontend/src/write.rs`: `write_lift(out, document, fingerprint, diagnostics, provenance) -> Result<(), Refusal>`
-- On a successful lift: `<out>`, `<out>.fingerprint`, `<out>.diagnostics.json`, `<out>.provenance.json`
+- `crates/extraction-frontend/src/write.rs`: `write_lift(out, document, fingerprint, diagnostics) -> Result<(), Refusal>`
+- On a successful lift: `<out>`, `<out>.fingerprint`, `<out>.diagnostics.json`
 - On a blocked lift: `<out>.diagnostics.json` only
 - `<out>.fingerprint` holding `{"domain":"quire.verification.jcs","version":"rfc8785-v1","algorithm":"sha256","digest":"sha256-jcs:<64 hex>"}`
 
@@ -106,13 +106,13 @@ test suite.
 
 - If `<out>` or any sidecar path lies under the bundle root or under a module root, then the frontend SHALL refuse with `OUTPUT_UNWRITABLE` naming the path before loading the bundle.
 - If the output directory does not exist or is not writable, then the frontend SHALL refuse with `OUTPUT_UNWRITABLE` naming the path.
-- If two of `<out>`, the fingerprint sidecar path, the diagnostics sidecar path, and the provenance sidecar path resolve to one file, then the frontend SHALL refuse with `OUTPUT_UNWRITABLE` naming both options before loading the bundle.
+- If two of `<out>`, the fingerprint sidecar path, and the diagnostics sidecar path resolve to one file, then the frontend SHALL refuse with `OUTPUT_UNWRITABLE` naming both options before loading the bundle.
 - The frontend SHALL treat an `OUTPUT_UNWRITABLE` refusal as blocking and write nothing.
-- The frontend SHALL write each of `<out>.diagnostics.json`, `<out>.provenance.json`, `<out>.fingerprint`, and `<out>` to a temporary file in the output file's own directory and rename it over its final path.
-- The frontend SHALL rename the four files in the order `<out>.diagnostics.json`, `<out>.provenance.json`, `<out>.fingerprint`, `<out>`, so that a reader observing `<out>` observes its sidecars.
-- The frontend SHALL write all four files on every lift with no blocking diagnostic, regardless of which FR-099 options are given.
+- The frontend SHALL write each of `<out>.diagnostics.json`, `<out>.fingerprint`, and `<out>` to a temporary file in the output file's own directory and rename it over its final path.
+- The frontend SHALL rename the three files in the order `<out>.diagnostics.json`, `<out>.fingerprint`, `<out>`, so that a reader observing `<out>` observes its sidecars.
+- The frontend SHALL write all three files on every lift with no blocking diagnostic, regardless of which FR-099 options are given.
 - If any diagnostic is blocking, then the frontend SHALL write `<out>.diagnostics.json` and nothing else.
-- If any diagnostic is blocking, then the frontend SHALL leave a pre-existing `<out>`, `<out>.fingerprint`, and `<out>.provenance.json` byte-unchanged.
+- If any diagnostic is blocking, then the frontend SHALL leave a pre-existing `<out>` and `<out>.fingerprint` byte-unchanged.
 - The frontend SHALL leave no temporary file behind after any lift.
 
 ## Constraints
@@ -128,21 +128,21 @@ test suite.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-097-AC-1 | `crates/extraction-frontend/Cargo.toml` names `agent-ix-semantic-ir` under `[dependencies]` with `path = "../semantic-ir"` and names no `jsonschema`; `cargo tree -p agent-ix-extraction-frontend` lists no direct `jsonschema` edge, and every `jsonschema` line it lists sits under `quire-rs`, which links it for its own frontmatter schemas (NFR-033). | Static (TC-1273) |
-| FR-097-AC-2 | A fault-injected document missing `unknownPolicy` on one type yields exactly one blocking `INVALID_IR` naming that type's instance pointer, and no `<out>`, `<out>.fingerprint`, or `<out>.provenance.json` is written. | Test (TC-1274) |
+| FR-097-AC-2 | A fault-injected document missing `unknownPolicy` on one type yields exactly one blocking `INVALID_IR` naming that type's instance pointer, and no `<out>` or `<out>.fingerprint` is written. | Test (TC-1274) |
 | FR-097-AC-3 | The bytes written for the `config-version-table` fixture equal `decide({"ir": doc}).normalized` and equal the committed `expected/semantic-ir.json`; parsing them and calling `normalized` again reproduces them. | Test (TC-1275) |
 | FR-097-AC-4 | Every node list in the written document is sorted by `identity` under code-point order, and the order equals the code-point sort computed in `node` under two `LC_ALL` values (`en_US.UTF-8`, `de_DE.UTF-8`); an `Intl.Collator` is not the reference, because a collator's primary level is case-insensitive and orders `Ordering` before `OrderLifecycle` where code point orders `L` before `i`, so it would disagree with FR-050's `normalizeIr` on the emitted lists. | Property (TC-1276) |
 | FR-097-AC-5 | `node -e` importing `src/compiler/ir/normalize.mjs` and applying FR-050 `normalizeIr` to every emitted fixture document returns the emitted bytes unchanged. | Test (TC-1277) |
 | FR-097-AC-6 | `<out>.fingerprint` parses to exactly the members `domain` `quire.verification.jcs`, `version` `rfc8785-v1`, `algorithm` `sha256`, and `digest` `sha256-jcs:<64 hex>`, and the digest equals `sha256sum` over the written document bytes. | Test (TC-1278) |
 | FR-097-AC-7 | Two consecutive lifts of the `config-version-table` fixture produce documents and sidecars byte-identical to each other and to the committed `expected/` goldens. | Test (TC-1279) |
 | FR-097-AC-8 | A lift run with a different `CARGO_TARGET_DIR`, working directory, `HOME`, and `LC_ALL` produces the same bytes as TC-1279 and as the committed golden. | Test (TC-1280) |
-| FR-097-AC-9 | A lift that raises a blocking diagnostic leaves a pre-existing `<out>`, `<out>.fingerprint`, and `<out>.provenance.json` byte-unchanged, writes `<out>.diagnostics.json`, and leaves no other new file in the output directory. | Test (TC-1281) |
+| FR-097-AC-9 | A lift that raises a blocking diagnostic leaves a pre-existing `<out>` and `<out>.fingerprint` byte-unchanged, writes `<out>.diagnostics.json`, and leaves no other new file in the output directory. | Test (TC-1281) |
 | FR-097-AC-10 | A lift into a directory that does not exist refuses with `OUTPUT_UNWRITABLE` naming the path and exits `2`. | Test (TC-1282) |
 | FR-097-AC-11 | `node src/compiler/cli.mjs inspect --ir` reports zero diagnostics for every emitted fixture document, and the test fails naming `node` when it is absent. | Test (TC-1283) |
 | FR-097-AC-12 | `decide` returns success with zero diagnostics for every emitted positive fixture document, asserted from the lift's own verdict and again by the test calling `decide` on the written bytes. | Test (TC-1284) |
 | FR-097-AC-13 | A lift with `--out` under the bundle root, and one with `--out` under a module root, each refuse with `OUTPUT_UNWRITABLE` naming the path before any document is loaded and write nothing. | Test (TC-1340) |
-| FR-097-AC-14 | A warning-only lift with no `--diagnostics` or `--provenance` option writes `<out>`, `<out>.fingerprint`, `<out>.diagnostics.json`, and `<out>.provenance.json`; the four are the only new files in the output directory. | Test (TC-1341) |
+| FR-097-AC-14 | A warning-only lift with no `--diagnostics` option writes `<out>`, `<out>.fingerprint`, and `<out>.diagnostics.json`; the three are the only new files in the output directory. | Test (TC-1341) |
 | FR-097-AC-15 | The `negatives/INVALID_IR` bundle, whose frontmatter declares `A contains B` and `B contains A`, refuses at lift time with `INVALID_IR` carrying the reader's `COMPOSITE_CYCLE` in `causes[0]` and writes no document. | Test (TC-1342) |
-| FR-097-AC-16 | `lift --out o.json --diagnostics o.json` and `lift --out o.json --diagnostics d.json --provenance d.json` each refuse with `OUTPUT_UNWRITABLE` naming both colliding options, exit `2`, and write nothing. | Test (TC-1339) |
+| FR-097-AC-16 | `lift --out o.json --diagnostics o.json` refuses with `OUTPUT_UNWRITABLE` naming both colliding options, exit `2`, and write nothing. | Test (TC-1339) |
 
 ## Dependencies
 

@@ -119,19 +119,14 @@ function read(bundle) {
 
 /**
  * One adapter result for one case.
- *
- * `caseDigest` is taken from the corpus manifest, never recomputed from bytes
- * this adapter chose: an adapter that digests its own reading of a case can
- * agree with itself about a case it misread.
  */
-function answer(entry, digest, version) {
+function answer(entry, version) {
 	const bundle = buildInput(entry);
 	const diagnostics = read(bundle);
 	const result = {
 		adapter: ADAPTER_ID,
 		adapterVersion: version,
 		caseId: entry.id,
-		caseDigest: digest,
 		support: "supported",
 		resultState: hasBlocking(diagnostics) ? "invalid" : "success",
 		diagnostics: diagnostics.map((entry_) => ({
@@ -169,12 +164,9 @@ function answer(entry, digest, version) {
 }
 
 function main() {
-	const { manifest, cases } = loadCorpus();
-	const digests = new Map(manifest.cases.map((row) => [row.id, row.digest]));
+	const { cases } = loadCorpus();
 	const version = adapterVersion();
-	const results = cases.map((entry) =>
-		answer(entry, digests.get(entry.id), version),
-	);
+	const results = cases.map((entry) => answer(entry, version));
 	process.stdout.write(`${JSON.stringify(results)}\n`);
 }
 

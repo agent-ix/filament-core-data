@@ -397,7 +397,6 @@ fn compare_golden(name: &Path, committed: &Path, into: &Path) -> Result<(), Stri
     let mut regenerated_files: Vec<String> = fs::read_dir(&regenerated)
         .map_err(|e| format!("{}: not regenerated: {e}", name.display()))?
         .map(|e| e.expect("entry").file_name().to_string_lossy().into_owned())
-        .filter(|f| f != "provenance.json")
         .collect();
     regenerated_files.sort();
     if files != regenerated_files {
@@ -583,7 +582,6 @@ fn tc_1289_a_lift_leaves_a_committed_copy_of_every_bundle_and_module_root_byte_u
             module_roots: modules.clone(),
             out: out.path().join("semantic-ir.json"),
             diagnostics: None,
-            provenance: None,
         };
         let outcome = lift(&request);
         match &outcome {
@@ -610,7 +608,7 @@ fn tc_1289_a_lift_leaves_a_committed_copy_of_every_bundle_and_module_root_byte_u
 // Determinism and hygiene over the corpus (FR-095, FR-096)
 // ---------------------------------------------------------------------------
 
-/// The four files of a lift by the built binary of `bundle`, run in `cwd`
+/// The three files of a lift by the built binary of `bundle`, run in `cwd`
 /// with `HOME` set to `home`, as (label, bytes).
 fn lift_by_binary(bundle: &Path, cwd: &Path, home: &Path) -> Vec<(&'static str, Vec<u8>)> {
     let out = tempfile::tempdir().expect("tempdir");
@@ -748,7 +746,7 @@ fn hygiene_violations(value: &Value, forbid_duration: bool) -> Vec<String> {
 
 #[trace("TC-1255", "FR-095-AC-10")]
 #[test]
-fn tc_1255_no_absolute_path_timestamp_hostname_or_username_in_the_provenance_or_document() {
+fn tc_1255_no_absolute_path_timestamp_hostname_or_username_in_the_document() {
     // An absolute bundle path, as `make extraction-frontend-lift BUNDLE=...`
     // gives it.
     let bundle = fs::canonicalize(fixture("config-version-table")).expect("absolute");
@@ -760,11 +758,10 @@ fn tc_1255_no_absolute_path_timestamp_hostname_or_username_in_the_provenance_or_
         matches!(outcome, LiftOutcome::Written { .. }),
         "{outcome:?}"
     );
-    for path in [&request.paths().provenance, &request.paths().document] {
-        let value = read_json(path);
-        let violations = hygiene_violations(&value, false);
-        assert!(violations.is_empty(), "{}: {violations:?}", path.display());
-    }
+    let path = &request.paths().document;
+    let value = read_json(path);
+    let violations = hygiene_violations(&value, false);
+    assert!(violations.is_empty(), "{}: {violations:?}", path.display());
     // The control: the scan sees a planted path and timestamp.
     let planted =
         serde_json::json!({"a": bundle.display().to_string(), "b": "2026-09-09T00:00:00Z"});

@@ -18,7 +18,7 @@ section below and answered from the published schema instead.
 
 | Rule | Derived from |
 |---|---|
-| The reader retains every number's source lexeme, object member order, and repeated member names. | `conformance/README.md`, "Case and base digests are over raw file bytes, so a one-byte edit anywhere is detected" — a reader that normalises on the way in cannot report what the document carried. |
+| The reader retains every number's source lexeme, object member order, and repeated member names. | A reader that normalises on the way in cannot report what the document carried. |
 | A duplicate object member resolves to its last occurrence. | ECMA-262 `JSON.parse`, the reader that produced every `expected` block in the corpus. |
 | The canonical form orders object members by code point, preserves array order, and writes no insignificant whitespace. | `conformance/README.md`, "The corpus comparison form is `agent-ix-conformance-jcs-v1`: object keys ordered by code point, no insignificant whitespace, array order preserved." |
 | Strings are escaped exactly as `JSON.stringify` escapes them: `"`, `\`, `\b`, `\f`, `\n`, `\r`, `\t`, and `\u00xx` below `0x20`; nothing else. | Same clause: the comparison form is produced by `JSON.stringify`, so its escape set is the form's escape set. Checked against the corpus's own strings, which carry no escape beyond the printable ASCII set. |
@@ -230,7 +230,6 @@ restored afterwards; no other file under `conformance/` was written.
 | The `command` removed and `status` returned to `unavailable` | `matched: 0`, `unmet: 111` — a missing adapter never reads as agreement |
 | `support: "unsupported"` on `ALIAS-001`, which no `unsupportedBy` licenses | problem `unsupported`, "the case does not declare this adapter in unsupportedBy", harness exit 1 |
 | The answer for `ENV-001` omitted | problem `missing-answer`, harness exit 1 |
-| The `caseDigest` for `SCAL-001` replaced | problem `case-digest`, "the answer names a case digest the manifest does not carry", harness exit 1 |
 
 ### A note for the NFR-023 gate
 

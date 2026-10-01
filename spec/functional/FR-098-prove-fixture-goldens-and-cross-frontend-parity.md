@@ -133,7 +133,7 @@ unlisted or listed and absent.
 
 ### Tests
 
-- Per positive fixture, `expected/semantic-ir.json`, `expected/semantic-ir.json.fingerprint`, `expected/diagnostics.json`, and `expected/provenance.json`
+- Per positive fixture, `expected/semantic-ir.json`, `expected/semantic-ir.json.fingerprint`, and `expected/diagnostics.json`
 - `crates/extraction-frontend/tests/`: the inventory, provenance, golden, read-only, parity, backend-acceptance, and payload tests, and `parity::project`, the projection function
 
 ## Behavior
@@ -146,7 +146,7 @@ unlisted or listed and absent.
 ### Goldens
 
 - The frontend SHALL write goldens only through `extraction-frontend lift --write-goldens --fixtures <dir> --staging <dir>` (FR-099), which lifts into the staging directory outside every bundle root and installs each `expected/` by rename.
-- The frontend SHALL write, for each fixture whose root holds a `spec/spec.md`, the document, its fingerprint sidecar, its diagnostics sidecar, and its provenance sidecar into the fixture's `expected/`.
+- The frontend SHALL write, for each fixture whose root holds a `spec/spec.md`, the document, its fingerprint sidecar, and its diagnostics sidecar into the fixture's `expected/`.
 - The frontend SHALL neither regenerate nor diff a constructed negative's `expected/diagnostics.json` through `--write-goldens` or `extraction-frontend-check`; that file is authored and asserted by TC-1288 alone.
 - The frontend SHALL NOT rewrite a committed golden from any test.
 - The frontend SHALL record in each `negatives/<CODE>/expected/diagnostics.json` the single expected code with its line and column, or no locus where FR-096 assigns none.

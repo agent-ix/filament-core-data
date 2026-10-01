@@ -42,7 +42,6 @@ pub mod identity;
 pub mod lift;
 pub mod limits;
 pub mod lower;
-pub mod provenance;
 pub mod resolve;
 pub mod rows;
 pub mod scalars;
@@ -68,7 +67,6 @@ pub use lower::{
     lower_bundle, lower_record, ArtifactContext, Loss, LowerError, Lowered, Lowering,
     TypeDefinition,
 };
-pub use provenance::{provenance_record, Provenance};
 pub use resolve::{
     classify, pass_one, pass_two, resolve, ArtifactRef, Outcome, Outcomes, Resolution, Resolutions,
     Resolved, Site, Unresolved,

@@ -75,8 +75,7 @@ author.
 
 ### The adapter
 
-- The adapter SHALL answer every case in the manifest, echoing the case's
-  `caseDigest` verbatim, and SHALL emit exactly one result per case.
+- The adapter SHALL answer every case in the manifest, and SHALL emit exactly one result per case.
 - The adapter SHALL emit `support: "supported"` with a `resultState`, the
   diagnostics it decided, and the `normalized` string, for every case, including
   `PROV-002`. `PROV-002` carries an `unsupportedBy` entry naming
@@ -184,7 +183,7 @@ author.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-059-AC-1 | `make rust-conformance` runs the `rust-backend` adapter as a process against the committed registry and reports 115 matched, 0 unmet, 0 failed, with the harness exit code 0. | Test (TC-698) |
-| FR-059-AC-2 | The adapter emits exactly one schema-valid adapter-result per manifest case, with the manifest's `caseDigest` echoed verbatim; omitting one case is reported as `missing-answer`, and answering one twice as `duplicate-answer`. | Test (TC-699) |
+| FR-059-AC-2 | The adapter emits exactly one schema-valid adapter-result per manifest case; omitting one case is reported as `missing-answer`, and answering one twice as `duplicate-answer`. | Test (TC-699) |
 | FR-059-AC-3 | The adapter's `normalized` string is byte-identical to the oracle's for every case, including the ones the schema layer decides invalid. | Test (TC-700) |
 | FR-059-AC-4 | The adapter's diagnostic codes and severities equal the oracle's, in order, for every negative and boundary case. | Test (TC-701) |
 | FR-059-AC-5 | The adapter's `classification` equals the oracle's for every compatibility case. | Test (TC-702) |

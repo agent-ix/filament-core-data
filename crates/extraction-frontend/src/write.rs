@@ -14,7 +14,7 @@
 //!
 //! Every file is first written whole to `.<name>.tmp` beside its final
 //! path, and the temporary files are then renamed into place in the order
-//! diagnostics, provenance, fingerprint, document, so that a reader that
+//! diagnostics, fingerprint, document, so that a reader that
 //! observes `<out>` observes its sidecars. A failure while writing any
 //! temporary file removes every temporary file and refuses with
 //! `OUTPUT_UNWRITABLE`; a blocking lift writes only the diagnostics
@@ -30,7 +30,6 @@ use sha2::{Digest, Sha256};
 use crate::bundle::Refusal;
 use crate::canonical::canonical_bytes;
 use crate::diagnostics::{Code, Diagnostic};
-use crate::provenance::Provenance;
 use crate::validate::ValidDocument;
 
 /// The manifest file of a module root.
@@ -39,8 +38,6 @@ pub const MANIFEST: &str = "manifest.yaml";
 pub const FINGERPRINT_SUFFIX: &str = ".fingerprint";
 /// The suffix of the default diagnostics sidecar.
 pub const DIAGNOSTICS_SUFFIX: &str = ".diagnostics.json";
-/// The suffix of the default provenance sidecar.
-pub const PROVENANCE_SUFFIX: &str = ".provenance.json";
 /// The suffix of a temporary file.
 const TEMP_SUFFIX: &str = ".tmp";
 
@@ -74,7 +71,7 @@ impl Fingerprint {
     }
 }
 
-/// The four paths one lift writes.
+/// The three paths one lift writes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OutputPaths {
     /// `<out>`.
@@ -83,8 +80,6 @@ pub struct OutputPaths {
     pub fingerprint: PathBuf,
     /// `--diagnostics`, or `<out>.diagnostics.json`.
     pub diagnostics: PathBuf,
-    /// `--provenance`, or `<out>.provenance.json`.
-    pub provenance: PathBuf,
 }
 
 /// Which option a path came from, for a refusal's message.
@@ -93,7 +88,6 @@ pub enum Slot {
     Document,
     Fingerprint,
     Diagnostics,
-    Provenance,
 }
 
 impl Slot {
@@ -102,7 +96,6 @@ impl Slot {
             Slot::Document => "--out",
             Slot::Fingerprint => "the fingerprint sidecar",
             Slot::Diagnostics => "--diagnostics",
-            Slot::Provenance => "--provenance",
         }
     }
 }
@@ -119,24 +112,20 @@ fn with_suffix(path: &Path, suffix: &str) -> PathBuf {
 
 impl OutputPaths {
     /// The paths of `out` with the sidecar overrides FR-099 admits.
-    pub fn new(out: &Path, diagnostics: Option<&Path>, provenance: Option<&Path>) -> Self {
+    pub fn new(out: &Path, diagnostics: Option<&Path>) -> Self {
         Self {
             document: out.to_path_buf(),
             fingerprint: with_suffix(out, FINGERPRINT_SUFFIX),
             diagnostics: diagnostics
                 .map(Path::to_path_buf)
                 .unwrap_or_else(|| with_suffix(out, DIAGNOSTICS_SUFFIX)),
-            provenance: provenance
-                .map(Path::to_path_buf)
-                .unwrap_or_else(|| with_suffix(out, PROVENANCE_SUFFIX)),
         }
     }
 
     /// Every path with its slot, in the rename order.
-    pub fn slots(&self) -> [(Slot, &Path); 4] {
+    pub fn slots(&self) -> [(Slot, &Path); 3] {
         [
             (Slot::Diagnostics, &self.diagnostics),
-            (Slot::Provenance, &self.provenance),
             (Slot::Fingerprint, &self.fingerprint),
             (Slot::Document, &self.document),
         ]
@@ -177,7 +166,7 @@ fn resolved(path: &Path) -> Option<PathBuf> {
 
 /// Refuse with `OUTPUT_UNWRITABLE` before the bundle is loaded (FR-097
 /// "Atomic write and sidecars"): a path under the bundle root or a module
-/// root, a missing output directory, or two of the four paths naming one
+/// root, a missing output directory, or two of the three paths naming one
 /// file. Every refusal names the offending path as the option gave it.
 pub fn check_output(
     paths: &OutputPaths,
@@ -224,11 +213,10 @@ pub fn check_output(
 pub enum Emission<'a> {
     /// A blocking diagnostic: the diagnostics sidecar alone.
     Blocked,
-    /// A success verdict: the document, its fingerprint and its provenance.
+    /// A success verdict: the document and its fingerprint.
     Document {
         document: &'a ValidDocument,
         fingerprint: &'a Fingerprint,
-        provenance: &'a Provenance,
     },
 }
 
@@ -287,10 +275,10 @@ impl Drop for Temp {
 }
 
 /// Write the lift's files (FR-097 "Atomic write and sidecars"): on
-/// [`Emission::Document`] all four, on [`Emission::Blocked`] the
+/// [`Emission::Document`] all three, on [`Emission::Blocked`] the
 /// diagnostics sidecar alone. Every file is written to a temporary file in
 /// its own directory and renamed over its final path, in the order
-/// diagnostics, provenance, fingerprint, document. A failure refuses with
+/// diagnostics, fingerprint, document. A failure refuses with
 /// `OUTPUT_UNWRITABLE` naming the path and leaves no temporary file.
 pub fn write_lift(
     paths: &OutputPaths,
@@ -302,10 +290,8 @@ pub fn write_lift(
     if let Emission::Document {
         document,
         fingerprint,
-        provenance,
     } = emission
     {
-        planned.push((&paths.provenance, sidecar_bytes(provenance)));
         planned.push((&paths.fingerprint, sidecar_bytes(fingerprint)));
         planned.push((&paths.document, document.bytes().to_vec()));
     }
@@ -333,8 +319,6 @@ pub fn write_lift(
 pub const GOLDEN_DOCUMENT: &str = "semantic-ir.json";
 /// The file name of the diagnostics golden under `expected/`.
 pub const GOLDEN_DIAGNOSTICS: &str = "diagnostics.json";
-/// The file name of the provenance golden under `expected/`.
-pub const GOLDEN_PROVENANCE: &str = "provenance.json";
 /// The directory a fixture's goldens live in.
 pub const EXPECTED_DIR: &str = "expected";
 /// The directory a fixture's own module roots live in, when it carries

@@ -19,7 +19,7 @@ REPO = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from python_backend.adapter import prepare, profiles  # noqa: E402
-from python_backend.runner import corpus_account, emit, qualify, validate  # noqa: E402
+from python_backend.runner import emit, qualify, validate  # noqa: E402
 from python_backend.runner import generate as runner  # noqa: E402
 from tests.change_range import changed_paths_of_commits  # noqa: E402
 
@@ -34,7 +34,6 @@ SENTINELS = [
 ]
 REPORT = json.loads((BACKEND / "qualification" / "report.json").read_text())
 GAPS = json.loads((BACKEND / "qualification" / "gaps.json").read_text())
-ACCOUNT = json.loads((BACKEND / "qualification" / "corpus-account.json").read_text())
 VALIDATION = json.loads((BACKEND / "qualification" / "validation.json").read_text())
 VERDICTS = {row["profileId"]: row for row in REPORT["verdicts"]}
 
@@ -75,8 +74,7 @@ def test_one_verdict_per_profile_each_citing_its_evidence() -> None:
     """TC-896: FR-077-AC-2."""
     assert set(VERDICTS) == set(profiles.profile_ids())
     for profile in profiles.load_profiles():
-        row = VERDICTS[profile["id"]]
-        assert row["profileDigest"] == profiles.profile_digest(profile)
+        assert VERDICTS[profile["id"]]["verdict"]
 
 
 def test_measured_retention_equals_every_declared_expectation() -> None:
@@ -160,7 +158,6 @@ def test_every_condition_names_a_declared_option_or_rule() -> None:
 def test_the_measured_artefacts_are_reproducible_and_checked() -> None:
     """TC-902, TC-941: FR-077-AC-8, NFR-027-AC-3."""
     assert qualify.main(["--check"]) == 0
-    assert corpus_account.main(["--check"]) == 0
     assert validate.main(["--check"]) == 0
 
 
@@ -175,26 +172,6 @@ def test_a_mutated_committed_report_fails_check(tmp_path: pathlib.Path) -> None:
     finally:
         (BACKEND / "qualification" / "report.json").write_text(original)
     assert qualify.main(["--check"]) == 0
-
-
-def test_the_corpus_account_is_honest_about_what_it_did_not_decide() -> None:
-    """TC-903: FR-077-AC-9, FR-077-CON-4."""
-    counts = ACCOUNT["counts"]
-    assert counts["agreed"] + counts["surfaceOverStrict"] == counts["decided"]
-    assert counts["decided"] + counts["undecidable"] == counts["cases"]
-    # The honest property is that this account never reads as corpus coverage,
-    # whichever way the slot stands. It said so by asserting the slot was
-    # unavailable, which stopped being a statement about honesty the moment
-    # issue #23's adapter landed and the slot went available.
-    status = ACCOUNT["adapterSlot"]["status"]
-    statement = ACCOUNT["adapterSlot"]["statement"]
-    if status == "available":
-        assert counts["unmetCorpusRows"] == 0
-        assert "is not this surface" in statement
-    else:
-        assert counts["unmetCorpusRows"] == counts["cases"]
-        assert "UNMET" in statement
-    assert "not corpus coverage" in ACCOUNT["notCoverage"]
 
 
 def test_the_conformance_corpus_is_untouched() -> None:

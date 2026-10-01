@@ -155,7 +155,6 @@ fn lift_spec_bundle(bundle: &Path, out_dir: &Path) -> Value {
         module_roots: module_roots(),
         out: out_dir.join("semantic-ir.json"),
         diagnostics: None,
-        provenance: None,
     };
     let outcome = lift(&request);
     assert!(

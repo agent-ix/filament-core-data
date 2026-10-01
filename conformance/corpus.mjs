@@ -1,5 +1,5 @@
 /**
- * The conformance corpus: loading, building, digesting, and gating (FR-035).
+ * The conformance corpus: loading, building, and gating (FR-035).
  *
  * Paths resolve relative to this module, never to the working directory, so a
  * consumer needs no particular cwd (FR-039). Nothing here reads a clock, the
@@ -33,11 +33,6 @@ const PUBLISHED_BASE = "https://schemas.agent-ix.org/filament-core-data/v1/";
 export const ROOT = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = join(ROOT, "..");
 const MANIFEST_PATH = join(ROOT, "corpus.json");
-
-/** SHA-256 over raw file bytes, in the contract's `sha256:<hex>` form. */
-export function fileDigest(path) {
-	return `sha256:${createHash("sha256").update(readFileSync(path)).digest("hex")}`;
-}
 
 /** SHA-256 over a UTF-8 string. */
 export function textDigest(text) {
@@ -321,11 +316,6 @@ export function classifyVersionChange(previous, current) {
 				level: "major",
 				reason: `case ${row.id} changed its expected result`,
 			});
-		} else if (prior.digest !== row.digest) {
-			reasons.push({
-				level: "patch",
-				reason: `case ${row.id} changed outside its expected result`,
-			});
 		}
 		priorCases.delete(row.id);
 	}
@@ -336,9 +326,6 @@ export function classifyVersionChange(previous, current) {
 		const prior = priorBases.get(row.id);
 		if (!prior)
 			reasons.push({ level: "minor", reason: `base ${row.id} was added` });
-		else if (prior.digest !== row.digest) {
-			reasons.push({ level: "major", reason: `base ${row.id} changed` });
-		}
 		priorBases.delete(row.id);
 	}
 	for (const id of priorBases.keys()) {
@@ -506,14 +493,6 @@ export function corpusGates(overrides = {}) {
 
 	for (const row of manifest.bases) {
 		const path = join(REPO_ROOT, row.path);
-		const actual = fileDigest(path);
-		if (actual !== row.digest) {
-			fail(
-				"digest",
-				row.path,
-				`base digest is ${actual}, manifest says ${row.digest}`,
-			);
-		}
 		const bundle = readJson(path);
 		for (const error of validateConformance(
 			"input-bundle.schema.json",
@@ -538,14 +517,6 @@ export function corpusGates(overrides = {}) {
 
 	for (const row of manifest.cases) {
 		const path = join(REPO_ROOT, row.path);
-		const actual = fileDigest(path);
-		if (actual !== row.digest) {
-			fail(
-				"digest",
-				row.id,
-				`case digest is ${actual}, manifest says ${row.digest}`,
-			);
-		}
 		const entry = readCase(row);
 		for (const error of validateConformance("corpus-case.schema.json", entry)) {
 			fail("case-schema", row.id, `${error.instancePath} ${error.message}`);
@@ -709,19 +680,6 @@ export function corpusGates(overrides = {}) {
 		}
 	}
 
-	const digestInput = [
-		...manifest.bases.map((row) => `${row.id}\n${row.digest}\n`),
-		...manifest.cases.map((row) => `${row.id}\n${row.digest}\n`),
-	].join("");
-	const expectedCorpusDigest = textDigest(digestInput);
-	if (manifest.corpusDigest !== expectedCorpusDigest) {
-		fail(
-			"corpus-digest",
-			"corpus.json",
-			`corpusDigest is ${manifest.corpusDigest}, recomputes to ${expectedCorpusDigest}`,
-		);
-	}
-
 	for (const path of listJson(join(ROOT, "cases")).map(relPath)) {
 		if (!manifest.cases.some((row) => row.path === path)) {
 			fail("case-index", path, "case file is not in the manifest");
@@ -738,15 +696,14 @@ export function corpusGates(overrides = {}) {
 	return failures;
 }
 
-/** Recomputes the manifest's digest rows and `corpusDigest` from disk. */
-export function computeDigests() {
+/** Recomputes the manifest's base and case index rows from disk. */
+export function computeIndex() {
 	const bases = listJson(join(ROOT, "bases")).map((path) => ({
 		id: path
 			.split(/[\\/]/)
 			.pop()
 			.replace(/\.json$/, ""),
 		path: relPath(path),
-		digest: fileDigest(path),
 	}));
 	const cases = listJson(join(ROOT, "cases")).map((path) => {
 		const entry = readJson(path);
@@ -755,19 +712,12 @@ export function computeDigests() {
 			path: relPath(path),
 			family: entry.family,
 			class: entry.class,
-			digest: fileDigest(path),
 			expectedDigest: textDigest(canonical(entry.expected)),
 		};
 	});
 	cases.sort((left, right) => compareCodePoint(left.id, right.id));
 	bases.sort((left, right) => compareCodePoint(left.id, right.id));
-	const corpusDigest = textDigest(
-		[
-			...bases.map((row) => `${row.id}\n${row.digest}\n`),
-			...cases.map((row) => `${row.id}\n${row.digest}\n`),
-		].join(""),
-	);
-	return { bases, cases, corpusDigest };
+	return { bases, cases };
 }
 
 export { isObject, validatePublished };

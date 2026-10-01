@@ -12,7 +12,7 @@ implementer of the thing it checks is not an oracle.
 
 | Path | What it is |
 |---|---|
-| `corpus.json` | The manifest: corpus version, construct register, unmet areas, base and case digests, `corpusDigest` |
+| `corpus.json` | The manifest: corpus version, construct register, unmet areas, base and case index |
 | `bases/` | Contract-valid input bundles every case patches |
 | `cases/<family>/` | One file per case: a base, a patch, a citation, and an expected result |
 | `schema/` | The input-bundle, case, manifest, and adapter-result schemas, composing the published v1 schemas |
@@ -78,10 +78,7 @@ change prevents a compatible promotion.
 The corpus comparison form is `agent-ix-conformance-jcs-v1`: object keys ordered
 by code point, no insignificant whitespace, array order preserved. **It is not**
 the contract's `RFC8785-JCS-with-identity-sorted-sets-v1` fingerprint form,
-which `contract-gaps.json` GAP-004 records as named but undefined. Case and base
-digests are over raw file bytes, so a one-byte edit anywhere is detected;
-`corpusDigest` is the SHA-256 over those digests joined in base-id then case-id
-order.
+which `contract-gaps.json` GAP-004 records as named but undefined.
 
 ## Versioning
 

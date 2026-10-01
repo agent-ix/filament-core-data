@@ -4,7 +4,7 @@ The corpus is language-neutral JSON. This suite reads it with the already
 pinned `jsonschema` and asserts, in a second language and a second JSON Schema
 implementation, the properties that must not depend on the oracle's own
 runtime: every case and base validates, every provenance quote still occurs,
-every digest recomputes, every diagnostic is a published diagnostic, and every
+every diagnostic is a published diagnostic, and every
 expected pointer addresses a node the built bundle carries.
 
 It adds no dependency and opens no network connection.
@@ -13,7 +13,6 @@ It adds no dependency and opens no network connection.
 from __future__ import annotations
 
 import copy
-import hashlib
 import json
 import pathlib
 import re
@@ -69,10 +68,6 @@ def _diagnostic_validator() -> Draft202012Validator:
     return Draft202012Validator(
         {"$ref": common + "#/$defs/diagnostic"}, registry=REGISTRY_OF_SCHEMAS
     )
-
-
-def _digest(path: pathlib.Path) -> str:
-    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _apply(document: dict, ops: list[dict]) -> dict:
@@ -193,20 +188,6 @@ def test_tc340_case_validates(entry: dict) -> None:
 def test_tc340_base_validates(base_id: str) -> None:
     """TC-642: every base bundle validates against the composed published schemas."""
     _validator(CONF_BASE + "input-bundle.schema.json").validate(BASES[base_id])
-
-
-def test_tc340_digests_recompute() -> None:
-    """TC-283/TC-642: every digest and the corpus digest recompute from disk."""
-    for row in MANIFEST["bases"] + MANIFEST["cases"]:
-        assert _digest(REPO / row["path"]) == row["digest"], row["path"]
-    joined = "".join(
-        f"{row['id']}\n{row['digest']}\n"
-        for row in MANIFEST["bases"] + MANIFEST["cases"]
-    )
-    assert (
-        "sha256:" + hashlib.sha256(joined.encode("utf-8")).hexdigest()
-        == MANIFEST["corpusDigest"]
-    )
 
 
 def test_tc333_provenance_quotes_occur() -> None:

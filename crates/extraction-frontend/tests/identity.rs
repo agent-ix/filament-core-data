@@ -379,14 +379,9 @@ fn tc_1257_src_names_no_git_or_environment_read_and_a_planted_env_fails_the_gate
     let src = crate_dir().join("src");
     let hits = forbidden_hits(&src);
     assert!(hits.is_empty(), "forbidden tokens under src/: {hits:?}");
-    for file in ["identity.rs", "envelope.rs", "provenance.rs"] {
+    for file in ["identity.rs", "envelope.rs"] {
         assert!(src.join(file).is_file(), "{file} is the gate's subject");
     }
-    let provenance = fs::read_to_string(src.join("provenance.rs")).expect("provenance.rs");
-    assert!(
-        provenance.contains("include_str!(\"../../../Cargo.lock\")"),
-        "the lock is embedded, not read at run time"
-    );
 
     // The control: the same gate over a scratch copy with the token planted
     // in envelope.rs.

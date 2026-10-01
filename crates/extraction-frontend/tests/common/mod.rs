@@ -184,7 +184,6 @@ pub fn request_at(bundle_root: &Path, out_dir: &Path) -> LiftRequest {
         module_roots: declared_module_roots(bundle_root),
         out: out_dir.join("semantic-ir.json"),
         diagnostics: None,
-        provenance: None,
     }
 }
 

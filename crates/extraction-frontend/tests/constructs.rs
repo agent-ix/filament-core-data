@@ -2212,7 +2212,6 @@ fn tc_1800_the_five_systems_kinds_lower_their_members_from_the_engines_extractio
         module_roots: systems_module_roots(),
         out: out_dir.path().join("semantic-ir.json"),
         diagnostics: None,
-        provenance: None,
     };
     let outcome = lift(&request);
     let LiftOutcome::Written { document, .. } = outcome else {
@@ -2439,7 +2438,6 @@ fn tc_1800_an_allocation_source_naming_an_operation_lowers_to_that_operations_id
         module_roots: systems_module_roots(),
         out: scratch.path().join("semantic-ir.json"),
         diagnostics: None,
-        provenance: None,
     };
     let outcome = lift(&request);
     let LiftOutcome::Written {

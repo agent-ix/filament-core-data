@@ -16,8 +16,7 @@
 		"familyPrefixes",
 		"constructRegister",
 		"bases",
-		"cases",
-		"corpusDigest"
+		"cases"
 	],
 	"properties": {
 		"corpusVersion": {
@@ -118,13 +117,10 @@
 			"minItems": 1,
 			"items": {
 				"type": "object",
-				"required": ["id", "path", "digest"],
+				"required": ["id", "path"],
 				"properties": {
 					"id": { "type": "string", "minLength": 1 },
-					"path": { "type": "string", "minLength": 1 },
-					"digest": {
-						"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/sha256"
-					}
+					"path": { "type": "string", "minLength": 1 }
 				},
 				"additionalProperties": false
 			}
@@ -134,14 +130,7 @@
 			"minItems": 1,
 			"items": {
 				"type": "object",
-				"required": [
-					"id",
-					"path",
-					"family",
-					"class",
-					"digest",
-					"expectedDigest"
-				],
+				"required": ["id", "path", "family", "class", "expectedDigest"],
 				"properties": {
 					"id": { "$ref": "corpus-case.schema.json#/$defs/caseId" },
 					"path": { "type": "string", "minLength": 1 },
@@ -149,18 +138,12 @@
 					"class": {
 						"enum": ["positive", "negative", "boundary", "evolution"]
 					},
-					"digest": {
-						"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/sha256"
-					},
 					"expectedDigest": {
 						"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/sha256"
 					}
 				},
 				"additionalProperties": false
 			}
-		},
-		"corpusDigest": {
-			"$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/sha256"
 		}
 	},
 	"additionalProperties": false

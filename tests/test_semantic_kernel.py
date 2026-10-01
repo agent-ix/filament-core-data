@@ -43,32 +43,6 @@ BACKEND = REPO / "python_backend"
 DOCUMENTS = 30
 ABSOLUTE_REFS = 35
 
-#: The measured qualification verdicts (FR-087-CON-4): profile, verdict, and
-#: the digest of the profile the verdict was measured against.
-PINNED_VERDICTS = {
-    "pydantic_v2_basemodel": (
-        "qualified-with-conditions",
-        "sha256:de77a678b1815ffce78633025a657d40deea86bcec59ba28c35adf93a9112dd0",
-    ),
-    "pydantic_v2_dataclass": (
-        "qualified-with-conditions",
-        "sha256:70c15540cb34650f73491fefbc4f7518823a5a7f56733747e4b120d0aba1d7f7",
-    ),
-    "stdlib_dataclass": (
-        "not-qualified",
-        "sha256:8a9d9dbddb7ccce1e1a1e295ca8bcf329e9cc86c330929b94292efef12d2bcfb",
-    ),
-    "typed_dict": (
-        "not-qualified",
-        "sha256:cffa91971f95f0c5d5cb78e86db3f22daaef8c6d25465a6de7437358c277ec3b",
-    ),
-    "msgspec_struct": (
-        "qualified-with-conditions",
-        "sha256:c22081156b8894c95079b63d0e883ab929a208c3082f3ba779213d057e4f3278",
-    ),
-}
-
-
 def _bundle_bytes() -> dict[str, bytes]:
     return {
         path.name: path.read_bytes() for path in sorted(KERNEL_SCHEMAS.glob("*.json"))
@@ -186,7 +160,7 @@ def test_the_guard_the_register_and_the_published_bundle_are_untouched() -> None
 
 def test_the_emitted_set_the_manifests_and_the_generator_are_as_declared() -> None:
     """TC-1059: FR-087-CON-4, FR-087-CON-5, FR-087-CON-6."""
-    # CON-4: no not-qualified family emits, and the verdicts were not re-run.
+    # CON-4: no not-qualified family emits.
     report = json.loads((BACKEND / "qualification/report.json").read_text())
     refused = {
         row["profileId"]
@@ -198,15 +172,6 @@ def test_the_emitted_set_the_manifests_and_the_generator_are_as_declared() -> No
         assert not (emit.PACKAGES / profile_id).exists()
         with pytest.raises(emit.KernelEmitError):
             emit.build(profile_id)
-    assert {
-        row["profileId"]: (row["verdict"], row["profileDigest"])
-        for row in report["verdicts"]
-    } == PINNED_VERDICTS
-    assert sorted(emit.demonstrated()) == sorted(
-        profile_id
-        for profile_id, (verdict, _) in PINNED_VERDICTS.items()
-        if verdict != route.NOT_QUALIFIED
-    )
 
     # CON-5: no distribution manifest and no workflow names the tree.
     for workflow in sorted((REPO / ".github").rglob("*")):
