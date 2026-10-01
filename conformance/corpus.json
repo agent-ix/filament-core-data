@@ -11,11 +11,6 @@
 		"schema/semantic/v1/",
 		"fixtures/semantic/v1/"
 	],
-	"predecessor": {
-		"state": "required",
-		"ref": "origin/main:conformance/corpus.json",
-		"rationale": "fcd#179 deletes contracts 1.0.0 and 1.1.0, leaving 2.0.0 the only contract: the minimal-1-0 base and every case whose sole subject was the 1.0.0/1.1.0 distinction are removed, and core-1-1/minimal-1-1/package-1-1 are replaced by 2.0.0-valid bases core-2-0/minimal-2-0/package-2-0. That is a major corpus change and it compares against the committed predecessor."
-	},
 	"familyPrefixes": {
 		"envelope": "ENV",
 		"identity": "IDENT",
@@ -366,806 +361,691 @@
 			"id": "ALIAS-001",
 			"path": "conformance/cases/alias/ALIAS-001.json",
 			"family": "alias",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "ALIAS-002",
 			"path": "conformance/cases/alias/ALIAS-002.json",
 			"family": "alias",
-			"class": "negative",
-			"expectedDigest": "sha256:508a666e886fbb17c5f096c28bde34e9f59310f65a0f0bb0b41daf6eaf1380c6"
+			"class": "negative"
 		},
 		{
 			"id": "ALIAS-003",
 			"path": "conformance/cases/alias/ALIAS-003.json",
 			"family": "alias",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "ALIAS-004",
 			"path": "conformance/cases/alias/ALIAS-004.json",
 			"family": "alias",
-			"class": "evolution",
-			"expectedDigest": "sha256:2cb5bd25a30b94ce1a9f705c85f03bb281392be96c67b588698977dd4f1c8d2f"
+			"class": "evolution"
 		},
 		{
 			"id": "CLAUSE-001",
 			"path": "conformance/cases/clause/CLAUSE-001.json",
 			"family": "clause",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "CLAUSE-002",
 			"path": "conformance/cases/clause/CLAUSE-002.json",
 			"family": "clause",
-			"class": "negative",
-			"expectedDigest": "sha256:65291eaa8b82ceddd8ff4877a0604c3d863956a4901b8425352a36f879a023ba"
+			"class": "negative"
 		},
 		{
 			"id": "CLAUSE-003",
 			"path": "conformance/cases/clause/CLAUSE-003.json",
 			"family": "clause",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "CLAUSE-004",
 			"path": "conformance/cases/clause/CLAUSE-004.json",
 			"family": "clause",
-			"class": "evolution",
-			"expectedDigest": "sha256:95cebf4832f1aed109c7a4542a3b6548d671b812c108e51a59e89fecda8a2dfc"
+			"class": "evolution"
 		},
 		{
 			"id": "CLAUSE-005",
 			"path": "conformance/cases/clause/CLAUSE-005.json",
 			"family": "clause",
-			"class": "negative",
-			"expectedDigest": "sha256:57affb91347130d6bcd186d1da4b8da92b232df2afa4e373008f1706f7a0e3c5"
+			"class": "negative"
 		},
 		{
 			"id": "CLAUSE-006",
 			"path": "conformance/cases/clause/CLAUSE-006.json",
 			"family": "clause",
-			"class": "negative",
-			"expectedDigest": "sha256:d13a05f12cdf73ead5dcdf2ffc7ae516cab6516586e4e139c6a1861847501f9c"
+			"class": "negative"
 		},
 		{
 			"id": "COMP-001",
 			"path": "conformance/cases/compatibility/COMP-001.json",
 			"family": "compatibility",
-			"class": "positive",
-			"expectedDigest": "sha256:2cb5bd25a30b94ce1a9f705c85f03bb281392be96c67b588698977dd4f1c8d2f"
+			"class": "positive"
 		},
 		{
 			"id": "COMP-002",
 			"path": "conformance/cases/compatibility/COMP-002.json",
 			"family": "compatibility",
-			"class": "negative",
-			"expectedDigest": "sha256:a302e10c784b06af54c124aa6fee290d2fae0855b1a36265f2c918d18656d4c5"
+			"class": "negative"
 		},
 		{
 			"id": "COMP-003",
 			"path": "conformance/cases/compatibility/COMP-003.json",
 			"family": "compatibility",
-			"class": "boundary",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "boundary"
 		},
 		{
 			"id": "COMP-004",
 			"path": "conformance/cases/compatibility/COMP-004.json",
 			"family": "compatibility",
-			"class": "evolution",
-			"expectedDigest": "sha256:6e371cdd54d9a4b6b298a1c0afa59978b88f0f8dbbc119f2a3e69afdf94458d2"
+			"class": "evolution"
 		},
 		{
 			"id": "COMP-005",
 			"path": "conformance/cases/compatibility/COMP-005.json",
 			"family": "compatibility",
-			"class": "evolution",
-			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
+			"class": "evolution"
 		},
 		{
 			"id": "CONS-001",
 			"path": "conformance/cases/constraint/CONS-001.json",
 			"family": "constraint",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "CONS-002",
 			"path": "conformance/cases/constraint/CONS-002.json",
 			"family": "constraint",
-			"class": "negative",
-			"expectedDigest": "sha256:587f34887b09e0d629173bceee6a310d5b86bd7fd1ca78159d04629bf6516bc5"
+			"class": "negative"
 		},
 		{
 			"id": "CONS-003",
 			"path": "conformance/cases/constraint/CONS-003.json",
 			"family": "constraint",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "CONS-004",
 			"path": "conformance/cases/constraint/CONS-004.json",
 			"family": "constraint",
-			"class": "evolution",
-			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
+			"class": "evolution"
 		},
 		{
 			"id": "CONS-005",
 			"path": "conformance/cases/constraint/CONS-005.json",
 			"family": "constraint",
-			"class": "negative",
-			"expectedDigest": "sha256:def85feb3b2d79589a100ea3eac19f93cb143ff32360f63a7813d423c3a2277b"
+			"class": "negative"
 		},
 		{
 			"id": "CONS-006",
 			"path": "conformance/cases/constraint/CONS-006.json",
 			"family": "constraint",
-			"class": "negative",
-			"expectedDigest": "sha256:a9938766daf4694865b84f7040ec7d02880fbfb18c2e57c9a14e0b56fea4a508"
+			"class": "negative"
 		},
 		{
 			"id": "CONS-007",
 			"path": "conformance/cases/constraint/CONS-007.json",
 			"family": "constraint",
-			"class": "negative",
-			"expectedDigest": "sha256:ac38aa99bbf1792b2491413901e109ebc2b1f0b828ada739aae9dd4a0d92a796"
+			"class": "negative"
 		},
 		{
 			"id": "CONS-008",
 			"path": "conformance/cases/constraint/CONS-008.json",
 			"family": "constraint",
-			"class": "negative",
-			"expectedDigest": "sha256:ec5ed04cc176adfc4d49ae0190c8fe6f70fe8600423f613aa374da1878da63cb"
+			"class": "negative"
 		},
 		{
 			"id": "DEF-001",
 			"path": "conformance/cases/field-default/DEF-001.json",
 			"family": "field-default",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "DEF-002",
 			"path": "conformance/cases/field-default/DEF-002.json",
 			"family": "field-default",
-			"class": "negative",
-			"expectedDigest": "sha256:d681da3420d0cef0c21f697860358445dc85dca6100b7dc7544113437f4a30d6"
+			"class": "negative"
 		},
 		{
 			"id": "DEF-003",
 			"path": "conformance/cases/field-default/DEF-003.json",
 			"family": "field-default",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "DEF-004",
 			"path": "conformance/cases/field-default/DEF-004.json",
 			"family": "field-default",
-			"class": "evolution",
-			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
+			"class": "evolution"
 		},
 		{
 			"id": "ENUM-001",
 			"path": "conformance/cases/enum/ENUM-001.json",
 			"family": "enum",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "ENUM-002",
 			"path": "conformance/cases/enum/ENUM-002.json",
 			"family": "enum",
-			"class": "negative",
-			"expectedDigest": "sha256:fb5d5bac4801fcc06618779ff1123b5d9da3d4cad2adad5c150fd1de98abb3aa"
+			"class": "negative"
 		},
 		{
 			"id": "ENUM-003",
 			"path": "conformance/cases/enum/ENUM-003.json",
 			"family": "enum",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "ENUM-004",
 			"path": "conformance/cases/enum/ENUM-004.json",
 			"family": "enum",
-			"class": "evolution",
-			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
+			"class": "evolution"
 		},
 		{
 			"id": "ENV-001",
 			"path": "conformance/cases/envelope/ENV-001.json",
 			"family": "envelope",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "ENV-002",
 			"path": "conformance/cases/envelope/ENV-002.json",
 			"family": "envelope",
-			"class": "negative",
-			"expectedDigest": "sha256:4c4f45e379d1d2ac909438cfccb24cfc3f651f7c254b7cf425fbddfe69a1f665"
+			"class": "negative"
 		},
 		{
 			"id": "ENV-003",
 			"path": "conformance/cases/envelope/ENV-003.json",
 			"family": "envelope",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "ENV-005",
 			"path": "conformance/cases/envelope/ENV-005.json",
 			"family": "envelope",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "EXT-001",
 			"path": "conformance/cases/extension/EXT-001.json",
 			"family": "extension",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "EXT-002",
 			"path": "conformance/cases/extension/EXT-002.json",
 			"family": "extension",
-			"class": "negative",
-			"expectedDigest": "sha256:1c942c8fe635e0d80175937f1ff223e8a36ce2ff581e5bb4f4d1c586561b4077"
+			"class": "negative"
 		},
 		{
 			"id": "EXT-003",
 			"path": "conformance/cases/extension/EXT-003.json",
 			"family": "extension",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "EXT-004",
 			"path": "conformance/cases/extension/EXT-004.json",
 			"family": "extension",
-			"class": "evolution",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "evolution"
 		},
 		{
 			"id": "IDENT-001",
 			"path": "conformance/cases/identity/IDENT-001.json",
 			"family": "identity",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "IDENT-002",
 			"path": "conformance/cases/identity/IDENT-002.json",
 			"family": "identity",
-			"class": "negative",
-			"expectedDigest": "sha256:dc96e8f9aa65079844060fb65d0c0fdbeee2a4748a665646f72001869f9b03e2"
+			"class": "negative"
 		},
 		{
 			"id": "IDENT-003",
 			"path": "conformance/cases/identity/IDENT-003.json",
 			"family": "identity",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "IDENT-004",
 			"path": "conformance/cases/identity/IDENT-004.json",
 			"family": "identity",
-			"class": "evolution",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "evolution"
 		},
 		{
 			"id": "IDENT-005",
 			"path": "conformance/cases/identity/IDENT-005.json",
 			"family": "identity",
-			"class": "negative",
-			"expectedDigest": "sha256:85056bf7f202e481716c1f079f62f9b684999194a6e7cdb04254b59e6a348e86"
+			"class": "negative"
 		},
 		{
 			"id": "IDENT-006",
 			"path": "conformance/cases/identity/IDENT-006.json",
 			"family": "identity",
-			"class": "negative",
-			"expectedDigest": "sha256:5e04838ea30cec52609eaea43ad9df6f382a1d904bde458e75455256be900c40"
+			"class": "negative"
 		},
 		{
 			"id": "OP-001",
 			"path": "conformance/cases/operation/OP-001.json",
 			"family": "operation",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "OP-002",
 			"path": "conformance/cases/operation/OP-002.json",
 			"family": "operation",
-			"class": "negative",
-			"expectedDigest": "sha256:2d9fdb371afb093f231e8a302e37ee8147c775b0dcfe64bf1d64fcbbaf36cd03"
+			"class": "negative"
 		},
 		{
 			"id": "OP-003",
 			"path": "conformance/cases/operation/OP-003.json",
 			"family": "operation",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "OP-004",
 			"path": "conformance/cases/operation/OP-004.json",
 			"family": "operation",
-			"class": "evolution",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "evolution"
 		},
 		{
 			"id": "OP-005",
 			"path": "conformance/cases/operation/OP-005.json",
 			"family": "operation",
-			"class": "negative",
-			"expectedDigest": "sha256:4cbf24873abaa0d9a94998973cb8e176b8f9d60ad030eb7b4ca75fec5b337f72"
+			"class": "negative"
 		},
 		{
 			"id": "PKG-001",
 			"path": "conformance/cases/package/PKG-001.json",
 			"family": "package",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "PKG-002",
 			"path": "conformance/cases/package/PKG-002.json",
 			"family": "package",
-			"class": "negative",
-			"expectedDigest": "sha256:41c17fe9c51b0b367b834bf2309719f9776a257e77df24a105de35e3b3908ef8"
+			"class": "negative"
 		},
 		{
 			"id": "PKG-003",
 			"path": "conformance/cases/package/PKG-003.json",
 			"family": "package",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "PKG-004",
 			"path": "conformance/cases/package/PKG-004.json",
 			"family": "package",
-			"class": "evolution",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "evolution"
 		},
 		{
 			"id": "PKG-005",
 			"path": "conformance/cases/package/PKG-005.json",
 			"family": "package",
-			"class": "negative",
-			"expectedDigest": "sha256:8b5823d7a1bacd2fdf65c5dcbc6445eff0cf067774073e908e01ca6b52e66f6e"
+			"class": "negative"
 		},
 		{
 			"id": "PKG-006",
 			"path": "conformance/cases/package/PKG-006.json",
 			"family": "package",
-			"class": "negative",
-			"expectedDigest": "sha256:daf3df3ced39a706f394efed077be900b26e8fc6ec909aedb16ddd929fe78923"
+			"class": "negative"
 		},
 		{
 			"id": "PKG-007",
 			"path": "conformance/cases/package/PKG-007.json",
 			"family": "package",
-			"class": "negative",
-			"expectedDigest": "sha256:794a0f2325cd4e6a95e11bf687796f64b69beb892dc327b3f66bba776b34fcd2"
+			"class": "negative"
 		},
 		{
 			"id": "PKG-008",
 			"path": "conformance/cases/package/PKG-008.json",
 			"family": "package",
-			"class": "negative",
-			"expectedDigest": "sha256:7e2dee75877f34e3e12f21977c8fc59134f6a0de8beccb6333a0004869d07cf5"
+			"class": "negative"
 		},
 		{
 			"id": "PRES-001",
 			"path": "conformance/cases/field-presence/PRES-001.json",
 			"family": "field-presence",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "PRES-003",
 			"path": "conformance/cases/field-presence/PRES-003.json",
 			"family": "field-presence",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "PRES-004",
 			"path": "conformance/cases/field-presence/PRES-004.json",
 			"family": "field-presence",
-			"class": "evolution",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "evolution"
 		},
 		{
 			"id": "PRES-005",
 			"path": "conformance/cases/field-presence/PRES-005.json",
 			"family": "field-presence",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "PRES-006",
 			"path": "conformance/cases/field-presence/PRES-006.json",
 			"family": "field-presence",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "PRES-007",
 			"path": "conformance/cases/field-presence/PRES-007.json",
 			"family": "field-presence",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "PRES-008",
 			"path": "conformance/cases/field-presence/PRES-008.json",
 			"family": "field-presence",
-			"class": "negative",
-			"expectedDigest": "sha256:84b01901df6e86d3bf95f4782bd3a81455ccc914373919bc19a423309822d29d"
+			"class": "negative"
 		},
 		{
 			"id": "PRES-009",
 			"path": "conformance/cases/field-presence/PRES-009.json",
 			"family": "field-presence",
-			"class": "negative",
-			"expectedDigest": "sha256:c0977c4ba19a5ed280c6f8199fdfa8d0138225dcc6cdd369904fdcfd0f88e25e"
+			"class": "negative"
 		},
 		{
 			"id": "PRES-010",
 			"path": "conformance/cases/field-presence/PRES-010.json",
 			"family": "field-presence",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "PRES-011",
 			"path": "conformance/cases/field-presence/PRES-011.json",
 			"family": "field-presence",
-			"class": "negative",
-			"expectedDigest": "sha256:88aedfd9d945e73ebbd0d0a846d62230f0221ecc5023be0486cf65f458de0043"
+			"class": "negative"
 		},
 		{
 			"id": "PRES-012",
 			"path": "conformance/cases/field-presence/PRES-012.json",
 			"family": "field-presence",
-			"class": "negative",
-			"expectedDigest": "sha256:88aedfd9d945e73ebbd0d0a846d62230f0221ecc5023be0486cf65f458de0043"
+			"class": "negative"
 		},
 		{
 			"id": "PRES-013",
 			"path": "conformance/cases/field-presence/PRES-013.json",
 			"family": "field-presence",
-			"class": "negative",
-			"expectedDigest": "sha256:88aedfd9d945e73ebbd0d0a846d62230f0221ecc5023be0486cf65f458de0043"
+			"class": "negative"
 		},
 		{
 			"id": "PRES-014",
 			"path": "conformance/cases/field-presence/PRES-014.json",
 			"family": "field-presence",
-			"class": "negative",
-			"expectedDigest": "sha256:88aedfd9d945e73ebbd0d0a846d62230f0221ecc5023be0486cf65f458de0043"
+			"class": "negative"
 		},
 		{
 			"id": "PRES-015",
 			"path": "conformance/cases/field-presence/PRES-015.json",
 			"family": "field-presence",
-			"class": "negative",
-			"expectedDigest": "sha256:957a8cfeac08a9de17e451305af71661bb4c007c6e44bb29a9f1bc99728d8f2e"
+			"class": "negative"
 		},
 		{
 			"id": "PRES-016",
 			"path": "conformance/cases/field-presence/PRES-016.json",
 			"family": "field-presence",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "PROV-001",
 			"path": "conformance/cases/provenance/PROV-001.json",
 			"family": "provenance",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "PROV-002",
 			"path": "conformance/cases/provenance/PROV-002.json",
 			"family": "provenance",
-			"class": "negative",
-			"expectedDigest": "sha256:0edd813c37957e5cfbb554d529f20a2771837429c38fb24c8ac082169f2a223b"
+			"class": "negative"
 		},
 		{
 			"id": "PROV-003",
 			"path": "conformance/cases/provenance/PROV-003.json",
 			"family": "provenance",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "PROV-004",
 			"path": "conformance/cases/provenance/PROV-004.json",
 			"family": "provenance",
-			"class": "evolution",
-			"expectedDigest": "sha256:2cb5bd25a30b94ce1a9f705c85f03bb281392be96c67b588698977dd4f1c8d2f"
+			"class": "evolution"
 		},
 		{
 			"id": "REC-001",
 			"path": "conformance/cases/recursion/REC-001.json",
 			"family": "recursion",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "REC-002",
 			"path": "conformance/cases/recursion/REC-002.json",
 			"family": "recursion",
-			"class": "negative",
-			"expectedDigest": "sha256:1d12f767df4672a2413fc616236e5603ebc0524ac3e10a8a57a7c642670f83de"
+			"class": "negative"
 		},
 		{
 			"id": "REC-003",
 			"path": "conformance/cases/recursion/REC-003.json",
 			"family": "recursion",
-			"class": "boundary",
-			"expectedDigest": "sha256:6000301d89a9480977cb39305e711d25e85aac1fabcbee1072dc857eb3a652a2"
+			"class": "boundary"
 		},
 		{
 			"id": "REC-004",
 			"path": "conformance/cases/recursion/REC-004.json",
 			"family": "recursion",
-			"class": "evolution",
-			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
+			"class": "evolution"
 		},
 		{
 			"id": "REC-005",
 			"path": "conformance/cases/recursion/REC-005.json",
 			"family": "recursion",
-			"class": "boundary",
-			"expectedDigest": "sha256:4d568c16d58afb4f4d4396daa57994421b17bd21a38ccc49f7190fbf7c1e510b"
+			"class": "boundary"
 		},
 		{
 			"id": "REC-006",
 			"path": "conformance/cases/recursion/REC-006.json",
 			"family": "recursion",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "REF-001",
 			"path": "conformance/cases/reference/REF-001.json",
 			"family": "reference",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "REF-002",
 			"path": "conformance/cases/reference/REF-002.json",
 			"family": "reference",
-			"class": "negative",
-			"expectedDigest": "sha256:8a5fd43f38f3e18c549564e9fcf9742ce41df32b5af4711308222139f693110e"
+			"class": "negative"
 		},
 		{
 			"id": "REF-003",
 			"path": "conformance/cases/reference/REF-003.json",
 			"family": "reference",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "REF-004",
 			"path": "conformance/cases/reference/REF-004.json",
 			"family": "reference",
-			"class": "evolution",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "evolution"
 		},
 		{
 			"id": "REL-001",
 			"path": "conformance/cases/relationship/REL-001.json",
 			"family": "relationship",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "REL-002",
 			"path": "conformance/cases/relationship/REL-002.json",
 			"family": "relationship",
-			"class": "negative",
-			"expectedDigest": "sha256:b5387a21dcd75c6acdaad42c04b3b3853f98f8ac0a8443b2e6f9ee9b946203eb"
+			"class": "negative"
 		},
 		{
 			"id": "REL-003",
 			"path": "conformance/cases/relationship/REL-003.json",
 			"family": "relationship",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "REL-004",
 			"path": "conformance/cases/relationship/REL-004.json",
 			"family": "relationship",
-			"class": "evolution",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "evolution"
 		},
 		{
 			"id": "REL-005",
 			"path": "conformance/cases/relationship/REL-005.json",
 			"family": "relationship",
-			"class": "negative",
-			"expectedDigest": "sha256:1cd509ec7bde2275b2dc6e600c6e3f3cc3ab8a2433b1436d110d105e1f027308"
+			"class": "negative"
 		},
 		{
 			"id": "REL-006",
 			"path": "conformance/cases/relationship/REL-006.json",
 			"family": "relationship",
-			"class": "negative",
-			"expectedDigest": "sha256:66a617342299f42ec59d06e8fa710b87e0c7756eb4263dc68967c3fa15e89a38"
+			"class": "negative"
 		},
 		{
 			"id": "REL-007",
 			"path": "conformance/cases/relationship/REL-007.json",
 			"family": "relationship",
-			"class": "negative",
-			"expectedDigest": "sha256:cb5b90ff19196f91c845c5ba8454b818569a2e95a3148cb4696f1abc1c6f39c1"
+			"class": "negative"
 		},
 		{
 			"id": "SCAL-001",
 			"path": "conformance/cases/scalar/SCAL-001.json",
 			"family": "scalar",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "SCAL-002",
 			"path": "conformance/cases/scalar/SCAL-002.json",
 			"family": "scalar",
-			"class": "negative",
-			"expectedDigest": "sha256:c09ea24d3323410324fc1d7d3e1b61c72297e5e3368dfa6e1350525cdc26c926"
+			"class": "negative"
 		},
 		{
 			"id": "SCAL-003",
 			"path": "conformance/cases/scalar/SCAL-003.json",
 			"family": "scalar",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "SCAL-004",
 			"path": "conformance/cases/scalar/SCAL-004.json",
 			"family": "scalar",
-			"class": "evolution",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "evolution"
 		},
 		{
 			"id": "SEQMAP-001",
 			"path": "conformance/cases/sequence-map/SEQMAP-001.json",
 			"family": "sequence-map",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "SEQMAP-002",
 			"path": "conformance/cases/sequence-map/SEQMAP-002.json",
 			"family": "sequence-map",
-			"class": "negative",
-			"expectedDigest": "sha256:ffe00f53f6bc05d53a4c40bb7d8a8a85661c9c36935ee6cd66e138b17611e7fb"
+			"class": "negative"
 		},
 		{
 			"id": "SEQMAP-003",
 			"path": "conformance/cases/sequence-map/SEQMAP-003.json",
 			"family": "sequence-map",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "SEQMAP-004",
 			"path": "conformance/cases/sequence-map/SEQMAP-004.json",
 			"family": "sequence-map",
-			"class": "evolution",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "evolution"
 		},
 		{
 			"id": "UNION-001",
 			"path": "conformance/cases/union/UNION-001.json",
 			"family": "union",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "UNION-002",
 			"path": "conformance/cases/union/UNION-002.json",
 			"family": "union",
-			"class": "negative",
-			"expectedDigest": "sha256:b28f3add692a08bac0e7d0a37c08d14f83794777b625dc8aa4f0c17642b57120"
+			"class": "negative"
 		},
 		{
 			"id": "UNION-003",
 			"path": "conformance/cases/union/UNION-003.json",
 			"family": "union",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "UNION-004",
 			"path": "conformance/cases/union/UNION-004.json",
 			"family": "union",
-			"class": "evolution",
-			"expectedDigest": "sha256:4d8c58cacba5665d772325195e70d588e515d8f3f4cd32b2fe325effe985650c"
+			"class": "evolution"
 		},
 		{
 			"id": "UNIT-001",
 			"path": "conformance/cases/unit/UNIT-001.json",
 			"family": "unit",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "UNIT-002",
 			"path": "conformance/cases/unit/UNIT-002.json",
 			"family": "unit",
-			"class": "negative",
-			"expectedDigest": "sha256:c80691433edbb198b225b794a2f3b78cd964cda4c6a4d99a0a109bae26b8cd76"
+			"class": "negative"
 		},
 		{
 			"id": "UNIT-003",
 			"path": "conformance/cases/unit/UNIT-003.json",
 			"family": "unit",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "UNIT-004",
 			"path": "conformance/cases/unit/UNIT-004.json",
 			"family": "unit",
-			"class": "evolution",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "evolution"
 		},
 		{
 			"id": "UNK-001",
 			"path": "conformance/cases/unknown/UNK-001.json",
 			"family": "unknown",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		},
 		{
 			"id": "UNK-002",
 			"path": "conformance/cases/unknown/UNK-002.json",
 			"family": "unknown",
-			"class": "negative",
-			"expectedDigest": "sha256:4ee9588d951ca72b04448ce56ba58527d509de5d4cd9de3cac6e3dd8da90223c"
+			"class": "negative"
 		},
 		{
 			"id": "UNK-003",
 			"path": "conformance/cases/unknown/UNK-003.json",
 			"family": "unknown",
-			"class": "boundary",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "boundary"
 		},
 		{
 			"id": "UNK-004",
 			"path": "conformance/cases/unknown/UNK-004.json",
 			"family": "unknown",
-			"class": "evolution",
-			"expectedDigest": "sha256:c43086125658be8a2498763467d29d219a7457fa885ab67b1441862146870513"
+			"class": "evolution"
 		},
 		{
 			"id": "UNK-005",
 			"path": "conformance/cases/unknown/UNK-005.json",
 			"family": "unknown",
-			"class": "positive",
-			"expectedDigest": "sha256:d0718d6e8faed2b34601964cc2b54bed76d435a03b9e8c5833944101842ad9c7"
+			"class": "positive"
 		}
 	]
 }

@@ -58,7 +58,7 @@ from python_backend.adapter.prepare import Rewrite
 #: rather than every key is what makes a `properties` entry literally named
 #: `$ref` data instead of a reference. The sets restate
 #: `python_backend/adapter/prepare.py`'s, which is module-private there and is
-#: not edited here (FR-087-CON-7); `tests/test_semantic_kernel.py` asserts the
+#: not edited here; `tests/test_semantic_kernel.py` asserts the
 #: two agree, so the duplication cannot drift silently.
 SUBSCHEMA_MAPS = ("properties", "patternProperties", "$defs", "definitions")
 SUBSCHEMA_LISTS = ("allOf", "anyOf", "oneOf", "prefixItems")

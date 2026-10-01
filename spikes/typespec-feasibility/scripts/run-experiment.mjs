@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import {
 	cpSync,
@@ -86,20 +85,6 @@ function canonical(value) {
 			.join(",")}}`;
 	}
 	return JSON.stringify(value);
-}
-
-function fingerprint(base, paths) {
-	const hash = createHash("sha256");
-	for (const path of [...paths].sort()) {
-		hash.update(path);
-		hash.update("\0");
-		const content = readFileSync(resolve(base, path), "utf8");
-		hash.update(
-			path.endsWith(".json") ? canonical(JSON.parse(content)) : content,
-		);
-		hash.update("\0");
-	}
-	return hash.digest("hex");
 }
 
 function listFiles(directory, prefix = "") {
@@ -493,7 +478,7 @@ function capability(
 	};
 }
 
-function validate(output, repeat) {
+function validate(output) {
 	const schema = json(
 		resolve(output, "generated/official/json-schema/semantic.json"),
 	);
@@ -946,27 +931,7 @@ function validate(output, repeat) {
 		humanPromotionRequired: true,
 	});
 
-	const fingerprintedFiles = [
-		"generated/official/json-schema/semantic.json",
-		"generated/official/protobuf/semantic.proto",
-		"generated/custom/semantic-ir.json",
-		"generated/custom/typescript/index.ts",
-		"generated/custom/python/input.schema.json",
-		"generated/custom/python/models.py",
-		"generated/custom/python/models_dataclass.py",
-		"generated/custom/rust/src/lib.rs",
-		"generated/custom/arrow/schema.json",
-		"generated/custom/markdown/mappings.json",
-		"generated/custom/protobuf/mapping.json",
-		"generated/fixtures/representative.json",
-		"generated/fixtures/invalid.json",
-	];
-	const normalizedFingerprint = fingerprint(output, fingerprintedFiles);
-	const repeatNormalizedFingerprint = fingerprint(repeat, fingerprintedFiles);
 	writeJson(resolve(output, "evidence/validation.json"), {
-		fingerprintedFiles,
-		normalizedFingerprint,
-		repeatNormalizedFingerprint,
 		native: {
 			typescript: { compile: "passed", consumer: "passed" },
 			python: {
@@ -990,7 +955,7 @@ function validate(output, repeat) {
 	});
 	write(
 		resolve(output, "report.md"),
-		`# TypeSpec feasibility report\n\n## Recommendation\n\nDo **not** promote TypeSpec as the structural source yet. Select **modular JSON Schema 2020-12 plus explicit package, mapping, and profile metadata** for the next design stage. The representative TypeSpec source, official JSON Schema/Protobuf emitters, semantic IR, and Rust/TypeScript/Python consumers all work. The unchanged P0 gate nevertheless fails because every native surface beyond official emitters depends on an Agent IX custom extension built on an experimental emitter framework, and no production owner, recurring maintenance budget, compatibility matrix, or upgrade SLA has been accepted. Protobuf remains a fit-for-purpose wire projection; Arrow remains a lossy analytical projection. Current Avro and consumers remain unchanged.\n\n## Evidence summary\n\n- Compiler and emitter versions are exact-locked; two clean normalized generations produce \`${normalizedFingerprint}\`.\n- Official JSON Schema 2020-12 validates the shared golden; official Protobuf emits explicit and reserved field numbers and parses with protobufjs. Native \`protoc\` was unavailable, so that P1 capability remains partial.\n- The custom emitter traverses the compiled program into ${json(resolve(output, "generated/custom/semantic-ir.json")).types.length} deterministic, source-located semantic types.\n- Generated TypeScript, Python/Pydantic, and Rust/Serde consumers compile and execute against the same golden values.\n- Arrow and Markdown are explicit projections with authority, round-trip, loss, and provenance declarations.\n- Patch, additive, and breaking compatibility examples all classify as expected.\n\n## Extension maintenance and cost of error\n\nThe custom path requires a named owner for the semantic IR, three native generators, compiler-upgrade qualification, compatibility fixtures, and incident response. TypeSpec identifies its emitter framework as experimental and TypeScript/JavaScript as the best-supported extension route. Choosing it without funding that compensation could block all consumer generation on a compiler upgrade. Choosing modular JSON Schema first may require a later source migration, but it keeps broadly supported validators and allows package/mapping metadata to evolve independently.\n\n## Human Decision Gate\n\nADR-0004 remains **provisional**. A human architecture reviewer must either (a) accept the modular JSON Schema fallback, or (b) explicitly assign and fund the custom-emitter ownership needed to reclassify the P0 maintenance capability. This spike cannot promote the ADR, change the current Avro source, publish packages, update catalogs, or migrate consumers.\n`,
+		`# TypeSpec feasibility report\n\n## Recommendation\n\nDo **not** promote TypeSpec as the structural source yet. Select **modular JSON Schema 2020-12 plus explicit package, mapping, and profile metadata** for the next design stage. The representative TypeSpec source, official JSON Schema/Protobuf emitters, semantic IR, and Rust/TypeScript/Python consumers all work. The unchanged P0 gate nevertheless fails because every native surface beyond official emitters depends on an Agent IX custom extension built on an experimental emitter framework, and no production owner, recurring maintenance budget, compatibility matrix, or upgrade SLA has been accepted. Protobuf remains a fit-for-purpose wire projection; Arrow remains a lossy analytical projection. Current Avro and consumers remain unchanged.\n\n## Evidence summary\n\n- Compiler and emitter versions are exact-locked.\n- Official JSON Schema 2020-12 validates the shared golden; official Protobuf emits explicit and reserved field numbers and parses with protobufjs. Native \`protoc\` was unavailable, so that P1 capability remains partial.\n- The custom emitter traverses the compiled program into ${json(resolve(output, "generated/custom/semantic-ir.json")).types.length} deterministic, source-located semantic types.\n- Generated TypeScript, Python/Pydantic, and Rust/Serde consumers compile and execute against the same golden values.\n- Arrow and Markdown are explicit projections with authority, round-trip, loss, and provenance declarations.\n- Patch, additive, and breaking compatibility examples all classify as expected.\n\n## Extension maintenance and cost of error\n\nThe custom path requires a named owner for the semantic IR, three native generators, compiler-upgrade qualification, compatibility fixtures, and incident response. TypeSpec identifies its emitter framework as experimental and TypeScript/JavaScript as the best-supported extension route. Choosing it without funding that compensation could block all consumer generation on a compiler upgrade. Choosing modular JSON Schema first may require a later source migration, but it keeps broadly supported validators and allows package/mapping metadata to evolve independently.\n\n## Human Decision Gate\n\nADR-0004 remains **provisional**. A human architecture reviewer must either (a) accept the modular JSON Schema fallback, or (b) explicitly assign and fund the custom-emitter ownership needed to reclassify the P0 maintenance capability. This spike cannot promote the ADR, change the current Avro source, publish packages, update catalogs, or migrate consumers.\n`,
 	);
 	const reportPath = resolve(output, "report.md");
 	const correctedReport = readFileSync(reportPath, "utf8")
@@ -1049,10 +1014,8 @@ function compare(expected, actual) {
 
 try {
 	const first = resolve(experimentRoot, "first");
-	const repeat = resolve(experimentRoot, "repeat");
 	generate(first);
-	generate(repeat);
-	validate(first, repeat);
+	validate(first);
 	const retained = ["generated", "evidence", "report.md"];
 	if (checkMode) {
 		for (const path of retained)

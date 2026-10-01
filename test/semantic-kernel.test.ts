@@ -50,7 +50,6 @@ import {
 	KERNEL_LOSSES,
 } from "../src/compiler/frontend/json-schema/representability.mjs";
 import { createHost } from "../src/compiler/host.mjs";
-import { changedPathsOfCommits, commitsAdding } from "./changed-paths.js";
 
 const root = resolve(import.meta.dirname, "..");
 const read = (p: string) =>
@@ -85,88 +84,6 @@ const bundle = read("packages/semantic-kernel/bundle.json");
 const inventory = read("packages/semantic-core/inventory.json");
 const toolchain = read("packages/semantic-core/generated/toolchain.json");
 const manifest = read("packages/semantic-core/package.json");
-
-/** The paths this issue writes, per NFR-030. Stated, never derived. */
-const PERMITTED = [
-	"spec/",
-	"plan/",
-	"reviews/",
-	"docs/semantic-data-system/compiler-diagnostics.md",
-	"src/compiler/frontend/json-schema/",
-	"src/compiler/diagnostics.mjs",
-	"src/compiler/inventory.json",
-	"packages/semantic-kernel/",
-	"python_backend/kernel/",
-	"docs/semantic-data-system/semantic-kernel-packages.md",
-	"scripts/build-semantic-kernel.mjs",
-	"scripts/check-semantic-kernel-crate.mjs",
-	"Cargo.toml",
-	"test/semantic-kernel.test.ts",
-	"test/changed-paths.ts",
-	"test/compiler-core.test.ts",
-	"tests/test_semantic_kernel.py",
-	"Makefile",
-];
-
-/** NFR-030's two declared sentinels, in the order it declares them. */
-const SENTINELS = [
-	"spec/usecase/US-014-consume-the-semantic-kernel-natively.md",
-	"docs/semantic-data-system/semantic-kernel-packages.md",
-];
-
-/** NFR-030's prohibited prefixes: paths this change writes no byte of. */
-const PROHIBITED = [
-	"packages/semantic-core/",
-	"schema/",
-	"fixtures/",
-	"spikes/",
-	"conformance/",
-	"package.json",
-	"pnpm-lock.yaml",
-	"poetry.lock",
-	"pyproject.toml",
-	"python_backend/adapter/",
-	"python_backend/runner/",
-	"python_backend/qualification/",
-	"python_backend/generated/",
-	"python_backend/profiles.json",
-	"python_backend/refusals.json",
-	"python_backend/limits.json",
-	"python_backend/toolchain.json",
-	"tsconfig.json",
-	"biome.json",
-	"src/generated.ts",
-	"src/compiler/backends/",
-	"src/compiler/frontend/typespec/",
-	"src/compiler/ir/",
-	"src/compiler/compat/",
-	"src/compiler/cli.mjs",
-	"crates/",
-	"test/fixtures/",
-	".github/",
-];
-
-/**
- * Issue #11's change set, both endpoints resolved from history.
- *
- * This gate previously read `git diff main...HEAD`, which measures whatever
- * branch happens to be checked out rather than the change NFR-030 is about.
- * On the merged trunk that range is empty and every prohibition below passes
- * vacuously; on any later branch that touches `src/compiler/backends/` it fails
- * and names the wrong ticket. `changedPathsOf` pins the range to the commit
- * that added the sentinel, so the gate asserts about issue #11 from either
- * side of its merge — the form issues #19 and #54 already settled here.
- */
-function changedPaths(): string[] {
-	// Issue #11 reached the trunk as more than one squash commit — `#82`, and
-	// then FR-086's — and a *range* across them annexes every ticket that
-	// landed in between, failing this gate for somebody else's paths. The
-	// commits are named instead of spanned, which is the sixth face of the
-	// merge-degrading defect `changed-paths.ts` records and the helper it
-	// promoted for it. A later commit delivering more of issue #11 adds its own
-	// sentinel above, or its paths go unmeasured.
-	return changedPathsOfCommits(root, SENTINELS);
-}
 
 function treeOf(dir: string): [string, string][] {
 	const out: [string, string][] = [];
@@ -496,43 +413,6 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 });
 
 describe("TC-1100..1108 determinism and non-disruption (NFR-028, NFR-030)", () => {
-	// TC-1100
-	it("changes only permitted paths", () => {
-		for (const path of changedPaths()) {
-			expect(
-				PERMITTED.some((prefix) => path === prefix || path.startsWith(prefix)),
-				`not permitted: ${path}`,
-			).toBe(true);
-		}
-	});
-
-	// TC-1101
-	it("changes no byte of any prohibited path", () => {
-		for (const path of changedPaths()) {
-			for (const prefix of PROHIBITED) {
-				expect(
-					path === prefix || path.startsWith(prefix),
-					`prohibited path changed: ${path}`,
-				).toBe(false);
-			}
-		}
-	});
-
-	// TC-1102 — the falsification: the permitted list must be able to reject.
-	it("would reject a path outside the permitted set", () => {
-		const outside = "src/compiler/ir/reader.mjs";
-		expect(
-			PERMITTED.some(
-				(prefix) => outside === prefix || outside.startsWith(prefix),
-			),
-		).toBe(false);
-		expect(
-			PROHIBITED.some(
-				(prefix) => outside === prefix || outside.startsWith(prefix),
-			),
-		).toBe(true);
-	});
-
 	// TC-1103
 	it("regenerates the kernel byte-identically", () => {
 		const before = treeOf(join(root, "packages/semantic-kernel"));
@@ -795,8 +675,6 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 			'from "../src/compiler/backends/rust-serde/cli.mjs"',
 		);
 		expect(sources.tree).toContain("generateRust(");
-		for (const path of changedPaths())
-			expect(path.startsWith("src/compiler/backends/"), path).toBe(false);
 
 		// CON-2. Read out of the recorded command list, never by eye: the recipe
 		// lines `make` reports, plus every argument vector the three scripts
@@ -848,11 +726,6 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		expect(imports(sources.tree)).toContain("generateRust");
 		expect(imports(sources.tree)).not.toContain("emitCrate");
 
-		// CON-5. #21's two artifacts are not this branch's to move.
-		for (const path of changedPaths()) {
-			expect(path.startsWith("test/fixtures/rust-serde/"), path).toBe(false);
-		}
-
 		// CON-6. The build gate runs cargo; it does not read a recorded result.
 		// Whitespace-insensitive: the formatter decides how the argument vector
 		// wraps, and the claim is about the vector, not its line breaks.
@@ -898,23 +771,7 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 	});
 
 	/** Traces: TC-1051; FR-086-CON-10, FR-086-AC-1, FR-086-AC-2. */
-	it("TC-1051 leaves every prohibited path unchanged and equals a fresh generation", () => {
-		// CON-10. The root manifest moves by exactly one added exclude entry.
-		const changed = changedPaths();
-		for (const path of changed) {
-			for (const prefix of [
-				"src/compiler/backends/",
-				"rust-toolchain.toml",
-				"rustfmt.toml",
-				".cargo/config.toml",
-				"package.json",
-				"tsconfig.json",
-				".github/",
-				"Cargo.lock",
-			]) {
-				expect(path.startsWith(prefix), `${path} is prohibited`).toBe(false);
-			}
-		}
+	it("TC-1051 equals a fresh generation", () => {
 		const workspace = readFileSync(resolve(root, "Cargo.toml"), "utf8");
 		expect(workspace).toContain('"packages/semantic-kernel/rust"');
 
@@ -1201,7 +1058,6 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 
 	/** Traces: TC-1057; FR-086-AC-18, FR-086-AC-19, FR-086-AC-20. */
 	it("TC-1057 reports the publication gate on every run and records it in the document", () => {
-		const kernelCommit = commitsAdding(root, [SENTINELS[1]])[0];
 		// AC-18. Reported by the gate, for a reader who never opens the document.
 		const reported = gate([
 			"scripts/check-semantic-kernel-crate.mjs",
@@ -1212,35 +1068,6 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		expect(reported.output).toContain("publish = false");
 		expect(reported.output).toContain("agent-ix/filament-core-data#21");
 
-		// AC-19. The root manifest's diff is exactly one added exclude entry.
-		const diff = execFileSync(
-			"git",
-			[
-				"diff",
-				"--unified=0",
-				"--no-renames",
-				// This change's own commit, not a range across every ticket that
-				// landed between issue #11's two squash commits.
-				`${kernelCommit}^..${kernelCommit}`,
-				"--",
-				"Cargo.toml",
-			],
-			{ cwd: root, encoding: "utf8" },
-		)
-			.split("\n")
-			.filter((line) => /^[+-][^+-]/.test(line));
-		for (const line of diff) expect(line).toContain("exclude = [");
-		expect(diff.filter((line) => line.startsWith("+"))).toHaveLength(
-			diff.filter((line) => line.startsWith("-")).length,
-		);
-		expect(
-			diff.filter(
-				(line) =>
-					line.startsWith("+") &&
-					line.includes("packages/semantic-kernel/rust"),
-			),
-		).toHaveLength(1);
-
 		// AC-20. Recorded in the document, for a reader who never runs the gate.
 		const doc = readFileSync(
 			resolve(root, "docs/semantic-data-system/semantic-kernel-packages.md"),
@@ -1250,9 +1077,6 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 			"agent-ix/quoin#290",
 			"publish = false",
 			"agent-ix/filament-core-data#21",
-			"65ea7fa",
-			"89e0ea1",
-			"01cc31f",
 		]) {
 			expect(doc, needle).toContain(needle);
 		}

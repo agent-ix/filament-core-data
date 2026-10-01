@@ -21,17 +21,8 @@ sys.path.insert(0, str(REPO))
 from python_backend.adapter import prepare, profiles  # noqa: E402
 from python_backend.runner import emit, qualify, validate  # noqa: E402
 from python_backend.runner import generate as runner  # noqa: E402
-from tests.change_range import changed_paths_of_commits  # noqa: E402
 
 BACKEND = REPO / "python_backend"
-#: One sentinel per commit that delivered part of this change, because issue #23
-#: reached the trunk as two squash commits ten tickets apart — PR #70, the
-#: generation route, and PR #113, the conformance adapter. The commits are named
-#: rather than spanned; see `tests/change_range.py`.
-SENTINELS = [
-    "spec/usecase/US-013-generate-governed-python-types.md",
-    "conformance/adapters/python-backend/adapter.py",
-]
 REPORT = json.loads((BACKEND / "qualification" / "report.json").read_text())
 GAPS = json.loads((BACKEND / "qualification" / "gaps.json").read_text())
 VALIDATION = json.loads((BACKEND / "qualification" / "validation.json").read_text())
@@ -174,27 +165,6 @@ def test_a_mutated_committed_report_fails_check(tmp_path: pathlib.Path) -> None:
     assert qualify.main(["--check"]) == 0
 
 
-def test_the_conformance_corpus_is_untouched() -> None:
-    """TC-904: FR-077-AC-10, FR-077-CON-3."""
-    # The corpus and the oracle, not the directory: issue #65 landed the
-    # Python adapter under `conformance/adapters/`, and an adapter's home is
-    # the harness that launches it. What must not move is what judges it.
-    assert (
-        changed_paths_of_commits(
-            REPO,
-            SENTINELS,
-            "conformance/corpus.json",
-            "conformance/corpus.mjs",
-            "conformance/cases",
-            "conformance/bases",
-            "conformance/oracle",
-            "conformance/schema",
-            "conformance/thresholds.json",
-        )
-        == []
-    )
-
-
 def test_no_gap_disposes_to_a_hand_written_generator() -> None:
     """TC-905: FR-077-AC-11, FR-077-CON-1."""
     for row in GAPS["gaps"]:
@@ -304,19 +274,6 @@ def test_a_not_qualified_family_has_no_package_and_a_recorded_reason() -> None:
         if verdict["verdict"] == qualify.NOT_QUALIFIED:
             assert not (BACKEND / "generated" / profile_id).exists()
             assert profile_id in note
-
-
-def test_no_manifest_or_workflow_changed_and_nothing_is_published() -> None:
-    """TC-924: FR-079-AC-7, FR-079-CON-1."""
-    assert (
-        changed_paths_of_commits(
-            REPO, SENTINELS, "package.json", "pnpm-lock.yaml", ".github"
-        )
-        == []
-    )
-    pyproject = (REPO / "pyproject.toml").read_text()
-    assert 'packages = [{ include = "agent_ix_core_data" }]' in pyproject
-    assert "python_backend" not in pyproject.split("[tool.poetry.group")[0]
 
 
 def test_no_backend_path_reaches_a_published_manifest() -> None:

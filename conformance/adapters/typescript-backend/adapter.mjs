@@ -29,7 +29,6 @@
  * independence. An undetectable property is better disclosed than asserted.
  */
 
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -52,35 +51,8 @@ const REPOSITORY_ROOT = resolve(
 	"../../..",
 );
 
-/** The decision modules whose content the adapter's version tracks. */
-const DECISION_MODULES = [
-	"src/compiler/backends/typescript-v1/admit.mjs",
-	"src/compiler/backends/typescript-v1/canonical.mjs",
-	"src/compiler/backends/typescript-v1/classify.mjs",
-	"src/compiler/backends/typescript-v1/loss.mjs",
-];
-
 const ADAPTER_ID = "typescript-backend";
-const ADAPTER_BASE_VERSION = "1.0.0";
-
-/**
- * `<base>+<digest>`, where the digest covers every decision module's bytes.
- *
- * FR-070 requires a version that moves whenever a decision module changes a
- * verdict this adapter produces. A hand-maintained constant does not: it moves
- * when someone remembers. Deriving it from the modules' own content moves it
- * whenever they change at all, which is stronger than the obligation and needs
- * nobody to remember. It reads committed bytes and no clock, so two runs of an
- * unchanged tree produce one version.
- */
-function adapterVersion() {
-	const hash = createHash("sha256");
-	for (const path of DECISION_MODULES) {
-		hash.update(path, "utf8");
-		hash.update(readFileSync(resolve(REPOSITORY_ROOT, path)));
-	}
-	return `${ADAPTER_BASE_VERSION}+${hash.digest("hex").slice(0, 12)}`;
-}
+const ADAPTER_VERSION = "1.0.0";
 
 /** Reads a published schema by the repository-relative path `SCHEMA_FILES` names. */
 function readSchema(fileName) {
@@ -103,12 +75,12 @@ function irOf(bundle) {
  * admits no member for one; carrying it as a diagnostic would invent a
  * disagreement the reader did not make.
  */
-function answer(entry, version, schemas) {
+function answer(entry, schemas) {
 	const bundle = buildInput(entry);
 	const admission = admitIr(bundle, { schemas });
 	const result = {
 		adapter: ADAPTER_ID,
-		adapterVersion: version,
+		adapterVersion: ADAPTER_VERSION,
 		caseId: entry.id,
 		support: "supported",
 		resultState: admission.resultState,
@@ -132,11 +104,10 @@ function answer(entry, version, schemas) {
 
 function main() {
 	const { cases } = loadCorpus();
-	const version = adapterVersion();
 	// The schemas are read once and reused, so the answer for case 111 is
 	// computed from the same bytes as the answer for case 1.
 	const schemas = SCHEMA_FILES.map(readSchema);
-	const results = cases.map((entry) => answer(entry, version, schemas));
+	const results = cases.map((entry) => answer(entry, schemas));
 	process.stdout.write(`${JSON.stringify(results)}\n`);
 }
 

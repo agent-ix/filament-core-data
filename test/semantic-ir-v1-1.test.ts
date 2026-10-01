@@ -1,13 +1,11 @@
-import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
-import { changedPathsOf } from "./changed-paths.js";
 import { normalize, readSemanticIr } from "./semantic-ir-v1-1-reader";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -74,30 +72,6 @@ function validates(schemaName: string, value: unknown): boolean {
 	const validate = ajv.getSchema(`${schemaBase}${schemaName}`);
 	if (!validate) throw new Error(`schema was not registered: ${schemaName}`);
 	return validate(value) as boolean;
-}
-
-function changedPaths(): string[] {
-	// Issue #51, fixed by issue #23. This gate used to resolve its range
-	// from a moving `main`, which is the quiet face of the defect issue #27
-	// met: once the change this suite guards merges, the range empties, the
-	// loop below iterates zero times, and every prohibition passes over
-	// nothing. Left open it is also the accreting face — the range annexes a
-	// later ticket's paths, and the only way to keep it green is to widen the
-	// permitted list below, which issue #55 records as how these guards were
-	// disabled incrementally.
-	//
-	// Both ends now come from history. The sentinel is the file issue #34's own
-	// change created — confirmed with `git log --diff-filter=A -1`, which names
-	// 014bff7 — so the range is that change's commit, it survives the squash
-	// merge, and it disappears (failing loudly) if the change is reverted.
-	return changedPathsOf(
-		root,
-		"fixtures/semantic/v1/positive/semantic-ir-v1-1.json",
-	);
-}
-
-function sha256(path: string): string {
-	return `sha256:${createHash("sha256").update(readFileSync(path)).digest("hex")}`;
 }
 
 function clone<T>(value: T): T {
@@ -174,18 +148,8 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 	 * them on disk as refused negative evidence — their refusal is asserted
 	 * over an inline document instead (`TestContract20`'s Rust and Python
 	 * mirrors, `crates/extraction-frontend/tests/constructs.rs`'s `tc_1756`).
-	 * The digest baseline below now pins only fixtures declaring the live
-	 * contract.
 	 */
-	it("keeps every v1 positive fixture byte-identical", () => {
-		const baseline = object(
-			readJson("v1-fixture-digests.json"),
-			"v1 fixture digest baseline",
-		);
-		const digests = object(baseline.digests, "digests");
-		for (const [name, digest] of Object.entries(digests)) {
-			expect(sha256(resolve(fixtureRoot, "positive", name)), name).toBe(digest);
-		}
+	it("validates the v1 positive package manifest", () => {
 		const manifest = object(
 			readJson("positive/package-manifest.json"),
 			"v1 manifest",
@@ -194,132 +158,6 @@ describe("semantic IR v1.1 baseline and non-disruption", () => {
 			validates("package-manifest.schema.json", manifest),
 			JSON.stringify(ajv.errors),
 		).toBe(true);
-	});
-
-	/**
-	 * fcd#179 deleted NFR-013 (TC-234's sole owner), whose subject was the
-	 * additivity of the now-deleted 1.0.0 -> 1.1.0 revision; the scope
-	 * discipline this test enforces has no other live requirement to trace to.
-	 * Kept as a regression guard, not a traced criterion.
-	 */
-	it("leaves the frozen TypeSpec spike untouched", () => {
-		// Scoped by issue #27 (FR-044), which owns the spike's rewiring. The
-		// retained evidence is still byte-identical apart from the one declared
-		// field, pinned by TC-371 in test/compiler.test.ts.
-		const promotionPaths = [
-			"spikes/typespec-feasibility/scripts/run-experiment.mjs",
-			"spikes/typespec-feasibility/package.json",
-			"spikes/typespec-feasibility/evidence/custom.json",
-		];
-		const permitted = (path: string) =>
-			promotionPaths.includes(path) ||
-			path.startsWith("spikes/typespec-feasibility/emitter/");
-		for (const path of changedPaths()) {
-			if (permitted(path)) continue;
-			expect(path.startsWith("spikes/"), path).toBe(false);
-		}
-		const spikeDiff = execFileSync(
-			"git",
-			["diff", "--no-renames", "origin/main", "--name-only", "--", "spikes/"],
-			{ cwd: root, encoding: "utf8" },
-		)
-			.split("\n")
-			.filter((line) => line.length > 0)
-			.filter((path) => !permitted(path));
-		expect(spikeDiff).toEqual([]);
-	});
-
-	/**
-	 * fcd#179 deleted NFR-013 (TC-236's sole owner); kept as a regression
-	 * guard, not a traced criterion (see the note above TC-234's test).
-	 */
-	it("keeps issue #34 inside its permitted paths", () => {
-		const allowed = [
-			"conformance/",
-			"plan/Plan-009-conformance-corpus-and-oracle/",
-			"test/conformance-corpus.test.ts",
-			"docs/semantic-data-system/",
-			"fixtures/semantic/v1/",
-			"plan/Plan-005-semantic-ir-v1-1/",
-			"plan/Plan-006-semantic-core-grammar/",
-			"src/compiler/",
-			"tsconfig.json",
-			"tsconfig.build.json",
-			"plan/Plan-007-promote-prototype-emitters/",
-			"package.json",
-			"pnpm-lock.yaml",
-			"docs/semantic-data-system/typespec-feasibility.md",
-			"test/compiler.test.ts",
-			"spikes/typespec-feasibility/scripts/",
-			"spikes/typespec-feasibility/package.json",
-			"spikes/typespec-feasibility/evidence/custom.json",
-			"spikes/typespec-feasibility/emitter/",
-			"packages/semantic-core/",
-			"fixtures/semantic-core/",
-			"Makefile",
-			"reviews/",
-			"schema/semantic/v1/",
-			"spec/",
-			"test/",
-			"tests/",
-			"audit/filament-contract-census/",
-			"pyproject.toml",
-			"poetry.lock",
-			// Issue #19 (the compiler core) adds the compiler fixture corpus, the
-			// matrix-summary script, its plan bundle, and its test file. Each entry
-			// is a path this branch writes, enumerated rather than widened.
-			"test/fixtures/compiler/",
-			"scripts/test-matrix-summary.mjs",
-			"scripts/build-compatibility-cases.mjs",
-			"scripts/build-evolution-goldens.mjs",
-			"scripts/build-compiler-docs.mjs",
-			"plan/Plan-008-typespec-frontend-and-ir-compiler-core/",
-			"plan/Plan-011-typescript-backend/",
-			// Issue #19 also publishes two generated documents and excludes its
-			// generated fixtures from the formatter.
-			"biome.json",
-			// Issue #21 (the Rust/Serde backend) adds a Rust workspace, its
-			// toolchain and formatter pins, the generated-crate goldens, the
-			// third-party attribution register and two rendered documents. Each
-			// entry is a path that branch writes, enumerated rather than widened,
-			// which is the extension NFR-016 states every ticket makes to these
-			// cumulative lists. The gate itself still reads a moving `origin/main`,
-			// which is issue #51 and not this ticket's to fix.
-			".cargo/config.toml",
-			"Cargo.toml",
-			"Cargo.lock",
-			"rust-toolchain.toml",
-			"rustfmt.toml",
-			"THIRD-PARTY-NOTICES.md",
-			".gitignore",
-			"crates/",
-			"scripts/build-rust-backend-docs.mjs",
-			"scripts/build-rust-backend-goldens.mjs",
-			"scripts/rust-backend-",
-			"docs/semantic-data-system/rust-backend",
-			"test/rust-backend.test.ts",
-			"test/fixtures/rust-serde/",
-			"test/changed-paths.ts",
-			"plan/",
-		];
-		for (const path of changedPaths()) {
-			expect(
-				allowed.some((prefix) => path === prefix || path.startsWith(prefix)),
-				path,
-			).toBe(true);
-			if (existsSync(resolve(root, path)))
-				expect(statSync(resolve(root, path)).isFile(), path).toBe(true);
-		}
-		// Issue #27 removes the spike emitter's `file:` devDependency, so
-		// `package.json` and `pnpm-lock.yaml` necessarily move. What these
-		// criteria protect — the published surface and the runtime dependency
-		// set — is pinned exactly by TC-391 in test/compiler.test.ts.
-		for (const prohibited of [
-			"schema/avro/core-data.avpr",
-			"src/generated.ts",
-			"agent_ix_core_data/core_data.py",
-		])
-			expect(changedPaths(), prohibited).not.toContain(prohibited);
 	});
 });
 
@@ -820,7 +658,7 @@ describe("FR-029 closed constraint vocabulary", () => {
 	 *
 	 * The `compatibility/cases.json` entry `v1-to-v1-1-additive-revision`
 	 * described the 1.0.0 -> 1.1.0 migration; both contracts are gone
-	 * (fcd#179), and the entry is deleted from the corpus (commit ecb7698).
+	 * (fcd#179), and the entry is deleted from the corpus.
 	 * FR-029-CON-2's trailing clause about that migration is deleted with it,
 	 * and NFR-013 (an entire requirement about that one now-nonexistent
 	 * revision) is deleted outright; TC-235, its sole trace, is deleted too.

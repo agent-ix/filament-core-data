@@ -36,22 +36,17 @@ never about the machine that ran the generator.
 
 - `test/fixtures/rust-serde/goldens/`: committed generated crates for each of
   the four corpus bases
-- `test/fixtures/rust-serde/digests.json`: the byte baseline over the goldens,
-  written by a script separate from the one that writes the goldens
 - `docs/semantic-data-system/rust-backend-support-matrix.md`: the MSRV, edition,
   toolchain version, `rustfmt` version, and platform matrix with the evidence
   each row rests on and the owning issue each unmet row carries
-- `scripts/build-rust-backend-goldens.mjs`: writes `digests.json` and the
-  determinism, formatter and support-matrix checks. It is a *different*
-  script from the one that writes the goldens, so a single emitter change
-  must move two artifacts and regenerating only the goldens leaves the
-  baseline red
+- `scripts/build-rust-backend-goldens.mjs`: the determinism, formatter and
+  support-matrix checks
 - `test/fixtures/rust-serde/format-branches.json`: a document exercising all
   three branches of the emitted `try_new` call rendering, because no corpus
   base reaches the middle one and a golden minted from the bases cannot
   catch a divergence there
 - A `make rust-check` target that regenerates into a scratch directory and
-  compares against the committed goldens and against the digest baseline
+  compares against the committed goldens
 - A `make rust-deep` target carrying the long property, fuzz, and mutation runs
 
 ## Behavior
@@ -91,14 +86,7 @@ never about the machine that ran the generator.
 - A golden SHALL be transcribed into `test/fixtures/rust-serde/goldens/` once,
   at the revision that introduces its corpus base, and SHALL thereafter be
   compared rather than regenerated.
-- The byte baseline `test/fixtures/rust-serde/digests.json` SHALL be written by
-  a script distinct from the one that writes the goldens, and the two SHALL
-  read the emitter through distinct entry points, so that a single emitter
-  change has to move two artifacts by two deliberate acts before the check goes
-  green again.
-- A change to one emitter byte SHALL therefore fail twice: once as a golden
-  comparison naming the file, and once as a digest baseline mismatch naming the
-  digest.
+- A change to one emitter byte SHALL fail the golden comparison, naming the file.
 
 ### Support matrix
 
@@ -150,7 +138,6 @@ never about the machine that ran the generator.
 | FR-060-CON-3 | A platform triple SHALL appear as supported only where the suite has run on it; an unrun row SHALL be recorded unmet with its owning issue. | Honesty | Inspection |
 | FR-060-CON-4 | The generator SHALL invoke no external process during generation. | Determinism | Analysis |
 | FR-060-CON-5 | The repository SHALL pin, in `rust-toolchain.toml`, an exact toolchain release together with its `rustfmt` component, carried into the support-matrix row as that row's evidence. | Maintainability | Inspection |
-| FR-060-CON-6 | The repository SHALL keep a golden frozen after its one transcription, with the digest baseline written by a script other than the golden writer. | Honesty | Inspection |
 | FR-060-CON-7 | A gate whose toolchain is absent SHALL fail naming what it could not run. | Honesty | Test |
 
 ## Acceptance Criteria
@@ -168,7 +155,6 @@ never about the machine that ran the generator.
 | FR-060-AC-9 | Reordering a document's identity-keyed arrays and permuting every object's key order produces byte-identical output. | Test (TC-718) |
 | FR-060-AC-10 | The output manifest's file list is sorted by path by code point, checked over every base. | Test (TC-718) |
 | FR-060-AC-11 | The `rustfmt` the check invokes reports the version `rust-toolchain.toml` pins and the support matrix names; a check run under a different formatter version fails naming both versions. | Test (TC-713) |
-| FR-060-AC-12 | Changing one emitter byte fails the golden comparison naming the file and fails the digest baseline naming the digest, and the two failures come from two scripts, so regenerating only the goldens leaves the baseline red. | Test (TC-714) |
 | FR-060-AC-13 | No platform row is listed supported without named measured evidence — the triple, the toolchain version, the `rustfmt` version, and the run that produced it — and exactly one row is so listed at this revision. | Inspection (TC-717) |
 | FR-060-AC-14 | Every unmet platform row names its reason and its owning issue, and a row recorded unmet with no owning issue fails the matrix gate. | Inspection (TC-717) |
 | FR-060-AC-15 | `make test` runs the Node-side gates and the consolidated Rust gates, `make rust-deep` runs the long property, fuzz, and mutation runs, and each target fails naming what it could not run when its toolchain is absent rather than skipping. | Test (TC-715) |

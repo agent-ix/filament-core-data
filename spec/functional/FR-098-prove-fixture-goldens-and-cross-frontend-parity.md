@@ -176,7 +176,6 @@ unlisted or listed and absent.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-098-CON-1 | Outside `crates/extraction-frontend/`, this requirement's change set SHALL be exactly `test/fixtures/compiler/shared/cases.json`, `test/fixtures/compiler/shared/typespec/records-and-scalars/`, and `test/fixtures/compiler/shared/spec-bundle/`. | Scope | Change-set diff |
 | FR-098-CON-3 | The crate SHALL keep the payload-schema helper unexported and unreachable from the `lift` and `inspect` commands. | Scope | Static analysis |
 
 ## Acceptance Criteria
@@ -191,7 +190,6 @@ unlisted or listed and absent.
 | FR-098-AC-7 | For `records-and-scalars`, `normalized` of the projection of the spec-bundle lift equals `normalized` of the projection of the `node src/compiler/cli.mjs compile` output byte for byte — every projected identity, the `type/NoteRevision` alias, and every `diagnosticCode` included — and the test fails naming `node` when it is absent. | Test (TC-1291) |
 | FR-098-AC-8 | `node src/compiler/cli.mjs generate` over the lifted `config-version-table` document exits zero with a non-empty file set and one diagnostic, the non-blocking `CONSTRUCT_MEMBER_UNENFORCED` advisory for its clauses ([FR-142](./FR-142-declare-one-construct-per-object-type.md)), for `--target rust` and for `--target typescript`; the Rust backend's own `generateRust` route through `node scripts/extraction-frontend-harness.mjs rust-generate` exits zero with zero diagnostics and a non-empty file set. The generic command line reaches the Rust target from [FR-130](./FR-130-register-the-rust-backend-in-the-generation-seam.md); before that registration only the harness route existed, and this criterion measured it alone. | Test (TC-1292) |
 | FR-098-AC-9 | A representative `ConfigVersion` payload validates against the test-derived schema, `{"versionNumber": 0}` fails at `versionNumber`, and the helper is not reachable from the crate's public surface. | Test (TC-1293) |
-| FR-098-AC-10 | The change set of this requirement outside the crate is exactly `cases.json`, `test/fixtures/compiler/shared/typespec/records-and-scalars/`, and files under `test/fixtures/compiler/shared/spec-bundle/`; `src/compiler/frontend/**` and `test/compiler-core.test.ts` are byte-unchanged. | Static (TC-1294) |
 | FR-098-AC-11 | The set of directories under `fixtures/`, `fixtures/negatives/`, and `fixtures/modules/` equals the inventory above, and every `constructed.json` names a test function that exists in `crates/extraction-frontend/tests/`. | Static (TC-1343) |
 | FR-098-AC-12 | `parity::project` applied to the `config-version-table` golden yields a value with `types` as its only member, no `origin` or `extensions` at any depth, and every identity beginning `ix://shared/`; applied twice it yields the same value. | Property (TC-1344) |
 

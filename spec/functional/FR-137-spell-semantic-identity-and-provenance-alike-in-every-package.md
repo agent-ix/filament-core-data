@@ -87,7 +87,7 @@ compatibility change in the contract the package describes.
 | FR-137-AC-4 | Every export the retired `metadata.ts` declared is declared by a module of the generated package after the change, under the same name | Test (TC-1540) |
 | FR-137-AC-5 | No generated package of any implemented target emits an artifact whose name denotes `metadata` | Test (TC-1541) |
 | FR-137-AC-6 | Each implemented backend's specification carries an ADR-0007 emitted-set section with a row for each concept, each row naming the artifact the concept lands in or declaring it a gap | Test (TC-1542) |
-| FR-137-AC-7 | Regenerating each committed golden reproduces its bytes exactly under the renamed layout | Test (TC-1543) |
+| FR-137-AC-7 | Regenerating each committed golden reproduces its bytes exactly under the renamed layout | Test |
 | FR-137-AC-8 | The generated TypeScript package's export surface does not contain `SEMANTIC_METADATA` | Test (TC-1544) |
 
 ## Dependencies

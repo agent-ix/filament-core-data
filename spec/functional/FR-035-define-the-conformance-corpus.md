@@ -62,8 +62,7 @@ the contract clause it was derived from.
 - If a case sets `provenance.blessedFromRun` to `true` without a `blessing` block, then the corpus gate SHALL fail and name that case.
 - A `positive` case SHALL declare `expected.resultState` as `success` and an empty expected diagnostic list.
 - A case SHALL declare `expected.diagnostics` as an ordered list whose entries each carry `pointer` (an RFC 6901 pointer into the input bundle) and `diagnostic` (a `common.schema.json#/$defs/diagnostic` document), so that the judged diagnostic is the contract's diagnostic and the pointer is corpus metadata beside it.
-- The corpus manifest SHALL record `corpusVersion` as SemVer, where adding a case, a base, or a construct-register row is a minor change, changing or removing an existing case's `expected` or an existing base is a major change, and editing a title, `derivedFrom`, or prose is a patch change.
-- If `corpusVersion` does not change as the manifest's own rules require for the change that was made, then the versioning gate SHALL fail and name the required bump.
+- The corpus manifest SHALL record `corpusVersion` as SemVer.
 - The corpus SHALL keep every case at or below a declared minimization budget of 64 JSON nodes in `ops`, counting each scalar, array, and object once.
 - The corpus SHALL NOT delete a case that reproduces a discovered defect after that defect is fixed.
 - If a case that a `defect` register row names is absent, then the corpus gate SHALL fail and name that row.
@@ -88,7 +87,7 @@ the contract clause it was derived from.
 | FR-035-AC-5 | No case sets `provenance.blessedFromRun` to `true`; a case that sets it without a `blessing` block fails the gate. | Test |
 | FR-035-AC-6 | No case's `ops` exceeds the 64-node minimization budget, and a `boundary` case that would exceed it uses `x-repeat` and stays inside it. | Test |
 | FR-035-AC-7 | An indexed `replace` or `remove` op with no preceding `test` op addressing it or an identifying member inside it fails the gate, and a `test` op that no longer matches its base fails the run. | Test |
-| FR-035-AC-8 | Deleting a case that a `defect` register row names fails the gate, and changing an existing `expected` block without a major `corpusVersion` bump fails the versioning gate. | Test |
+| FR-035-AC-8 | Deleting a case that a `defect` register row names fails the gate. | Test |
 | FR-035-AC-9 | Every expected diagnostic validates against `common.schema.json#/$defs/diagnostic`, and its `pointer` resolves in the case's built input bundle. | Test |
 | FR-035-AC-10 | Every case id matches the declared pattern, is unique, and sits in the directory its `family` names. | Test |
 

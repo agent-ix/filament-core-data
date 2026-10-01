@@ -190,14 +190,14 @@ def test_the_emitted_set_the_manifests_and_the_generator_are_as_declared() -> No
 
 
 # --------------------------------------------------------------------------
-# TC-1060 — FR-087-CON-7, FR-087-CON-8, FR-087-AC-1
+# TC-1060 — FR-087-AC-1
 # --------------------------------------------------------------------------
 
 
 def test_the_route_is_byte_identical_and_refuses_the_bundle_before_localization() -> (
     None
 ):
-    """TC-1060: FR-087-CON-7, FR-087-CON-8, FR-087-AC-1."""
+    """TC-1060: FR-087-AC-1."""
     paths = sorted(KERNEL_SCHEMAS.glob("*.json"))
     assert len(paths) == DOCUMENTS
 
@@ -218,12 +218,12 @@ def test_the_route_is_byte_identical_and_refuses_the_bundle_before_localization(
 
 
 # --------------------------------------------------------------------------
-# TC-1061 — FR-087-AC-2, FR-087-AC-3, FR-087-AC-4
+# TC-1061 — FR-087-AC-2, FR-087-AC-3
 # --------------------------------------------------------------------------
 
 
 def test_localization_leaves_a_bundle_the_guards_contract_permits() -> None:
-    """TC-1061: FR-087-AC-2, FR-087-AC-3, FR-087-AC-4."""
+    """TC-1061: FR-087-AC-2, FR-087-AC-3."""
     committed = emit.documents()
     base = emit.bundle_identity()["base"]
     result = localize.localize_bundle(committed, base)
@@ -517,7 +517,7 @@ def test_msgspec_cannot_decode_four_kernel_types() -> None:
 
     Neither union shape occurs in the thirteen published documents the issue
     #23 qualification probed, so neither is a `gaps.json` row, and
-    FR-087-CON-4 and FR-087-CON-7 both forbid making one from here. The loss is
+    FR-087-CON-4 forbids making one from here. The loss is
     pinned instead: the day `#125` is settled this fails and says so.
     """
     msgspec = pytest.importorskip("msgspec")

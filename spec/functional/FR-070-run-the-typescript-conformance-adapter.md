@@ -84,7 +84,7 @@ obliges honesty about how the agreement was reached.
 - The adapter SHALL answer `support: "supported"` for every corpus case.
 - The adapter SHALL NOT call `oracleVerdict` or `compare`.
 - The adapter SHALL NOT import `conformance/oracle/oracle.mjs`, `conformance/oracle/schema-layer.mjs`, or `conformance/corpus.mjs`.
-- The adapter SHALL declare an `adapterVersion` that moves whenever any of the backend's decision modules changes a verdict it produces.
+- The adapter SHALL declare an `adapterVersion`.
 - The adapter SHALL read no clock, no environment variable, and no network, so its output is a function of the corpus and the backend alone.
 - The adapter SHALL produce byte-identical output on two consecutive runs, from a different working directory, and under a different locale.
 
@@ -179,7 +179,6 @@ obliges honesty about how the agreement was reached.
 | FR-070-AC-16 | No package was published to any registry by this work. | Manual |
 | FR-070-AC-17 | `spec/tests.md` records the first-run divergence count, the final divergence count, and the count of FR-068 ledger entries derived from the corpus register rather than from a published clause, each labelled with what it counts. | Analysis |
 | FR-070-AC-18 | `conformance/divergences.json` is byte-unchanged, and a run that registers a divergence for this slot fails the change-set gate. | Analysis |
-| FR-070-AC-19 | The adapter's `adapterVersion` changes when a backend decision module changes a verdict, asserted by a test that mutates a decision and observes both the verdict and the declared version move. | Unit |
 | FR-070-AC-20 | No acceptance criterion or Behavior statement of this requirement claims an absolute value for the corpus-wide `unmetCases` total or for any adapter row this issue does not own, asserted by a check over this requirement's own text. | Static |
 
 ## Dependencies

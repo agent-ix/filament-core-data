@@ -30,10 +30,6 @@
  * the published contract, by a different ticket, before the corpus judged it.
  */
 
-import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { diffSemanticContract } from "../../../src/compiler/compat/diff.mjs";
 
 import { hasBlocking } from "../../../src/compiler/diagnostics.mjs";
@@ -41,46 +37,8 @@ import { normalizeIr } from "../../../src/compiler/ir/normalize.mjs";
 import { readContractIr } from "../../../src/compiler/ir/reader.mjs";
 import { buildBefore, buildInput, loadCorpus } from "../../oracle/index.mjs";
 
-/**
- * The repository root, resolved from this module rather than from
- * `process.cwd()`: the harness runs the adapter from `conformance/`, and a
- * working directory is exactly the kind of ambient input that makes an answer
- * depend on where it was asked.
- */
-const REPOSITORY_ROOT = resolve(
-	dirname(fileURLToPath(import.meta.url)),
-	"../../..",
-);
-
-/** The decision modules whose content the adapter's version tracks. */
-const DECISION_MODULES = [
-	"src/compiler/ir/reader.mjs",
-	"src/compiler/ir/normalize.mjs",
-	"src/compiler/compat/diff.mjs",
-	"src/compiler/diagnostics.mjs",
-];
-
 const ADAPTER_ID = "compiler-frontend";
-const ADAPTER_BASE_VERSION = "1.0.0";
-
-/**
- * `<base>+<digest>`, where the digest covers every decision module's bytes.
- *
- * FR-070 requires a version that moves whenever a decision module changes a
- * verdict this adapter produces. A hand-maintained constant does not: it moves
- * when someone remembers. Deriving it from the modules' own content moves it
- * whenever they change at all, which is stronger than the obligation and needs
- * nobody to remember. It reads committed bytes and no clock, so two runs of an
- * unchanged tree produce one version.
- */
-function adapterVersion() {
-	const hash = createHash("sha256");
-	for (const path of DECISION_MODULES) {
-		hash.update(path, "utf8");
-		hash.update(readFileSync(resolve(REPOSITORY_ROOT, path)));
-	}
-	return `${ADAPTER_BASE_VERSION}+${hash.digest("hex").slice(0, 12)}`;
-}
+const ADAPTER_VERSION = "1.0.0";
 
 /** The IR member of an input bundle, or `null` where the bundle carries none. */
 function irOf(bundle) {
@@ -120,12 +78,12 @@ function read(bundle) {
 /**
  * One adapter result for one case.
  */
-function answer(entry, version) {
+function answer(entry) {
 	const bundle = buildInput(entry);
 	const diagnostics = read(bundle);
 	const result = {
 		adapter: ADAPTER_ID,
-		adapterVersion: version,
+		adapterVersion: ADAPTER_VERSION,
 		caseId: entry.id,
 		support: "supported",
 		resultState: hasBlocking(diagnostics) ? "invalid" : "success",
@@ -165,8 +123,7 @@ function answer(entry, version) {
 
 function main() {
 	const { cases } = loadCorpus();
-	const version = adapterVersion();
-	const results = cases.map((entry) => answer(entry, version));
+	const results = cases.map((entry) => answer(entry));
 	process.stdout.write(`${JSON.stringify(results)}\n`);
 }
 

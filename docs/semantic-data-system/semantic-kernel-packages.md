@@ -55,18 +55,17 @@ remains manual and remains GitHub-only.
 
 [agent-ix/filament-core-data#21](https://github.com/agent-ix/filament-core-data/issues/21)
 is **open**. FR-086 was written while `make rust-check` was red on `main`:
-`test/fixtures/rust-serde/goldens/**` and `test/fixtures/rust-serde/digests.json`
-were both stale relative to `crate.mjs`, reproduced on clean `git clone`s under
-`mktemp -d` at `65ea7fa` and again at #21's own merge commit `89e0ea1`, so the
-redness was a property of the repository rather than of a working tree.
+`test/fixtures/rust-serde/goldens/**`
+was stale relative to `crate.mjs`, reproduced on clean `git clone`s under
+`mktemp -d`, so the redness was a property of the repository rather than of a
+working tree.
 
 That redness has since been repaired — not here. Its cause was a `match` arm
 the emitter wrote past `max_width = 100`, fixed under #21 by
 [PR #123](https://github.com/agent-ix/filament-core-data/pull/123), merged to
-`main` as `01cc31f`; `make rust-check` was measured green at that revision.
+`main`; `make rust-check` was measured green after the merge.
 FR-086 did not repair it, does not repair it, and leaves
-`test/fixtures/rust-serde/goldens/**` and
-`test/fixtures/rust-serde/digests.json` byte-unchanged: regenerating another
+`test/fixtures/rust-serde/goldens/**` byte-unchanged: regenerating another
 ticket's emitter output from here would be this requirement blessing bytes it
 does not answer for. #21 remains open for the rest of its scope.
 

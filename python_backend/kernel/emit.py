@@ -93,7 +93,7 @@ STRENUM_SHADOW = {
 #: kernel types at decoder-construction time. Neither union shape occurs in the
 #: thirteen published documents the issue #23 qualification probed, so neither
 #: is a `python_backend/qualification/gaps.json` row and neither may be made
-#: into one from here (FR-087-CON-4, FR-087-CON-7).
+#: into one from here (FR-087-CON-4).
 MSGSPEC_UNION_LOSS = {
     "id": "F2",
     "issue": "agent-ix/filament-core-data#125",

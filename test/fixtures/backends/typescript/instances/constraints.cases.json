@@ -5,8 +5,7 @@
 		"authoredFrom": [
 			"spec/functional/FR-066-generate-runtime-validators.md",
 			"test/fixtures/backends/typescript/instances/ir/constraints.ir.json"
-		],
-		"blessedFromRun": false
+		]
 	},
 	"cases": [
 		{

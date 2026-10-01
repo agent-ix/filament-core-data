@@ -63,7 +63,7 @@ All identifiers below are rooted at
 Positive, negative, compatibility, representation, Markdown, package-graph, and
 legacy evidence is published under `fixtures/semantic/v1/`; `2.0.0` golden
 documents, `negative/reader-cases.json` (cross-field rules a schema cannot
-express), and the `v1-fixture-digests.json` byte baseline sit beside them. A consumer can
+express) sit beside them. A consumer can
 validate it using only these files and a JSON Schema 2020-12 implementation.
 A document declaring `1.0.0` or `1.1.0` is refused by every reader, because
 `2.0.0` is the only contract a document may declare (fcd#179 deleted both
