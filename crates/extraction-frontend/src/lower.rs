@@ -61,7 +61,7 @@
 //! # Module short name
 //!
 //! FR-093 names roles `<module short name>:<object type>` with the example
-//! `business:entity` for `spec-objects-business`, and defines the short name
+//! `domain:entity` for `spec-objects-domain`, and defines the short name
 //! nowhere; the engine surfaces no `nav.category.slug`. [`module_short_name`]
 //! strips a leading `spec-objects-` from the manifest `name` and otherwise
 //! keeps the name whole. Reported as a spec gap with Task-132.
@@ -319,8 +319,8 @@ pub fn loss_register() -> Result<Vec<LossRow>, serde_json::Error> {
 // Names and roles
 // ---------------------------------------------------------------------------
 
-/// `<module short name>` of a manifest `name`: `business` for
-/// `spec-objects-business`; a name without the prefix is its own short
+/// `<module short name>` of a manifest `name`: `domain` for
+/// `spec-objects-domain`; a name without the prefix is its own short
 /// name.
 pub fn module_short_name(module: &str) -> &str {
     module.strip_prefix(MODULE_PREFIX).unwrap_or(module)

@@ -22,15 +22,15 @@ use serde_json::Value;
 
 use crate::common::{common_schema, crate_dir, diagnostic_schema_violations};
 
-const SOURCE: &str = "ix://agent-ix/config-service/spec";
-const DOC: &str = "spec/functional/FR-006-config-version-entity.md";
+const SOURCE: &str = "ix://agent-ix/docs-service/spec";
+const DOC: &str = "spec/functional/FR-006-snapshot-entity.md";
 
 fn fixture(name: &str) -> PathBuf {
     crate_dir().join("fixtures").join(name)
 }
 
 fn business_module() -> PathBuf {
-    fixture("modules/spec-objects-business")
+    fixture("modules/fixture-domain")
 }
 
 fn load_ok(bundle: &str) -> Bundle {
@@ -347,12 +347,12 @@ fn tc_1263_engine_advisory_maps_to_info_and_engine_error_to_blocking_error() {
 fn tc_1265_a_refused_module_yields_module_refused_at_the_manifest_line_1_column_1() {
     let root = fixture("negatives/MODULE_REFUSED");
     let refusal =
-        Bundle::load(&root, &[&root.join("modules/spec-objects-business")]).expect_err("refused");
+        Bundle::load(&root, &[&root.join("modules/fixture-domain")]).expect_err("refused");
     let d = &refusal.diagnostic;
     assert_eq!(d.code, WireCode::Registry(Code::ModuleRefused));
     assert_eq!((d.severity, d.blocking), (Severity::Error, true));
     let locus = d.locus.as_ref().expect("manifest locus");
-    assert_eq!(locus.path, "spec-objects-business/manifest.yaml");
+    assert_eq!(locus.path, "fixture-domain/manifest.yaml");
     assert_eq!((locus.start_line, locus.start_column), (1, 1));
     assert_eq!(locus.source_identity, SOURCE);
     assert!(d.causes.is_empty());

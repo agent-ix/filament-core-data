@@ -879,7 +879,7 @@ describe("TC-1773 every construct kind and model member rendered by the TypeScri
 			const golden = await generatedValidators(
 				resolve(
 					root,
-					"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
+					"crates/extraction-frontend/fixtures/snapshot-table/expected/semantic-ir.json",
 				),
 				resolve(scratch, "golden"),
 			);
@@ -1040,18 +1040,16 @@ describe("TC-1767 generated TypeScript names come from display names (FR-064)", 
 			const module = await generatedValidators(
 				resolve(
 					root,
-					"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
+					"crates/extraction-frontend/fixtures/snapshot-table/expected/semantic-ir.json",
 				),
 				resolve(scratch, "names"),
 			);
 			const identities = module.TYPE_IDENTITY as Record<string, string>;
-			expect(identities.ConfigVersion).toBe(
-				"ix://agent-ix/config-service/FR-006",
-			);
+			expect(identities.Snapshot).toBe("ix://agent-ix/docs-service/FR-006");
 			expect(
 				Object.keys(identities).some((name) => /^Fr?-?00/i.test(name)),
 			).toBe(false);
-			expect(typeof module.validateConfigVersion).toBe("function");
+			expect(typeof module.validateSnapshot).toBe("function");
 		} finally {
 			rmSync(scratch, { recursive: true, force: true });
 		}

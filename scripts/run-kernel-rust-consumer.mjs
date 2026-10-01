@@ -34,7 +34,6 @@ const CONSTRAINT_GOLDEN = join(
 	ROOT,
 	"packages/semantic-kernel/parity/golden/PAR-0027.json",
 );
-const CLOSURES = join(ROOT, "packages/semantic-kernel/examples/closures.json");
 
 function run(command, args, options) {
 	try {
@@ -45,18 +44,17 @@ function run(command, args, options) {
 	}
 }
 
-function recordClosure(metadata) {
-	const current = existsSync(CLOSURES)
-		? JSON.parse(readFileSync(CLOSURES, "utf8"))
-		: { $comment: "FR-089. Written by the consumer execution harnesses." };
-	current.rust = {
-		packages: metadata.packages
-			.map(({ name, version }) => ({ name, version }))
-			.sort((left, right) =>
-				left.name < right.name ? -1 : left.name > right.name ? 1 : 0,
-			),
-	};
-	writeFileSync(CLOSURES, `${JSON.stringify(current, null, "\t")}\n`);
+/** The resolved closure holds no persistence, Tauri, UI, ORM or framework package. */
+const FORBIDDEN =
+	/^(sqlx|diesel|rusqlite|sea-orm|tokio-postgres|tauri|gtk|egui|iced|actix-web|axum|rocket)(-|$)/;
+
+function assertClosure(metadata) {
+	const found = metadata.packages
+		.map(({ name }) => name)
+		.filter((name) => FORBIDDEN.test(name));
+	if (found.length > 0) {
+		throw new Error(`the Rust example's closure holds ${found.join(", ")}`);
+	}
 }
 
 const scratch = mkdtempSync(join(tmpdir(), "fcd-kernel-rust-consumer-"));
@@ -92,7 +90,7 @@ try {
 		env: { ...process.env, CARGO_TARGET_DIR: join(scratch, "consumer-target") },
 	});
 	process.stdout.write(output);
-	recordClosure(
+	assertClosure(
 		JSON.parse(
 			run("cargo", ["metadata", "--offline", "--format-version", "1"], {
 				cwd: join(build, "kernel-consumer"),

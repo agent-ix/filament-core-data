@@ -1,0 +1,17 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/domain/0.1.0/PopulationMember.json",
+	"type": "object",
+	"properties": {
+		"type": {
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/TypeRef.json"
+		},
+		"extent": {
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/Multiplicity.json"
+		}
+	},
+	"required": ["type", "extent"],
+	"unevaluatedProperties": {
+		"not": {}
+	}
+}

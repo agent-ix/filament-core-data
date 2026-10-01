@@ -1,0 +1,17 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/systems/0.1.0/Allocation.json",
+	"type": "object",
+	"properties": {
+		"sourceElement": {
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/SemanticId.json"
+		},
+		"targetElement": {
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/SemanticId.json"
+		}
+	},
+	"required": ["sourceElement", "targetElement"],
+	"unevaluatedProperties": {
+		"not": {}
+	}
+}

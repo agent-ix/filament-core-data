@@ -1,5 +1,5 @@
 //! FR-093: records, fields, constraints, enumerations and the declared
-//! losses, over committed fixture bundles under the vendored business
+//! losses, over committed fixture bundles under the fixture-domain
 //! module. Nothing here reads the environment.
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -40,13 +40,13 @@ fn fixture(name: &str) -> PathBuf {
 }
 
 fn business_module() -> PathBuf {
-    fixture("modules/spec-objects-business")
+    fixture("modules/fixture-domain")
 }
 
 /// The `edge_types` registry FR-094 categorises frontmatter edges by,
 /// declaring the business module's verbs byte-identically.
 fn edge_vocabulary() -> PathBuf {
-    fixture("modules/edge-vocabulary")
+    fixture("modules/fixture-edges")
 }
 
 fn limits() -> Limits {
@@ -223,8 +223,8 @@ fn artifact_ref(lift: &Lift, id: &str) -> ArtifactRef {
 #[trace("TC-1220", "FR-093-CON-1")]
 #[test]
 fn tc_1220_table_root_and_fence_root_lower_to_byte_identical_types_and_fields_form_moves_no_byte() {
-    let table = lift("config-version-table");
-    let fence = lift("config-version-fence");
+    let table = lift("snapshot-table");
+    let fence = lift("snapshot-fence");
     assert!(
         !table.lowered.diagnostics.iter().any(|d| d.blocking)
             && !fence.lowered.diagnostics.iter().any(|d| d.blocking),
@@ -289,31 +289,31 @@ fn tc_1220_table_root_and_fence_root_lower_to_byte_identical_types_and_fields_fo
 
 #[trace("TC-1221", "FR-093-AC-2")]
 #[test]
-fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_order() {
-    let lift = lift("config-version-table");
+fn tc_1221_snapshot_carries_three_roles_reject_policy_and_seven_fields_in_order() {
+    let lift = lift("snapshot-table");
     let types = types_json(&lift);
-    let record = type_named(&types, "ConfigVersion");
+    let record = type_named(&types, "Snapshot");
     assert_eq!(
         record["kind"],
-        json!({"module": "agent-ix/spec-objects-business", "name": "entity"})
+        json!({"module": "fixture/domain", "name": "entity"})
     );
-    assert_eq!(record["identity"], "ix://agent-ix/config-service/FR-006");
+    assert_eq!(record["identity"], "ix://agent-ix/docs-service/FR-006");
     assert_eq!(
         record["roles"],
         json!([
-            "business:aggregate-member",
-            "business:composite-owner",
-            "business:domain-object",
-            "business:entity",
-            "business:persistable"
+            "fixture-domain:aggregate-member",
+            "fixture-domain:composite-owner",
+            "fixture-domain:domain-object",
+            "fixture-domain:entity",
+            "fixture-domain:persistable"
         ])
     );
     assert_eq!(record["unknownPolicy"], "reject");
     assert_eq!(
         record["origin"],
         json!({"source": {
-            "sourceIdentity": "ix://agent-ix/config-service/spec",
-            "path": "spec/functional/FR-006-config-version-entity.md",
+            "sourceIdentity": "ix://agent-ix/docs-service/spec",
+            "path": "spec/functional/FR-006-snapshot-entity.md",
             "startLine": 1, "startColumn": 1
         }})
     );
@@ -339,7 +339,7 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
     // Roles are sorted and de-duplicated whatever the manifest order.
     assert_eq!(
         roles(
-            "spec-objects-business",
+            "fixture-domain",
             "entity",
             &[
                 "persistable".into(),
@@ -348,9 +348,9 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
             ]
         ),
         [
-            "business:domain-object",
-            "business:entity",
-            "business:persistable"
+            "fixture-domain:domain-object",
+            "fixture-domain:entity",
+            "fixture-domain:persistable"
         ]
     );
     // Every emitted definition is schema-shaped: the reader accepts it.
@@ -361,9 +361,9 @@ fn tc_1221_config_version_carries_three_roles_reject_policy_and_seven_fields_in_
 #[test]
 fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_and_parent_to_optional(
 ) {
-    let lift = lift("config-version-table");
+    let lift = lift("snapshot-table");
     let types = types_json(&lift);
-    let record = type_named(&types, "ConfigVersion");
+    let record = type_named(&types, "Snapshot");
     let id = field_named(record, "id");
     assert_eq!(
         id["multiplicity"],
@@ -373,7 +373,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(id["nullable"], false);
     assert_eq!(id["defaultKind"], "none");
     assert_eq!(id["typeRef"], "ix://quire/native/UUID");
-    assert_eq!(id["identity"], "ix://agent-ix/config-service/FR-006/id");
+    assert_eq!(id["identity"], "ix://agent-ix/docs-service/FR-006/id");
     assert_eq!(
         id["extensions"],
         json!([{
@@ -386,8 +386,8 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(
         id["origin"]["source"],
         json!({
-            "sourceIdentity": "ix://agent-ix/config-service/spec",
-            "path": "spec/functional/FR-006-config-version-entity.md",
+            "sourceIdentity": "ix://agent-ix/docs-service/spec",
+            "path": "spec/functional/FR-006-snapshot-entity.md",
             "startLine": 22, "startColumn": 3
         }),
         "the row's line, column 3"
@@ -400,7 +400,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(parent["presence"], "optional");
     assert_eq!(parent["nullable"], false);
     assert_eq!(
-        parent["typeRef"], "ix://agent-ix/config-service/FR-006",
+        parent["typeRef"], "ix://agent-ix/docs-service/FR-006",
         "the self-reference resolves to the record itself (EC-143)"
     );
     assert_eq!(parent["extensions"], json!([]));
@@ -435,16 +435,16 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
 #[test]
 fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the_screaming_diagnostic_code(
 ) {
-    let lift = lift("config-version-table");
+    let lift = lift("snapshot-table");
     let types = types_json(&lift);
-    let record = type_named(&types, "ConfigVersion");
+    let record = type_named(&types, "Snapshot");
     // The record carries no constraint of its own: each lives inline on its
     // field (gap 1 of FCD #199/#200), no alias is minted for it.
     assert_eq!(record["constraints"], json!([]));
     let field = field_named(record, "versionNumber");
     assert_eq!(
         field["identity"],
-        "ix://agent-ix/config-service/FR-006/versionNumber"
+        "ix://agent-ix/docs-service/FR-006/versionNumber"
     );
     assert_eq!(field["typeRef"], "ix://quire/native/Integer");
     let constraints = field["constraints"].as_array().expect("constraints");
@@ -455,22 +455,22 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the
     assert_eq!(min["appliesTo"], field["identity"]);
     assert_eq!(
         min["diagnosticCode"],
-        "agent-ix.config-service.CONFIGVERSION_VERSIONNUMBER_MIN"
+        "agent-ix.docs-service.SNAPSHOT_VERSIONNUMBER_MIN"
     );
     assert_eq!(
         min["identity"],
-        "ix://agent-ix/config-service/constraint/FR-006-versionNumber-min"
+        "ix://agent-ix/docs-service/constraint/FR-006-versionNumber-min"
     );
     assert_eq!(min["origin"]["source"]["startLine"], 23, "the row's origin");
     assert_eq!(min["origin"]["source"]["startColumn"], 3);
     // Every constraint of the record: min, nonEmpty, maxLength, one per
     // constrained field, in field order; no unconstrained field mints one.
-    let keywords: Vec<&str> = constraints_of(&types, "ConfigVersion")
+    let keywords: Vec<&str> = constraints_of(&types, "Snapshot")
         .iter()
         .map(|c| c["keyword"].as_str().expect("keyword"))
         .collect();
     assert_eq!(keywords, ["min", "nonEmpty", "maxLength"]);
-    let constrained_names: Vec<&str> = constrained_fields_of(&types, "ConfigVersion")
+    let constrained_names: Vec<&str> = constrained_fields_of(&types, "Snapshot")
         .iter()
         .map(|f| f["name"].as_str().expect("name"))
         .collect();
@@ -494,20 +494,20 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the
     assert_eq!(screaming("created__at"), "CREATED_AT");
     assert_eq!(screaming("maxLength"), "MAXLENGTH");
     assert_eq!(screaming("id"), "ID");
-    let package = PackageIdentity::new("agent-ix", "config-service");
+    let package = PackageIdentity::new("agent-ix", "docs-service");
     assert_eq!(
-        diagnostic_code(&package, "ConfigVersion", "createdBy", "maxLength"),
-        "agent-ix.config-service.CONFIGVERSION_CREATEDBY_MAXLENGTH"
+        diagnostic_code(&package, "Snapshot", "createdBy", "maxLength"),
+        "agent-ix.docs-service.SNAPSHOT_CREATEDBY_MAXLENGTH"
     );
 }
 
 #[trace("TC-1224", "FR-093-AC-5")]
 #[test]
 fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
-    let lift = lift("config-version-table");
+    let lift = lift("snapshot-table");
     let types = types_json(&lift);
-    let record = type_named(&types, "ConfigVersion");
-    let max_length = constraints_of(&types, "ConfigVersion")
+    let record = type_named(&types, "Snapshot");
+    let max_length = constraints_of(&types, "Snapshot")
         .into_iter()
         .find(|c| c["keyword"] == "maxLength")
         .expect("maxLength");
@@ -785,8 +785,8 @@ fn tc_1226_and_tc_1553_json_object_resolves_to_the_native_any_scalar_without_a_d
         .ends_with("FR-106"));
     for name in [
         "negatives/DECLARED_LOSS",
-        "config-version-table",
-        "config-version-fence",
+        "snapshot-table",
+        "snapshot-fence",
         "business",
         "lower/collections",
     ] {
@@ -886,12 +886,7 @@ fn tc_1228_legacy_form_emits_no_record_and_a_warning_while_both_forms_blocks() {
     assert_eq!(
         legacy.resolutions.outcomes.get("FR-006"),
         Some(&Outcome::NotLowered {
-            cause: locus(
-                &legacy,
-                "spec/functional/FR-006-config-version-entity.md",
-                1,
-                1
-            )
+            cause: locus(&legacy, "spec/functional/FR-006-snapshot-entity.md", 1, 1)
         })
     );
 
@@ -1051,12 +1046,15 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     let status = type_named(&types, "OrderStatus");
     assert_eq!(
         status["kind"],
-        json!({"module": "agent-ix/spec-objects-business", "name": "enumeration"})
+        json!({"module": "fixture/domain", "name": "enumeration"})
     );
     assert_eq!(status["identity"], "ix://agent-ix/orders/EN_001");
     assert_eq!(
         status["roles"],
-        json!(["business:aggregate-member", "business:enumeration"])
+        json!([
+            "fixture-domain:aggregate-member",
+            "fixture-domain:enumeration"
+        ])
     );
     assert_eq!(status["unknownPolicy"], "reject");
     assert_eq!(status["constraints"], json!([]));
@@ -1139,8 +1137,8 @@ fn tc_1333_the_business_enumeration_lowers_to_one_enum_with_a_variant_per_values
     // fixture document is a record or a construct, and every field
     // constraint applies to its own field.
     for name in [
-        "config-version-table",
-        "config-version-fence",
+        "snapshot-table",
+        "snapshot-fence",
         "business",
         "lower/constraints",
         "lower/collections",
@@ -1221,13 +1219,13 @@ fn tc_1334_status_and_status_collide_and_repeated_or_colliding_constraints_are_d
         unnameable[0].locus,
         Some(locus(
             &lift,
-            "spec/functional/FR-005-config-overlay-entity.md",
+            "spec/functional/FR-005-snapshot-group-entity.md",
             1,
             1
         ))
     );
     assert!(
-        unnameable[0].message.contains("Config Overlay Entity"),
+        unnameable[0].message.contains("Snapshot Group Entity"),
         "{}",
         unnameable[0].message
     );
@@ -1249,12 +1247,12 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_field_and_variant_levels() {
     write_fixture(
         types.path(),
         "spec/functional/FR-001.md",
-        &entity("FR_001", "ConfigVersion", "| id | UUID | 1 | identity |\n"),
+        &entity("FR_001", "Snapshot", "| id | UUID | 1 | identity |\n"),
     );
     write_fixture(
         types.path(),
         "spec/functional/FR-002.md",
-        &entity("FR__001", "ConfigOverlay", "| id | UUID | 1 | identity |\n"),
+        &entity("FR__001", "SnapshotGroup", "| id | UUID | 1 | identity |\n"),
     );
     let type_lift = lift_at(types.path(), &[&business_module(), &edge_vocabulary()]);
     assert!(
@@ -1391,10 +1389,10 @@ fn tc_1335_a_domain_without_properties_lowers_to_an_empty_record_and_lossy_yield
     let domain = type_named(&types, "Ordering");
     assert_eq!(
         domain["kind"],
-        json!({"module": "agent-ix/spec-objects-business", "name": "domain"})
+        json!({"module": "fixture/domain", "name": "domain"})
     );
     assert!(domain.get("fields").is_none(), "{domain}");
-    assert_eq!(domain["roles"], json!(["business:domain"]));
+    assert_eq!(domain["roles"], json!(["fixture-domain:domain"]));
     assert_eq!(
         lift.extractions.artifacts["DM_001"]
             .extraction

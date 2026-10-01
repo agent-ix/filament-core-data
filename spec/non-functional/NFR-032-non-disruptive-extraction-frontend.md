@@ -45,8 +45,8 @@ the crates whose agreement is evidence remain independent of it.
   its *last*. Both ends of the range resolve from these, in the NFR-023 form;
   the diagnostics document is therefore written in the final implementation
   commit rather than when its requirement is first satisfied.
-- Permitted paths: `crates/extraction-frontend/**`, including the vendored
-  module fixture under `crates/extraction-frontend/fixtures/modules/**`; the
+- Permitted paths: `crates/extraction-frontend/**`, including the synthetic
+  module fixtures under `crates/extraction-frontend/fixtures/modules/**`; the
   `members` line of the root `Cargo.toml` and the `Cargo.lock` entries that
   line adds, resolved under `cargo --locked` so that no other member's
   entry moves (NFR-033); one `extraction-frontend` block in the root
@@ -80,8 +80,7 @@ the crates whose agreement is evidence remain independent of it.
   `test/*.test.ts`, the repository-root `scripts/**` other than
   `scripts/extraction-frontend-harness.mjs`, and every path of every other
   repository —
-  `config-service`, `quire-rs`, `spec-objects-business`, and
-  `spec-artifacts-iso` are read-only fixtures. The `fixtures/**` and
+  `docs-service` and `quire-rs` are read-only. The `fixtures/**` and
   `tests/**` globs are anchored at the repository root and do not match
   `crates/extraction-frontend/fixtures/` or `crates/extraction-frontend/tests/`.
 - `crates/semantic-ir/**` is prohibited for edits and permitted as a
@@ -103,8 +102,8 @@ the crates whose agreement is evidence remain independent of it.
   table — to live under the root `scripts/`; the shared-case members and the
   `$comment` because FR-045 reserved the column for this ticket by name and
   FR-098 owns the `reason` member and the `records-and-scalars` case; the
-  vendored module because
-  NFR-033 pins it there; and the diagnostics document because FR-096 names it
+  synthetic modules because
+  NFR-033 pins them there; and the diagnostics document because FR-096 names it
   as the published registry.
 
 ## Rationale
@@ -122,7 +121,7 @@ parity criterion is only a criterion while the two frontends share nothing but
 the IR they emit.
 
 The corpus repositories are prohibited for a reason this ticket measured. The
-Phase 0 gate found that the live `config-service` FR-006 predates the
+Phase 0 gate found that the live `docs-service` FR-006 predates the
 typed-table contract and lifts to nothing, and that no `object: entity`
 artifact anywhere under the authoring host's checkouts is yet in the typed form.
 The temptation to "fix the fixture" is exactly the corpus migration the program

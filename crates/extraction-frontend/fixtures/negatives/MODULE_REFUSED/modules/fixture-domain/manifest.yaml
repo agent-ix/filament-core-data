@@ -1,0 +1,34 @@
+manifest_version: 1.0.0
+name: fixture-domain
+version: 0.1.0
+description: A module declaring a semantic-core version the engine embeds no bundle for (FR-091-AC-3)
+semantic:
+  contract_version: 1.0.0
+  semantic_core: 9.9.9
+  package: fixture/domain
+  exports:
+  - entity
+  imports: {}
+  targets: [json-schema]
+  mappings: [typed-table]
+  compatibility_posture: additive
+  legacy_forms: warning
+archetypes: []
+grammars: []
+artifact_types: []
+lint_rules: []
+object_types:
+- name: entity
+  data_schema:
+    schema: schemas/Entity.json
+  body_extraction:
+    yield_pattern:
+      match:
+        id:
+          from: frontmatter_field
+          path: [id]
+          required: true
+        properties:
+          from: section_body
+          after_heading: Properties
+          required: true

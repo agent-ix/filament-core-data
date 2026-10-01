@@ -36,19 +36,17 @@ use serde_json::Value;
 // ---------------------------------------------------------------------------
 
 /// The directories directly under `fixtures/`. FR-098's own list names
-/// `business`, `config-version-fence`, `config-version-table`, `legacy`,
+/// `business`, `snapshot-fence`, `snapshot-table`, `legacy`,
 /// `modules`, `negatives` and a `both-forms` that lives under
 /// `negatives/ARTIFACT_NOT_LOWERED`; the rest are the bundles FR-091..FR-097
 /// name in their criteria and FR-098 does not repeat (reported with
 /// Task-136). `architecture` is the filament-core-data#173 bundle: the
-/// spec-objects-architecture systems kinds (part, port, connection,
+/// fixture-systems systems kinds (part, port, connection,
 /// allocation, interface).
 const TOP_LEVEL: [&str; 13] = [
     "architecture",
     "business",
     "clauses",
-    "config-version-fence",
-    "config-version-table",
     "edges",
     "identity-cases",
     "legacy",
@@ -57,17 +55,19 @@ const TOP_LEVEL: [&str; 13] = [
     "negatives",
     "registry-doc",
     "resolve",
+    "snapshot-fence",
+    "snapshot-table",
 ];
 
 /// The module roots under `fixtures/modules/`.
 const MODULES: [&str; 7] = [
     "acme-other",
     "conflicting",
-    "edge-vocabulary",
+    "fixture-domain",
+    "fixture-edges",
+    "fixture-systems",
     "frobnicates",
     "objects-extra",
-    "spec-objects-architecture",
-    "spec-objects-business",
 ];
 
 /// The codes FR-096 declares whose emission a committed file cannot
@@ -460,7 +460,7 @@ fn tc_1286_regenerating_every_golden_into_the_target_directory_reproduces_it_byt
 
     // Falsification: a one-byte change to a scratch copy of one golden
     // fails naming the fixture and the byte offset.
-    let name = Path::new("config-version-table");
+    let name = Path::new("snapshot-table");
     let copy = scratch_dir("tc-1286-copy");
     copy_tree(
         &fixtures_root().join(name).join(EXPECTED_DIR),
@@ -472,7 +472,7 @@ fn tc_1286_regenerating_every_golden_into_the_target_directory_reproduces_it_byt
     bytes[offset] ^= 0x01;
     fs::write(&golden, bytes).expect("write");
     let error = compare_golden(name, &copy.join(EXPECTED_DIR), &into).expect_err("differs");
-    assert!(error.contains("config-version-table"), "{error}");
+    assert!(error.contains("snapshot-table"), "{error}");
     assert!(error.contains(&format!("offset {offset}")), "{error}");
 }
 
@@ -648,13 +648,9 @@ fn tc_1253_one_checkout_lifted_from_two_working_directories_and_homes_matches_it
         let home = scratch.path().join(format!("home-{label}"));
         fs::create_dir_all(&cwd).expect("mkdir");
         fs::create_dir_all(&home).expect("mkdir");
-        runs.push(lift_by_binary(
-            &fixture("config-version-table"),
-            &cwd,
-            &home,
-        ));
+        runs.push(lift_by_binary(&fixture("snapshot-table"), &cwd, &home));
     }
-    let expected = fixture("config-version-table").join(EXPECTED_DIR);
+    let expected = fixture("snapshot-table").join(EXPECTED_DIR);
     for ((golden, a), (_, b)) in runs[0].iter().zip(&runs[1]) {
         assert_eq!(a, b, "{golden} differs between the two runs");
         assert_eq!(
@@ -742,7 +738,7 @@ fn hygiene_violations(value: &Value, forbid_duration: bool) -> Vec<String> {
 fn tc_1255_no_absolute_path_timestamp_hostname_or_username_in_the_document() {
     // An absolute bundle path, as `make extraction-frontend-lift BUNDLE=...`
     // gives it.
-    let bundle = fs::canonicalize(fixture("config-version-table")).expect("absolute");
+    let bundle = fs::canonicalize(fixture("snapshot-table")).expect("absolute");
     assert!(bundle.is_absolute());
     let out = tempfile::tempdir().expect("tempdir");
     let request = request_at(&bundle, out.path());

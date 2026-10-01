@@ -27,11 +27,11 @@ fn fixture(name: &str) -> PathBuf {
 }
 
 fn business_module() -> PathBuf {
-    fixture("modules/spec-objects-business")
+    fixture("modules/fixture-domain")
 }
 
 fn edge_vocabulary() -> PathBuf {
-    fixture("modules/edge-vocabulary")
+    fixture("modules/fixture-edges")
 }
 
 fn limits() -> Limits {
@@ -132,7 +132,7 @@ fn ir_document(lift: &Lift) -> Value {
     json!({ "ir": doc })
 }
 
-const FR_006: &str = "spec/functional/FR-006-config-version-entity.md";
+const FR_006: &str = "spec/functional/FR-006-snapshot-entity.md";
 const FR_001: &str = "spec/functional/FR-001-order.md";
 const OPERATIONS: &str = "spec/functional/operations.md";
 
@@ -140,14 +140,14 @@ const OPERATIONS: &str = "spec/functional/operations.md";
 #[test]
 fn tc_1239_the_immutable_ocl_fence_lowers_to_one_clause_with_the_engine_span_and_origin_at_its_start(
 ) {
-    let lift = lift("config-version-table");
+    let lift = lift("snapshot-table");
     assert!(
         !is_blocked(&lift.lowered.diagnostics),
         "{:?}",
         lift.lowered.diagnostics
     );
     let types = types_json(&lift);
-    let record = type_named(&types, "ConfigVersion");
+    let record = type_named(&types, "Snapshot");
     let clauses = list(record, "clauses");
     assert_eq!(clauses.len(), 1, "{clauses:?}");
     let clause = &clauses[0];
@@ -155,12 +155,12 @@ fn tc_1239_the_immutable_ocl_fence_lowers_to_one_clause_with_the_engine_span_and
     assert_eq!(clause["clauseId"], "immutable");
     assert_eq!(
         clause["identity"],
-        "ix://agent-ix/config-service/clause/FR-006-immutable"
+        "ix://agent-ix/docs-service/clause/FR-006-immutable"
     );
     let extraction = &lift.extractions.artifacts["FR-006"].extraction;
     let text = &extraction.clause_text.as_ref().expect("clause_text")["immutable"];
     assert_eq!(clause["text"].as_str(), Some(text.as_str()));
-    assert!(text.starts_with("context ConfigVersion inv immutable:"));
+    assert!(text.starts_with("context Snapshot inv immutable:"));
     // The span as the engine reports it: the fence's opening line at
     // column 1 through its closing line.
     let engine = extraction.clauses.as_ref().expect("clauses")[0]
@@ -344,7 +344,7 @@ fn tc_1242_an_unresolved_returns_token_raises_unresolved_type_token_at_the_retur
     assert!(is_blocked(&lift.lowered.diagnostics));
     assert!(types_json(&lift)
         .iter()
-        .all(|t| t["displayName"] != "ConfigVersion"));
+        .all(|t| t["displayName"] != "Snapshot"));
 }
 
 /// `^ix://[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._~:/-]*$`

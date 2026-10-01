@@ -1,7 +1,7 @@
 {
 	"roots": [
-		"modules/spec-objects-business",
-		"modules/edge-vocabulary",
-		"modules/spec-objects-architecture"
+		"modules/fixture-domain",
+		"modules/fixture-edges",
+		"modules/fixture-systems"
 	]
 }

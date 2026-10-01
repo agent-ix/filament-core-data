@@ -85,7 +85,6 @@ const PROMOTED_IR_COMMAND =
  */
 const FROZEN_CUSTOM_EVIDENCE: Json = {
 	command: SPIKE_IR_COMMAND,
-	compilerVersion: "1.15.0",
 	result: "passed",
 	typeCount: 18,
 	extensionSurface:

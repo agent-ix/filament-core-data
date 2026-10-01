@@ -14,7 +14,7 @@
 //! is the engine's to read and the Relationships-section bullet grammar exists
 //! in no contract (FR-094 "SHALL NOT read a Relationships-section section",
 //! FR-091-CON-3). No the Properties table row becomes a relationship: `parent |
-//! ConfigVersion | 0..1` is a field (FR-094-AC-8).
+//! Snapshot | 0..1` is a field (FR-094-AC-8).
 //!
 //! # What decides `category` and `composite`
 //!

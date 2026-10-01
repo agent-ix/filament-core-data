@@ -34,23 +34,20 @@ itself.
 
 ## Rationale
 
-The `config-version` fixtures are the quire-rs re-authorings of config-service
-FR-006, copied verbatim, because the live config-service FR-006 is a legacy
-free-column table that FR-091 proves lifts to nothing; the 2026-09-08 Phase 0
-comment on issue #36 records that finding, and config-service is not edited.
+The `snapshot` fixtures are authored here in the typed-table and fence forms,
+because a legacy free-column table lifts to nothing (FR-091), which the
+`legacy` fixture proves. No file of another repository is copied.
 The table and fence forms live in two bundle roots at the same relative
 document path, never in one bundle, because a bundle with two `FR-006`
 documents collides on artifact id and type name and because `origin.source.path`
-is an emitted byte. The vendored copies carry a `relationships:` frontmatter
-block the quire-rs originals lack (FR-094 lowers relationships from frontmatter
-only). The spec-objects-business
-module is vendored from repository revision `7b7b0bc` (`0.7.0`, untagged
-`main`), whose object types declare the FR-075 model tables the engine gates
-on and each object type's `construct`. That revision declares
-`allowed_links` and the `edge_types` its object types use, byte-identical to
-the FR-040 registry FR-094 reads in spec-artifacts-iso, whose manifest cannot be
-vendored whole for one registry, so `modules/edge-vocabulary/` carries the
-registry alone and every lift loads both module roots.
+is an emitted byte. The module roots every fixture is lifted under are
+synthetic modules authored in this repository, so no module of another
+repository is copied here: `fixture-domain` declares the domain-modelling
+object types the fixtures use together with each type's `construct` and the
+FR-075 model tables the engine gates on, `fixture-systems` declares the
+systems-model kinds, and `fixture-edges` carries the edge-type and role
+registries FR-094 reads. `fixture-domain` and `fixture-edges` declare the
+shared edge verbs byte-identically, and every lift loads both.
 
 Byte parity of whole documents between the two frontends is unmeetable by
 construction: envelopes differ (FR-046 stamps `source/typespec` and an FR-048
@@ -79,7 +76,7 @@ which is the FR-028-CON-1 reading of absence as empty, not a widening.
 Task-136 measured the two former backend defects: `generate --target
 typescript` refused repeated kernel-scalar extensions with `DUPLICATE_IDENTITY`
 (filed as filament-core-data#88), and the Rust backend's writer refused the
-`config-version-table` document with `NAME_COLLISION` on `UUID` (filed as
+`snapshot-table` document with `NAME_COLLISION` on `UUID` (filed as
 filament-core-data#90). Both are resolved; the acceptance tests below run the
 two successful paths. `--target rust` through the generic `src/compiler/cli.mjs` is
 `BACKEND_NOT_IMPLEMENTED`; the Rust backend's entry is its writer
@@ -102,9 +99,6 @@ author's derivation only, and TC-1293 traces to FR-098-AC-9 alone.
 
 ## Inputs
 
-- `quire-rs tests/fixtures/semantic/quoin/mapping/config-version.table.md` and `config-version.fence.md`, the provenance-tracked re-authorings of config-service FR-006
-- `config-service spec/functional/FR-006-config-version-entity.md` at its inspected revision, the legacy free-column form
-- The spec-objects-business repository at revision `7b7b0bc`: `manifest.yaml` and `schemas/`
 - `test/fixtures/compiler/shared/cases.json` and its `typespec` source trees (FR-045)
 - The FR-050 reader and normalizer, and the `rust` and `typescript` backends, reached through `node src/compiler/cli.mjs`
 - `agent_ix_semantic_ir::decide`, the independent reader (FR-097)
@@ -117,16 +111,17 @@ Every fixture directory any acceptance criterion in FR-091 through FR-099 names
 is listed here; the inventory test fails on a directory that is present and
 unlisted or listed and absent.
 
-- `crates/extraction-frontend/fixtures/config-version-table/`: a bundle root holding `spec/spec.md`, `spec/functional/FR-005-config-overlay-entity.md` (the typed ConfigOverlay artifact, the `config-overlay` target of the FR-006 edges), `spec/functional/FR-006-config-version-entity.md` in the **table** form, and `expected/`
-- `crates/extraction-frontend/fixtures/config-version-fence/`: the same bundle with `spec/functional/FR-006-config-version-entity.md` in the **fence** form at the same relative path, and `expected/`
-- `crates/extraction-frontend/fixtures/legacy/`: the verbatim live config-service `FR-006`, and `expected/`
-- `crates/extraction-frontend/fixtures/business/`: one typed artifact per exported object type of spec-objects-business — `domain`, `entity`, `value_object`, `aggregate_root`, `nested_entity`, `repository`, `event`, `state_machine`, `process`, `enumeration` — exercising every declaration kind, operations with parameters and returns, clauses, an enumeration with a `values` table, and the `operations.md` artifact FR-094 names; and `expected/`
+- `crates/extraction-frontend/fixtures/snapshot-table/`: a bundle root holding `spec/spec.md`, `spec/functional/FR-005-snapshot-group-entity.md` (the typed SnapshotGroup artifact, the `snapshot-group` target of the FR-006 edges), `spec/functional/FR-006-snapshot-entity.md` in the **table** form, and `expected/`
+- `crates/extraction-frontend/fixtures/snapshot-fence/`: the same bundle with `spec/functional/FR-006-snapshot-entity.md` in the **fence** form at the same relative path, and `expected/`
+- `crates/extraction-frontend/fixtures/legacy/`: an authored legacy free-column `FR-006`, and `expected/`
+- `crates/extraction-frontend/fixtures/business/`: one typed artifact per exported object type of fixture-domain — `domain`, `entity`, `value_object`, `aggregate_root`, `nested_entity`, `repository`, `event`, `state_machine`, `process`, `enumeration` — exercising every declaration kind, operations with parameters and returns, clauses, an enumeration with a `values` table, and the `operations.md` artifact FR-094 names; and `expected/`
 - `crates/extraction-frontend/fixtures/clauses/`, `edges/`, `lower/`, `resolve/`, and `registry-doc/`: authored positive bundles exercising the FR-094 clause lowering, the edge vocabulary, the FR-093 lowering, the FR-092 resolve layer, and a registry document, each with `expected/`
 - `crates/extraction-frontend/fixtures/negatives/<CODE>/`: one directory per FR-096 code, holding a bundle root, a module root, or both, plus `expected/diagnostics.json`. `negatives/ARTIFACT_NOT_LOWERED/` is the `both-forms` bundle, the artifact FR-093 names that carries both a table and a fence, in the legacy form. The following codes cannot be expressed by a file and are exercised by a test-constructed bundle in a scratch directory; their directory holds no `expected/`, only a `constructed.json` naming the constructing test function: `OUTPUT_UNWRITABLE`, `LIMIT_MAX_DOCUMENTS`, `LIMIT_MAX_DOCUMENT_BYTES`, `LIMIT_MAX_FIELDS_PER_RECORD`, `LIMIT_MAX_CLAUSE_BYTES`, `LIMIT_MAX_DEPTH`. `INVALID_IR` holds both a file-expressible bundle (the composite cycle of FR-097-AC-15) and a `constructed.json` for the fault-injected schema case. `MODULE_WITHOUT_SEMANTIC_BLOCK` and `MODULE_REFUSED` hold a module root. `DUPLICATE_TYPE_NAME` (two documents both titled `Status` under distinct ids, contract case (a); re-authored under CR-087-2 from the former `Status`/`status` pair, which is now the positive half of FR-095-AC-14), `DUPLICATE_IDENTITY` (an artifact `NoteRevision` beside a record `Note` with a constrained field `revision`, contract case (c), FR-095-AC-14), `DUPLICATE_ARTIFACT_ID`, and `STALE_TYPE_TOKEN` hold two-document bundles. The non-blocking negatives are exactly two, `DECLARED_LOSS` and `ENGINE_DIAGNOSTIC`, and their `expected/` also holds `semantic-ir.json`; `negatives/ARTIFACT_NOT_LOWERED/` (the `both-forms` bundle) blocks, since its document carries both forms of one declaration, while the non-blocking legacy form of `ARTIFACT_NOT_LOWERED` is exercised by the `legacy/` fixture above; `KERNEL_NAME_SHADOWED`'s fixture uses the shadowed scalar and is refused at lift level with `DUPLICATE_TYPE_NAME` per FR-092-AC-8, so it is a blocking negative. A fixture directory MAY carry a `modules.json` reading `{"roots": [...]}` naming its module roots; that list takes precedence over a `modules/` directory of the fixture's own and over the default pair below.
-- `crates/extraction-frontend/fixtures/modules/spec-objects-business/`: `manifest.yaml` and `schemas/` vendored from spec-objects-business revision `7b7b0bc`; the frontend loads this module (beside `edge-vocabulary`) and never `~/.ix`
-- `crates/extraction-frontend/fixtures/modules/edge-vocabulary/`: a `manifest.yaml` carrying the FR-040 `edge_types` and `roles` registries copied byte for byte from spec-artifacts-iso revision `6686f11`, `spec_artifacts_iso/manifest.yaml` lines 872–975, under an authored header with an empty `semantic` block; loaded beside `spec-objects-business` by every lift; both declare the business verbs byte-identically
+- `crates/extraction-frontend/fixtures/modules/fixture-domain/`: an authored `manifest.yaml` and `schemas/` declaring the domain-modelling object types; the frontend loads this module (beside `fixture-edges`) and never `~/.ix`
+- `crates/extraction-frontend/fixtures/modules/fixture-edges/`: an authored `manifest.yaml` carrying the `edge_types` and `roles` registries under an empty `semantic` block; loaded beside `fixture-domain` by every lift; both declare the shared verbs byte-identically
+- `crates/extraction-frontend/fixtures/modules/fixture-systems/`: an authored module declaring the systems-model kinds `interface`, `part`, `port`, `connection` and `allocation`, loaded by the `architecture` fixture named in its `modules.json`
 - `crates/extraction-frontend/fixtures/modules/objects-extra/`: an authored second module declaring one object type, for FR-095-AC-11
-- `crates/extraction-frontend/fixtures/modules/conflicting/`: an authored module whose `semantic` block would change a `config-version` field, planted under a fake `HOME/.ix` and `QUIRE_MODULES` as the FR-091 ambient-isolation control
+- `crates/extraction-frontend/fixtures/modules/conflicting/`: an authored module sharing `fixture-domain`'s name whose `semantic` block would change a `snapshot` field, planted under a fake `HOME/.ix` and `QUIRE_MODULES` as the FR-091 ambient-isolation control
 - `crates/extraction-frontend/fixtures/modules/acme-other/` and `crates/extraction-frontend/fixtures/modules/frobnicates/`: authored modules named by fixtures' `modules.json` roots, for the FR-091 module-loading and FR-095 package-identity criteria
 - `test/fixtures/compiler/shared/typespec/records-and-scalars/` and `test/fixtures/compiler/shared/spec-bundle/records-and-scalars/`: the new shared case, authored in both dialects with kernel scalars only
 - `test/fixtures/compiler/shared/cases.json`: the `records-and-scalars` case with both source trees present and both `typespec` and `spec-bundle` non-null (issue #87 decided the shared rule), and for each existing case `"spec-bundle": null` with a `reason`
@@ -140,7 +135,7 @@ unlisted or listed and absent.
 
 ### Fixtures
 
-- The frontend SHALL NOT edit config-service, quire-rs, or spec-objects-business.
+- The frontend SHALL NOT edit docs-service or quire-rs.
 - The frontend SHALL lift the `legacy` fixture to no record and exactly one `ARTIFACT_NOT_LOWERED` diagnostic naming `legacy-form`.
 
 ### Goldens
@@ -167,9 +162,9 @@ unlisted or listed and absent.
 
 ### Backend acceptance and the payload check (declared gap, issue #85)
 
-- The Rust and TypeScript backends SHALL refuse the `config-version-table` document's FR-142 constructs with a named diagnostic until filament-core-data#147 renders them; the two criteria below hold for a document whose type definitions are records.
-- The frontend SHALL emit a `config-version-table` document that the Rust backend's writer `generateRust` (`src/compiler/backends/rust-serde/index.mjs`, run over the document by `node scripts/extraction-frontend-harness.mjs rust-generate --ir <file> --out <dir>` with the request `src/compiler/backends/rust-serde/cli.mjs` builds; `node src/compiler/cli.mjs generate --target rust` remains `BACKEND_NOT_IMPLEMENTED`.
-- The frontend SHALL emit a `config-version-table` document that `node src/compiler/cli.mjs generate --target typescript` accepts with zero diagnostics.
+- The Rust and TypeScript backends SHALL refuse the `snapshot-table` document's FR-142 constructs with a named diagnostic until filament-core-data#147 renders them; the two criteria below hold for a document whose type definitions are records.
+- The frontend SHALL emit a `snapshot-table` document that the Rust backend's writer `generateRust` (`src/compiler/backends/rust-serde/index.mjs`, run over the document by `node scripts/extraction-frontend-harness.mjs rust-generate --ir <file> --out <dir>` with the request `src/compiler/backends/rust-serde/cli.mjs` builds; `node src/compiler/cli.mjs generate --target rust` remains `BACKEND_NOT_IMPLEMENTED`.
+- The frontend SHALL emit a `snapshot-table` document that `node src/compiler/cli.mjs generate --target typescript` accepts with zero diagnostics.
 - The frontend SHALL keep the payload-schema helper under `crates/extraction-frontend/tests/` only, unexported and unreachable from `lift` and `inspect`.
 
 ## Constraints
@@ -188,10 +183,10 @@ unlisted or listed and absent.
 | FR-098-AC-5 | After lifting a committed copy of each fixture bundle, `git status --porcelain` is empty and every file's hash under the bundle and module roots is unchanged, for a clean lift and for a lift with a blocking diagnostic. | Test (TC-1289) |
 | FR-098-AC-6 | `cases.json` carries `records-and-scalars` with both source trees present and both `typespec` and `spec-bundle` non-null, and `"spec-bundle": null` with a `reason` naming `scalar` for each of the three existing cases; the parity test finds exactly one two-dialect case and compares it; the projection materialises an absent `relationships`, `operations`, or `clauses` as `[]`. | Test (TC-1290) |
 | FR-098-AC-7 | For `records-and-scalars`, `normalized` of the projection of the spec-bundle lift equals `normalized` of the projection of the `node src/compiler/cli.mjs compile` output byte for byte — every projected identity, the `type/NoteRevision` alias, and every `diagnosticCode` included — and the test fails naming `node` when it is absent. | Test (TC-1291) |
-| FR-098-AC-8 | `node src/compiler/cli.mjs generate` over the lifted `config-version-table` document exits zero with a non-empty file set and one diagnostic, the non-blocking `CONSTRUCT_MEMBER_UNENFORCED` advisory for its clauses ([FR-142](./FR-142-declare-one-construct-per-object-type.md)), for `--target rust` and for `--target typescript`; the Rust backend's own `generateRust` route through `node scripts/extraction-frontend-harness.mjs rust-generate` exits zero with zero diagnostics and a non-empty file set. The generic command line reaches the Rust target from [FR-130](./FR-130-register-the-rust-backend-in-the-generation-seam.md); before that registration only the harness route existed, and this criterion measured it alone. | Test (TC-1292) |
-| FR-098-AC-9 | A representative `ConfigVersion` payload validates against the test-derived schema, `{"versionNumber": 0}` fails at `versionNumber`, and the helper is not reachable from the crate's public surface. | Test (TC-1293) |
+| FR-098-AC-8 | `node src/compiler/cli.mjs generate` over the lifted `snapshot-table` document exits zero with a non-empty file set and one diagnostic, the non-blocking `CONSTRUCT_MEMBER_UNENFORCED` advisory for its clauses ([FR-142](./FR-142-declare-one-construct-per-object-type.md)), for `--target rust` and for `--target typescript`; the Rust backend's own `generateRust` route through `node scripts/extraction-frontend-harness.mjs rust-generate` exits zero with zero diagnostics and a non-empty file set. The generic command line reaches the Rust target from [FR-130](./FR-130-register-the-rust-backend-in-the-generation-seam.md); before that registration only the harness route existed, and this criterion measured it alone. | Test (TC-1292) |
+| FR-098-AC-9 | A representative `Snapshot` payload validates against the test-derived schema, `{"versionNumber": 0}` fails at `versionNumber`, and the helper is not reachable from the crate's public surface. | Test (TC-1293) |
 | FR-098-AC-11 | The set of directories under `fixtures/`, `fixtures/negatives/`, and `fixtures/modules/` equals the inventory above, and every `constructed.json` names a test function that exists in `crates/extraction-frontend/tests/`. | Static (TC-1343) |
-| FR-098-AC-12 | `parity::project` applied to the `config-version-table` golden yields a value with `types` as its only member, no `origin` or `extensions` at any depth, and every identity beginning `ix://shared/`; applied twice it yields the same value. | Property (TC-1344) |
+| FR-098-AC-12 | `parity::project` applied to the `snapshot-table` golden yields a value with `types` as its only member, no `origin` or `extensions` at any depth, and every identity beginning `ix://shared/`; applied twice it yields the same value. | Property (TC-1344) |
 
 ## Dependencies
 

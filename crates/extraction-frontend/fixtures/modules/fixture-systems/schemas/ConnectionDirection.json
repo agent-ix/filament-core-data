@@ -1,0 +1,6 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/systems/0.1.0/ConnectionDirection.json",
+	"type": "string",
+	"enum": ["source-to-target", "target-to-source", "bidirectional"]
+}

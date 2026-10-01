@@ -112,7 +112,7 @@ raised by the limit checks NFR-031 owns.
 | FR-096-AC-3 | A grep of `crates/extraction-frontend/src/` finds no string literal beginning `agent-ix.extraction-frontend.`, `agent-ix.compiler.`, or `agent-ix.semantic-ir.`; the only spelling is the enum's `Display`; planting one such literal in `lower.rs` fails the gate. | Static (TC-1261) |
 | FR-096-AC-4 | The `legacy` fixture yields one `ENGINE_DIAGNOSTIC` of severity `warning` whose message begins `semantic.legacy-properties-form (reason: ` and carries the engine message after `): `, whose `causes` is empty, and whose locus is line 17, column 1. | Test (TC-1262) |
 | FR-096-AC-5 | An engine `advisory` maps to `info`, non-blocking; an engine `error` maps to `error`, blocking; the wire code of each is `agent-ix.extraction-frontend.ENGINE_DIAGNOSTIC`. | Test (TC-1263) |
-| FR-096-AC-6 | A `Type` cell `Sting` at row 14 yields `UNRESOLVED_TYPE_TOKEN` with locus `{path, startLine: 14, startColumn: 3}` and `sourceIdentity` `ix://agent-ix/config-service/spec`. | Test (TC-1264) |
+| FR-096-AC-6 | A `Type` cell `Sting` at row 14 yields `UNRESOLVED_TYPE_TOKEN` with locus `{path, startLine: 14, startColumn: 3}` and `sourceIdentity` `ix://agent-ix/docs-service/spec`. | Test (TC-1264) |
 | FR-096-AC-7 | A refused module yields `MODULE_REFUSED` with locus at the manifest, line 1, column 1. | Test (TC-1265) |
 | FR-096-AC-8 | `sort_diagnostics` yields the same order for a list and its reverse, and across two `LC_ALL` settings, with every locus-free diagnostic first. | Property (TC-1266) |
 | FR-096-AC-9 | The `negatives/DUPLICATE_TYPE_NAME` fixture lifted twice produces diagnostic bytes identical to each other and to its committed `expected/diagnostics.json`. | Snapshot (TC-1267) |

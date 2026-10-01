@@ -28,7 +28,7 @@ function generate(
 const root = resolve(import.meta.dirname, "..");
 const golden = resolve(
 	root,
-	"crates/extraction-frontend/fixtures/config-version-table/expected/semantic-ir.json",
+	"crates/extraction-frontend/fixtures/snapshot-table/expected/semantic-ir.json",
 );
 /** A `2.0.0` ConfigVersion document of records, which the backend renders. */
 const configVersion12 = resolve(
@@ -328,16 +328,16 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 	});
 
 	/** Traces: TC-1362; FR-100-AC-2. */
-	it("emits ConfigVersion properties, required fields, and constraints", () => {
+	it("emits Snapshot properties, required fields, and constraints", () => {
 		const ir = JSON.parse(readFileSync(golden, "utf8"));
 		const result = generate({ ir });
 		expect(result.state).toBe("success");
 		expect(result.diagnostics.map((d) => d.code)).toEqual([
 			"agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED",
 		]);
-		const file = result.files.find((one) => one.path === "ConfigVersion.json");
+		const file = result.files.find((one) => one.path === "Snapshot.json");
 		expect(file).toBeDefined();
-		if (!file) throw new Error("ConfigVersion schema was not emitted");
+		if (!file) throw new Error("Snapshot schema was not emitted");
 		const schema = JSON.parse(file.text);
 		expect(Object.keys(schema.properties).sort()).toEqual([
 			"createdAt",
@@ -367,7 +367,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(result.state).toBe("success");
 		const paths = result.files.map((one) => one.path);
 		expect(paths.some((path) => path.startsWith("FR-"))).toBe(false);
-		for (const name of ["ConfigOverlay", "ConfigVersion"]) {
+		for (const name of ["SnapshotGroup", "Snapshot"]) {
 			const file = result.files.find((one) => one.path === `${name}.json`);
 			if (!file) throw new Error(`${name} schema was not emitted`);
 			const schema = JSON.parse(file.text);
@@ -393,10 +393,10 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 	it("refuses two display names that derive one file name, case-insensitively, naming both identities and writing no file", () => {
 		const ir = JSON.parse(readFileSync(golden, "utf8"));
 		const overlay = ir.types.find(
-			(type: { displayName?: string }) => type.displayName === "ConfigOverlay",
+			(type: { displayName?: string }) => type.displayName === "SnapshotGroup",
 		);
 		const version = ir.types.find(
-			(type: { displayName?: string }) => type.displayName === "ConfigVersion",
+			(type: { displayName?: string }) => type.displayName === "Snapshot",
 		);
 		overlay.displayName = "Config Overlay";
 		version.displayName = "Config-Overlay";
@@ -413,7 +413,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		// A definition named `index` would overwrite the backend's own index.
 		const indexed = JSON.parse(readFileSync(golden, "utf8"));
 		indexed.types.find(
-			(type: { displayName?: string }) => type.displayName === "ConfigOverlay",
+			(type: { displayName?: string }) => type.displayName === "SnapshotGroup",
 		).displayName = "index";
 		const refused = generate({ ir: indexed });
 		expect(refused.state).toBe("unsupported");
@@ -429,10 +429,10 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		// `Status` and `status` are one file on a case-insensitive file system.
 		const cased = JSON.parse(readFileSync(golden, "utf8"));
 		const upper = cased.types.find(
-			(type: { displayName?: string }) => type.displayName === "ConfigOverlay",
+			(type: { displayName?: string }) => type.displayName === "SnapshotGroup",
 		);
 		const lower = cased.types.find(
-			(type: { displayName?: string }) => type.displayName === "ConfigVersion",
+			(type: { displayName?: string }) => type.displayName === "Snapshot",
 		);
 		upper.displayName = "Status";
 		lower.displayName = "status";
@@ -502,12 +502,12 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		const ir = JSON.parse(readFileSync(golden, "utf8"));
 		const result = generate({ ir });
 		expect(result.state).toBe("success");
-		const file = result.files.find((one) => one.path === "ConfigVersion.json");
-		if (!file) throw new Error("ConfigVersion schema was not emitted");
+		const file = result.files.find((one) => one.path === "Snapshot.json");
+		if (!file) throw new Error("Snapshot schema was not emitted");
 		const schema = JSON.parse(file.text);
-		expect(schema.$id.endsWith("/ConfigVersion.json")).toBe(true);
+		expect(schema.$id.endsWith("/Snapshot.json")).toBe(true);
 		expect(schema["x-agent-ix-semantic-id"]).toBe(
-			"ix://agent-ix/config-service/FR-006",
+			"ix://agent-ix/docs-service/FR-006",
 		);
 	});
 

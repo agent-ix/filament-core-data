@@ -17,8 +17,8 @@ use serde_json::Value;
 const OUT: &str = "semantic-ir.json";
 
 /// The engine's non-blocking advisory for FR-006's `ocl` clause in
-/// `config-version-table`: `ocl` is carried by clause id, unchecked.
-const OCL_UNCHECKED: &str = "agent-ix.extraction-frontend.ENGINE_DIAGNOSTIC: semantic.clause-language-unchecked: clause immutable: language ocl is carried unchecked (spec/functional/FR-006-config-version-entity.md:34:1)";
+/// `snapshot-table`: `ocl` is carried by clause id, unchecked.
+const OCL_UNCHECKED: &str = "agent-ix.extraction-frontend.ENGINE_DIAGNOSTIC: semantic.clause-language-unchecked: clause immutable: language ocl is carried unchecked (spec/functional/FR-006-snapshot-entity.md:34:1)";
 
 fn bin() -> Command {
     Command::new(env!("CARGO_BIN_EXE_extraction-frontend"))
@@ -99,7 +99,7 @@ fn tree(root: &Path) -> Vec<(PathBuf, Vec<u8>)> {
 fn tc_1295_lift_writes_two_files_and_the_sidecar_options_rename_them() {
     let dir = tempfile::tempdir().expect("tempdir");
     let out = dir.path().join(OUT);
-    let output = run(&lift_args(&fixture("config-version-table"), &out));
+    let output = run(&lift_args(&fixture("snapshot-table"), &out));
     assert_eq!(code(&output), 0, "stderr:\n{}", stderr(&output));
     assert_eq!(
         files(dir.path()),
@@ -118,7 +118,7 @@ fn tc_1295_lift_writes_two_files_and_the_sidecar_options_rename_them() {
 
     let renamed = tempfile::tempdir().expect("tempdir");
     let out2 = renamed.path().join(OUT);
-    let mut args = lift_args(&fixture("config-version-table"), &out2);
+    let mut args = lift_args(&fixture("snapshot-table"), &out2);
     args.extend([os("--diagnostics"), os(renamed.path().join("d.json"))]);
     let output = run(&args);
     assert_eq!(code(&output), 0, "stderr:\n{}", stderr(&output));
@@ -148,7 +148,7 @@ fn tc_1296_a_blocking_lift_exits_1_with_the_sidecar_and_refusals_exit_2_writing_
     let output = run(&[
         os("lift"),
         os("--bundle"),
-        os(fixture("config-version-table")),
+        os(fixture("snapshot-table")),
         os("--out"),
         os(dir.path().join(OUT)),
     ]);
@@ -175,7 +175,7 @@ fn tc_1296_a_blocking_lift_exits_1_with_the_sidecar_and_refusals_exit_2_writing_
     assert_eq!(files(dir.path()), Vec::<String>::new());
 
     // `--out` under the bundle root: exit 2, the bundle byte-unchanged.
-    let bundle = fixture("config-version-table");
+    let bundle = fixture("snapshot-table");
     let before = tree(&bundle);
     let output = run(&lift_args(&bundle, &bundle.join(OUT)));
     assert_eq!(code(&output), 2, "stderr:\n{}", stderr(&output));
@@ -276,7 +276,7 @@ fn tc_1268_a_blocking_lift_leaves_out_untouched_and_a_warning_only_lift_writes_i
     // that its `ocl` clause is carried unchecked.
     let dir = tempfile::tempdir().expect("tempdir");
     let output = run(&lift_args(
-        &fixture("config-version-table"),
+        &fixture("snapshot-table"),
         &dir.path().join(OUT),
     ));
     assert_eq!(code(&output), 0, "stderr:\n{}", stderr(&output));

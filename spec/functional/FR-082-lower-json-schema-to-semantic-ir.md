@@ -101,11 +101,9 @@ the contract.
 
 ### The declared dialect
 
-- The emitted document SHALL declare `source.dialect` of `typespec`.
+- The emitted document SHALL declare `source.dialect` of `spec-bundle`.
 - `semantic-ir.schema.json` admits exactly two dialect values, unconditionally on `contractVersion`: `typespec` and `spec-bundle`, read from `common.schema.json#/$defs/frontendDialect`. There is no `json-schema` dialect value; a document naming one is not a valid contract IR document.
-- `typespec` is correct rather than merely permitted: the authored source is `packages/semantic-core/main.tsp`, and the thirty documents are the official `@typespec/json-schema` emitter's deterministic projection of it, gated byte-for-byte by `make semantic-core-check`. The bundle is the transport, not the source. This requirement states that reasoning in the emitted document's provenance rather than leaving a later reader to infer it from a dialect value that looks wrong.
-- `source.identity` SHALL be the source identity of `packages/semantic-core/main.tsp`, so the document names the authored source.
-- This requirement SHALL file an issue against the contract owner asking whether a deterministic projection of an authored source deserves its own `frontendDialect` value, and SHALL record that issue by number in the emitted document's provenance and in this repository's contract-gap register.
+- `source.identity` SHALL be `ix://agent-ix/semantic-core`, and `source.version` SHALL be the version segment of the bundle's own `$id`s; a caller may supply the `source` block instead, and a bundle with neither a versioned `$id` nor a supplied `source` is refused with `UNSUPPORTED_SCHEMA_SHAPE`.
 - This requirement SHALL edit no file under `schema/semantic/v1/`. Adding a dialect value to a published schema to make one's own document validate is how a contract stops meaning anything.
 
 ### Determinism and ordering
@@ -162,7 +160,7 @@ the contract.
 | FR-082-AC-9 | Every `fields[]` member and every operation parameter of the emitted document carries `multiplicity`; removing it from any one produces `agent-ix.semantic-ir.MISSING_MULTIPLICITY` from the FR-050 reader. | Test |
 | FR-082-AC-10 | For every field of the emitted document, `presence` is `required` exactly when `multiplicity.lower >= 1`, asserted directly over the emitted document; a mutant that assigns `presence` from the schema's `required` array independently, bypassing the FR-082-CON-4 call site, is caught by that direct assertion. | Property |
 | FR-082-AC-11 | `OperationDecl.params` lowers to `multiplicity` `{ lower: 0 }` with derived `presence: "optional"`, and the run records the declared representability loss naming the construct, rather than emitting `lower: 1`. | Test |
-| FR-082-AC-12 | The emitted document declares `source.dialect` of `typespec`; the provenance names `packages/semantic-core/main.tsp` as the authored source, the `@typespec/json-schema` emitter as the projector, and the issue number of the dialect question filed with the contract owner. | Test |
+| FR-082-AC-12 | The emitted document declares `source.dialect` of `spec-bundle` and a `source.version` equal to the version segment of the bundle's `$id`s; a bundle with no versioned `$id` and no supplied `source` is refused. | Test |
 | FR-082-AC-13 | The branch changes no file under `schema/`, `packages/semantic-core/`, `fixtures/`, `conformance/`, `src/compiler/backends/`, `src/compiler/frontend/typespec/`, or `src/compiler/frontend/spec-bundle/`, and leaves `src/compiler/cli.mjs`, the root `package.json`, `tsconfig.json`, `pyproject.toml`, `pnpm-lock.yaml`, and `poetry.lock` byte-unchanged. | Analysis |
 | FR-082-AC-14 | Two lowerings of the same bytes, run in different working directories and under a changed `TZ` and `LANG`, produce byte-identical `packages/semantic-kernel/semantic-ir.json`; shuffling the order in which the thirty documents are supplied changes nothing. | Property |
 | FR-082-AC-15 | Every emitted list — `types`, `fields`, `variants`, `constraints`, `extensions` — is sorted by identity under Unicode code-point comparison, asserted over the whole emitted document. | Property |

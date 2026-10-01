@@ -64,15 +64,13 @@ against the contract owner, in that order.
 
 ### The source block
 
-- `source.identity` SHALL be `ix://agent-ix/semantic-core/source/main.tsp`, naming `packages/semantic-core/main.tsp`, the authored source.
-- `source.dialect` SHALL be `typespec`.
-- The reason SHALL be recorded rather than left implicit: `common.schema.json#/$defs/frontendDialect` admits exactly `typespec` and `spec-bundle` and declares no `json-schema` value, and the JSON Schema bundle is the pinned official `@typespec/json-schema` emitter's deterministic projection of `main.tsp` — the transport this lowering reads, not the source the kernel was authored in. Declaring `typespec` states the authored origin; declaring `spec-bundle` would be false.
-- This requirement SHALL file an issue against the live contract owner asking whether a projection of a declared dialect deserves a dialect value of its own, SHALL record that issue's number beside the `source.dialect` decision, and SHALL NOT edit `common.schema.json` to add one. `agent-ix/filament-core-data#59` records that the closed issue #9 can no longer own the contract-gap register, so the issue is filed against a live owner rather than added to a register with none.
+- `source.identity` SHALL be `ix://agent-ix/semantic-core`, naming the semantic-core bundle the lowering read.
+- `source.dialect` SHALL be `spec-bundle`: the lowering reads the committed JSON Schema bundle, and `common.schema.json#/$defs/frontendDialect` admits exactly `typespec` and `spec-bundle`.
 - `source.digest`, `package.manifestDigest` and `package.lockDigest` SHALL be the all-zero placeholder, `sha256:` followed by sixty-four `0` digits, which `common.schema.json#/$defs/sha256` admits and the schema requires.
 
 ### The package block
 
-- `package.identity` SHALL be `agent-ix/semantic-core`, which matches `common.schema.json#/$defs/packageIdentity`, and SHALL be the same `agent-ix/semantic-core` segment every identity FR-083 mints carries.
+- `package.identity` SHALL be `agent-ix/semantic-kernel`, which matches `common.schema.json#/$defs/packageIdentity`.
 - `package.mappingVersions` and `package.profileVersions` SHALL be the empty array where the kernel declares no mapping and no profile, which `semantic-ir.schema.json` permits because neither array carries a `minItems`; the empty array SHALL be emitted rather than the member omitted, since both members are `required`.
 - The emitted document SHALL declare `contractVersion` `2.0.0` and SHALL carry `occurrences` and `extensions` as empty arrays, because the root requires both and the kernel declares neither.
 
@@ -131,8 +129,8 @@ against the contract owner, in that order.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-084-AC-1 | The emitted kernel IR validates against `schema/semantic/v1/semantic-ir.schema.json` at `contractVersion` `2.0.0`, carrying every required member of `source` and `package` and no member `additionalProperties: false` forbids. | Test |
-| FR-084-AC-2 | `source.dialect` is `typespec`, a member of `common.schema.json#/$defs/frontendDialect`; a test asserts that enum still carries no `json-schema` value, so adding one upstream fails here rather than silently changing the meaning of this document. | Test |
-| FR-084-AC-5 | `package.identity` is `agent-ix/semantic-core`, matches `common.schema.json#/$defs/packageIdentity`, and equals the owner segment of every identity FR-083 mints. | Unit |
+| FR-084-AC-2 | `source.dialect` is `spec-bundle`, a member of `common.schema.json#/$defs/frontendDialect`. | Test |
+| FR-084-AC-5 | `package.identity` is `agent-ix/semantic-kernel` and matches `common.schema.json#/$defs/packageIdentity`. | Unit |
 | FR-084-AC-6 | `source.digest`, `package.manifestDigest` and `package.lockDigest` are the all-zero placeholder, and `mappingVersions` and `profileVersions` are present as empty arrays. | Test |
 | FR-084-AC-8 | Generating twice from the same bundle on two working directories with differing paths and cleared environments produces identical fingerprints, and no generated file contains a timestamp, host name, or absolute path. | Integration |
 | FR-084-AC-9 | `KERNEL_LOSSES` has exactly two rows and stands in bijection with the rows of `packages/semantic-kernel/losses.json`, which `scripts/build-semantic-kernel.mjs --check` regenerates and compares byte for byte; a test adding a third row without a registered code, and one adding a code without a row, each fail. | Unit |
@@ -146,7 +144,7 @@ against the contract owner, in that order.
 | FR-084-AC-17 | Every diagnostic this requirement emits is a member access on `DIAGNOSTIC_CODES`; no module under `src/compiler/frontend/json-schema/` spells the literal prefix `agent-ix.`. | Static |
 | FR-084-AC-18 | The change set of this requirement touches no file under `schema/`, `fixtures/`, `conformance/`, `packages/semantic-core/`, or `src/compiler/backends/`, and neither `src/compiler/cli.mjs` nor `package.json`; it adds exactly three members to `DIAGNOSTIC_CODES` while modifying none, and `docs/semantic-data-system/compiler-diagnostics.md` matches a fresh run of `scripts/build-compiler-docs.mjs`. | Analysis |
 | FR-084-AC-19 | Over 512 mutated bundles `representability.mjs` does not throw, returns an answer, and leaves its argument byte-unchanged. | Fuzz |
-| FR-084-AC-20 | Each of the two register rows names a filed issue against a live contract owner, and the `source.dialect` decision names the issue asking whether a projection of a declared dialect deserves a dialect value of its own; a row or decision with no issue number fails. | Inspection |
+| FR-084-AC-20 | Each of the two register rows names a filed issue against a live contract owner; a row with no issue number fails. | Inspection |
 | FR-084-AC-21 | Diagnostic order is byte-identical when the suite is re-run under `LC_ALL=tr_TR.UTF-8` and from a different working directory. | Integration |
 
 ## Dependencies

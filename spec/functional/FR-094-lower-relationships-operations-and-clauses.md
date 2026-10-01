@@ -44,6 +44,7 @@ why only verbs the object type lists under `allowed_links` are lowered.
 
 - `crates/extraction-frontend/src/edges.rs`: `lower_relationships(record, edges, registries, index) -> Result<Vec<Relationship>, Vec<Diagnostic>>`
 - `crates/extraction-frontend/src/clauses.rs`: `lower_clauses(record, extraction) -> Result<Vec<Clause>, LowerError>` (`UNSLUGGABLE_NAME` when a `clauseId` slugs to the empty string) and `lower_operations(record, extraction, resolutions) -> Result<Vec<Operation>, Vec<Diagnostic>>`
+- `src/compiler/ir/edge-vocabulary.json`: the edge vocabulary (verb to `category` and optional `inverse`) the TypeSpec frontend loads through `src/compiler/ir/applicability.mjs`
 - One `relationship`, `operation`, and `clause` node per declaration, each carrying `identity` and `origin`
 
 ## Behavior
@@ -94,7 +95,7 @@ relationship; this frontend emits `parent` as a field because it is a
 `## Properties` row. That fixture's `belongs_to` relationship came from the
 removed `## Relationships` bullet grammar and its identity patterns predate
 FR-095, so its hand-verified values for the one relationship both documents
-share — `target` and `multiplicity` on the edge to `ConfigOverlay` — are
+share — `target` and `multiplicity` on the edge to `SnapshotGroup` — are
 preserved only as FR-094-AC-8's pinned literals rather than as a fixture
 file compared node by node; the golden for this frontend is regenerated
 under FR-098.
@@ -111,14 +112,14 @@ under FR-098.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-094-AC-1 | The `config-version-table` fixture's `FR-006` frontmatter entry `{target: FR-005, type: references}` lowers to one relationship `verb: references`, `category: traceability`, `composite: false`, `target` the `type/FR-005` identity, `multiplicity {1,1}`, `origin` at `FR-006`'s path, line 1, column 1. | Test (TC-1231) |
-| FR-094-AC-2 | Under the two module roots spec-objects-business and edge-vocabulary (the FR-040 registry), a `contains` frontmatter edge under a `domain` artifact lowers to `category: structural`, `composite: true` (registry `inverse: part_of`); an `aggregates` edge under an `aggregate_root` does the same; a `composes` edge under a `value_object` lowers to `category: structural`, `composite: false` (`inverse: composed_by`). | Test (TC-1232) |
+| FR-094-AC-1 | The `snapshot-table` fixture's `FR-006` frontmatter entry `{target: FR-005, type: references}` lowers to one relationship `verb: references`, `category: traceability`, `composite: false`, `target` the `type/FR-005` identity, `multiplicity {1,1}`, `origin` at `FR-006`'s path, line 1, column 1. | Test (TC-1231) |
+| FR-094-AC-2 | Under the two module roots fixture-domain and fixture-edges (the edge registry), a `contains` frontmatter edge under a `domain` artifact lowers to `category: structural`, `composite: true` (registry `inverse: part_of`); an `aggregates` edge under an `aggregate_root` does the same; a `composes` edge under a `value_object` lowers to `category: structural`, `composite: false` (`inverse: composed_by`). | Test (TC-1232) |
 | FR-094-AC-3 | Under the same two module roots, a `references` edge lowers to `category: traceability`, `composite: false`; an `owns` edge under an `entity` to `category: dependency`, `composite: false`. | Test (TC-1233) |
 | FR-094-AC-4 | Under a test module whose `entity` `allowed_links` lists `frobnicates` while no loaded `edge_types` declares it, a `frobnicates` frontmatter edge raises `UNKNOWN_EDGE_VERB` at line 1, column 1, blocking, and no document is written. | Test (TC-1234) |
 | FR-094-AC-5 | A `references` frontmatter edge targeting `Nonesuch` raises `UNRESOLVED_RELATIONSHIP_TARGET` at line 1, column 1 naming `Nonesuch`, blocking; one targeting a legacy-form artifact raises the same code naming that artifact. | Test (TC-1235) |
 | FR-094-AC-6 | An `entity` whose frontmatter carries `traces_to`, `implements`, and `depends_on` edges lowers with zero relationships from them and zero diagnostics about them; the same document with one `references` edge added lowers to exactly one relationship. | Test (TC-1236) |
 | FR-094-AC-7 | Two frontmatter entries with the same `(verb, target)` yield one relationship; two entries with the same target and different allowed verbs yield two relationships with distinct identities. | Test (TC-1237) |
-| FR-094-AC-8 | The `parent | ConfigVersion | 0..1` row appears as a field and not as a relationship: the emitted `relationships[]` carries no `parent` relationship, and the remaining relationship — the edge to `ConfigOverlay` — carries the `target` and `multiplicity` the #34 hand fixture independently verified. | Test (TC-1238) |
+| FR-094-AC-8 | The `parent | Snapshot | 0..1` row appears as a field and not as a relationship: the emitted `relationships[]` carries no `parent` relationship, and the remaining relationship — the edge to `SnapshotGroup` — carries the `target` and `multiplicity` the #34 hand fixture independently verified. | Test (TC-1238) |
 | FR-094-AC-9 | The `immutable` `ocl` fence lowers to one clause with `language: ocl`, `clauseId: immutable`, `text` byte-identical to `clause_text`, `sourceSpan` `{startLine, startColumn: 1, endLine, endColumn}` as the engine reports, and `origin.source` at the span start. | Test (TC-1239) |
 | FR-094-AC-10 | A clause whose text carries leading whitespace, trailing newlines, and a `\t` reaches the IR byte-identical. | Test (TC-1240) |
 | FR-094-AC-11 | The `operations` fixture (FR-098) lowers each `OperationDecl` to an operation with its params as fields under `field/<Name>-<operation>-<param>` (no `param/` identity is emitted), `returns` from the resolved type with `nullable: false`, and `pre`/`post` as `clauseId` lists; no second clause node is emitted for a `pre`/`post` reference. | Test (TC-1241) |

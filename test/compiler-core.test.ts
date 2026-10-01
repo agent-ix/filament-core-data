@@ -54,11 +54,7 @@ import {
 	selectFrontend,
 } from "../src/compiler/frontend/seam.mjs";
 import { DECORATOR_LIBRARY } from "../src/compiler/frontend/typespec/frontend.mjs";
-import {
-	EDGE_VOCABULARY,
-	PART_OF,
-	parseEdgeVocabulary,
-} from "../src/compiler/ir/applicability.mjs";
+import { EDGE_VOCABULARY, PART_OF } from "../src/compiler/ir/applicability.mjs";
 import {
 	constraintDiagnosticCode,
 	mintIdentity,
@@ -1181,15 +1177,17 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 	});
 
 	/** Traces: TC-1816; FR-094-AC-14. */
-	it("parses the committed edge vocabulary manifest into every declared verb", () => {
-		// H4 of the FCD #199/#200 review: `EDGE_VOCABULARY`'s hand-rolled
-		// extractor reads `manifest.yaml`'s `edge_types` block directly (no npm
-		// dependency could be added without moving `pnpm-lock.yaml`, which
-		// NFR-019/NFR-021's own gate closes); this pins its output against a
-		// sample spanning every shape the manifest's rows take, so a change to
-		// the file's format, not just its content, is caught here rather than
-		// by a silent under-parse.
-		expect(Object.keys(EDGE_VOCABULARY).length).toBe(76);
+	it("loads the compiler's edge vocabulary data file into every declared verb", () => {
+		const declared = JSON.parse(
+			readFileSync(
+				resolve(root, "src/compiler/ir/edge-vocabulary.json"),
+				"utf8",
+			),
+		) as Record<string, { category: string; inverse?: string }>;
+		expect(Object.keys(EDGE_VOCABULARY).sort()).toEqual(
+			Object.keys(declared).sort(),
+		);
+		expect(Object.keys(declared).length).toBeGreaterThan(10);
 		expect(EDGE_VOCABULARY.contains).toEqual({
 			category: "structural",
 			inverse: "part_of",
@@ -1198,40 +1196,12 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			category: "structural",
 			inverse: "contains",
 		});
-		// A verb with no declared inverse still parses, with `inverse`
-		// `undefined` rather than absent-and-throwing or a stray key.
-		expect(EDGE_VOCABULARY.breaches).toEqual({
-			category: "governance",
+		// A verb with no declared inverse loads with `inverse` `undefined`.
+		expect(EDGE_VOCABULARY.triggers).toEqual({
+			category: "behavioral",
 			inverse: undefined,
 		});
-		// The last row of the file: the extractor's end-of-block detection (a
-		// line at column 0 ends it) does not drop it.
-		expect(EDGE_VOCABULARY.covers).toEqual({
-			category: "traceability",
-			inverse: "covered_by",
-		});
-		// `belongs_to` is the FCD #199/#200 review's own example of a verb the
-		// manifest does not declare (H4's assurance-fixture finding).
 		expect(Object.hasOwn(EDGE_VOCABULARY, "belongs_to")).toBe(false);
-	});
-
-	/** Traces: TC-1820; FR-094 (L2 of the FCD #199/#200 round-3 review). */
-	it("throws, naming the line, on an edge_types row it does not recognise, rather than truncating the block", () => {
-		// A legal but unrecognised row shape (a multi-line block mapping
-		// instead of the one-line flow mapping this hand-rolled parser
-		// reads) sits between two rows the parser does recognise. The
-		// pre-fix behavior silently `break`-ed at the unrecognised row,
-		// dropping `zeta` even though a real YAML parser accepts the file.
-		const source = [
-			"edge_types:",
-			'  alpha: { description: "a", category: structural }',
-			"  beta:",
-			"    description: b",
-			"    category: structural",
-			'  zeta: { description: "z", category: structural }',
-			"",
-		].join("\n");
-		expect(() => parseEdgeVocabulary(source)).toThrowError(/:3: /);
 	});
 
 	/** Traces: TC-1817; FR-094-AC-14, FR-094-CON-2. */
@@ -5788,21 +5758,31 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 			"x-agent-ix-semantic-id": `ix://agent-ix/semantic-core/${name}`,
 			type: "string",
 		});
-		const result = lower.lowerBundle([
+		const result = lower.lowerBundle(
 			[
-				"Choice.json",
-				{
-					$id: "https://schemas.example.test/Choice.json",
-					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Choice",
-					anyOf: [
-						{ $ref: "https://schemas.example.test/Left.json" },
-						{ $ref: "https://schemas.example.test/Right.json" },
-					],
-				},
+				[
+					"Choice.json",
+					{
+						$id: "https://schemas.example.test/Choice.json",
+						"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Choice",
+						anyOf: [
+							{ $ref: "https://schemas.example.test/Left.json" },
+							{ $ref: "https://schemas.example.test/Right.json" },
+						],
+					},
+				],
+				["Left.json", schema("Left")],
+				["Right.json", schema("Right")],
 			],
-			["Left.json", schema("Left")],
-			["Right.json", schema("Right")],
-		]);
+			{
+				source: {
+					identity: "ix://agent-ix/semantic-core",
+					version: "1.0.0",
+					dialect: "spec-bundle",
+					digest: `sha256:${"0".repeat(64)}`,
+				},
+			},
+		);
 		expect(result.diagnostics).toBeUndefined();
 		const choice = (result.document!.types as LoweredType[]).find(
 			(entry) => entry.displayName === "Choice",
@@ -5829,21 +5809,31 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 		const lower = await import(
 			"../src/compiler/frontend/json-schema/lower.mjs"
 		);
-		const result = lower.lowerBundle([
+		const result = lower.lowerBundle(
 			[
-				"Constraint.json",
-				{
-					$id: "https://schemas.example.test/Constraint.json",
-					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Constraint",
-					type: "object",
-					unevaluatedProperties: { not: {} },
-					properties: {
-						value: { anyOf: [{ type: "number" }, { type: "string" }] },
+				[
+					"Constraint.json",
+					{
+						$id: "https://schemas.example.test/Constraint.json",
+						"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Constraint",
+						type: "object",
+						unevaluatedProperties: { not: {} },
+						properties: {
+							value: { anyOf: [{ type: "number" }, { type: "string" }] },
+						},
+						required: ["value"],
 					},
-					required: ["value"],
-				},
+				],
 			],
-		]);
+			{
+				source: {
+					identity: "ix://agent-ix/semantic-core",
+					version: "1.0.0",
+					dialect: "spec-bundle",
+					digest: `sha256:${"0".repeat(64)}`,
+				},
+			},
+		);
 		expect(result.diagnostics).toBeUndefined();
 		const value = (result.document!.types as LoweredType[]).find(
 			(entry) => entry.displayName === "ConstraintValue",

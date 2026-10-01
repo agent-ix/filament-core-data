@@ -209,7 +209,6 @@ describe("TypeSpec feasibility gate", () => {
 				"priority",
 				"method",
 				"command",
-				"toolVersion",
 				"result",
 				"disposition",
 				"limitation",

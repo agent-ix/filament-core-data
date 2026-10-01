@@ -94,8 +94,8 @@ document to point at.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-092-AC-1 | Every kernel scalar name resolves to `KernelScalar`, and the `config-version-table` fixture uses exactly five kernel scalar names (`UUID`, `Integer`, `String`, `Timestamp`, `JsonObject`), each token's `typeRef` resolving to `ix://quire/native/<Name>` and minting no package-local node. | Test (TC-1210) |
-| FR-092-AC-2 | `ConfigOverlay` in a `Type` cell resolves to `Object(FR-005)` by title (or by an identifier-shaped id); a cell reading `FR-005` is rejected upstream by quire-rs FR-070 `is_identifier` as `semantic.invalid-type-token`, so by-id resolution applies only to identifier-shaped ids. | Test (TC-1211) |
+| FR-092-AC-1 | Every kernel scalar name resolves to `KernelScalar`, and the `snapshot-table` fixture uses exactly five kernel scalar names (`UUID`, `Integer`, `String`, `Timestamp`, `JsonObject`), each token's `typeRef` resolving to `ix://quire/native/<Name>` and minting no package-local node. | Test (TC-1210) |
+| FR-092-AC-2 | `SnapshotGroup` in a `Type` cell resolves to `Object(FR-005)` by title (or by an identifier-shaped id); a cell reading `FR-005` is rejected upstream by quire-rs FR-070 `is_identifier` as `semantic.invalid-type-token`, so by-id resolution applies only to identifier-shaped ids. | Test (TC-1211) |
 | FR-092-AC-3 | A `Type` cell reading `Sting` yields `Unresolved::UnknownToken` and one blocking `UNRESOLVED_TYPE_TOKEN` at that row's line and column, naming `Sting`; no IR document is written. | Test (TC-1212) |
 | FR-092-AC-4 | Two artifacts titled `Status` make the engine emit `semantic.ambiguous-type`; the referring artifact yields `ARTIFACT_NOT_LOWERED` plus one `ENGINE_DIAGNOSTIC`, and no `Resolution` value is produced for the dropped row. | Test (TC-1213) |
 | FR-092-AC-5 | A cell naming `ix://acme/other/type/Thing` yields `Unresolved::ImportUnsupported("acme/other")` and blocking `IMPORT_UNSUPPORTED` naming `acme/other`. | Test (TC-1214) |

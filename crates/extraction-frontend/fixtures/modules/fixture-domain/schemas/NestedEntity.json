@@ -1,0 +1,36 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/domain/0.1.0/NestedEntity.json",
+	"type": "object",
+	"properties": {
+		"fields": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/FieldDecl.json"
+			},
+			"minItems": 1,
+			"contains": {
+				"$ref": "https://schemas.agent-ix.org/fixture/domain/0.1.0/IdentityField.json"
+			}
+		},
+		"owner": {
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/RelationDecl.json"
+		},
+		"clauses": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/ClauseRef.json"
+			}
+		},
+		"operations": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.0/OperationDecl.json"
+			}
+		}
+	},
+	"required": ["fields"],
+	"unevaluatedProperties": {
+		"not": {}
+	}
+}

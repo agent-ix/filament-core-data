@@ -2,7 +2,7 @@
 //! closed `Resolution`, in two passes, and mint the kernel scalars a bundle
 //! uses once per package.
 //!
-//! Every bundle is a committed fixture under `fixtures/`; the vendored
+//! Every bundle is a committed fixture under `fixtures/`; the fixture
 //! business module is the module root (plus `acme-other` for the import
 //! case). Nothing here reads the environment.
 
@@ -32,7 +32,7 @@ fn fixture(name: &str) -> PathBuf {
 }
 
 fn business_module() -> PathBuf {
-    fixture("modules/spec-objects-business")
+    fixture("modules/fixture-domain")
 }
 
 fn load(name: &str, modules: &[&Path]) -> (Bundle, Extractions) {
@@ -74,8 +74,8 @@ fn object_ref(resolution: &Resolution) -> &ArtifactRef {
 
 #[trace("TC-1210", "FR-092-AC-1")]
 #[test]
-fn tc_1210_every_kernel_name_is_kernel_scalar_and_config_version_uses_five_native_refs() {
-    let (bundle, extractions) = load_business("config-version-table");
+fn tc_1210_every_kernel_name_is_kernel_scalar_and_snapshot_uses_five_native_refs() {
+    let (bundle, extractions) = load_business("snapshot-table");
     let outcomes = pass_one(&bundle, &extractions).outcomes;
 
     // Every kernel scalar name, whatever the order it is asked in.
@@ -162,7 +162,7 @@ fn tc_1210_every_kernel_name_is_kernel_scalar_and_config_version_uses_five_nativ
 
 #[trace("TC-1211", "FR-092-AC-2")]
 #[test]
-fn tc_1211_config_overlay_by_title_and_fr_005_by_id_resolve_to_the_same_object() {
+fn tc_1211_snapshot_group_by_title_and_fr_005_by_id_resolve_to_the_same_object() {
     let (bundle, extractions) = load_business("resolve/by-title");
     let lift = resolve(&bundle, &extractions);
     assert!(
@@ -175,19 +175,19 @@ fn tc_1211_config_overlay_by_title_and_fr_005_by_id_resolve_to_the_same_object()
     assert_eq!(by_title.id, "FR-005");
     assert_eq!(
         by_title.path,
-        "spec/functional/FR-005-config-overlay-entity.md"
+        "spec/functional/FR-005-snapshot-group-entity.md"
     );
     let package = PackageIdentity::from(bundle.package());
     assert_eq!(
         overlay.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/FR-005"),
+        Some("ix://agent-ix/docs-service/FR-005"),
         "the typeRef is the definition's identity, not the token's spelling"
     );
 
     // By id: the `type/FR-005` form the engine mints when a cell names an
     // artifact by an identifier-shaped id (quire-rs FR-070 step 2).
     let by_id = classify(
-        "ix://agent-ix/config-service/type/FR-005",
+        "ix://agent-ix/docs-service/type/FR-005",
         None,
         &bundle,
         &lift.outcomes,
@@ -199,7 +199,7 @@ fn tc_1211_config_overlay_by_title_and_fr_005_by_id_resolve_to_the_same_object()
     );
     assert_eq!(
         by_id.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/FR-005")
+        Some("ix://agent-ix/docs-service/FR-005")
     );
 
     // Recorded, not asserted as behaviour of this crate: a Type cell reading
@@ -209,19 +209,18 @@ fn tc_1211_config_overlay_by_title_and_fr_005_by_id_resolve_to_the_same_object()
     let src = fixture("resolve/by-title");
     for rel in [
         "spec/spec.md",
-        "spec/functional/FR-005-config-overlay-entity.md",
+        "spec/functional/FR-005-snapshot-group-entity.md",
     ] {
         let target = dir.path().join(rel);
         std::fs::create_dir_all(target.parent().expect("parent")).expect("mkdir");
         std::fs::copy(src.join(rel), target).expect("copy");
     }
     std::fs::write(
-        dir.path()
-            .join("spec/functional/FR-006-config-version-entity.md"),
-        std::fs::read_to_string(src.join("spec/functional/FR-006-config-version-entity.md"))
+        dir.path().join("spec/functional/FR-006-snapshot-entity.md"),
+        std::fs::read_to_string(src.join("spec/functional/FR-006-snapshot-entity.md"))
             .expect("FR-006")
             .replace(
-                "| overlay | ConfigOverlay | 1 | |",
+                "| overlay | SnapshotGroup | 1 | |",
                 "| overlay | FR-005 | 1 | |",
             ),
     )
@@ -261,8 +260,8 @@ fn tc_1212_sting_is_unknown_token_with_one_blocking_unresolved_type_token_at_the
     assert_eq!(
         d.locus,
         Some(Locus::new(
-            "ix://agent-ix/config-service/spec",
-            "spec/functional/FR-006-config-version-entity.md",
+            "ix://agent-ix/docs-service/spec",
+            "spec/functional/FR-006-snapshot-entity.md",
             14,
             3
         ))
@@ -297,8 +296,8 @@ fn tc_1213_two_status_artifacts_drop_the_row_with_artifact_not_lowered_and_one_e
         lift.outcomes.get("FR-006"),
         Some(&Outcome::NotLowered {
             cause: Locus::head(
-                "ix://agent-ix/config-service/spec",
-                "spec/functional/FR-006-config-version-entity.md"
+                "ix://agent-ix/docs-service/spec",
+                "spec/functional/FR-006-snapshot-entity.md"
             )
         })
     );
@@ -359,8 +358,8 @@ fn assert_stale_under(bundle: &Bundle, extractions: &Extractions, outcomes: &Out
     let two = pass_two(bundle, extractions, outcomes);
     let overlay = resolution_of(&two.resolutions, "FR-006", "overlay");
     let cause = Locus::head(
-        "ix://agent-ix/config-service/spec",
-        "spec/functional/FR-005-config-overlay-entity.md",
+        "ix://agent-ix/docs-service/spec",
+        "spec/functional/FR-005-snapshot-group-entity.md",
     );
     match &overlay.resolution {
         Resolution::Unresolved(Unresolved::Stale(artifact)) => assert_eq!(artifact.id, "FR-005"),
@@ -373,8 +372,8 @@ fn assert_stale_under(bundle: &Bundle, extractions: &Extractions, outcomes: &Out
     assert_eq!(
         stale[0].locus,
         Some(Locus::new(
-            "ix://agent-ix/config-service/spec",
-            "spec/functional/FR-006-config-version-entity.md",
+            "ix://agent-ix/docs-service/spec",
+            "spec/functional/FR-006-snapshot-entity.md",
             15,
             3
         ))
@@ -456,7 +455,7 @@ fn tc_1216_an_enumeration_artifact_resolves_to_enumeration_and_an_entity_of_the_
     let package = PackageIdentity::from(bundle.package());
     assert_eq!(
         status.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/EN_001")
+        Some("ix://agent-ix/docs-service/EN_001")
     );
 
     let (bundle, extractions) = load_business("resolve/entity-titled-status");
@@ -466,7 +465,7 @@ fn tc_1216_an_enumeration_artifact_resolves_to_enumeration_and_an_entity_of_the_
     assert_eq!(object_ref(&status.resolution).id, "FR-001");
     assert_eq!(
         status.resolution.type_ref(&package).as_deref(),
-        Some("ix://agent-ix/config-service/FR-001")
+        Some("ix://agent-ix/docs-service/FR-001")
     );
 }
 
@@ -488,7 +487,7 @@ fn tc_1217_an_artifact_titled_string_warns_kernel_name_shadowed_and_the_cell_is_
     assert_eq!(
         shadowed[0].locus,
         Some(Locus::head(
-            "ix://agent-ix/config-service/spec",
+            "ix://agent-ix/docs-service/spec",
             "spec/functional/FR-007-string.md"
         ))
     );
@@ -516,11 +515,11 @@ fn any_target() -> impl Strategy<Value = String> {
                 .map(|k| k.name().to_string())
                 .collect::<Vec<_>>()
         ),
-        ident.prop_map(|t| format!("ix://agent-ix/config-service/type/{t}")),
-        ident.prop_map(|t| format!("ix://agent-ix/config-service/unresolved/{t}")),
+        ident.prop_map(|t| format!("ix://agent-ix/docs-service/type/{t}")),
+        ident.prop_map(|t| format!("ix://agent-ix/docs-service/unresolved/{t}")),
         (package, ident).prop_map(|(p, t)| format!("ix://{p}/type/{t}")),
-        Just("ix://agent-ix/config-service/type/FR-005".to_string()),
-        Just("ix://agent-ix/config-service/type/FR-005".to_string()),
+        Just("ix://agent-ix/docs-service/type/FR-005".to_string()),
+        Just("ix://agent-ix/docs-service/type/FR-005".to_string()),
         ".{0,40}",
     ]
 }
@@ -591,7 +590,7 @@ fn tc_1218_256_mutated_tokens_never_panic_and_every_unresolved_maps_to_one_code(
     let stale = Unresolved::Stale(ArtifactRef {
         id: "FR-005".into(),
         path: "spec/functional/FR-005.md".into(),
-        display_name: "ConfigOverlay".into(),
+        display_name: "SnapshotGroup".into(),
     });
     assert!(!carries_string(&stale));
     assert!(carries_string(&Unresolved::ImportUnsupported(
@@ -616,8 +615,8 @@ fn tc_1264_sting_at_row_14_carries_locus_path_line_14_column_3_and_the_bundle_so
     assert_eq!(
         json["locus"],
         serde_json::json!({
-            "sourceIdentity": "ix://agent-ix/config-service/spec",
-            "path": "spec/functional/FR-006-config-version-entity.md",
+            "sourceIdentity": "ix://agent-ix/docs-service/spec",
+            "path": "spec/functional/FR-006-snapshot-entity.md",
             "startLine": 14,
             "startColumn": 3
         })

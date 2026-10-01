@@ -455,7 +455,7 @@ EXTRACTION_LOCKFILE ?= Cargo.lock
 EXTRACTION_GOLDEN_STAGING := $(CARGO_TARGET_DIR)/extraction-frontend-goldens
 EXTRACTION_CHECK_SCRATCH := $(CARGO_TARGET_DIR)/extraction-frontend-check
 EXTRACTION_RUN := cargo run --locked -p $(EXTRACTION_CRATE) --bin extraction-frontend --
-MODULES ?= $(EXTRACTION_FIXTURES)/modules/spec-objects-business $(EXTRACTION_FIXTURES)/modules/edge-vocabulary
+MODULES ?= $(EXTRACTION_FIXTURES)/modules/fixture-domain $(EXTRACTION_FIXTURES)/modules/fixture-edges
 
 .PHONY: extraction-frontend-lift
 extraction-frontend-lift: rust-toolchain-check
@@ -493,7 +493,7 @@ extraction-frontend-check: rust-toolchain-check
 # typed-table form the lift requires.
 #
 # The gate also always runs the `architecture` bundle (filament-core-data#173):
-# it needs the extra `spec-objects-architecture` module root business does not,
+# it needs the extra `fixture-systems` module root business does not,
 # so it is not folded into the overridable `SPEC_PIPELINE_BUNDLE` var and is
 # staged into its own subdirectory. Its module roots are read out of the
 # bundle's own `modules.json` rather than repeated here, so the two cannot

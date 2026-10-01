@@ -12,8 +12,8 @@
 //! `fixtures/*/expected/` (FR-098 "Goldens"). Each fixture bundle is
 //! lifted under the inventory roots its `modules.json` names when it
 //! carries one, else under its own `modules/*` roots when it carries some,
-//! otherwise under `<fixtures>/modules/spec-objects-business` and
-//! `<fixtures>/modules/edge-vocabulary`. With `--staging <dir>` each lift
+//! otherwise under `<fixtures>/modules/fixture-domain` and
+//! `<fixtures>/modules/fixture-edges`. With `--staging <dir>` each lift
 //! lands in `<staging>/<fixture>/` and is then installed as
 //! `<fixture>/expected/` (a bundle root refuses a direct write, FR-097);
 //! with `--into <dir>` it lands in `<into>/<fixture>/expected/` and the
@@ -35,7 +35,7 @@ use clap::{ArgGroup, Args, Parser, Subcommand};
 use serde_json::Value;
 
 /// The default module roots of a golden lift, relative to `--fixtures`.
-const DEFAULT_MODULES: [&str; 2] = ["modules/spec-objects-business", "modules/edge-vocabulary"];
+const DEFAULT_MODULES: [&str; 2] = ["modules/fixture-domain", "modules/fixture-edges"];
 
 /// Exit `0`: no diagnostic blocks.
 const EXIT_OK: u8 = 0;
