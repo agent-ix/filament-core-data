@@ -360,7 +360,7 @@ describe("TC-655, TC-697 the published tables and the closed code sets", () => {
 			.split("\n")
 			.filter((line) => /^\| ERR-1(1[4-9]|2[0-9]|3[01]) \|/.test(line))
 			.join("\n");
-		expect(errRows.split("\n")).toHaveLength(18);
+		expect(errRows.split("\n")).toHaveLength(17);
 
 		const qualified = [
 			...`${requirements}\n${errRows}`.matchAll(

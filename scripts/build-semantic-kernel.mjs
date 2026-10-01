@@ -247,7 +247,7 @@ function main(argv) {
 	}
 	for (const stray of strays) {
 		process.stderr.write(
-			`agent-ix.compiler.KERNEL_BUNDLE_STALE: rust/${stray} is committed and the emitter does not emit it\n`,
+			`rust/${stray} is committed and the emitter does not emit it\n`,
 		);
 	}
 
@@ -263,9 +263,7 @@ function main(argv) {
 		if (current === contents) continue;
 		stale += 1;
 		if (check) {
-			process.stderr.write(
-				`agent-ix.compiler.KERNEL_BUNDLE_STALE: ${relative} differs from a fresh generation\n`,
-			);
+			process.stderr.write(`${relative} differs from a fresh generation\n`);
 			continue;
 		}
 		mkdirSync(dirname(path), { recursive: true });

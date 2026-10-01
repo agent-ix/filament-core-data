@@ -5875,7 +5875,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 	// Every code this repository registers must be emitted by a test in this
 	// file (FR-049's closing gate). Issue #11 adds six, and fires each one here
 	// from the module that raises it, rather than asserting the code exists.
-	it("fires each of the six kernel codes from the module that raises it", async () => {
+	it("fires each of the five kernel codes from the module that raises it", async () => {
 		const bundle = await import(
 			"../src/compiler/frontend/json-schema/bundle.mjs"
 		);
@@ -5892,7 +5892,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 			inventoryCounts: { models: 1 },
 		};
 
-		// KERNEL_INVENTORY_MISMATCH and KERNEL_BUNDLE_STALE.
+		// KERNEL_INVENTORY_MISMATCH.
 		note(
 			bundle.checkKernelBundle(
 				declaration,
@@ -5922,7 +5922,6 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 
 		for (const code of [
 			"agent-ix.compiler.KERNEL_INVENTORY_MISMATCH",
-			"agent-ix.compiler.KERNEL_BUNDLE_STALE",
 			"agent-ix.compiler.UNSUPPORTED_SCHEMA_KEYWORD",
 			"agent-ix.compiler.UNSUPPORTED_SCHEMA_SHAPE",
 			"agent-ix.compiler.KERNEL_UNCONSTRAINED_VALUE",

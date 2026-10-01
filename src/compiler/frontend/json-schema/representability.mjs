@@ -58,9 +58,7 @@ export function checkLossBijection(registry = DIAGNOSTIC_CODES) {
 		.map((entry) => entry.code)
 		.filter(
 			(code) =>
-				code.includes("KERNEL_") &&
-				!code.endsWith("KERNEL_BUNDLE_STALE") &&
-				!code.endsWith("KERNEL_INVENTORY_MISMATCH"),
+				code.includes("KERNEL_") && !code.endsWith("KERNEL_INVENTORY_MISMATCH"),
 		);
 	const declared = new Set(KERNEL_LOSS_CODES);
 	return Object.freeze({
