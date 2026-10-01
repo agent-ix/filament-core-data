@@ -60,17 +60,8 @@ jobs:
       - name: Install Node dependencies
         run: make install
 
-      # Both toolchains the repository pins: the workspace channel from
-      # rust-toolchain.toml, and the exact qualification toolchain the
-      # extraction-frontend gates run under (Makefile EXTRACTION_TOOLCHAIN).
       - name: Install the workspace toolchain
         run: rustup show active-toolchain || rustup toolchain install
-
-      - name: Install the extraction-frontend qualification toolchain
-        run: |
-          toolchain="$(make --no-print-directory print-extraction-toolchain)"
-          rustup toolchain install "$toolchain" --component clippy,rustfmt
-          rustup component add clippy rustfmt
 
       # Provisioning, which is not a gate.
       #
