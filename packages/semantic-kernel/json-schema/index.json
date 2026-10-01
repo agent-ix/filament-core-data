@@ -1,6 +1,6 @@
 {
 	"$comment": "Issue #11, FR-088. An index over packages/semantic-core/generated/json-schema/, never a copy of it.",
-	"base": "https://schemas.agent-ix.org/semantic-core/0.3.0/",
+	"base": "https://schemas.agent-ix.org/semantic-core/0.3.1/",
 	"documents": [
 		{
 			"name": "ClauseLanguage.json",
