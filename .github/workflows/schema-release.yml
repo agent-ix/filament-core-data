@@ -63,7 +63,7 @@ on:
           - semantic-schema
         required: true
       version:
-        description: "Version to publish (e.g. 0.3.0)"
+        description: "Version to publish (e.g. X.Y.Z)"
         required: true
 
 permissions:
