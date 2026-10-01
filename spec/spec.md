@@ -209,10 +209,10 @@ against the TypeSpec frontend on a shared case authored in both dialects.
   frontmatter-relationship, operation, and clause declarations to IR v1.1,
   package identity and provenance minting, the
   `agent-ix.extraction-frontend.*` diagnostic registry, lift-time validation
-  and canonical bytes through `crates/semantic-ir`, the fingerprint sidecar,
+  and canonical bytes through `crates/semantic-ir`,
   provenance-tracked fixtures with goldens and negatives, the structural
   shared-case parity gate, and the `extraction-frontend` command line with its
-  Make targets — all under exact Rust 1.98.1 and AGPL-3.0-or-later, none of it
+  Make targets — all under the pinned Rust toolchain and AGPL-3.0-or-later, none of it
   published.
 
 ### 2.2 Out of Scope

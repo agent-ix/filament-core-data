@@ -54,7 +54,7 @@ import { renderProgram, SUPPORT_PRELUDE } from "./support-source.mjs";
 /** The exact `serde` version the generated crate pins. */
 export const SERDE_VERSION = "1.0.229";
 
-/** The edition and MSRV of the declared support matrix. */
+/** The edition and MSRV a generated crate declares. */
 export const CRATE_EDITION = "2021";
 export const CRATE_RUST_VERSION = "1.85.0";
 
@@ -1237,7 +1237,7 @@ function okSelf(indent, fields) {
  * indenting the chained call by four; it breaks the argument list only when the
  * arguments themselves exceed `fn_call_width`.
  *
- * Measured against rustfmt 1.9.0-stable (Rust 1.98.1) under the pinned
+ * Measured against the formatter under the
  * `rustfmt.toml` rather than reasoned about. Emitting the fully-broken form for a call whose arguments
  * fit inside `fn_call_width` produced output the formatter rewrites — a real
  * `rustfmt --check` failure that no corpus base reaches, because their records

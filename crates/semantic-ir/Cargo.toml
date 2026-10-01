@@ -9,7 +9,7 @@
 # evidence rather than a shared implementation.
 [package]
 name = "agent-ix-semantic-ir"
-version = "0.1.0"
+version = "0.1.1"
 description = "Independent Rust reader for the Filament semantic IR v1 contract."
 edition.workspace = true
 rust-version.workspace = true

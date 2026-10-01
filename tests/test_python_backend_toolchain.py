@@ -28,8 +28,7 @@ REFUSALS = json.loads((REPO / "python_backend" / "refusals.json").read_text())
 
 
 def test_generator_version_and_licence() -> None:
-    """TC-845: FR-072-AC-1, FR-072-CON-3."""
-    assert tc.installed_version("datamodel-code-generator") == "0.76.0"
+    """TC-845: FR-072-CON-3."""
     dist = metadata.distribution("datamodel-code-generator")
     declared = (
         (dist.metadata.get("License-Expression") or "")

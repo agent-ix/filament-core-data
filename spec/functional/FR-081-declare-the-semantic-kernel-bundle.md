@@ -40,7 +40,7 @@ consume it.
 - `packages/semantic-core/inventory.json`: the FR-031 declaration inventory of `AgentIx.Semantic.Core` — twenty-one `models`, one `unions` member (`ConstraintDecl`), four `enums`, and four `scalars`
 - `packages/semantic-core/generated/json-schema/`: the thirty JSON Schema 2020-12 documents the pinned official `@typespec/json-schema` emitter projects from `packages/semantic-core/main.tsp`
 - `packages/semantic-core/kernel-scalars.json` and `packages/semantic-core/lowering.json`
-- `packages/semantic-core/package.json`, whose `name` is `@agent-ix/semantic-core` and whose `version` is `0.2.0`
+- `packages/semantic-core/package.json`, whose `name` is `@agent-ix/semantic-core`
 - The closed `target` vocabulary of `schema/semantic/v1/common.schema.json#/$defs/target`: `json-schema`, `rust`, `typescript`, `python-pydantic-v2`, `python-dataclass`
 - The FR-048 canonicalization and `digest`
 - The injected host of NFR-019 and NFR-020, through which every read a compiler module makes is performed
@@ -107,7 +107,7 @@ consume it.
 | FR-081-CON-5 | This requirement SHALL implement no generator. It declares what is generated, where it lands, and how staleness is decided; the four generators belong to their own requirements and to issues #21, #22, and #23. | Scope | Inspection |
 | FR-081-CON-6 | The `json-schema` target SHALL be indexed, not copied: `packages/semantic-kernel/json-schema/index.json` names the thirty documents by file name and `$id` and carries none of their bytes. ADR-0005 assigns the projection to the upstream emitter, and a second copy under version control is a second thing to keep in agreement — the exact drift `make semantic-core-check` exists to prevent. | Integrity | Byte comparison |
 | FR-081-CON-7 | This requirement SHALL write only under `packages/semantic-kernel/`, `src/compiler/frontend/json-schema/`, `scripts/build-semantic-kernel.mjs`, `test/semantic-kernel.test.ts`, `src/compiler/diagnostics.mjs`, `src/compiler/inventory.json`, `docs/semantic-data-system/compiler-diagnostics.md`, the `Makefile`, and `spec/`. `packages/semantic-core/**` in its entirety, `schema/**`, `fixtures/**`, `conformance/**`, `src/compiler/backends/**`, `src/compiler/frontend/typespec/**`, `src/compiler/frontend/spec-bundle/**`, `src/compiler/cli.mjs`, the root `package.json`, `tsconfig.json`, `pyproject.toml`, and every lockfile but `Cargo.lock` are read and never written. | Non-disruption | Branch diff |
-| FR-081-CON-8 | The bundle SHALL NOT record a target as generated while its tree is absent or its recorded digest is stale; the state a reader sees SHALL be the state on disk, because a manifest that claims a tree it cannot show is worse than no manifest. | Correctness | Test |
+| FR-081-CON-8 | The bundle SHALL NOT record a target as generated while its tree is absent; the state a reader sees SHALL be the state on disk, because a manifest that claims a tree it cannot show is worse than no manifest. | Correctness | Test |
 
 ## Acceptance Criteria
 

@@ -22,10 +22,6 @@ import {
 	emitTypeScript,
 	normalizeJsonSchemaForPython,
 } from "../../../src/compiler/index.mjs";
-import {
-	DATAMODEL_CODEGEN_VERSION,
-	PYDANTIC_VERSION,
-} from "../../../src/compiler/backends/python-pins.mjs";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const spike = resolve(scriptDirectory, "..");
@@ -39,8 +35,10 @@ const checkMode = process.argv.includes("--check");
 // generated/custom/semantic-ir.json byte-identical to the issue #4 record.
 const spikeGeneratorId = "@agent-ix/typespec-semantic-ir-emitter-spike@0.0.0";
 const irCommand = `node src/compiler/cli.mjs emit-ir --entrypoint spikes/typespec-feasibility/main.tsp --generator ${spikeGeneratorId} --out generated/custom/semantic-ir.json`;
-const pydanticVersion = PYDANTIC_VERSION;
-const datamodelCodegenVersion = DATAMODEL_CODEGEN_VERSION;
+// "<datamodel-code-generator>/<pydantic>" as installed in the spike's venv,
+// read from the venv when it is provisioned and recorded where the run's
+// output names its tools.
+let pythonToolVersion = "";
 const serdeVersion = "1.0.229";
 const serdeJsonVersion = "1.0.151";
 const experimentRoot = mkdtempSync(join(tmpdir(), "filament-typespec-"));
@@ -194,7 +192,7 @@ function emitConsumers(output) {
 	);
 	write(
 		resolve(output, "generated/custom/python/requirements.txt"),
-		`pydantic==${pydanticVersion}\n`,
+		"pydantic\n",
 	);
 	writeJson(
 		resolve(output, "generated/custom/rust/fixtures/representative.json"),
@@ -417,24 +415,20 @@ function ensurePython() {
 	const environment = resolve(spike, ".venv");
 	const python = resolve(environment, "bin/python");
 	if (!existsSync(python)) run("python3", ["-m", "venv", environment]);
-	const probe = run(
-		python,
-		[
-			"-c",
-			"import importlib.metadata, pydantic; print(pydantic.__version__ + '/' + importlib.metadata.version('datamodel-code-generator'))",
-		],
-		{ allowFailure: true },
-	);
-	if (
-		probe.exitCode !== 0 ||
-		probe.stdout.trim() !== `${pydanticVersion}/${datamodelCodegenVersion}`
-	) {
+	const probeArguments = [
+		"-c",
+		"import importlib.metadata, pydantic; print(importlib.metadata.version('datamodel-code-generator') + '/' + pydantic.__version__)",
+	];
+	let probe = run(python, probeArguments, { allowFailure: true });
+	if (probe.exitCode !== 0) {
 		run(resolve(environment, "bin/pip"), [
 			"install",
-			`pydantic==${pydanticVersion}`,
-			`datamodel-code-generator==${datamodelCodegenVersion}`,
+			"pydantic",
+			"datamodel-code-generator",
 		]);
+		probe = run(python, probeArguments);
 	}
+	pythonToolVersion = probe.stdout.trim();
 	return python;
 }
 
@@ -632,64 +626,6 @@ function validate(output) {
 	};
 	writeJson(resolve(output, "evidence/compatibility.json"), compatibility);
 
-	const versions = {
-		node: run("node", ["--version"]).stdout.trim().replace(/^v/, ""),
-		pnpm: run("pnpm", ["--version"]).stdout.trim(),
-		rustc: run("rustc", ["--version"]).stdout.trim().split(" ")[1],
-		cargo: run("cargo", ["--version"]).stdout.trim().split(" ")[1],
-		python: run("python3", ["--version"]).stdout.trim().split(" ")[1],
-	};
-	writeJson(resolve(output, "evidence/toolchain.json"), {
-		tools: [
-			{ name: "node", version: versions.node, command: "node --version" },
-			{ name: "pnpm", version: versions.pnpm, command: "pnpm --version" },
-			{
-				name: "TypeSpec compiler",
-				version: packageVersion("@typespec/compiler"),
-				command: "pnpm exec tsp --version",
-			},
-			{
-				name: "TypeSpec JSON Schema emitter",
-				version: packageVersion("@typespec/json-schema"),
-				command: "package lock",
-			},
-			{
-				name: "TypeSpec Protobuf emitter",
-				version: packageVersion("@typespec/protobuf"),
-				command: "package lock",
-			},
-			{
-				name: "TypeScript",
-				version: packageVersion("typescript"),
-				command: "pnpm exec tsc --version",
-			},
-			{
-				name: "Pydantic",
-				version: pydanticVersion,
-				command:
-					"spikes/typespec-feasibility/.venv/bin/python -c import-pydantic-version",
-			},
-			{
-				name: "datamodel-code-generator",
-				version: datamodelCodegenVersion,
-				command:
-					"python -m datamodel_code_generator --input normalized.schema.json --output models.py",
-			},
-			{ name: "rustc", version: versions.rustc, command: "rustc --version" },
-			{ name: "cargo", version: versions.cargo, command: "cargo --version" },
-			{
-				name: "serde",
-				version: serdeVersion,
-				command: "generated/custom/rust/Cargo.lock",
-			},
-			{
-				name: "Python",
-				version: versions.python,
-				command: "python3 --version",
-			},
-		],
-	});
-
 	const capabilities = [
 		capability(
 			"modular-source",
@@ -774,7 +710,7 @@ function validate(output) {
 			"P0",
 			"established generator plus native import and execute",
 			"datamodel-codegen normalized JSON Schema; python -B consumer.py",
-			`${datamodelCodegenVersion}/${pydanticVersion}`,
+			pythonToolVersion,
 			"datamodel-code-generator Pydantic output round-trips the shared golden and stdlib dataclass output imports and constructs",
 			"pass",
 			"Requires pinned local tooling, TypeSpec JSON Schema URI normalization, extension rejection, and sandboxed generation",

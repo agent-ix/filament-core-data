@@ -256,7 +256,6 @@ rust-check: rust-toolchain-check
 	node scripts/build-rust-backend-goldens.mjs --manifests $(RUST_CHECK_SCRATCH)
 	node scripts/build-rust-backend-goldens.mjs --determinism
 	node scripts/build-rust-backend-goldens.mjs --rustfmt
-	node scripts/build-rust-backend-goldens.mjs --matrix
 
 .PHONY: rust-docs
 rust-docs:
@@ -405,7 +404,7 @@ semantic-kernel-parity-check:
 #
 # `clippy --no-deps`: cargo lints workspace path dependencies along with the
 # requested package, and `agent-ix-semantic-ir` is linted by the workspace
-# gate `rust-clippy`; NFR-033's "qualified on 1.98.1" covers this crate alone.
+# gate `rust-clippy`.
 #
 # `extraction-frontend-lift` takes BUNDLE, MODULES (space-separated,
 # each one `--module`; the fixtures need both module roots) and OUT.
@@ -441,7 +440,7 @@ extraction-frontend-test: rust-toolchain-check
 # the rows they bind have a named producer (SR-170 FND-1505). A test
 # `#[ignore]`d as *blocked* on an open issue fails by design until the issue
 # closes and is skipped here by name; run one deliberately with
-# `cargo +1.98.1 test -p agent-ix-extraction-frontend -- --ignored --exact <name>`.
+# `cargo test -p agent-ix-extraction-frontend -- --ignored --exact <name>`.
 #
 # The list names the tests blocked on an open issue, and an entry is removed in
 # the change that unblocks its test. No test is blocked today.

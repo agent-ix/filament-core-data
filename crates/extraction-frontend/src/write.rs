@@ -1,5 +1,5 @@
-//! FR-097 "Fingerprint" and "Atomic write and sidecars": the crate's one
-//! file-system seam (NFR-031-AC-5).
+//! FR-097 "Atomic write and sidecars": the crate's one file-system seam
+//! (NFR-031-AC-5).
 //!
 //! `std::fs` appears in this module and nowhere else under `src/`. It
 //! reaches the file system for the module manifest
@@ -14,8 +14,8 @@
 //!
 //! Every file is first written whole to `.<name>.tmp` beside its final
 //! path, and the temporary files are then renamed into place in the order
-//! diagnostics, fingerprint, document, so that a reader that
-//! observes `<out>` observes its sidecars. A failure while writing any
+//! diagnostics, document, so that a reader that
+//! observes `<out>` observes its sidecar. A failure while writing any
 //! temporary file removes every temporary file and refuses with
 //! `OUTPUT_UNWRITABLE`; a blocking lift writes only the diagnostics
 //! sidecar and touches no other path.
@@ -25,7 +25,6 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use serde::Serialize;
-use sha2::{Digest, Sha256};
 
 use crate::bundle::Refusal;
 use crate::canonical::canonical_bytes;
@@ -34,50 +33,16 @@ use crate::validate::ValidDocument;
 
 /// The manifest file of a module root.
 pub const MANIFEST: &str = "manifest.yaml";
-/// The suffix of the fingerprint sidecar.
-pub const FINGERPRINT_SUFFIX: &str = ".fingerprint";
 /// The suffix of the default diagnostics sidecar.
 pub const DIAGNOSTICS_SUFFIX: &str = ".diagnostics.json";
 /// The suffix of a temporary file.
 const TEMP_SUFFIX: &str = ".tmp";
 
-/// The fingerprint sidecar (quire-specification FR-018's shape, copied
-/// verbatim; decision D10).
-pub const FINGERPRINT_DOMAIN: &str = "quire.verification.jcs";
-pub const FINGERPRINT_VERSION: &str = "rfc8785-v1";
-pub const FINGERPRINT_ALGORITHM: &str = "sha256";
-/// The prefix of `digest`.
-pub const DIGEST_PREFIX: &str = "sha256-jcs:";
-
-/// `<out>.fingerprint` (FR-097 "Fingerprint").
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
-pub struct Fingerprint {
-    pub domain: String,
-    pub version: String,
-    pub algorithm: String,
-    /// `sha256-jcs:` followed by 64 lowercase hexadecimal digits.
-    pub digest: String,
-}
-
-impl Fingerprint {
-    /// SHA-256 over exactly `bytes`, the document bytes as written.
-    pub fn of(bytes: &[u8]) -> Self {
-        Self {
-            domain: FINGERPRINT_DOMAIN.to_string(),
-            version: FINGERPRINT_VERSION.to_string(),
-            algorithm: FINGERPRINT_ALGORITHM.to_string(),
-            digest: format!("{DIGEST_PREFIX}{:x}", Sha256::digest(bytes)),
-        }
-    }
-}
-
-/// The three paths one lift writes.
+/// The two paths one lift writes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OutputPaths {
     /// `<out>`.
     pub document: PathBuf,
-    /// `<out>.fingerprint`.
-    pub fingerprint: PathBuf,
     /// `--diagnostics`, or `<out>.diagnostics.json`.
     pub diagnostics: PathBuf,
 }
@@ -86,7 +51,6 @@ pub struct OutputPaths {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Slot {
     Document,
-    Fingerprint,
     Diagnostics,
 }
 
@@ -94,7 +58,6 @@ impl Slot {
     fn option(self) -> &'static str {
         match self {
             Slot::Document => "--out",
-            Slot::Fingerprint => "the fingerprint sidecar",
             Slot::Diagnostics => "--diagnostics",
         }
     }
@@ -115,7 +78,6 @@ impl OutputPaths {
     pub fn new(out: &Path, diagnostics: Option<&Path>) -> Self {
         Self {
             document: out.to_path_buf(),
-            fingerprint: with_suffix(out, FINGERPRINT_SUFFIX),
             diagnostics: diagnostics
                 .map(Path::to_path_buf)
                 .unwrap_or_else(|| with_suffix(out, DIAGNOSTICS_SUFFIX)),
@@ -123,10 +85,9 @@ impl OutputPaths {
     }
 
     /// Every path with its slot, in the rename order.
-    pub fn slots(&self) -> [(Slot, &Path); 3] {
+    pub fn slots(&self) -> [(Slot, &Path); 2] {
         [
             (Slot::Diagnostics, &self.diagnostics),
-            (Slot::Fingerprint, &self.fingerprint),
             (Slot::Document, &self.document),
         ]
     }
@@ -166,7 +127,7 @@ fn resolved(path: &Path) -> Option<PathBuf> {
 
 /// Refuse with `OUTPUT_UNWRITABLE` before the bundle is loaded (FR-097
 /// "Atomic write and sidecars"): a path under the bundle root or a module
-/// root, a missing output directory, or two of the three paths naming one
+/// root, a missing output directory, or the two paths naming one
 /// file. Every refusal names the offending path as the option gave it.
 pub fn check_output(
     paths: &OutputPaths,
@@ -213,15 +174,12 @@ pub fn check_output(
 pub enum Emission<'a> {
     /// A blocking diagnostic: the diagnostics sidecar alone.
     Blocked,
-    /// A success verdict: the document and its fingerprint.
-    Document {
-        document: &'a ValidDocument,
-        fingerprint: &'a Fingerprint,
-    },
+    /// A success verdict: the document.
+    Document { document: &'a ValidDocument },
 }
 
-/// The canonical bytes of a sidecar value (FR-097 "Fingerprint": every
-/// sidecar goes through the same `normalized` call as the document).
+/// The canonical bytes of a sidecar value (every sidecar goes through the
+/// same `normalized` call as the document).
 fn sidecar_bytes<T: Serialize>(value: &T) -> Vec<u8> {
     canonical_bytes(&serde_json::to_value(value).unwrap_or(serde_json::Value::Null))
 }
@@ -275,10 +233,10 @@ impl Drop for Temp {
 }
 
 /// Write the lift's files (FR-097 "Atomic write and sidecars"): on
-/// [`Emission::Document`] all three, on [`Emission::Blocked`] the
+/// [`Emission::Document`] both, on [`Emission::Blocked`] the
 /// diagnostics sidecar alone. Every file is written to a temporary file in
 /// its own directory and renamed over its final path, in the order
-/// diagnostics, fingerprint, document. A failure refuses with
+/// diagnostics, document. A failure refuses with
 /// `OUTPUT_UNWRITABLE` naming the path and leaves no temporary file.
 pub fn write_lift(
     paths: &OutputPaths,
@@ -287,12 +245,7 @@ pub fn write_lift(
 ) -> Result<(), Refusal> {
     let mut planned: Vec<(&Path, Vec<u8>)> =
         vec![(&paths.diagnostics, sidecar_bytes(&diagnostics))];
-    if let Emission::Document {
-        document,
-        fingerprint,
-    } = emission
-    {
-        planned.push((&paths.fingerprint, sidecar_bytes(fingerprint)));
+    if let Emission::Document { document } = emission {
         planned.push((&paths.document, document.bytes().to_vec()));
     }
     let mut temps: Vec<(&Path, Temp)> = Vec::with_capacity(planned.len());

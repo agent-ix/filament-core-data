@@ -3,7 +3,7 @@
 One rewrite, measured rather than assumed. The official TypeSpec JSON Schema
 emitter states a sealed model with `unevaluatedProperties`, usually as the
 always-false schema `{"not": {}}`. The pinned generator reads neither: measured
-against `0.76.0`, `unevaluatedProperties: {"not": {}}` produces `extra='allow'`
+against it, `unevaluatedProperties: {"not": {}}` produces `extra='allow'`
 in both Pydantic families and no `closed=True` in `TypedDict`, while
 `additionalProperties: false` produces `extra='forbid'` and `closed=True`. Every
 sealed contract type would otherwise generate as an open Python model, in every
@@ -110,7 +110,7 @@ def _walk(node: Any, name: str, pointer: str, out: list[Rewrite]) -> Any:
             result[key] = copy.deepcopy(value)
 
     if "enum" in result and "default" in result:
-        # Measured against the pinned 0.76.0 generator: a property that
+        # Measured against the pinned generator: a property that
         # carries both `enum` and a scalar `default` emits a class attribute
         # typed as the enum but assigned the raw default *string*, which
         # mypy --strict correctly rejects as an incompatible assignment in

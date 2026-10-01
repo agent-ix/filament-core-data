@@ -100,10 +100,9 @@ document needs behaviour the backend does not have, that is a change to issue
 - The descriptor API SHALL be validated rather than free-form: the identity map is typed over the union of exported names, so a kernel type with no identity entry and an entry naming an unexported name each fail the typecheck instead of producing a partial map at run time.
 - The two surfaces together SHALL account for every node of the kernel document: FR-067's node audit finds each node either rendered or named in a declared representability loss, and FR-084 owns the loss register the kernel's two declared losses are recorded in.
 
-### Banner and fingerprint
+### Header
 
-- Every committed file SHALL begin with the `SPDX-License-Identifier: AGPL-3.0-or-later` header and the banner naming the backend identity, the backend version and the IR fingerprint, and SHALL name no clock value, hostname, user, working directory or tool path.
-- The fingerprint SHALL be computed over the normalized document, so a re-serialization of the kernel IR that changes no meaning does not churn the committed tree.
+- Every committed file SHALL begin with the `SPDX-License-Identifier: AGPL-3.0-or-later` header, and SHALL name no clock value, hostname, user, working directory or tool path.
 
 ### The blocked strict typecheck
 
@@ -144,7 +143,7 @@ document needs behaviour the backend does not have, that is a change to issue
 | FR-085-AC-8 | The committed `identity.ts` exposes every kernel type's `roles[]` and `unknownPolicy`, every `record`'s relationship descriptors, every field's identity and its `unit` where declared, and every operation, clause, default, extension and occurrence the kernel document carries; and a node-audit walk over the kernel IR finds each node either rendered or named in the FR-084 loss register. | Test |
 | FR-085-AC-9 | **Blocked on `agent-ix/filament-core-data#22`.** The committed kernel package typechecks with zero errors under `strict`, `exactOptionalPropertyTypes`, `noUnusedLocals` and `noUnusedParameters`. It does not: the kernel's `JsonObject` lowering of `DefaultDecl.value` produces a zero-field record, for which the backend emits `const declared = [];` in `validators.ts`, failing with TS7034 and TS7005. The criterion is recorded blocked with that defect, those error codes and that construct named; it is not restated against weaker options and it is not marked satisfied. | Compile |
 | FR-085-AC-10 | `tsconfig.json` is byte-unchanged on this branch, carrying exactly its existing single `exclude` entry, `test/fixtures/backends/typescript`, and no entry for `packages/semantic-kernel/typescript`; and no committed file of the generated tree contains `@ts-nocheck` or `@ts-expect-error`. | Static |
-| FR-085-AC-11 | Every committed file begins with the `SPDX-License-Identifier: AGPL-3.0-or-later` header and the banner naming the backend identity, the backend version and the IR fingerprint; and no committed byte outside a copied `occurrences[].observedAt` value matches a date, time, hostname, user or absolute-path pattern. | Static |
+| FR-085-AC-11 | Every committed file begins with the `SPDX-License-Identifier: AGPL-3.0-or-later` header; and no committed byte outside a copied `occurrences[].observedAt` value matches a date, time, hostname, user or absolute-path pattern. | Static |
 | FR-085-AC-13 | Two generations of the kernel package at different wall-clock times, under two working directories, two `HOME` values, and `LANG=C` against `LANG=tr_TR.UTF-8`, produce byte-identical trees. | Test |
 | FR-085-AC-14 | Every `import` specifier in every committed module begins with `./` or `../`, and no committed module names a package in any of the seven prohibited dependency categories. | Static |
 | FR-085-AC-15 | The committed `LICENSE` is byte-identical to this repository's committed `LICENSE`. | Test |

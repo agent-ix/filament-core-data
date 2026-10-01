@@ -252,8 +252,8 @@ def build() -> tuple[dict[str, Any], dict[str, Any]]:
             "closableByPreparation": False,
             "disposition": (
                 "The generator's `--use-missing-sentinel` separates the two, and "
-                "against pydantic 2.12.5 it renders `pydantic_core.MISSING` in a "
-                "type position that mypy 1.19.1 rejects, which FR-080 forbids "
+                "under the Pydantic families it renders `pydantic_core.MISSING` in a "
+                "type position that strict mypy rejects, which FR-080 forbids "
                 "papering over. Recorded rather than adopted; the two obligations "
                 "cannot both be met with this toolchain."
             ),

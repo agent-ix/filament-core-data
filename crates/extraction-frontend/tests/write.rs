@@ -1,4 +1,4 @@
-//! FR-097 "Fingerprint", "Determinism" and "Atomic write and sidecars":
+//! FR-097 "Determinism" and "Atomic write and sidecars":
 //! what a lift leaves on disk, byte for byte, and what it refuses to
 //! touch. The determinism test re-runs this binary as a child with a
 //! different working directory and environment; nothing else here reads
@@ -11,28 +11,23 @@ use std::process::Command;
 mod common;
 
 use agent_ix_extraction_frontend::diagnostics::{Code, WireCode};
-use agent_ix_extraction_frontend::write::{
-    OutputPaths, DIGEST_PREFIX, FINGERPRINT_ALGORITHM, FINGERPRINT_DOMAIN, FINGERPRINT_VERSION,
-};
+use agent_ix_extraction_frontend::write::OutputPaths;
 use agent_ix_extraction_frontend::{lift, LiftOutcome, LiftRequest};
-use common::{
-    business_module, entries, fixture, inspect, lift_fixture, positive_lifts, request, sha256sum,
-};
+use common::{business_module, entries, fixture, inspect, lift_fixture, positive_lifts, request};
 use ix_trace_rs::trace;
 use serde_json::Value;
 
-/// The three files of a lift at `out`, as `(label, path)`.
-fn three(request: &LiftRequest) -> [(&'static str, PathBuf); 3] {
+/// The two files of a lift at `out`, as `(label, path)`.
+fn two(request: &LiftRequest) -> [(&'static str, PathBuf); 2] {
     let paths = request.paths();
     [
         ("document", paths.document),
-        ("fingerprint", paths.fingerprint),
         ("diagnostics", paths.diagnostics),
     ]
 }
 
 fn read_all(request: &LiftRequest) -> Vec<(&'static str, Vec<u8>)> {
-    three(request)
+    two(request)
         .into_iter()
         .map(|(label, path)| {
             (
@@ -48,53 +43,6 @@ fn refused_code(outcome: &LiftOutcome) -> (Code, String) {
         LiftOutcome::Refused(refusal) => (refusal.code(), refusal.diagnostic.message.clone()),
         other => panic!("not refused: {other:?}"),
     }
-}
-
-#[trace("TC-1278", "FR-097-AC-6")]
-#[test]
-fn tc_1278_the_fingerprint_sidecar_carries_exactly_four_members_and_sha256sum_of_the_document() {
-    let (_dir, request, outcome) = lift_fixture("config-version-table");
-    let LiftOutcome::Written {
-        document,
-        fingerprint,
-        ..
-    } = &outcome
-    else {
-        panic!("{outcome:?}")
-    };
-    let paths = request.paths();
-    let on_disk: Value =
-        serde_json::from_slice(&fs::read(&paths.fingerprint).expect("read")).expect("json");
-    let members = on_disk.as_object().expect("object");
-    let mut keys: Vec<&String> = members.keys().collect();
-    keys.sort();
-    assert_eq!(keys, ["algorithm", "digest", "domain", "version"]);
-    assert_eq!(on_disk["domain"], "quire.verification.jcs");
-    assert_eq!(on_disk["version"], "rfc8785-v1");
-    assert_eq!(on_disk["algorithm"], "sha256");
-    assert_eq!(FINGERPRINT_DOMAIN, "quire.verification.jcs");
-    assert_eq!(FINGERPRINT_VERSION, "rfc8785-v1");
-    assert_eq!(FINGERPRINT_ALGORITHM, "sha256");
-    assert_eq!(DIGEST_PREFIX, "sha256-jcs:");
-    let digest = on_disk["digest"].as_str().expect("digest");
-    let hex = digest.strip_prefix("sha256-jcs:").expect("prefix");
-    assert_eq!(hex.len(), 64);
-    assert!(hex
-        .chars()
-        .all(|c| c.is_ascii_digit() || ('a'..='f').contains(&c)));
-    let written = fs::read(&paths.document).expect("document");
-    assert_eq!(&written, document);
-    assert_eq!(hex, sha256sum(&written));
-    assert_eq!(fingerprint.digest, digest);
-    // The sidecar is in the reader's canonical form: no whitespace, members
-    // by code point, no trailing newline.
-    let raw = fs::read_to_string(&paths.fingerprint).expect("read");
-    assert_eq!(
-        raw,
-        format!(
-            "{{\"algorithm\":\"sha256\",\"digest\":\"{digest}\",\"domain\":\"quire.verification.jcs\",\"version\":\"rfc8785-v1\"}}"
-        )
-    );
 }
 
 #[trace("TC-1279", "FR-097-AC-7")]
@@ -121,7 +69,6 @@ fn tc_1279_two_consecutive_lifts_produce_byte_identical_documents_and_sidecars()
         for (label, bytes) in &a {
             let golden = match *label {
                 "document" => expected.join("semantic-ir.json"),
-                "fingerprint" => expected.join("semantic-ir.json.fingerprint"),
                 "diagnostics" => expected.join("diagnostics.json"),
                 _ => unreachable!(),
             };
@@ -198,13 +145,12 @@ fn request_in(out: &Path) -> LiftRequest {
 
 #[trace("TC-1281", "FR-097-AC-9")]
 #[test]
-fn tc_1281_a_blocking_lift_leaves_a_pre_existing_document_and_fingerprint_byte_unchanged() {
+fn tc_1281_a_blocking_lift_leaves_a_pre_existing_document_byte_unchanged() {
     let dir = tempfile::tempdir().expect("tempdir");
     let request = request("negatives/CONSTRAINT_NOT_APPLICABLE", dir.path());
     let paths = request.paths();
     let stale: Vec<(&Path, &[u8])> = vec![
         (&paths.document, b"stale document"),
-        (&paths.fingerprint, b"stale fingerprint"),
         (&paths.diagnostics, b"stale diagnostics"),
     ];
     for (path, bytes) in &stale {
@@ -216,7 +162,7 @@ fn tc_1281_a_blocking_lift_leaves_a_pre_existing_document_and_fingerprint_byte_u
         panic!("not blocked: {outcome:?}");
     };
     assert!(diagnostics.iter().any(|d| d.blocking));
-    for (path, bytes) in &stale[..2] {
+    for (path, bytes) in &stale[..1] {
         assert_eq!(
             fs::read(path).expect("read"),
             *bytes,
@@ -308,7 +254,6 @@ fn tc_1339_colliding_output_and_sidecar_paths_refuse_naming_both_options_and_wri
 
     // The default sidecar paths never collide with `<out>`.
     let paths = OutputPaths::new(Path::new("x/o.json"), None);
-    assert_eq!(paths.fingerprint, Path::new("x/o.json.fingerprint"));
     assert_eq!(paths.diagnostics, Path::new("x/o.json.diagnostics.json"));
 }
 
@@ -381,7 +326,7 @@ fn warning_only_bundle(dir: &Path) {
 
 #[trace("TC-1341", "FR-097-AC-14")]
 #[test]
-fn tc_1341_a_warning_only_lift_writes_exactly_the_three_files() {
+fn tc_1341_a_warning_only_lift_writes_exactly_the_two_files() {
     let scratch = tempfile::tempdir().expect("tempdir");
     let bundle = scratch.path().join("bundle");
     warning_only_bundle(&bundle);
@@ -407,13 +352,9 @@ fn tc_1341_a_warning_only_lift_writes_exactly_the_three_files() {
     );
     assert_eq!(
         entries(dir.path()),
-        [
-            "semantic-ir.json",
-            "semantic-ir.json.diagnostics.json",
-            "semantic-ir.json.fingerprint",
-        ]
+        ["semantic-ir.json", "semantic-ir.json.diagnostics.json"]
     );
-    for (label, path) in three(&request) {
+    for (label, path) in two(&request) {
         assert!(path.is_file(), "{label} at {}", path.display());
     }
     // The diagnostics sidecar is the sorted list the outcome reports.
@@ -432,7 +373,7 @@ fn tc_1341_a_warning_only_lift_writes_exactly_the_three_files() {
     assert!(matches!(lift(&redirected), LiftOutcome::Written { .. }));
     assert_eq!(
         entries(redirected_dir.path()),
-        ["d.json", "semantic-ir.json", "semantic-ir.json.fingerprint"]
+        ["d.json", "semantic-ir.json"]
     );
     assert_eq!(
         fs::read(redirected_dir.path().join("semantic-ir.json")).expect("read"),

@@ -295,7 +295,6 @@ fn tc_1274_a_document_missing_unknown_policy_yields_one_invalid_ir_at_the_type_a
         "only the diagnostics sidecar"
     );
     assert!(!paths.document.exists());
-    assert!(!paths.fingerprint.exists());
     // The sidecar carries that one diagnostic.
     let sidecar: Value =
         serde_json::from_slice(&fs::read(&paths.diagnostics).expect("read")).expect("json");

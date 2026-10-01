@@ -34,8 +34,7 @@
  * `agent-ix/filament-core-data#9` is closed, and
  * `agent-ix/filament-core-data#59` carries the ownership question. This is the
  * highest-volatility reading the backend makes: `normalized` is compared byte
- * for byte on every corpus case, and the fingerprint stamped into every
- * generated file's banner derives from it.
+ * for byte on every corpus case, and the IR fingerprint derives from it.
  */
 
 import { createHash } from "node:crypto";
@@ -264,7 +263,7 @@ export function normalizeIr(document) {
 
 /**
  * The canonical string an adapter answer carries as `normalized`, and the input
- * to the fingerprint every generated file's banner names.
+ * to the IR fingerprint.
  *
  * It depends on nothing from the admissibility reader: FR-068 and FR-069 do not
  * form a cycle, and this function is measurable against every corpus case

@@ -102,16 +102,6 @@ surface did not grow" is a checked fact rather than a review opinion.
 - A run under `LC_ALL=tr_TR.UTF-8` SHALL produce byte-identical files; the Turkish locale is named because dotted-I case folding is how a locale-dependent identifier mint or sort would first show itself.
 - A run with every environment variable cleared but `PATH` SHALL produce byte-identical files.
 
-### The packed artifact
-
-- The default artifact comparison SHALL be a listing this repository computes itself, naming each packable file's path, size, and content digest.
-- The self-computed listing SHALL be the stated default because `npm pack` starts `npm`, which reads ambient configuration and in this ecosystem may be pointed at a private registry, so its output is a function of the host as well as of the package.
-- `npm pack --dry-run --json` MAY be run as an optional cross-check, and its result SHALL NOT be the gate.
-- The listing SHALL be equal between two runs after normalization.
-- Normalization SHALL replace exactly the archive's own recorded `mtime`, `uid`, `gid`, `uname`, and `gname` members with fixed values.
-- Normalization SHALL change no member other than those five.
-- Normalization SHALL NOT normalize a file's path, size, mode, or content digest, because those are the members the comparison exists to check.
-
 ### The committed fixtures
 
 - The repository SHALL carry a generation fixture under `test/fixtures/backends/typescript/` holding one input IR document and the full expected generated package.
@@ -167,7 +157,6 @@ surface did not grow" is a checked fact rather than a review opinion.
 | FR-071-AC-5 | Every path the command creates during a fixture generation is a caller-named path or its `.tmp` sibling, asserted by an instrumented host. | Integration |
 | FR-071-AC-6 | An unknown command, an unknown flag, a missing required flag, and an unreadable `--limits` file each exit `2` and print the usage text. | Unit |
 | FR-071-AC-7 | A `--target` naming a registered declared-unimplemented target prints that target and the owning issue the registry records for it, and exits `1`; a `--target` outside the closed target vocabulary exits `2`. Both are exercised over the registry as it stands at the time of the run rather than over a named sibling target, so neither assertion depends on which targets remain unimplemented. | Unit |
-| FR-071-AC-8 | The self-computed normalized artifact listing is equal between two runs, and a listing normalized only in `mtime`, `uid`, `gid`, `uname`, and `gname` still differs when one generated file's content differs by one byte. | Integration |
 | FR-071-AC-9 | The type-level fixtures compile under the fixture `tsconfig.json`; the four deliberately-uncompilable fixtures each fail with the expected diagnostic code, and a fixture failing with a different code fails the check. | Compile |
 | FR-071-AC-10 | The four presence and nullability forms appear as four distinct declared property types in the type-level fixture, checked by assignability probes rather than by inspection. | Compile |
 | FR-071-AC-11 | The committed reachable-symbol record matches the walk's result for every declared entry module, adding an export to an entry's reachable set fails the check, and removing `"sideEffects": false` from the generated manifest makes the walk fail rather than report a set. | Analysis |

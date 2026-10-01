@@ -1,8 +1,8 @@
 //! The library entry the `lift` command calls (FR-099): one bundle under
-//! one module set to one document and two sidecars.
+//! one module set to one document and one sidecar.
 //!
 //! The pipeline is FR-091 load → FR-092/093/094 lower → FR-095 envelope →
-//! FR-097 sort, decide, fingerprint, write. The output paths are checked
+//! FR-097 sort, decide, write. The output paths are checked
 //! before the bundle is loaded; a refusal writes nothing; a lift with a
 //! blocking diagnostic writes the diagnostics sidecar alone and consults no
 //! reader, because its document is not a candidate; a document the reader
@@ -23,7 +23,7 @@ use crate::lower::lower_bundle;
 use crate::resolve::resolve;
 use crate::scalars::check_library;
 use crate::validate::validate;
-use crate::write::{check_output, read_manifest, write_lift, Emission, Fingerprint, OutputPaths};
+use crate::write::{check_output, read_manifest, write_lift, Emission, OutputPaths};
 
 /// One lift as the command line names it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -53,14 +53,13 @@ pub enum LiftOutcome {
     /// At least one blocking diagnostic: `<out>.diagnostics.json` written,
     /// nothing else touched (exit `1`).
     Blocked { diagnostics: Vec<Diagnostic> },
-    /// No blocking diagnostic: all three files written (exit `0`).
+    /// No blocking diagnostic: both files written (exit `0`).
     Written {
         diagnostics: Vec<Diagnostic>,
         /// The reader's verdict over the written document.
         result_state: ResultState,
         /// The document bytes as written.
         document: Vec<u8>,
-        fingerprint: Fingerprint,
     },
 }
 
@@ -153,7 +152,7 @@ pub fn lift(request: &LiftRequest) -> LiftOutcome {
 }
 
 /// The FR-097 tail of a lift over an assembled `document`: sort, decide,
-/// fingerprint, write. `diagnostics` are the frontend's own findings so far;
+/// write. `diagnostics` are the frontend's own findings so far;
 /// when one blocks, the document is not a candidate and only the
 /// diagnostics sidecar is written.
 pub fn emit(paths: &OutputPaths, document: Value, mut diagnostics: Vec<Diagnostic>) -> LiftOutcome {
@@ -176,17 +175,12 @@ pub fn emit(paths: &OutputPaths, document: Value, mut diagnostics: Vec<Diagnosti
         }
     };
     sort_diagnostics(&mut diagnostics);
-    let fingerprint = Fingerprint::of(valid.bytes());
-    let emission = Emission::Document {
-        document: &valid,
-        fingerprint: &fingerprint,
-    };
+    let emission = Emission::Document { document: &valid };
     match write_lift(paths, emission, &diagnostics) {
         Ok(()) => LiftOutcome::Written {
             diagnostics,
             result_state: valid.result_state(),
             document: valid.bytes().to_vec(),
-            fingerprint,
         },
         Err(refusal) => LiftOutcome::Refused(refusal),
     }

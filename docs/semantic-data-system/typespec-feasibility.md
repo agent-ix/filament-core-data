@@ -80,20 +80,16 @@ node src/compiler/cli.mjs emit-ir --entrypoint spikes/typespec-feasibility/main.
 ### Host reproducibility
 
 `pnpm run spike:typespec:check` cannot pass off the workstation that minted the
-evidence, for three measured reasons recorded in
+evidence, for two measured reasons recorded in
 [issue #42](https://github.com/agent-ix/filament-core-data/issues/42):
 
 1. The generated Rust package pinned only `serde` and `serde_json`, so its
    retained `Cargo.lock` was regenerated on every run and drifted whenever a
    transitive crate published. **Issue #27 fixes this** by seeding the committed
    lockfile instead of resolving afresh; it changes no committed byte.
-2. `evidence/toolchain.json` is inside the byte-compared set and records the
-   host's own `node`, `rustc`/`cargo` and `python3` versions (24.15.0, 1.95.0,
-   3.14.7). Repairing this rewrites retained evidence and needs an owner
-   decision plus a run on a conforming host, so issue #27 does not do it.
-3. The generated Python models target 3.13 and import `StrEnum`, so a host whose
+2. The generated Python models target 3.13 and import `StrEnum`, so a host whose
    `python3` is 3.10 cannot import them. The required floor is undeclared.
 
-Because of 2 and 3, the promotion is verified per component — the semantic IR,
+Because of 2, the promotion is verified per component — the semantic IR,
 TypeScript, Rust and Python-input bytes are each compared against the committed
 issue #4 goldens — rather than by a full replay.

@@ -75,7 +75,7 @@ repository's existing Cargo workspace.
 
 - **Given** a read-only checkout of the domain repository
 - **When** the author lifts it, with or without defects
-- **Then** the checkout is byte-unchanged; on success the only files written are the output document and its two sidecars (`.fingerprint`, `.diagnostics.json`), on a blocking lift only the diagnostics sidecar, and an output path inside the bundle root is refused before anything is written
+- **Then** the checkout is byte-unchanged; on success the only files written are the output document and its diagnostics sidecar (`.diagnostics.json`), on a blocking lift only the diagnostics sidecar, and an output path inside the bundle root is refused before anything is written
 
 ### [US-015-EX-5] A module the compiler cannot read is refused, not emptied
 

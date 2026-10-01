@@ -24,8 +24,8 @@ relationships:
 
 [FR-043](../functional/FR-043-govern-the-python-generation-adapter.md) already
 settled the shape: the repository owns a JSON Schema adapter and the code
-generation itself stays `datamodel-code-generator`. It pinned `0.76.0` and
-`pydantic` `2.12.5`, closed a three-key forbidden-extension set, and explicitly
+generation itself stays `datamodel-code-generator`. It pinned the generator and
+`pydantic`, closed a three-key forbidden-extension set, and explicitly
 left the generator invocation to this story.
 
 Two published advisories bound the floor. GHSA-386q-5hp3-95m9 is code injection

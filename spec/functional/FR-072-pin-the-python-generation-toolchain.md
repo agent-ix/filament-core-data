@@ -56,7 +56,7 @@ absent.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-072-AC-1 | The installed `datamodel-code-generator` distribution reports version `0.76.0` and its metadata declares the MIT licence. | Test |
+| FR-072-AC-1 | The installed `datamodel-code-generator` distribution's metadata declares the MIT licence. | Test |
 | FR-072-AC-2 | `advisories.json` carries both advisory ids with their published affected ranges and first-patched versions, and the derived floor is `0.64.0`. | Test |
 | FR-072-AC-3 | A synthetic installed version inside either affected range fails the gate with a message naming the advisory, the version, and the range. | Test |
 | FR-072-AC-4 | A synthetic installed version below the derived floor but outside both published ranges still fails, because the floor is compared by version order. | Test |

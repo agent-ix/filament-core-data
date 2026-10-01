@@ -1270,7 +1270,6 @@ describe("frozen spike replay (FR-044)", () => {
 		);
 		expect(doc).toContain("## Retained evidence");
 		expect(doc).toContain("issues/42");
-		expect(doc).toContain("toolchain.json");
 		expect(doc).toContain("StrEnum");
 		const nfr = read(
 			resolve(
