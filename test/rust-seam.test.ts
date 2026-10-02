@@ -78,7 +78,7 @@ const readJson = (path: string) =>
 type Manifest = {
 	state: string;
 	backend: string;
-	files: { path: string; digest: string; mediaType: string }[];
+	files: { path: string; mediaType: string }[];
 	diagnostics: { code: string; message: string; blocking?: boolean }[];
 };
 
@@ -146,16 +146,20 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 	 * Traces: TC-1390; FR-130-AC-3, FR-130-CON-1.
 	 *
 	 * The seam is a route, not a reimplementation. Both sides run here: the
-	 * seam's manifest carries a digest per path, and the backend's own writing
+	 * seam records the bytes per path, and the backend's own writing
 	 * entry point is run against an in-memory sink so its bytes are captured
-	 * without touching a disk. A digest computed from those bytes must equal the
-	 * one the seam recorded, at every path, with no path on either side missing.
+	 * without touching a disk. The bytes must be equal at every path, with no path
+	 * on either side missing.
 	 */
 	it("emits bytes identical to the backend's own entry point at every path", async () => {
-		const { createHash } = await import("node:crypto");
+		const seamBytes = new Map<string, string>();
 		const manifest = generateTarget(rustRequest(), {
 			target: "rust",
 			host: host(),
+			format: (text: string, path: string) => {
+				seamBytes.set(path, text);
+				return text;
+			},
 		}) as never as Manifest;
 
 		const written = new Map<string, string>();
@@ -172,8 +176,9 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 		);
 		for (const entry of manifest.files) {
 			const text = written.get(entry.path) as string;
-			const digest = `sha256:${createHash("sha256").update(text, "utf8").digest("hex")}`;
-			expect(digest, `bytes differ at ${entry.path}`).toBe(entry.digest);
+			expect(seamBytes.get(entry.path), `bytes differ at ${entry.path}`).toBe(
+				text,
+			);
 		}
 		console.log(
 			`TC-1390 measured: ${manifest.files.length} paths byte-identical between the seam and generateRust`,

@@ -55,7 +55,7 @@ All identifiers below are rooted at
 | `profile.schema.json` | Authority, edit direction, round trip, unknown policy, omissions, enrichment, and lifetime |
 | `representation.schema.json` | Markdown, JSON, PostgreSQL, Protobuf, Avro, Arrow/Parquet, CSV, and TSV refinements |
 | `compiler-request.schema.json` | Locked compiler input and backend capability boundary |
-| `output-manifest.schema.json` | Complete emitted-file inventory, result state, diagnostics, and normalized fingerprint |
+| `output-manifest.schema.json` | Complete emitted-file inventory, result state, and diagnostics |
 | `target-contract.schema.json` | Rust, TypeScript, Python, and JSON Schema API/runtime expectations and backend qualification |
 | `compatibility-report.schema.json` | Per-change and aggregate compatibility dispositions, consumers, evidence, and gates |
 | `consumer-policy.schema.json` | Dynamic/generated mode and preserve/reject/surface policy over one identity graph |
@@ -433,7 +433,7 @@ compatibility gate. Describing a format does not select it.
 
 The compiler request contains the complete locked IR, selected profile,
 mappings, backend identity/version/features/options, and a relative output root.
-The output manifest reconciles every emitted file to its digest, media type, and
+The output manifest reconciles every emitted file to its media type and
 semantic identities. Invalid, unsupported, or unavailable results emit zero
 files and at least one diagnostic.
 

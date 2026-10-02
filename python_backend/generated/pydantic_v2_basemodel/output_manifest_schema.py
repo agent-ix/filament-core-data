@@ -15,7 +15,6 @@ class File(BaseModel):
         extra='forbid',
         regex_engine="python-re",
     )
-    digest: common_schema.Sha256
     mediaType: Annotated[str, Field(min_length=1)]
     path: Annotated[
         str,
@@ -37,6 +36,4 @@ class FilamentCompilerOutputManifestV1(BaseModel):
     contractVersion: Literal['1.0.0']
     diagnostics: list[common_schema.Diagnostic]
     files: list[File]
-    normalizedFingerprint: common_schema.Sha256
-    requestFingerprint: common_schema.Sha256
     state: common_schema.ResultState

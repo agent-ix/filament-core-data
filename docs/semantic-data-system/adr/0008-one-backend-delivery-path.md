@@ -1,10 +1,10 @@
 ---
 id: ADR-0008
-title: "Deliver every backend through the seam, with one manifest meaning"
+title: "Deliver every backend through the seam"
 type: ADR
 status: normative
 ---
-# ADR-0008: Deliver every backend through the seam, with one manifest meaning
+# ADR-0008: Deliver every backend through the seam
 
 ## Context
 
@@ -24,23 +24,8 @@ the seam registered `rust` as unimplemented. A complete backend was delivered
 only by a private development command, and the documented entry point said the
 capability did not exist.
 
-That is the first defect: **a private command became a delivery path by
+That is the defect: **a private command became a delivery path by
 default**, because nothing said it could not be.
-
-The second is narrower and sharper. There are two independent
-`output-manifest` builders, and they disagree about what a field means:
-
-- `seam.mjs` sets `normalizedFingerprint` to a fingerprint **of the request's
-  IR document** — an input property, stable across backends, which answers "were
-  these two generations run over the same contract?"
-- `rust-serde/crate.mjs` sets `normalizedFingerprint` to a digest over the
-  **emitted path-and-digest list** — an output property, which answers "did
-  these two generations produce the same bytes?"
-
-Both are useful. They are not the same question, and they share a field name in
-documents validated by one schema. A consumer comparing two manifests cannot
-tell which question it asked without knowing which producer wrote the document —
-and after FR-130 both producers can write a manifest for the same target.
 
 ## Decision
 
@@ -57,13 +42,6 @@ path.**
 - The seam remains the only assembler of the manifest a consumer receives. A
   backend returns files and diagnostics; it does not shape the delivered
   document.
-
-**One field, one meaning.** `normalizedFingerprint` in
-`output-manifest.schema.json` is the fingerprint of the normalized IR the
-request carried — the input property, as `seam.mjs` computes it. The
-output-bytes digest is a distinct property with a distinct name, and a backend
-that wants to report it reports it under that name or not at all. No two
-producers of one schema's documents assign different meanings to one member.
 
 ## Rationale
 
@@ -82,28 +60,10 @@ catalogue, and none of that belongs in a consumer-facing seam. The rule
 therefore constrains what a command may be the sole route *to*, rather than
 forbidding commands.
 
-**Two meanings for one field is worse than two fields.** A consumer that
-compares `normalizedFingerprint` across two manifests is asking a question, and
-the field silently answers a different question depending on who produced the
-document. Two equal values would mean "same contract" in one case and "same
-bytes" in the other; unequal values would be equally ambiguous. Neither
-producer is wrong about what it wanted — the schema is wrong to have let one
-name carry both.
-
-**The input property is the one that keeps the name**, because it is the one
-the schema's own seam already computes for every target, and because it is the
-property a consumer can compare *across* backends. An output-bytes digest is
-only comparable between two runs of the same backend, which is a narrower and
-more specialised claim — appropriately carried under a more specialised name.
-
 ## Consequences
 
 - FR-130 registers the Rust backend, which is the first application of the
   delivery rule; the JSON Schema backend follows, and Python follows that.
-- `rust-serde/crate.mjs` continues to build a manifest for its own command. Its
-  `normalizedFingerprint` is renamed to a name that says it digests emitted
-  bytes, or dropped, and the change is visible to anything that read the private
-  command's output — which is development tooling, by the rule above.
 - A gate reads the seam registry and asserts every declared target is either
   implemented or attributed to an owning ticket, so "unimplemented" can never
   again be a stale claim about a finished backend.

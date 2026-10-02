@@ -720,7 +720,7 @@ blocked as stated above.
 | TC-385 | Emitted ordering is unchanged under two collator locales | Property | P0 | NFR-017-AC-3 | ✅ passed |
 | TC-386 | `baseDir` is an explicit parameter, not an ambient read | Unit | P0 | NFR-017-AC-4 | ✅ passed |
 | TC-387 | A seeded lockfile survives `cargo check --offline --locked` unchanged | Integration | P0 | NFR-017-AC-5 | ✅ passed |
-| TC-388 | No dependency added, exact pins, no `.npmrc`, no `file:`/`link:` | Static | P0 | NFR-017-AC-6 | ✅ passed |
+| TC-388 | No dependency added, no `file:`/`link:` | Static | P0 | NFR-017-AC-6 | ✅ passed |
 | TC-389 | All three issue #42 host couplings are named in the feasibility doc | Static | P0 | NFR-017-AC-7 | ✅ passed |
 | TC-393 | Every promoted `src/compiler/**` manifest and every added package manifest declares AGPL-3.0-or-later | Static | P0 | NFR-018-AC-4 | ✅ passed |
 | TC-396 | No workflow, tag, or registry publication is added or triggered | Static | P0 | NFR-018-AC-7 | ✅ passed |
@@ -955,7 +955,7 @@ blocked as stated above.
 | TC-747 | A target registered as declared-unimplemented returns `state: "unavailable"`, zero files, and one blocking `BACKEND_NOT_IMPLEMENTED` naming its registered owner, exercised over a synthetic registration; and every registry entry names an owner that `isBackendImplemented` agrees with | Unit | P0 | FR-063-AC-3, FR-063-AC-19 | 🚧 partially exercised by an existing test; no test binds this row |
 | TC-748 | A request failing `compiler-request.schema.json` returns `state: "invalid"` with one diagnostic per schema error at the failing instance pointer and no file | Unit | P0 | FR-063-AC-4 | 🚧 partially exercised by an existing test; no test binds this row |
 | TC-749 | Every manifest the seam returns validates against `output-manifest.schema.json`, and the five states are each reached: `success` for an admitted representable document, `lossy` for an admissible one, `unsupported` for a representability loss, `invalid` for a schema-failing request, and `unavailable` for an unimplemented target | Property | P0 | FR-063-AC-5, FR-063-AC-17, FR-063-AC-18 | 🚧 no discrete test; no test binds this row |
-| TC-750 | `requestFingerprint` and `normalizedFingerprint` are recomputed independently, each `files[]` entry carries a path under `outputRoot`, its media type, and a non-empty identity set, and its digest is taken over the text the injected formatter returned | Integration | P0 | FR-063-AC-6, FR-063-AC-7, FR-063-AC-20 | 🚧 no discrete test; no test binds this row |
+| TC-750 | Each `files[]` entry carries a path under `outputRoot`, its media type, and a non-empty identity set, and the text the injected formatter returned is the text recorded | Integration | P0 | FR-063-AC-7, FR-063-AC-20 | 🚧 no discrete test; no test binds this row |
 | TC-751 | `assertBackendContract` rejects a backend missing any contract member and one naming a path outside `outputRoot`, and a `1.0.0` request against the TypeScript backend returns `state: "invalid"` with `UNKNOWN_CONTRACT_VERSION` (TC-748 exercises this clause directly) | Unit | P0 | FR-063-AC-8, FR-063-AC-9, FR-063-AC-10 | 🚧 partially exercised by an existing test; no test binds this row |
 | TC-752 | `target-contract.json` validates against its schema and carries the member values of the committed `typescript` target row, whose declared runtime validator is satisfied in-package | Unit | P0 | FR-063-AC-11, FR-063-CON-2 | 🚧 no discrete test; no test binds this row |
 | TC-753 | The seam imports no frontend and neither prototype backend, the narrow interface keeps exactly fifteen symbols, and `package.json` metadata is unchanged | Analysis | P0 | FR-063-AC-12, FR-063-CON-4, FR-063-CON-5, FR-063-CON-6 | ✅ passed — Analysis; the evidence is the recorded analysis, which mints no source symbol |
@@ -1070,7 +1070,7 @@ blocked as stated above.
 | TC-666 | Each corpus base generates a crate that builds offline with warnings denied | Integration | P0 | FR-056-AC-1 | 🚧 planned |
 | TC-667 | The emitted manifest declares the licence, publish false, one pinned dependency and the MSRV | Analysis | P0 | FR-056-AC-2, FR-056-CON-3 | 🚧 planned |
 | TC-669 | The SemanticType export is exhaustive and an added type breaks a consumer match | Compile | P0 | FR-056-AC-4 | 🚧 planned |
-| TC-670 | The output manifest names exactly the files written, with matching digests | Unit | P0 | FR-056-AC-5 | 🚧 planned |
+| TC-670 | The output manifest names exactly the files written | Unit | P0 | FR-056-AC-5 | 🚧 planned |
 | TC-671 | A blocking diagnostic writes zero files and leaves the output root empty | Unit | P0 | FR-056-AC-6 | 🚧 planned |
 | TC-672 | Emitted bytes carry no clock, host, path, user or environment value | Unit | P0 | FR-056-AC-7, FR-056-CON-2 | 🚧 planned |
 | TC-673 | Each declared limit raises its diagnostic and writes no file | Unit | P0 | FR-056-AC-8 | 🚧 planned |
@@ -1286,7 +1286,7 @@ blocked as stated above.
 | TC-1052 | The committed Cargo.toml carries publish = false | Property | P0 | FR-086-AC-3, FR-086-AC-4, FR-086-AC-5 | ✅ Complete |
 | TC-1053 | Introducing a missing_docs violation | Unit | P0 | FR-086-AC-6, FR-086-AC-7, FR-086-AC-8 | ✅ Complete |
 | TC-1054 | Make semantic-kernel-check leaves git status --porcelain empty, in the passing case and in each failing case, with no Cargo.lock and no target/ left i | Property | P0 | FR-086-AC-9, FR-086-AC-10, FR-086-AC-11 | ✅ Complete |
-| TC-1055 | THIRD-PARTY-NOTICES.md carries a row for serde at the exact pinned version with its SPDX identifier and the location of its preserved upstream licence | Snapshot | P0 | FR-086-AC-12, FR-086-AC-13, FR-086-AC-14 | ✅ Complete |
+| TC-1055 | THIRD-PARTY-NOTICES.md carries a row for serde with its SPDX identifier and the location of its preserved upstream licence | Snapshot | P0 | FR-086-AC-12, FR-086-AC-13, FR-086-AC-14 | ✅ Complete |
 | TC-1056 | The committed crate name equals the value crate.mjs derives from the kernel document's package.identity | Snapshot | P0 | FR-086-AC-15, FR-086-AC-16, FR-086-AC-17 | ✅ Complete |
 | TC-1057 | Make semantic-kernel-check reports on every run that Rust publication is blocked on agent-ix/quoin#290, that publish = false in the generated manifest | Property | P0 | FR-086-AC-18, FR-086-AC-20 | ✅ Complete |
 | TC-1058 | The guard, the refusal register and the profiles match their pinned digests, the committed semantic-core bundle equals the generator's emission and is unchanged by localization, and the localization pass is schema-to-schema: it imports nothing that can reach generated source | Static | P0 | FR-087-CON-1, FR-087-CON-2, FR-087-CON-3 | ✅ Complete |
@@ -1313,7 +1313,7 @@ blocked as stated above.
 | TC-1079 | Writes no file under conformance/, which NFR-030 makes a prohibited path for issue #11 in its entirety | Property | P0 | FR-089-CON-10, FR-089-AC-1, FR-089-AC-2 | 🚧 planned |
 | TC-1080 | Each example constructs a FieldDecl carrying a multiplicity and asserts its member values | Property | P0 | FR-089-AC-3, FR-089-AC-4, FR-089-AC-5 | 🚧 planned |
 | TC-1081 | Each example reads its package's semantic identity, source version | Unit | P0 | FR-089-AC-6, FR-089-AC-7, FR-089-AC-8 | 🚧 planned |
-| TC-1082 | The Rust example declares the generated kernel crate and serde_json at a pinned exact version as a dev-dependency and nothing else | Property | P0 | FR-089-AC-9, FR-089-AC-10, FR-089-AC-11 | 🚧 planned |
+| TC-1082 | The Rust example declares the generated kernel crate and serde_json as a dev-dependency and nothing else | Property | P0 | FR-089-AC-9, FR-089-AC-10, FR-089-AC-11 | 🚧 planned |
 | TC-1083 | No example is skipped, marked expected-to-fail, or conditionally disabled, checked over the collected test inventory of all three suites rather than b | Compile | P0 | FR-089-AC-12, FR-089-AC-13, FR-089-AC-14 | 🚧 planned |
 | TC-1084 | No example's source matches Date.now, new Date, process.env, process.cwd, datetime.now, os.environ, std::time, std::env, or any socket API, and two ru | Snapshot | P0 | FR-089-AC-15, FR-089-AC-16, FR-089-AC-17 | 🚧 planned |
 | TC-1085 | Where the Python package excludes a colliding type name from __all__, the example reaches that type as <module>.<Name> and no example re-exports the e | Unit | P0 | FR-089-AC-18 | 🚧 planned |

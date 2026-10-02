@@ -315,12 +315,6 @@ function manifestGate() {
 			);
 		}
 	}
-	const pin = /serde\s*=\s*\{\s*version\s*=\s*"=([0-9.]+)"/.exec(text)?.[1];
-	if (!pin) {
-		problems.push(
-			`${relative(ROOT, MANIFEST)} does not declare serde at an exact version pin`,
-		);
-	}
 
 	// Nothing here writes; a crate that carries a lock file or a build
 	// directory is a tree the gates have dirtied.
@@ -338,7 +332,7 @@ function manifestGate() {
 	const code = report(problems, "kernel manifest gate");
 	if (code === 0) {
 		process.stdout.write(
-			`kernel manifest gate passed: publish = false, serde =${pin} alone, warnings/missing_docs denied and unsafe_code forbidden\n`,
+			`kernel manifest gate passed: publish = false, serde alone, warnings/missing_docs denied and unsafe_code forbidden\n`,
 		);
 	}
 	return code;

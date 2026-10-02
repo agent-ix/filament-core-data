@@ -24,7 +24,7 @@ TypeScript, and Python without selecting an unqualified backend implementation.
 ## Outputs
 
 - Generated target files
-- Machine-readable output manifest, diagnostics, normalized fingerprint, and conformance-fixture results
+- Machine-readable output manifest, diagnostics, and conformance-fixture results
 
 ## Behavior
 

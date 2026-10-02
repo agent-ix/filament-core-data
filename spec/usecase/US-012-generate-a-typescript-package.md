@@ -103,8 +103,8 @@ and unrelated; it is not the thing being generated here and does not move.
 - **Given** one IR document and one profile
 - **When** the consumer generates twice, from different working directories and
   under a different locale
-- **Then** every generated file is byte-identical and the output manifest
-  reports the same fingerprint
+- **Then** every generated file is byte-identical and the output manifest is
+  identical
 
 ### [US-012-EX-6] A consumer imports one type and ships one type
 

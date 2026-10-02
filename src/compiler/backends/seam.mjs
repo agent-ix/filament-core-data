@@ -43,11 +43,6 @@ import {
 } from "./python-v1/index.mjs";
 import { rustBackend } from "./rust-serde/backend.mjs";
 import { BACKEND_TARGETS } from "./targets.mjs";
-import {
-	canonicalize,
-	digestOf,
-	fingerprintIrForTarget,
-} from "./typescript-v1/canonical.mjs";
 import { typescriptBackend } from "./typescript-v1/index.mjs";
 
 export { BACKEND_TARGETS };
@@ -272,47 +267,14 @@ function packageIdentityOf(ir) {
  * here, so there is one place the document's shape is decided and one place a
  * schema change would be felt.
  */
-function manifest({
-	request,
-	backendIdentity,
-	state,
-	files = [],
-	diagnostics = [],
-}) {
+function manifest({ backendIdentity, state, files = [], diagnostics = [] }) {
 	return {
 		contractVersion: "1.0.0",
-		requestFingerprint: safeDigest(request),
 		backend: backendIdentity,
 		state,
 		files,
 		diagnostics: sortDiagnostics(diagnostics),
-		normalizedFingerprint: safeIrFingerprint(request?.ir),
 	};
-}
-
-const NULL_DIGEST = digestOf("");
-
-/**
- * A request that cannot be canonicalized still needs a fingerprint, because the
- * manifest requires one and the request is exactly the kind of document that
- * arrives malformed. The digest of the empty string is the declared stand-in;
- * it is a constant, so it cannot be mistaken for a real request's fingerprint
- * by anything that compares two manifests.
- */
-function safeDigest(request) {
-	try {
-		return digestOf(canonicalize(request, { sets: true }));
-	} catch {
-		return NULL_DIGEST;
-	}
-}
-
-function safeIrFingerprint(ir) {
-	try {
-		return fingerprintIrForTarget(ir);
-	} catch {
-		return NULL_DIGEST;
-	}
 }
 
 /**
@@ -324,8 +286,7 @@ function safeIrFingerprint(ir) {
  * `output-manifest.schema.json`-valid document (FR-063-CON-3).
  *
  * `options.format(text, path)` is the injected formatter of FR-071. Every
- * emitted file's text passes through it *before* its digest is computed, so the
- * digest a manifest records is the digest of the bytes a caller writes. When no
+ * emitted file's text passes through it before the caller writes it. When no
  * formatter is supplied the identity function stands in and nothing is
  * recorded: an unformatted generation is a legitimate caller decision, not a
  * defect.
@@ -349,7 +310,6 @@ export function generateTarget(request, options = {}) {
 		// caller should be told which one it saw rather than reading a bare
 		// enum-mismatch message (FR-063).
 		return manifest({
-			request,
 			backendIdentity: entry.backend?.identity ?? unimplementedIdentity(entry),
 			state: "invalid",
 			diagnostics: errors.map((error) =>
@@ -366,7 +326,6 @@ export function generateTarget(request, options = {}) {
 
 	if (!entry.implemented) {
 		return manifest({
-			request,
 			backendIdentity: unimplementedIdentity(entry),
 			state: "unavailable",
 			diagnostics: [
@@ -383,7 +342,6 @@ export function generateTarget(request, options = {}) {
 	const irVersion = request.ir?.contractVersion;
 	if (!backend.supportedIrVersions.includes(irVersion)) {
 		return manifest({
-			request,
 			backendIdentity: backend.identity,
 			state: "unsupported",
 			diagnostics: [
@@ -417,7 +375,6 @@ export function generateTarget(request, options = {}) {
 		state === "unavailable"
 	) {
 		return manifest({
-			request,
 			backendIdentity: backend.identity,
 			state,
 			diagnostics:
@@ -442,14 +399,12 @@ export function generateTarget(request, options = {}) {
 					: [];
 		return {
 			path: file.path,
-			digest: digestOf(text),
 			mediaType: file.mediaType ?? mediaTypeFor(file.path),
 			semanticIdentities: identities,
 		};
 	});
 
 	return manifest({
-		request,
 		backendIdentity: backend.identity,
 		state: hasBlocking(diagnostics) ? "invalid" : state,
 		files: hasBlocking(diagnostics) ? [] : files,

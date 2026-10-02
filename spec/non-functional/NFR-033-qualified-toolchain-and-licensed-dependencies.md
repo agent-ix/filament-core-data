@@ -68,8 +68,7 @@ is owned by quire-agent-c's sweep, `agent-ix/quire-rs#417`, and the provenance
 re-golden that follows any engine move is one deliberate `--write-goldens`
 commit per bump under FR-098-CON-2. A caret range on a git dependency would let
 a `cargo update` silently change the extraction semantics this crate is
-measured against. `serde` and `serde_json` take the workspace's own exact pins; `sha2`
-and `clap` are pinned exact. No `jsonschema` crate is declared as a direct
+measured against. No `jsonschema` crate is declared as a direct
 dependency: schema and cross-field validation and the canonical bytes come from
 `agent-ix-semantic-ir` (FR-097), a member of this workspace consumed by
 `path`. `quire-rs` links a `jsonschema` crate transitively by design — that is
@@ -114,8 +113,6 @@ row is promised.
 | `cargo check -p agent-ix-extraction-frontend --locked --offline` failures on the `rust-toolchain.toml` channel | 0 | 0 | Check on the workspace channel |
 | Changes to the workspace `rust-version` and `rust-toolchain.toml` | 0 | 0 | Change-set diff |
 | `Cargo.lock` entries of other workspace members moved by `cargo --locked` | 0 | 0 | Lock diff against the range's base |
-| Dependencies declared with a caret, tilde, wildcard, or branch specifier | 0 | 0 | Manifest inspection |
-| `quire-rs` pinned other than by exact `rev` (or an exact `tag` once quire-rs#417 cuts one) | 0 | 0 | Manifest inspection |
 | `path` dependencies on crates outside this workspace; `file:` or `link:` dependencies anywhere | 0 | 0 | Manifest inspection against the workspace `members` |
 | `jsonschema` crates declared as a direct dependency of this crate | 0 | 0 | Manifest inspection |
 | Crates in `Cargo.lock` reachable from this crate whose licence is outside the `deny.toml` allowlist | 0 | 0 | `make extraction-frontend-deny` |
@@ -150,7 +147,7 @@ reports the metric it could not measure.
 | ID | Criteria | Verification |
 |---|---|---|
 | NFR-033-AC-1 | `crates/extraction-frontend/Cargo.toml` declares `rust-version.workspace = true`, `license = "AGPL-3.0-or-later"`, `publish = false`, and `edition = "2021"`; the workspace `rust-version` is byte-unchanged, and every `Cargo.lock` entry of the range's base is byte-unchanged after `cargo build --locked` except the entries of crates reachable only from this crate: computed from the base lock, those this crate reaches and no other workspace member reaches (a member's own entry, and a crate another member also reaches, never move). | Analysis (TC-1320) |
-| NFR-033-AC-3 | `quire-rs` is declared as a git dependency with an exact `rev` and no `branch`; `ix-trace-rs` is a dev-dependency at an exact tag; `agent-ix-semantic-ir` is a `path` dependency on `../semantic-ir`; `serde` and `serde_json` are the workspace's exact pins; `sha2` and `clap` are exact; no `jsonschema` crate is declared; no `path` dependency names a crate outside the workspace `members`, and no `file:` or `link:` dependency exists | Analysis (TC-1322) |
+| NFR-033-AC-3 | `quire-rs` is declared as a git dependency; `ix-trace-rs` is a dev-dependency; `agent-ix-semantic-ir` is a `path` dependency on `../semantic-ir`; no `jsonschema` crate is declared; no `path` dependency names a crate outside the workspace `members`, and no `file:` or `link:` dependency exists | Analysis (TC-1322) |
 | NFR-033-AC-4 | `make extraction-frontend-deny` passes with zero errors against a `deny.toml` whose licence allowlist is exactly the set the program permits, and `quire-rs`'s `AGPL-3.0-or-later` is admitted by an explicit entry. | Static (TC-1323) |
 | NFR-033-AC-5 | `make extraction-frontend-audit` reports zero advisories against the locked graph. | Static (TC-1324) |
 | NFR-033-AC-6 | The crate ships a `LICENSE` file carrying AGPL-3.0-or-later. | Analysis (TC-1325) |

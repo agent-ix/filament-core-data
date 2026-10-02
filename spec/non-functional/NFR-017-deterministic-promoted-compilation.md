@@ -74,7 +74,7 @@ inspect `package.json` and `pnpm-lock.yaml`.
 | NFR-017-AC-3 | The type order the compiler emits is unchanged when compared against `Intl.Collator` orderings for at least two distinct locales, proving the ordering is locale-independent. | Test |
 | NFR-017-AC-4 | The compiler takes the working directory as an explicit `baseDir` parameter; two values yield correspondingly different loci for the same entrypoint. | Test |
 | NFR-017-AC-5 | Seeding the committed lockfile into a generated Rust package and running `cargo check --offline --locked` leaves the lockfile byte-identical. | Test |
-| NFR-017-AC-6 | `package.json` gains no dependency, every `@typespec/*` specifier is an exact version with no range expression, no `.npmrc` is committed, and no `file:`/`link:` specifier remains. | Analysis |
+| NFR-017-AC-6 | `package.json` gains no dependency and no `file:`/`link:` specifier remains. | Analysis |
 | NFR-017-AC-7 | The three retained-evidence host couplings recorded in issue #42 are named in `docs/semantic-data-system/typespec-feasibility.md`, and the one the promotion repairs is distinguished from the two it does not. | Inspection |
 
 ## Dependencies

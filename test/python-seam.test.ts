@@ -95,7 +95,7 @@ const readJson = (path: string) =>
 type Manifest = {
 	state: string;
 	backend: string;
-	files: { path: string; digest: string; mediaType: string }[];
+	files: { path: string; mediaType: string }[];
 	diagnostics: { code: string; message: string; blocking?: boolean }[];
 };
 

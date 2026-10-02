@@ -172,7 +172,7 @@ run that omits any one of them SHALL fail:
   asserted by the run, so that the assertion is over what actually resolved and not over what a manifest
   declared it would.
 - Each example SHALL declare, beyond the generated package it consumes, only its
-  language's serialization front door: `serde_json` at a pinned exact version as
+  language's serialization front door: `serde_json` as
   a `[dev-dependencies]` entry for the Rust example, following
   `crates/consumer-runtime/Cargo.toml`; the standard `JSON` global and no
   dependency at all for the TypeScript example; and `pydantic` — the family
@@ -251,7 +251,7 @@ run that omits any one of them SHALL fail:
 | FR-089-AC-5 | Each example is refused, with the error named, on one document per forbidden class: an undeclared member on a `reject` record, a member absent that `multiplicity.lower >= 1` makes required, a `KernelScalar` variant outside the closed enum, a `ConstraintDecl` variant naming no declared keyword, a `pattern` violation, and a value outside a declared `minimum`/`maximum`. Accepting any one of them fails the example. | Test |
 | FR-089-AC-7 | No example's source matches an import of a path under `src/compiler/`, `python_backend/`, `packages/semantic-core/scripts/`, or `conformance/`, nor a deep import into the consumed package below its declared entry point. | Static |
 | FR-089-AC-8 | The run asserts over the resolved closure that no persistence, Tauri, user-interface, ORM, or application-framework package appears; injecting such a package into one example's manifest makes the assertion fail naming the example and the package. | Test |
-| FR-089-AC-9 | The Rust example declares the generated kernel crate and `serde_json` at a pinned exact version as a dev-dependency and nothing else; the TypeScript example declares no dependency beyond the generated package; the Python example declares only the generated package, `pydantic`, and the standard library. | Analysis |
+| FR-089-AC-9 | The Rust example declares the generated kernel crate and `serde_json` as a dev-dependency and nothing else; the TypeScript example declares no dependency beyond the generated package; the Python example declares only the generated package, `pydantic`, and the standard library. | Analysis |
 | FR-089-AC-10 | `crates/kernel-consumer/` builds offline with `-D warnings` against the unpacked artifact in a scratch directory; its `Cargo.toml` contains no `path` dependency resolving outside that directory, it does not appear in the root `Cargo.toml` workspace members, and a build attempted against the generator's output tree instead of the unpacked artifact fails. | Test |
 | FR-089-AC-11 | Removing an assertion from any one of the five demonstrations in any one example makes the run fail naming that example and that demonstration, so a silently emptied example cannot pass. | Test |
 | FR-089-AC-12 | No example is skipped, marked expected-to-fail, or conditionally disabled, checked over the collected test inventory of all three suites rather than by reading the files. | Inspection |

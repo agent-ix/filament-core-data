@@ -19,7 +19,6 @@
  * from this module's graph.
  */
 
-import { createHash } from "node:crypto";
 import {
 	isEnumerationShaped,
 	isRecordShaped,
@@ -137,10 +136,6 @@ export function canonicalJson(value) {
 		return `{${members.join(",")}}`;
 	}
 	return JSON.stringify(value);
-}
-
-function sha256(text) {
-	return `sha256:${createHash("sha256").update(text, "utf8").digest("hex")}`;
 }
 
 const META = "crate::identity";
@@ -376,11 +371,10 @@ function finish(
 			: `ix://${model.package.identity}`;
 
 	const entries = [];
-	for (const [path, text] of emitted) {
+	for (const path of emitted.keys()) {
 		const identities = identitiesByPath?.get(path);
 		entries.push({
 			path,
-			digest: sha256(text),
 			mediaType: mediaTypeOf(path),
 			semanticIdentities:
 				identities === undefined
@@ -391,16 +385,12 @@ function finish(
 
 	const manifest = {
 		contractVersion: "1.0.0",
-		requestFingerprint: sha256(canonicalJson(request)),
 		backend:
 			request.backend?.identity ??
 			"ix://agent-ix/filament-core-data/rust-backend",
 		state: resolvedState,
 		files: entries,
 		diagnostics: limited,
-		normalizedFingerprint: sha256(
-			entries.map((entry) => `${entry.path} ${entry.digest}\n`).join(""),
-		),
 	};
 	return {
 		files: emitted,

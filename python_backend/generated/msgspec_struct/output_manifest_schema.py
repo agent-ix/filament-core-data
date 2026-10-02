@@ -11,7 +11,6 @@ from . import common_schema
 
 
 class File(Struct):
-    digest: common_schema.Sha256
     mediaType: Annotated[str, Meta(min_length=1)]
     path: Annotated[
         str,
@@ -30,6 +29,4 @@ class FilamentCompilerOutputManifestV1(Struct):
     contractVersion: Literal['1.0.0']
     diagnostics: list[common_schema.Diagnostic]
     files: list[File]
-    normalizedFingerprint: common_schema.Sha256
-    requestFingerprint: common_schema.Sha256
     state: common_schema.ResultState

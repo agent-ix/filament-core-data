@@ -90,14 +90,13 @@ surface did not grow" is a checked fact rather than a review opinion.
 - `biomeFormatter` SHALL render generated text through the `@biomejs/biome` binary at the exact version this repository's lockfile pins, in the manner `conformance/tools/format-json.mjs` already renders generated JSON.
 - `src/compiler/backends/format.mjs` SHALL be the one module under `src/compiler/backends/` that starts a child process, and it SHALL say so in its own header, as `src/compiler/identity.mjs` already says it is the one module under `src/compiler/` outside `cli.mjs` that reads a file.
 - Every module under `src/compiler/backends/typescript-v1/` SHALL remain pure, receiving the formatter as an argument rather than reaching for it.
-- The output manifest's `files[].digest` SHALL be computed over the formatted bytes, so the digest names what was written.
 - Because the formatter is the repository's own, `biome format .` over the committed generated fixture SHALL report no change, and `biome.json` SHALL NOT be edited by this work.
 - If the formatter is unavailable or exits non-zero, then `generate` SHALL fail with a blocking diagnostic naming it, rather than writing unformatted output.
 
 ### Determinism of the emitted bytes
 
 - Two consecutive runs over one IR document into two different output directories SHALL produce byte-identical files at corresponding paths.
-- Those two runs SHALL produce a byte-identical output manifest, because the manifest carries digests and a fingerprint and no path, clock, or host value.
+- Those two runs SHALL produce a byte-identical output manifest, because the manifest carries no path, clock, or host value.
 - A run from a different working directory SHALL produce byte-identical files, so no emitted byte depends on where the command was invoked.
 - A run under `LC_ALL=tr_TR.UTF-8` SHALL produce byte-identical files; the Turkish locale is named because dotted-I case folding is how a locale-dependent identifier mint or sort would first show itself.
 - A run with every environment variable cleared but `PATH` SHALL produce byte-identical files.

@@ -59,7 +59,6 @@ export type FormatFunction = (text: string, path: string) => string;
 /** One `files[]` entry of an `output-manifest.schema.json` document. */
 export interface OutputManifestFile {
 	path: string;
-	digest: string;
 	mediaType: string;
 	semanticIdentities: string[];
 }
@@ -67,12 +66,10 @@ export interface OutputManifestFile {
 /** An `output-manifest.schema.json` document. */
 export interface OutputManifest {
 	contractVersion: "1.0.0";
-	requestFingerprint: string;
 	backend: string;
 	state: string;
 	files: OutputManifestFile[];
 	diagnostics: CompilerDiagnostic[];
-	normalizedFingerprint: string;
 }
 
 export interface BackendSelection {

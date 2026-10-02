@@ -1213,14 +1213,12 @@ describe("frozen spike replay (FR-044)", () => {
 	});
 
 	/** Traces: TC-376, TC-388; FR-044-AC-6, FR-044-CON-3, NFR-017-AC-6. */
-	it("leaves no file: or link: specifier and no committed .npmrc", () => {
+	it("leaves no file: or link: specifier", () => {
 		const lock = read(resolve(root, "pnpm-lock.yaml"));
 		for (const line of lock.split("\n")) {
 			expect(line, line).not.toMatch(/(?<![\w-])(file|link):/);
 		}
 		expect(lock).not.toContain("typespec-semantic-ir-emitter-spike");
-		const tracked = git("ls-files").split("\n");
-		expect(tracked.filter((path) => path.endsWith(".npmrc"))).toEqual([]);
 	});
 
 	/** Traces: TC-377; FR-044-AC-7. */

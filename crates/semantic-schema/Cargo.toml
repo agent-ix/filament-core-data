@@ -25,7 +25,7 @@
 # dependency needs no registry publish anyway).
 [package]
 name = "agent-ix-semantic-schema"
-version = "0.2.1"
+version = "0.3.0"
 description = "Compile-time access to filament-core-data's published JSON Schema v1 contract and semantic-core's generated JSON Schema for Rust consumers (e.g. quire-rs)."
 edition.workspace = true
 rust-version.workspace = true
