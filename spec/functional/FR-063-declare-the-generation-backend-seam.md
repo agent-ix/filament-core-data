@@ -30,7 +30,7 @@ The compiler SHALL reach every generated target through one seam keyed on the
 published `target` vocabulary, so that a caller submits a
 `compiler-request.schema.json` document and receives an
 `output-manifest.schema.json` document whichever target it names — a manifest of
-emitted files and their digests where the target is implemented and the document
+emitted files where the target is implemented and the document
 generates, and a manifest naming the owning issue where it is not — rather than
 a guess in either direction.
 
@@ -81,10 +81,8 @@ a guess in either direction.
 - If the request names a registered but unimplemented target, then `generateTarget` SHALL return a manifest with `state: "unavailable"`, zero files, and exactly one blocking diagnostic coded `agent-ix.compiler.BACKEND_NOT_IMPLEMENTED` whose message names the issue that owns the target.
 - `generateTarget` SHALL return an `output-manifest.schema.json`-valid document for every request, including every failing one.
 - `generateTarget` SHALL NOT throw for any defect in a request document; a defect in a submitted document is a diagnostic.
-- `generateTarget` SHALL set `requestFingerprint` to the digest of the canonicalized request under the FR-048 canonicalization.
-- `generateTarget` SHALL set `normalizedFingerprint` to `fingerprintIr` of the request's `ir` member.
 - `generateTarget` SHALL set `backend` to the selected backend's declared `identity`.
-- Each `files[]` entry SHALL carry the `outputRoot`-relative path, the `sha256:` digest of the emitted bytes, the media type, and a non-empty set of semantic identities.
+- Each `files[]` entry SHALL carry the `outputRoot`-relative path, the media type, and a non-empty set of semantic identities.
 - A `files[]` entry for a file that renders one or more type definitions SHALL carry exactly the identities of the definitions it renders.
 - A `files[]` entry for a file that renders no type definition SHALL carry the package's own identity, minted as `ix://<owner>/<name>` from the IR document's `package.identity`, because `output-manifest.schema.json` requires a non-empty set on every entry and `contracts-v1.md` requires every emitted file to reconcile.
 - If a backend reports a state of `invalid`, `unsupported`, or `unavailable`, then `generateTarget` SHALL emit zero files and at least one diagnostic, as `output-manifest.schema.json` requires.
@@ -98,7 +96,7 @@ a guess in either direction.
 
 ### The injected formatter
 
-- `generateTarget` SHALL pass every emitted file's text through `options.format(text, path)` before computing that file's digest, so that the digest a manifest records is the digest of the bytes a caller writes.
+- `generateTarget` SHALL pass every emitted file's text through `options.format(text, path)` before the caller writes it, so that the bytes a caller writes are the formatted bytes.
 - `generateTarget` SHALL start no process, open no socket, and read no file of its own while formatting; the injected formatter is the caller's, and [FR-071](./FR-071-provide-the-generate-command-and-surface-fixtures.md) owns the implementation this repository supplies.
 - If a caller supplies no `options.format`, then `generateTarget` SHALL use an identity function and record that choice in no diagnostic, because an unformatted generation is a legitimate caller decision rather than a defect.
 
@@ -153,8 +151,7 @@ a guess in either direction.
 | FR-063-AC-3 | A target registered as declared-unimplemented returns `state: "unavailable"`, zero files, and one blocking `agent-ix.compiler.BACKEND_NOT_IMPLEMENTED` diagnostic naming its registered owner, exercised over a synthetic registration so the criterion does not depend on which targets a sibling ticket has since implemented. | Unit |
 | FR-063-AC-4 | A request missing a required member returns `state: "invalid"` with one diagnostic per schema error, each located at the failing instance pointer, and emits no file. | Unit |
 | FR-063-AC-5 | Every manifest `generateTarget` returns — for a valid request, an invalid request, an unimplemented target, and a model carrying declared loss — validates against `output-manifest.schema.json`. | Property |
-| FR-063-AC-6 | For the fixture request, `requestFingerprint` equals the digest of the canonicalized request and `normalizedFingerprint` equals `fingerprintIr` of its `ir`, both recomputed independently in the test. | Unit |
-| FR-063-AC-7 | Each `files[]` entry of a successful generation names a path under `outputRoot`, a digest equal to the SHA-256 of its formatted bytes, a media type, and a non-empty identity set — the rendered definitions' identities for a file that renders definitions, and the package identity for `package.json` and `LICENSE`, which render none. | Integration |
+| FR-063-AC-7 | Each `files[]` entry of a successful generation names a path under `outputRoot`, a media type, and a non-empty identity set — the rendered definitions' identities for a file that renders definitions, and the package identity for `package.json` and `LICENSE`, which render none. | Integration |
 | FR-063-AC-8 | A stub backend missing any one of `identity`, `version`, `supportedIrVersions`, `supportedFeatures`, or `generate` is rejected by `assertBackendContract`, once per omitted member. | Unit |
 | FR-063-AC-9 | A stub backend returning a file path outside `outputRoot` is rejected by `assertBackendContract`. | Unit |
 | FR-063-AC-10 | A request whose `ir.contractVersion` is `1.0.0` returns `state: "invalid"` with a blocking `agent-ix.compiler.UNKNOWN_CONTRACT_VERSION` diagnostic naming the version seen, before any backend-specific check runs, and emits no file. | Unit |
@@ -167,7 +164,7 @@ a guess in either direction.
 | FR-063-AC-17 | A request naming `typescript` over a fixture document the backend admits with `success` and can fully represent returns `state: "success"`, one `files[]` entry per emitted file, and no blocking diagnostic. | Integration |
 | FR-063-AC-18 | A request over a document whose admissibility result is `lossy` returns `state: "lossy"` with the same file set a `success` document of the same shape produces, while a document carrying a representability loss returns `state: "unsupported"` with zero files. | Unit |
 | FR-063-AC-19 | Every entry of the registry names an owning issue or upstream component, and `isBackendImplemented` agrees with the presence of an implementation on that entry for all five targets. | Unit |
-| FR-063-AC-20 | Every emitted file's `files[]` digest equals the SHA-256 of the text after `options.format` ran, and a generation given a formatter that uppercases its input produces digests that differ from the same generation given the identity formatter. | Unit |
+| FR-063-AC-20 | Every emitted file's text passes through `options.format` before the caller writes it, and a generation given a formatter that uppercases its input records uppercased text where the identity formatter records the original. | Unit |
 | FR-063-AC-21 | `seam.mjs` and every module it imports below the injected formatter start no child process, asserted by an instrumented `node:child_process` during a fixture generation. | Test |
 | FR-063-AC-22 | The `json-schema` registry entry is implemented, owned by `agent-ix/filament-core-data#85`, and a CLI request for it carries the registered backend declaration rather than the TypeScript declaration. | Test (TC-1360) |
 | FR-063-AC-23 | A request naming a registered, implemented backend whose declared `supportedIrVersions` excludes the request's `ir.contractVersion` returns `state: "unsupported"` with a blocking `agent-ix.compiler.UNSUPPORTED_IR_VERSION` diagnostic naming the version seen and the versions the backend declares, and emits no file, exercised over a synthetic registration since no committed backend declares support narrower than `2.0.0`. | Unit (TC-1797) |

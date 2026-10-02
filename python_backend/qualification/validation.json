@@ -11,7 +11,7 @@
 			"nonValidatingDeclarations": 70,
 			"exercisedTypes": 72,
 			"unexercisedValidatingTypes": 68,
-			"constraintsExercised": 228,
+			"constraintsExercised": 227,
 			"typesRejectingAnEmptyOrUndeclaredValue": 96,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
@@ -324,7 +324,7 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 2
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "module_manifest_schema",
@@ -1106,7 +1106,7 @@
 			"nonValidatingDeclarations": 116,
 			"exercisedTypes": 72,
 			"unexercisedValidatingTypes": 26,
-			"constraintsExercised": 223,
+			"constraintsExercised": 222,
 			"typesRejectingAnEmptyOrUndeclaredValue": 95,
 			"typesAcceptingAnything": [
 				"module_manifest_schema.Defaults",
@@ -1298,7 +1298,7 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 2
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "module_manifest_schema",
@@ -1944,7 +1944,7 @@
 			"nonValidatingDeclarations": 116,
 			"exercisedTypes": 63,
 			"unexercisedValidatingTypes": 35,
-			"constraintsExercised": 218,
+			"constraintsExercised": 217,
 			"typesRejectingAnEmptyOrUndeclaredValue": 92,
 			"typesAcceptingAnything": [
 				"module_manifest_schema.Defaults",
@@ -2146,7 +2146,7 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 2
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "module_manifest_schema",

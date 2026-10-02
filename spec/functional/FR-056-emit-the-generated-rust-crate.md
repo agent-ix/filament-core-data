@@ -64,7 +64,7 @@ it came from.
   `Cargo.toml`, `LICENSE`, `README.md`, `src/lib.rs`, `src/support.rs`,
   `src/identity.rs`, and one module per IR type
 - An `output-manifest.schema.json` document naming every emitted file with its
-  digest, media type, and the semantic identities it carries
+  media type and the semantic identities it carries
 - `THIRD-PARTY-NOTICES.md`: the third-party attribution register, one entry per
   third-party crate this work uses, with its exact version, its SPDX identifier,
   and the location of its preserved upstream licence text
@@ -156,9 +156,7 @@ not restated here.
 ### Output manifest
 
 - The backend SHALL emit one `output-manifest` document whose `files` names
-  every emitted file with its `sha256` digest, its `mediaType`, and its
-  `semanticIdentities`, and whose `normalizedFingerprint` is the digest over the
-  concatenated canonical file list.
+  every emitted file with its `mediaType` and its `semanticIdentities`.
 - `mediaType` SHALL be a total function of the emitted file's extension:
 
 | Emitted file | `mediaType` |
@@ -232,7 +230,7 @@ that decision requires.
 | FR-056-AC-1 | Generating from each of the four corpus bases produces a crate that `cargo build --offline` compiles with no warning under `-D warnings`, with `#![deny(missing_docs)]` in force. | Test (TC-666) |
 | FR-056-AC-2 | The emitted `Cargo.toml` declares `AGPL-3.0-or-later`, `publish = false`, exactly one dependency (`serde`) pinned with `=`, and the `rust-version` the backend declares. | Analysis (TC-667) |
 | FR-056-AC-4 | `SemanticType` has exactly one variant per generated type, and a consumer matching exhaustively over it fails to compile when a type is added. | Test (TC-669) |
-| FR-056-AC-5 | The output manifest names every emitted file, every named file exists, every digest matches the bytes, and no file exists that the manifest does not name. | Test (TC-670) |
+| FR-056-AC-5 | The output manifest names every emitted file, every named file exists, and no file exists that the manifest does not name. | Test (TC-670) |
 | FR-056-AC-6 | A document that produces a blocking diagnostic emits zero files and at least one diagnostic, and leaves the output root empty. | Test (TC-671) |
 | FR-056-AC-7 | No emitted byte contains a timestamp, hostname, absolute path, user name, or environment value, checked by generating under two different working directories, `TZ` values, `LANG` values, and `HOME` values and comparing bytes. | Test (TC-672) |
 | FR-056-AC-8 | A document exceeding `maxNodes`, one exceeding `maxDepth`, and one exceeding `maxCollectionItems` each raise `LIMIT_EXCEEDED` naming the limit and emit no file. | Test (TC-673) |

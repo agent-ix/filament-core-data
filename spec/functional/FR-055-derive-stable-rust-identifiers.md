@@ -36,8 +36,8 @@ that a rename in the generated crate can only follow a change in the contract.
 - `src/compiler/backends/rust-serde/names.mjs`: `typeName(definition)`,
   `memberName(node)`, `variantName(node)`, `moduleName(packageIdentity)`,
   `crateName(packageIdentity)`, and `constantName(node)`
-- `src/compiler/backends/rust-serde/reserved-words.json`: the pinned reserved
-  word list with its Rust edition and its transcription provenance
+- `src/compiler/backends/rust-serde/reserved-words.json`: the reserved
+  word list with its Rust edition
 
 ## Behavior
 
@@ -73,7 +73,7 @@ that a rename in the generated crate can only follow a change in the contract.
   nor an ASCII digit, and SHALL drop those runs, so `HTTPStatusCode` segments as
   `HTTP`, `Status`, `Code`.
 - Case conversion SHALL use the Unicode simple, locale-independent case
-  mappings for the pinned Unicode version, never a host locale's mapping, so a
+  mappings, never a host locale's mapping, so a
   Turkish locale cannot change a generated identifier.
 - Where the source carries a character `XID_Continue` admits, the backend SHALL
   render it faithfully; Rust has accepted non-ASCII identifiers since 1.53.
@@ -144,7 +144,7 @@ the derived identifier into the crate scope.
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-055-CON-1 | The derivation SHALL be injective within each declared scope, and SHALL raise `NAME_COLLISION` rather than make two identities distinct by mangling. | Correctness | Test |
-| FR-055-CON-2 | The reserved-word list and the Unicode version SHALL be pinned in the repository with their provenance recorded, so a toolchain upgrade that adds a keyword is a visible diff. | Maintainability | Inspection |
+| FR-055-CON-2 | The reserved-word list SHALL be kept in the repository, so a toolchain upgrade that adds a keyword is a visible diff. | Maintainability | Inspection |
 | FR-055-CON-3 | `names.mjs` SHALL read no input other than its argument and the pinned tables. | Purity | Analysis |
 | FR-055-CON-4 | The backend SHALL NOT silently alter a name. Every character the renderer cannot carry SHALL produce `UNRENDERABLE_NAME`. | Correctness | Test |
 

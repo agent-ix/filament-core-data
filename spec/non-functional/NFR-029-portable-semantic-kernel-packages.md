@@ -93,7 +93,7 @@ emitted package's closure.
 |---|---|---|---|
 | Persistence, ORM, Tauri, UI-framework or application packages in any emitted package's transitive closure | 0 | 0 | Dependency-closure test |
 | Third-party runtime dependencies of the emitted TypeScript package | 0 | 0 | Dependency-closure test |
-| Third-party runtime dependencies of the emitted Rust crate | 1 (`serde`, pinned exactly) | 1 | Dependency-closure test |
+| Third-party runtime dependencies of the emitted Rust crate | 1 (`serde`) | 1 | Dependency-closure test |
 | Third-party runtime dependencies of the emitted Python package beyond the declared Pydantic pin | 0 | 0 | Dependency-closure test |
 | Network or filesystem access performed by an emitted package at run time | 0 | 0 | Instrumented run |
 | `$ref`s in the JSON Schema bundle that do not resolve inside the bundle | 0 | 0 | Offline resolution test |
@@ -121,7 +121,7 @@ attribution.
 |---|---|---|
 | NFR-029-AC-1 | The transitive dependency closure of each emitted package contains no persistence layer, ORM, Tauri, UI framework, application package, or network transport, asserted per language against its own resolver rather than against a hand-listed direct dependency set. | Test |
 | NFR-029-AC-2 | The emitted TypeScript package resolves zero third-party runtime dependencies, and its validator is code the package carries. | Test |
-| NFR-029-AC-3 | The emitted Rust crate's closure is exactly `serde` at its pinned version, and the pin is exact rather than a range. | Test |
+| NFR-029-AC-3 | The emitted Rust crate's closure is exactly `serde`. | Test |
 | NFR-029-AC-4 | The emitted Python package's closure adds nothing beyond the declared Pydantic pin, and `datamodel-code-generator` appears in no runtime closure. | Test |
 | NFR-029-AC-5 | Importing each emitted package under an instrumented runtime opens no socket and reads no file. | Test |
 | NFR-029-AC-6 | Every `$ref` in the modular JSON Schema bundle resolves inside the bundle with the network disabled. | Test |

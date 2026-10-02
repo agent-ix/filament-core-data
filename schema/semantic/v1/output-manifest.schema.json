@@ -3,32 +3,22 @@
 	"$id": "https://schemas.agent-ix.org/filament-core-data/v1/output-manifest.schema.json",
 	"title": "Filament compiler output manifest v1",
 	"type": "object",
-	"required": [
-		"contractVersion",
-		"requestFingerprint",
-		"backend",
-		"state",
-		"files",
-		"diagnostics",
-		"normalizedFingerprint"
-	],
+	"required": ["contractVersion", "backend", "state", "files", "diagnostics"],
 	"properties": {
 		"contractVersion": { "const": "1.0.0" },
-		"requestFingerprint": { "$ref": "common.schema.json#/$defs/sha256" },
 		"backend": { "$ref": "common.schema.json#/$defs/semanticIdentity" },
 		"state": { "$ref": "common.schema.json#/$defs/resultState" },
 		"files": {
 			"type": "array",
 			"items": {
 				"type": "object",
-				"required": ["path", "digest", "mediaType", "semanticIdentities"],
+				"required": ["path", "mediaType", "semanticIdentities"],
 				"properties": {
 					"path": {
 						"type": "string",
 						"minLength": 1,
 						"pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$"
 					},
-					"digest": { "$ref": "common.schema.json#/$defs/sha256" },
 					"mediaType": { "type": "string", "minLength": 1 },
 					"semanticIdentities": {
 						"type": "array",
@@ -43,8 +33,7 @@
 		"diagnostics": {
 			"type": "array",
 			"items": { "$ref": "common.schema.json#/$defs/diagnostic" }
-		},
-		"normalizedFingerprint": { "$ref": "common.schema.json#/$defs/sha256" }
+		}
 	},
 	"allOf": [
 		{

@@ -2918,6 +2918,11 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
     let document = read_json(&request.out);
     let manifest = fs::read(business_module().join("manifest.yaml")).expect("manifest");
     let digest = format!("sha256:{}", common::sha256sum(&manifest));
+    let declared_version = String::from_utf8_lossy(&manifest)
+        .lines()
+        .find_map(|line| line.strip_prefix("version:"))
+        .map(|v| v.trim().trim_matches('"').to_string())
+        .expect("the manifest declares a version");
 
     let used: std::collections::BTreeSet<String> = document["types"]
         .as_array()
@@ -2935,7 +2940,7 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
     assert_eq!(entries.len(), used.len(), "no kind declared twice");
     for entry in entries {
         assert_eq!(entry["kind"]["module"], BUSINESS, "{entry}");
-        assert_eq!(entry["moduleVersion"], "0.1.0", "{entry}");
+        assert_eq!(entry["moduleVersion"], declared_version.as_str(), "{entry}");
         assert_eq!(entry["manifestDigest"], digest.as_str(), "{entry}");
     }
     let entry = |name: &str| {

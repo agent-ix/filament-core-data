@@ -31,11 +31,11 @@ version = "0.1.1"
 [[package]]
 name = "agent-ix-semantic-schema"
 version = "0.2.1"
+source = "git+https://github.com/agent-ix/filament-core-data?tag=semantic-schema-v0.2.1#888b9260c7e2cb6d0f664e25a4a30a0f9c8adfd2"
 
 [[package]]
 name = "agent-ix-semantic-schema"
-version = "0.2.1"
-source = "git+https://github.com/agent-ix/filament-core-data?tag=semantic-schema-v0.2.1#888b9260c7e2cb6d0f664e25a4a30a0f9c8adfd2"
+version = "0.3.0"
 
 [[package]]
 name = "ahash"
@@ -1002,7 +1002,7 @@ name = "quire-rs"
 version = "0.50.0"
 source = "git+https://github.com/agent-ix/quire-rs?rev=3157726b502569d87c5d54e79e9b4546819e99da#3157726b502569d87c5d54e79e9b4546819e99da"
 dependencies = [
- "agent-ix-semantic-schema 0.2.1 (git+https://github.com/agent-ix/filament-core-data?tag=semantic-schema-v0.2.1)",
+ "agent-ix-semantic-schema 0.2.1",
  "globset",
  "ignore",
  "indexmap",

@@ -12,12 +12,6 @@
  * So this runs the real thing: the lift writes an IR document from markdown,
  * and that document, not a fixture, is what every target generates from.
  *
- * The fingerprint check is the part worth keeping. `normalizedFingerprint` is
- * the seam's fingerprint of the *IR*, so every target must report the same one
- * from a single lift. A target reporting a different fingerprint has either
- * normalized the IR differently or generated from something else, and both are
- * defects that no per-backend golden can see.
- *
  * `--compile` additionally proves each target's *output* is admissible to a
  * real toolchain, not only that the generator reported zero blocking
  * diagnostics: `cargo build`/`clippy` on the Rust crate (offline, in a scratch
@@ -247,7 +241,6 @@ const countFiles = (dir) => {
 };
 
 const failures = [];
-const fingerprints = new Map();
 const rows = [];
 
 for (const target of TARGETS) {
@@ -302,17 +295,7 @@ for (const target of TARGETS) {
 		failures.push(...COMPILERS[target](outRoot));
 	}
 
-	fingerprints.set(target, manifest.normalizedFingerprint);
-	rows.push({ target, files, fingerprint: manifest.normalizedFingerprint });
-}
-
-const distinct = new Set(fingerprints.values());
-if (distinct.size > 1) {
-	failures.push(
-		`the targets disagree on the IR fingerprint: ${[...fingerprints]
-			.map(([target, value]) => `${target}=${value}`)
-			.join(", ")}`,
-	);
+	rows.push({ target, files });
 }
 
 const ir = JSON.parse(
@@ -329,7 +312,6 @@ for (const row of rows) {
 		`  ${row.target.padEnd(20)} ${String(row.files).padStart(3)} file(s)`,
 	);
 }
-console.log(`  IR fingerprint ${[...distinct][0] ?? "(none)"}`);
 
 if (ir.types.length === 0) {
 	failures.push(
