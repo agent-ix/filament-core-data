@@ -42,7 +42,6 @@ consume it.
 - `packages/semantic-core/kernel-scalars.json` and `packages/semantic-core/lowering.json`
 - `packages/semantic-core/package.json`, whose `name` is `@agent-ix/semantic-core`
 - The closed `target` vocabulary of `schema/semantic/v1/common.schema.json#/$defs/target`: `json-schema`, `rust`, `typescript`, `python-pydantic-v2`, `python-dataclass`
-- The FR-048 canonicalization and `digest`
 - The injected host of NFR-019 and NFR-020, through which every read a compiler module makes is performed
 
 ## Outputs
@@ -50,7 +49,7 @@ consume it.
 - `packages/semantic-kernel/bundle.json`: the kernel bundle declaration — the enumerated document set, the declared targets with their tree roots and owning issues, and the publication-gate record
 - `src/compiler/frontend/json-schema/bundle.mjs`: the pure bundle predicates — `checkKernelBundle(declaration, inventory)` — a function from supplied values to diagnostics or bytes, reading nothing
 - `src/compiler/frontend/json-schema/bundle.d.mts`, declaring every added symbol, beside the `.mjs`, as the TypeSpec frontend already does for its own modules
-- `scripts/build-semantic-kernel.mjs`: the sole file-system boundary, which reads the declaration and every digest input, calls the pure predicates, and writes every generated tree; driven by `make semantic-kernel` and, with `--check`, by `make semantic-kernel-check`
+- `scripts/build-semantic-kernel.mjs`: the sole file-system boundary, which reads the declaration and every input it names, calls the pure predicates, and writes every generated tree; driven by `make semantic-kernel` and, with `--check`, by `make semantic-kernel-check`
 - `packages/semantic-kernel/typescript/`, `packages/semantic-kernel/rust/`, and `packages/semantic-kernel/python/`: the three generated language trees
 - `packages/semantic-kernel/json-schema/index.json`: the `json-schema` target artifact, an index over the thirty emitted documents
 - Diagnostic `agent-ix.compiler.KERNEL_INVENTORY_MISMATCH`, added as a member of `DIAGNOSTIC_CODES` in `src/compiler/diagnostics.mjs`

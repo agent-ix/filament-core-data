@@ -47,10 +47,8 @@ the member it edits, so that an edit to a base cannot silently re-aim a case.
 
 Every case carries `derivedFrom`: the artifact, the locator, and the verbatim
 quote its expectation was read from. The gate checks that the quote still occurs
-in that artifact. Every case carries `provenance.blessedFromRun: false`; a case
-that set it true would need a reviewed `blessing` block naming the
-implementation, its version, the command, and the reviewer who checked the
-derivation by hand. No case in this corpus is blessed from a run.
+in that artifact. Every case carries `provenance.blessedFromRun: false`. No case
+in this corpus is blessed from a run.
 
 The expected result carries `resultState` and an ordered diagnostic list. Each
 entry is a `common.schema.json#/$defs/diagnostic` document with an RFC 6901

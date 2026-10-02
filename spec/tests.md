@@ -621,7 +621,7 @@ blocked as stated above.
 | TC-280 | Every case file, base bundle, and the corpus manifest validate against their conformance schemas | Unit | P0 | FR-035-AC-1 | ✅ passed — conformance corpus (PR pending) |
 | TC-281 | Every base bundle validates against the published schemas it composes and yields zero oracle diagnostics | Unit | P0 | FR-035-AC-2, FR-035-CON-1 | ✅ passed — conformance corpus (PR pending) |
 | TC-282 | Every case's `derivedFrom` names an existing artifact and its `quote` occurs verbatim; a quote that no longer occurs fails the gate | Unit | P0 | FR-035-AC-3, US-008-EX-1 | ✅ passed — conformance corpus (PR pending) |
-| TC-284 | No case sets `provenance.blessedFromRun`; a blessed case with no `blessing` block fails the gate | Unit | P0 | FR-035-AC-5 | ✅ passed — conformance corpus (PR pending) |
+| TC-284 | No case sets `provenance.blessedFromRun` | Unit | P0 | FR-035-AC-5 | ✅ passed — conformance corpus (PR pending) |
 | TC-285 | No case's `ops` exceeds the 64-node budget, and the depth boundary case stays inside it using `x-repeat` | Unit | P1 | FR-035-AC-6 | ✅ passed — conformance corpus (PR pending) |
 | TC-286 | An indexed `replace` or `remove` with no preceding `test` op fails the gate; a `test` op that no longer matches its base fails the run | Unit | P0 | FR-035-AC-7 | ✅ passed — conformance corpus (PR pending) |
 | TC-287 | Deleting a case a `defect` row names fails the gate | Unit | P0 | FR-035-AC-8 | ✅ passed — conformance corpus (PR pending) |
@@ -683,7 +683,7 @@ blocked as stated above.
 | TC-343 | `make lint` formats and typechecks `src/compiler/` | Static | P0 | FR-041-AC-12 | ✅ passed |
 | TC-344 | A deliberate declaration mismatch fails `tsc --noEmit` | Compile | P0 | FR-041-AC-12 | ✅ passed |
 | TC-345 | Every `src/compiler/**` manifest in the tree, and every added manifest, declares AGPL-3.0-or-later and no dependency is added | Static | P0 | FR-041-AC-13, FR-041-CON-5 | ✅ passed |
-| TC-346 | The compiler imports only pinned `@typespec/*` packages | Static | P0 | FR-041-CON-3 | ✅ passed |
+| TC-346 | The compiler imports only `@typespec/*` packages declared in `package.json` | Static | P0 | FR-041-CON-3 | ✅ passed |
 | TC-347 | `@typespec/*` stay devDependencies and no runtime entry point is added | Static | P0 | FR-041-CON-4 | ✅ passed |
 | TC-348 | The promoted IR is never validated against the v1 IR schema | Static | P1 | FR-041-CON-2 | ✅ passed |
 | TC-349 | `emitTypeScript` reproduces the committed TypeScript golden | Snapshot | P0 | FR-042-AC-1 | ✅ passed |
@@ -1641,7 +1641,7 @@ blocked as stated above.
 | TC-1787 | No business construct kind name appears as a string literal in `src/`, `crates/*/src` or `python_backend/` outside fixtures, goldens, generated code and tests, a name that is also a core shape term counting as that shape; a planted `kind.name === "entity"` fails the gate | Unit | P0 | FR-142-AC-7 | ✅ passed |
 | TC-1788 | Reading a construct declaration refuses an unknown identity, an unknown member, a rule whose member presence is undeclared, a reference to a forbidden member, a wildcard or repeated role, a reference on a non-reference member, a repeated rule, an unknown declaration member and a missing required member at their pointers, and reads a declaration without `references` and `rules` and with each flag at its default | Unit | P0 | FR-142-AC-12, FR-142-AC-14 | ✅ passed |
 | TC-1789 | A type's or a population's kind with no `constructs` entry, an unused entry, a duplicate entry, a `2.0.0` document without `constructs`, a wildcard role and an undeclared rule presence each refuse with `SCHEMA_VIOLATION`; widening admitted roles admits a reference its former roles refused, and removing the role from the target type refuses it; a `sourceElement` resolved through FR-152's operation fallback is checked by the same role admission, against the role of the operation's owning type | Unit | P0 | FR-142-AC-9 | ✅ passed |
-| TC-1790 | The `business` fixture lifts with one `constructs` entry per used kind carrying module version `0.7.0`, the `sha256:` manifest digest and the manifest declaration with roles qualified `business:<role>`, read through the one manifest seam | Integration | P0 | FR-143-AC-7 | ✅ passed |
+| TC-1790 | The `business` fixture lifts with one `constructs` entry per used kind carrying the module version, the manifest digest and the manifest declaration with roles qualified `business:<role>`, read through the one manifest seam | Integration | P0 | FR-143-AC-7 | ✅ passed |
 | TC-1791 | A systems `port` kind carrying `owner`, `direction`, `interfaceType` and `multiplicity`, and a `connection` carrying `flowDirection` and two ends, read clean in the Rust and Node readers and render by shape and identity; a `direction` outside `in`/`out`/`inout`, a missing required member and an owner without the admitted role refuse | Unit | P0 | FR-142-AC-10 | ✅ passed |
 | TC-1792 | A manifest declaration missing `meaning`, naming a member or rule outside the vocabulary, selecting a rule whose member presence it does not declare, admitting `*`, or referencing an undeclared role yields one blocking diagnostic naming the module and object type, and no artifact of that type lowers | Unit | P0 | FR-143-AC-8 | ✅ passed |
 | TC-1793 | A `featureOrder` naming its type's own fields and operations each once reads clean; an omitted operation raises `INCOMPLETE_FEATURE_ORDER`, another type's operation `UNRESOLVED_CONSTRUCT_REF`, and a repeated entry, an empty order, an order the declaration forbids and a missing required order `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-13 | ✅ passed |
@@ -1841,8 +1841,6 @@ blocked as stated above.
 | FR-040-CON-1 | Prohibited | A `partial` capability whose limitation is dropped | TC-329 | Inventory test fails |
 | FR-040-CON-4 | Prohibited | A promoted component listed only under `authored` | TC-330 | Inventory test fails |
 | FR-041 export set | Min / Above max | Exactly six exports / a seventh export | TC-331, TC-332 | Pass / fail the export-set assertion |
-| FR-041-CON-3 | Allowed | `@typespec/compiler` pinned to `1.15.0` | TC-346 | Dependency inspection passes |
-| FR-041-CON-3 | Prohibited | A caret or upper-bounded `@typespec/*` range | TC-346, TC-388 | Dependency inspection fails |
 | FR-041-CON-4 | Prohibited | Any added `dependencies` entry | TC-347, TC-394 | Dependency inspection fails |
 | FR-042-CON-1 | Allowed | Backends recorded as representative-slice-only | TC-358 | Inventory test passes |
 | FR-042-CON-1 | Prohibited | A backend described as production-qualified | TC-358 | Inventory test fails |

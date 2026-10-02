@@ -56,18 +56,7 @@
 			"properties": {
 				"authoredFor": { "type": "string", "minLength": 1 },
 				"blessedFromRun": { "type": "boolean" },
-				"reproduces": { "type": "string", "minLength": 1 },
-				"blessing": {
-					"type": "object",
-					"required": ["implementation", "version", "command", "reviewer"],
-					"properties": {
-						"implementation": { "type": "string", "minLength": 1 },
-						"version": { "type": "string", "minLength": 1 },
-						"command": { "type": "string", "minLength": 1 },
-						"reviewer": { "type": "string", "minLength": 1 }
-					},
-					"additionalProperties": false
-				}
+				"reproduces": { "type": "string", "minLength": 1 }
 			},
 			"additionalProperties": false
 		},

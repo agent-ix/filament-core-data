@@ -45,7 +45,7 @@ derivation without running anything.
 
 | Metric | Target | Threshold | Method |
 |---|---|---|---|
-| Cases with `blessedFromRun: true` and no reviewed `blessing` block | 0 | 0 | Corpus gate |
+| Cases with `blessedFromRun: true` | 0 | 0 | Corpus gate |
 | Cases with no `derivedFrom` entry whose quote occurs in the named artifact | 0 | 0 | Corpus gate |
 | Byte differences between two oracle runs over the corpus | 0 | 0 | Repeat-run comparison |
 | Byte differences between two harness reports over an unchanged corpus | 0 | 0 | Repeat-run comparison |
