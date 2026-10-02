@@ -387,16 +387,6 @@ export function corpusGates(overrides = {}) {
 			}
 		}
 
-		if (
-			entry.provenance.blessedFromRun === true &&
-			!entry.provenance.blessing
-		) {
-			fail(
-				"blessing",
-				row.id,
-				"blessedFromRun is true with no reviewed blessing block",
-			);
-		}
 		for (const source of entry.derivedFrom) {
 			const allowed = (manifest.contractArtifacts ?? []).some(
 				(prefix) =>

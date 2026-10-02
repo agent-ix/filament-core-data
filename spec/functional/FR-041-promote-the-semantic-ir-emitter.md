@@ -24,7 +24,7 @@ than a path under `spikes/`.
 - A TypeSpec entrypoint path, or an already-compiled TypeSpec `Program`
 - A `generator` identity string stamped into the emitted IR
 - A `baseDir` against which source loci are made relative
-- The pinned `@typespec/compiler` 1.15.0 and `@typespec/versioning` 0.85.0 toolchain
+- The `@typespec/compiler` and `@typespec/versioning` toolchain declared in `package.json`
 
 ## Outputs
 
@@ -62,7 +62,7 @@ than a path under `spikes/`.
 |---|---|---|---|
 | FR-041-CON-1 | The promoted emitter SHALL keep the issue #4 IR `schemaVersion` value `1.0.0` and its `{schemaVersion, generator, types}` envelope; revising the emitted IR shape belongs to the compiler ticket (#19). | Compatibility | Emitted-IR test |
 | FR-041-CON-2 | The promoted IR is the issue #4 prototype IR, not a `schema/semantic/v1/semantic-ir.schema.json` document; the maintainer SHALL NOT validate one against the other. Reconciling the two shapes belongs to issue #19. | Compatibility | Inspection |
-| FR-041-CON-3 | The compiler SHALL import only the exactly pinned `@typespec/*` packages already present in `package.json`. | Maintainability | Dependency inspection |
+| FR-041-CON-3 | The compiler SHALL import only the `@typespec/*` packages already present in `package.json`. | Maintainability | Dependency inspection |
 | FR-041-CON-4 | The promotion SHALL add no dependency to `package.json`. Every `@typespec/*` entry stays a devDependency, and making `src/compiler/` a runtime entry point belongs to issue #11. | Maintainability | Dependency inspection |
 | FR-041-CON-5 | Every package manifest the promotion adds SHALL declare `"license": "AGPL-3.0-or-later"`, matching the repository's existing posture. | Legal | Licence inspection |
 

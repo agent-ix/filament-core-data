@@ -27,7 +27,7 @@ constraint, relation, operation, clause reference, and enum value.
 
 - The IR node shapes (FR-027..030) and the IR `common.schema.json` patterns for `semanticIdentity` and `sourceLocus`
 - The FR-040 edge categories, the FR-029 closed keyword set, and the FR-028 clause languages
-- The pinned TypeSpec compiler (`@typespec/compiler` 1.15.0, ADR-0005)
+- The TypeSpec compiler (`@typespec/compiler`, ADR-0005)
 
 ## Outputs
 

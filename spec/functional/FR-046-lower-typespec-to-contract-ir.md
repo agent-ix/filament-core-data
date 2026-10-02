@@ -36,7 +36,7 @@ type's spelling.
 ## Inputs
 
 - A `FrontendRequest` from FR-045, carrying the resolved package, the entrypoint, the limits, and the injected host
-- The pinned `@typespec/compiler` 1.15.0 and `@typespec/versioning` 0.85.0 toolchain
+- The `@typespec/compiler` and `@typespec/versioning` toolchain declared in `package.json`
 - The semantic vocabulary and identity minting of FR-053
 
 ## Outputs

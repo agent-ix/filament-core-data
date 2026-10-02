@@ -1,7 +1,7 @@
 {
 	"manifest_version": "1.0.0",
-	"name": "spec-objects-architecture",
-	"version": "1.4.0",
+	"name": "example-objects",
+	"version": "1.0.0",
 	"description": "Architecture domain view objects for the spec editor ecosystem.",
 	"nav": {
 		"category": {
@@ -87,8 +87,8 @@
 	},
 	"semantic": {
 		"contract_version": "1.0.0",
-		"semantic_core": "0.3.0",
-		"package": "agent-ix/spec-objects-architecture",
+		"semantic_core": "0.0.1",
+		"package": "agent-ix/example-objects",
 		"exports": ["component"],
 		"imports": {},
 		"targets": ["json-schema", "typescript"],

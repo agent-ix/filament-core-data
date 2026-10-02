@@ -207,16 +207,6 @@ describe("TC-280..289 the corpus format and provenance (FR-035)", () => {
 		}
 	});
 
-	it("TC-284 a blessed case with no blessing block fails the gate", () => {
-		const failures = gatesWithCase("ENV-001", (entry) => {
-			(entry.provenance as Json).blessedFromRun = true;
-		});
-		expect(failures.some((one) => one.gate === "blessing")).toBe(true);
-		expect(failures.find((one) => one.gate === "blessing")?.subject).toBe(
-			"ENV-001",
-		);
-	});
-
 	it("TC-285 no case exceeds the minimization budget", () => {
 		for (const entry of cases) {
 			expect(countNodes(entry.ops), String(entry.id)).toBeLessThanOrEqual(

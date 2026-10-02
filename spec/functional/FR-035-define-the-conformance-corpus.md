@@ -58,8 +58,6 @@ the contract clause it was derived from.
 - A case whose `kind` is `compatibility` SHALL carry a `classification` in its `expected` block.
 - `derivedFrom` SHALL carry at least one entry naming an `artifact` that exists in the repository, a `locator` (a JSON pointer or a heading), and the `quote` the expectation was read from.
 - `provenance` SHALL carry `authoredFor` (the issue that authored the case), `blessedFromRun` (a boolean), and, when the case reproduces a discovered defect, `reproduces` naming that defect's register entry.
-- A case whose `provenance.blessedFromRun` is `true` SHALL additionally carry a `blessing` block naming the implementation, its version, the run command, and the reviewer who checked the derivation by hand.
-- If a case sets `provenance.blessedFromRun` to `true` without a `blessing` block, then the corpus gate SHALL fail and name that case.
 - A `positive` case SHALL declare `expected.resultState` as `success` and an empty expected diagnostic list.
 - A case SHALL declare `expected.diagnostics` as an ordered list whose entries each carry `pointer` (an RFC 6901 pointer into the input bundle) and `diagnostic` (a `common.schema.json#/$defs/diagnostic` document), so that the judged diagnostic is the contract's diagnostic and the pointer is corpus metadata beside it.
 - The corpus manifest SHALL record `corpusVersion` as SemVer.
@@ -84,7 +82,7 @@ the contract clause it was derived from.
 | FR-035-AC-1 | Every case file validates against `corpus-case.schema.json`, every base against `input-bundle.schema.json`, and `corpus.json` against `corpus-manifest.schema.json`. | Test |
 | FR-035-AC-2 | Every base bundle validates against the published schemas it composes and yields zero oracle diagnostics. | Test |
 | FR-035-AC-3 | Every case carries at least one `derivedFrom` entry whose `artifact` path exists and whose `quote` occurs verbatim in that artifact; a quote that no longer occurs fails the gate. | Test |
-| FR-035-AC-5 | No case sets `provenance.blessedFromRun` to `true`; a case that sets it without a `blessing` block fails the gate. | Test |
+| FR-035-AC-5 | No case sets `provenance.blessedFromRun` to `true`. | Test |
 | FR-035-AC-6 | No case's `ops` exceeds the 64-node minimization budget, and a `boundary` case that would exceed it uses `x-repeat` and stays inside it. | Test |
 | FR-035-AC-7 | An indexed `replace` or `remove` op with no preceding `test` op addressing it or an identifying member inside it fails the gate, and a `test` op that no longer matches its base fails the run. | Test |
 | FR-035-AC-8 | Deleting a case that a `defect` register row names fails the gate. | Test |

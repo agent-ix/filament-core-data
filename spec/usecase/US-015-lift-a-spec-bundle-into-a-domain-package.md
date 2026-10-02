@@ -36,7 +36,7 @@ quoin#293 fixed the Markdown → semantic-core mapping (the typed
 `quire_rs::semantic::extract_semantic`, returning `FieldDecl[]`,
 `ClauseRef[]`, and `OperationDecl[]` with source loci and a closed diagnostic
 vocabulary. spec-objects-business#4 published the first module whose
-`semantic` block exports those declarations against semantic-core `0.1.0`.
+`semantic` block exports those declarations.
 
 What does not exist is the step that reads a *whole bundle* through that
 contract and lowers what it returns into the IR: the resolver from a type
