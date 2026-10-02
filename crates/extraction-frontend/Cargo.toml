@@ -14,7 +14,7 @@
 # canonical bytes come from `agent-ix-semantic-ir` (FR-097).
 [package]
 name = "agent-ix-extraction-frontend"
-version = "0.2.0"
+version = "0.2.1"
 description = "Lifts a quire spec bundle into the Filament semantic IR."
 edition = "2021"
 rust-version.workspace = true
@@ -30,7 +30,7 @@ name = "extraction-frontend"
 path = "src/main.rs"
 
 [dependencies]
-quire-rs = { git = "https://github.com/agent-ix/quire-rs", rev = "3157726b502569d87c5d54e79e9b4546819e99da" }
+quire-rs = { git = "https://github.com/agent-ix/quire-rs", rev = "8ab0d509db3a067eafd5c03f657b51eb2aaab7f2" }
 agent-ix-semantic-ir = { path = "../semantic-ir" }
 serde = { workspace = true }
 serde_json = { workspace = true }
