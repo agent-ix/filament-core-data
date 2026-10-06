@@ -126,6 +126,22 @@ author.
 - The reader SHALL terminate on a cyclic alias chain, a cyclic composite
   relationship graph, and an oversized document, returning a diagnostic rather
   than recursing without bound.
+- The reader SHALL read, clone, compare, format, write, drop and decide a
+  document of any nesting depth, and SHALL walk an alias chain, a composite
+  relationship graph, a package graph and a supertype hierarchy of any length,
+  keeping the state of every walk on the heap, so that no step uses native
+  recursion whose depth grows with the document. A read SHALL be bounded only
+  by the `ReadLimits` its caller sets: input bytes, and a depth only when the
+  caller asks for one. A reached limit is a typed refusal naming the limit.
+- The reader SHALL report a cycle in a composite relationship graph, a package
+  graph, an alias chain or a supertype hierarchy whatever its length, because
+  cycle detection never depends on a depth limit.
+- The reader SHALL carry no depth limit of its own. It SHALL report an
+  acyclic alias chain longer than the `alias_depth` its caller configures as
+  `DEPTH_LIMIT_EXCEEDED` at the node that exceeds it, and SHALL report no such
+  chain when none is configured. The conformance adapter configures the
+  `depthLimit` the corpus manifest declares, so the corpus is decided under
+  the bound it states.
 - The reader SHALL return a diagnostic for every malformed input and SHALL NOT
   panic, and its public surface SHALL contain no `unwrap`, `expect`, or
   `panic!` on an input-derived path.
@@ -198,6 +214,11 @@ author.
 | FR-059-AC-14 | `docs/semantic-data-system/rust-backend.md` records the GAP-011 dependency with the closed owner named and the adopted reading stated, records GAP-002 as answered by FR-057 with its register closure filed as issue #59, and records the unspent divergence budget; and `conformance/divergences.json` is byte-unchanged. | Inspection (TC-710) |
 | FR-059-AC-15 | The ECMAScript number formatter agrees with Node's `JSON.stringify` on a declared set of at least 512 values covering the exponent thresholds, negative zero, trailing zeros, integral floats, and the extremes of `f64`. | Test (TC-700) |
 | FR-059-AC-16 | The reader's `normalized` materializes `nullable: true` for the input `true`, and `nullable: false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member. | Test (TC-1802) |
+| FR-059-AC-17 | On a thread with a 256 KiB stack, the reader reads an array nest and an object nest each 1,000,000 levels deep under the default limits, clones and compares each, writes each in the corpus comparison form and the document form, formats each with `Debug`, and drops each; an input of 1,000,000 unclosed arrays and one with a trailing `]` each refuse as malformed. `Debug` output equals a derived `Debug`'s in both the compact and the `{:#?}` form. | Test (TC-1820) |
+| FR-059-AC-18 | A read with `max_depth` set to 2 refuses `[[[0]]]` with a typed depth refusal naming 2 at the byte of the value it refuses, and reads it with `max_depth` 3 and with none; a read with `max_bytes` set to 4 refuses `[1,2]` with a typed byte refusal naming 4 and reads it at 5; malformed input is a typed malformed refusal. | Test (TC-1820) |
+| FR-059-AC-19 | A ring of 300 composite relationships and a ring of 100,000, each over record types, are reported as one `COMPOSITE_CYCLE`, and a chain of the same lengths that does not close is not; a ring of 300 and of 100,000 packages in a lock is reported as a package cycle and a chain is not; the 100,000 cases run on a 512 KiB stack. | Test (TC-1821) |
+| FR-059-AC-20 | With no depth limit configured, an acyclic alias chain of 100,000 links resolves and walks on a 512 KiB stack and a chain of 300 yields no `DEPTH_LIMIT_EXCEEDED`; with `alias_depth` 256 the chain of 100,000 fails to resolve, its walk is over the limit, and the chain of 300 yields `DEPTH_LIMIT_EXCEEDED`. | Test (TC-1821) |
+| FR-059-AC-21 | On a 512 KiB stack, `decide` returns `invalid` for a bundle holding a value nested 1,000,000 levels deep at a member the schema does not admit, with a diagnostic at that type and a `normalized` form longer than twice the depth. | Test (TC-1822) |
 
 ## Dependencies
 

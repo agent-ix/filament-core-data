@@ -9,9 +9,11 @@
 //! rules that range over several types. It reads a kind only as the
 //! `{module, name}` key of its declaration and never matches a kind name.
 
+use std::collections::BTreeSet;
+
 use crate::diag::{child, index};
 use crate::json::Json;
-use crate::rules::{Document, Sink, DANGLING_CLAUSE_REF, DEPTH_LIMIT, UNRESOLVED_TYPE_REF};
+use crate::rules::{Document, Sink, DANGLING_CLAUSE_REF, UNRESOLVED_TYPE_REF};
 use crate::schema::SCHEMA_VIOLATION;
 use crate::vocabulary::{Declaration, Member, Rule, Shape};
 
@@ -236,14 +238,13 @@ fn visible_fields<'a>(document: &Document<'a>, definition: &'a Json) -> Vec<&'a 
 /// The transitive supertypes of `definition`, nearest first, each once.
 fn ancestors<'a>(document: &Document<'a>, definition: &'a Json) -> Vec<&'a Json> {
     let mut out: Vec<&'a Json> = Vec::new();
-    let mut seen: Vec<&str> = identity_of(definition).into_iter().collect();
+    let mut seen: BTreeSet<&str> = identity_of(definition).into_iter().collect();
     let mut frontier: Vec<&'a Json> = vec![definition];
     while let Some(current) = frontier.pop() {
         for (_, name) in strings(current.get("supertypes")) {
-            if seen.contains(&name) || out.len() > DEPTH_LIMIT {
+            if !seen.insert(name) {
                 continue;
             }
-            seen.push(name);
             if let Some(parent) = document.type_of(name) {
                 out.push(parent);
                 frontier.push(parent);
@@ -535,7 +536,7 @@ fn supertypes(document: &Document<'_>, definition: &Json, type_at: &str, sink: &
 
 /// Whether walking the supertypes of `definition` reaches `identity`.
 fn ancestors_reach(document: &Document<'_>, definition: &Json, identity: &str) -> bool {
-    let mut seen: Vec<&str> = Vec::new();
+    let mut seen: BTreeSet<&str> = BTreeSet::new();
     let mut frontier: Vec<&str> = strings(definition.get("supertypes"))
         .into_iter()
         .map(|(_, name)| name)
@@ -544,10 +545,9 @@ fn ancestors_reach(document: &Document<'_>, definition: &Json, identity: &str) -
         if name == identity {
             return true;
         }
-        if seen.contains(&name) || seen.len() > DEPTH_LIMIT {
+        if !seen.insert(name) {
             continue;
         }
-        seen.push(name);
         if let Some(parent) = document.type_of(name) {
             frontier.extend(
                 strings(parent.get("supertypes"))

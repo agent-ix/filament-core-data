@@ -250,7 +250,7 @@ blocked as stated above.
 | FR-056 | FR-056-AC-1..17, FR-056-CON-1..8 | TC-666..TC-676 | ✅ Complete |
 | FR-057 | FR-057-AC-1..14, FR-057-CON-1..6 | TC-677..TC-689 | ✅ Complete |
 | FR-058 | FR-058-AC-1..14, FR-058-CON-1..5 | TC-690..TC-697, TC-1762, TC-1772 | ✅ Complete |
-| FR-059 | FR-059-AC-1..15, FR-059-CON-1..6 | TC-698..TC-710 | ✅ Complete |
+| FR-059 | FR-059-AC-1..21, FR-059-CON-1..6 | TC-698..TC-710, TC-1802, TC-1820..TC-1822 | ✅ Complete |
 | FR-060 | FR-060-AC-1..7, FR-060-AC-9, FR-060-AC-10, FR-060-AC-15, FR-060-CON-1, FR-060-CON-2, FR-060-CON-4, FR-060-CON-7 | TC-711..TC-718 | ✅ Complete |
 | FR-061 | FR-061-AC-1..13, FR-061-CON-1..7 | TC-719..TC-724 | ✅ Complete |
 | FR-062 | FR-062-AC-1..15, FR-062-CON-1..7 | TC-725..TC-730, TC-1359 | 🚧 In progress |
@@ -1765,6 +1765,9 @@ blocked as stated above.
 | TC-1816 | The TypeSpec frontend's edge vocabulary loads every verb of `src/compiler/ir/edge-vocabulary.json`, including a verb with no declared `inverse` and the absence of an undeclared verb | Unit | P1 | FR-094-AC-14 | ✅ passed |
 | TC-1817 | A relationship's `targetEnd.role` and `composite` derive from the loaded edge vocabulary's `inverse` for the verb, not from a decorator argument | Unit | P1 | FR-094-AC-14, FR-094-CON-2 | ✅ passed |
 | TC-1818 | A `@relationship` verb the loaded edge vocabulary does not declare is refused `UNKNOWN_EDGE_VERB` | Unit | P1 | FR-094-AC-4 | ✅ passed |
+| TC-1820 | The reader reads, clones, compares, writes, formats and drops a million levels and refuses at a configured limit with a typed error | Unit | P1 | FR-059-AC-17, FR-059-AC-18 | ✅ passed |
+| TC-1821 | Cycles of any length are reported and an alias chain is depth-limited only by configuration | Unit | P1 | FR-059-AC-19, FR-059-AC-20 | ✅ passed |
+| TC-1822 | `decide` returns for a bundle nested a million levels deep | Unit | P1 | FR-059-AC-21 | ✅ passed |
 | TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 | ✅ passed |
 
 ## Constraint Boundary Tests

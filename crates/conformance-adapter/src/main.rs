@@ -18,7 +18,8 @@ use std::process::ExitCode;
 use agent_ix_semantic_ir::compat::{classify, Classification};
 use agent_ix_semantic_ir::json::{parse, write_string, Json};
 use agent_ix_semantic_ir::patch::apply;
-use agent_ix_semantic_ir::{decide, ResultState};
+use agent_ix_semantic_ir::rules::RuleLimits;
+use agent_ix_semantic_ir::{decide_with, ResultState};
 
 /// The adapter id the registry declares.
 const ADAPTER: &str = "rust-backend";
@@ -72,6 +73,14 @@ fn read_json(path: &Path) -> Result<Json, String> {
 
 fn run() -> Result<String, String> {
     let manifest = read_json(Path::new("corpus.json"))?;
+    // The depth bound the corpus declares is the configuration this run is
+    // compared under; the reader itself carries none.
+    let limits = RuleLimits {
+        alias_depth: manifest
+            .get("depthLimit")
+            .and_then(Json::as_i64)
+            .and_then(|limit| usize::try_from(limit).ok()),
+    };
     let bases = manifest
         .get("bases")
         .and_then(Json::as_array)
@@ -114,11 +123,11 @@ fn run() -> Result<String, String> {
         let case = read_json(&resolve(path))?;
 
         let bundle = build(&case, "base", "ops", &base_of)?;
-        let verdict = decide(&bundle);
+        let verdict = decide_with(&bundle, limits);
 
         let classification = if case.has("beforeBase") || case.has("beforeOps") {
             let before = build(&case, "beforeBase", "beforeOps", &base_of)?;
-            let before_verdict = decide(&before);
+            let before_verdict = decide_with(&before, limits);
             Some(classify(
                 &before,
                 &bundle,

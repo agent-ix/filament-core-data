@@ -42,7 +42,8 @@ fn apply_one(document: Json, op: &Json) -> Result<Json, PatchError> {
             let found = resolve(&document, path).ok_or_else(|| PatchError {
                 message: format!("a test op addresses {path}, which the document does not carry"),
             })?;
-            let expected = op.get("value").unwrap_or(&Json::Null);
+            let null = Json::Null;
+            let expected = op.get("value").unwrap_or(&null);
             if to_canonical_string(found) != to_canonical_string(expected) {
                 return fail(format!("a test op at {path} did not hold"));
             }

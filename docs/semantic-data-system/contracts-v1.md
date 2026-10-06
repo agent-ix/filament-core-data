@@ -490,9 +490,14 @@ Locked validation and future compilation are offline and deterministic. Paths,
 timestamps, hostnames, locale, and map ordering are normalized or excluded.
 Schemas, metadata, mappings, examples, options, names, and references are
 untrusted. Implementations must prevent code execution, undeclared network
-access, path/symlink escape, and writes outside a fresh output root. Graph depth,
-reference expansion, collection sizes, input bytes, and diagnostic volume must
-have declared finite limits and terminate with source-located diagnostics.
+access, path/symlink escape, and writes outside a fresh output root. Collection
+sizes, input bytes, and diagnostic volume must have declared finite limits and
+terminate with source-located diagnostics. Graph depth and reference expansion
+carry no implementation limit: a reader keeps the state of every walk on the
+heap, so a nesting, an alias chain, a composite or package cycle or a
+supertype hierarchy of any depth is read, walked and reported, and a cycle is
+reported whatever its length. A consumer that wants a depth report configures
+a limit and receives `DEPTH_LIMIT_EXCEEDED` at the node that exceeds it.
 
 ## Promotion boundary
 

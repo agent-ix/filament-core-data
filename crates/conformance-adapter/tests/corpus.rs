@@ -12,7 +12,8 @@ use std::path::PathBuf;
 use agent_ix_semantic_ir::compat::classify;
 use agent_ix_semantic_ir::json::{to_document_string, Json};
 use agent_ix_semantic_ir::patch::apply;
-use agent_ix_semantic_ir::{decide, json::parse, ResultState};
+use agent_ix_semantic_ir::rules::RuleLimits;
+use agent_ix_semantic_ir::{decide_with, json::parse, ResultState, Verdict};
 
 fn repo(path: &str) -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -31,6 +32,23 @@ struct Case {
     case: Json,
     bundle: Json,
     before: Option<Json>,
+}
+
+/// The depth bound the corpus manifest declares, the configuration its
+/// expectations are authored under; the reader itself carries none.
+fn corpus_limits() -> RuleLimits {
+    static LIMITS: std::sync::OnceLock<RuleLimits> = std::sync::OnceLock::new();
+    *LIMITS.get_or_init(|| RuleLimits {
+        alias_depth: read("conformance/corpus.json")
+            .get("depthLimit")
+            .and_then(Json::as_i64)
+            .and_then(|limit| usize::try_from(limit).ok()),
+    })
+}
+
+/// `decide` under the corpus's declared limits.
+fn decide(bundle: &Json) -> Verdict {
+    decide_with(bundle, corpus_limits())
 }
 
 fn corpus() -> Vec<Case> {
@@ -145,7 +163,8 @@ fn tc_701_every_case_matches_its_authored_expectation() {
             continue;
         }
         for (want, got) in wanted.iter().zip(verdict.diagnostics.iter()) {
-            let diagnostic = want.get("diagnostic").unwrap_or(&Json::Null);
+            let null = Json::Null;
+            let diagnostic = want.get("diagnostic").unwrap_or(&null);
             let field = |name: &str| {
                 diagnostic
                     .get(name)

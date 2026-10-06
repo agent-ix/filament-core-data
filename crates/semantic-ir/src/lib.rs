@@ -81,9 +81,14 @@ pub struct Verdict {
 /// `normalized` is produced either way, because the harness compares the string
 /// unconditionally.
 pub fn decide(bundle: &Json) -> Verdict {
+    decide_with(bundle, rules::RuleLimits::default())
+}
+
+/// [`decide`] under `limits`, each used as the caller gives it.
+pub fn decide_with(bundle: &Json, limits: rules::RuleLimits) -> Verdict {
     let mut diagnostics = schema::decide(bundle);
     if diagnostics.is_empty() {
-        diagnostics = rules::decide(bundle);
+        diagnostics = rules::decide_with(bundle, limits);
     }
     order(&mut diagnostics);
     // An `info` diagnostic is advisory: a document carrying only advisories is
@@ -134,4 +139,46 @@ fn order(diagnostics: &mut [Located]) {
 /// Whether a bundle's document layer accepts it.
 pub fn is_valid(bundle: &Json) -> bool {
     decide(bundle).result_state != ResultState::Invalid
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::json::parse;
+
+    /// A bundle carrying a value nested a million levels deep at a member the
+    /// schema does not admit is decided, not overflowed: the schema layer
+    /// reports the member, and the diagnostics, the verdict's normalized form
+    /// and the bundle drop without recursion.
+    ///
+    /// Tracing: TC-1822
+    /// ACs: FR-059-AC-21
+    #[test]
+    fn tc_1822_decides_a_bundle_nested_a_million_levels_deep_on_a_small_stack() {
+        const DEPTH: usize = 1_000_000;
+        std::thread::Builder::new()
+            .stack_size(512 * 1024)
+            .spawn(|| {
+                let deep = format!("{}0{}", "[".repeat(DEPTH), "]".repeat(DEPTH));
+                let text = format!(
+                    r#"{{"ir":{{"contractVersion":"2.0.0","types":[{{"identity":"ix://acme/pkg/T","kind":"record","deep":{deep}}}]}}}}"#
+                );
+                let bundle = parse(&text).expect("a million levels read");
+                let verdict = decide(&bundle);
+                assert_eq!(verdict.result_state, ResultState::Invalid);
+                assert!(
+                    verdict
+                        .diagnostics
+                        .iter()
+                        .any(|located| located.pointer.starts_with("/ir/types/0")),
+                    "{:?}",
+                    verdict.diagnostics.len()
+                );
+                assert!(verdict.normalized.len() > 2 * DEPTH);
+                assert!(!is_valid(&bundle));
+            })
+            .expect("spawn a 512 KiB thread")
+            .join()
+            .expect("deciding must not overflow a 512 KiB stack");
+    }
 }
