@@ -5,7 +5,7 @@
 several modules declare are different types that happen to share a
 local name; they are reachable as `<module>.<Name>`."""
 
-from .common_schema import Diagnostic, Extension, FilamentSemanticContractCommonTypesV1, FrontendDialect, GeneratedOrigin, ManifestTarget, Origin, Origin1, Origin2, PackageIdentity, RepresentationFormat, ResultState, SemanticIdentity, Semver, Sha256, UnknownPolicy
+from .common_schema import Diagnostic, Extension, FilamentSemanticContractCommonTypesV1, FrontendDialect, GeneratedOrigin, ManifestTarget, Origin, Origin1, Origin2, PackageIdentity, RepresentationFormat, ResultState, SemanticIdentity, Semver, Sha256, TextProfile, UnknownPolicy
 from .compatibility_report_schema import AffectedConsumer, Change, ConsumerEvidenceStatus, Disposition, Family, FilamentSemanticCompatibilityReportV1, RequiredGate, RetainedBridge, Surface, TargetResult
 from .compiler_request_schema import Backend, FilamentCompilerRequestV1, Limits, SupportedFeature
 from .consumer_policy_schema import FilamentSemanticConsumerPolicyV1, IdentityPlane, Mode
@@ -183,6 +183,7 @@ __all__ = [
     "Surface",
     "TargetResult",
     "Term",
+    "TextProfile",
     "Transformation",
     "Transition",
     "TypeDefinition",

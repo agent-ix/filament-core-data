@@ -218,6 +218,16 @@ const CATEGORIES: &[&str] = &[
 ];
 const DEFAULT_KINDS: &[&str] = &["none", "semantic", "representation", "migration"];
 const PRESENCES: &[&str] = &["required", "optional"];
+/// The text profiles a text field or text value type may carry: the
+/// normalization and comparison domains of the text value contract.
+const TEXT_PROFILES: &[&str] = &[
+    "unicode-scalars",
+    "nfc",
+    "nfd",
+    "nfkc",
+    "nfkd",
+    "binary-utf8",
+];
 const TARGETS: &[&str] = &[
     "json-schema",
     "rust",
@@ -886,6 +896,7 @@ const TYPE_MEMBERS: &[&str] = &[
     "clauses",
     "supertypes",
     "abstract",
+    "textProfile",
     "identityFields",
     "owner",
     "members",
@@ -1105,6 +1116,22 @@ fn type_definition(definition: &Json, at: &str, table: &mut ConstructTable<'_>, 
         "scalar",
         f,
     );
+    expect_enum(
+        definition.get("textProfile"),
+        &child(at, "textProfile"),
+        TEXT_PROFILES,
+        "textProfile",
+        f,
+    );
+    if definition.has("textProfile")
+        && (definition.get("kind").and_then(Json::as_str) != Some("scalar")
+            || definition.get("scalar").and_then(Json::as_str) != Some("string"))
+    {
+        f.push(
+            &child(at, "textProfile"),
+            "a text profile is carried by a scalar type definition of scalar string only",
+        );
+    }
     for name in ["target", "items", "values"] {
         expect_shape(
             definition.get(name),
@@ -1357,6 +1384,7 @@ const FIELD_MEMBERS: &[&str] = &[
     "unit",
     "subsets",
     "redefines",
+    "textProfile",
     "constraints",
 ];
 const FIELD_REQUIRED: &[&str] = &[
@@ -1445,6 +1473,13 @@ fn field_schema(field: &Json, at: &str, f: &mut Findings) {
         &child(at, "unit"),
         is_unit,
         "a unit is a non-empty run of printable ASCII",
+        f,
+    );
+    expect_enum(
+        field.get("textProfile"),
+        &child(at, "textProfile"),
+        TEXT_PROFILES,
+        "textProfile",
         f,
     );
     if let Some(constraints) = field.get("constraints") {
@@ -1653,7 +1688,15 @@ fn relationship_end_schema(end: Option<&Json>, at: &str, required: &[&str], f: &
 }
 
 const OPERATION_MEMBERS: &[&str] = &[
-    "identity", "name", "params", "returns", "pre", "post", "origin", "frame",
+    "identity",
+    "name",
+    "params",
+    "returns",
+    "pre",
+    "post",
+    "origin",
+    "redefines",
+    "frame",
 ];
 const FRAME_MEMBERS: &[&str] = &["modifies", "creates", "deletes"];
 const INLINE_CLAUSE_MEMBERS: &[&str] = &["language", "text", "sourceSpan", "origin"];
@@ -1758,6 +1801,13 @@ fn operation_schema(operation: &Json, at: &str, f: &mut Findings) {
             }
         }
     }
+    expect_shape(
+        operation.get("redefines"),
+        &child(at, "redefines"),
+        is_semantic_identity,
+        "an identity is ix://<owner>/<name>",
+        f,
+    );
     if let Some(frame) = operation.get("frame") {
         frame_schema(frame, &child(at, "frame"), f);
     }

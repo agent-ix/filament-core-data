@@ -181,4 +181,161 @@ mod tests {
             .join()
             .expect("deciding must not overflow a 512 KiB stack");
     }
+
+    const GENERATED: &str = r#"{"generated":{"generatorIdentity":"ix://agent-ix/conformance/generator/case-author","generatorVersion":"1.0.0","inputIdentities":["ix://agent-ix/filament-core-data/source/typespec"]}}"#;
+
+    fn multiplicity(lower: i64, upper: i64) -> String {
+        format!(r#"{{"lower":{lower},"upper":{upper},"ordered":false,"unique":false}}"#)
+    }
+
+    fn operation(identity: &str, upper: i64, redefines: &str) -> String {
+        format!(
+            r#"{{"identity":"{identity}","name":"size","params":[],"pre":[],"post":[],"origin":{GENERATED},"returns":{{"typeRef":"ix://quire/native/Integer","multiplicity":{},"nullable":false}}{redefines}}}"#,
+            multiplicity(1, upper)
+        )
+    }
+
+    fn record(identity: &str, supertypes: &str, operations: &str) -> String {
+        format!(
+            r#"{{"identity":"{identity}","displayName":"T","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[],"operations":[{operations}]{supertypes}}}"#
+        )
+    }
+
+    /// A `Base` and a `Sub` specializing it, each with a `size` operation;
+    /// `sub_operation` is `Sub`'s.
+    /// The members of a `2.0.0` IR document besides its types.
+    const HEADER: &str = r#""contractVersion":"2.0.0","source":{"dialect":"spec-bundle","digest":"sha256:ea98d2dccb8b5d16936209f232e1d8115d404f519f0d110a8f9207190d83bbcf","identity":"ix://acme/pkg/spec","version":"0.0.0"},"package":{"identity":"acme/pkg","lockDigest":"sha256:8b58fb1a6b5d597159c1f0b28c6a2088e5d5eb15665d3add2414c72025e0adc5","manifestDigest":"sha256:c13bc6a59950fbb3338deaec4a8b6975b4815aef8e1756c8262e8b43452de5a6","mappingVersions":["1.0.0"],"profileVersions":[],"version":"0.0.0"},"occurrences":[],"extensions":[],"constructs":[]"#;
+
+    fn operations_bundle(base_upper: i64, sub_operation: &str) -> Json {
+        let base = record(
+            "ix://acme/pkg/Base",
+            "",
+            &operation("ix://acme/pkg/Base/size", base_upper, ""),
+        );
+        let sub = record(
+            "ix://acme/pkg/Sub",
+            r#","supertypes":["ix://acme/pkg/Base"]"#,
+            sub_operation,
+        );
+        parse(&format!(r#"{{"ir":{{{HEADER},"types":[{base},{sub}]}}}}"#)).expect("a bundle")
+    }
+
+    fn codes(bundle: &Json) -> Vec<(String, String)> {
+        decide(bundle)
+            .diagnostics
+            .into_iter()
+            .map(|located| {
+                (
+                    located
+                        .code
+                        .trim_start_matches("agent-ix.semantic-ir.")
+                        .to_string(),
+                    located.pointer,
+                )
+            })
+            .collect()
+    }
+
+    /// An operation carries `redefines` as a field does: the identity of the
+    /// supertype operation it narrows.
+    ///
+    /// Tracing: TC-1823
+    /// ACs: FR-141-AC-10
+    #[test]
+    fn tc_1823_an_operation_redefines_a_supertype_operation() {
+        let redefines = |target: &str| format!(r#","redefines":"{target}""#);
+        let at = "/ir/types/1/operations/0/redefines";
+        let narrowing = operation(
+            "ix://acme/pkg/Sub/size",
+            1,
+            &redefines("ix://acme/pkg/Base/size"),
+        );
+        assert_eq!(codes(&operations_bundle(3, &narrowing)), []);
+        // A target that is no operation of a supertype.
+        let unresolved = operation(
+            "ix://acme/pkg/Sub/size",
+            1,
+            &redefines("ix://acme/pkg/Base/gone"),
+        );
+        assert_eq!(
+            codes(&operations_bundle(3, &unresolved)),
+            [("UNRESOLVED_FEATURE_REF".to_string(), at.to_string())]
+        );
+        // A return multiplicity wider than the redefined operation's.
+        let widening = operation(
+            "ix://acme/pkg/Sub/size",
+            9,
+            &redefines("ix://acme/pkg/Base/size"),
+        );
+        assert_eq!(
+            codes(&operations_bundle(3, &widening)),
+            [("INVALID_REDEFINITION".to_string(), at.to_string())]
+        );
+        // A value that is no identity is a schema violation.
+        let malformed = operation("ix://acme/pkg/Sub/size", 1, r#","redefines":"size""#);
+        assert_eq!(
+            codes(&operations_bundle(3, &malformed)),
+            [("SCHEMA_VIOLATION".to_string(), at.to_string())]
+        );
+    }
+
+    fn text_bundle(field_profile: &str, type_members: &str) -> Json {
+        let field = format!(
+            r#"{{"identity":"ix://acme/pkg/Item/sku","name":"sku","typeRef":"ix://quire/native/String","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{}{field_profile}}}"#,
+            multiplicity(1, 1)
+        );
+        let item = format!(
+            r#"{{"identity":"ix://acme/pkg/Item","displayName":"Item","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{field}]}}"#
+        );
+        let code = format!(
+            r#"{{"identity":"ix://acme/pkg/Code","displayName":"Code","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"{type_members}}}"#
+        );
+        parse(&format!(r#"{{"ir":{{{HEADER},"types":[{item},{code}]}}}}"#)).expect("a bundle")
+    }
+
+    /// A text field, and a text value type (a scalar of scalar `string`),
+    /// carry a `textProfile` from the closed set; no other value, and no
+    /// other kind of type, does.
+    ///
+    /// Tracing: TC-1824
+    /// ACs: FR-141-AC-11
+    #[test]
+    fn tc_1824_a_text_field_and_a_text_value_type_carry_a_text_profile() {
+        let string = r#","kind":"scalar","scalar":"string""#;
+        for profile in [
+            "unicode-scalars",
+            "nfc",
+            "nfd",
+            "nfkc",
+            "nfkd",
+            "binary-utf8",
+        ] {
+            let field = format!(r#","textProfile":"{profile}""#);
+            let value_type = format!(r#"{string},"textProfile":"{profile}""#);
+            assert_eq!(codes(&text_bundle(&field, &value_type)), [], "{profile}");
+        }
+        let field_at = "/ir/types/0/fields/0/textProfile";
+        for refused in [r#""NFC""#, r#""""#, "1", r#""nfc ""#] {
+            let field = format!(r#","textProfile":{refused}"#);
+            assert_eq!(
+                codes(&text_bundle(&field, string)),
+                [("SCHEMA_VIOLATION".to_string(), field_at.to_string())],
+                "{refused}"
+            );
+        }
+        let type_at = "/ir/types/1";
+        for kind in [
+            r#","kind":"scalar","scalar":"integer","textProfile":"nfc""#,
+            r#","kind":"record","fields":[],"textProfile":"nfc""#,
+        ] {
+            let found = codes(&text_bundle("", kind));
+            assert!(
+                found
+                    .iter()
+                    .any(|(code, pointer)| code == "SCHEMA_VIOLATION"
+                        && pointer.starts_with(type_at)),
+                "{kind}: {found:?}"
+            );
+        }
+    }
 }

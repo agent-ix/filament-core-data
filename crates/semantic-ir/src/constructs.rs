@@ -600,6 +600,54 @@ fn features(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mu
             Some(_) => {}
         }
     }
+    redefined_operations(document, definition, type_at, sink);
+}
+
+/// An operation's `redefines` names an operation of a transitive supertype,
+/// and the operation's return multiplicity lies within the redefined
+/// operation's, as a field's `redefines` does.
+fn redefined_operations(
+    document: &Document<'_>,
+    definition: &Json,
+    type_at: &str,
+    sink: &mut Sink<'_>,
+) {
+    let inherited: Vec<&Json> = ancestors(document, definition)
+        .into_iter()
+        .flat_map(|ancestor| items(ancestor, "operations"))
+        .collect();
+    let operations_at = child(type_at, "operations");
+    for (position, operation) in items(definition, "operations").iter().enumerate() {
+        let Some(name) = operation.get("redefines").and_then(Json::as_str) else {
+            continue;
+        };
+        let at = child(&index(&operations_at, position), "redefines");
+        match inherited
+            .iter()
+            .find(|other| identity_of(other) == Some(name))
+        {
+            None => sink.emit(
+                at,
+                UNRESOLVED_FEATURE_REF,
+                "a redefined operation is an operation of a supertype",
+            ),
+            Some(redefined) => {
+                // Two operations that both return compare their returns; an
+                // operation that returns nothing has no bounds to compare.
+                if let (Some(returns), Some(outer)) =
+                    (operation.get("returns"), redefined.get("returns"))
+                {
+                    if !narrows(returns, outer) {
+                        sink.emit(
+                            at,
+                            INVALID_REDEFINITION,
+                            "a redefinition keeps its return multiplicity within the bounds of the operation it redefines",
+                        );
+                    }
+                }
+            }
+        }
+    }
 }
 
 /// Whether `field`'s multiplicity lies within `redefined`'s.

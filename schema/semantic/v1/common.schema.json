@@ -175,6 +175,9 @@
 		"unknownPolicy": {
 			"enum": ["preserve", "reject", "surface"]
 		},
+		"textProfile": {
+			"enum": ["unicode-scalars", "nfc", "nfd", "nfkc", "nfkd", "binary-utf8"]
+		},
 		"target": {
 			"enum": [
 				"json-schema",

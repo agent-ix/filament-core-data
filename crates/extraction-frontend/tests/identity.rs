@@ -281,6 +281,9 @@ fn rust_identity_case(row: &serde_json::Value) -> serde_json::Value {
                 "relationship" => package.relationship_identity(parts[0], parts[1], parts[2]),
                 "operation" => package.operation_identity(parts[0], parts[1]),
                 "clause" => package.clause_identity(parts[0], parts[1]),
+                "constraint" if parts.len() == 2 => {
+                    package.type_constraint_identity(parts[0], parts[1])
+                }
                 "constraint" => package.constraint_identity(parts[0], parts[1], parts[2]),
                 other => panic!("unknown slot {other}"),
             }

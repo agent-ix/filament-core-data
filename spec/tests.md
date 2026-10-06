@@ -277,7 +277,7 @@ blocked as stated above.
 | FR-092 | FR-092-AC-1..11, FR-092-CON-1..2 | TC-1210..TC-1219, TC-1330, TC-1332 | ✅ Complete |
 | FR-093 | FR-093-AC-1..14, FR-093-CON-1..4 | TC-1220..TC-1230, TC-1333..TC-1335, TC-1347 | ✅ Complete |
 | FR-094 | FR-094-AC-1..16, FR-094-CON-1..4 | TC-1231..TC-1245, TC-1816..TC-1819 | ✅ Complete |
-| FR-095 | FR-095-AC-1..8, FR-095-AC-10..14, FR-095-AC-16, FR-095-CON-1..3 | TC-1246..TC-1258, TC-1347, TC-1351..TC-1354 | ✅ Complete |
+| FR-095 | FR-095-AC-1..8, FR-095-AC-10..14, FR-095-AC-16..18, FR-095-CON-1..3 | TC-1246..TC-1258, TC-1347, TC-1351..TC-1354 | ✅ Complete |
 | FR-096 | FR-096-AC-1..16, FR-096-CON-1..3 | TC-1259..TC-1272, TC-1345, TC-1346 | ✅ Complete |
 | FR-097 | FR-097-AC-1..16, FR-097-CON-1..3 | TC-1273..TC-1284, TC-1336, TC-1339..TC-1342 | ✅ Complete |
 | FR-098 | FR-098-AC-2..9, FR-098-AC-11..12, FR-098-CON-3 | TC-1286..TC-1293, TC-1338, TC-1343, TC-1344 | ✅ Complete |
@@ -293,7 +293,7 @@ blocked as stated above.
 | FR-138 | FR-138-AC-1..7, FR-138-CON-1..3 | TC-1545..TC-1551 | 🚧 planned on issue #37 |
 | FR-139 | FR-139-AC-1..6, FR-139-CON-1..3 | TC-1552..TC-1557 | 🚧 TC-1552, TC-1554..TC-1557 planned on issue #93 |
 | FR-140 | FR-140-AC-1..7, FR-140-CON-1..3 | TC-1558..TC-1564 | 🚧 planned on issue #52 |
-| FR-141 | FR-141-AC-1..4, FR-141-AC-6..9, FR-141-CON-2 | TC-1740..TC-1743, TC-1759, TC-1761, TC-1795, TC-1796 | ✅ Complete |
+| FR-141 | FR-141-AC-1..4, FR-141-AC-6..11, FR-141-CON-2 | TC-1740..TC-1743, TC-1759, TC-1761, TC-1795, TC-1796, TC-1823, TC-1824 | ✅ Complete |
 | FR-142 | FR-142-AC-1..14, FR-142-CON-1..2 | TC-1745..TC-1750, TC-1776, TC-1786..TC-1789, TC-1791, TC-1793 | 🚧 In progress |
 | FR-143 | FR-143-AC-1..11, FR-143-CON-1..2 | TC-1751..TC-1755, TC-1785, TC-1790, TC-1792, TC-1794, TC-1799..TC-1801 | 🚧 In progress |
 
@@ -1768,6 +1768,8 @@ blocked as stated above.
 | TC-1820 | The reader reads, clones, compares, writes, formats and drops a million levels and refuses at a configured limit with a typed error | Unit | P1 | FR-059-AC-17, FR-059-AC-18 | ✅ passed |
 | TC-1821 | Cycles of any length are reported and an alias chain is depth-limited only by configuration | Unit | P1 | FR-059-AC-19, FR-059-AC-20 | ✅ passed |
 | TC-1822 | `decide` returns for a bundle nested a million levels deep | Unit | P1 | FR-059-AC-21 | ✅ passed |
+| TC-1823 | An operation's `redefines` resolves against supertype operations and compares return multiplicity | Unit | P1 | FR-141-AC-10 | ✅ passed |
+| TC-1824 | A text field and a scalar-string type carry a closed-set `textProfile`; other values and kinds are refused | Unit | P1 | FR-141-AC-11 | ✅ passed |
 | TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 | ✅ passed |
 
 ## Constraint Boundary Tests
@@ -2554,13 +2556,13 @@ now asserts `rust-version.workspace = true`, and TC-1326 carries clippy's `--no-
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 42 | 26 | 0 | 16 | 100% mapped (42/42) |
 | Property | 124 | 79 | 0 | 45 | 100% mapped (124/124) |
-| Unit | 598 | 497 | 0 | 101 | 100% mapped (598/598) |
+| Unit | 600 | 499 | 0 | 101 | 100% mapped (600/600) |
 | Integration | 152 | 94 | 0 | 58 | 100% mapped (152/152) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1329** | **1017** | **0** | **312** | **100% mapped (1329/1329)** |
+| **Total** | **1331** | **1019** | **0** | **312** | **100% mapped (1331/1331)** |
 
 Two defects outside issue #23's scope were found and filed rather than absorbed:
 issue #65, the corpus `python-backend` adapter slot, whose owning issue the

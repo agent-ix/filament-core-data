@@ -31,7 +31,8 @@ prose. The members are:
 | `abstract` | `typeDefinition` | Whether the type has direct instances |
 | `presence` | `field` | Whether the member must appear, authored (FR-106) |
 | `subsets` | `field` | The supertype fields whose values include this field's values |
-| `redefines` | `field` | The supertype field this field narrows |
+| `redefines` | `field`, `operation` | The supertype field or operation this member narrows; an operation narrows by its return multiplicity |
+| `textProfile` | `field`, `typeDefinition` | The text profile (`unicode-scalars`, `nfc`, `nfd`, `nfkc`, `nfkd`, `binary-utf8`, FR-141 of the quire-specification text contract) a text field or a text value type binds; a type definition carries it only as a scalar of `string` |
 | `frame` | `operation` | The declarations the operation `modifies`, `creates` and `deletes`: each entry is the node identity of a declared field or relationship (`modifies`) or of a declared object type or process (`creates`, `deletes`), never an access path |
 | inline `pre`, `post` items | `operation` | A `pre` or `post` item that is an inline clause with a language and text, beside the clause-id items |
 | `populations` | document | Named instance extents, each bound by its own `kind` (`{module, name}`, QSpec FR-154 row 2/AC-7, FR-208) for QSpec intake to key on, a flat set of unique member type references, and a single `extent` (`closed` or `open`, QSpec FR-153/AD-006) for the population as a whole |
@@ -67,7 +68,8 @@ either question until QSpec decides it.
 
 - The schema SHALL admit each member of the table only in a `2.0.0` document; FR-050's `contractVersion` rule refuses every other document with `SCHEMA_VIOLATION` before a reader evaluates any member, so no member of the table is ever evaluated against a document declaring another `contractVersion`.
 - A reader SHALL raise `UNRESOLVED_CONSTRUCT_REF` for a supertype naming no declared type, `CONSTRUCT_TARGET_KIND` for a supertype of another kind, and `SUPERTYPE_CYCLE` for a type that reaches itself through `supertypes`.
-- A reader SHALL raise `UNRESOLVED_FEATURE_REF` for a `subsets` or `redefines` entry naming no field of a transitive supertype, and `INVALID_REDEFINITION` for a redefinition whose multiplicity lies outside the redefined field's bounds.
+- A reader SHALL raise `UNRESOLVED_FEATURE_REF` for a `subsets` or `redefines` entry naming no field of a transitive supertype, and `INVALID_REDEFINITION` for a redefinition whose multiplicity lies outside the redefined field's bounds. An operation's `redefines` is read the same way against the operations of its transitive supertypes, and its return multiplicity is the one compared.
+- The schema SHALL admit `textProfile` only from the closed set above, on a field or on a scalar type definition of scalar `string`; any other value, and the member on any other kind of type, is `SCHEMA_VIOLATION` at the member.
 - A reader SHALL raise `UNRESOLVED_FRAME_PATH` for a `modifies` entry naming no field or relationship the document declares, and for a `creates` or `deletes` entry naming no type the document declares. Resolution ranges over the whole document, not only the operation's own type or its supertypes: QSpec FR-340 admits any declared field or relationship node in the package, and FR-013 has no reachability limit.
 - A reader SHALL raise `UNRESOLVED_TYPE_REF` for a population member naming no declared type.
 - The Node, Python and Rust readers SHALL agree on the schema verdict of every document.
@@ -93,6 +95,8 @@ either question until QSpec decides it.
 | FR-141-AC-7 | A TypeSpec model member of type `unknown` compiles without a blocking diagnostic to a field whose `typeRef` resolves to a `scalar` definition of scalar `any` whose identity ends `/JsonObject`, the identity a spec bundle mints for the same scalar, and no zero-field record is emitted for it. | Test (TC-1761) |
 | FR-141-AC-8 | A `2.0.0` operation whose `pre` lists a clause id and an inline clause is accepted by the Rust, Node and Python readers; a dangling id item raises `DANGLING_CLAUSE_REF` at that item and no inline item is resolved as an id. | Test (TC-1795) |
 | FR-141-AC-9 | For the same operation, the Rust, TypeScript and JSON Schema backends each carry the id item as a clause reference, and those three and the Python backend each carry every inline item's language and text in their output. | Test (TC-1796) |
+| FR-141-AC-10 | An operation whose `redefines` names an operation of a supertype is accepted; one naming no such operation raises `UNRESOLVED_FEATURE_REF`, one whose return multiplicity is wider than the redefined operation's raises `INVALID_REDEFINITION`, and a value that is no identity is `SCHEMA_VIOLATION`, each at the `redefines` pointer. | Test (TC-1823) |
+| FR-141-AC-11 | A text field and a scalar-`string` type definition each accept every profile of the closed set; a profile outside it, and a `textProfile` on a non-string scalar or on a record, raise `SCHEMA_VIOLATION`. | Test (TC-1824) |
 
 ## Dependencies
 

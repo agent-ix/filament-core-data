@@ -365,6 +365,7 @@ class Field(Struct):
     extensions: list[common_schema.Extension] | UnsetType = UNSET
     redefines: common_schema.SemanticIdentity | UnsetType = UNSET
     subsets: IdentityList | UnsetType = UNSET
+    textProfile: common_schema.TextProfile | UnsetType = UNSET
     unit: Annotated[str, Meta(min_length=1, pattern='^[!-~]+$')] | UnsetType = UNSET
 
 
@@ -454,6 +455,7 @@ class Operation(Struct):
     post: list[ContractItem]
     pre: list[ContractItem]
     frame: Frame | UnsetType = UNSET
+    redefines: common_schema.SemanticIdentity | UnsetType = UNSET
     returns: Returns | UnsetType = UNSET
 
 
@@ -496,6 +498,7 @@ class TypeDefinition(Struct):
     target: common_schema.SemanticIdentity | UnsetType = UNSET
     targetElement: common_schema.SemanticIdentity | UnsetType = UNSET
     targetEnd: ConnectionEnd | UnsetType = UNSET
+    textProfile: common_schema.TextProfile | UnsetType = UNSET
     transitions: list[Transition] | UnsetType = UNSET
     values: common_schema.SemanticIdentity | UnsetType = UNSET
     variants: list[Variant] | UnsetType = UNSET

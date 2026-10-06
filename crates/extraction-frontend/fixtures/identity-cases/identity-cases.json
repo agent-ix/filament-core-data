@@ -37,6 +37,13 @@
 			"identity": "ix://agent-ix/docs-service/constraint/Snapshot-versionNumber-minLength"
 		},
 		{
+			"kind": "identity",
+			"package": "agent-ix/docs-service",
+			"slot": "constraint",
+			"parts": ["Snapshot", "minLength"],
+			"identity": "ix://agent-ix/docs-service/constraint/Snapshot-minLength"
+		},
+		{
 			"kind": "diagnosticCode",
 			"package": "agent-ix/core.data",
 			"parts": ["Snapshot", "versionNumber"],

@@ -220,6 +220,16 @@ impl PackageIdentity {
         Ok(self.node(NodeKind::Constraint, &join(record, &[field, keyword])?))
     }
 
+    /// `ix://<org>/<name>/constraint/<type id>-<keyword>`: a constraint a
+    /// value type carries on itself, which has no field segment.
+    pub fn type_constraint_identity(
+        &self,
+        type_id: &str,
+        keyword: &str,
+    ) -> Result<String, Unsluggable> {
+        Ok(self.node(NodeKind::Constraint, &join(type_id, &[keyword])?))
+    }
+
     /// `ix://<org>/<name>/relationship/<record id>-<verb>-<target id>`.
     pub fn relationship_identity(
         &self,
