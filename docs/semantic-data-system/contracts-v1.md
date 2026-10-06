@@ -135,14 +135,16 @@ shared table `crates/extraction-frontend/fixtures/identity-cases/identity-cases.
 implementations agree.
 
 Every identity is rooted at the package identity, `ix://<package identity>/`.
-A type definition (including a kernel scalar definition) and a member (field,
-operation parameter, relationship, operation, clause) mint no slot segment: a
-type's identity is `ix://<package
-identity>/<Name>`, and a member's identity is its owner's identity, `/`, and
-the member's own part, nested as deep as the member sits (an operation
-parameter is nested under its operation, which is nested under its type).
-Every other slot — `variant`, `state`, `transition`, `step`, `constraint` —
-still occupies `ix://<package identity>/<slot>/<tail>`. Every name part of
+A type definition (including a kernel scalar definition) and a member that is a
+field, an operation or an operation parameter mint no slot segment: a type's
+identity is `ix://<package identity>/<Name>`, and such a member's identity is
+its owner's identity, `/`, and the member's own part, nested as deep as the
+member sits (an operation parameter is nested under its operation, which is
+nested under its type). Every other slot — `variant`, `relationship`,
+`clause`, `state`, `transition`, `step`, `constraint` — occupies
+`ix://<package identity>/<slot>/<tail>`, so a relationship is
+`relationship/<Name>-<verb>-<TargetName>` and a clause is
+`clause/<Name>-<clauseId>`, never nested under their owner. Every name part of
 every slot is slugged; an artifact id part (`<Name>` in the spec-bundle
 frontend) is verbatim, as the paragraph below the table states:
 
