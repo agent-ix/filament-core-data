@@ -3,7 +3,7 @@
 //! Every code emitted here has a `conformance/diagnostic-codes.json` row, and
 //! `crates/semantic-ir/RULES.md` cites the clause each rule was derived from.
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::diag::{child, index, locus_for, owner_for, Located, Severity};
 use crate::json::Json;
@@ -60,8 +60,8 @@ fn native_scalar(identity: &str) -> Option<&'static str> {
 
 /// Whether `identity` resolves: a document declares it, or it is a native
 /// type reference.
-fn resolves(declared: &[String], identity: &str) -> bool {
-    native_scalar(identity).is_some() || declared.iter().any(|d| d == identity)
+fn resolves(declared: &HashSet<String>, identity: &str) -> bool {
+    native_scalar(identity).is_some() || declared.contains(identity)
 }
 
 /// What an identity resolves to, for the applicability table and the unit
@@ -180,6 +180,11 @@ impl<'a> Document<'a> {
             limits,
             by_identity,
         })
+    }
+
+    /// The position in `types` of the definition an identity names.
+    pub(crate) fn by_position(&self, identity: &str) -> Option<usize> {
+        self.by_identity.get(identity).copied()
     }
 
     /// The type definition an identity names.
@@ -420,7 +425,7 @@ pub fn decide_with(bundle: &Json, limits: RuleLimits) -> Vec<Located> {
 }
 
 fn duplicate_identities(document: &Document<'_>, sink: &mut Sink<'_>) {
-    let mut seen: Vec<String> = Vec::new();
+    let mut seen: HashSet<String> = HashSet::new();
     for (pointer, _node, identity) in document.identity_declarations() {
         if seen.contains(&identity) {
             sink.emit(
@@ -429,13 +434,13 @@ fn duplicate_identities(document: &Document<'_>, sink: &mut Sink<'_>) {
                 "the second declaration of an identity the document already carries",
             );
         } else {
-            seen.push(identity);
+            seen.insert(identity);
         }
     }
 }
 
 fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
-    let declared: Vec<String> = document
+    let declared: HashSet<String> = document
         .types
         .iter()
         .filter_map(|definition| definition.get("identity").and_then(Json::as_str))
@@ -452,6 +457,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         .map(str::to_string)
         .collect();
 
+    let mut alias_memo = AliasMemo::new();
     for (position, definition) in document.types.iter().enumerate() {
         let type_at = index("/ir/types", position);
         let kind = definition.get("kind").and_then(Json::as_str).unwrap_or("");
@@ -465,7 +471,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                         format!("the {kind} target resolves to no declared type"),
                     );
                 } else if kind == "alias" {
-                    match walk_alias(document, definition) {
+                    match walk_alias(document, definition, &mut alias_memo) {
                         Walk::Cycle => sink.emit(
                             child(&type_at, "target"),
                             ALIAS_CYCLE,
@@ -525,7 +531,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                     .and_then(|end| end.get("type"))
                     .and_then(Json::as_str)
                 {
-                    let resolves = declared.iter().any(|identity| identity == target)
+                    let resolves = declared.contains(target)
                         || manifest_exports.iter().any(|identity| identity == target);
                     if !resolves {
                         sink.emit(
@@ -636,7 +642,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
 
 fn check_element(
     _document: &Document<'_>,
-    declared: &[String],
+    declared: &HashSet<String>,
     definition: &Json,
     member: &str,
     type_at: &str,
@@ -658,46 +664,97 @@ fn check_element(
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Walk {
     Resolved,
     Cycle,
     TooDeep,
 }
 
+/// What walking from one alias to the end of its chain found, kept per alias
+/// so each link is walked once however long the chain is.
+#[derive(Debug, Clone, Copy)]
+enum Chain {
+    /// The chain closes on itself.
+    Cycle,
+    /// The chain ends after `steps` links; `at_type` is whether it ends at a
+    /// declared type that is not an alias (the only end a depth limit applies to).
+    Ends { steps: usize, at_type: bool },
+}
+
+/// Per-alias results of [`walk_alias`], by identity, shared across a decision.
+type AliasMemo<'a> = HashMap<&'a str, Chain>;
+
 /// Walks an alias chain, detecting a cycle before any configured depth limit
-/// applies.
-fn walk_alias(document: &Document<'_>, start: &Json) -> Walk {
+/// applies. The walk is iterative and records every alias it passes, so
+/// walking every alias of a chain of `n` links costs `n` steps in all.
+fn walk_alias<'a>(document: &Document<'a>, start: &'a Json, memo: &mut AliasMemo<'a>) -> Walk {
+    let mut path: Vec<&'a str> = Vec::new();
+    let mut on_path: HashSet<&'a str> = HashSet::new();
     let mut current = start;
-    let mut seen: BTreeSet<&str> = BTreeSet::new();
-    if let Some(identity) = start.get("identity").and_then(Json::as_str) {
-        seen.insert(identity);
-    }
-    let mut steps = 0usize;
-    loop {
-        let target = match current.get("target").and_then(Json::as_str) {
-            Some(target) => target,
-            None => return Walk::Resolved,
-        };
-        if !seen.insert(target) {
-            return Walk::Cycle;
+    let mut chain = loop {
+        let identity = current.get("identity").and_then(Json::as_str).unwrap_or("");
+        if let Some(known) = memo.get(identity) {
+            break *known;
         }
-        steps += 1;
-        let next = match document.type_of(target) {
-            Some(next) => next,
-            None => return Walk::Resolved,
-        };
-        if next.get("kind").and_then(Json::as_str) != Some("alias") {
-            return if document
-                .limits
-                .alias_depth
-                .is_some_and(|limit| steps > limit)
-            {
-                Walk::TooDeep
-            } else {
-                Walk::Resolved
+        if !on_path.insert(identity) {
+            break Chain::Cycle;
+        }
+        path.push(identity);
+        let Some(target) = current.get("target").and_then(Json::as_str) else {
+            path.pop();
+            let end = Chain::Ends {
+                steps: 0,
+                at_type: false,
             };
+            memo.insert(identity, end);
+            break end;
+        };
+        match document.type_of(target) {
+            None => {
+                path.pop();
+                let end = Chain::Ends {
+                    steps: 1,
+                    at_type: false,
+                };
+                memo.insert(identity, end);
+                break end;
+            }
+            Some(next) if next.get("kind").and_then(Json::as_str) != Some("alias") => {
+                path.pop();
+                let end = Chain::Ends {
+                    steps: 1,
+                    at_type: true,
+                };
+                memo.insert(identity, end);
+                break end;
+            }
+            Some(next) => current = next,
         }
-        current = next;
+    };
+    while let Some(identity) = path.pop() {
+        chain = match chain {
+            Chain::Cycle => Chain::Cycle,
+            Chain::Ends { steps, at_type } => Chain::Ends {
+                steps: steps + 1,
+                at_type,
+            },
+        };
+        memo.insert(identity, chain);
+    }
+    match chain {
+        Chain::Cycle => Walk::Cycle,
+        Chain::Ends {
+            steps,
+            at_type: true,
+        } if document
+            .limits
+            .alias_depth
+            .is_some_and(|limit| steps > limit) =>
+        {
+            Walk::TooDeep
+        }
+        Chain::Ends { .. } => Walk::Resolved,
     }
 }
 
@@ -721,7 +778,7 @@ fn duplicate_names(items: &[Json], items_at: &str, code: &'static str, sink: &mu
 
 fn field_rules(
     document: &Document<'_>,
-    declared: &[String],
+    declared: &HashSet<String>,
     fields: &[Json],
     fields_at: &str,
     sink: &mut Sink<'_>,
@@ -873,7 +930,7 @@ fn constraint_rules(
 }
 
 fn occurrences(document: &Document<'_>, sink: &mut Sink<'_>) {
-    let declared: Vec<&str> = document
+    let declared: HashSet<&str> = document
         .types
         .iter()
         .filter_map(|definition| definition.get("identity").and_then(Json::as_str))
@@ -881,7 +938,7 @@ fn occurrences(document: &Document<'_>, sink: &mut Sink<'_>) {
     if let Some(occurrences) = document.ir.get("occurrences").and_then(Json::as_array) {
         for (position, occurrence) in occurrences.iter().enumerate() {
             if let Some(definition) = occurrence.get("definition").and_then(Json::as_str) {
-                if !declared.contains(&definition) {
+                if !declared.contains(definition) {
                     sink.emit(
                         child(&index("/ir/occurrences", position), "definition"),
                         UNRESOLVED_OCCURRENCE_DEFINITION,
@@ -1551,7 +1608,10 @@ mod tests {
                 document.resolve("ix://acme/pkg/A0"),
                 Some(Resolved::Node(_))
             ));
-            assert!(matches!(walk_alias(&document, first), Walk::Resolved));
+            assert!(matches!(
+                walk_alias(&document, first, &mut AliasMemo::new()),
+                Walk::Resolved
+            ));
             let limited = Document::read_with(
                 &bundle,
                 RuleLimits {
@@ -1560,7 +1620,10 @@ mod tests {
             )
             .expect("an IR document");
             assert!(limited.resolve("ix://acme/pkg/A0").is_none());
-            assert!(matches!(walk_alias(&limited, first), Walk::TooDeep));
+            assert!(matches!(
+                walk_alias(&limited, first, &mut AliasMemo::new()),
+                Walk::TooDeep
+            ));
         });
         let bundle = alias_chain(300);
         let default = decide(&bundle);

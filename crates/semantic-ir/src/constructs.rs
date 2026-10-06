@@ -187,9 +187,16 @@ pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
             return;
         }
     };
+    let cyclic = types_on_a_supertype_cycle(document);
     for (position, definition) in document.types.iter().enumerate() {
         let type_at = index("/ir/types", position);
-        supertypes(document, definition, &type_at, sink);
+        supertypes(
+            document,
+            definition,
+            &type_at,
+            cyclic.contains(&position),
+            sink,
+        );
         features(document, definition, &type_at, sink);
         frames(document, definition, &type_at, sink);
         inline_clauses(definition, &type_at, sink);
@@ -498,7 +505,13 @@ fn transitions(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
     }
 }
 
-fn supertypes(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
+fn supertypes(
+    document: &Document<'_>,
+    definition: &Json,
+    type_at: &str,
+    on_cycle: bool,
+    sink: &mut Sink<'_>,
+) {
     let at = child(type_at, "supertypes");
     let kind = definition.get("kind");
     for (position, name) in strings(definition.get("supertypes")) {
@@ -522,10 +535,7 @@ fn supertypes(document: &Document<'_>, definition: &Json, type_at: &str, sink: &
             Some(_) => {}
         }
     }
-    let Some(own) = identity_of(definition) else {
-        return;
-    };
-    if definition.has("supertypes") && ancestors_reach(document, definition, own) {
+    if on_cycle {
         sink.emit(
             at,
             SUPERTYPE_CYCLE,
@@ -534,36 +544,92 @@ fn supertypes(document: &Document<'_>, definition: &Json, type_at: &str, sink: &
     }
 }
 
-/// Whether walking the supertypes of `definition` reaches `identity`.
-fn ancestors_reach(document: &Document<'_>, definition: &Json, identity: &str) -> bool {
-    let mut seen: BTreeSet<&str> = BTreeSet::new();
-    let mut frontier: Vec<&str> = strings(definition.get("supertypes"))
-        .into_iter()
-        .map(|(_, name)| name)
+/// The positions of the types that reach themselves through `supertypes`,
+/// found by one iterative strongly-connected-components pass, so a chain of
+/// any length costs a step per type and per edge, not a walk per type.
+fn types_on_a_supertype_cycle(document: &Document<'_>) -> BTreeSet<usize> {
+    let count = document.types.len();
+    let edges: Vec<Vec<usize>> = document
+        .types
+        .iter()
+        .map(|definition| {
+            strings(definition.get("supertypes"))
+                .into_iter()
+                .filter_map(|(_, name)| document.by_position(name))
+                .collect()
+        })
         .collect();
-    while let Some(name) = frontier.pop() {
-        if name == identity {
-            return true;
-        }
-        if !seen.insert(name) {
+    const UNSEEN: usize = usize::MAX;
+    let mut order = vec![UNSEEN; count];
+    let mut low = vec![0usize; count];
+    let mut on_stack = vec![false; count];
+    let mut stack: Vec<usize> = Vec::new();
+    let mut next_order = 0usize;
+    let mut cyclic = BTreeSet::new();
+    for root in 0..count {
+        if order[root] != UNSEEN {
             continue;
         }
-        if let Some(parent) = document.type_of(name) {
-            frontier.extend(
-                strings(parent.get("supertypes"))
-                    .into_iter()
-                    .map(|(_, n)| n),
-            );
+        // Each frame is a node and how many of its edges it has taken.
+        let mut frames: Vec<(usize, usize)> = vec![(root, 0)];
+        order[root] = next_order;
+        low[root] = next_order;
+        next_order += 1;
+        stack.push(root);
+        on_stack[root] = true;
+        while let Some(&(node, taken)) = frames.last() {
+            if let Some(&target) = edges[node].get(taken) {
+                if let Some(frame) = frames.last_mut() {
+                    frame.1 += 1;
+                }
+                if order[target] == UNSEEN {
+                    order[target] = next_order;
+                    low[target] = next_order;
+                    next_order += 1;
+                    stack.push(target);
+                    on_stack[target] = true;
+                    frames.push((target, 0));
+                } else if on_stack[target] {
+                    low[node] = low[node].min(order[target]);
+                }
+                continue;
+            }
+            frames.pop();
+            if let Some(&(parent, _)) = frames.last() {
+                low[parent] = low[parent].min(low[node]);
+            }
+            if low[node] == order[node] {
+                let mut members = Vec::new();
+                while let Some(member) = stack.pop() {
+                    on_stack[member] = false;
+                    members.push(member);
+                    if member == node {
+                        break;
+                    }
+                }
+                if members.len() > 1 || edges[node].contains(&node) {
+                    cyclic.extend(members);
+                }
+            }
         }
     }
-    false
+    cyclic
 }
 
 fn features(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
-    let inherited: Vec<&Json> = ancestors(document, definition)
-        .into_iter()
-        .flat_map(|ancestor| items(ancestor, "fields"))
-        .collect();
+    // The inherited fields are read only to resolve a `subsets` or `redefines`
+    // entry, so a type with neither never walks its supertypes.
+    let narrows_something = items(definition, "fields")
+        .iter()
+        .any(|field| field.has("subsets") || field.has("redefines"));
+    let inherited: Vec<&Json> = if narrows_something {
+        ancestors(document, definition)
+            .into_iter()
+            .flat_map(|ancestor| items(ancestor, "fields"))
+            .collect()
+    } else {
+        Vec::new()
+    };
     let fields_at = child(type_at, "fields");
     for (position, field) in items(definition, "fields").iter().enumerate() {
         let field_at = index(&fields_at, position);
@@ -612,6 +678,12 @@ fn redefined_operations(
     type_at: &str,
     sink: &mut Sink<'_>,
 ) {
+    if !items(definition, "operations")
+        .iter()
+        .any(|operation| operation.has("redefines"))
+    {
+        return;
+    }
     let inherited: Vec<&Json> = ancestors(document, definition)
         .into_iter()
         .flat_map(|ancestor| items(ancestor, "operations"))
