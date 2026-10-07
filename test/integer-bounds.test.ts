@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
 import { lowerConstraints } from "../src/compiler/backends/rust-serde/constraints.mjs";
-import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
