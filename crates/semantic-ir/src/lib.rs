@@ -538,7 +538,7 @@ mod tests {
         let valid_time = started.elapsed();
         // The same chain with a required member missing from every type: one
         // schema finding per type.
-        let broken = types.join(",").replace(r#""unknownPolicy":"reject""#, "");
+        let broken = types.join(",").replace(r#","unknownPolicy":"reject""#, "");
         let invalid =
             parse(&format!(r#"{{"ir":{{{HEADER},"types":[{broken}]}}}}"#)).expect("a bundle");
         let started = std::time::Instant::now();
