@@ -503,4 +503,50 @@ mod tests {
             [("INVALID_OPERAND".to_string(), at)]
         );
     }
+
+    /// `decide` on a schema-valid 100,000-link alias chain, and on 100,000
+    /// invalid types, finishes in linear time: every alias is walked once and
+    /// the schema layer's findings are not compared pairwise.
+    ///
+    /// Tracing: TC-1821
+    /// ACs: FR-059-AC-20
+    #[test]
+    fn tc_1821_decide_on_100000_types_is_linear() {
+        const COUNT: usize = 100_000;
+        let alias = |position: usize, target: &str| {
+            format!(
+                r#"{{"identity":"ix://acme/pkg/A{position}","displayName":"A","kind":"alias","target":"{target}","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"}}"#
+            )
+        };
+        let mut types = Vec::with_capacity(COUNT + 1);
+        for position in 0..COUNT {
+            let target = if position + 1 < COUNT {
+                format!("ix://acme/pkg/A{}", position + 1)
+            } else {
+                "ix://acme/pkg/Leaf".to_string()
+            };
+            types.push(alias(position, &target));
+        }
+        types.push(record("ix://acme/pkg/Leaf", "", ""));
+        let valid = parse(&format!(
+            r#"{{"ir":{{{HEADER},"types":[{}]}}}}"#,
+            types.join(",")
+        ))
+        .expect("a bundle");
+        let started = std::time::Instant::now();
+        assert_eq!(decide(&valid).result_state, ResultState::Success);
+        let valid_time = started.elapsed();
+        // The same chain with a required member missing from every type: one
+        // schema finding per type.
+        let broken = types.join(",").replace(r#""unknownPolicy":"reject""#, "");
+        let invalid =
+            parse(&format!(r#"{{"ir":{{{HEADER},"types":[{broken}]}}}}"#)).expect("a bundle");
+        let started = std::time::Instant::now();
+        assert_eq!(decide(&invalid).result_state, ResultState::Invalid);
+        // Quadratic work on either takes many minutes in a debug build; the
+        // linear passes take seconds. The bound leaves a busy machine room.
+        let limit = std::time::Duration::from_secs(60);
+        assert!(valid_time < limit, "valid {valid_time:?}");
+        assert!(started.elapsed() < limit, "invalid {:?}", started.elapsed());
+    }
 }

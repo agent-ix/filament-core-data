@@ -1630,26 +1630,6 @@ mod tests {
         parse(&text).expect("a document")
     }
 
-    /// `decide` on a 100,000-link alias chain finishes in linear time: every
-    /// alias is walked once, however long the chain.
-    ///
-    /// Tracing: TC-1821
-    /// ACs: FR-059-AC-20
-    #[test]
-    fn tc_1821_decide_on_a_100000_link_alias_chain_is_linear() {
-        let bundle = alias_chain(100_000);
-        let started = std::time::Instant::now();
-        let _ = decide(&bundle);
-        // Quadratic work on this chain takes minutes in a debug build; the
-        // linear walk takes well under a second. The bound leaves a busy
-        // machine room.
-        assert!(
-            started.elapsed() < std::time::Duration::from_secs(30),
-            "{:?}",
-            started.elapsed()
-        );
-    }
-
     /// An acyclic alias chain of any length resolves and walks without a
     /// depth report unless the caller configures a depth limit, and a
     /// configured limit reports exactly the chains past it.

@@ -50,16 +50,28 @@ impl Findings {
     /// dropped, so one violation inside a cascade yields one diagnostic at the
     /// deepest failing node.
     fn deepest(self) -> Vec<Finding> {
-        let pointers: Vec<String> = self.items.iter().map(|f| f.pointer.clone()).collect();
+        // A finding is shadowed when some other pointer is longer and begins
+        // with it. In sorted order every pointer beginning with `p` follows `p`
+        // contiguously, so the one after `p` begins with `p` exactly when one
+        // does: a sort and a lookup, not a scan of every pair.
+        let mut sorted: Vec<&str> = self.items.iter().map(|f| f.pointer.as_str()).collect();
+        sorted.sort_unstable();
+        sorted.dedup();
+        let shadowed: std::collections::HashSet<&str> = sorted
+            .iter()
+            .enumerate()
+            .filter(|(position, pointer)| {
+                sorted
+                    .get(position + 1)
+                    .is_some_and(|next| next.starts_with(**pointer))
+            })
+            .map(|(_, pointer)| *pointer)
+            .collect();
+        let mut seen: std::collections::HashSet<String> = std::collections::HashSet::new();
         let mut kept: Vec<Finding> = Vec::new();
         for finding in self.items {
-            let shadowed = pointers.iter().any(|other| {
-                other.len() > finding.pointer.len() && other.starts_with(&finding.pointer)
-            });
-            if shadowed {
-                continue;
-            }
-            if kept.iter().any(|seen| seen.pointer == finding.pointer) {
+            if shadowed.contains(finding.pointer.as_str()) || !seen.insert(finding.pointer.clone())
+            {
                 continue;
             }
             kept.push(finding);
