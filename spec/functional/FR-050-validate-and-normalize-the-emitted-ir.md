@@ -114,7 +114,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | FR-050-AC-11 | Every rule of the code table fires on a constructed document and produces exactly its named code. | Test |
 | FR-050-AC-12 | With `importedExports` set to `unknown`, a relationship target absent from the document produces no diagnostic and one recorded suppression; with the resolution supplied, the same document produces `UNRESOLVED_RELATIONSHIP_TARGET`. | Test |
 | FR-050-AC-13 | Over 512 mutated documents the reader returns diagnostics and never throws. | Fuzz |
-| FR-050-AC-14 | On an `integer` scalar, `min`, `max`, `exclusiveMin` and `exclusiveMax` accept a number or a canonical decimal string (`0`, or an optional `-` and digits with no leading zero), so a `max` of `"18446744073709551615"` is exact; `"01"`, `"+1"`, `" 1"`, `"-0"` and `""` raise `INVALID_OPERAND` at the operand; on a `number` scalar a string still does. | Test (TC-1825) |
+| FR-050-AC-14 | On an `integer` scalar, `min`, `max`, `exclusiveMin` and `exclusiveMax` accept a number or a canonical decimal string (`0`, or an optional `-` and digits with no leading zero), so a `max` of `"18446744073709551615"` is exact; `"01"`, `"+1"`, `" 1"`, `"-0"` and `"1.0"` raise `INVALID_OPERAND` at the operand, and an empty string or a boolean raises `SCHEMA_VIOLATION` there, the schema refusing it before any rule reads it; on a `number` scalar a string still does. The Node reader, the oracle and the TypeScript and JSON Schema backends' admission accept and refuse the same strings; those two backends emit a bound they can hold exactly and refuse one past 2^53 (`INTEGER_BOUND_NOT_EXACT`, and `UNDECLARED_LOSS` for JSON Schema). | Test (TC-1825) |
 
 ## Dependencies
 

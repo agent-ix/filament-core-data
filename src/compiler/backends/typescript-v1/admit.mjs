@@ -1362,7 +1362,12 @@ function operandDefect(constraint, subject) {
 		case "exclusiveMax": {
 			const value = operands.value;
 			if (NUMERIC_SCALARS.has(subject) && typeof value !== "number") {
-				return "value";
+				// An `integer` bound may be a canonical decimal string (contracts-v1).
+				const canonical =
+					subject === "integer" &&
+					typeof value === "string" &&
+					/^(0|-?[1-9][0-9]*)$/.test(value);
+				return canonical ? undefined : "value";
 			}
 			if (TEMPORAL_SCALARS.has(subject) && typeof value !== "string") {
 				return "value";
