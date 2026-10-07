@@ -18,4 +18,3 @@ okf_version: "0.1"
 * [Task-054](./tasks/Task-054-coverage-thresholds-and-import-api.md) - Coverage account, thresholds, mutation catalogue, import API.
 * [Task-055](./tasks/Task-055-determinism-and-offline-evidence.md) - Determinism, locale, directory, and offline evidence.
 * [Task-056](./tasks/Task-056-review-gap-analysis-and-pr.md) - Code review, gap analysis, PR.
-* [Update log](./log.md) - Chronological plan lifecycle.

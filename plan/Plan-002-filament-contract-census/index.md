@@ -16,4 +16,3 @@ okf_version: "0.1"
 * [Task-013: Repository and concept impact](./tasks/Task-013-repository-impact.md) - Assess effort, risk, gates, waves, confidence, and active overlap.
 * [Task-014: Census review and drift refresh](./tasks/Task-014-census-review-drift-refresh.md) - Publish the acceptance review against refreshed volatile facts.
 * [Task-015: Reproducibility and read-only gate](./tasks/Task-015-final-census-gate.md) - Complete all matrix cases and prove non-disruption.
-* [Update log](./log.md) - Chronological plan lifecycle.

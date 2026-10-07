@@ -17,4 +17,3 @@ okf_version: "0.1"
 * [Task-021](./tasks/Task-021-determinism-compatibility.md) - Prove clean regeneration and controlled change classification.
 * [Task-022](./tasks/Task-022-feasibility-report.md) - Publish the capability ledger, recommendation, and proposed ADR resolution.
 * [Task-023](./tasks/Task-023-final-spike-gate.md) - Run all validation, review, and non-publication gates.
-* [Update log](./log.md) - Chronological plan lifecycle.

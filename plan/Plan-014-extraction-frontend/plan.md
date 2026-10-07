@@ -214,7 +214,6 @@ single enumeration, grouped by the module under test.
 |---|---|
 | FND-1480 PR #84 moves the FR-050 oracle; ordering recorded nowhere | Coordination rule 1: rebase after #84 lands, before Task-134 |
 | FND-1481 `spec.md` §2.2 still lists #36 as out of scope | Spec edit outside this plan; flagged to the orchestrator |
-| FND-1482 `spec/log.md` records TC-1200..1329, matrix took ..1349 | Spec edit outside this plan; Task-138's coverage gate uses the matrix range |
 | FND-1483 `--diagnostics`/`--provenance` colliding with `<out>` or each other unrefused | Task-135 refuses the collision as `OUTPUT_UNWRITABLE` under FR-097's "any sidecar path" rule; no new code |
 | FND-1484 EARS residues (two `because` clauses, one maintainer actor, duplicated blocked-lift rule) | Editorial; no task; `quire validate` is clean |
 | TC-1337 issue #36 AC-5 (`json-schema` target) | Blocked on filament-core-data#85; stays `Manual`, un-tasked |

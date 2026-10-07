@@ -6,7 +6,6 @@ type: index
 ## Contents
 
 * [Plan-013](./plan.md) - semantic kernel packages for Rust, TypeScript, Python and JSON Schema.
-* [Log](./log.md) - dated lifecycle events for this plan.
 * [Task-117](./tasks/Task-117-bundle-declaration.md) - bundle declaration and the staleness gate.
 * [Task-118](./tasks/Task-118-lower-and-name.md) - JSON Schema lowering and anonymous-construct naming.
 * [Task-119](./tasks/Task-119-provenance-and-refusal.md) - provenance and the refusal path.

@@ -25,4 +25,3 @@ okf_version: "0.1"
 * [Task-093](./tasks/Task-093-the-diagnostic-completeness-gates.md) - The diagnostic completeness gates and the rendered documentation.
 * [Task-094](./tasks/Task-094-the-non-disruption-gates.md) - The non-disruption, attribution and revert gates.
 * [Task-095](./tasks/Task-095-review-gap-analysis-and-pr.md) - Code review, gap analysis, and the pull request.
-* [Update log](./log.md) - Chronological plan lifecycle.

@@ -17,4 +17,3 @@ okf_version: "0.1"
 * [Task-006: Compatibility and roadmap gates](./tasks/Task-006-compatibility-and-roadmap-gates.md) - Define compatibility, feasibility, corpus review, and promotion gates.
 * [Task-007: ADR and conflict record](./tasks/Task-007-adr-and-conflict-record.md) - Record decisions and reconcile Quire architecture.
 * [Task-008: Final architecture gate](./tasks/Task-008-final-architecture-gate.md) - Complete standalone review and non-disruption evidence.
-* [Update log](./log.md) - Chronological plan lifecycle.

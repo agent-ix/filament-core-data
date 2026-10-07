@@ -19,4 +19,3 @@ okf_version: "0.1"
 * [Task-031](./tasks/Task-031-dynamic-and-legacy-boundaries.md) - Define dynamic/static coexistence and legacy adapters.
 * [Task-032](./tasks/Task-032-cross-contract-conformance-and-assurance.md) - Run deterministic, parity, safety, portability, and non-disruption evidence.
 * [Task-033](./tasks/Task-033-human-normative-source-gate.md) - Record the owner's normative-source decision (done: TypeSpec, ADR-0005).
-* [Update log](./log.md) - Chronological plan lifecycle.

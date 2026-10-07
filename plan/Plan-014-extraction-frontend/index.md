@@ -6,7 +6,6 @@ type: index
 ## Contents
 
 * [Plan-014](./plan.md) - spec-bundle extraction frontend: lift a Quire spec bundle into a domain package.
-* [Log](./log.md) - dated lifecycle events for this plan.
 * [Task-127](./tasks/Task-127-crate-scaffold.md) - NFR-033 scaffold: crate, pins, vendored module, toolchain gate.
 * [Task-128](./tasks/Task-128-bundle-load-and-extract.md) - FR-091 bundle load and extraction through the engine.
 * [Task-129](./tasks/Task-129-diagnostic-registry.md) - FR-096 diagnostic registry and locus rule.
