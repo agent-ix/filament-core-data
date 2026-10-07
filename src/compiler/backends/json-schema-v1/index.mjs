@@ -162,8 +162,8 @@ function constraint(schema, one, subject) {
 	else if (key === "pattern") schema.pattern = one.operands.regex;
 	else if (key === "format") schema.format = FORMAT_MAP[one.operands.name];
 	else if (table[key] && value !== undefined) {
-		// An integer bound may be a canonical decimal string (contracts-v1); a JSON
-		// Schema bound is a number, written as the double the string rounds to.
+		// An integer bound may be a canonical decimal string (contracts-v1); the
+		// backend has refused one past 2^53, so the number written is exact.
 		schema[table[key]] =
 			subject?.scalar === "integer" && typeof value === "string"
 				? Number(value)
@@ -389,6 +389,33 @@ function unsupportedFormat(ir) {
 	}
 	return undefined;
 }
+/**
+ * A bound given as a canonical decimal string past 2^53: a JSON Schema bound is
+ * a number, which would be written as the double it rounds to, loosening or
+ * tightening the bound silently, so the backend refuses it.
+ */
+function inexactIntegerBound(ir) {
+	for (const type of ir.types ?? []) {
+		for (const node of [type, ...(type.fields ?? [])]) {
+			const constraint = (node.constraints ?? []).find((one) =>
+				inexactBound(one),
+			);
+			if (constraint) return constraint;
+		}
+	}
+	return undefined;
+}
+function inexactBound(constraint) {
+	const value = constraint?.operands?.value;
+	return (
+		["min", "max", "exclusiveMin", "exclusiveMax"].includes(
+			constraint?.keyword,
+		) &&
+		typeof value === "string" &&
+		/^(0|-?[1-9][0-9]*)$/.test(value) &&
+		!Number.isSafeInteger(Number(value))
+	);
+}
 function admit(request, host) {
 	if (typeof host?.readText !== "function") return undefined;
 	const schemas = SCHEMA_FILES.map((relativePath) =>
@@ -490,6 +517,17 @@ export const jsonSchemaBackend = Object.freeze({
 				diagnostics: [
 					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
 						message: `JSON Schema backend has no enforcing mapping for format ${format.operands?.name}`,
+					}),
+				],
+			};
+		const inexact = inexactIntegerBound(ir);
+		if (inexact)
+			return {
+				state: "unsupported",
+				files: [],
+				diagnostics: [
+					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
+						message: `JSON Schema backend cannot write the integer bound ${inexact.operands.value} of ${inexact.identity} exactly: a JSON Schema bound is a double`,
 					}),
 				],
 			};

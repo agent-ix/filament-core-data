@@ -3,6 +3,7 @@
 //! Every code emitted here has a `conformance/diagnostic-codes.json` row, and
 //! `crates/semantic-ir/RULES.md` cites the clause each rule was derived from.
 
+use std::cell::RefCell;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::diag::{child, index, locus_for, owner_for, Located, Severity};
@@ -150,6 +151,12 @@ pub struct Document<'a> {
     /// The position of the first type declaring each identity, so a lookup
     /// by identity is one map access however many types the document holds.
     by_identity: HashMap<&'a str, usize>,
+    /// The first field or operation parameter declaring each identity, in
+    /// document order.
+    by_feature: HashMap<&'a str, &'a Json>,
+    /// What each identity resolved to, so a chain is walked once however many
+    /// fields and constraints name its head.
+    resolved: RefCell<HashMap<String, Option<Resolved<'a>>>>,
 }
 
 impl<'a> Document<'a> {
@@ -174,12 +181,37 @@ impl<'a> Document<'a> {
                 by_identity.entry(identity).or_insert(position);
             }
         }
+        let mut by_feature = HashMap::new();
+        for definition in types {
+            let params = definition
+                .get("operations")
+                .and_then(Json::as_array)
+                .unwrap_or(&[])
+                .iter()
+                .flat_map(|operation| {
+                    operation
+                        .get("params")
+                        .and_then(Json::as_array)
+                        .unwrap_or(&[])
+                });
+            let fields = definition
+                .get("fields")
+                .and_then(Json::as_array)
+                .unwrap_or(&[]);
+            for feature in fields.iter().chain(params) {
+                if let Some(identity) = feature.get("identity").and_then(Json::as_str) {
+                    by_feature.entry(identity).or_insert(feature);
+                }
+            }
+        }
         Some(Document {
             bundle,
             ir,
             types,
             limits,
             by_identity,
+            by_feature,
+            resolved: RefCell::new(HashMap::new()),
         })
     }
 
@@ -214,28 +246,7 @@ impl<'a> Document<'a> {
     /// name one directly, gap 1 of FCD #199/#200: a constrained field keeps
     /// its constraints inline, with no alias node between them).
     fn field_of(&self, identity: &str) -> Option<&'a Json> {
-        for definition in self.types {
-            if let Some(fields) = definition.get("fields").and_then(Json::as_array) {
-                if let Some(field) = fields
-                    .iter()
-                    .find(|field| field.get("identity").and_then(Json::as_str) == Some(identity))
-                {
-                    return Some(field);
-                }
-            }
-            if let Some(operations) = definition.get("operations").and_then(Json::as_array) {
-                for operation in operations {
-                    if let Some(params) = operation.get("params").and_then(Json::as_array) {
-                        if let Some(param) = params.iter().find(|param| {
-                            param.get("identity").and_then(Json::as_str) == Some(identity)
-                        }) {
-                            return Some(param);
-                        }
-                    }
-                }
-            }
-        }
-        None
+        self.by_feature.get(identity).copied()
     }
 
     /// What an identity resolves to: a native type reference; a field or
@@ -246,6 +257,26 @@ impl<'a> Document<'a> {
     /// runs past the declared depth bound; each of those is reported under its
     /// own code by the rule that owns it, not by this resolver.
     pub fn resolve(&self, identity: &str) -> Option<Resolved<'a>> {
+        if let Some(known) = self.resolved.borrow().get(identity) {
+            return *known;
+        }
+        let mut walked = Vec::new();
+        let result = self.resolve_walk(identity, &mut walked);
+        // A configured depth limit counts hops from the start of each walk, so
+        // only the start's own result is the same for every start.
+        let mut cache = self.resolved.borrow_mut();
+        if self.limits.alias_depth.is_none() {
+            for name in walked {
+                cache.insert(name.to_string(), result);
+            }
+        }
+        cache.insert(identity.to_string(), result);
+        result
+    }
+
+    /// One uncached walk; `walked` collects every alias identity it passes,
+    /// each of which resolves to the same result as the start.
+    fn resolve_walk(&self, identity: &str, walked: &mut Vec<&'a str>) -> Option<Resolved<'a>> {
         let mut seen = BTreeSet::new();
         seen.insert(identity);
         let mut identity = identity;
@@ -283,6 +314,12 @@ impl<'a> Document<'a> {
             hops += 1;
             if self.limits.alias_depth.is_some_and(|limit| hops > limit) {
                 return None;
+            }
+            if self.limits.alias_depth.is_none() {
+                if let Some(known) = self.resolved.borrow().get(target) {
+                    return *known;
+                }
+                walked.push(target);
             }
             current = self.type_of(target)?;
         }

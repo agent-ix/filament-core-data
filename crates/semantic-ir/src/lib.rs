@@ -537,6 +537,20 @@ mod tests {
             };
             types.push(alias(position, &target));
         }
+        // A record of fields typed by the head of the chain, each carrying a
+        // text profile and a unit, so each resolves that chain once.
+        let fields: Vec<String> = (0..COUNT / 10)
+            .map(|position| {
+                format!(
+                    r#"{{"identity":"ix://acme/pkg/Holder/f{position}","name":"f{position}","typeRef":"ix://acme/pkg/A0","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{}}}"#,
+                    multiplicity(1, 1)
+                )
+            })
+            .collect();
+        types.push(format!(
+            r#"{{"identity":"ix://acme/pkg/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{}]}}"#,
+            fields.join(",")
+        ));
         types.push(record("ix://acme/pkg/Leaf", "", ""));
         let valid = parse(&format!(
             r#"{{"ir":{{{HEADER},"types":[{}]}}}}"#,
