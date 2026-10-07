@@ -797,7 +797,7 @@ fn walk_alias<'a>(document: &Document<'a>, start: &'a Json, memo: &mut AliasMemo
 }
 
 fn duplicate_names(items: &[Json], items_at: &str, code: &'static str, sink: &mut Sink<'_>) {
-    let mut seen: Vec<&str> = Vec::new();
+    let mut seen: HashSet<&str> = HashSet::new();
     for (member, item) in items.iter().enumerate() {
         if let Some(name) = item.get("name").and_then(Json::as_str) {
             if seen.contains(&name) {
@@ -808,7 +808,7 @@ fn duplicate_names(items: &[Json], items_at: &str, code: &'static str, sink: &mu
                 };
                 sink.emit(child(&index(items_at, member), "name"), code, what);
             } else {
-                seen.push(name);
+                seen.insert(name);
             }
         }
     }
