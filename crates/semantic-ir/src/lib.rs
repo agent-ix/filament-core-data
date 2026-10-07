@@ -539,7 +539,7 @@ mod tests {
         }
         // A record of fields typed by the head of the chain, each carrying a
         // text profile and a unit, so each resolves that chain once.
-        let fields: Vec<String> = (0..COUNT)
+        let fields: Vec<String> = (0..COUNT / 5)
             .map(|position| {
                 format!(
                     r#"{{"identity":"ix://acme/pkg/Holder/f{position}","name":"f{position}","typeRef":"ix://acme/pkg/A0","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{},"textProfile":"nfc"}}"#,

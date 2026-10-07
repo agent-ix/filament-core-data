@@ -138,6 +138,15 @@ codes! {
     UNKNOWN_REQUIRED_EXTENSION => "agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION",
 }
 
+/// A resolution kept without borrowing the document: a node is its position
+/// among the types.
+#[derive(Clone, Copy)]
+enum Cached {
+    Nothing,
+    Native(&'static str),
+    Node(usize),
+}
+
 /// The reading of the document the cross-field rules and the classifier share.
 pub struct Document<'a> {
     /// The whole input bundle.
@@ -156,7 +165,7 @@ pub struct Document<'a> {
     by_feature: HashMap<&'a str, &'a Json>,
     /// What each identity resolved to, so a chain is walked once however many
     /// fields and constraints name its head.
-    resolved: RefCell<HashMap<String, Option<Resolved<'a>>>>,
+    resolved: RefCell<HashMap<String, Cached>>,
 }
 
 impl<'a> Document<'a> {
@@ -258,7 +267,7 @@ impl<'a> Document<'a> {
     /// own code by the rule that owns it, not by this resolver.
     pub fn resolve(&self, identity: &str) -> Option<Resolved<'a>> {
         if let Some(known) = self.resolved.borrow().get(identity) {
-            return *known;
+            return self.restore(*known);
         }
         let mut walked = Vec::new();
         let result = self.resolve_walk(identity, &mut walked);
@@ -271,12 +280,21 @@ impl<'a> Document<'a> {
             }
         }
         cache.insert(identity.to_string(), result);
-        result
+        drop(cache);
+        self.restore(result)
+    }
+
+    fn restore(&self, cached: Cached) -> Option<Resolved<'a>> {
+        match cached {
+            Cached::Nothing => None,
+            Cached::Native(scalar) => Some(Resolved::Native(scalar)),
+            Cached::Node(position) => self.types.get(position).map(Resolved::Node),
+        }
     }
 
     /// One uncached walk; `walked` collects every alias identity it passes,
     /// each of which resolves to the same result as the start.
-    fn resolve_walk(&self, identity: &str, walked: &mut Vec<&'a str>) -> Option<Resolved<'a>> {
+    fn resolve_walk(&self, identity: &str, walked: &mut Vec<&'a str>) -> Cached {
         let mut seen = BTreeSet::new();
         seen.insert(identity);
         let mut identity = identity;
@@ -287,33 +305,42 @@ impl<'a> Document<'a> {
         // `BTreeSet`: membership is the only operation the walk needs.
         loop {
             if let Some(scalar) = native_scalar(identity) {
-                return Some(Resolved::Native(scalar));
+                return Cached::Native(scalar);
             }
             let Some(field) = self.field_of(identity) else {
                 break;
             };
-            let type_ref = field.get("typeRef").and_then(Json::as_str)?;
+            let Some(type_ref) = field.get("typeRef").and_then(Json::as_str) else {
+                return Cached::Nothing;
+            };
             if !seen.insert(type_ref) {
-                return None;
+                return Cached::Nothing;
             }
             identity = type_ref;
         }
-        let mut current = self.type_of(identity)?;
+        let Some(mut position) = self.by_position(identity) else {
+            return Cached::Nothing;
+        };
         let mut hops = 0usize;
         loop {
+            let Some(current) = self.types.get(position) else {
+                return Cached::Nothing;
+            };
             if current.get("kind").and_then(Json::as_str) != Some("alias") {
-                return Some(Resolved::Node(current));
+                return Cached::Node(position);
             }
-            let target = current.get("target").and_then(Json::as_str)?;
+            let Some(target) = current.get("target").and_then(Json::as_str) else {
+                return Cached::Nothing;
+            };
             if let Some(scalar) = native_scalar(target) {
-                return Some(Resolved::Native(scalar));
+                return Cached::Native(scalar);
             }
             if !seen.insert(target) {
-                return None;
+                return Cached::Nothing;
             }
             hops += 1;
             if self.limits.alias_depth.is_some_and(|limit| hops > limit) {
-                return None;
+                return Cached::Nothing;
             }
             if self.limits.alias_depth.is_none() {
                 if let Some(known) = self.resolved.borrow().get(target) {
@@ -321,7 +348,10 @@ impl<'a> Document<'a> {
                 }
                 walked.push(target);
             }
-            current = self.type_of(target)?;
+            let Some(next) = self.by_position(target) else {
+                return Cached::Nothing;
+            };
+            position = next;
         }
     }
 
