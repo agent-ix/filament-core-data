@@ -63,3 +63,21 @@ author's claim holds and they are not caused by this PR.
 | FND-1670 | medium | `walk_alias` runs once per alias type and `ancestors` once or more per type, each walking the whole chain with no cap, so `decide` stays superlinear on a long alias chain: measured in release on a schema-valid bundle, 2,000 / 4,000 / 8,000 aliases take 0.44 s / 2.1 s / 11.9 s (about 5.5x per doubling), so the 100,000-link chain FR-059 says is walked "of any length" is not decided in practical time. Not a regression: `origin/main` takes 6.7 s / 49 s at 1,000 / 2,000, and the new identity index is a large improvement. Memoise each alias's walk result and each type's ancestor set, and add a `decide` test over a long chain | crates/semantic-ir/src/rules.rs:468, crates/semantic-ir/src/rules.rs:669-702, crates/semantic-ir/src/constructs.rs:238-256 |
 | FND-1671 | low | `patch::substitute` still recurses on the template's depth; it is reachable from the public `patch::apply` over a `Json`, so a deep `x-repeat` template overflows the stack | crates/semantic-ir/src/patch.rs:108-130 |
 | FND-1672 | low | A doc comment for `operations_bundle` ("A `Base` and a `Sub` specializing it …") is stranded above `HEADER`, so `HEADER`'s doc describes the wrong item | crates/semantic-ir/src/lib.rs:203-206 |
+
+## New findings (disposition pass 1)
+
+Reviewed at `02a1df0ccb0eec4ae8cc5ed6f54d8cf392938222`.
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-1680 | medium | `Document::resolve` is not memoised, and the new `textProfile` check in `field_rules` calls it once per field (as the unit and constraint checks already do), so n fields typed by the head of an n-link alias chain cost O(n²). Measured in release on a schema-valid bundle: 2,000 / 4,000 / 8,000 fields take 1.0 s / 6.7 s / 39.6 s. `tc_1821_decide_on_100000_types_is_linear` covers alias-to-alias walking only, not field resolution | crates/semantic-ir/src/rules.rs:826-845, crates/semantic-ir/src/rules.rs:248-288 |
+
+## Dispositions
+
+Round 1, reviewed at `02a1df0ccb0eec4ae8cc5ed6f54d8cf392938222`. Release build of the focused cargo tests for semantic-ir, extraction-frontend and conformance-adapter: pass, 0 failures. `tc_1821_decide_on_100000_types_is_linear`: 15.0 s in debug, about 4 s in release, against a 60 s bound. Differential conformance: rust-backend, typescript-backend, python-backend and compiler-frontend each match 115 of 115, and `coverage.json` is unchanged.
+
+| FND | outcome | sha/reason |
+| --- | --- | --- |
+| FND-1670 | fixed 2b849919 | `walk_alias` now memoises per alias (`AliasMemo`), so every alias of an n-link chain costs n steps in all. Supertype cycles are found by one iterative Tarjan SCC pass (`types_on_a_supertype_cycle`). `ancestors` runs only for a type with a `subsets`, field `redefines` or operation `redefines`. Lookups use hash sets. 6874e72e made the schema layer's `deepest` sort-based, and added `tc_1821_decide_on_100000_types_is_linear`, which decides a 100,000-link chain in 15 s in debug. The field-resolution path is still quadratic; that is FND-1680, not this finding |
+| FND-1671 | fixed ea5a6f5f | `patch::substitute` walks the template over an explicit frame stack, and `tc_1820_x_repeat_substitutes_a_deep_template_on_a_small_stack` substitutes a 1,000,000-level template on a 512 KiB thread |
+| FND-1672 | fixed ea5a6f5f | The doc comment now sits on `operations_bundle`, and `HEADER` carries only its own doc |

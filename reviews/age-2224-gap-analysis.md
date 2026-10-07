@@ -50,3 +50,12 @@ gaps, listed below.
 | --- | --- | --- | --- |
 | FND-1673 | low | `PackageIdentity::type_constraint_identity` has no production caller: `lower.rs` mints only field constraints (`constraint_identity`), so the FR-095 value-type constraint form exists only in the minter and the identity table, and FR-095-AC-18 tests a function no lowering path reaches | crates/extraction-frontend/src/identity.rs:223-231, crates/extraction-frontend/src/lower.rs:950-953 |
 | FND-1674 | low | TC-1822 decides a deep value only where the schema layer rejects it, so the rules, normalize and compat layers never see a deep value in a committed test; a schema-valid bundle with a deep extension `payload` (admitted by `common.schema.json#/$defs/extension`) is the case that reaches them | crates/semantic-ir/src/lib.rs:155-182 |
+
+## Dispositions
+
+Round 1, reviewed at `02a1df0ccb0eec4ae8cc5ed6f54d8cf392938222`.
+
+| FND | outcome | sha/reason |
+| --- | --- | --- |
+| FND-1673 | accepted-no-change | The team chose to keep `type_constraint_identity` because FR-095-AC-18 and the shared identity table require both minters to mint the value-type form. The minter still has no lowering caller; ea5a6f5f moved it to `constraint/<Name>/<keyword>` |
+| FND-1674 | fixed ea5a6f5f | `tc_1822_decides_a_schema_valid_deep_payload_on_a_small_stack` decides a schema-valid bundle with a 1,000,000-level extension `payload` on a 512 KiB thread and asserts `Success` |
