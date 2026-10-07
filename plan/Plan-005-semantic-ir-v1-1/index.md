@@ -16,4 +16,3 @@ okf_version: "0.1"
 * [Task-038](./tasks/Task-038-relationships-operations-and-clauses.md) - Relationship, operation, and opaque clause nodes.
 * [Task-039](./tasks/Task-039-worked-example-and-compatibility-entry.md) - `ConfigVersion` fixture, compatibility corpus entry, contract document.
 * [Task-040](./tasks/Task-040-second-reader-and-round-trip-gate.md) - Python second reader, generated round-trip property, fixture inventory.
-* [Update log](./log.md) - Chronological plan lifecycle.

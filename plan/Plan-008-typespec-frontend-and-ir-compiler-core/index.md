@@ -21,4 +21,3 @@ okf_version: "0.1"
 * [Task-077](./tasks/Task-077-pipeline-cli-and-interface.md) - Pipeline, commands, narrow interface.
 * [Task-078](./tasks/Task-078-determinism-safety-and-non-disruption-gates.md) - Determinism, safety, non-disruption gates.
 * [Task-079](./tasks/Task-079-review-gap-analysis-and-pr.md) - Code review, gap analysis, PR.
-* [Update log](./log.md) - Chronological plan lifecycle.

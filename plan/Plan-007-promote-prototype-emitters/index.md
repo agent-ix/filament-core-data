@@ -17,4 +17,3 @@ okf_version: "0.1"
 * [Task-065](./tasks/Task-065-promotion-inventory.md) - Promotion inventory and the feasibility-doc record.
 * [Task-066](./tasks/Task-066-determinism-and-non-disruption-gates.md) - Determinism and non-disruption gates.
 * [Task-067](./tasks/Task-067-review-gap-analysis-and-pr.md) - Code review, gap analysis, PR.
-* [Update log](./log.md) - Chronological plan lifecycle.

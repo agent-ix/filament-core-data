@@ -26,4 +26,3 @@ okf_version: "0.1"
 * [Task-114](./tasks/Task-114-conformance-adapter-and-coverage-delta.md) - The conformance adapter, the first-run divergence count, the coverage delta.
 * [Task-115](./tasks/Task-115-determinism-portability-and-non-disruption.md) - Determinism, portability, and the non-disruption gates.
 * [Task-116](./tasks/Task-116-review-gap-analysis-and-pr.md) - Code review, gap analysis, three-state verification, PR.
-* [Update log](./log.md) - Chronological plan lifecycle.

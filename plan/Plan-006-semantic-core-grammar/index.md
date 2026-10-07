@@ -16,4 +16,3 @@ okf_version: "0.1"
 * [Task-045](./tasks/Task-045-lowering-table-and-reference-lowerer.md) - Lowering table, reference lowerer, lowered FR-006 document.
 * [Task-046](./tasks/Task-046-kernel-scope-amendments.md) - ARCH-005 and ADR-0002 one-paragraph amendments.
 * [Task-047](./tasks/Task-047-review-gap-analysis-and-pr.md) - Code review, gap analysis, PR.
-* [Update log](./log.md) - Chronological plan lifecycle.
