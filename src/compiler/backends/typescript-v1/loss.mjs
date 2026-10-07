@@ -299,7 +299,9 @@ export function representability(ir, options = {}) {
 		}
 
 		for (const [slot, field] of (type.fields ?? []).entries()) {
-			for (const [position, constraint] of (field?.constraints ?? []).entries()) {
+			for (const [position, constraint] of (
+				field?.constraints ?? []
+			).entries()) {
 				if (!inexactIntegerBound(constraint)) continue;
 				record({
 					code: LOSS_CODES.INTEGER_BOUND_NOT_EXACT.code,

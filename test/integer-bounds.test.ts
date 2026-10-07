@@ -82,10 +82,10 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 	it("the TypeScript backend emits a safe bound and refuses one past 2^53 (TC-1825)", () => {
 		const safe = generated(typescriptBackend, withBound("9007199254740991"));
 		expect(safe.diagnostics.filter((one) => one.blocking)).toEqual([]);
-		expect(safe.state).toBe("generated");
+		expect(safe.state).toBe("success");
 		expect(JSON.stringify(safe.files)).toContain("9007199254740991");
 		const unsafe = generated(typescriptBackend, withBound("9007199254740993"));
-		expect(unsafe.state).not.toBe("generated");
+		expect(unsafe.state).not.toBe("success");
 		expect(unsafe.diagnostics.map((one) => one.code)).toContain(
 			"agent-ix.typescript-backend.INTEGER_BOUND_NOT_EXACT",
 		);
@@ -97,7 +97,7 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 			withBound("9007199254740991"),
 		);
 		expect(safe.diagnostics.filter((one) => one.blocking)).toEqual([]);
-		expect(safe.state).toBe("generated");
+		expect(safe.state).toBe("success");
 		expect(JSON.stringify(safe.files)).toContain("9007199254740991");
 		const unsafe = generated(
 			jsonSchemaBackend as never,
