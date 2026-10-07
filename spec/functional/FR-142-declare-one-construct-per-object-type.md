@@ -7,8 +7,6 @@ relationships:
     type: "implements"
   - target: "ix://agent-ix/filament-core-data/FR-141"
     type: "depends_on"
-  - target: "ix://agent-ix/filament-core-data/NFR-044"
-    type: "constrained_by"
 ---
 # FR-142: Declare construct kinds as module data
 
@@ -117,4 +115,3 @@ mutable construct.
 
 - **Upstream**: [FR-141](./FR-141-carry-the-model-members-in-the-semantic-ir.md)
 - **Downstream**: [FR-143](./FR-143-lift-object-type-artifacts-to-their-constructs.md); the Rust, TypeScript and Python types for module artifact types and object types are [filament-core-data#150](https://github.com/agent-ix/filament-core-data/issues/150)
-- **Constrained by**: [NFR-044](../non-functional/NFR-044-preserve-semantic-ir-revision-compatibility.md)

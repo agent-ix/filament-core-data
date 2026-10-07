@@ -3,15 +3,6 @@ id: NFR-044
 title: "Refuse retired semantic IR contract versions"
 type: NFR
 quality_attribute: compatibility
-relationships:
-  - target: "ix://agent-ix/filament-core-data/FR-106"
-    type: "constrains"
-  - target: "ix://agent-ix/filament-core-data/FR-139"
-    type: "constrains"
-  - target: "ix://agent-ix/filament-core-data/FR-141"
-    type: "constrains"
-  - target: "ix://agent-ix/filament-core-data/FR-142"
-    type: "constrains"
 ---
 # NFR-044: Refuse retired semantic IR contract versions
 

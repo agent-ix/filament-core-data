@@ -46,3 +46,14 @@ AC, and the SysML bullet is ambiguous.
 | FND-1704 | medium | No AC covers these Behavior bullets: `decimal128` with precision above 34 (234-237); frontend rounding of an authored `float32` value to nearest binary32, ties to even (167-169); a parsed-value reader entry point skipping only the two exact-number cases (203-204); `float32` instance overflow rejection in Rust/TS (278-281, 301-302); a decimal instance `"-0"`/`"-0.00"` refused while `"1.10"` is admitted (269-271); and the ±2^53 counter cap on `line`/`column`/`precision`/`scale` (AC-9 tests only `multiplicity.upper` and `maxLength`) | spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md:167-169, spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md:199-204, spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md:234-237, spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md:269-281 |
 | FND-1705 | low | FR-144-AC-8 has the four readers agree (CON-1) but leaves out the inputs where their JSON parsers differ most: `1e400`/`-1e400` (no finite double: `JSON.parse` gives Infinity, Python `inf`, serde an error), `5e-324` (exact) and `9.007199254740993e15` (whole beyond 2^53 in decimal form). QSL FR-056-AC-13/14 lists them | spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md:366 |
 | FND-1706 | low | FR-144-AC-3 gives the refusal pointer as `/values/1`. Everywhere else, codes are raised at an RFC 6901 pointer into the document, here `.../operands/values/1` under the constraint. A test could assert either form | spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md:361 |
+
+## Dispositions
+
+Round 1, reviewed at bb823e67c6fd092bb7aafe2b87c6600d97a31845.
+
+| FND | outcome | sha/reason |
+| --- | --- | --- |
+| FND-1703 | fixed bb823e67 | The SysML bullet now writes the file, says FR-138's no-mapping refusal does not apply, and emits one non-blocking `agent-ix.sysml-target.DECLARED_LOSS` per `Real` subject; FR-144-AC-21 |
+| FND-1704 | fixed bb823e67 | New AC coverage: `decimal128` precision 35/34 and float32 rounding (AC-11); parsed-value entry point (AC-22); float32 overflow (AC-13, AC-14); decimal `-0`/`-0.00` (AC-13, AC-14); line/column/precision/scale counters (AC-9) |
+| FND-1705 | fixed bb823e67 | AC-8 adds `-9007199254740993`, `9.007199254740993e15`, `1e400`, `-1e400` (`INEXACT_INTEGER`, no parse failure), `4.9e-324` (`INEXACT_NUMBER`) and `5e-324` (exact), matching QSL FR-056-AC-13/14 |
+| FND-1706 | fixed bb823e67 | AC-3 gives the pointer as the constraint's own pointer followed by `/operands/values/1` |

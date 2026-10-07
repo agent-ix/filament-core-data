@@ -246,9 +246,10 @@ field whose subject is `any` is not a value site (FR-139).
 - The TypeSpec frontend SHALL write a width's bounds as constraints of a type
   definition, as FR-053 places every constraint: on a scalar declaration whose
   base is a width built-in, as constraints of that scalar definition; on a
-  member typed directly by one, as constraints of the alias FR-053 mints for
-  the member over the package-local `Integer` definition, exactly as if the
-  bounds were constraint decorators. The package-local `Integer` definition
+  model property, an indexer value, a union variant or an operation parameter
+  typed directly by one, as constraints of the alias FR-053 mints for that site
+  over the package-local `Integer` definition, exactly as if the bounds were
+  constraint decorators. No site typed by a width loses its bounds. The package-local `Integer` definition
   carries no bound.
 - Where a member also carries an authored bound of the same keyword, the
   TypeSpec frontend SHALL write one bound per keyword, the tighter of the width
@@ -464,6 +465,7 @@ round (AGE-2229's same-slice rule). For reference, the mapping is:
 | FR-144-AC-20 | A `uint64` member with `@maxValueExclusive(100)` carries `max` `"18446744073709551615"` and `exclusiveMax` `"100"`, has the effective range `[0, 99]`, and generates `i64` in Rust, `number` in TypeScript and `{"type": "integer", "minimum": 0, "maximum": 99}` in JSON Schema. | Test |
 | FR-144-AC-21 | The SysML v2 target over a document with an `integer`, a `decimal(5, 2)` and a `float32` field writes its file, maps the three to `ScalarValues::Integer`, `ScalarValues::Real` and `ScalarValues::Real`, and emits one non-blocking `agent-ix.sysml-target.DECLARED_LOSS` for each of the two `Real` fields naming the policy or the width. | Test |
 | FR-144-AC-22 | Given the parsed value of a document whose `float64` bound is `0.1000000000000000000001`, a reader's parsed-value entry point raises no `INEXACT_NUMBER`, while given the parsed value of a document whose `integer` bound is `"01"` it raises `INVALID_OPERAND` at the operand, as the bytes entry point does. | Test |
+| FR-144-AC-23 | An integer indexer typed `uint8`, a union variant typed `int16` and an operation parameter typed `uint64` each reference a minted alias over the package-local `Integer` definition carrying that width's `min` and `max` (`"0"`/`"255"`, `"-32768"`/`"32767"`, `"0"`/`"18446744073709551615"`) from `items`, `payloadType` and the parameter's `typeRef`; the `uint64` parameter generates `u64` in Rust. | Test |
 
 ## Dependencies
 
