@@ -53,7 +53,11 @@ const generated = (backend: typeof typescriptBackend, ir: Ir) =>
 	backend.generate({ ir } as never, { host } as never) as {
 		state: string;
 		files: unknown;
-		diagnostics: { code: string; message: string; blocking: boolean }[];
+		diagnostics: readonly {
+			code: string;
+			message: string;
+			blocking: boolean;
+		}[];
 	};
 
 const operand = "agent-ix.semantic-ir.INVALID_OPERAND";
