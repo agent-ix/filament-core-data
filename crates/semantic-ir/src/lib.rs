@@ -473,7 +473,7 @@ mod tests {
             assert_eq!(codes(&bound_bundle("Integer", accepted)), [], "{accepted}");
         }
         for refused in [
-            r#""01""#, r#""+1""#, r#"" 1""#, r#""1 ""#, r#""-0""#, r#""1.0""#, "true",
+            r#""01""#, r#""+1""#, r#"" 1""#, r#""1 ""#, r#""-0""#, r#""1.0""#,
         ] {
             assert_eq!(
                 codes(&bound_bundle("Integer", refused)),
@@ -484,6 +484,10 @@ mod tests {
         // The schema refuses an empty string before any rule reads it.
         assert_eq!(
             codes(&bound_bundle("Integer", r#""""#)),
+            [("SCHEMA_VIOLATION".to_string(), at.clone())]
+        );
+        assert_eq!(
+            codes(&bound_bundle("Integer", "true")),
             [("SCHEMA_VIOLATION".to_string(), at.clone())]
         );
         // Each of the four bound keywords takes the same operand forms.

@@ -110,10 +110,10 @@ none of the three is refused (ADR-0009).
 The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,
 `exclusiveMax`, `pattern`, `minLength`, `maxLength`, `enumValues`, `nonEmpty`,
 `unique`, `format`) with typed operands per keyword and an applicability table
-over the resolved kind. A `min`, `max`, `exclusiveMin` or `exclusiveMax` operand on an
+over the resolved kind. `source.dialect` is `typespec` or `spec-bundle`. A `min`, `max`, `exclusiveMin` or `exclusiveMax` operand on an
 `integer` scalar is a JSON number or a canonical decimal string (`0`, or an optional
 `-` and digits with no leading zero), so a bound past 2^53 is exact
-(`"18446744073709551615"`); a `number` scalar's bound is a JSON number. `source.dialect` is `typespec` or `spec-bundle`. Manifest
+(`"18446744073709551615"`); a `number` scalar's bound is a JSON number. Manifest
 targets bind to the declared registry: generated targets or representation
 formats, each defined once in `common.schema.json`. The worked example
 `fixtures/semantic/v1/positive/config-version-v2.json` lifts config-service
