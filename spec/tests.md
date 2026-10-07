@@ -232,7 +232,7 @@ blocked as stated above.
 | FR-047 | FR-047-AC-1..16, FR-047-CON-1..5 | TC-456..TC-476, TC-610, TC-615, TC-616, TC-618 | ✅ Complete |
 | FR-048 | FR-048-AC-1..11, FR-048-CON-1..4 | TC-477..TC-491, TC-613 | ✅ Complete |
 | FR-049 | FR-049-AC-1..14, FR-049-CON-1..4 | TC-492..TC-509, TC-605, TC-608, TC-609 | ✅ Complete |
-| FR-050 | FR-050-AC-1..13, FR-050-CON-1..4 | TC-510..TC-526, TC-600, TC-611, TC-617 | ✅ Complete |
+| FR-050 | FR-050-AC-1..14, FR-050-CON-1..4 | TC-510..TC-526, TC-600, TC-611, TC-617, TC-1825 | ✅ Complete |
 | FR-051 | FR-051-AC-1..6, FR-051-AC-11, FR-051-AC-15..17, FR-051-CON-1, FR-051-CON-2, FR-051-CON-4, FR-051-CON-5 | TC-527..TC-532, TC-537, TC-541..TC-546, TC-602, TC-1804 | ✅ Complete |
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
@@ -1770,6 +1770,7 @@ blocked as stated above.
 | TC-1822 | `decide` returns for a bundle nested a million levels deep | Unit | P1 | FR-059-AC-21 | ✅ passed |
 | TC-1823 | An operation's `redefines` resolves against supertype operations and compares return multiplicity | Unit | P1 | FR-141-AC-10 | ✅ passed |
 | TC-1824 | A text field and a scalar-string type carry a closed-set `textProfile`; other values and kinds are refused | Unit | P1 | FR-141-AC-11 | ✅ passed |
+| TC-1825 | An integer bound accepts a canonical decimal string beyond 2^53 and refuses a non-canonical one | Unit | P1 | FR-050-AC-14 | ✅ passed |
 | TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 | ✅ passed |
 
 ## Constraint Boundary Tests

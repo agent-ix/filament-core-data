@@ -422,7 +422,7 @@ function checkConstraint(constraint, at, types, out) {
 		const numeric =
 			resolved.scalar === "integer" || resolved.scalar === "number";
 		const value = operands.value;
-		if (numeric ? typeof value !== "number" : typeof value !== "string") {
+		if (!operandAdmitted(numeric, resolved.scalar, value)) {
 			out.push(
 				diagnostic(
 					"INVALID_OPERAND",
@@ -1496,4 +1496,20 @@ export function classify(beforeBundle, afterBundle) {
 		"patch",
 	);
 	return { classification, changes };
+}
+
+/**
+ * Whether a bound operand fits its scalar: a `number` or `integer` bound is a
+ * JSON number, and an `integer` bound may instead be a canonical decimal
+ * string (`0`, or an optional `-` and digits with no leading zero), so a value
+ * past 2^53 is exact; every other scalar's bound is a string.
+ */
+function operandAdmitted(numeric, scalar, value) {
+	if (!numeric) return typeof value === "string";
+	if (typeof value === "number") return true;
+	return (
+		scalar === "integer" &&
+		typeof value === "string" &&
+		/^(0|-?[1-9][0-9]*)$/.test(value)
+	);
 }

@@ -704,18 +704,23 @@ fn redefined_operations(
                 "a redefined operation is an operation of a supertype",
             ),
             Some(redefined) => {
-                // Two operations that both return compare their returns; an
-                // operation that returns nothing has no bounds to compare.
-                if let (Some(returns), Some(outer)) =
-                    (operation.get("returns"), redefined.get("returns"))
-                {
-                    if !narrows(returns, outer) {
-                        sink.emit(
-                            at,
-                            INVALID_REDEFINITION,
-                            "a redefinition keeps its return multiplicity within the bounds of the operation it redefines",
-                        );
-                    }
+                // An operation that declares no `returns` returns no value:
+                // its return multiplicity is `0..0`. A redefinition keeps the
+                // redefined operation's bounds, so redefining an operation
+                // that returns with one that does not, or the reverse, leaves
+                // the bounds and is `INVALID_REDEFINITION`; two operations
+                // that both return nothing agree.
+                let within = match (operation.get("returns"), redefined.get("returns")) {
+                    (Some(inner), Some(outer)) => narrows(inner, outer),
+                    (None, None) => true,
+                    (Some(_), None) | (None, Some(_)) => false,
+                };
+                if !within {
+                    sink.emit(
+                        at,
+                        INVALID_REDEFINITION,
+                        "a redefinition keeps its return multiplicity within the bounds of the operation it redefines, and an operation without returns returns no value",
+                    );
                 }
             }
         }

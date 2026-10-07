@@ -110,7 +110,10 @@ none of the three is refused (ADR-0009).
 The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,
 `exclusiveMax`, `pattern`, `minLength`, `maxLength`, `enumValues`, `nonEmpty`,
 `unique`, `format`) with typed operands per keyword and an applicability table
-over the resolved kind. `source.dialect` is `typespec` or `spec-bundle`. Manifest
+over the resolved kind. A `min`, `max`, `exclusiveMin` or `exclusiveMax` operand on an
+`integer` scalar is a JSON number or a canonical decimal string (`0`, or an optional
+`-` and digits with no leading zero), so a bound past 2^53 is exact
+(`"18446744073709551615"`); a `number` scalar's bound is a JSON number. `source.dialect` is `typespec` or `spec-bundle`. Manifest
 targets bind to the declared registry: generated targets or representation
 formats, each defined once in `common.schema.json`. The worked example
 `fixtures/semantic/v1/positive/config-version-v2.json` lifts config-service
@@ -159,7 +162,7 @@ frontend) is verbatim, as the paragraph below the table states:
 | `state` | `state/<Name>-<state>` | owner state machine, state |
 | `transition` | `transition/<Name>-<from>-<to>-<trigger>` | owner state machine, from state, to state, trigger operation (a transition row has no name) |
 | `step` | `step/<Name>-<step>` | owner process, step |
-| `constraint` | `constraint/<Name>-<field>-<keyword>` for a field constraint; `constraint/<Name>-<keyword>` for a type constraint | owner, (field,) keyword |
+| `constraint` | `constraint/<Name>-<field>-<keyword>` for a field constraint; `constraint/<Name>/<keyword>` for a type constraint | owner, (field,) keyword |
 
 `<Name>` is the declaring type's name part. The TypeSpec frontend takes it
 from the declaration name, and slugs it. The spec-bundle frontend takes it
@@ -495,12 +498,15 @@ Schemas, metadata, mappings, examples, options, names, and references are
 untrusted. Implementations must prevent code execution, undeclared network
 access, path/symlink escape, and writes outside a fresh output root. Collection sizes,
 input bytes, and diagnostic volume must
-have declared finite limits and terminate with source-located diagnostics. Graph depth and reference expansion
-carry no implementation limit: a reader keeps the state of every walk on the
-heap, so a nesting, an alias chain, a composite or package cycle or a
-supertype hierarchy of any depth is read, walked and reported, and a cycle is
-reported whatever its length. A consumer that wants a depth report configures
-a limit and receives `DEPTH_LIMIT_EXCEEDED` at the node that exceeds it.
+have declared finite limits and terminate with source-located diagnostics. The Rust reader (`semantic-ir`) puts no limit on graph depth or
+reference expansion: it keeps the state of every walk on the heap, so a
+nesting, an alias chain, a composite or package cycle or a supertype hierarchy
+of any depth is read, walked and reported, and a cycle is reported whatever its
+length. A consumer that wants a depth report configures a limit and receives
+`DEPTH_LIMIT_EXCEEDED` at the node that exceeds it. The Node reader and the
+oracle keep FR-068's declared depth bound (256 for `admitIr`, 128 for the
+reader's `maxDepth`), so for them a ring or chain longer than the bound reports
+`DEPTH_LIMIT_EXCEEDED` where the Rust reader reports the cycle.
 
 ## Promotion boundary
 

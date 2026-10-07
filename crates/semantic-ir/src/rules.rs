@@ -8,6 +8,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use crate::diag::{child, index, locus_for, owner_for, Located, Severity};
 use crate::json::Json;
 use crate::regex262;
+use crate::schema::SCHEMA_VIOLATION;
 use crate::vocabulary::Shape;
 
 /// The limits the cross-field rules run under, each used as the caller gives
@@ -822,6 +823,27 @@ fn field_rules(
                 );
             }
         }
+        if field.has("textProfile") {
+            // Unresolved references are reported by their own rule; only a
+            // reference that resolves to something other than a text scalar
+            // is refused here.
+            let resolved = type_ref.and_then(|identity| document.resolve(identity));
+            let is_text = match resolved {
+                Some(Resolved::Native(scalar)) => scalar == "string",
+                Some(Resolved::Node(node)) => {
+                    node.get("kind").and_then(Json::as_str) == Some("scalar")
+                        && node.get("scalar").and_then(Json::as_str) == Some("string")
+                }
+                None => true,
+            };
+            if !is_text {
+                sink.emit(
+                    child(&field_at, "textProfile"),
+                    SCHEMA_VIOLATION,
+                    "a text profile is carried only where the type reference resolves to a text scalar",
+                );
+            }
+        }
         // A constrained field keeps its constraints inline, with no alias
         // node between them (gap 1 of FCD #199/#200); `Document::resolve`
         // already resolves a field identity directly through `field_of`, so
@@ -858,6 +880,17 @@ fn applies_to(keyword: &str, kind: &str, scalar: &str) -> bool {
         }
         "unique" => matches!(kind, "sequence" | "map"),
         _ => true,
+    }
+}
+
+/// A canonical decimal integer: `0`, or an optional `-` and digits with no
+/// leading zero. No `+`, no spaces, no `-0`.
+fn is_canonical_integer(text: &str) -> bool {
+    let digits = text.strip_prefix('-').unwrap_or(text);
+    match digits.as_bytes() {
+        [b'0'] => !text.starts_with('-'),
+        [first, rest @ ..] => (b'1'..=b'9').contains(first) && rest.iter().all(u8::is_ascii_digit),
+        [] => false,
     }
 }
 
@@ -901,14 +934,19 @@ fn constraint_rules(
         if matches!(keyword, "min" | "max" | "exclusiveMin" | "exclusiveMax")
             && matches!(scalar, "integer" | "number")
         {
-            match constraint.get("operands").and_then(|o| o.get("value")) {
-                Some(Json::Number(_)) => {}
-                Some(_) => sink.emit(
+            // An integer bound may be a canonical decimal string, so a value
+            // past 2^53 is exact; a `number` bound is a JSON number.
+            let admitted = match constraint.get("operands").and_then(|o| o.get("value")) {
+                Some(Json::Number(_)) | None => true,
+                Some(Json::Str(text)) => scalar == "integer" && is_canonical_integer(text),
+                Some(_) => false,
+            };
+            if !admitted {
+                sink.emit(
                     child(&child(constraint_at, "operands"), "value"),
                     INVALID_OPERAND,
-                    "a numeric keyword on a numeric scalar takes a number operand",
-                ),
-                None => {}
+                    "a numeric keyword on a numeric scalar takes a number operand, or a canonical decimal string on an integer",
+                );
             }
         }
     }
@@ -1590,6 +1628,26 @@ mod tests {
         }
         text.push_str(r#",{"identity":"ix://acme/pkg/Leaf","kind":"record"}]}}"#);
         parse(&text).expect("a document")
+    }
+
+    /// `decide` on a 100,000-link alias chain finishes in linear time: every
+    /// alias is walked once, however long the chain.
+    ///
+    /// Tracing: TC-1821
+    /// ACs: FR-059-AC-20
+    #[test]
+    fn tc_1821_decide_on_a_100000_link_alias_chain_is_linear() {
+        let bundle = alias_chain(100_000);
+        let started = std::time::Instant::now();
+        let _ = decide(&bundle);
+        // Quadratic work on this chain takes minutes in a debug build; the
+        // linear walk takes well under a second. The bound leaves a busy
+        // machine room.
+        assert!(
+            started.elapsed() < std::time::Duration::from_secs(30),
+            "{:?}",
+            started.elapsed()
+        );
     }
 
     /// An acyclic alias chain of any length resolves and walks without a

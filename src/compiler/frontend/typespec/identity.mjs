@@ -21,6 +21,7 @@ export const SLOTS = Object.freeze({
 	operation: ["owner", "name"],
 	clause: ["owner", "clauseId"],
 	constraint: ["owner", "keyword"],
+	typeConstraint: ["owner", "keyword"],
 });
 
 /**
@@ -48,6 +49,11 @@ export function mintIdentity(packageIdentity, slot, parts) {
 	const slugged = parts.map(slug).filter((part) => part.length > 0);
 	if (slot === "type" || slot === "field" || slot === "operation") {
 		return `ix://${packageIdentity}/${slugged.join("/")}`;
+	}
+	if (slot === "typeConstraint") {
+		// A constraint a value type carries on itself nests its keyword under
+		// the owner with `/`, a character no other constraint form contains.
+		return `ix://${packageIdentity}/constraint/${slugged.join("/")}`;
 	}
 	return `ix://${packageIdentity}/${slot}/${slugged.join("-")}`;
 }

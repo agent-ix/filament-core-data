@@ -104,29 +104,94 @@ fn apply_one(document: Json, op: &Json) -> Result<Json, PatchError> {
 }
 
 /// Replaces `$i` with the copy index and `$n` with its successor, everywhere a
-/// string appears in the template.
+/// string appears in the template: string values and member names alike.
+///
+/// Walks the template with an explicit frame stack, so a template of any depth
+/// substitutes on any thread.
 fn substitute(template: &Json, copy: usize) -> Json {
-    match template {
-        Json::Str(text) => Json::Str(
-            text.replace("$i", &copy.to_string())
-                .replace("$n", &(copy + 1).to_string()),
-        ),
-        Json::Array(items) => {
-            Json::Array(items.iter().map(|item| substitute(item, copy)).collect())
+    enum Frame<'a> {
+        Array {
+            items: &'a [Json],
+            next: usize,
+            out: Vec<Json>,
+        },
+        Object {
+            members: &'a [(String, Json)],
+            next: usize,
+            out: Vec<(String, Json)>,
+            name: String,
+        },
+    }
+    fn text(value: &str, copy: usize) -> String {
+        value
+            .replace("$i", &copy.to_string())
+            .replace("$n", &(copy + 1).to_string())
+    }
+    // A scalar is finished at once; a container opens a frame.
+    fn enter<'a>(node: &'a Json, stack: &mut Vec<Frame<'a>>, copy: usize) -> Option<Json> {
+        match node {
+            Json::Str(value) => Some(Json::Str(text(value, copy))),
+            Json::Array(items) => {
+                stack.push(Frame::Array {
+                    items,
+                    next: 0,
+                    out: Vec::with_capacity(items.len()),
+                });
+                None
+            }
+            Json::Object(members) => {
+                stack.push(Frame::Object {
+                    members,
+                    next: 0,
+                    out: Vec::with_capacity(members.len()),
+                    name: String::new(),
+                });
+                None
+            }
+            other => Some(other.clone()),
         }
-        Json::Object(members) => Json::Object(
-            members
-                .iter()
-                .map(|(name, value)| {
-                    (
-                        name.replace("$i", &copy.to_string())
-                            .replace("$n", &(copy + 1).to_string()),
-                        substitute(value, copy),
-                    )
-                })
-                .collect(),
-        ),
-        other => other.clone(),
+    }
+    let mut stack: Vec<Frame<'_>> = Vec::new();
+    let mut finished = enter(template, &mut stack, copy);
+    loop {
+        if let Some(value) = finished.take() {
+            match stack.last_mut() {
+                None => return value,
+                Some(Frame::Array { out, .. }) => out.push(value),
+                Some(Frame::Object { out, name, .. }) => {
+                    out.push((std::mem::take(name), value));
+                }
+            }
+        }
+        let child = match stack.last_mut() {
+            Some(Frame::Array { items, next, .. }) => {
+                let child = items.get(*next);
+                *next += 1;
+                child
+            }
+            Some(Frame::Object {
+                members,
+                next,
+                name,
+                ..
+            }) => {
+                let child = members.get(*next);
+                *next += 1;
+                if let Some((member, _)) = child {
+                    *name = text(member, copy);
+                }
+                child.map(|(_, value)| value)
+            }
+            None => return Json::Null,
+        };
+        finished = match child {
+            Some(child) => enter(child, &mut stack, copy),
+            None => match stack.pop() {
+                Some(Frame::Array { out, .. }) => Some(Json::Array(out)),
+                Some(Frame::Object { out, .. }) => Some(Json::Object(out)),
+                None => return Json::Null,
+            },
+        };
     }
 }
 
@@ -282,6 +347,41 @@ mod tests {
             to_canonical_string(&patched),
             r#"{"a":[2,3],"b":{"c":"y"},"e":"y"}"#
         );
+    }
+
+    /// `x-repeat` substitutes into a template a million levels deep on a
+    /// 512 KiB thread.
+    ///
+    /// Tracing: TC-1820
+    /// ACs: FR-059-AC-17
+    #[test]
+    fn tc_1820_x_repeat_substitutes_a_deep_template_on_a_small_stack() {
+        const DEPTH: usize = 1_000_000;
+        std::thread::Builder::new()
+            .stack_size(512 * 1024)
+            .spawn(|| {
+                let template = format!("{}\"L$i\"{}", "[".repeat(DEPTH), "]".repeat(DEPTH));
+                let ops = parse(&format!(
+                    r#"[{{"op":"x-repeat","path":"/t/-","count":2,"template":{template}}}]"#
+                ))
+                .expect("a deep patch reads");
+                let base = parse(r#"{"t":[]}"#).expect("a document");
+                let patched = apply(&base, ops.as_array().unwrap_or(&[])).expect("it applies");
+                let copies = patched.get("t").and_then(Json::as_array).expect("copies");
+                assert_eq!(copies.len(), 2);
+                // The innermost string of the second copy is `L1`.
+                let mut node = &copies[1];
+                let mut depth = 0usize;
+                while let Some(inner) = node.as_array().and_then(|items| items.first()) {
+                    node = inner;
+                    depth += 1;
+                }
+                assert_eq!(depth, DEPTH);
+                assert_eq!(node.as_str(), Some("L1"));
+            })
+            .expect("spawn a 512 KiB thread")
+            .join()
+            .expect("substituting must not overflow a 512 KiB stack");
     }
 
     #[test]

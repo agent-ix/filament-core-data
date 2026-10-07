@@ -1,6 +1,6 @@
 {
 	"id": "CONS-006",
-	"title": "A string operand on a numeric keyword is rejected",
+	"title": "A non-numeric string operand on an integer keyword is rejected",
 	"family": "constraint",
 	"class": "negative",
 	"kind": "document",
@@ -15,7 +15,7 @@
 		{
 			"op": "replace",
 			"path": "/ir/types/1/constraints/0/operands/value",
-			"value": "0"
+			"value": "zero"
 		}
 	],
 	"covers": ["CR-constraint"],

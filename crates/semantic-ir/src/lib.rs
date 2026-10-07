@@ -201,11 +201,11 @@ mod tests {
         )
     }
 
-    /// A `Base` and a `Sub` specializing it, each with a `size` operation;
-    /// `sub_operation` is `Sub`'s.
     /// The members of a `2.0.0` IR document besides its types.
     const HEADER: &str = r#""contractVersion":"2.0.0","source":{"dialect":"spec-bundle","digest":"sha256:ea98d2dccb8b5d16936209f232e1d8115d404f519f0d110a8f9207190d83bbcf","identity":"ix://acme/pkg/spec","version":"0.0.0"},"package":{"identity":"acme/pkg","lockDigest":"sha256:8b58fb1a6b5d597159c1f0b28c6a2088e5d5eb15665d3add2414c72025e0adc5","manifestDigest":"sha256:c13bc6a59950fbb3338deaec4a8b6975b4815aef8e1756c8262e8b43452de5a6","mappingVersions":["1.0.0"],"profileVersions":[],"version":"0.0.0"},"occurrences":[],"extensions":[],"constructs":[]"#;
 
+    /// A `Base` and a `Sub` specializing it, each with a `size` operation;
+    /// `sub_operation` is `Sub`'s.
     fn operations_bundle(base_upper: i64, sub_operation: &str) -> Json {
         let base = record(
             "ix://acme/pkg/Base",
@@ -280,8 +280,12 @@ mod tests {
     }
 
     fn text_bundle(field_profile: &str, type_members: &str) -> Json {
+        text_bundle_of("String", field_profile, type_members)
+    }
+
+    fn text_bundle_of(native: &str, field_profile: &str, type_members: &str) -> Json {
         let field = format!(
-            r#"{{"identity":"ix://acme/pkg/Item/sku","name":"sku","typeRef":"ix://quire/native/String","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{}{field_profile}}}"#,
+            r#"{{"identity":"ix://acme/pkg/Item/sku","name":"sku","typeRef":"ix://quire/native/{native}","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{}{field_profile}}}"#,
             multiplicity(1, 1)
         );
         let item = format!(
@@ -291,6 +295,100 @@ mod tests {
             r#"{{"identity":"ix://acme/pkg/Code","displayName":"Code","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"{type_members}}}"#
         );
         parse(&format!(r#"{{"ir":{{{HEADER},"types":[{item},{code}]}}}}"#)).expect("a bundle")
+    }
+
+    /// A text profile is a text member: a field whose type resolves to an
+    /// integer is refused, and one that resolves to text through an alias is not.
+    ///
+    /// Tracing: TC-1824
+    /// ACs: FR-141-AC-11
+    #[test]
+    fn tc_1824_a_text_profile_on_a_non_text_field_is_refused() {
+        let field_at = "/ir/types/0/fields/0/textProfile".to_string();
+        let profile = r#","textProfile":"nfc""#;
+        assert_eq!(
+            codes(&text_bundle_of("Integer", profile, "")),
+            [("SCHEMA_VIOLATION".to_string(), field_at)]
+        );
+        assert_eq!(codes(&text_bundle_of("String", profile, "")), []);
+    }
+
+    /// An operation that declares no `returns` returns no value (`0..0`), so
+    /// redefining across that line leaves the redefined bounds.
+    ///
+    /// Tracing: TC-1823
+    /// ACs: FR-141-AC-10
+    #[test]
+    fn tc_1823_a_redefinition_agrees_with_the_redefined_operation_on_returning() {
+        let at = "/ir/types/1/operations/0/redefines".to_string();
+        let silent = |identity: &str, redefines: &str| {
+            format!(
+                r#"{{"identity":"{identity}","name":"size","params":[],"pre":[],"post":[],"origin":{GENERATED}{redefines}}}"#
+            )
+        };
+        let redefines = r#","redefines":"ix://acme/pkg/Base/size""#;
+        // Base returns, Sub does not.
+        assert_eq!(
+            codes(&operations_bundle(
+                3,
+                &silent("ix://acme/pkg/Sub/size", redefines)
+            )),
+            [("INVALID_REDEFINITION".to_string(), at.clone())]
+        );
+        // Sub returns, Base does not.
+        let base = record(
+            "ix://acme/pkg/Base",
+            "",
+            &silent("ix://acme/pkg/Base/size", ""),
+        );
+        let sub = record(
+            "ix://acme/pkg/Sub",
+            r#","supertypes":["ix://acme/pkg/Base"]"#,
+            &operation("ix://acme/pkg/Sub/size", 1, redefines),
+        );
+        let bundle = parse(&format!(r#"{{"ir":{{{HEADER},"types":[{base},{sub}]}}}}"#)).unwrap();
+        assert_eq!(codes(&bundle), [("INVALID_REDEFINITION".to_string(), at)]);
+        // Neither returns.
+        let sub = record(
+            "ix://acme/pkg/Sub",
+            r#","supertypes":["ix://acme/pkg/Base"]"#,
+            &silent("ix://acme/pkg/Sub/size", redefines),
+        );
+        let bundle = parse(&format!(r#"{{"ir":{{{HEADER},"types":[{base},{sub}]}}}}"#)).unwrap();
+        assert_eq!(codes(&bundle), []);
+    }
+
+    /// `decide` on a schema-valid document carrying a million-level extension
+    /// payload succeeds on a 512 KiB thread.
+    ///
+    /// Tracing: TC-1822
+    /// ACs: FR-059-AC-21
+    #[test]
+    fn tc_1822_decides_a_schema_valid_deep_payload_on_a_small_stack() {
+        const DEPTH: usize = 1_000_000;
+        std::thread::Builder::new()
+            .stack_size(512 * 1024)
+            .spawn(|| {
+                let deep = format!("{}0{}", "[".repeat(DEPTH), "]".repeat(DEPTH));
+                let extension = format!(
+                    r#"{{"identity":"ix://acme/pkg/extension/deep","payload":{deep},"required":false,"version":"1.0.0"}}"#
+                );
+                let item = format!(
+                    r#"{{"identity":"ix://acme/pkg/Item","displayName":"Item","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[{extension}],"unknownPolicy":"reject","fields":[]}}"#
+                );
+                let bundle = parse(&format!(r#"{{"ir":{{{HEADER},"types":[{item}]}}}}"#))
+                    .expect("a million levels read");
+                let verdict = decide(&bundle);
+                assert_eq!(
+                    verdict.result_state,
+                    ResultState::Success,
+                    "{:?}",
+                    verdict.diagnostics.first().map(|d| (&d.code, &d.pointer))
+                );
+            })
+            .expect("spawn a 512 KiB thread")
+            .join()
+            .expect("deciding must not overflow a 512 KiB stack");
     }
 
     /// A text field, and a text value type (a scalar of scalar `string`),
@@ -337,5 +435,51 @@ mod tests {
                 "{kind}: {found:?}"
             );
         }
+    }
+
+    fn bound_bundle(native: &str, operand: &str) -> Json {
+        let constraint = format!(
+            r#"{{"identity":"ix://acme/pkg/constraint/Item-count-max","appliesTo":"ix://acme/pkg/Item/count","keyword":"max","operands":{{"value":{operand}}},"diagnosticCode":"acme.pkg.ITEM_COUNT_MAX","origin":{GENERATED}}}"#
+        );
+        let field = format!(
+            r#"{{"identity":"ix://acme/pkg/Item/count","name":"count","typeRef":"ix://quire/native/{native}","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{},"constraints":[{constraint}]}}"#,
+            multiplicity(1, 1)
+        );
+        let item = format!(
+            r#"{{"identity":"ix://acme/pkg/Item","displayName":"Item","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{field}]}}"#
+        );
+        parse(&format!(r#"{{"ir":{{{HEADER},"types":[{item}]}}}}"#)).expect("a bundle")
+    }
+
+    /// An integer bound is a number or a canonical decimal string, so a bound
+    /// past 2^53 is exact; a non-canonical string is refused.
+    ///
+    /// Tracing: TC-1825
+    /// ACs: FR-050-AC-14
+    #[test]
+    fn tc_1825_an_integer_bound_accepts_a_canonical_decimal_string() {
+        let at = "/ir/types/0/fields/0/constraints/0/operands/value".to_string();
+        for accepted in [
+            r#""18446744073709551615""#,
+            r#""-9223372036854775809""#,
+            r#""0""#,
+            "7",
+        ] {
+            assert_eq!(codes(&bound_bundle("Integer", accepted)), [], "{accepted}");
+        }
+        for refused in [
+            r#""01""#, r#""+1""#, r#"" 1""#, r#""1 ""#, r#""-0""#, r#""""#, r#""1.0""#, "true",
+        ] {
+            assert_eq!(
+                codes(&bound_bundle("Integer", refused)),
+                [("INVALID_OPERAND".to_string(), at.clone())],
+                "{refused}"
+            );
+        }
+        // A `number` bound stays a JSON number.
+        assert_eq!(
+            codes(&bound_bundle("Number", r#""18446744073709551615""#)),
+            [("INVALID_OPERAND".to_string(), at)]
+        );
     }
 }
