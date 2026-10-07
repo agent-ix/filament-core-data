@@ -539,10 +539,10 @@ mod tests {
         }
         // A record of fields typed by the head of the chain, each carrying a
         // text profile and a unit, so each resolves that chain once.
-        let fields: Vec<String> = (0..COUNT / 10)
+        let fields: Vec<String> = (0..COUNT)
             .map(|position| {
                 format!(
-                    r#"{{"identity":"ix://acme/pkg/Holder/f{position}","name":"f{position}","typeRef":"ix://acme/pkg/A0","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{}}}"#,
+                    r#"{{"identity":"ix://acme/pkg/Holder/f{position}","name":"f{position}","typeRef":"ix://acme/pkg/A0","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{},"textProfile":"nfc"}}"#,
                     multiplicity(1, 1)
                 )
             })
@@ -551,7 +551,9 @@ mod tests {
             r#"{{"identity":"ix://acme/pkg/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{}]}}"#,
             fields.join(",")
         ));
-        types.push(record("ix://acme/pkg/Leaf", "", ""));
+        types.push(format!(
+            r#"{{"identity":"ix://acme/pkg/Leaf","displayName":"Leaf","kind":"scalar","scalar":"string","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"}}"#
+        ));
         let valid = parse(&format!(
             r#"{{"ir":{{{HEADER},"types":[{}]}}}}"#,
             types.join(",")
