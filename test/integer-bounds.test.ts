@@ -157,7 +157,31 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		// Through generation, the literal is the one the Rust source carries.
 		const generated = rustBackend.generate(
 			{
+				contractVersion: "1.0.0",
+				lockFingerprint: `sha256:${"a".repeat(64)}`,
 				ir: withBound("9223372036854775807"),
+				profile: JSON.parse(
+					readFileSync(
+						resolve(root, "fixtures/semantic/v1/positive/profile.json"),
+						"utf8",
+					),
+				),
+				mappings: [],
+				backend: {
+					identity: rustBackend.identity,
+					version: rustBackend.version,
+					supportedIrVersions: [...rustBackend.supportedIrVersions],
+					supportedFeatures: [...rustBackend.supportedFeatures],
+					options: {},
+				},
+				outputRoot: "generated/rust",
+				limits: {
+					maxInputBytes: 33554432,
+					maxDepth: 256,
+					maxNodes: 1000000,
+					maxCollectionItems: 100000,
+					maxDiagnostics: 1000,
+				},
 			} as never,
 			{ host } as never,
 		) as {
