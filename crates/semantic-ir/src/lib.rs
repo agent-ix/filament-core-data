@@ -438,8 +438,12 @@ mod tests {
     }
 
     fn bound_bundle(native: &str, operand: &str) -> Json {
+        bound_bundle_of("max", native, operand)
+    }
+
+    fn bound_bundle_of(keyword: &str, native: &str, operand: &str) -> Json {
         let constraint = format!(
-            r#"{{"identity":"ix://acme/pkg/constraint/Item-count-max","appliesTo":"ix://acme/pkg/Item/count","keyword":"max","operands":{{"value":{operand}}},"diagnosticCode":"acme.pkg.ITEM_COUNT_MAX","origin":{GENERATED}}}"#
+            r#"{{"identity":"ix://acme/pkg/constraint/Item-count-max","appliesTo":"ix://acme/pkg/Item/count","keyword":"{keyword}","operands":{{"value":{operand}}},"diagnosticCode":"acme.pkg.ITEM_COUNT_MAX","origin":{GENERATED}}}"#
         );
         let field = format!(
             r#"{{"identity":"ix://acme/pkg/Item/count","name":"count","typeRef":"ix://quire/native/{native}","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{},"constraints":[{constraint}]}}"#,
@@ -474,6 +478,23 @@ mod tests {
                 codes(&bound_bundle("Integer", refused)),
                 [("INVALID_OPERAND".to_string(), at.clone())],
                 "{refused}"
+            );
+        }
+        // Each of the four bound keywords takes the same operand forms.
+        for keyword in ["min", "max", "exclusiveMin", "exclusiveMax"] {
+            assert_eq!(
+                codes(&bound_bundle_of(
+                    keyword,
+                    "Integer",
+                    r#""18446744073709551615""#
+                )),
+                [],
+                "{keyword}"
+            );
+            assert_eq!(
+                codes(&bound_bundle_of(keyword, "Integer", r#""007""#)),
+                [("INVALID_OPERAND".to_string(), at.clone())],
+                "{keyword}"
             );
         }
         // A `number` bound stays a JSON number.
