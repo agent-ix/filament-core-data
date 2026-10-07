@@ -509,7 +509,7 @@ mod tests {
         }
         // A `number` bound stays a JSON number.
         assert_eq!(
-            codes(&bound_bundle("Number", r#""18446744073709551615""#)),
+            codes(&bound_bundle("Decimal", r#""18446744073709551615""#)),
             [("INVALID_OPERAND".to_string(), at)]
         );
     }
