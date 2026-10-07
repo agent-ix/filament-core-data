@@ -174,6 +174,23 @@ function lowerOne(constraint, keyword, identity, resolved, raise, options) {
 function lowerBound(constraint, keyword, identity, resolved, raise) {
 	const value = constraint.operands?.value;
 	const scalar = resolved.scalar;
+	if (scalar === "integer" && typeof value === "string") {
+		// The IR carries an integer bound as a canonical decimal string so it is
+		// exact past 2^53 (contracts-v1). This backend's integer is `i64`, so the
+		// string is emitted as it is when it fits one and refused when it does not.
+		const fits =
+			/^(0|-?[1-9][0-9]*)$/.test(value) &&
+			BigInt(value) >= -(2n ** 63n) &&
+			BigInt(value) < 2n ** 63n;
+		if (!fits) {
+			raise(
+				RUST_BACKEND_CODES.INVALID_OPERAND,
+				`the constraint ${fragment(identity)} bounds an integer subject with ${fragment(JSON.stringify(value))}, which is not a canonical decimal integer within i64`,
+			);
+			return undefined;
+		}
+		return { identity, keyword, form: "numeric", scalar, value };
+	}
 	if (scalar === "integer" || scalar === "number") {
 		if (typeof value !== "number" || !Number.isFinite(value)) {
 			raise(

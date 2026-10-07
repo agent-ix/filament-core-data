@@ -184,6 +184,10 @@ function orderedCondition(scalar, operator, value) {
 	if (scalar === "date" || scalar === "datetime") {
 		return `Date.parse(candidate) ${operator} Date.parse(${literal(value)})`;
 	}
+	// An integer bound may be a canonical decimal string (contracts-v1). A TypeScript
+	// `number` candidate is a double, so the bound is compared as the double it rounds to.
+	if (typeof value === "string")
+		return `candidate ${operator} ${Number(value)}`;
 	return `candidate ${operator} ${literal(value)}`;
 }
 

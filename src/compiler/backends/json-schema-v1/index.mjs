@@ -161,7 +161,14 @@ function constraint(schema, one, subject) {
 	else if (key === "enumValues") schema.enum = one.operands.values;
 	else if (key === "pattern") schema.pattern = one.operands.regex;
 	else if (key === "format") schema.format = FORMAT_MAP[one.operands.name];
-	else if (table[key] && value !== undefined) schema[table[key]] = value;
+	else if (table[key] && value !== undefined) {
+		// An integer bound may be a canonical decimal string (contracts-v1); a JSON
+		// Schema bound is a number, written as the double the string rounds to.
+		schema[table[key]] =
+			subject?.scalar === "integer" && typeof value === "string"
+				? Number(value)
+				: value;
+	}
 	return schema;
 }
 function annotated(schema, node) {
