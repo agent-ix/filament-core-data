@@ -19,20 +19,41 @@
 use crate::number::ecma_number_to_string;
 use core::fmt::Write as _;
 
-/// The maximum nesting depth the reader accepts.
+/// The default number of input bytes the reader accepts.
 ///
-/// A reader that recurses without a bound turns a hostile document into a stack
-/// overflow, which is an abort and not a diagnostic. `contracts-v1.md` requires
-/// that "graph depth, reference expansion, collection sizes, input bytes, and
-/// diagnostic volume must have declared finite limits and terminate with
-/// source-located diagnostics".
-pub const MAX_DEPTH: usize = 200;
-
-/// The maximum number of input bytes the reader accepts.
+/// A byte limit bounds a document's size, not its shape: the reader reads a
+/// document of any nesting depth over an explicit heap stack, so nesting costs
+/// bytes and is never a limit of its own. The caller sets both limits through
+/// [`ReadLimits`].
 pub const MAX_INPUT_BYTES: usize = 64 * 1024 * 1024;
 
+/// The limits one read runs under, each used as the caller gives it.
+///
+/// `max_bytes` bounds the input's length. `max_depth` is `None` by default and
+/// bounds the arrays and objects enclosing any one value only when the caller
+/// asks for it; no depth is compiled in.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct ReadLimits {
+    /// The most input bytes the reader accepts.
+    pub max_bytes: usize,
+    /// The most arrays and objects that may enclose any one value, or `None`
+    /// for no depth limit.
+    pub max_depth: Option<usize>,
+}
+
+impl Default for ReadLimits {
+    fn default() -> Self {
+        Self {
+            max_bytes: MAX_INPUT_BYTES,
+            max_depth: None,
+        }
+    }
+}
+
 /// A JSON value that retains number lexemes, member order, and duplicates.
-#[derive(Debug, Clone, PartialEq, Eq)]
+///
+/// Dropping, cloning, comparing and formatting a value walk it over an
+/// explicit heap stack, so a document of any depth is handled on any thread.
 pub enum Json {
     /// `null`.
     Null,
@@ -48,18 +69,284 @@ pub enum Json {
     Object(Vec<(String, Json)>),
 }
 
+/// Why a read stopped.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum JsonErrorKind {
+    /// The input is not a JSON document.
+    Malformed,
+    /// The input is longer than the configured byte limit.
+    InputBytes {
+        /// The configured limit.
+        limit: usize,
+    },
+    /// A value is enclosed by more arrays and objects than the configured
+    /// depth limit.
+    Depth {
+        /// The configured limit.
+        limit: usize,
+    },
+}
+
 /// A positioned reader error.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct JsonError {
     /// What went wrong.
     pub message: String,
     /// The byte offset the reader stopped at.
     pub offset: usize,
+    /// Whether the input was malformed or reached a configured limit.
+    pub kind: JsonErrorKind,
 }
 
 impl core::fmt::Display for JsonError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         write!(f, "{} at byte {}", self.message, self.offset)
+    }
+}
+
+/// Moves the children of `node` onto `stack`, leaving it a childless node.
+fn take_children(node: &mut Json, stack: &mut Vec<Json>) {
+    match node {
+        Json::Array(items) => stack.append(items),
+        Json::Object(members) => stack.extend(members.drain(..).map(|(_, value)| value)),
+        Json::Null | Json::Bool(_) | Json::Number(_) | Json::Str(_) => {}
+    }
+}
+
+impl Drop for Json {
+    fn drop(&mut self) {
+        let mut stack = Vec::new();
+        take_children(self, &mut stack);
+        while let Some(mut node) = stack.pop() {
+            take_children(&mut node, &mut stack);
+        }
+    }
+}
+
+impl Clone for Json {
+    fn clone(&self) -> Self {
+        enum Frame<'a> {
+            Enter(&'a Json),
+            Array(usize),
+            Object(&'a [(String, Json)]),
+        }
+        let mut work = vec![Frame::Enter(self)];
+        let mut done: Vec<Json> = Vec::new();
+        while let Some(frame) = work.pop() {
+            match frame {
+                Frame::Enter(node) => match node {
+                    Json::Null => done.push(Json::Null),
+                    Json::Bool(value) => done.push(Json::Bool(*value)),
+                    Json::Number(lexeme) => done.push(Json::Number(lexeme.clone())),
+                    Json::Str(text) => done.push(Json::Str(text.clone())),
+                    Json::Array(items) => {
+                        work.push(Frame::Array(items.len()));
+                        work.extend(items.iter().rev().map(Frame::Enter));
+                    }
+                    Json::Object(members) => {
+                        work.push(Frame::Object(members));
+                        work.extend(members.iter().rev().map(|(_, value)| Frame::Enter(value)));
+                    }
+                },
+                Frame::Array(length) => {
+                    let items = done.split_off(done.len() - length);
+                    done.push(Json::Array(items));
+                }
+                Frame::Object(members) => {
+                    let values = done.split_off(done.len() - members.len());
+                    done.push(Json::Object(
+                        members
+                            .iter()
+                            .zip(values)
+                            .map(|((name, _), value)| (name.clone(), value))
+                            .collect(),
+                    ));
+                }
+            }
+        }
+        done.pop().unwrap_or(Json::Null)
+    }
+}
+
+impl PartialEq for Json {
+    fn eq(&self, other: &Self) -> bool {
+        let mut pairs = vec![(self, other)];
+        while let Some((left, right)) = pairs.pop() {
+            match (left, right) {
+                (Json::Null, Json::Null) => {}
+                (Json::Bool(left), Json::Bool(right)) if left == right => {}
+                (Json::Number(left), Json::Number(right)) if left == right => {}
+                (Json::Str(left), Json::Str(right)) if left == right => {}
+                (Json::Array(left), Json::Array(right)) if left.len() == right.len() => {
+                    pairs.extend(left.iter().zip(right));
+                }
+                (Json::Object(left), Json::Object(right)) if left.len() == right.len() => {
+                    for ((left_name, left_value), (right_name, right_value)) in
+                        left.iter().zip(right)
+                    {
+                        if left_name != right_name {
+                            return false;
+                        }
+                        pairs.push((left_value, right_value));
+                    }
+                }
+                _ => return false,
+            }
+        }
+        true
+    }
+}
+
+impl Eq for Json {}
+
+/// One piece of work in the iterative `Debug` writer.
+enum Op<'a> {
+    Node(&'a Json, usize),
+    Text(&'static str),
+    Quoted(&'a str),
+    Indent(usize),
+}
+
+impl core::fmt::Debug for Json {
+    /// Formats exactly as a derived `Debug` would, in both the compact and the
+    /// `{:#?}` form, over an explicit stack.
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let pretty = f.alternate();
+        let mut stack = vec![Op::Node(self, 0)];
+        while let Some(op) = stack.pop() {
+            match op {
+                Op::Text(text) => f.write_str(text)?,
+                Op::Quoted(text) => write!(f, "{text:?}")?,
+                Op::Indent(level) => {
+                    for _ in 0..level {
+                        f.write_str("    ")?;
+                    }
+                }
+                Op::Node(node, level) => {
+                    // The pieces of `node`'s text, in order; pushed reversed.
+                    let mut parts: Vec<Op<'_>> = Vec::new();
+                    let (open, close) = if pretty { ("(\n", ")") } else { ("(", ")") };
+                    match node {
+                        Json::Null => parts.push(Op::Text("Null")),
+                        Json::Bool(true) => bool_parts(&mut parts, pretty, level, "true"),
+                        Json::Bool(false) => bool_parts(&mut parts, pretty, level, "false"),
+                        Json::Number(lexeme) => quoted(&mut parts, pretty, level, "Number", lexeme),
+                        Json::Str(text) => quoted(&mut parts, pretty, level, "Str", text),
+                        Json::Array(items) => {
+                            parts.push(Op::Text("Array"));
+                            parts.push(Op::Text(open));
+                            if pretty {
+                                parts.push(Op::Indent(level + 1));
+                                if items.is_empty() {
+                                    parts.push(Op::Text("[],\n"));
+                                } else {
+                                    parts.push(Op::Text("[\n"));
+                                    for item in items {
+                                        parts.push(Op::Indent(level + 2));
+                                        parts.push(Op::Node(item, level + 2));
+                                        parts.push(Op::Text(",\n"));
+                                    }
+                                    parts.push(Op::Indent(level + 1));
+                                    parts.push(Op::Text("],\n"));
+                                }
+                                parts.push(Op::Indent(level));
+                            } else {
+                                parts.push(Op::Text("["));
+                                for (position, item) in items.iter().enumerate() {
+                                    if position > 0 {
+                                        parts.push(Op::Text(", "));
+                                    }
+                                    parts.push(Op::Node(item, level));
+                                }
+                                parts.push(Op::Text("]"));
+                            }
+                            parts.push(Op::Text(close));
+                        }
+                        Json::Object(members) => {
+                            parts.push(Op::Text("Object"));
+                            parts.push(Op::Text(open));
+                            if pretty {
+                                parts.push(Op::Indent(level + 1));
+                                if members.is_empty() {
+                                    parts.push(Op::Text("[],\n"));
+                                } else {
+                                    parts.push(Op::Text("[\n"));
+                                    for (name, value) in members {
+                                        parts.push(Op::Indent(level + 2));
+                                        parts.push(Op::Text("(\n"));
+                                        parts.push(Op::Indent(level + 3));
+                                        parts.push(Op::Quoted(name));
+                                        parts.push(Op::Text(",\n"));
+                                        parts.push(Op::Indent(level + 3));
+                                        parts.push(Op::Node(value, level + 3));
+                                        parts.push(Op::Text(",\n"));
+                                        parts.push(Op::Indent(level + 2));
+                                        parts.push(Op::Text("),\n"));
+                                    }
+                                    parts.push(Op::Indent(level + 1));
+                                    parts.push(Op::Text("],\n"));
+                                }
+                                parts.push(Op::Indent(level));
+                            } else {
+                                parts.push(Op::Text("["));
+                                for (position, (name, value)) in members.iter().enumerate() {
+                                    if position > 0 {
+                                        parts.push(Op::Text(", "));
+                                    }
+                                    parts.push(Op::Text("("));
+                                    parts.push(Op::Quoted(name));
+                                    parts.push(Op::Text(", "));
+                                    parts.push(Op::Node(value, level));
+                                    parts.push(Op::Text(")"));
+                                }
+                                parts.push(Op::Text("]"));
+                            }
+                            parts.push(Op::Text(close));
+                        }
+                    }
+                    stack.extend(parts.into_iter().rev());
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
+fn bool_parts<'a>(parts: &mut Vec<Op<'a>>, pretty: bool, level: usize, text: &'static str) {
+    parts.push(Op::Text("Bool"));
+    if pretty {
+        parts.push(Op::Text("(\n"));
+        parts.push(Op::Indent(level + 1));
+        parts.push(Op::Text(text));
+        parts.push(Op::Text(",\n"));
+        parts.push(Op::Indent(level));
+        parts.push(Op::Text(")"));
+    } else {
+        parts.push(Op::Text("("));
+        parts.push(Op::Text(text));
+        parts.push(Op::Text(")"));
+    }
+}
+
+fn quoted<'a>(
+    parts: &mut Vec<Op<'a>>,
+    pretty: bool,
+    level: usize,
+    name: &'static str,
+    text: &'a str,
+) {
+    parts.push(Op::Text(name));
+    if pretty {
+        parts.push(Op::Text("(\n"));
+        parts.push(Op::Indent(level + 1));
+        parts.push(Op::Quoted(text));
+        parts.push(Op::Text(",\n"));
+        parts.push(Op::Indent(level));
+        parts.push(Op::Text(")"));
+    } else {
+        parts.push(Op::Text("("));
+        parts.push(Op::Quoted(text));
+        parts.push(Op::Text(")"));
     }
 }
 
@@ -140,36 +427,47 @@ impl Json {
     }
 }
 
-/// Reads one JSON document, rejecting trailing content.
+/// Reads one JSON document under the default [`ReadLimits`], rejecting
+/// trailing content.
 pub fn parse(input: &str) -> Result<Json, JsonError> {
-    if input.len() > MAX_INPUT_BYTES {
+    parse_with(input, ReadLimits::default())
+}
+
+/// Reads one JSON document under `limits`, rejecting trailing content.
+///
+/// The reader keeps its open arrays and objects on a heap stack, so a document
+/// of any nesting depth reads on any thread; a depth limit applies only when
+/// `limits` carries one.
+pub fn parse_with(input: &str, limits: ReadLimits) -> Result<Json, JsonError> {
+    if input.len() > limits.max_bytes {
         return Err(JsonError {
-            message: "the document is larger than the declared input limit".to_string(),
+            message: "the document is larger than the configured input limit".to_string(),
             offset: 0,
+            kind: JsonErrorKind::InputBytes {
+                limit: limits.max_bytes,
+            },
         });
     }
     let bytes = input.as_bytes();
-    let mut reader = Reader {
-        bytes,
-        pos: 0,
-        depth: 0,
-    };
-    reader.skip_whitespace();
-    let value = reader.value()?;
+    let mut reader = Reader { bytes, pos: 0 };
+    let value = reader.document(limits.max_depth)?;
     reader.skip_whitespace();
     if reader.pos != bytes.len() {
-        return Err(JsonError {
-            message: "trailing content after the document".to_string(),
-            offset: reader.pos,
-        });
+        return reader.err("trailing content after the document");
     }
     Ok(value)
+}
+
+/// An array or object the reader has opened and not yet closed.
+enum Open {
+    Array(Vec<Json>),
+    /// The members read so far, and the name of the member being read.
+    Object(Vec<(String, Json)>, String),
 }
 
 struct Reader<'a> {
     bytes: &'a [u8],
     pos: usize,
-    depth: usize,
 }
 
 impl<'a> Reader<'a> {
@@ -181,6 +479,7 @@ impl<'a> Reader<'a> {
         Err(JsonError {
             message: message.to_string(),
             offset: self.pos,
+            kind: JsonErrorKind::Malformed,
         })
     }
 
@@ -203,85 +502,116 @@ impl<'a> Reader<'a> {
         }
     }
 
-    fn value(&mut self) -> Result<Json, JsonError> {
-        if self.depth >= MAX_DEPTH {
-            return self.err("the document nests deeper than the declared limit");
+    /// Reads one object member's name and its `:`, leaving the position at
+    /// the member's value.
+    fn member_name(&mut self) -> Result<String, JsonError> {
+        self.skip_whitespace();
+        if self.peek() != Some(b'"') {
+            return self.err("an object member name is not a string");
         }
-        match self.peek() {
-            None => self.err("an empty document"),
-            Some(b'n') => self.literal("null", Json::Null),
-            Some(b't') => self.literal("true", Json::Bool(true)),
-            Some(b'f') => self.literal("false", Json::Bool(false)),
-            Some(b'"') => {
-                let text = self.string()?;
-                Ok(Json::Str(text))
-            }
-            Some(b'[') => self.array(),
-            Some(b'{') => self.object(),
-            Some(byte) if byte == b'-' || byte.is_ascii_digit() => self.number(),
-            Some(_) => self.err("a value the JSON grammar does not admit"),
+        let name = self.string()?;
+        self.skip_whitespace();
+        if self.peek() != Some(b':') {
+            return self.err("an object member name is not followed by :");
         }
+        self.pos += 1;
+        Ok(name)
     }
 
-    fn array(&mut self) -> Result<Json, JsonError> {
-        self.pos += 1;
-        self.depth += 1;
-        let mut items = Vec::new();
-        self.skip_whitespace();
-        if self.peek() == Some(b']') {
-            self.pos += 1;
-            self.depth -= 1;
-            return Ok(Json::Array(items));
-        }
-        loop {
+    /// Reads one document, keeping each array and object it opens on `open`.
+    fn document(&mut self, max_depth: Option<usize>) -> Result<Json, JsonError> {
+        let mut open: Vec<Open> = Vec::new();
+        'value: loop {
             self.skip_whitespace();
-            items.push(self.value()?);
-            self.skip_whitespace();
-            match self.peek() {
-                Some(b',') => self.pos += 1,
-                Some(b']') => {
-                    self.pos += 1;
-                    self.depth -= 1;
-                    return Ok(Json::Array(items));
+            if let Some(limit) = max_depth {
+                if open.len() > limit {
+                    return Err(JsonError {
+                        message: "the document nests deeper than the configured limit".to_string(),
+                        offset: self.pos,
+                        kind: JsonErrorKind::Depth { limit },
+                    });
                 }
-                _ => return self.err("an array member is followed by neither , nor ]"),
             }
-        }
-    }
-
-    fn object(&mut self) -> Result<Json, JsonError> {
-        self.pos += 1;
-        self.depth += 1;
-        let mut members: Vec<(String, Json)> = Vec::new();
-        self.skip_whitespace();
-        if self.peek() == Some(b'}') {
-            self.pos += 1;
-            self.depth -= 1;
-            return Ok(Json::Object(members));
-        }
-        loop {
-            self.skip_whitespace();
-            if self.peek() != Some(b'"') {
-                return self.err("an object member name is not a string");
-            }
-            let name = self.string()?;
-            self.skip_whitespace();
-            if self.peek() != Some(b':') {
-                return self.err("an object member name is not followed by :");
-            }
-            self.pos += 1;
-            self.skip_whitespace();
-            let value = self.value()?;
-            members.push((name, value));
-            self.skip_whitespace();
-            match self.peek() {
-                Some(b',') => self.pos += 1,
-                Some(b'}') => {
+            let mut value = match self.peek() {
+                None => return self.err("an empty document"),
+                Some(b'n') => self.literal("null", Json::Null)?,
+                Some(b't') => self.literal("true", Json::Bool(true))?,
+                Some(b'f') => self.literal("false", Json::Bool(false))?,
+                Some(b'"') => Json::Str(self.string()?),
+                Some(b'[') => {
                     self.pos += 1;
-                    self.depth -= 1;
-                    return Ok(Json::Object(members));
+                    self.skip_whitespace();
+                    if self.peek() == Some(b']') {
+                        self.pos += 1;
+                        Json::Array(Vec::new())
+                    } else {
+                        open.push(Open::Array(Vec::new()));
+                        continue 'value;
+                    }
                 }
-                _ => return self.err("an object member is followed by neither , nor }"),
+                Some(b'{') => {
+                    self.pos += 1;
+                    self.skip_whitespace();
+                    if self.peek() == Some(b'}') {
+                        self.pos += 1;
+                        Json::Object(Vec::new())
+                    } else {
+                        let name = self.member_name()?;
+                        open.push(Open::Object(Vec::new(), name));
+                        continue 'value;
+                    }
+                }
+                Some(byte) if byte == b'-' || byte.is_ascii_digit() => self.number()?,
+                Some(_) => return self.err("a value the JSON grammar does not admit"),
+            };
+            // `value` is complete: attach it to the innermost open container,
+            // closing every container it finishes.
+            loop {
+                match open.last_mut() {
+                    None => return Ok(value),
+                    Some(Open::Array(items)) => {
+                        items.push(value);
+                        self.skip_whitespace();
+                        match self.peek() {
+                            Some(b',') => {
+                                self.pos += 1;
+                                continue 'value;
+                            }
+                            Some(b']') => {
+                                self.pos += 1;
+                                value = match open.pop() {
+                                    Some(Open::Array(items)) => Json::Array(items),
+                                    _ => return self.err("an array closed out of order"),
+                                };
+                            }
+                            _ => return self.err("an array member is followed by neither , nor ]"),
+                        }
+                    }
+                    Some(Open::Object(members, name)) => {
+                        members.push((std::mem::take(name), value));
+                        self.skip_whitespace();
+                        match self.peek() {
+                            Some(b',') => {
+                                self.pos += 1;
+                                let next = self.member_name()?;
+                                if let Some(Open::Object(_, name)) = open.last_mut() {
+                                    *name = next;
+                                }
+                                continue 'value;
+                            }
+                            Some(b'}') => {
+                                self.pos += 1;
+                                value = match open.pop() {
+                                    Some(Open::Object(members, _)) => Json::Object(members),
+                                    _ => return self.err("an object closed out of order"),
+                                };
+                            }
+                            _ => {
+                                return self.err("an object member is followed by neither , nor }")
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -478,81 +808,83 @@ pub fn to_document_string(value: &Json) -> String {
     out
 }
 
-fn write_document(out: &mut String, value: &Json) {
-    match value {
-        Json::Object(members) => {
-            let mut resolved: Vec<(&str, &Json)> = Vec::with_capacity(members.len());
-            for (name, member) in members {
-                match resolved.iter_mut().find(|(seen, _)| *seen == name.as_str()) {
-                    Some(slot) => slot.1 = member,
-                    None => resolved.push((name.as_str(), member)),
-                }
-            }
-            out.push('{');
-            for (index, (name, member)) in resolved.iter().enumerate() {
-                if index > 0 {
-                    out.push(',');
-                }
-                write_string(out, name);
-                out.push(':');
-                write_document(out, member);
-            }
-            out.push('}');
+/// One piece of work in the iterative writers.
+enum Emit<'a> {
+    Node(&'a Json),
+    Text(&'static str),
+    Name(&'a str),
+}
+
+/// The members of an object with each duplicate name resolved to its last
+/// occurrence, at the position of its first.
+fn resolved_members(members: &[(String, Json)]) -> Vec<(&str, &Json)> {
+    let mut resolved: Vec<(&str, &Json)> = Vec::with_capacity(members.len());
+    for (name, member) in members {
+        match resolved.iter_mut().find(|(seen, _)| *seen == name.as_str()) {
+            Some(slot) => slot.1 = member,
+            None => resolved.push((name.as_str(), member)),
         }
-        Json::Array(items) => {
-            out.push('[');
-            for (index, item) in items.iter().enumerate() {
-                if index > 0 {
-                    out.push(',');
-                }
-                write_document(out, item);
-            }
-            out.push(']');
-        }
-        other => write_canonical(out, other),
     }
+    resolved
+}
+
+fn write_document(out: &mut String, value: &Json) {
+    write_iteratively(out, value, false);
 }
 
 fn write_canonical(out: &mut String, value: &Json) {
-    match value {
-        Json::Null => out.push_str("null"),
-        Json::Bool(true) => out.push_str("true"),
-        Json::Bool(false) => out.push_str("false"),
-        Json::Number(lexeme) => match lexeme.parse::<f64>() {
-            Ok(number) if number.is_finite() => out.push_str(&ecma_number_to_string(number)),
-            // `JSON.stringify` writes a non-finite number as `null`.
-            _ => out.push_str("null"),
-        },
-        Json::Str(text) => write_string(out, text),
-        Json::Array(items) => {
-            out.push('[');
-            for (index, item) in items.iter().enumerate() {
-                if index > 0 {
-                    out.push(',');
-                }
-                write_canonical(out, item);
-            }
-            out.push(']');
-        }
-        Json::Object(members) => {
-            let mut resolved: Vec<(&str, &Json)> = Vec::with_capacity(members.len());
-            for (name, member) in members {
-                match resolved.iter_mut().find(|(seen, _)| *seen == name.as_str()) {
-                    Some(slot) => slot.1 = member,
-                    None => resolved.push((name.as_str(), member)),
-                }
-            }
-            resolved.sort_by(|left, right| left.0.as_bytes().cmp(right.0.as_bytes()));
-            out.push('{');
-            for (index, (name, member)) in resolved.iter().enumerate() {
-                if index > 0 {
-                    out.push(',');
-                }
+    write_iteratively(out, value, true);
+}
+
+/// Writes `value` over an explicit stack, sorting object members by name when
+/// `sorted`, so a document of any depth is written on any thread.
+fn write_iteratively(out: &mut String, value: &Json, sorted: bool) {
+    let mut stack = vec![Emit::Node(value)];
+    while let Some(emit) = stack.pop() {
+        match emit {
+            Emit::Text(text) => out.push_str(text),
+            Emit::Name(name) => {
                 write_string(out, name);
                 out.push(':');
-                write_canonical(out, member);
             }
-            out.push('}');
+            Emit::Node(node) => match node {
+                Json::Null => out.push_str("null"),
+                Json::Bool(true) => out.push_str("true"),
+                Json::Bool(false) => out.push_str("false"),
+                Json::Number(lexeme) => match lexeme.parse::<f64>() {
+                    Ok(number) if number.is_finite() => {
+                        out.push_str(&ecma_number_to_string(number));
+                    }
+                    // `JSON.stringify` writes a non-finite number as `null`.
+                    _ => out.push_str("null"),
+                },
+                Json::Str(text) => write_string(out, text),
+                Json::Array(items) => {
+                    out.push('[');
+                    stack.push(Emit::Text("]"));
+                    for (position, item) in items.iter().enumerate().rev() {
+                        stack.push(Emit::Node(item));
+                        if position > 0 {
+                            stack.push(Emit::Text(","));
+                        }
+                    }
+                }
+                Json::Object(members) => {
+                    let mut resolved = resolved_members(members);
+                    if sorted {
+                        resolved.sort_by(|left, right| left.0.as_bytes().cmp(right.0.as_bytes()));
+                    }
+                    out.push('{');
+                    stack.push(Emit::Text("}"));
+                    for (position, (name, member)) in resolved.into_iter().enumerate().rev() {
+                        stack.push(Emit::Node(member));
+                        stack.push(Emit::Name(name));
+                        if position > 0 {
+                            stack.push(Emit::Text(","));
+                        }
+                    }
+                }
+            },
         }
     }
 }
@@ -593,9 +925,143 @@ mod tests {
         }
     }
 
+    /// Runs `check` on a 256 KiB thread, a stack a recursion that grows with
+    /// depth would overflow long before 1,000,000 levels.
+    fn on_a_small_stack(check: impl FnOnce() + Send + 'static) {
+        std::thread::Builder::new()
+            .stack_size(256 * 1024)
+            .spawn(check)
+            .expect("spawn a 256 KiB thread")
+            .join()
+            .expect("the reader must not overflow a 256 KiB stack");
+    }
+
+    const DEEP: usize = 1_000_000;
+
+    fn nested(open: &str, close: &str) -> String {
+        format!("{}0{}", open.repeat(DEEP), close.repeat(DEEP))
+    }
+
+    /// Tracing: TC-1820
+    /// ACs: FR-059-AC-17
     #[test]
-    fn tc_708_bounds_nesting_rather_than_overflowing_the_stack() {
-        let deep = "[".repeat(5000);
-        assert!(parse(&deep).is_err());
+    fn tc_1820_reads_clones_compares_writes_and_drops_a_million_levels() {
+        on_a_small_stack(|| {
+            let arrays = nested("[", "]");
+            let objects = nested("{\"a\":", "}");
+            for text in [&arrays, &objects] {
+                let value = parse(text).expect("a million levels read under the default limits");
+                let copy = value.clone();
+                assert!(value == copy, "a clone equals its original");
+                assert_eq!(to_canonical_string(&value), *text);
+                assert_eq!(to_document_string(&value), *text);
+                let debug = format!("{value:?}");
+                assert!(debug.starts_with("Array([") || debug.starts_with("Object([(\"a\", "));
+                drop(copy);
+                drop(value);
+            }
+            // Two values that differ only at the innermost level differ.
+            let left = parse(&nested("[", "]")).unwrap();
+            let right = parse(&format!("{}1{}", "[".repeat(DEEP), "]".repeat(DEEP))).unwrap();
+            assert!(left != right);
+        });
+    }
+
+    /// Tracing: TC-1820
+    /// ACs: FR-059-AC-17
+    #[test]
+    fn tc_1820_debug_matches_a_derived_debug_in_both_forms() {
+        #[derive(Debug)]
+        #[allow(dead_code)]
+        enum Reference {
+            Null,
+            Bool(bool),
+            Number(String),
+            Str(String),
+            Array(Vec<Reference>),
+            Object(Vec<(String, Reference)>),
+        }
+        fn mirror(value: &Json) -> Reference {
+            match value {
+                Json::Null => Reference::Null,
+                Json::Bool(value) => Reference::Bool(*value),
+                Json::Number(lexeme) => Reference::Number(lexeme.clone()),
+                Json::Str(text) => Reference::Str(text.clone()),
+                Json::Array(items) => Reference::Array(items.iter().map(mirror).collect()),
+                Json::Object(members) => Reference::Object(
+                    members
+                        .iter()
+                        .map(|(name, value)| (name.clone(), mirror(value)))
+                        .collect(),
+                ),
+            }
+        }
+        for text in [
+            "null",
+            "true",
+            "false",
+            "1.50",
+            "\"a\\\"b\\n\"",
+            "[]",
+            "{}",
+            "[1,[2,[]],{\"k\":[true,null]}]",
+            "{\"b\":{\"c\":[1,2,{}]},\"a\":\"x\",\"b\":[]}",
+        ] {
+            let value = parse(text).expect("a document");
+            let reference = mirror(&value);
+            assert_eq!(format!("{value:?}"), format!("{reference:?}"), "{text}");
+            assert_eq!(format!("{value:#?}"), format!("{reference:#?}"), "{text}");
+        }
+    }
+
+    /// Tracing: TC-1820
+    /// ACs: FR-059-AC-18
+    #[test]
+    fn tc_1820_a_configured_depth_limit_refuses_with_a_typed_error() {
+        let limits = |max_depth| ReadLimits {
+            max_depth: Some(max_depth),
+            ..ReadLimits::default()
+        };
+        // Three arrays around a scalar read at depth 3 and refuse at 2.
+        assert!(parse_with("[[[0]]]", limits(3)).is_ok());
+        let refused = parse_with("[[[0]]]", limits(2)).unwrap_err();
+        assert_eq!(refused.kind, JsonErrorKind::Depth { limit: 2 });
+        assert_eq!(refused.offset, 3);
+        // Without a limit the same text reads, and so does a deep one.
+        assert!(parse("[[[0]]]").is_ok());
+        on_a_small_stack(move || {
+            let refused = parse_with(&nested("[", "]"), limits(10)).unwrap_err();
+            assert_eq!(refused.kind, JsonErrorKind::Depth { limit: 10 });
+        });
+    }
+
+    /// Tracing: TC-1820
+    /// ACs: FR-059-AC-18
+    #[test]
+    fn tc_1820_a_configured_byte_limit_refuses_with_a_typed_error() {
+        let limits = |max_bytes| ReadLimits {
+            max_bytes,
+            ..ReadLimits::default()
+        };
+        assert!(parse_with("[1,2]", limits(5)).is_ok());
+        let refused = parse_with("[1,2]", limits(4)).unwrap_err();
+        assert_eq!(refused.kind, JsonErrorKind::InputBytes { limit: 4 });
+        assert_eq!(parse("[").unwrap_err().kind, JsonErrorKind::Malformed);
+    }
+
+    /// Malformed input a million levels deep refuses with its position and
+    /// does not overflow the stack while the partial value drops.
+    ///
+    /// Tracing: TC-1820
+    /// ACs: FR-059-AC-17
+    #[test]
+    fn tc_1820_a_malformed_deep_document_refuses_on_a_small_stack() {
+        on_a_small_stack(|| {
+            let truncated = "[".repeat(DEEP);
+            let refused = parse(&truncated).unwrap_err();
+            assert_eq!(refused.kind, JsonErrorKind::Malformed);
+            let trailing = format!("{}]", nested("[", "]"));
+            assert_eq!(parse(&trailing).unwrap_err().kind, JsonErrorKind::Malformed);
+        });
     }
 }

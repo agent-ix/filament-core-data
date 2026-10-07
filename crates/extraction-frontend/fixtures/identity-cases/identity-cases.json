@@ -37,6 +37,27 @@
 			"identity": "ix://agent-ix/docs-service/constraint/Snapshot-versionNumber-minLength"
 		},
 		{
+			"kind": "identity",
+			"package": "agent-ix/docs-service",
+			"slot": "typeConstraint",
+			"parts": ["Snapshot", "minLength"],
+			"identity": "ix://agent-ix/docs-service/constraint/Snapshot/minLength"
+		},
+		{
+			"kind": "identity",
+			"package": "agent-ix/docs-service",
+			"slot": "typeConstraint",
+			"parts": ["A-b", "min"],
+			"identity": "ix://agent-ix/docs-service/constraint/A-b/min"
+		},
+		{
+			"kind": "identity",
+			"package": "agent-ix/docs-service",
+			"slot": "constraint",
+			"parts": ["A", "b", "min"],
+			"identity": "ix://agent-ix/docs-service/constraint/A-b-min"
+		},
+		{
 			"kind": "diagnosticCode",
 			"package": "agent-ix/core.data",
 			"parts": ["Snapshot", "versionNumber"],

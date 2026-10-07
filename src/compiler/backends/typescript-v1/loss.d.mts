@@ -9,6 +9,7 @@ export interface LossCode {
 export declare const LOSS_CODES: Readonly<{
 	FORMAT_NOT_IMPLEMENTED: LossCode;
 	DURATION_ORDER_NOT_REPRESENTABLE: LossCode;
+	INTEGER_BOUND_NOT_EXACT: LossCode;
 	IDENTIFIER_COLLISION: LossCode;
 	ABSTRACT_TYPE_HELD: LossCode;
 }>;
@@ -37,6 +38,12 @@ export declare const REFERENCE_POLICY: "strict" | "open";
 
 /** The two settings the policy admits, so a third is a visible change. */
 export declare const REFERENCE_POLICIES: readonly ["strict", "open"];
+
+/**
+ * Whether `constraint` bounds with a canonical decimal string past 2^53, which
+ * a TypeScript `number` cannot hold (`INTEGER_BOUND_NOT_EXACT`).
+ */
+export declare function inexactIntegerBound(constraint: unknown): boolean;
 
 export interface LossReport {
 	readonly code: string;

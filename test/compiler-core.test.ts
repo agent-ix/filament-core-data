@@ -3495,7 +3495,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				$defs: {
 					typeDefinition: {
 						properties: { kind: { anyOf: { enum?: string[] }[] } };
-						allOf: { if: { properties: { kind: { enum?: string[] } } } }[];
+						allOf: { if: { properties?: { kind: { enum?: string[] } } } }[];
 					};
 				};
 			}
@@ -3508,7 +3508,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		// The one branch forbidding relationships and operations names every core
 		// kind but `record`; a construct kind is governed by its declaration.
 		const edgeless = definition.allOf
-			.map((branch) => branch.if.properties.kind.enum)
+			.map((branch) => branch.if.properties?.kind.enum)
 			.filter((kinds) => kinds !== undefined && kinds.length > 2);
 		expect(edgeless).toHaveLength(1);
 		expect([...(edgeless[0] ?? [])].sort()).toEqual(

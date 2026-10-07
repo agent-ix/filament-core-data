@@ -184,6 +184,11 @@ function orderedCondition(scalar, operator, value) {
 	if (scalar === "date" || scalar === "datetime") {
 		return `Date.parse(candidate) ${operator} Date.parse(${literal(value)})`;
 	}
+	// An integer bound may be a canonical decimal string (contracts-v1). The
+	// backend refuses one past 2^53 (`INTEGER_BOUND_NOT_EXACT`), so the number
+	// written is exact.
+	if (typeof value === "string")
+		return `candidate ${operator} ${Number(value)}`;
 	return `candidate ${operator} ${literal(value)}`;
 }
 

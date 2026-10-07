@@ -453,6 +453,7 @@ class FieldModel(BaseModel):
     presence: Presence
     redefines: common_schema.SemanticIdentity | None = None
     subsets: IdentityList | None = None
+    textProfile: common_schema.TextProfile | None = None
     typeRef: common_schema.SemanticIdentity
     unit: Annotated[str | None, Field(min_length=1, pattern='^[!-~]+$')] = None
 
@@ -574,6 +575,7 @@ class Operation(BaseModel):
     params: list[FieldModel]
     post: list[ContractItem]
     pre: list[ContractItem]
+    redefines: common_schema.SemanticIdentity | None = None
     returns: Returns | None = None
 
 
@@ -618,6 +620,7 @@ class TypeDefinition(BaseModel):
     target: common_schema.SemanticIdentity | None = None
     targetElement: common_schema.SemanticIdentity | None = None
     targetEnd: ConnectionEnd | None = None
+    textProfile: common_schema.TextProfile | None = None
     transitions: list[Transition] | None = None
     unknownPolicy: common_schema.UnknownPolicy
     values: common_schema.SemanticIdentity | None = None

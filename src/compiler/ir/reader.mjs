@@ -493,7 +493,7 @@ export function readContractIr(document, options = {}) {
 			const numeric =
 				resolved.scalar === "integer" || resolved.scalar === "number";
 			const value = operands.value;
-			if (numeric ? typeof value !== "number" : typeof value !== "string") {
+			if (!operandAdmitted(numeric, resolved.scalar, value)) {
 				raise(
 					DIAGNOSTIC_CODES.INVALID_OPERAND,
 					`${fragment(keyword)} on ${fragment(String(resolved.scalar))} takes ${numeric ? "a number" : "an ISO 8601 string"}`,
@@ -772,4 +772,20 @@ export function readContractIr(document, options = {}) {
 		if (!state.has(identity)) visit(identity);
 
 	return Object.assign(diagnostics, { suppressions });
+}
+
+/**
+ * Whether a bound operand fits its scalar: a `number` or `integer` bound is a
+ * JSON number, and an `integer` bound may instead be a canonical decimal
+ * string (`0`, or an optional `-` and digits with no leading zero), so a value
+ * past 2^53 is exact; every other scalar's bound is a string.
+ */
+function operandAdmitted(numeric, scalar, value) {
+	if (!numeric) return typeof value === "string";
+	if (typeof value === "number") return true;
+	return (
+		scalar === "integer" &&
+		typeof value === "string" &&
+		/^(0|-?[1-9][0-9]*)$/.test(value)
+	);
 }

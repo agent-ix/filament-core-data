@@ -390,6 +390,7 @@ class FieldModel:
     extensions: list[common_schema.Extension] | None = None
     redefines: common_schema.SemanticIdentity | None = None
     subsets: IdentityList | None = None
+    textProfile: common_schema.TextProfile | None = None
     unit: Annotated[str | None, Field(min_length=1, pattern='^[!-~]+$')] = None
 
 
@@ -489,6 +490,7 @@ class Operation:
     post: list[ContractItem]
     pre: list[ContractItem]
     frame: Frame | None = None
+    redefines: common_schema.SemanticIdentity | None = None
     returns: Returns | None = None
 
 
@@ -532,6 +534,7 @@ class TypeDefinition:
     target: common_schema.SemanticIdentity | None = None
     targetElement: common_schema.SemanticIdentity | None = None
     targetEnd: ConnectionEnd | None = None
+    textProfile: common_schema.TextProfile | None = None
     transitions: list[Transition] | None = None
     values: common_schema.SemanticIdentity | None = None
     variants: list[Variant] | None = None

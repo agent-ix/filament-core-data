@@ -110,7 +110,10 @@ none of the three is refused (ADR-0009).
 The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,
 `exclusiveMax`, `pattern`, `minLength`, `maxLength`, `enumValues`, `nonEmpty`,
 `unique`, `format`) with typed operands per keyword and an applicability table
-over the resolved kind. `source.dialect` is `typespec` or `spec-bundle`. Manifest
+over the resolved kind. `source.dialect` is `typespec` or `spec-bundle`. A `min`, `max`, `exclusiveMin` or `exclusiveMax` operand on an
+`integer` scalar is a JSON number or a canonical decimal string (`0`, or an optional
+`-` and digits with no leading zero), so a bound past 2^53 is exact
+(`"18446744073709551615"`); a `number` scalar's bound is a JSON number. Manifest
 targets bind to the declared registry: generated targets or representation
 formats, each defined once in `common.schema.json`. The worked example
 `fixtures/semantic/v1/positive/config-version-v2.json` lifts config-service
@@ -135,14 +138,16 @@ shared table `crates/extraction-frontend/fixtures/identity-cases/identity-cases.
 implementations agree.
 
 Every identity is rooted at the package identity, `ix://<package identity>/`.
-A type definition (including a kernel scalar definition) and a member (field,
-operation parameter, relationship, operation, clause) mint no slot segment: a
-type's identity is `ix://<package
-identity>/<Name>`, and a member's identity is its owner's identity, `/`, and
-the member's own part, nested as deep as the member sits (an operation
-parameter is nested under its operation, which is nested under its type).
-Every other slot — `variant`, `state`, `transition`, `step`, `constraint` —
-still occupies `ix://<package identity>/<slot>/<tail>`. Every name part of
+A type definition (including a kernel scalar definition) and a member that is a
+field, an operation or an operation parameter mint no slot segment: a type's
+identity is `ix://<package identity>/<Name>`, and such a member's identity is
+its owner's identity, `/`, and the member's own part, nested as deep as the
+member sits (an operation parameter is nested under its operation, which is
+nested under its type). Every other slot — `variant`, `relationship`,
+`clause`, `state`, `transition`, `step`, `constraint` — occupies
+`ix://<package identity>/<slot>/<tail>`, so a relationship is
+`relationship/<Name>-<verb>-<TargetName>` and a clause is
+`clause/<Name>-<clauseId>`, never nested under their owner. Every name part of
 every slot is slugged; an artifact id part (`<Name>` in the spec-bundle
 frontend) is verbatim, as the paragraph below the table states:
 
@@ -157,7 +162,7 @@ frontend) is verbatim, as the paragraph below the table states:
 | `state` | `state/<Name>-<state>` | owner state machine, state |
 | `transition` | `transition/<Name>-<from>-<to>-<trigger>` | owner state machine, from state, to state, trigger operation (a transition row has no name) |
 | `step` | `step/<Name>-<step>` | owner process, step |
-| `constraint` | `constraint/<Name>-<field>-<keyword>` for a field constraint; `constraint/<Name>-<keyword>` for a type constraint | owner, (field,) keyword |
+| `constraint` | `constraint/<Name>-<field>-<keyword>` for a field constraint; `constraint/<Name>/<keyword>` for a type constraint | owner, (field,) keyword |
 
 `<Name>` is the declaring type's name part. The TypeSpec frontend takes it
 from the declaration name, and slugs it. The spec-bundle frontend takes it
@@ -282,7 +287,8 @@ frontend to skip its own half of the check.
 | `supertypes` | type | The types this type specializes, of the same kind; the graph is acyclic | `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND`, `SUPERTYPE_CYCLE` |
 | `abstract` | type | The type has no direct instances | — |
 | `subsets` | field | Supertype fields whose values include this field's values | `UNRESOLVED_FEATURE_REF` |
-| `redefines` | field | The supertype field this field narrows; its multiplicity lies within the redefined bounds | `UNRESOLVED_FEATURE_REF`, `INVALID_REDEFINITION` |
+| `redefines` | field, operation | The supertype field or operation this member narrows; its multiplicity lies within the redefined bounds (for an operation, its return multiplicity) | `UNRESOLVED_FEATURE_REF`, `INVALID_REDEFINITION` |
+| `textProfile` | field, type | The text profile a text field or a text value type binds: `unicode-scalars`, `nfc`, `nfd`, `nfkc`, `nfkd` or `binary-utf8`; a type carries it only as a scalar of `string` | `SCHEMA_VIOLATION` |
 | `frame` | operation | Declaration references the operation `modifies` (a field or relationship), `creates` or `deletes` (an object type or process); never an access path. Resolution ranges over every such declaration the whole document carries, never only the operation's own type or its supertypes (QSpec FR-340, FR-013). QSpec #101 and #106 leave the frame's body encoding and grant-range semantics open | `UNRESOLVED_FRAME_PATH` |
 | `pre`, `post` items | operation | A `pre` or `post` item is a clause id or an inline clause `{language, text}` | `DANGLING_CLAUSE_REF` for an id item |
 | `populations` | document | Named instance extents, bound by `kind` (`{module, name}`); a flat set of unique member type references; one `extent` (`closed` or `open`) for the whole population | `UNRESOLVED_TYPE_REF` |
@@ -490,9 +496,17 @@ Locked validation and future compilation are offline and deterministic. Paths,
 timestamps, hostnames, locale, and map ordering are normalized or excluded.
 Schemas, metadata, mappings, examples, options, names, and references are
 untrusted. Implementations must prevent code execution, undeclared network
-access, path/symlink escape, and writes outside a fresh output root. Graph depth,
-reference expansion, collection sizes, input bytes, and diagnostic volume must
-have declared finite limits and terminate with source-located diagnostics.
+access, path/symlink escape, and writes outside a fresh output root. Collection sizes,
+input bytes, and diagnostic volume must
+have declared finite limits and terminate with source-located diagnostics. The Rust reader (`semantic-ir`) puts no limit on graph depth or
+reference expansion: it keeps the state of every walk on the heap, so a
+nesting, an alias chain, a composite or package cycle or a supertype hierarchy
+of any depth is read, walked and reported, and a cycle is reported whatever its
+length. A consumer that wants a depth report configures a limit and receives
+`DEPTH_LIMIT_EXCEEDED` at the node that exceeds it. The Node reader and the
+oracle keep FR-068's declared depth bound (256 for `admitIr`, 128 for the
+reader's `maxDepth`), so for them a ring or chain longer than the bound reports
+`DEPTH_LIMIT_EXCEEDED` where the Rust reader reports the cycle.
 
 ## Promotion boundary
 

@@ -64,6 +64,11 @@ export const LOSS_CODES = Object.freeze({
 		severity: "error",
 		blocking: true,
 	}),
+	INTEGER_BOUND_NOT_EXACT: Object.freeze({
+		code: TARGET("INTEGER_BOUND_NOT_EXACT"),
+		severity: "error",
+		blocking: true,
+	}),
 	IDENTIFIER_COLLISION: Object.freeze({
 		code: TARGET("IDENTIFIER_COLLISION"),
 		severity: "error",
@@ -92,6 +97,12 @@ export const TARGET_LOSSES = Object.freeze([
 		code: LOSS_CODES.DURATION_ORDER_NOT_REPRESENTABLE.code,
 		rationale:
 			"ISO-8601 designators admit no total order — P1M and P30D are not comparable without a calendar — so an ordering constraint on a duration subject is refused rather than answered by an invented comparison",
+	}),
+	Object.freeze({
+		construct: "integer-bound-not-exact",
+		code: LOSS_CODES.INTEGER_BOUND_NOT_EXACT.code,
+		rationale:
+			"a TypeScript number is a double, so an integer bound past 2^53 given as a decimal string would be checked against the double it rounds to, which loosens or tightens it silently; it is refused until the backend carries a bigint check",
 	}),
 	Object.freeze({
 		construct: "abstract-type-held",
@@ -205,6 +216,20 @@ const ORDERING_KEYWORDS = new Set([
 ]);
 
 /**
+ * Whether `constraint` bounds with a canonical decimal string past 2^53, the
+ * bounds a double cannot hold (contracts-v1; date bounds are never of this form).
+ */
+export function inexactIntegerBound(constraint) {
+	const value = constraint?.operands?.value;
+	return (
+		ORDERING_KEYWORDS.has(constraint?.keyword) &&
+		typeof value === "string" &&
+		/^(0|-?[1-9][0-9]*)$/.test(value) &&
+		!Number.isSafeInteger(Number(value))
+	);
+}
+
+/**
  * Every construct in `ir` that this target cannot represent, each naming the
  * owning type's identity and the construct.
  *
@@ -238,6 +263,15 @@ export function representability(ir, options = {}) {
 
 		for (const [position, constraint] of (type.constraints ?? []).entries()) {
 			if (constraint === null || typeof constraint !== "object") continue;
+			if (inexactIntegerBound(constraint)) {
+				record({
+					code: LOSS_CODES.INTEGER_BOUND_NOT_EXACT.code,
+					construct: "integer-bound-not-exact",
+					owner,
+					pointer: `/ir/types/${index}/constraints/${position}/operands/value`,
+					detail: constraint.operands.value,
+				});
+			}
 			if (
 				constraint.keyword === "format" &&
 				!formats.has(constraint.operands?.name)
@@ -260,6 +294,21 @@ export function representability(ir, options = {}) {
 					owner,
 					pointer: `/ir/types/${index}/constraints/${position}/keyword`,
 					detail: constraint.keyword,
+				});
+			}
+		}
+
+		for (const [slot, field] of (type.fields ?? []).entries()) {
+			for (const [position, constraint] of (
+				field?.constraints ?? []
+			).entries()) {
+				if (!inexactIntegerBound(constraint)) continue;
+				record({
+					code: LOSS_CODES.INTEGER_BOUND_NOT_EXACT.code,
+					construct: "integer-bound-not-exact",
+					owner,
+					pointer: `/ir/types/${index}/fields/${slot}/constraints/${position}/operands/value`,
+					detail: constraint.operands.value,
 				});
 			}
 		}

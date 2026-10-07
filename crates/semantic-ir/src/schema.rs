@@ -50,16 +50,27 @@ impl Findings {
     /// dropped, so one violation inside a cascade yields one diagnostic at the
     /// deepest failing node.
     fn deepest(self) -> Vec<Finding> {
-        let pointers: Vec<String> = self.items.iter().map(|f| f.pointer.clone()).collect();
+        // A finding is shadowed when some other pointer is longer and begins
+        // with it. In sorted order every pointer beginning with `p` follows `p`
+        // contiguously, so the one after `p` begins with `p` exactly when one
+        // does: a sort and a lookup, not a scan of every pair.
+        let mut sorted: Vec<&str> = self.items.iter().map(|f| f.pointer.as_str()).collect();
+        sorted.sort_unstable();
+        sorted.dedup();
+        let shadowed: std::collections::HashSet<String> = sorted
+            .iter()
+            .enumerate()
+            .filter(|(position, pointer)| {
+                sorted
+                    .get(position + 1)
+                    .is_some_and(|next| next.starts_with(**pointer))
+            })
+            .map(|(_, pointer)| (*pointer).to_string())
+            .collect();
+        let mut seen: std::collections::HashSet<String> = std::collections::HashSet::new();
         let mut kept: Vec<Finding> = Vec::new();
         for finding in self.items {
-            let shadowed = pointers.iter().any(|other| {
-                other.len() > finding.pointer.len() && other.starts_with(&finding.pointer)
-            });
-            if shadowed {
-                continue;
-            }
-            if kept.iter().any(|seen| seen.pointer == finding.pointer) {
+            if shadowed.contains(&finding.pointer) || !seen.insert(finding.pointer.clone()) {
                 continue;
             }
             kept.push(finding);
@@ -218,6 +229,16 @@ const CATEGORIES: &[&str] = &[
 ];
 const DEFAULT_KINDS: &[&str] = &["none", "semantic", "representation", "migration"];
 const PRESENCES: &[&str] = &["required", "optional"];
+/// The text profiles a text field or text value type may carry: the
+/// normalization and comparison domains of the text value contract.
+const TEXT_PROFILES: &[&str] = &[
+    "unicode-scalars",
+    "nfc",
+    "nfd",
+    "nfkc",
+    "nfkd",
+    "binary-utf8",
+];
 const TARGETS: &[&str] = &[
     "json-schema",
     "rust",
@@ -886,6 +907,7 @@ const TYPE_MEMBERS: &[&str] = &[
     "clauses",
     "supertypes",
     "abstract",
+    "textProfile",
     "identityFields",
     "owner",
     "members",
@@ -1105,6 +1127,22 @@ fn type_definition(definition: &Json, at: &str, table: &mut ConstructTable<'_>, 
         "scalar",
         f,
     );
+    expect_enum(
+        definition.get("textProfile"),
+        &child(at, "textProfile"),
+        TEXT_PROFILES,
+        "textProfile",
+        f,
+    );
+    if definition.has("textProfile")
+        && (definition.get("kind").and_then(Json::as_str) != Some("scalar")
+            || definition.get("scalar").and_then(Json::as_str) != Some("string"))
+    {
+        f.push(
+            &child(at, "textProfile"),
+            "a text profile is carried by a scalar type definition of scalar string only",
+        );
+    }
     for name in ["target", "items", "values"] {
         expect_shape(
             definition.get(name),
@@ -1357,6 +1395,7 @@ const FIELD_MEMBERS: &[&str] = &[
     "unit",
     "subsets",
     "redefines",
+    "textProfile",
     "constraints",
 ];
 const FIELD_REQUIRED: &[&str] = &[
@@ -1445,6 +1484,13 @@ fn field_schema(field: &Json, at: &str, f: &mut Findings) {
         &child(at, "unit"),
         is_unit,
         "a unit is a non-empty run of printable ASCII",
+        f,
+    );
+    expect_enum(
+        field.get("textProfile"),
+        &child(at, "textProfile"),
+        TEXT_PROFILES,
+        "textProfile",
         f,
     );
     if let Some(constraints) = field.get("constraints") {
@@ -1653,7 +1699,15 @@ fn relationship_end_schema(end: Option<&Json>, at: &str, required: &[&str], f: &
 }
 
 const OPERATION_MEMBERS: &[&str] = &[
-    "identity", "name", "params", "returns", "pre", "post", "origin", "frame",
+    "identity",
+    "name",
+    "params",
+    "returns",
+    "pre",
+    "post",
+    "origin",
+    "redefines",
+    "frame",
 ];
 const FRAME_MEMBERS: &[&str] = &["modifies", "creates", "deletes"];
 const INLINE_CLAUSE_MEMBERS: &[&str] = &["language", "text", "sourceSpan", "origin"];
@@ -1758,6 +1812,13 @@ fn operation_schema(operation: &Json, at: &str, f: &mut Findings) {
             }
         }
     }
+    expect_shape(
+        operation.get("redefines"),
+        &child(at, "redefines"),
+        is_semantic_identity,
+        "an identity is ix://<owner>/<name>",
+        f,
+    );
     if let Some(frame) = operation.get("frame") {
         frame_schema(frame, &child(at, "frame"), f);
     }

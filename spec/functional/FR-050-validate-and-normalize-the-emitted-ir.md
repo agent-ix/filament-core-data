@@ -63,7 +63,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | a constraint keyword is one of the closed eleven | `agent-ix.semantic-ir.UNKNOWN_CONSTRAINT_KEYWORD` |
 | a constraint keyword applies to its resolved subject | `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` |
 | a `pattern` regex compiles under ECMA-262 | `agent-ix.semantic-ir.INVALID_PATTERN` |
-| a bound operand is typed for its scalar | `agent-ix.semantic-ir.INVALID_OPERAND` |
+| a bound operand is typed for its scalar (an `integer` bound is a number or a canonical decimal string) | `agent-ix.semantic-ir.INVALID_OPERAND` |
 | `relationships` and `operations` appear only on a `record` | `agent-ix.semantic-ir.NODES_ON_NON_RECORD` |
 | a relationship target resolves to a document type or an imported export | `agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET` |
 | a relationship's `sourceEnd.type`, where present, names the type declaring the relationship | `agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE` |
@@ -114,6 +114,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | FR-050-AC-11 | Every rule of the code table fires on a constructed document and produces exactly its named code. | Test |
 | FR-050-AC-12 | With `importedExports` set to `unknown`, a relationship target absent from the document produces no diagnostic and one recorded suppression; with the resolution supplied, the same document produces `UNRESOLVED_RELATIONSHIP_TARGET`. | Test |
 | FR-050-AC-13 | Over 512 mutated documents the reader returns diagnostics and never throws. | Fuzz |
+| FR-050-AC-14 | On an `integer` scalar, `min`, `max`, `exclusiveMin` and `exclusiveMax` accept a number or a canonical decimal string (`0`, or an optional `-` and digits with no leading zero), so a `max` of `"18446744073709551615"` is exact; `"01"`, `"+1"`, `" 1"`, `"-0"` and `"1.0"` raise `INVALID_OPERAND` at the operand, and an empty string or a boolean raises `SCHEMA_VIOLATION` there, the schema refusing it before any rule reads it; on a `number` scalar a string still does. The Node reader, the oracle and the TypeScript and JSON Schema backends' admission accept and refuse the same strings; those two backends emit a bound they can hold exactly and refuse one past 2^53 (`INTEGER_BOUND_NOT_EXACT`, and `UNDECLARED_LOSS` for JSON Schema). | Test (TC-1825) |
 
 ## Dependencies
 

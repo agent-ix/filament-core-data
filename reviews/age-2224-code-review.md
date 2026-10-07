@@ -1,0 +1,89 @@
+---
+id: SR-188
+title: "Code review (Rust lane) — PR #264 semantic-ir arbitrary depth, operation redefines, text profile"
+type: SpecReview
+analysis: code-review
+scope: "agent-ix/filament-core-data@29858a01dca8b685fb0587822c407999f6cf5b6c; crates/semantic-ir/src/{json,rules,constructs,schema,lib,patch}.rs, crates/semantic-ir/RULES.md, crates/extraction-frontend/src/identity.rs, crates/extraction-frontend/tests/identity.rs, crates/conformance-adapter/{src/main.rs,tests/corpus.rs}, test/compiler-core.test.ts"
+review_set: subset
+relationships:
+  - target: "ix://agent-ix/filament-core-data/FR-059"
+    type: reviews
+  - target: "ix://agent-ix/filament-core-data/FR-141"
+    type: reviews
+---
+
+# Code review (Rust lane) — PR #264
+
+## Summary
+
+Ticket: AGE-2224 (primary), with AGE-2225 and AGE-2226 in the same PR.
+Diff scope `git diff origin/main...HEAD` at the reviewed sha in `scope`.
+`rust-review` ran as a lane of this review. The TypeScript change is a
+two-line type widening in `test/compiler-core.test.ts` for the new `allOf`
+branch whose `if` has no `properties`; it is correct.
+
+Examined for recursion on every depth-driven path: `Json` `Drop`, `Clone`,
+`PartialEq`, `Debug` (both forms), `parse_with` (open containers on a heap
+`Vec<Open>`; a partially built value drops element by element through the
+iterative `Drop`), `write_iteratively` (both writers), `rules::composite_walk`
+and `package_walk` (colour DFS over explicit frames, O(V+E) through the new
+identity index), `Document::resolve` and `walk_alias` (loops), and
+`constructs::ancestors` / `ancestors_reach` (frontier loops). No native
+recursion whose depth grows with the input remains on parse, serialize,
+drop or `decide`. The 1,000,000-level tests are real: they run on 256 KiB
+and 512 KiB threads and exercise read, clone, compare, both writers,
+`Debug`, drop, a malformed deep input, and `decide`. `MAX_DEPTH` and
+`DEPTH_LIMIT` are gone; `ReadLimits` and `RuleLimits` replace them with no
+compiled-in depth and no compatibility shim. The `redefines` and
+`textProfile` members are closed in `OPERATION_MEMBERS`, `FIELD_MEMBERS`
+and `TYPE_MEMBERS`, matching the JSON Schema.
+
+## Verdict
+
+**PASS WITH FINDINGS** — no high. One medium: with the 256 cap gone, the per-type
+alias and supertype walks are unbounded, so `decide` is still superlinear
+in the length of an alias chain (faster than `origin/main`, but a
+100,000-link chain is not decided in practical time).
+
+## Gates
+
+Run at the reviewed sha through `~/dev/worktrees/locked-build.sh`:
+`cargo test --offline --locked --no-fail-fast -p agent-ix-semantic-ir -p agent-ix-extraction-frontend -p agent-ix-conformance-adapter`
+passed, 31 test binaries, 0 failures (semantic-ir 41 unit tests).
+`poetry run pytest -q`: 4 failed, 509 passed. The same 4 tests
+(`test_tc341_the_corpus_publishes_nothing`,
+`test_no_backend_path_reaches_a_published_manifest`, and two in
+`test_semantic_kernel.py`) also fail on `origin/main` (68c0acba), so the
+author's claim holds and they are not caused by this PR.
+
+## Findings
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-1670 | medium | `walk_alias` runs once per alias type and `ancestors` once or more per type, each walking the whole chain with no cap, so `decide` stays superlinear on a long alias chain: measured in release on a schema-valid bundle, 2,000 / 4,000 / 8,000 aliases take 0.44 s / 2.1 s / 11.9 s (about 5.5x per doubling), so the 100,000-link chain FR-059 says is walked "of any length" is not decided in practical time. Not a regression: `origin/main` takes 6.7 s / 49 s at 1,000 / 2,000, and the new identity index is a large improvement. Memoise each alias's walk result and each type's ancestor set, and add a `decide` test over a long chain | crates/semantic-ir/src/rules.rs:468, crates/semantic-ir/src/rules.rs:669-702, crates/semantic-ir/src/constructs.rs:238-256 |
+| FND-1671 | low | `patch::substitute` still recurses on the template's depth; it is reachable from the public `patch::apply` over a `Json`, so a deep `x-repeat` template overflows the stack | crates/semantic-ir/src/patch.rs:108-130 |
+| FND-1672 | low | A doc comment for `operations_bundle` ("A `Base` and a `Sub` specializing it …") is stranded above `HEADER`, so `HEADER`'s doc describes the wrong item | crates/semantic-ir/src/lib.rs:203-206 |
+
+## New findings (disposition pass 1)
+
+Reviewed at `02a1df0ccb0eec4ae8cc5ed6f54d8cf392938222`.
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-1680 | medium | `Document::resolve` is not memoised, and the new `textProfile` check in `field_rules` calls it once per field (as the unit and constraint checks already do), so n fields typed by the head of an n-link alias chain cost O(n²). Measured in release on a schema-valid bundle: 2,000 / 4,000 / 8,000 fields take 1.0 s / 6.7 s / 39.6 s. `tc_1821_decide_on_100000_types_is_linear` covers alias-to-alias walking only, not field resolution | crates/semantic-ir/src/rules.rs:826-845, crates/semantic-ir/src/rules.rs:248-288 |
+
+## Dispositions
+
+Round 1, reviewed at `02a1df0ccb0eec4ae8cc5ed6f54d8cf392938222`. Release build of the focused cargo tests for semantic-ir, extraction-frontend and conformance-adapter: pass, 0 failures. `tc_1821_decide_on_100000_types_is_linear`: 15.0 s in debug, about 4 s in release, against a 60 s bound. Differential conformance: rust-backend, typescript-backend, python-backend and compiler-frontend each match 115 of 115, and `coverage.json` is unchanged.
+
+| FND | outcome | sha/reason |
+| --- | --- | --- |
+| FND-1670 | fixed 2b849919 | `walk_alias` now memoises per alias (`AliasMemo`), so every alias of an n-link chain costs n steps in all. Supertype cycles are found by one iterative Tarjan SCC pass (`types_on_a_supertype_cycle`). `ancestors` runs only for a type with a `subsets`, field `redefines` or operation `redefines`. Lookups use hash sets. 6874e72e made the schema layer's `deepest` sort-based, and added `tc_1821_decide_on_100000_types_is_linear`, which decides a 100,000-link chain in 15 s in debug. The field-resolution path is still quadratic; that is FND-1680, not this finding |
+| FND-1671 | fixed ea5a6f5f | `patch::substitute` walks the template over an explicit frame stack, and `tc_1820_x_repeat_substitutes_a_deep_template_on_a_small_stack` substitutes a 1,000,000-level template on a 512 KiB thread |
+| FND-1672 | fixed ea5a6f5f | The doc comment now sits on `operations_bundle`, and `HEADER` carries only its own doc |
+
+Round 2, reviewed at `d840ff2901c25b4a6c3c004542734371a2cfa170`. Gates: `cargo test -p agent-ix-semantic-ir` in debug passes, 48 + 1 tests (the whole lib binary, including `tc_1821_decide_on_100000_types_is_linear`, takes 28.6 s single-threaded). The conformance-adapter corpus and extraction-frontend identity tests pass. vitest on `test/integer-bounds.test.ts`, `test/typescript-backend.test.ts` and `test/compiler-core.test.ts` passes, 174 tests. Differential conformance: all 4 adapters match 115 of 115, and `coverage.json` is unchanged.
+
+| FND | outcome | sha/reason |
+| --- | --- | --- |
+| FND-1680 | fixed 7e762a8b | `Document::resolve` caches each result by type position (`Cached`), together with every alias the walk passes (only when no `alias_depth` is configured, since hops then depend on the start), and reuses a cached target mid-walk. `field_of` is a hash lookup (`by_feature`). c04ac966 extends `tc_1821_decide_on_100000_types_is_linear` with 20,000 `textProfile` fields typed by the head of the 100,000-link chain. I checked that caching an intermediate alias gives the same result as an uncached walk, including on cycles: a cached node is only reused when its own chain is acyclic |

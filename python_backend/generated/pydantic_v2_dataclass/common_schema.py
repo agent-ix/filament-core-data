@@ -91,6 +91,15 @@ class Target(Enum):
     python_dataclass = 'python-dataclass'
 
 
+class TextProfile(Enum):
+    unicode_scalars = 'unicode-scalars'
+    nfc = 'nfc'
+    nfd = 'nfd'
+    nfkc = 'nfkc'
+    nfkd = 'nfkd'
+    binary_utf8 = 'binary-utf8'
+
+
 class UnknownPolicy(Enum):
     preserve = 'preserve'
     reject = 'reject'

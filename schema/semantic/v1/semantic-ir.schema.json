@@ -431,6 +431,9 @@
 				"redefines": {
 					"$ref": "common.schema.json#/$defs/semanticIdentity"
 				},
+				"textProfile": {
+					"$ref": "common.schema.json#/$defs/textProfile"
+				},
 				"constraints": {
 					"type": "array",
 					"items": {
@@ -607,6 +610,9 @@
 				"abstract": {
 					"type": "boolean"
 				},
+				"textProfile": {
+					"$ref": "common.schema.json#/$defs/textProfile"
+				},
 				"identityFields": {
 					"type": "array",
 					"items": {
@@ -685,6 +691,20 @@
 				}
 			},
 			"allOf": [
+				{
+					"if": {
+						"type": "object",
+						"required": ["textProfile"]
+					},
+					"then": {
+						"type": "object",
+						"required": ["kind", "scalar"],
+						"properties": {
+							"kind": { "const": "scalar" },
+							"scalar": { "const": "string" }
+						}
+					}
+				},
 				{
 					"if": {
 						"type": "object",
@@ -1017,6 +1037,9 @@
 				},
 				"origin": {
 					"$ref": "common.schema.json#/$defs/origin"
+				},
+				"redefines": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
 				},
 				"frame": {
 					"$ref": "#/$defs/frame"

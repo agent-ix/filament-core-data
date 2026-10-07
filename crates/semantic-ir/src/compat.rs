@@ -255,26 +255,70 @@ fn compare_constraints(earlier: &Json, later: &Json, report: &mut Report) {
     }
 }
 
+/// A constraint operand read as a number: a JSON number, or a canonical
+/// decimal string on an integer bound, exact past 2^53.
+#[derive(Clone, Copy)]
+enum Bound {
+    Integer(i128),
+    Float(f64),
+}
+
+impl Bound {
+    fn of(value: &Json) -> Option<Self> {
+        if let Some(text) = value.as_str() {
+            let digits = text.strip_prefix('-').unwrap_or(text);
+            let canonical = match digits.as_bytes() {
+                [b'0'] => !text.starts_with('-'),
+                [first, rest @ ..] => {
+                    (b'1'..=b'9').contains(first) && rest.iter().all(u8::is_ascii_digit)
+                }
+                [] => false,
+            };
+            return canonical
+                .then(|| text.parse().ok())
+                .flatten()
+                .map(Self::Integer);
+        }
+        value
+            .as_i64()
+            .map(|number| Self::Integer(i128::from(number)))
+            .or_else(|| value.as_f64().map(Self::Float))
+    }
+
+    fn float(self) -> f64 {
+        match self {
+            Self::Integer(number) => number as f64,
+            Self::Float(number) => number,
+        }
+    }
+
+    /// Whether `self` is greater than `other`.
+    fn exceeds(self, other: Self) -> bool {
+        match (self, other) {
+            (Self::Integer(left), Self::Integer(right)) => left > right,
+            _ => self.float() > other.float(),
+        }
+    }
+}
+
 fn operand_move(earlier: &Json, later: &Json) -> Classification {
     let keyword = earlier.get("keyword").and_then(Json::as_str).unwrap_or("");
     if later.get("keyword").and_then(Json::as_str) != Some(keyword) {
         return Classification::Conditional;
     }
-    let before = earlier
-        .get("operands")
-        .and_then(|operands| operands.get("value"))
-        .and_then(Json::as_f64);
-    let after = later
-        .get("operands")
-        .and_then(|operands| operands.get("value"))
-        .and_then(Json::as_f64);
-    let (before, after) = match (before, after) {
+    let operand = |constraint: &Json| {
+        constraint
+            .get("operands")
+            .and_then(|operands| operands.get("value"))
+            .and_then(Bound::of)
+    };
+    let (before, after) = match (operand(earlier), operand(later)) {
         (Some(before), Some(after)) => (before, after),
         _ => return Classification::Conditional,
     };
     let tightening = match keyword {
-        "min" | "minLength" | "exclusiveMin" => after > before,
-        "max" | "maxLength" | "exclusiveMax" => after < before,
+        "min" | "minLength" | "exclusiveMin" => after.exceeds(before),
+        "max" | "maxLength" | "exclusiveMax" => before.exceeds(after),
         _ => return Classification::Conditional,
     };
     if tightening {
@@ -581,7 +625,7 @@ fn strip_origin(node: &Json) -> Json {
 
 #[cfg(test)]
 mod tests {
-    use super::{classify, Classification};
+    use super::{classify, operand_move, Classification};
     use crate::json::parse;
 
     /// fcd#179 deleted contract 1.1.0 (and 1.0.0); the special-cased "the
@@ -625,6 +669,44 @@ mod tests {
         );
         assert_eq!(
             classify(&after, &before, true, true),
+            Classification::Conditional
+        );
+    }
+
+    /// A bound given as a canonical decimal string compares as the integer it
+    /// is, exactly past 2^53 where two doubles would be equal.
+    ///
+    /// Tracing: TC-1825
+    /// ACs: FR-050-AC-14
+    #[test]
+    fn tc_1825_a_decimal_string_bound_classifies_as_an_integer() {
+        let bound = |keyword: &str, value: &str| {
+            parse(&format!(
+                r#"{{"keyword":"{keyword}","operands":{{"value":{value}}}}}"#
+            ))
+            .expect("a constraint")
+        };
+        let max = |value: &str| bound("max", value);
+        // 2^53 + 1 and 2^53 are one double and two integers.
+        assert_eq!(
+            operand_move(&max(r#""9007199254740993""#), &max(r#""9007199254740992""#)),
+            Classification::Conditional
+        );
+        assert_eq!(
+            operand_move(&max(r#""9007199254740992""#), &max(r#""9007199254740993""#)),
+            Classification::Additive
+        );
+        assert_eq!(
+            operand_move(&max(r#""18446744073709551615""#), &max("7")),
+            Classification::Conditional
+        );
+        assert_eq!(
+            operand_move(&max("7"), &max(r#""18446744073709551615""#)),
+            Classification::Additive
+        );
+        // Not a canonical integer: no number to compare.
+        assert_eq!(
+            operand_move(&max(r#""01""#), &max("7")),
             Classification::Conditional
         );
     }

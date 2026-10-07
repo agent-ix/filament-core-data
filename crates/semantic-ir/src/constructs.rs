@@ -9,9 +9,11 @@
 //! rules that range over several types. It reads a kind only as the
 //! `{module, name}` key of its declaration and never matches a kind name.
 
+use std::collections::{BTreeSet, HashSet};
+
 use crate::diag::{child, index};
 use crate::json::Json;
-use crate::rules::{Document, Sink, DANGLING_CLAUSE_REF, DEPTH_LIMIT, UNRESOLVED_TYPE_REF};
+use crate::rules::{Document, Sink, DANGLING_CLAUSE_REF, UNRESOLVED_TYPE_REF};
 use crate::schema::SCHEMA_VIOLATION;
 use crate::vocabulary::{Declaration, Member, Rule, Shape};
 
@@ -185,11 +187,32 @@ pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
             return;
         }
     };
+    let cyclic = types_on_a_supertype_cycle(document);
+    // Read only when some operation declares a frame, and once for the document.
+    let has_frame = document.types.iter().any(|definition| {
+        items(definition, "operations")
+            .iter()
+            .any(|op| op.has("frame"))
+    });
+    let frame_targets: HashSet<&str> = if has_frame {
+        document_features(document)
+            .into_iter()
+            .filter_map(identity_of)
+            .collect()
+    } else {
+        HashSet::new()
+    };
     for (position, definition) in document.types.iter().enumerate() {
         let type_at = index("/ir/types", position);
-        supertypes(document, definition, &type_at, sink);
+        supertypes(
+            document,
+            definition,
+            &type_at,
+            cyclic.contains(&position),
+            sink,
+        );
         features(document, definition, &type_at, sink);
-        frames(document, definition, &type_at, sink);
+        frames(document, &frame_targets, definition, &type_at, sink);
         inline_clauses(definition, &type_at, sink);
         let Some(declaration) = declarations.of(definition) else {
             continue;
@@ -236,14 +259,13 @@ fn visible_fields<'a>(document: &Document<'a>, definition: &'a Json) -> Vec<&'a 
 /// The transitive supertypes of `definition`, nearest first, each once.
 fn ancestors<'a>(document: &Document<'a>, definition: &'a Json) -> Vec<&'a Json> {
     let mut out: Vec<&'a Json> = Vec::new();
-    let mut seen: Vec<&str> = identity_of(definition).into_iter().collect();
+    let mut seen: BTreeSet<&str> = identity_of(definition).into_iter().collect();
     let mut frontier: Vec<&'a Json> = vec![definition];
     while let Some(current) = frontier.pop() {
         for (_, name) in strings(current.get("supertypes")) {
-            if seen.contains(&name) || out.len() > DEPTH_LIMIT {
+            if !seen.insert(name) {
                 continue;
             }
-            seen.push(name);
             if let Some(parent) = document.type_of(name) {
                 out.push(parent);
                 frontier.push(parent);
@@ -497,7 +519,13 @@ fn transitions(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
     }
 }
 
-fn supertypes(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
+fn supertypes(
+    document: &Document<'_>,
+    definition: &Json,
+    type_at: &str,
+    on_cycle: bool,
+    sink: &mut Sink<'_>,
+) {
     let at = child(type_at, "supertypes");
     let kind = definition.get("kind");
     for (position, name) in strings(definition.get("supertypes")) {
@@ -521,10 +549,7 @@ fn supertypes(document: &Document<'_>, definition: &Json, type_at: &str, sink: &
             Some(_) => {}
         }
     }
-    let Some(own) = identity_of(definition) else {
-        return;
-    };
-    if definition.has("supertypes") && ancestors_reach(document, definition, own) {
+    if on_cycle {
         sink.emit(
             at,
             SUPERTYPE_CYCLE,
@@ -533,37 +558,92 @@ fn supertypes(document: &Document<'_>, definition: &Json, type_at: &str, sink: &
     }
 }
 
-/// Whether walking the supertypes of `definition` reaches `identity`.
-fn ancestors_reach(document: &Document<'_>, definition: &Json, identity: &str) -> bool {
-    let mut seen: Vec<&str> = Vec::new();
-    let mut frontier: Vec<&str> = strings(definition.get("supertypes"))
-        .into_iter()
-        .map(|(_, name)| name)
+/// The positions of the types that reach themselves through `supertypes`,
+/// found by one iterative strongly-connected-components pass, so a chain of
+/// any length costs a step per type and per edge, not a walk per type.
+fn types_on_a_supertype_cycle(document: &Document<'_>) -> BTreeSet<usize> {
+    let count = document.types.len();
+    let edges: Vec<Vec<usize>> = document
+        .types
+        .iter()
+        .map(|definition| {
+            strings(definition.get("supertypes"))
+                .into_iter()
+                .filter_map(|(_, name)| document.by_position(name))
+                .collect()
+        })
         .collect();
-    while let Some(name) = frontier.pop() {
-        if name == identity {
-            return true;
-        }
-        if seen.contains(&name) || seen.len() > DEPTH_LIMIT {
+    const UNSEEN: usize = usize::MAX;
+    let mut order = vec![UNSEEN; count];
+    let mut low = vec![0usize; count];
+    let mut on_stack = vec![false; count];
+    let mut stack: Vec<usize> = Vec::new();
+    let mut next_order = 0usize;
+    let mut cyclic = BTreeSet::new();
+    for root in 0..count {
+        if order[root] != UNSEEN {
             continue;
         }
-        seen.push(name);
-        if let Some(parent) = document.type_of(name) {
-            frontier.extend(
-                strings(parent.get("supertypes"))
-                    .into_iter()
-                    .map(|(_, n)| n),
-            );
+        // Each frame is a node and how many of its edges it has taken.
+        let mut frames: Vec<(usize, usize)> = vec![(root, 0)];
+        order[root] = next_order;
+        low[root] = next_order;
+        next_order += 1;
+        stack.push(root);
+        on_stack[root] = true;
+        while let Some(&(node, taken)) = frames.last() {
+            if let Some(&target) = edges[node].get(taken) {
+                if let Some(frame) = frames.last_mut() {
+                    frame.1 += 1;
+                }
+                if order[target] == UNSEEN {
+                    order[target] = next_order;
+                    low[target] = next_order;
+                    next_order += 1;
+                    stack.push(target);
+                    on_stack[target] = true;
+                    frames.push((target, 0));
+                } else if on_stack[target] {
+                    low[node] = low[node].min(order[target]);
+                }
+                continue;
+            }
+            frames.pop();
+            if let Some(&(parent, _)) = frames.last() {
+                low[parent] = low[parent].min(low[node]);
+            }
+            if low[node] == order[node] {
+                let mut members = Vec::new();
+                while let Some(member) = stack.pop() {
+                    on_stack[member] = false;
+                    members.push(member);
+                    if member == node {
+                        break;
+                    }
+                }
+                if members.len() > 1 || edges[node].contains(&node) {
+                    cyclic.extend(members);
+                }
+            }
         }
     }
-    false
+    cyclic
 }
 
 fn features(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
-    let inherited: Vec<&Json> = ancestors(document, definition)
-        .into_iter()
-        .flat_map(|ancestor| items(ancestor, "fields"))
-        .collect();
+    // The inherited fields are read only to resolve a `subsets` or `redefines`
+    // entry, so a type with neither never walks its supertypes.
+    let narrows_something = items(definition, "fields")
+        .iter()
+        .any(|field| field.has("subsets") || field.has("redefines"));
+    let inherited: Vec<&Json> = if narrows_something {
+        ancestors(document, definition)
+            .into_iter()
+            .flat_map(|ancestor| items(ancestor, "fields"))
+            .collect()
+    } else {
+        Vec::new()
+    };
     let fields_at = child(type_at, "fields");
     for (position, field) in items(definition, "fields").iter().enumerate() {
         let field_at = index(&fields_at, position);
@@ -598,6 +678,65 @@ fn features(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mu
                 "a redefinition keeps its multiplicity within the bounds of the field it redefines",
             ),
             Some(_) => {}
+        }
+    }
+    redefined_operations(document, definition, type_at, sink);
+}
+
+/// An operation's `redefines` names an operation of a transitive supertype,
+/// and the operation's return multiplicity lies within the redefined
+/// operation's, as a field's `redefines` does.
+fn redefined_operations(
+    document: &Document<'_>,
+    definition: &Json,
+    type_at: &str,
+    sink: &mut Sink<'_>,
+) {
+    if !items(definition, "operations")
+        .iter()
+        .any(|operation| operation.has("redefines"))
+    {
+        return;
+    }
+    let inherited: Vec<&Json> = ancestors(document, definition)
+        .into_iter()
+        .flat_map(|ancestor| items(ancestor, "operations"))
+        .collect();
+    let operations_at = child(type_at, "operations");
+    for (position, operation) in items(definition, "operations").iter().enumerate() {
+        let Some(name) = operation.get("redefines").and_then(Json::as_str) else {
+            continue;
+        };
+        let at = child(&index(&operations_at, position), "redefines");
+        match inherited
+            .iter()
+            .find(|other| identity_of(other) == Some(name))
+        {
+            None => sink.emit(
+                at,
+                UNRESOLVED_FEATURE_REF,
+                "a redefined operation is an operation of a supertype",
+            ),
+            Some(redefined) => {
+                // An operation that declares no `returns` returns no value:
+                // its return multiplicity is `0..0`. A redefinition keeps the
+                // redefined operation's bounds, so redefining an operation
+                // that returns with one that does not, or the reverse, leaves
+                // the bounds and is `INVALID_REDEFINITION`; two operations
+                // that both return nothing agree.
+                let within = match (operation.get("returns"), redefined.get("returns")) {
+                    (Some(inner), Some(outer)) => narrows(inner, outer),
+                    (None, None) => true,
+                    (Some(_), None) | (None, Some(_)) => false,
+                };
+                if !within {
+                    sink.emit(
+                        at,
+                        INVALID_REDEFINITION,
+                        "a redefinition keeps its return multiplicity within the bounds of the operation it redefines, and an operation without returns returns no value",
+                    );
+                }
+            }
         }
     }
 }
@@ -642,8 +781,13 @@ fn narrows(field: &Json, redefined: &Json) -> bool {
 /// what `creates`/`deletes` differ over, and relationship-end scope) are
 /// still open in QSpec #101 (Q3 open with Peter) and #106; FCD carries no
 /// shape for either question.
-fn frames(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
-    let features = document_features(document);
+fn frames(
+    document: &Document<'_>,
+    features: &HashSet<&str>,
+    definition: &Json,
+    type_at: &str,
+    sink: &mut Sink<'_>,
+) {
     let operations_at = child(type_at, "operations");
     for (position, operation) in items(definition, "operations").iter().enumerate() {
         let Some(frame) = operation.get("frame") else {
@@ -652,7 +796,7 @@ fn frames(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut 
         let frame_at = child(&index(&operations_at, position), "frame");
         let modifies_at = child(&frame_at, "modifies");
         for (slot, name) in strings(frame.get("modifies")) {
-            if !features.iter().any(|node| identity_of(node) == Some(name)) {
+            if !features.contains(name) {
                 sink.emit(
                     index(&modifies_at, slot),
                     UNRESOLVED_FRAME_PATH,

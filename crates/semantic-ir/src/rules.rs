@@ -3,18 +3,30 @@
 //! Every code emitted here has a `conformance/diagnostic-codes.json` row, and
 //! `crates/semantic-ir/RULES.md` cites the clause each rule was derived from.
 
-use std::collections::BTreeSet;
+use std::cell::RefCell;
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::diag::{child, index, locus_for, owner_for, Located, Severity};
 use crate::json::Json;
 use crate::regex262;
+use crate::schema::SCHEMA_VIOLATION;
 use crate::vocabulary::Shape;
 
-/// The declared finite depth bound on an acyclic expansion.
+/// The limits the cross-field rules run under, each used as the caller gives
+/// it.
 ///
-/// `contracts-v1.md` obliges "declared finite limits"; the corpus manifest
-/// declares this one as `depthLimit: 256`.
-pub const DEPTH_LIMIT: usize = 256;
+/// No depth is compiled in: every walk the rules make keeps its own state on
+/// the heap and ends on the graph it walks, so a chain, a cycle or a hierarchy
+/// of any length is walked on any thread. A caller that wants a depth report
+/// sets one here.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct RuleLimits {
+    /// The most links an acyclic alias chain may hold, or `None` for no limit.
+    /// A longer chain is reported `DEPTH_LIMIT_EXCEEDED` at the node that
+    /// exceeds it, and a cycle is reported as a cycle however long the chain
+    /// before it closes.
+    pub alias_depth: Option<usize>,
+}
 
 /// The prefix a native type reference carries (gap 1 of FCD #199/#200): a
 /// kernel scalar mints no document node, so a `typeRef`, `target`, sequence
@@ -50,8 +62,8 @@ fn native_scalar(identity: &str) -> Option<&'static str> {
 
 /// Whether `identity` resolves: a document declares it, or it is a native
 /// type reference.
-fn resolves(declared: &[String], identity: &str) -> bool {
-    native_scalar(identity).is_some() || declared.iter().any(|d| d == identity)
+fn resolves(declared: &HashSet<String>, identity: &str) -> bool {
+    native_scalar(identity).is_some() || declared.contains(identity)
 }
 
 /// What an identity resolves to, for the applicability table and the unit
@@ -126,6 +138,15 @@ codes! {
     UNKNOWN_REQUIRED_EXTENSION => "agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION",
 }
 
+/// A resolution kept without borrowing the document: a node is its position
+/// among the types.
+#[derive(Clone, Copy)]
+enum Cached {
+    Nothing,
+    Native(&'static str),
+    Node(usize),
+}
+
 /// The reading of the document the cross-field rules and the classifier share.
 pub struct Document<'a> {
     /// The whole input bundle.
@@ -134,6 +155,17 @@ pub struct Document<'a> {
     pub ir: &'a Json,
     /// The type definitions, in document order.
     pub types: &'a [Json],
+    /// The limits the rules run under.
+    pub limits: RuleLimits,
+    /// The position of the first type declaring each identity, so a lookup
+    /// by identity is one map access however many types the document holds.
+    by_identity: HashMap<&'a str, usize>,
+    /// The first field or operation parameter declaring each identity, in
+    /// document order.
+    by_feature: HashMap<&'a str, &'a Json>,
+    /// What each identity resolved to, so a chain is walked once however many
+    /// fields and constraints name its head.
+    resolved: RefCell<HashMap<String, Cached>>,
 }
 
 impl<'a> Document<'a> {
@@ -145,16 +177,63 @@ impl<'a> Document<'a> {
     /// (fcd#179), so every document reaching this reading already declares
     /// contract 2.0.0 — there is no other live version left to distinguish.
     pub fn read(bundle: &'a Json) -> Option<Document<'a>> {
+        Self::read_with(bundle, RuleLimits::default())
+    }
+
+    /// [`Document::read`] under `limits`.
+    pub fn read_with(bundle: &'a Json, limits: RuleLimits) -> Option<Document<'a>> {
         let ir = bundle.get("ir")?;
         let types = ir.get("types").and_then(Json::as_array).unwrap_or(&[]);
-        Some(Document { bundle, ir, types })
+        let mut by_identity = HashMap::with_capacity(types.len());
+        for (position, definition) in types.iter().enumerate() {
+            if let Some(identity) = definition.get("identity").and_then(Json::as_str) {
+                by_identity.entry(identity).or_insert(position);
+            }
+        }
+        let mut by_feature = HashMap::new();
+        for definition in types {
+            let params = definition
+                .get("operations")
+                .and_then(Json::as_array)
+                .unwrap_or(&[])
+                .iter()
+                .flat_map(|operation| {
+                    operation
+                        .get("params")
+                        .and_then(Json::as_array)
+                        .unwrap_or(&[])
+                });
+            let fields = definition
+                .get("fields")
+                .and_then(Json::as_array)
+                .unwrap_or(&[]);
+            for feature in fields.iter().chain(params) {
+                if let Some(identity) = feature.get("identity").and_then(Json::as_str) {
+                    by_feature.entry(identity).or_insert(feature);
+                }
+            }
+        }
+        Some(Document {
+            bundle,
+            ir,
+            types,
+            limits,
+            by_identity,
+            by_feature,
+            resolved: RefCell::new(HashMap::new()),
+        })
+    }
+
+    /// The position in `types` of the definition an identity names.
+    pub(crate) fn by_position(&self, identity: &str) -> Option<usize> {
+        self.by_identity.get(identity).copied()
     }
 
     /// The type definition an identity names.
     pub fn type_of(&self, identity: &str) -> Option<&'a Json> {
-        self.types
-            .iter()
-            .find(|definition| definition.get("identity").and_then(Json::as_str) == Some(identity))
+        self.by_identity
+            .get(identity)
+            .and_then(|&position| self.types.get(position))
     }
 
     /// The type declaring the operation an identity names, when the document
@@ -176,28 +255,7 @@ impl<'a> Document<'a> {
     /// name one directly, gap 1 of FCD #199/#200: a constrained field keeps
     /// its constraints inline, with no alias node between them).
     fn field_of(&self, identity: &str) -> Option<&'a Json> {
-        for definition in self.types {
-            if let Some(fields) = definition.get("fields").and_then(Json::as_array) {
-                if let Some(field) = fields
-                    .iter()
-                    .find(|field| field.get("identity").and_then(Json::as_str) == Some(identity))
-                {
-                    return Some(field);
-                }
-            }
-            if let Some(operations) = definition.get("operations").and_then(Json::as_array) {
-                for operation in operations {
-                    if let Some(params) = operation.get("params").and_then(Json::as_array) {
-                        if let Some(param) = params.iter().find(|param| {
-                            param.get("identity").and_then(Json::as_str) == Some(identity)
-                        }) {
-                            return Some(param);
-                        }
-                    }
-                }
-            }
-        }
-        None
+        self.by_feature.get(identity).copied()
     }
 
     /// What an identity resolves to: a native type reference; a field or
@@ -208,54 +266,93 @@ impl<'a> Document<'a> {
     /// runs past the declared depth bound; each of those is reported under its
     /// own code by the rule that owns it, not by this resolver.
     pub fn resolve(&self, identity: &str) -> Option<Resolved<'a>> {
-        let mut seen = BTreeSet::new();
-        seen.insert(identity);
-        self.resolve_bounded(identity, &mut seen)
+        if let Some(known) = self.resolved.borrow().get(identity) {
+            return self.restore(*known);
+        }
+        let mut walked = Vec::new();
+        let result = self.resolve_walk(identity, &mut walked);
+        // A configured depth limit counts hops from the start of each walk, so
+        // only the start's own result is the same for every start.
+        let mut cache = self.resolved.borrow_mut();
+        if self.limits.alias_depth.is_none() {
+            for name in walked {
+                cache.insert(name.to_string(), result);
+            }
+        }
+        cache.insert(identity.to_string(), result);
+        drop(cache);
+        self.restore(result)
     }
 
-    /// `resolve`'s recursive step, bounded by `seen`: the identities already
-    /// visited on this chain. A field's `typeRef` can name another field
-    /// (gap 1 of FCD #199/#200, via a constraint's `appliesTo`), so two
-    /// fields whose `typeRef`s name each other would otherwise recurse
-    /// through `field_of` with no depth check and overflow the stack; a
-    /// revisit here resolves to nothing, the same as a closed alias chain.
-    ///
-    /// `seen` is a `BTreeSet`, not a `Vec`: membership is the only operation
-    /// this method needs, a `Vec` would linear-scan it on every hop, and a
-    /// set states that invariant instead of relying on call discipline.
-    fn resolve_bounded<'s>(
-        &self,
-        identity: &'s str,
-        seen: &mut BTreeSet<&'s str>,
-    ) -> Option<Resolved<'a>>
-    where
-        'a: 's,
-    {
-        if let Some(scalar) = native_scalar(identity) {
-            return Some(Resolved::Native(scalar));
+    fn restore(&self, cached: Cached) -> Option<Resolved<'a>> {
+        match cached {
+            Cached::Nothing => None,
+            Cached::Native(scalar) => Some(Resolved::Native(scalar)),
+            Cached::Node(position) => self.types.get(position).map(Resolved::Node),
         }
-        if let Some(field) = self.field_of(identity) {
-            let type_ref = field.get("typeRef").and_then(Json::as_str)?;
+    }
+
+    /// One uncached walk; `walked` collects every alias identity it passes,
+    /// each of which resolves to the same result as the start.
+    fn resolve_walk(&self, identity: &str, walked: &mut Vec<&'a str>) -> Cached {
+        let mut seen = BTreeSet::new();
+        seen.insert(identity);
+        let mut identity = identity;
+        // A field's `typeRef` can name another field (gap 1 of FCD
+        // #199/#200, via a constraint's `appliesTo`), so two fields whose
+        // `typeRef`s name each other would otherwise walk forever; a revisit
+        // resolves to nothing, the same as a closed alias chain. `seen` is a
+        // `BTreeSet`: membership is the only operation the walk needs.
+        loop {
+            if let Some(scalar) = native_scalar(identity) {
+                return Cached::Native(scalar);
+            }
+            let Some(field) = self.field_of(identity) else {
+                break;
+            };
+            let Some(type_ref) = field.get("typeRef").and_then(Json::as_str) else {
+                return Cached::Nothing;
+            };
             if !seen.insert(type_ref) {
-                return None;
+                return Cached::Nothing;
             }
-            return self.resolve_bounded(type_ref, seen);
+            identity = type_ref;
         }
-        let mut current = self.type_of(identity)?;
-        for _ in 0..=DEPTH_LIMIT {
+        let Some(mut position) = self.by_position(identity) else {
+            return Cached::Nothing;
+        };
+        let mut hops = 0usize;
+        loop {
+            let Some(current) = self.types.get(position) else {
+                return Cached::Nothing;
+            };
             if current.get("kind").and_then(Json::as_str) != Some("alias") {
-                return Some(Resolved::Node(current));
+                return Cached::Node(position);
             }
-            let target = current.get("target").and_then(Json::as_str)?;
+            let Some(target) = current.get("target").and_then(Json::as_str) else {
+                return Cached::Nothing;
+            };
             if let Some(scalar) = native_scalar(target) {
-                return Some(Resolved::Native(scalar));
+                return Cached::Native(scalar);
             }
             if !seen.insert(target) {
-                return None;
+                return Cached::Nothing;
             }
-            current = self.type_of(target)?;
+            hops += 1;
+            if self.limits.alias_depth.is_some_and(|limit| hops > limit) {
+                return Cached::Nothing;
+            }
+            if self.limits.alias_depth.is_none() {
+                if let Some(known) = self.resolved.borrow().get(target) {
+                    return *known;
+                }
+                walked.push(target);
+            }
+            let Some(next) = self.by_position(target) else {
+                return Cached::Nothing;
+            };
+            position = next;
         }
-        None
     }
 
     /// Every identity the document declares, in document order.
@@ -373,11 +470,16 @@ impl<'a> Sink<'a> {
 
 /// Decides every cross-field and package-context rule over one input bundle.
 pub fn decide(bundle: &Json) -> Vec<Located> {
+    decide_with(bundle, RuleLimits::default())
+}
+
+/// [`decide`] under `limits`.
+pub fn decide_with(bundle: &Json, limits: RuleLimits) -> Vec<Located> {
     let mut sink = Sink {
         bundle,
         out: Vec::new(),
     };
-    let document = match Document::read(bundle) {
+    let document = match Document::read_with(bundle, limits) {
         Some(document) => document,
         None => return sink.out,
     };
@@ -391,7 +493,7 @@ pub fn decide(bundle: &Json) -> Vec<Located> {
 }
 
 fn duplicate_identities(document: &Document<'_>, sink: &mut Sink<'_>) {
-    let mut seen: Vec<String> = Vec::new();
+    let mut seen: HashSet<String> = HashSet::new();
     for (pointer, _node, identity) in document.identity_declarations() {
         if seen.contains(&identity) {
             sink.emit(
@@ -400,13 +502,13 @@ fn duplicate_identities(document: &Document<'_>, sink: &mut Sink<'_>) {
                 "the second declaration of an identity the document already carries",
             );
         } else {
-            seen.push(identity);
+            seen.insert(identity);
         }
     }
 }
 
 fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
-    let declared: Vec<String> = document
+    let declared: HashSet<String> = document
         .types
         .iter()
         .filter_map(|definition| definition.get("identity").and_then(Json::as_str))
@@ -423,6 +525,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         .map(str::to_string)
         .collect();
 
+    let mut alias_memo = AliasMemo::new();
     for (position, definition) in document.types.iter().enumerate() {
         let type_at = index("/ir/types", position);
         let kind = definition.get("kind").and_then(Json::as_str).unwrap_or("");
@@ -436,7 +539,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                         format!("the {kind} target resolves to no declared type"),
                     );
                 } else if kind == "alias" {
-                    match walk_alias(document, definition) {
+                    match walk_alias(document, definition, &mut alias_memo) {
                         Walk::Cycle => sink.emit(
                             child(&type_at, "target"),
                             ALIAS_CYCLE,
@@ -445,7 +548,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                         Walk::TooDeep => sink.emit(
                             child(&type_at, "target"),
                             DEPTH_LIMIT_EXCEEDED,
-                            "alias expansion is bounded at the declared finite depth",
+                            "alias expansion exceeds the configured depth limit",
                         ),
                         Walk::Resolved => {}
                     }
@@ -496,7 +599,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                     .and_then(|end| end.get("type"))
                     .and_then(Json::as_str)
                 {
-                    let resolves = declared.iter().any(|identity| identity == target)
+                    let resolves = declared.contains(target)
                         || manifest_exports.iter().any(|identity| identity == target);
                     if !resolves {
                         sink.emit(
@@ -607,7 +710,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
 
 fn check_element(
     _document: &Document<'_>,
-    declared: &[String],
+    declared: &HashSet<String>,
     definition: &Json,
     member: &str,
     type_at: &str,
@@ -629,50 +732,102 @@ fn check_element(
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Walk {
     Resolved,
     Cycle,
     TooDeep,
 }
 
-/// Walks an alias chain, detecting a cycle before the depth bound applies.
-fn walk_alias(document: &Document<'_>, start: &Json) -> Walk {
+/// What walking from one alias to the end of its chain found, kept per alias
+/// so each link is walked once however long the chain is.
+#[derive(Debug, Clone, Copy)]
+enum Chain {
+    /// The chain closes on itself.
+    Cycle,
+    /// The chain ends after `steps` links; `at_type` is whether it ends at a
+    /// declared type that is not an alias (the only end a depth limit applies to).
+    Ends { steps: usize, at_type: bool },
+}
+
+/// Per-alias results of [`walk_alias`], by identity, shared across a decision.
+type AliasMemo<'a> = HashMap<&'a str, Chain>;
+
+/// Walks an alias chain, detecting a cycle before any configured depth limit
+/// applies. The walk is iterative and records every alias it passes, so
+/// walking every alias of a chain of `n` links costs `n` steps in all.
+fn walk_alias<'a>(document: &Document<'a>, start: &'a Json, memo: &mut AliasMemo<'a>) -> Walk {
+    let mut path: Vec<&'a str> = Vec::new();
+    let mut on_path: HashSet<&'a str> = HashSet::new();
     let mut current = start;
-    let mut seen: Vec<&str> = match start.get("identity").and_then(Json::as_str) {
-        Some(identity) => vec![identity],
-        None => Vec::new(),
-    };
-    let mut steps = 0usize;
-    loop {
-        let target = match current.get("target").and_then(Json::as_str) {
-            Some(target) => target,
-            None => return Walk::Resolved,
-        };
-        if seen.contains(&target) {
-            return Walk::Cycle;
+    let mut chain = loop {
+        let identity = current.get("identity").and_then(Json::as_str).unwrap_or("");
+        if let Some(known) = memo.get(identity) {
+            break *known;
         }
-        seen.push(target);
-        steps += 1;
-        let next = match document.type_of(target) {
-            Some(next) => next,
-            None => return Walk::Resolved,
-        };
-        if next.get("kind").and_then(Json::as_str) != Some("alias") {
-            return if steps > DEPTH_LIMIT {
-                Walk::TooDeep
-            } else {
-                Walk::Resolved
+        if !on_path.insert(identity) {
+            break Chain::Cycle;
+        }
+        path.push(identity);
+        let Some(target) = current.get("target").and_then(Json::as_str) else {
+            path.pop();
+            let end = Chain::Ends {
+                steps: 0,
+                at_type: false,
             };
+            memo.insert(identity, end);
+            break end;
+        };
+        match document.type_of(target) {
+            None => {
+                path.pop();
+                let end = Chain::Ends {
+                    steps: 1,
+                    at_type: false,
+                };
+                memo.insert(identity, end);
+                break end;
+            }
+            Some(next) if next.get("kind").and_then(Json::as_str) != Some("alias") => {
+                path.pop();
+                let end = Chain::Ends {
+                    steps: 1,
+                    at_type: true,
+                };
+                memo.insert(identity, end);
+                break end;
+            }
+            Some(next) => current = next,
         }
-        current = next;
-        if steps > document.types.len() + 1 {
-            return Walk::TooDeep;
+    };
+    while let Some(identity) = path.pop() {
+        chain = match chain {
+            Chain::Cycle => Chain::Cycle,
+            Chain::Ends { steps, at_type } => Chain::Ends {
+                steps: steps + 1,
+                at_type,
+            },
+        };
+        memo.insert(identity, chain);
+    }
+    match chain {
+        Chain::Cycle => Walk::Cycle,
+        Chain::Ends {
+            steps,
+            at_type: true,
+        } if document
+            .limits
+            .alias_depth
+            .is_some_and(|limit| steps > limit) =>
+        {
+            Walk::TooDeep
         }
+        Chain::Ends { .. } => Walk::Resolved,
     }
 }
 
 fn duplicate_names(items: &[Json], items_at: &str, code: &'static str, sink: &mut Sink<'_>) {
-    let mut seen: Vec<&str> = Vec::new();
+    let mut seen: HashSet<&str> = HashSet::new();
     for (member, item) in items.iter().enumerate() {
         if let Some(name) = item.get("name").and_then(Json::as_str) {
             if seen.contains(&name) {
@@ -683,7 +838,7 @@ fn duplicate_names(items: &[Json], items_at: &str, code: &'static str, sink: &mu
                 };
                 sink.emit(child(&index(items_at, member), "name"), code, what);
             } else {
-                seen.push(name);
+                seen.insert(name);
             }
         }
     }
@@ -691,7 +846,7 @@ fn duplicate_names(items: &[Json], items_at: &str, code: &'static str, sink: &mu
 
 fn field_rules(
     document: &Document<'_>,
-    declared: &[String],
+    declared: &HashSet<String>,
     fields: &[Json],
     fields_at: &str,
     sink: &mut Sink<'_>,
@@ -735,6 +890,27 @@ fn field_rules(
                 );
             }
         }
+        if field.has("textProfile") {
+            // Unresolved references are reported by their own rule; only a
+            // reference that resolves to something other than a text scalar
+            // is refused here.
+            let resolved = type_ref.and_then(|identity| document.resolve(identity));
+            let is_text = match resolved {
+                Some(Resolved::Native(scalar)) => scalar == "string",
+                Some(Resolved::Node(node)) => {
+                    node.get("kind").and_then(Json::as_str) == Some("scalar")
+                        && node.get("scalar").and_then(Json::as_str) == Some("string")
+                }
+                None => true,
+            };
+            if !is_text {
+                sink.emit(
+                    child(&field_at, "textProfile"),
+                    SCHEMA_VIOLATION,
+                    "a text profile is carried only where the type reference resolves to a text scalar",
+                );
+            }
+        }
         // A constrained field keeps its constraints inline, with no alias
         // node between them (gap 1 of FCD #199/#200); `Document::resolve`
         // already resolves a field identity directly through `field_of`, so
@@ -771,6 +947,17 @@ fn applies_to(keyword: &str, kind: &str, scalar: &str) -> bool {
         }
         "unique" => matches!(kind, "sequence" | "map"),
         _ => true,
+    }
+}
+
+/// A canonical decimal integer: `0`, or an optional `-` and digits with no
+/// leading zero. No `+`, no spaces, no `-0`.
+fn is_canonical_integer(text: &str) -> bool {
+    let digits = text.strip_prefix('-').unwrap_or(text);
+    match digits.as_bytes() {
+        [b'0'] => !text.starts_with('-'),
+        [first, rest @ ..] => (b'1'..=b'9').contains(first) && rest.iter().all(u8::is_ascii_digit),
+        [] => false,
     }
 }
 
@@ -814,14 +1001,19 @@ fn constraint_rules(
         if matches!(keyword, "min" | "max" | "exclusiveMin" | "exclusiveMax")
             && matches!(scalar, "integer" | "number")
         {
-            match constraint.get("operands").and_then(|o| o.get("value")) {
-                Some(Json::Number(_)) => {}
-                Some(_) => sink.emit(
+            // An integer bound may be a canonical decimal string, so a value
+            // past 2^53 is exact; a `number` bound is a JSON number.
+            let admitted = match constraint.get("operands").and_then(|o| o.get("value")) {
+                Some(Json::Number(_)) | None => true,
+                Some(Json::Str(text)) => scalar == "integer" && is_canonical_integer(text),
+                Some(_) => false,
+            };
+            if !admitted {
+                sink.emit(
                     child(&child(constraint_at, "operands"), "value"),
                     INVALID_OPERAND,
-                    "a numeric keyword on a numeric scalar takes a number operand",
-                ),
-                None => {}
+                    "a numeric keyword on a numeric scalar takes a number operand, or a canonical decimal string on an integer",
+                );
             }
         }
     }
@@ -843,7 +1035,7 @@ fn constraint_rules(
 }
 
 fn occurrences(document: &Document<'_>, sink: &mut Sink<'_>) {
-    let declared: Vec<&str> = document
+    let declared: HashSet<&str> = document
         .types
         .iter()
         .filter_map(|definition| definition.get("identity").and_then(Json::as_str))
@@ -851,7 +1043,7 @@ fn occurrences(document: &Document<'_>, sink: &mut Sink<'_>) {
     if let Some(occurrences) = document.ir.get("occurrences").and_then(Json::as_array) {
         for (position, occurrence) in occurrences.iter().enumerate() {
             if let Some(definition) = occurrence.get("definition").and_then(Json::as_str) {
-                if !declared.contains(&definition) {
+                if !declared.contains(definition) {
                     sink.emit(
                         child(&index("/ir/occurrences", position), "definition"),
                         UNRESOLVED_OCCURRENCE_DEFINITION,
@@ -865,14 +1057,17 @@ fn occurrences(document: &Document<'_>, sink: &mut Sink<'_>) {
 
 /// Reports the back edge that closes a cycle in the composite relationship
 /// graph, which `contracts-v1.md` requires to be acyclic.
+///
+/// A depth-first walk with an explicit frame stack and a colour per type, so
+/// a cycle of any length is found on any thread and each type is entered once.
 fn composite_graph(document: &Document<'_>, sink: &mut Sink<'_>) {
-    let mut visited: Vec<usize> = Vec::new();
+    let by_identity = &document.by_identity;
+    let mut colour = vec![Colour::White; document.types.len()];
     for start in 0..document.types.len() {
-        if visited.contains(&start) {
+        if colour[start] != Colour::White {
             continue;
         }
-        let mut stack: Vec<usize> = Vec::new();
-        if let Some(found) = composite_visit(document, start, &mut visited, &mut stack, 0) {
+        if let Some(found) = composite_walk(document, by_identity, &mut colour, start) {
             sink.emit(
                 found,
                 COMPOSITE_CYCLE,
@@ -883,64 +1078,68 @@ fn composite_graph(document: &Document<'_>, sink: &mut Sink<'_>) {
     }
 }
 
-fn composite_visit(
+/// A node's state in a depth-first walk: unvisited, on the walk's path, or
+/// finished.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum Colour {
+    White,
+    Grey,
+    Black,
+}
+
+/// The walk from `start`, returning the pointer of the first back edge.
+fn composite_walk(
     document: &Document<'_>,
-    at: usize,
-    visited: &mut Vec<usize>,
-    stack: &mut Vec<usize>,
-    depth: usize,
+    by_identity: &HashMap<&str, usize>,
+    colour: &mut [Colour],
+    start: usize,
 ) -> Option<String> {
-    if depth > DEPTH_LIMIT {
-        return None;
-    }
-    visited.push(at);
-    stack.push(at);
-    let definition = match document.types.get(at) {
-        Some(definition) => definition,
-        None => {
-            stack.pop();
-            return None;
+    // Each frame is a type on the path and the next of its relationships to
+    // examine.
+    let mut path: Vec<(usize, usize)> = vec![(start, 0)];
+    colour[start] = Colour::Grey;
+    while let Some(&mut (at, ref mut next_relationship)) = path.last_mut() {
+        let relationships = document
+            .types
+            .get(at)
+            .and_then(|definition| definition.get("relationships"))
+            .and_then(Json::as_array)
+            .unwrap_or(&[]);
+        let Some(relationship) = relationships.get(*next_relationship) else {
+            colour[at] = Colour::Black;
+            path.pop();
+            continue;
+        };
+        let member = *next_relationship;
+        *next_relationship += 1;
+        if relationship.get("composite").and_then(Json::as_bool) != Some(true) {
+            continue;
         }
-    };
-    let type_at = index("/ir/types", at);
-    if let Some(relationships) = definition.get("relationships").and_then(Json::as_array) {
-        let relationships_at = child(&type_at, "relationships");
-        for (member, relationship) in relationships.iter().enumerate() {
-            if relationship.get("composite").and_then(Json::as_bool) != Some(true) {
-                continue;
-            }
-            let target = match relationship
-                .get("targetEnd")
-                .and_then(|end| end.get("type"))
-                .and_then(Json::as_str)
-            {
-                Some(target) => target,
-                None => continue,
-            };
-            let next = document
-                .types
-                .iter()
-                .position(|other| other.get("identity").and_then(Json::as_str) == Some(target));
-            let next = match next {
-                Some(next) => next,
-                None => continue,
-            };
-            if stack.contains(&next) {
-                stack.pop();
+        let Some(target) = relationship
+            .get("targetEnd")
+            .and_then(|end| end.get("type"))
+            .and_then(Json::as_str)
+        else {
+            continue;
+        };
+        let Some(&next) = by_identity.get(target) else {
+            continue;
+        };
+        match colour[next] {
+            Colour::Grey => {
+                let relationships_at = child(&index("/ir/types", at), "relationships");
                 return Some(child(
                     &child(&index(&relationships_at, member), "targetEnd"),
                     "type",
                 ));
             }
-            if !visited.contains(&next) {
-                if let Some(found) = composite_visit(document, next, visited, stack, depth + 1) {
-                    stack.pop();
-                    return Some(found);
-                }
+            Colour::White => {
+                colour[next] = Colour::Grey;
+                path.push((next, 0));
             }
+            Colour::Black => {}
         }
     }
-    stack.pop();
     None
 }
 
@@ -1108,76 +1307,72 @@ fn package_context(document: &Document<'_>, sink: &mut Sink<'_>) {
 
 fn package_cycle(lock: &Json) -> Option<String> {
     let packages = lock.get("packages").and_then(Json::as_array)?;
-    let identities: Vec<&str> = packages
-        .iter()
-        .map(|package| package.get("identity").and_then(Json::as_str).unwrap_or(""))
-        .collect();
-    let mut visited: Vec<usize> = Vec::new();
+    let mut by_identity: HashMap<&str, usize> = HashMap::with_capacity(packages.len());
+    for (position, package) in packages.iter().enumerate() {
+        let identity = package.get("identity").and_then(Json::as_str).unwrap_or("");
+        by_identity.entry(identity).or_insert(position);
+    }
+    let mut colour = vec![Colour::White; packages.len()];
     for start in 0..packages.len() {
-        if visited.contains(&start) {
+        if colour[start] != Colour::White {
             continue;
         }
-        let mut stack: Vec<usize> = Vec::new();
-        if let Some(found) =
-            package_visit(packages, &identities, start, &mut visited, &mut stack, 0)
-        {
+        if let Some(found) = package_walk(packages, &by_identity, &mut colour, start) {
             return Some(found);
         }
     }
     None
 }
 
-fn package_visit(
+/// The depth-first walk of the package graph from `start`, over an explicit
+/// frame stack, returning the pointer of the first back edge.
+fn package_walk(
     packages: &[Json],
-    identities: &[&str],
-    at: usize,
-    visited: &mut Vec<usize>,
-    stack: &mut Vec<usize>,
-    depth: usize,
+    by_identity: &HashMap<&str, usize>,
+    colour: &mut [Colour],
+    start: usize,
 ) -> Option<String> {
-    if depth > DEPTH_LIMIT {
-        return None;
-    }
-    visited.push(at);
-    stack.push(at);
-    if let Some(package) = packages.get(at) {
-        if let Some(dependencies) = package.get("dependencies").and_then(Json::as_array) {
-            for dependency in dependencies {
-                let name = match dependency.as_str() {
-                    Some(name) => name,
-                    None => continue,
-                };
-                let next = match identities.iter().position(|known| *known == name) {
-                    Some(next) => next,
-                    None => continue,
-                };
-                if stack.contains(&next) {
-                    stack.pop();
-                    return Some(child(&index("/lock/packages", at), "dependencies"));
-                }
-                if !visited.contains(&next) {
-                    if let Some(found) =
-                        package_visit(packages, identities, next, visited, stack, depth + 1)
-                    {
-                        stack.pop();
-                        return Some(found);
-                    }
-                }
+    let mut path: Vec<(usize, usize)> = vec![(start, 0)];
+    colour[start] = Colour::Grey;
+    while let Some(&mut (at, ref mut next_dependency)) = path.last_mut() {
+        let dependencies = packages
+            .get(at)
+            .and_then(|package| package.get("dependencies"))
+            .and_then(Json::as_array)
+            .unwrap_or(&[]);
+        let Some(dependency) = dependencies.get(*next_dependency) else {
+            colour[at] = Colour::Black;
+            path.pop();
+            continue;
+        };
+        *next_dependency += 1;
+        let Some(&next) = dependency.as_str().and_then(|name| by_identity.get(name)) else {
+            continue;
+        };
+        match colour[next] {
+            Colour::Grey => {
+                return Some(child(&index("/lock/packages", at), "dependencies"));
             }
+            Colour::White => {
+                colour[next] = Colour::Grey;
+                path.push((next, 0));
+            }
+            Colour::Black => {}
         }
     }
-    stack.pop();
     None
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        decide, native_scalar, CONSTRAINT_NOT_APPLICABLE, NATIVE_PREFIX, NATIVE_SCALARS,
-        UNIT_ON_NON_SCALAR, UNRESOLVED_TYPE_REF,
+        composite_graph, decide, decide_with, native_scalar, package_cycle, walk_alias, AliasMemo,
+        Document, Resolved, RuleLimits, Sink, Walk, COMPOSITE_CYCLE, CONSTRAINT_NOT_APPLICABLE,
+        DEPTH_LIMIT_EXCEEDED, NATIVE_PREFIX, NATIVE_SCALARS, UNIT_ON_NON_SCALAR,
+        UNRESOLVED_TYPE_REF,
     };
-    use crate::json::Json;
     use crate::json::parse;
+    use crate::json::Json;
 
     /// Owner ruling (2026-09-19T15:39:32Z) on FCD #199, superseding R2 of the
     /// #199/#200 review round: `FLAGS_ON_NON_COLLECTION` is deleted outright,
@@ -1204,9 +1399,12 @@ mod tests {
             .expect("a document")
         };
 
-        for (ordered, unique, upper) in
-            [(true, false, 1), (false, true, 1), (false, false, 1), (true, true, 5)]
-        {
+        for (ordered, unique, upper) in [
+            (true, false, 1),
+            (false, true, 1),
+            (false, false, 1),
+            (true, true, 5),
+        ] {
             let decided = decide(&wrap(field(ordered, unique, upper)));
             assert!(
                 decided.is_empty(),
@@ -1312,11 +1510,17 @@ mod tests {
         .expect("a document");
         let diagnostics = decide(&bundle);
         assert!(
-            diagnostics.iter().any(|located| located.code == UNIT_ON_NON_SCALAR),
+            diagnostics
+                .iter()
+                .any(|located| located.code == UNIT_ON_NON_SCALAR),
             "a unit on a field whose typeRef closes a cycle resolves to no scalar: {diagnostics:?}"
         );
         assert!(
-            diagnostics.iter().filter(|located| located.code == UNRESOLVED_TYPE_REF).count() == 2,
+            diagnostics
+                .iter()
+                .filter(|located| located.code == UNRESOLVED_TYPE_REF)
+                .count()
+                == 2,
             "each field's typeRef names another field, not a declared type: {diagnostics:?}"
         );
     }
@@ -1358,5 +1562,193 @@ mod tests {
                 "{name} maps to {canonical_scalar} in kernel-scalars.json"
             );
         }
+    }
+
+    /// A ring of `count` record types, each carrying one composite
+    /// relationship to the next and the last closing the ring on the first,
+    /// or, when `closed` is false, an acyclic chain with the last type
+    /// relating to nothing.
+    fn composite_ring(count: usize, closed: bool) -> Json {
+        let mut text = String::from(r#"{"ir":{"contractVersion":"2.0.0","types":["#);
+        for position in 0..count {
+            if position > 0 {
+                text.push(',');
+            }
+            let relationships = if position + 1 < count || closed {
+                let next = (position + 1) % count;
+                format!(
+                    r#","relationships":[{{"composite":true,"targetEnd":{{"type":"ix://acme/pkg/T{next}"}}}}]"#
+                )
+            } else {
+                String::new()
+            };
+            text.push_str(&format!(
+                r#"{{"identity":"ix://acme/pkg/T{position}","kind":"record"{relationships}}}"#
+            ));
+        }
+        text.push_str("]}}");
+        parse(&text).expect("a document")
+    }
+
+    /// Runs `check` on a 512 KiB thread, a stack a recursion that grows with
+    /// the cycle's length would overflow.
+    fn on_a_small_stack(check: impl FnOnce() + Send + 'static) {
+        std::thread::Builder::new()
+            .stack_size(512 * 1024)
+            .spawn(check)
+            .expect("spawn a 512 KiB thread")
+            .join()
+            .expect("the cycle walk must not overflow a 512 KiB stack");
+    }
+
+    /// The composite cycle codes `composite_graph` emits over `bundle`.
+    fn composite_cycles(bundle: &Json) -> usize {
+        let document = Document::read(bundle).expect("an IR document");
+        let mut sink = Sink {
+            bundle,
+            out: Vec::new(),
+        };
+        composite_graph(&document, &mut sink);
+        sink.out
+            .iter()
+            .filter(|located| located.code == COMPOSITE_CYCLE)
+            .count()
+    }
+
+    /// A composite cycle is reported whatever its length: a ring longer than
+    /// the 256 types an old depth bound allowed went unreported.
+    ///
+    /// Tracing: TC-1821
+    /// ACs: FR-059-AC-19
+    #[test]
+    fn tc_1821_a_composite_cycle_of_300_types_is_reported() {
+        let bundle = composite_ring(300, true);
+        let diagnostics = decide(&bundle);
+        assert_eq!(
+            diagnostics
+                .iter()
+                .filter(|located| located.code == COMPOSITE_CYCLE)
+                .count(),
+            1,
+            "{diagnostics:?}"
+        );
+        assert_eq!(composite_cycles(&composite_ring(300, false)), 0);
+    }
+
+    /// Tracing: TC-1821
+    /// ACs: FR-059-AC-19
+    #[test]
+    fn tc_1821_a_composite_cycle_of_100000_types_is_reported_on_a_small_stack() {
+        on_a_small_stack(|| {
+            assert_eq!(composite_cycles(&composite_ring(100_000, true)), 1);
+            assert_eq!(composite_cycles(&composite_ring(100_000, false)), 0);
+        });
+    }
+
+    fn package_ring(count: usize, closed: bool) -> Json {
+        let mut text = String::from(r#"{"packages":["#);
+        for position in 0..count {
+            if position > 0 {
+                text.push(',');
+            }
+            let dependencies = if position + 1 < count || closed {
+                format!(r#""ix://acme/pkg{}""#, (position + 1) % count)
+            } else {
+                String::new()
+            };
+            text.push_str(&format!(
+                r#"{{"identity":"ix://acme/pkg{position}","dependencies":[{dependencies}]}}"#
+            ));
+        }
+        text.push_str("]}");
+        parse(&text).expect("a lock")
+    }
+
+    /// Tracing: TC-1821
+    /// ACs: FR-059-AC-19
+    #[test]
+    fn tc_1821_a_package_cycle_of_any_length_is_reported() {
+        assert!(package_cycle(&package_ring(300, true)).is_some());
+        assert!(package_cycle(&package_ring(300, false)).is_none());
+        on_a_small_stack(|| {
+            assert!(package_cycle(&package_ring(100_000, true)).is_some());
+            assert!(package_cycle(&package_ring(100_000, false)).is_none());
+        });
+    }
+
+    /// `count` alias types, each naming the next, the last naming a record,
+    /// so the chain is acyclic and `count` links long.
+    fn alias_chain(count: usize) -> Json {
+        let mut text = String::from(r#"{"ir":{"contractVersion":"2.0.0","types":["#);
+        for position in 0..count {
+            if position > 0 {
+                text.push(',');
+            }
+            let target = if position + 1 < count {
+                format!("ix://acme/pkg/A{}", position + 1)
+            } else {
+                "ix://acme/pkg/Leaf".to_string()
+            };
+            text.push_str(&format!(
+                r#"{{"identity":"ix://acme/pkg/A{position}","kind":"alias","target":"{target}"}}"#
+            ));
+        }
+        text.push_str(r#",{"identity":"ix://acme/pkg/Leaf","kind":"record"}]}}"#);
+        parse(&text).expect("a document")
+    }
+
+    /// An acyclic alias chain of any length resolves and walks without a
+    /// depth report unless the caller configures a depth limit, and a
+    /// configured limit reports exactly the chains past it.
+    ///
+    /// Tracing: TC-1821
+    /// ACs: FR-059-AC-20
+    #[test]
+    fn tc_1821_an_alias_chain_resolves_at_any_length_unless_a_limit_is_configured() {
+        on_a_small_stack(|| {
+            let bundle = alias_chain(100_000);
+            let document = Document::read(&bundle).expect("an IR document");
+            let first = document.types.first().expect("a first alias");
+            assert!(matches!(
+                document.resolve("ix://acme/pkg/A0"),
+                Some(Resolved::Node(_))
+            ));
+            assert!(matches!(
+                walk_alias(&document, first, &mut AliasMemo::new()),
+                Walk::Resolved
+            ));
+            let limited = Document::read_with(
+                &bundle,
+                RuleLimits {
+                    alias_depth: Some(256),
+                },
+            )
+            .expect("an IR document");
+            assert!(limited.resolve("ix://acme/pkg/A0").is_none());
+            assert!(matches!(
+                walk_alias(&limited, first, &mut AliasMemo::new()),
+                Walk::TooDeep
+            ));
+        });
+        let bundle = alias_chain(300);
+        let default = decide(&bundle);
+        assert!(
+            default
+                .iter()
+                .all(|located| located.code != DEPTH_LIMIT_EXCEEDED),
+            "{default:?}"
+        );
+        let configured = decide_with(
+            &bundle,
+            RuleLimits {
+                alias_depth: Some(256),
+            },
+        );
+        assert!(
+            configured
+                .iter()
+                .any(|located| located.code == DEPTH_LIMIT_EXCEEDED),
+            "{configured:?}"
+        );
     }
 }

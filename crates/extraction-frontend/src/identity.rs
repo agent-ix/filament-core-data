@@ -220,6 +220,22 @@ impl PackageIdentity {
         Ok(self.node(NodeKind::Constraint, &join(record, &[field, keyword])?))
     }
 
+    /// `ix://<org>/<name>/constraint/<type id>/<keyword>`: a constraint a
+    /// value type carries on itself. The keyword nests under the owner with
+    /// `/`, which no field-constraint identity contains, so a value type `A-b`
+    /// with `min` and a record `A` with field `b` and `min`
+    /// (`constraint/A-b-min`) cannot mint one identity.
+    pub fn type_constraint_identity(
+        &self,
+        type_id: &str,
+        keyword: &str,
+    ) -> Result<String, Unsluggable> {
+        Ok(self.node(
+            NodeKind::Constraint,
+            &format!("{}/{}", id_segment(type_id)?, slug(keyword)?),
+        ))
+    }
+
     /// `ix://<org>/<name>/relationship/<record id>-<verb>-<target id>`.
     pub fn relationship_identity(
         &self,
