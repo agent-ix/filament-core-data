@@ -1299,8 +1299,8 @@ fn package_walk(
 #[cfg(test)]
 mod tests {
     use super::{
-        composite_graph, decide, decide_with, native_scalar, package_cycle, walk_alias, Document,
-        Resolved, RuleLimits, Sink, Walk, COMPOSITE_CYCLE, CONSTRAINT_NOT_APPLICABLE,
+        composite_graph, decide, decide_with, native_scalar, package_cycle, walk_alias, AliasMemo,
+        Document, Resolved, RuleLimits, Sink, Walk, COMPOSITE_CYCLE, CONSTRAINT_NOT_APPLICABLE,
         DEPTH_LIMIT_EXCEEDED, NATIVE_PREFIX, NATIVE_SCALARS, UNIT_ON_NON_SCALAR,
         UNRESOLVED_TYPE_REF,
     };
