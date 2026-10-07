@@ -194,7 +194,7 @@ pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
             .iter()
             .any(|op| op.has("frame"))
     });
-    let features: HashSet<&str> = if has_frame {
+    let frame_targets: HashSet<&str> = if has_frame {
         document_features(document)
             .into_iter()
             .filter_map(identity_of)
@@ -212,7 +212,7 @@ pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
             sink,
         );
         features(document, definition, &type_at, sink);
-        frames(document, &features, definition, &type_at, sink);
+        frames(document, &frame_targets, definition, &type_at, sink);
         inline_clauses(definition, &type_at, sink);
         let Some(declaration) = declarations.of(definition) else {
             continue;
