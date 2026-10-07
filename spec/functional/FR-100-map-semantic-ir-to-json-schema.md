@@ -114,7 +114,11 @@ frontend, a generated programming-language package, or an ambient registry.
   payload-free variant SHALL constrain its tag alone and a payload-carrying
   variant SHALL constrain its tag and payload.
 - An `alias` definition SHALL render the schema of its target and its own
-  constraints in an `allOf` composition.
+  constraints in an `allOf` composition, except that an alias whose resolution
+  walk reaches `integer` or `decimal` SHALL render the schema [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) gives its
+  own subject (over its own effective range or decimal policy) in place of its
+  target's schema, because a safe target renders `type: integer` and a wide or
+  decimal alias's instance value is a string.
 - A `sequence` definition SHALL render `type: array` and an `items` schema for
   its element definition.
 - A `map` definition SHALL render `type: object` and an
@@ -135,11 +139,23 @@ frontend, a generated programming-language package, or an ambient registry.
   schema or `null`.
 - The backend SHALL render a collection field as `type: array`; it SHALL map
   multiplicity bounds to `minItems` and `maxItems`, and it SHALL map unique
-  collections to `uniqueItems: true`.
+  collections to `uniqueItems: true`, except that a unique collection of a
+  `decimal` item subject raises the blocking `UNDECLARED_LOSS` and writes no
+  file, because `uniqueItems` compares the strings `"1.1"` and `"1.10"` as two
+  values while [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) makes them one.
 - The backend SHALL map the admitted `min`, `max`, `exclusiveMin`,
   `exclusiveMax`, `minLength`, `maxLength`, `pattern`, `format`, `enumValues`,
   `nonEmpty`, and `unique` constraints to their JSON Schema 2020-12
   counterparts; collection bounds arise from field multiplicity.
+- On a numeric subject the backend SHALL map bounds and `enumValues` as
+  [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) states, not by the counterpart above: an `integer` subject's bounds fold
+  into its effective range, written as JSON-number `minimum`/`maximum` for a
+  safe subject and only in the interval `pattern` for a wide one; a `decimal`
+  subject's bound raises `UNDECLARED_LOSS`; `enumValues` is an `enum` of JSON
+  numbers on a safe `integer`, of canonical integer strings on a wide one, and
+  a `pattern` admitting every instance spelling of each declared value on a
+  `decimal`; a `float32` or `float64` subject's bounds and `enumValues` map to
+  the numeric keywords and `enum`.
 - The backend SHALL map `iana:email`, `iana:uri`, and the supported
   `agent-ix:` date, date-time, duration, UUID, email, and URI formats to their
   enforcing JSON Schema format names; it SHALL refuse every other format name
@@ -192,6 +208,7 @@ that decision requires.
 | FR-100-AC-9 | Two definitions whose display names `Config Overlay` and `Config-Overlay` derive `Config-Overlay.json`, or `Status` and `status`, produce one blocking diagnostic naming the paths and both identities; a definition named `index` produces one blocking diagnostic stating it collides with the backend's `index.json`; each emits zero files. | Test (TC-1771) |
 | FR-100-AC-10 | Generating the contract `2.0.0` constructs fixture emits one schema per construct carrying its kind's schema and annotations: value equality, `readOnly` and the occurrence field on an event, owner and identity fields on a nested entity, members on an aggregate root and a domain, the variant `enum` of an enumeration, `$defs.OrderLifecycleState` and the transitions of a state machine, the steps of a process, `not: {}` and `x-agent-ix-persists` on a repository, the vocabulary of a domain, and supertypes, redefines, subsets, abstract, operation frame and clauses, and populations. | Test (TC-1774) |
 | FR-100-AC-11 | Generating the constructs fixture with an unredefined `Party.remark` that subsets `labels` succeeds, `Order.json` carries `remark` with that subset and `x-agent-ix-identity-fields: ["id"]`; with `Order.id` redefining nothing it returns one blocking diagnostic at `/ir/types/<Order>/fields` naming `id` and emits no file. | Test (TC-1782) |
+| FR-100-AC-12 | An alias carrying `min` `"0"` and `max` `"18446744073709551615"` over an unbounded `integer` definition renders a string schema with the interval pattern and no `minimum`, `maximum` or target `type: integer`; a safe subject with `exclusiveMax` `"100"` renders `maximum` `99`; a `decimal(5, 2)` subject's `enumValues` `["1.1"]` renders a pattern admitting `"1.1"` and `"1.10"` and rejecting `"1.2"`; a unique collection of that decimal subject raises `UNDECLARED_LOSS` and writes no file. | Test |
 
 ## Dependencies
 

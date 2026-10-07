@@ -445,8 +445,8 @@ schema, the readers, the frontends and the backends in the following change.
 - Quire validation checks requirement and process-artifact structure.
 - Link and inventory checks prove the record is navigable and complete.
 - Inspection checks ownership, status labeling, and conflict dispositions.
-- The Test Matrix maps every acceptance criterion to an explicit verification
-  case before this ticket enters specification review.
+- The test index (`spec/tests.md`) names a test case for every acceptance
+  criterion, and `quire matrix` computes coverage from the tests' trace tags.
 - Machine-readable census artifacts are schema-validated and checked for stable
   identifiers, resolvable evidence loci, deterministic ordering, and complete
   dispositions.

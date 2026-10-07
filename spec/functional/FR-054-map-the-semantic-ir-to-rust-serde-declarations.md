@@ -80,7 +80,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | `record` | `pub struct N { .. }` | derived, member attributes per the field rules below |
 | `enum` | fieldless `pub enum N { .. }` | `#[serde(rename = "<variant name>")]` per variant, emitted only where the derived identifier differs from the variant `name` |
 | `union` | `pub enum N { .. }`, unit variant where `payloadType` is absent, one-field variant where it is present | externally tagged, serde's default, with the same conditional `rename` |
-| `alias` | `pub struct N(T);` newtype over the target's Rust type, with `try_new` | `#[serde(transparent)]` |
+| `alias` | `pub struct N(T);` newtype over the target's Rust type, with `try_new`; for an alias whose walk reaches `integer` or `decimal`, a newtype over the Rust base [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) gives the alias's own subject (`i64`, `u64` or `i128` over its effective range, or `Decimal` at its scale), never over the target's type | `#[serde(transparent)]` |
 | `sequence` | `pub struct N(Vec<I>);` newtype over the `items` type, with `try_new` | `#[serde(transparent)]` |
 | `map` | `pub struct N(BTreeMap<String, V>);` newtype over the `values` type, with `try_new` | `#[serde(transparent)]` |
 | `reference` | `pub struct N(SemanticIdentity);` newtype over the validated identity, not over the target's Rust type | `#[serde(transparent)]` plus a validating `Deserialize` |
@@ -263,6 +263,7 @@ construct's disposition is written down rather than decided at the keyboard.
   `multiplicity.ordered` in the field's metadata constant.
 - Where `defaultKind` is `semantic`, the backend SHALL emit a serde `default`
   drawn from `defaultValue`.
+- Where the field's subject is numeric, the backend SHALL read `defaultValue` in its [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) IR spelling, parse it exactly into the subject's Rust type, and serialize it in the subject's instance wire form, so `"42"` on a safe `integer` field is the `i64` `42` and `"1.5"` on a `decimal(5, 2)` field is written `"1.50"`.
 - If `defaultValue` is not a JSON value the field's mapped Rust type admits,
   then the backend SHALL raise a blocking
   `agent-ix.rust-backend.INVALID_DEFAULT_VALUE` naming the field identity,
@@ -381,6 +382,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-18 | Generating the constructs fixture renders each `entity`, `nested_entity`, `aggregate_root` and `process` with no derived `PartialEq` and with `PartialEq`, `Eq` and `Hash` over its identity fields, and a `value_object` with the derived `PartialEq`; a newtype an identity field reaches derives `Eq` and `Hash`; and an identity field of a `float64` scalar is refused with `UNSUPPORTED_CONSTRUCT` and no file. | Test (TC-1777) |
 | FR-054-AC-19 | Generating the constructs fixture renders the abstract `Party` as a trait of accessors with no struct or constructor and `Order` implementing it; a `reference` type targeting `Party` generates; a field naming `Party`, and an `Order` field redefining an inherited field with another Rust type, are each refused with `UNSUPPORTED_CONSTRUCT` and no file. | Test (TC-1778) |
 | FR-054-AC-20 | A repository operation whose frame is empty renders a method taking `&self`, and an operation with no frame renders a method taking `&mut self`. | Test (TC-1780) |
+| FR-054-AC-21 | An alias carrying `min` `"0"` and `max` `"18446744073709551615"` over an unbounded `integer` definition renders as a newtype over `u64` while its target renders over `i64`; a safe `integer` field with semantic `defaultValue` `"42"` deserializes an absent member as `42` and raises no `INVALID_DEFAULT_VALUE`, and a `decimal(5, 2)` field with `defaultValue` `"1.5"` serializes the default as `"1.50"`. | Test |
 
 ## Dependencies
 

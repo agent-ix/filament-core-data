@@ -32,7 +32,7 @@ with a representation and bounds policy recorded in a machine-readable table.
 ## Behavior
 
 - `KernelScalar` SHALL enumerate exactly `UUID`, `Boolean`, `Integer`, `Decimal`, `Float32`, `Float64`, `String`, `Timestamp`, `Duration`, `Bytes`, `JsonObject`.
-- The table SHALL record `Integer` as IR `integer`, bounded only by its declared bounds, each an integer within `i128::MIN..=i128::MAX` written as a canonical integer string ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)).
+- The table SHALL record `Integer` as IR `integer`, whose instance domain ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)) is the integers within its declared bounds, each an integer within `i128::MIN..=i128::MAX` written as a canonical integer string, and -(2^53 - 1) or 2^53 - 1 on a side that declares none.
 - The table SHALL record `Decimal` as IR `decimal`, governed by the decimal policy (`precision`, `scale`) that `TypeRef.decimal` carries under the grammar rule in FR-031 and that the IR carries as the `decimal` member ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)).
 - The table SHALL record `Float32` as IR `float32` (IEEE 754 binary32) and `Float64` as IR `float64` (IEEE 754 binary64), each serialized as a finite JSON number.
 - The table SHALL record `Timestamp` as IR `datetime`, UTC, at most nanosecond precision, RFC 3339 serialization.
@@ -58,7 +58,7 @@ with a representation and bounds policy recorded in a machine-readable table.
 | FR-032-AC-2 | The semantic-core reader rejects a `TypeRef` targeting `Decimal` without `decimal`, and a `TypeRef` targeting `String` with `decimal`. | Test |
 | FR-032-AC-3 | Every entry's `irScalar` is a member of the IR scalar enumeration, and `JsonObject`'s is `any`. | Analysis |
 | FR-032-AC-4 | A twelfth enum member `Any` added to the source fails FR-031's inventory test. | Test |
-| FR-032-AC-6 | `kernel-scalars.json` records `Integer` → `integer`, `Decimal` → `decimal`, `Float32` → `float32` and `Float64` → `float64`, no entry maps to `number`, and `Integer`'s bounds name the i128 ceiling rather than a 64-bit width. | Analysis |
+| FR-032-AC-6 | `kernel-scalars.json` records `Integer` → `integer`, `Decimal` → `decimal`, `Float32` → `float32` and `Float64` → `float64`, no entry maps to `number`, and `Integer`'s bounds name the default instance domain `-9007199254740991..=9007199254740991` and the i128 ceiling on a declared bound, rather than a 64-bit width. | Analysis |
 | FR-032-AC-5 | Every `type.target` in the committed FR-006 `FieldDecl[]` fixture is one of `UUID`, `Integer`, `String`, `Timestamp`, `JsonObject`, or a `SemanticId`. | Test |
 
 ## Dependencies

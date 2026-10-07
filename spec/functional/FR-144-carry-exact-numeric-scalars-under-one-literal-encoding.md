@@ -11,6 +11,10 @@ relationships:
     type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-050"
     type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/FR-139"
+    type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/FR-138"
+    type: "references"
   - target: "ix://agent-ix/filament-core-data/NFR-009"
     type: "constrained_by"
   - target: "ix://agent-ix/filament-core-data/NFR-019"
@@ -60,10 +64,14 @@ two kinds of place"), so QSL intake and the FCD readers agree by construction:
 - A *decimal value* is a canonical decimal string, never a JSON number and
   never a binary float.
 - A *float value* is a JSON number with an exact RFC 8785 spelling.
-- No JSON number anywhere in a document may lack an exact RFC 8785 spelling,
-  because the FR-050 canonical form writes every number through its nearest
-  binary64 double, and a document holding such a number would fingerprint as
-  a different value.
+- No JSON number anywhere in a document may denote a whole value beyond
+  ±2^53, because a reader holding numbers as binary doubles cannot tell such
+  a value from its neighbours, so an integer that large is always a string.
+  This holds even where RFC 8785 spells the number exactly (`1e20`), and so it
+  also limits float values (see "Exact numbers").
+- No other JSON number may lack an exact RFC 8785 spelling, because the FR-050
+  canonical form writes every number through its nearest binary64 double, and
+  a document holding such a number would fingerprint as a different value.
 
 ## Inputs
 
@@ -190,8 +198,17 @@ field whose subject is `any` is not a value site (FR-139).
   - any other number whose exact decimal value differs from that of the
     RFC 8785 text of its nearest binary64 double (`0.1000000000000000000001`,
     `1e-400`) SHALL raise `agent-ix.semantic-ir.INEXACT_NUMBER` at its pointer.
+- A number with no finite binary64 value (`1e400`, `-1e400`) SHALL be
+  classified from its source text like every other number, never reported as a
+  parse failure; being whole beyond 2^53, it raises `INEXACT_INTEGER`.
 - The rule SHALL cover every number of the document at any depth, the members of
   an `any` value included.
+- Every binary64 value of magnitude at least 2^53 is whole, so a float value
+  site lies within ±2^53 (`9007199254740992`): a `float32` or `float64` bound,
+  default or enumerated value beyond it (`1e20`, or binary32's largest value
+  `3.4028234663852886e38`) is refused with `INEXACT_INTEGER` when read from
+  bytes, although RFC 8785 spells it exactly. The limit applies to values the
+  IR writes, not to instance values, and QSL FR-056 refuses the same numbers.
 - The two codes SHALL name the same condition as QSL's
   `noncanonical_wire`/`inexact-integer` and `noncanonical_wire`/`inexact-number`,
   so a document an FCD reader admits is never refused by QSL intake for a number
@@ -226,15 +243,30 @@ field whose subject is `any` is not a value site (FR-139).
 | `decimal`, `decimal128` | `decimal` | none; the policy comes from `@decimal` |
 | `numeric` | refused | — |
 
+- The TypeSpec frontend SHALL write a width's bounds as constraints of a type
+  definition, as FR-053 places every constraint: on a scalar declaration whose
+  base is a width built-in, as constraints of that scalar definition; on a
+  member typed directly by one, as constraints of the alias FR-053 mints for
+  the member over the package-local `Integer` definition, exactly as if the
+  bounds were constraint decorators. The package-local `Integer` definition
+  carries no bound.
 - Where a member also carries an authored bound of the same keyword, the
   TypeSpec frontend SHALL write one bound per keyword, the tighter of the width
   bound and the authored one, so no two constraints share an identity.
 - The TypeSpec frontend SHALL write the FR-053 `@decimal(precision, scale)`
-  decorator as the `decimal` member of the decorated member or scalar.
+  decorator as the `decimal` member of the scalar it decorates or, on a member,
+  of the alias FR-053 mints for the member when the member carries a
+  constraint, and of the field itself otherwise. This is the placement the
+  spec-bundle and semantic-core paths use, so FR-098's cross-frontend
+  projection sees one declaration lifted one way.
 - If a member or scalar whose base is `decimal` or `decimal128` carries no
-  `@decimal`, or a `decimal128` one carries a `precision` above 34, then
-  the TypeSpec frontend SHALL raise the blocking
+  `@decimal`, then the TypeSpec frontend SHALL raise the blocking
   `agent-ix.compiler.DECIMAL_POLICY_MISSING` at it.
+- If a member or scalar whose base is `decimal128` carries a `@decimal` whose
+  `precision` is above 34, the most decimal128 holds, then the TypeSpec
+  frontend SHALL raise the blocking
+  `agent-ix.compiler.DECIMAL_PRECISION_EXCEEDS_BASE` at it, naming the
+  precision and the limit 34.
 - If a member's type resolves to `numeric`, then the TypeSpec frontend SHALL
   raise the blocking `agent-ix.compiler.AMBIGUOUS_NUMERIC` at it, because
   `numeric` names no one of integer, decimal and float.
@@ -258,10 +290,23 @@ The instance wire is the JSON form a generated target reads and writes for a
 value of a numeric subject. One wire form per subject keeps the backends in
 agreement (NFR-009).
 
+- The *subject* of a field, alias, constraint or other reference is its
+  resolution walk: the nodes the walk passes and the scalar it ends at. A
+  backend types, renders and checks a value by its own subject, never by the
+  subject of an alias `target` the walk passes.
+- The *bounds* of an `integer` subject are the `min`, `max`, `exclusiveMin` and
+  `exclusiveMax` constraints that apply to any node of its walk.
 - The *effective range* of an `integer` subject SHALL be `[lo, hi]`, where `lo`
-  is its `min`, or its `exclusiveMin` plus one, and `hi` is its `max`, or its
-  `exclusiveMax` minus one; a missing lower bound gives `lo` = -(2^53 - 1) and a
-  missing upper bound gives `hi` = 2^53 - 1.
+  is the greatest of every `min` and of every `exclusiveMin` plus one, and `hi`
+  is the least of every `max` and of every `exclusiveMax` minus one. Where it has
+  no lower bound, `lo` is -(2^53 - 1); where it has no upper bound, `hi` is
+  2^53 - 1. A `uint64` member with `@maxValueExclusive(100)` carries `max`
+  `"18446744073709551615"` and `exclusiveMax` `"100"`, so its effective range
+  is `[0, 99]`.
+- The value a missing side takes belongs to the subject alone and is not a
+  bound of any node, so an alias over an unbounded `integer` definition that
+  declares `min` `"0"` and `max` `"18446744073709551615"` has the effective
+  range `[0, 18446744073709551615]`.
 - An `integer` subject is *safe* when its effective range lies within
   `-9007199254740991..=9007199254740991`, and *wide* otherwise.
 - A safe `integer` subject's instance value SHALL be a JSON number with no
@@ -273,6 +318,17 @@ agreement (NFR-009).
   scale 0).
 - Two decimal instance values SHALL be equal, ordered, and unique by their
   mathematical value, so `"1.1"` and `"1.10"` are one value.
+- Every generated target SHALL decide `enumValues` membership and collection
+  uniqueness over a `decimal` subject by mathematical value: an `enumValues`
+  of `["1.1"]` admits `"1.10"`, and a `unique` collection holding `"1.1"` and
+  `"1.10"` is rejected. Over an `integer` subject it SHALL decide them by
+  integer value, and over a `float32` or `float64` subject by the IEEE 754
+  equality FR-057 states.
+- A generated target SHALL convert a numeric `defaultValue` from its IR
+  spelling to its subject's instance wire form before it substitutes or checks
+  the default. `"42"` becomes the JSON number `42` on a safe `integer` subject
+  and stays `"42"` on a wide one, and `"1.5"` becomes `"1.50"` on a
+  `decimal(5, 2)` subject.
 - A `float64` subject's instance value SHALL be a finite JSON number, read as
   its nearest binary64 value and written as the RFC 8785 text of that value.
 - A `float32` subject's instance value SHALL be a finite JSON number, read as
@@ -285,6 +341,12 @@ agreement (NFR-009).
 
 ### Backends
 
+- Each backend SHALL render a field, alias or other definition whose walk
+  reaches `integer` or `decimal` by the type and wire form of its own subject,
+  never by those of an alias `target`. The Rust backend writes an alias as a
+  newtype over its own subject's base (FR-054), the TypeScript backend as a
+  type alias to its own subject's primitive (FR-064), and the JSON Schema
+  backend as its own subject's schema in place of its target's (FR-100).
 - The Rust backend SHALL type an `integer` subject as `i64` when its effective
   range lies within `i64`, else as `u64` when it lies within `0..=u64::MAX`,
   else as `i128`, and SHALL check its bounds against operands parsed exactly
@@ -304,6 +366,15 @@ agreement (NFR-009).
   `{"type": "integer", "minimum": lo, "maximum": hi}` over its effective range,
   and a wide one as `{"type": "string", "pattern": P}`, where `P` admits exactly
   the canonical integer strings of the integers in its effective range.
+- The JSON Schema backend SHALL fold an `integer` subject's bounds into that
+  rendering and emit no separate bound keyword for them: a safe subject's
+  `lo` and `hi` are written as JSON numbers, which hold them exactly, and a
+  wide subject carries its bounds only in `P`.
+- The JSON Schema backend SHALL render `enumValues` over a safe `integer`
+  subject as an `enum` of JSON numbers, over a wide one as an `enum` of the
+  canonical integer strings, and over a `decimal` subject as a `pattern`
+  admitting exactly the instance strings of the declared values (`1.1` at scale
+  2 admits `"1.1"` and `"1.10"`).
 - The JSON Schema backend SHALL render a `decimal` subject as
   `{"type": "string", "pattern": P}`, where `P` admits exactly the instance
   strings of its decimal policy.
@@ -311,13 +382,22 @@ agreement (NFR-009).
   raise the blocking `agent-ix.semantic-ir.UNDECLARED_LOSS` naming the
   constraint and write no file, because a JSON Schema numeric keyword compares
   numbers and a decimal instance value is a string.
+- If a collection field declaring `unique: true` has a `decimal` item subject,
+  then the JSON Schema backend SHALL raise the blocking
+  `agent-ix.semantic-ir.UNDECLARED_LOSS` naming the field and write no file,
+  because `uniqueItems` compares strings and would admit `["1.1", "1.10"]`.
 - The JSON Schema backend SHALL render `float32` and `float64` subjects as
   `{"type": "number"}` with their bounds as numeric keywords.
 - The Python backends SHALL inherit every numeric rendering and refusal from
   the JSON Schema backend, from whose output they generate (FR-136).
 - The SysML v2 target SHALL map `integer` to `ScalarValues::Integer` and
-  `decimal`, `float32` and `float64` to `ScalarValues::Real`, and SHALL emit an
-  FR-138 diagnostic naming the decimal policy or float width it cannot carry.
+  `decimal`, `float32` and `float64` to `ScalarValues::Real`, and SHALL write
+  the file. A numeric subject is mapped, so FR-138's refusal of a node with no
+  mapping does not apply.
+- For each `decimal`, `float32` or `float64` subject, the SysML v2 target SHALL
+  emit one non-blocking warning `agent-ix.sysml-target.DECLARED_LOSS` naming
+  the subject and the decimal policy or float width that `Real` does not
+  carry.
 - No backend SHALL raise `INTEGER_BOUND_NOT_EXACT`: every integer bound the IR
   admits is held exactly by every backend above.
 
@@ -326,15 +406,21 @@ agreement (NFR-009).
 - The FR-051 diff SHALL compare integer and decimal bounds by exact value,
   never through a double, and SHALL classify a changed numeric scalar or
   decimal policy by the rows FR-051 states for them (FR-051-AC-18).
+- The FR-051 diff SHALL classify as `breaking` a revision that moves an
+  `integer` subject between safe and wide, in either direction and by any
+  change, because its instance wire form and its generated types change
+  (FR-051-AC-19).
 
 ### QSL agreement
 
 The rules above fix what QSL intake reads; QSL adapts its intake in the same
 round (AGE-2229's same-slice rule). For reference, the mapping is:
 
-- An `integer` subject with bounds maps to QSL `Int[lo, hi]` with the bounds as
-  written; QSL FR-056 already reads a decimal-string bound, and with this
-  requirement every bound is one.
+- An `integer` subject maps to QSL `Int[lo, hi]` over its effective range, so a
+  missing bound maps to -(2^53 - 1) or 2^53 - 1 and an exclusive bound moves one
+  inward. QSL then models the domain every FCD validator enforces. QSL FR-056
+  already reads a decimal-string bound, and with this requirement every bound
+  is one.
 - A `decimal` subject with policy `{p, s}` maps to QSpec FR-140's
   `Decimal[lo, hi; s, s]`, with `lo` = -(10^p - 1) and `hi` = 10^p - 1, each
   narrowed by a declared bound shifted by `10^s` (an exclusive bound moved one
@@ -348,7 +434,7 @@ round (AGE-2229's same-slice rule). For reference, the mapping is:
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-144-CON-1 | The Rust reader, the Node reader, the Python reader and the oracle SHALL raise the same codes at the same pointers for every document of this requirement's corpus cases; each implements the rules independently (FR-050-CON-1). | Correctness | Differential test |
-| FR-144-CON-2 | No reader, frontend, or backend SHALL hold an integer or decimal value as a binary double at any step between reading it and writing or comparing it. | Correctness | Inspection |
+| FR-144-CON-2 | No reader, frontend, or backend SHALL hold a decimal value as a binary double at any step, nor an integer value until an exact check has placed it within ±(2^53 - 1), where every integer is a binary double exactly; a safe subject's bounds and instance values are then held as doubles (the TypeScript `number`, the JSON Schema `minimum`/`maximum`). | Correctness | Inspection |
 | FR-144-CON-3 | This requirement SHALL NOT carry a rational scalar, a quantity type, unit algebra, dimension checks, or unit conversions; AGE-2229 row 4 is undecided. | Scope | Inspection |
 | FR-144-CON-4 | FCD SHALL reference QSL's and QSpec's numeric rules by requirement id only, with none of their files or vectors copied into this repository. | Integrity | Inspection |
 
@@ -358,20 +444,26 @@ round (AGE-2229's same-slice rule). For reference, the mapping is:
 |---|---|---|
 | FR-144-AC-1 | A scalar type definition of each of `integer`, `decimal` (with a policy), `float32` and `float64` is accepted by the Rust, Node and Python readers and the oracle; one of `number` raises `SCHEMA_VIOLATION` at `scalar`. | Test |
 | FR-144-AC-2 | On an `integer` subject, a `max` of `"18446744073709551615"`, of `"170141183460469231731687303715884105727"` and of `"-170141183460469231731687303715884105728"` is accepted; `"170141183460469231731687303715884105728"` and `"-170141183460469231731687303715884105729"` raise `INTEGER_OUTSIDE_I128` at the operand naming the value and the limit; `"01"`, `"+1"`, `" 1"`, `"-0"`, `"1.0"` and the JSON number `1` raise `INVALID_OPERAND` at the operand. | Test |
-| FR-144-AC-3 | On an `integer` field, a `defaultValue` of `"42"` is accepted and one of `42` or `"042"` raises `INVALID_DEFAULT_VALUE`; an `enumValues` list `["1", "2"]` is accepted and `["1", 2]` raises `INVALID_OPERAND` at `/values/1`. | Test |
+| FR-144-AC-3 | On an `integer` field, a `defaultValue` of `"42"` is accepted and one of `42` or `"042"` raises `INVALID_DEFAULT_VALUE`; an `enumValues` list `["1", "2"]` is accepted and `["1", 2]` raises `INVALID_OPERAND` at that constraint's `operands/values/1`, the pointer being the constraint's own pointer followed by `/operands/values/1`. | Test |
 | FR-144-AC-4 | A field typed `ix://quire/native/Decimal` carrying `decimal: {precision: 5, scale: 2}` is accepted with a `max` of `"999.99"` and a `defaultValue` of `"1.5"`; `"1000"` and `"0.001"` raise `INVALID_OPERAND`, `"1.50"`, `"-0"`, `".5"`, `"1e2"` and the JSON number `1.5` raise `INVALID_OPERAND`, and a `defaultValue` of `"1.50"` raises `INVALID_DEFAULT_VALUE`. | Test |
 | FR-144-AC-5 | A policy with `precision` 0 or 39, a negative `scale`, or a `scale` above `precision` raises `SCHEMA_VIOLATION` at the policy; `decimal` on a record raises `SCHEMA_VIOLATION`, and on a field resolving to `integer` raises `SCHEMA_VIOLATION` at the field's `decimal`. | Test |
 | FR-144-AC-6 | A field typed `ix://quire/native/Decimal` with no `decimal`, and a sequence whose `items` is `ix://quire/native/Decimal`, each raise `DECIMAL_POLICY_MISSING` at the field or the `items`; a field carrying `decimal` whose `typeRef` names a scalar `decimal` definition carrying one raises `DECIMAL_POLICY_CONFLICT` at the field's `decimal`, and the same field without its own policy is accepted. | Test |
-| FR-144-AC-7 | On a `float32` subject a bound of `0.5` and of `0.10000000149011612` is accepted and one of `0.1` raises `INVALID_OPERAND`; on a `float64` subject `0.1` is accepted. | Test |
-| FR-144-AC-8 | Read from bytes, a document holding `9007199254740993`, `1e20` or `18446744073709551615` at any depth, the inside of an `any` default included, raises `INEXACT_INTEGER` at that number's pointer; one holding `0.1000000000000000000001` or `1e-400` raises `INEXACT_NUMBER`; one holding `9007199254740992`, `0.1`, `1.0` or `-0` raises neither. The Rust, Node and Python readers and the oracle agree on each. | Test |
-| FR-144-AC-9 | A `multiplicity.upper` or a `maxLength` operand of `9007199254740991` is accepted, and `9007199254740992` raises `SCHEMA_VIOLATION` at it. | Test |
+| FR-144-AC-7 | On a `float32` subject a bound of `0.5` and of `0.10000000149011612` is accepted and one of `0.1` raises `INVALID_OPERAND`; on a `float64` subject `0.1` is accepted. Read from bytes, a `float64` bound of `9007199254740992` is accepted and one of `1e20` raises `INEXACT_INTEGER`. | Test |
+| FR-144-AC-8 | Read from bytes, a document holding `9007199254740993`, `-9007199254740993`, `9.007199254740993e15`, `1e20`, `18446744073709551615`, `1e400` or `-1e400` at any depth, the inside of an `any` default included, raises `INEXACT_INTEGER` at that number's pointer and no parse failure; one holding `0.1000000000000000000001`, `1e-400` or `4.9e-324` raises `INEXACT_NUMBER`; one holding `9007199254740992`, `0.1`, `1.0`, `-0` or `5e-324` raises neither. The Rust, Node and Python readers and the oracle agree on each. | Test |
+| FR-144-AC-9 | A `multiplicity.upper`, a `maxLength` operand, or a source span's `startLine` or `startColumn` of `9007199254740991` is accepted, and `9007199254740992` raises `SCHEMA_VIOLATION` at it; a decimal policy's `precision` or `scale` of `9007199254740992` raises `SCHEMA_VIOLATION` at it. | Test |
 | FR-144-AC-10 | `kernel-scalars.json` maps `Integer`, `Decimal`, `Float32` and `Float64` to `integer`, `decimal`, `float32` and `float64`, and a field typed `ix://quire/native/Float32` resolves to scalar `float32` in every reader. | Test |
-| FR-144-AC-11 | The TypeSpec frontend lowers members typed `int8`, `uint64`, `safeint`, `float`, `float32` and `decimal` with `@decimal(12, 2)` to the scalars and bounds of the lifting table; `int8` with `@minValue(0)` carries one `min` of `"0"` and one `max` of `"127"`; `decimal` without `@decimal` raises `DECIMAL_POLICY_MISSING` and `numeric` raises `AMBIGUOUS_NUMERIC`, each blocking. | Test |
+| FR-144-AC-11 | The TypeSpec frontend lowers members typed `int8`, `uint64`, `safeint`, `float`, `float32` and `decimal` with `@decimal(12, 2)` to the scalars and bounds of the lifting table. An undecorated `int8` member's field references a minted alias carrying `min` `"-128"` and `max` `"127"` over the package-local `Integer` definition, which carries no bound, and `scalar Age extends uint8` carries `min` `"0"` and `max` `"255"` on its own definition. `int8` with `@minValue(0)` carries one `min` of `"0"` and one `max` of `"127"`. An unconstrained `decimal` member with `@decimal(12, 2)` carries the policy on its field, and one also carrying `@minValue(0)` carries it on its minted alias and none on the field. A `float32` member with `@minValue(0.1)` carries the bound `0.10000000149011612`. `decimal` without `@decimal` raises `DECIMAL_POLICY_MISSING`, `decimal128` with `@decimal(35, 2)` raises `DECIMAL_PRECISION_EXCEEDS_BASE` while `@decimal(34, 2)` is accepted, and `numeric` raises `AMBIGUOUS_NUMERIC`, each blocking. | Test |
 | FR-144-AC-12 | The spec-bundle frontend lifts `versionNumber \| Integer \| 1 \| min: 1` with operand `"1"`, a constrained `Decimal` row with policy `(10, 2)` and `min: 1.50` to an alias carrying `decimal` `{precision: 10, scale: 2}` and operand `"1.5"`, and a `Decimal` row with no policy to a blocking `DECIMAL_POLICY_MISSING` at the row. | Test |
-| FR-144-AC-13 | The Rust backend types integer subjects with effective ranges `[0, 9]`, unbounded, `[0, 18446744073709551615]` and `[-1, 18446744073709551615]` as `i64`, `i64`, `u64` and `i128`; a generated `u64` field reads `"18446744073709551615"` and rejects `"18446744073709551616"` and the JSON number `5`; a `decimal(5, 2)` field reads `"1.1"` and `"1.10"` as one value, writes `"1.10"`, and rejects `"1.001"` and `"1000"`; `f32` and `f64` fields generate for `float32` and `float64`. | Test |
-| FR-144-AC-14 | The TypeScript backend generates a `max` of `"9007199254740993"` on an `integer` without refusing; the subject is a `string`, its validator accepts `"9007199254740993"`, rejects `"9007199254740994"` with the constraint's code and rejects the JSON number `5` with a structural code; an unbounded `integer` stays `number` and rejects `9007199254740992`; a `decimal(5, 2)` subject with `max` `"10.5"` accepts `"10.50"` and rejects `"10.51"`. | Test |
-| FR-144-AC-15 | The JSON Schema backend renders an unbounded `integer` with `minimum` `-9007199254740991` and `maximum` `9007199254740991`, a `[0, 18446744073709551615]` subject as a string whose pattern accepts `"0"` and `"18446744073709551615"` and rejects `"18446744073709551616"`, `"01"` and `"-1"`, and a `decimal(5, 2)` subject as a string whose pattern accepts `"999.99"` and `"1.1"` and rejects `"1000"` and `"1.001"`; a `decimal` subject with a bound raises `UNDECLARED_LOSS` and writes no file. The Python backends generate from that output with the same acceptances. | Test |
-| FR-144-AC-16 | No source file of the readers, the oracle, the frontends or the backends converts an integer or decimal value site to a JavaScript `number`, a Rust `f64` or a Python `float`, and no backend declares `INTEGER_BOUND_NOT_EXACT`. | Inspection |
+| FR-144-AC-13 | The Rust backend types integer subjects with effective ranges `[0, 9]`, unbounded, `[0, 18446744073709551615]` and `[-1, 18446744073709551615]` as `i64`, `i64`, `u64` and `i128`; a generated `u64` field reads `"18446744073709551615"` and rejects `"18446744073709551616"` and the JSON number `5`; a `decimal(5, 2)` field reads `"1.1"` and `"1.10"` as one value, writes `"1.10"`, and rejects `"1.001"`, `"1000"`, `"-0"` and `"-0.00"`; `f32` and `f64` fields generate for `float32` and `float64`, and the `f32` field reads `3.4028234663852886e38` and rejects `3.5e38`. | Test |
+| FR-144-AC-14 | The TypeScript backend generates a `max` of `"9007199254740993"` on an `integer` without refusing; the subject is a `string`, its validator accepts `"9007199254740993"`, rejects `"9007199254740994"` with the constraint's code and rejects the JSON number `5` with a structural code; an unbounded `integer` stays `number` and rejects `9007199254740992`; a `decimal(5, 2)` subject with `max` `"10.5"` accepts `"10.50"` and `"1.10"` and rejects `"10.51"`, `"-0"` and `"-0.00"`; a `float32` subject accepts `3.4028234663852886e38` and rejects `3.5e38` with a structural code. | Test |
+| FR-144-AC-15 | The JSON Schema backend renders an unbounded `integer` with `minimum` `-9007199254740991` and `maximum` `9007199254740991`, a `[0, 18446744073709551615]` subject as a string whose pattern accepts `"0"` and `"18446744073709551615"` and rejects `"18446744073709551616"`, `"01"` and `"-1"`, and a `decimal(5, 2)` subject as a string whose pattern accepts `"999.99"` and `"1.1"` and rejects `"1000"` and `"1.001"`; a `decimal` subject with a bound raises `UNDECLARED_LOSS` and writes no file. A safe subject with `exclusiveMax` `"100"` renders `maximum` `99` and no `exclusiveMaximum`, and a wide subject renders no `minimum` or `maximum`. The Python backends generate from that output with the same acceptances. | Test |
+| FR-144-AC-16 | No source file of the readers, the oracle, the frontends or the backends converts a decimal value site to a JavaScript `number`, a Rust `f64` or a Python `float`, or converts an integer value site to one before an exact check places it within ±(2^53 - 1); and no backend declares `INTEGER_BOUND_NOT_EXACT`. | Inspection |
+| FR-144-AC-17 | An alias over the package-local `Integer` definition carrying `min` `"0"` and `max` `"18446744073709551615"` renders as a `u64` newtype in Rust, `string` in TypeScript and a string schema with the interval pattern in JSON Schema, while its target renders as `i64`, `number` and `{"type": "integer"}`; an alias carrying `decimal` `{precision: 5, scale: 2}` over the `Decimal` definition renders as `Decimal` at scale 2, `string` and the policy pattern. | Test |
+| FR-144-AC-18 | A safe `integer` field declaring `defaultKind` `semantic` and `defaultValue` `"42"` substitutes the JSON number `42` in the TypeScript validator and the Rust serde default and reports no defect; a wide one substitutes `"42"`; a `decimal(5, 2)` field with `defaultValue` `"1.5"` substitutes `"1.50"`, and the Rust and TypeScript targets each write `"1.50"`. | Test |
+| FR-144-AC-19 | Over a `decimal(5, 2)` subject with `enumValues` `["1.1"]`, the Rust and TypeScript validators and the JSON Schema pattern each admit `"1.10"` and reject `"1.2"`; the Rust and TypeScript validators reject a `unique` collection holding `"1.1"` and `"1.10"`, and the JSON Schema backend raises `UNDECLARED_LOSS` for that field and writes no file; over a wide `integer` subject the JSON Schema backend renders `enumValues` as an `enum` of canonical strings. | Test |
+| FR-144-AC-20 | A `uint64` member with `@maxValueExclusive(100)` carries `max` `"18446744073709551615"` and `exclusiveMax` `"100"`, has the effective range `[0, 99]`, and generates `i64` in Rust, `number` in TypeScript and `{"type": "integer", "minimum": 0, "maximum": 99}` in JSON Schema. | Test |
+| FR-144-AC-21 | The SysML v2 target over a document with an `integer`, a `decimal(5, 2)` and a `float32` field writes its file, maps the three to `ScalarValues::Integer`, `ScalarValues::Real` and `ScalarValues::Real`, and emits one non-blocking `agent-ix.sysml-target.DECLARED_LOSS` for each of the two `Real` fields naming the policy or the width. | Test |
+| FR-144-AC-22 | Given the parsed value of a document whose `float64` bound is `0.1000000000000000000001`, a reader's parsed-value entry point raises no `INEXACT_NUMBER`, while given the parsed value of a document whose `integer` bound is `"01"` it raises `INVALID_OPERAND` at the operand, as the bytes entry point does. | Test |
 
 ## Dependencies
 

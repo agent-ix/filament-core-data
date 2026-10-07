@@ -99,9 +99,9 @@ contract itself rather than against an erased TypeScript type.
 | `min`, `max`, `exclusiveMin`, `exclusiveMax` | `value` as a canonical integer or decimal string for `integer` and `decimal`, as a number for `float32` and `float64` ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)), and as an ISO-8601 string for `date` and `datetime` | ordered comparison against the resolved scalar's ordering, exact by `bigint` for `integer` and `decimal` |
 | `minLength`, `maxLength` | `value` as a non-negative integer | Unicode code points of a `string` subject, or decoded octets of a `bytes` subject |
 | `pattern` | `regex` and `dialect` | ECMA-262 match |
-| `enumValues` | `values` | membership in the declared set |
+| `enumValues` | `values` | membership in the declared set, by mathematical value over a `decimal` subject and by integer value over an `integer` subject ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)) |
 | `nonEmpty` | none | length greater than zero |
-| `unique` | none | no two members share a canonical form |
+| `unique` | none | no two members share a canonical form, or, over a `decimal` subject, a mathematical value |
 | `format` | `name` | the named format's declared check |
 
 - The backend SHALL resolve a constraint's subject through the alias chain before selecting its check, because a constraint hangs on a type and the frontend mints an alias type per constrained property.
@@ -161,11 +161,13 @@ contract itself rather than against an erased TypeScript type.
 ### Collections and defaults
 
 - Where a field's `multiplicity` declares `unique: true`, the generated validator SHALL reject a collection two of whose members share the canonical form FR-069 defines, rather than comparing by reference or by `===`.
+- Where that collection's item subject is `decimal`, the generated validator SHALL compare two members by mathematical value ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)), so `"1.1"` and `"1.10"` are one member although their canonical forms differ.
 - Where a field's `multiplicity` declares `ordered: false`, the generated validator SHALL accept any member order.
 - Where a field's `multiplicity` declares `ordered: false`, the generated validator SHALL NOT reorder the value it returns.
 - Where a field's `multiplicity` declares `lower` greater than zero on a collection, the generated validator SHALL reject a collection shorter than `lower`.
 - Where a field's `multiplicity` declares an `upper`, the generated validator SHALL reject a collection longer than `upper`.
 - Where a field declares `defaultKind: "semantic"`, the generated validator SHALL substitute its `defaultValue` when the property is absent, so the returned value is complete.
+- Where that field's subject is numeric, the generated validator SHALL first convert `defaultValue` from its [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) IR spelling to the subject's instance wire form, so `"42"` substitutes the JSON number `42` on a safe `integer` subject and `"42"` on a wide one, and `"1.5"` substitutes `"1.50"` on a `decimal(5, 2)` subject; it SHALL then validate the converted value.
 - Where a field declares `defaultKind: "semantic"`, the generated validator SHALL validate the substituted `defaultValue` against the field's own declared type and constraints, so a default the contract itself rejects is a defect the validator reports rather than a value it hands on.
 - Where a field declares `defaultKind: "representation"` or `defaultKind: "migration"`, the generated validator SHALL leave the property absent, because those defaults belong to a representation mapping and to a migration respectively and not to the semantic contract.
 - Where a field declares `defaultKind: "none"`, the generated validator SHALL substitute nothing.
@@ -241,6 +243,7 @@ contract itself rather than against an erased TypeScript type.
 | FR-066-AC-27 | `unknownPolicy` declared on a `union` and on a `map` produces no validation effect, and the declared value appears in the FR-067 metadata for both. | Unit |
 | FR-066-AC-28 | A document whose admissibility result is `lossy` generates validators; a document carrying a representability loss generates none. | Unit |
 | FR-066-AC-29 | The `bytes` wire form, its length unit, and the union discriminator's wire shape each appear as a single named declared decision citing `agent-ix/filament-core-data#58`, and `conformance/divergences.json` carries no entry attributed to that question. | Static |
+| FR-066-AC-30 | A safe `integer` field with semantic `defaultValue` `"42"` returns the JSON number `42` for an absent member and reports no defect; a `decimal(5, 2)` field with `defaultValue` `"1.5"` returns `"1.50"`; a `decimal(5, 2)` subject with `enumValues` `["1.1"]` accepts `"1.10"`; a `unique` collection of that subject holding `"1.1"` and `"1.10"` is rejected. | Unit |
 
 ## Dependencies
 
