@@ -417,8 +417,8 @@ Authority is assigned by concern:
 | Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-090](./functional/FR-090-prove-cross-language-agreement.md) | Architecture, census, feasibility, semantic IR, package, mapping, generation, compatibility, IR v1.1 declaration, semantic-core grammar, prototype-promotion, compiler-core, Rust/Serde, TypeScript, qualified Python generation, and semantic kernel packaging behavior |
 | Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-030](./non-functional/NFR-030-non-disruptive-kernel-packaging.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic kernel generation, portable dependency-free kernel packages, and non-disruptive kernel packaging behind the publication gate |
 | User | [US-001](./usecase/US-001-understand-data-authority.md) through [US-015](./usecase/US-015-lift-a-spec-bundle-into-a-domain-package.md), and [US-019](./usecase/US-019-reach-every-generated-target-through-one-seam.md) through [US-021](./usecase/US-021-read-a-generated-package-without-knowing-its-language.md) | Reader, implementer, migration-review, tool-selection, schema-author, module-author, module-maintainer, compiler-maintainer, package-author, Rust-consumer, TypeScript-consumer, Python-consumer, semantic-kernel-consumer, domain-author, generation-seam, contract-migration, and cross-language package-reader outcomes |
-| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-106](./functional/FR-106-author-field-presence-independently.md), and [FR-130](./functional/FR-130-register-the-rust-backend-in-the-generation-seam.md) through [FR-143](./functional/FR-143-lift-object-type-artifacts-to-their-constructs.md) | Architecture, census, feasibility, semantic IR and field presence, package, mapping, generation, compiler, backend, semantic-kernel, extraction-frontend, generation-seam registration, contract retirement and freeze, SysML v2 target, unconstrained values, compiler-frontend conformance, model members, and object-type construct behavior |
-| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-034](./non-functional/NFR-034-deterministic-json-schema-generation.md), and [NFR-038](./non-functional/NFR-038-runnable-rust-gates-on-two-platforms.md) through [NFR-044](./non-functional/NFR-044-preserve-semantic-ir-revision-compatibility.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic kernel generation, portable dependency-free kernel packages, non-disruptive kernel packaging, deterministic and hermetic lifting, non-disruptive extraction frontend, qualified toolchain and licensed dependencies, deterministic JSON Schema generation, runnable and releasable gates, single-owner regeneration, one gate entry point, and semantic IR revision compatibility |
+| Functional | [FR-001](./functional/FR-001-indexed-architecture-record.md) through [FR-106](./functional/FR-106-author-field-presence-independently.md), and [FR-130](./functional/FR-130-register-the-rust-backend-in-the-generation-seam.md) through [FR-144](./functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) | Architecture, census, feasibility, semantic IR and field presence, package, mapping, generation, compiler, backend, semantic-kernel, extraction-frontend, generation-seam registration, contract retirement and freeze, SysML v2 target, unconstrained values, compiler-frontend conformance, model members, object-type construct behavior, and exact numeric scalars |
+| Non-functional | [NFR-001](./non-functional/NFR-001-traceable-record.md) through [NFR-034](./non-functional/NFR-034-deterministic-json-schema-generation.md), and [NFR-038](./non-functional/NFR-038-runnable-rust-gates-on-two-platforms.md) through [NFR-044](./non-functional/NFR-044-preserve-semantic-ir-revision-compatibility.md) | Traceability, readability, reproducibility, isolation, evidence honesty, parity, security, portability, non-disruption, additive revision, kernel discipline, deterministic and hermetic kernel generation, portable dependency-free kernel packages, non-disruptive kernel packaging, deterministic and hermetic lifting, non-disruptive extraction frontend, qualified toolchain and licensed dependencies, deterministic JSON Schema generation, runnable and releasable gates, single-owner regeneration, one gate entry point, and refusal of retired semantic IR contract versions |
 
 ## 6. Decision Status Model
 
@@ -436,13 +436,17 @@ FR-106, FR-139 and FR-141 through FR-143 are normative: contract `2.0.0`
 (issues #93, #146 and #172) implements them in the schema, the readers and the
 spec-bundle frontend.
 
+FR-144 (Linear AGE-2229) is specified ahead of its code: the numeric scalars,
+the decimal policy and the shared numeric literal encoding land in the
+schema, the readers, the frontends and the backends in the following change.
+
 ## 7. Verification Strategy
 
 - Quire validation checks requirement and process-artifact structure.
 - Link and inventory checks prove the record is navigable and complete.
 - Inspection checks ownership, status labeling, and conflict dispositions.
-- The Test Matrix maps every acceptance criterion to an explicit verification
-  case before this ticket enters specification review.
+- `quire matrix` computes coverage from the tests' trace tags; `spec/tests.md`
+  indexes the test cases.
 - Machine-readable census artifacts are schema-validated and checked for stable
   identifiers, resolvable evidence loci, deterministic ordering, and complete
   dispositions.

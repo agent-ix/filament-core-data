@@ -55,7 +55,7 @@ the two implementations of that statement.
 - `Multiplicity` SHALL lower property-for-property to `field.multiplicity`, `relationship.multiplicity`, and `returns.multiplicity`, where an absent `TypeRef.multiplicity` lowers to `1..1`, an absent `RelationDecl.multiplicity` to `0..1`, and an absent `composite` to `false`.
 - `TypeRef.target` SHALL lower to `field.typeRef`: a `SemanticId` verbatim, a `KernelScalar` to that package-local kernel definition's identity.
 - `TypeRef.unit` SHALL lower to `field.unit` verbatim.
-- `TypeRef.decimal` SHALL lower to the extension `ix://agent-ix/semantic-core/ext/decimal` (version `1.0.0`, `required: true`, payload `{ precision, scale }`) on the field.
+- `TypeRef.decimal` SHALL lower to the `decimal` member `{ precision, scale }` ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)) of the alias a constrained field mints, or of the field itself when it carries no constraint; the package-local `Decimal` kernel definition carries no policy, and no decimal extension is emitted.
 - `FieldDecl.nullable` SHALL lower to `field.nullable` (default `false`).
 - `FieldDecl.default` SHALL lower to `defaultKind`/`defaultValue` (absent → `none`).
 - `FieldDecl.identity` SHALL lower to the extension `ix://agent-ix/semantic-core/ext/identity` (version `1.0.0`, `required: false`, payload `{ identity: true }`).
@@ -85,7 +85,7 @@ the two implementations of that statement.
 | FR-034-AC-2 | The lowered FR-006 document validates against `semantic-ir.schema.json` as `2.0.0` and both IR readers return zero diagnostics. | Test |
 | FR-034-AC-3 | The lowered FR-006 document's fields (name, multiplicity, unit, nullable), relationships (verb, category, target, multiplicity), constraints (keyword, operands), and clauses (language, clauseId, text) equal those of `fixtures/semantic/v1/positive/config-version-v2.json` in a structural comparison that ignores minted identities and semantic-core extensions. | Test |
 | FR-034-AC-4 | `UnitSymbol` rejects the empty string, `k g`, and `kg²` and accepts `kg`, `m/s`, `ms`, `10*3.m`; UCUM membership beyond the charset is a consumer concern and is not claimed. | Test |
-| FR-034-AC-5 | A `Decimal` field lowers with the `decimal` extension carrying `precision` and `scale`, and the lowering table records no loss for `TypeRef.decimal`. | Test |
+| FR-034-AC-5 | An unconstrained `Decimal` field lowers with a `decimal` member carrying `precision` and `scale` on the field, a constrained one with that member on its minted alias and none on the field, no node carries an `ext/decimal` extension, the lowered document raises no `DECIMAL_POLICY_MISSING` or `DECIMAL_POLICY_CONFLICT`, and the lowering table records no loss for `TypeRef.decimal`. | Test |
 
 ## Dependencies
 

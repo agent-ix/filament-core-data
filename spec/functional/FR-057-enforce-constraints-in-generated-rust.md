@@ -90,7 +90,8 @@ second case — so that a `pattern` constraint is never carried as an unchecked
 
 | Keyword | Subject | Generated check |
 |---|---|---|
-| `min`, `max`, `exclusiveMin`, `exclusiveMax` | `integer`, `number` | IEEE-754 comparison against the operand parsed as `i64` or `f64` |
+| `min`, `max`, `exclusiveMin`, `exclusiveMax` | `integer`, `decimal` | exact comparison against the operand's canonical string parsed into the subject's Rust type ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)): `i64`, `u64` or `i128`, or the `Decimal` coefficient at the subject's scale |
+| `min`, `max`, `exclusiveMin`, `exclusiveMax` | `float32`, `float64` | IEEE-754 comparison against the operand parsed as `f32` or `f64` |
 | `min`, `max`, `exclusiveMin`, `exclusiveMax` | `date`, `datetime` | comparison of the two values parsed to a normalized instant, so `2019-12-31T23:00:00-05:00` orders after `2020-01-01T00:00:00Z` |
 | `min`, `max`, `exclusiveMin`, `exclusiveMax` | `duration` | refused — see below |
 | `minLength`, `maxLength` | `string` | Unicode scalar-value count |
@@ -107,14 +108,18 @@ second case — so that a `pattern` constraint is never carried as an unchecked
   and `PT1H` are one duration written two ways — so any comparison the backend
   chose would be a rule it invented.
 - If an operand's JSON type is not one the subject's Rust type admits — an
-  `enumValues` operand list mixing a string and a number against an `integer`
-  subject, or a bound operand that is not a number for a numeric subject — then
+  `enumValues` operand list holding a JSON number against an `integer`
+  subject, or a bound operand not spelled for its numeric subject by [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) — then
   the backend SHALL raise a blocking
   `agent-ix.rust-backend.INVALID_OPERAND` naming the operand.
-- Numeric equality for `enumValues` and `unique` SHALL be IEEE-754 equality
-  extended so that `NaN` is equal to no value including itself and `-0.0` is
-  equal to `0.0`, stated here because the two conventions differ and a generated
-  check must pick one visibly.
+- Equality for `enumValues` and `unique` over a `float32` or `float64` subject
+  SHALL be IEEE-754 equality extended so that `NaN` is equal to no value
+  including itself and `-0.0` is equal to `0.0`, stated here because the two
+  conventions differ and a generated check must pick one visibly.
+- Equality for `enumValues` and `unique` over an `integer` subject SHALL be
+  integer equality, and over a `decimal` subject equality of mathematical value
+  ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)), which the `Decimal` newtype gives by comparing coefficients at the
+  subject's one scale, so `"1.1"` and `"1.10"` are one value.
 - `minLength` and `maxLength` SHALL count Unicode scalar values, which is what
   the published schema's own `minLength` counts for a JSON string.
 - If a constraint is not applicable to its resolved subject, then the backend
@@ -236,6 +241,7 @@ second case — so that a `pattern` constraint is never carried as an unchecked
 | FR-057-AC-12 | The differential harness fails, naming the input, when the hand-written validator is perturbed to treat U+000A as the only line terminator, and when it is perturbed to drop the drive-letter rule. | Test (TC-688) |
 | FR-057-AC-13 | The generated crate's dependency set contains no regex engine, and the matcher's subject basis is UTF-16 code units, demonstrated by a subject containing an astral character on which a code-point matcher and the published engine disagree. | Test (TC-689) |
 | FR-057-AC-14 | Two `datetime` values with different UTC offsets are ordered by instant and not by their text, demonstrated by a `max` bound a lexicographic comparison would wrongly accept. | Test (TC-677) |
+| FR-057-AC-15 | A generated `decimal(5, 2)` field with `enumValues` `["1.1"]` accepts `"1.10"` and rejects `"1.2"`, and a `unique` sequence of that subject holding `"1.1"` and `"1.10"` is rejected; a `float64` `enumValues` of `[0]` accepts `-0.0`. | Test |
 
 ## Dependencies
 

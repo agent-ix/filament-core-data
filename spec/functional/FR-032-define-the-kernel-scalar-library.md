@@ -9,6 +9,8 @@ relationships:
     type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-020"
     type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/FR-144"
+    type: "depends_on"
 ---
 # [FR-032] Define the kernel scalar library
 
@@ -21,7 +23,7 @@ with a representation and bounds policy recorded in a machine-readable table.
 ## Inputs
 
 - The `KernelScalar` enumeration from FR-031
-- The IR v1 scalar vocabulary (`boolean`, `integer`, `number`, `string`, `bytes`, `date`, `datetime`, `duration`, `uuid`)
+- The IR scalar vocabulary (`boolean`, `integer`, `decimal`, `float32`, `float64`, `string`, `bytes`, `date`, `datetime`, `duration`, `uuid`, `any`)
 
 ## Outputs
 
@@ -29,16 +31,17 @@ with a representation and bounds policy recorded in a machine-readable table.
 
 ## Behavior
 
-- `KernelScalar` SHALL enumerate exactly `UUID`, `Boolean`, `Integer`, `Decimal`, `String`, `Timestamp`, `Duration`, `Bytes`, `JsonObject`.
-- The table SHALL record `Integer` as IR `integer` with the signed 64-bit bound `-2^63 .. 2^63-1`.
-- The table SHALL record `Decimal` as IR `number` whose `TypeRef.decimal` policy (`precision`, `scale`) is required by the grammar rule in FR-031.
+- `KernelScalar` SHALL enumerate exactly `UUID`, `Boolean`, `Integer`, `Decimal`, `Float32`, `Float64`, `String`, `Timestamp`, `Duration`, `Bytes`, `JsonObject`.
+- The table SHALL record `Integer` as IR `integer`, whose instance domain ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)) is the integers within its declared bounds, each an integer within `i128::MIN..=i128::MAX` written as a canonical integer string, and -(2^53 - 1) or 2^53 - 1 on a side that declares none.
+- The table SHALL record `Decimal` as IR `decimal`, governed by the decimal policy (`precision`, `scale`) that `TypeRef.decimal` carries under the grammar rule in FR-031 and that the IR carries as the `decimal` member ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)).
+- The table SHALL record `Float32` as IR `float32` (IEEE 754 binary32) and `Float64` as IR `float64` (IEEE 754 binary64), each serialized as a finite JSON number.
 - The table SHALL record `Timestamp` as IR `datetime`, UTC, at most nanosecond precision, RFC 3339 serialization.
 - The table SHALL record `Duration` as IR `duration` with ISO 8601 serialization.
 - The table SHALL record `Bytes` as IR `bytes` whose length a `maxLength` constraint bounds in bytes.
 - The table SHALL record `String` as IR `string` whose length `minLength`/`maxLength` bound in Unicode code points.
 - The table SHALL record `UUID` as IR `uuid` and `Boolean` as IR `boolean`.
 - The table SHALL record `JsonObject` as IR `any`, an unconstrained JSON value that is never typed further (FR-139).
-- The table SHALL mark `unitAllowed: true` only for `Integer`, `Decimal`, `Timestamp`, `Duration`.
+- The table SHALL mark `unitAllowed: true` only for `Integer`, `Decimal`, `Float32`, `Float64`, `Timestamp`, `Duration`.
 - The bounds in the table are documentation for consumers; the semantic-core reader SHALL NOT evaluate values against them.
 
 ## Constraints
@@ -54,7 +57,8 @@ with a representation and bounds policy recorded in a machine-readable table.
 | FR-032-AC-1 | `kernel-scalars.json` has exactly one entry per `KernelScalar` member, and only `JsonObject` maps to `any`. | Analysis |
 | FR-032-AC-2 | The semantic-core reader rejects a `TypeRef` targeting `Decimal` without `decimal`, and a `TypeRef` targeting `String` with `decimal`. | Test |
 | FR-032-AC-3 | Every entry's `irScalar` is a member of the IR scalar enumeration, and `JsonObject`'s is `any`. | Analysis |
-| FR-032-AC-4 | A tenth enum member `Any` added to the source fails FR-031's inventory test. | Test |
+| FR-032-AC-4 | A twelfth enum member `Any` added to the source fails FR-031's inventory test. | Test |
+| FR-032-AC-6 | `kernel-scalars.json` records `Integer` → `integer`, `Decimal` → `decimal`, `Float32` → `float32` and `Float64` → `float64`, no entry maps to `number`, and `Integer`'s bounds name the default instance domain `-9007199254740991..=9007199254740991` and the i128 ceiling on a declared bound, rather than a 64-bit width. | Analysis |
 | FR-032-AC-5 | Every `type.target` in the committed FR-006 `FieldDecl[]` fixture is one of `UUID`, `Integer`, `String`, `Timestamp`, `JsonObject`, or a `SemanticId`. | Test |
 
 ## Dependencies

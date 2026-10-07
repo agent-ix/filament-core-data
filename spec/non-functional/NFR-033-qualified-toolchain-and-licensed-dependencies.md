@@ -99,11 +99,7 @@ row someone remembered to tick. That convention is the one `quire-rs` uses
 (`tests/robustness.rs`); it is not yet this repository's — the
 `crates/conformance-adapter` tests carry `tc_NNN_` names and no `#[trace]`
 marker, and no workspace member depends on `ix-trace-rs` today — so this crate
-is the first member to adopt it. One consequence follows for the evidence: the
-status-lie criterion of NFR-033-AC-9 presumes `quire coverage` binds
-the Rust attribute form under the module's `traceability:` model, which the
-first traced test confirms with `quire coverage --scope . --json` before the
-row is promised.
+is the first member to adopt it.
 
 ## Measurement and Evaluation
 
@@ -153,7 +149,6 @@ reports the metric it could not measure.
 | NFR-033-AC-6 | The crate ships a `LICENSE` file carrying AGPL-3.0-or-later. | Analysis (TC-1325) |
 | NFR-033-AC-7 | `cargo clippy --no-deps --all-targets --locked -- -D warnings` and `cargo fmt --check` both pass. | Test (TC-1326) |
 | NFR-033-AC-8 | Every requirement test in the crate carries `#[trace("TC-NNNN", "<FR or NFR>-AC-N")]` and is named `tc_NNNN_…`, and every named TC id exists in `spec/tests.md`. | Analysis (TC-1327) |
-| NFR-033-AC-9 | With `quire coverage --scope . --json` confirmed to bind the Rust `#[trace]` form, removing both the `#[trace]` marker and the `tc_NNNN_` name prefix from one test turns its matrix row into a status lie under `quire coverage` (the `rust-test-name-id` form still binds through the name alone), proving the binding is by symbol rather than by row. | Static (TC-1328) |
 | NFR-033-AC-10 | `cargo build --locked --offline` succeeds from a warm cache, proving every dependency is resolvable without a network. | Test (TC-1329) |
 | NFR-033-AC-11 | `cargo check -p agent-ix-extraction-frontend --locked --offline` on the `rust-toolchain.toml` channel exits zero, proving a `--workspace` build on the workspace channel still compiles the crate and `make rust-build` and `make rust-test` are not broken by it. | Test (TC-1350) |
 

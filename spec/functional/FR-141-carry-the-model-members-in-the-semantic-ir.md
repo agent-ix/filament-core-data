@@ -9,8 +9,6 @@ relationships:
     type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-106"
     type: "depends_on"
-  - target: "ix://agent-ix/filament-core-data/NFR-044"
-    type: "constrained_by"
 ---
 # FR-141: Carry the model members in the semantic IR
 
@@ -102,4 +100,3 @@ either question until QSpec decides it.
 
 - **Upstream**: [FR-028](./FR-028-represent-relationships-operations-and-clauses.md), [FR-106](./FR-106-author-field-presence-independently.md), [FR-139](./FR-139-express-an-unconstrained-value-in-the-semantic-ir.md)
 - **Downstream**: [FR-142](./FR-142-declare-one-construct-per-object-type.md)
-- **Constrained by**: [NFR-044](../non-functional/NFR-044-preserve-semantic-ir-revision-compatibility.md)

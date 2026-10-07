@@ -110,10 +110,26 @@ none of the three is refused (ADR-0009).
 The constraint `keyword` is a closed set (`min`, `max`, `exclusiveMin`,
 `exclusiveMax`, `pattern`, `minLength`, `maxLength`, `enumValues`, `nonEmpty`,
 `unique`, `format`) with typed operands per keyword and an applicability table
-over the resolved kind. `source.dialect` is `typespec` or `spec-bundle`. A `min`, `max`, `exclusiveMin` or `exclusiveMax` operand on an
-`integer` scalar is a JSON number or a canonical decimal string (`0`, or an optional
-`-` and digits with no leading zero), so a bound past 2^53 is exact
-(`"18446744073709551615"`); a `number` scalar's bound is a JSON number. Manifest
+over the resolved kind. `source.dialect` is `typespec` or `spec-bundle`.
+
+The numeric scalars are `integer`, `decimal`, `float32` and `float64`; there
+is no `number` scalar ([FR-144](../../spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md),
+Linear AGE-2229). Every number is spelled by one encoding, shared with
+quire-spec-language's QSL-642 rule (QSL FR-092): a counter (a multiplicity
+bound, a length operand, a source position, a decimal `precision` or `scale`)
+is a JSON integer no greater than 2^53 - 1; an integer value (a bound, default
+or enumerated value of an `integer` subject) is a canonical integer string
+(`0`, or an optional `-` and digits with no leading zero) at every magnitude,
+within `i128::MIN..=i128::MAX`, so `"18446744073709551615"` is exact; a value of
+a `decimal` subject is a canonical decimal string (no exponent, no trailing
+fraction zero) within the subject's decimal policy `{precision, scale}`,
+never a binary float; and a value of a `float32` or `float64` subject is a
+finite JSON number. A document read from bytes holding a JSON number with no
+exact RFC 8785 spelling is refused (`INEXACT_INTEGER`, `INEXACT_NUMBER`), the
+condition QSL names `noncanonical_wire`. Each walk from a field or reference to
+a `decimal` scalar passes exactly one node carrying the decimal policy: the
+field, an alias, or the scalar definition. Rationals and quantities with units
+are not declared here (AGE-2229 row 4). Manifest
 targets bind to the declared registry: generated targets or representation
 formats, each defined once in `common.schema.json`. The worked example
 `fixtures/semantic/v1/positive/config-version-v2.json` lifts config-service
@@ -289,6 +305,7 @@ frontend to skip its own half of the check.
 | `subsets` | field | Supertype fields whose values include this field's values | `UNRESOLVED_FEATURE_REF` |
 | `redefines` | field, operation | The supertype field or operation this member narrows; its multiplicity lies within the redefined bounds (for an operation, its return multiplicity) | `UNRESOLVED_FEATURE_REF`, `INVALID_REDEFINITION` |
 | `textProfile` | field, type | The text profile a text field or a text value type binds: `unicode-scalars`, `nfc`, `nfd`, `nfkc`, `nfkd` or `binary-utf8`; a type carries it only as a scalar of `string` | `SCHEMA_VIOLATION` |
+| `decimal` | field, alias type, `decimal` scalar type | The decimal policy `{precision, scale}` (`1 <= precision <= 38`, `0 <= scale <= precision`) governing a `decimal` subject; exactly one node on each resolution walk carries it (FR-144) | `SCHEMA_VIOLATION`, `DECIMAL_POLICY_MISSING`, `DECIMAL_POLICY_CONFLICT` |
 | `frame` | operation | Declaration references the operation `modifies` (a field or relationship), `creates` or `deletes` (an object type or process); never an access path. Resolution ranges over every such declaration the whole document carries, never only the operation's own type or its supertypes (QSpec FR-340, FR-013). QSpec #101 and #106 leave the frame's body encoding and grant-range semantics open | `UNRESOLVED_FRAME_PATH` |
 | `pre`, `post` items | operation | A `pre` or `post` item is a clause id or an inline clause `{language, text}` | `DANGLING_CLAUSE_REF` for an id item |
 | `populations` | document | Named instance extents, bound by `kind` (`{module, name}`); a flat set of unique member type references; one `extent` (`closed` or `open`) for the whole population | `UNRESOLVED_TYPE_REF` |

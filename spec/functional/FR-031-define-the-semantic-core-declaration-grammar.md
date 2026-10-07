@@ -39,7 +39,7 @@ constraint, relation, operation, clause reference, and enum value.
 
 - The package SHALL declare exactly this inventory and nothing else: grammar models `Multiplicity`, `TypeRef`, `DecimalPolicy`, `DefaultDecl`, `FieldDecl`, `ConstraintDecl` (as a union of the eleven per-keyword models `MinConstraint`, `MaxConstraint`, `ExclusiveMinConstraint`, `ExclusiveMaxConstraint`, `PatternConstraint`, `MinLengthConstraint`, `MaxLengthConstraint`, `EnumValuesConstraint`, `NonEmptyConstraint`, `UniqueConstraint`, `FormatConstraint`), `RelationDecl`, `OperationDecl`, `ClauseRef`, `EnumValue`, `SourceLocus`; enums `KernelScalar`, `EdgeCategory`, `ConstraintKeyword`, `DefaultKind`; scalars `Identifier`, `SemanticId`, `UnitSymbol`, `ClauseLanguage`.
 - `Multiplicity` SHALL be `{ lower: int32; upper?: int32; ordered?: boolean; unique?: boolean }` with `@minValue(0)` on both bounds; an absent `upper` means unbounded.
-- `TypeRef` SHALL be `{ target: SemanticId | KernelScalar; multiplicity?: Multiplicity; unit?: UnitSymbol; decimal?: DecimalPolicy }` where `DecimalPolicy` is `{ precision: int32; scale: int32 }`.
+- `TypeRef` SHALL be `{ target: SemanticId | KernelScalar; multiplicity?: Multiplicity; unit?: UnitSymbol; decimal?: DecimalPolicy }` where `DecimalPolicy` is `{ precision: int32; scale: int32 }` with `@minValue(1)` and `@maxValue(38)` on `precision` and `@minValue(0)` on `scale`, the ranges [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) gives the IR's decimal policy.
 - `FieldDecl` SHALL be `{ name: Identifier; type: TypeRef; identity?: boolean; nullable?: boolean; default?: DefaultDecl; doc?: string; constraints?: ConstraintDecl[] }` where `DefaultDecl` is `{ kind: DefaultKind; value?: unknown }` and `DefaultKind` enumerates `semantic`, `representation`, `migration`.
 - Each per-keyword constraint model SHALL carry `keyword: ConstraintKeyword.<member>` and exactly the FR-029 operands for that keyword, so the emitted schema closes both the keyword set and each operand shape.
 - `RelationDecl` SHALL be `{ verb: Identifier; category: EdgeCategory; composite?: boolean; target: SemanticId; multiplicity?: Multiplicity }`.
@@ -67,6 +67,7 @@ rule SHALL have a negative fixture:
 - `ordered`/`unique` SHALL appear only when `upper` is absent or greater than 1.
 - A `TypeRef` whose `target` is `KernelScalar.Decimal` SHALL carry `decimal`.
 - A `TypeRef` whose `target` is not `KernelScalar.Decimal` SHALL NOT carry `decimal`.
+- A `DecimalPolicy.scale` SHALL be at most its `precision`.
 - `TypeRef.unit` SHALL appear only when `target` is a `KernelScalar` other than `Boolean`, `Bytes`, `JsonObject`, `String`, `UUID`.
 - `OperationDecl.returns` SHALL NOT carry `unit`.
 - Within one declaration set, `FieldDecl` and `OperationDecl` SHALL be unique by `name`, `params` by `name`, `RelationDecl` by (`verb`, `target`), `EnumValue` by `value`, and `ClauseRef` by `clauseId`, where a `clauseId` shared between `pre` and `post` names one clause.
@@ -90,6 +91,7 @@ rule SHALL have a negative fixture:
 | FR-031-AC-5 | No property in the compiled program resolves to `unknown` or an untyped record except `DefaultDecl.value`. | Analysis |
 | FR-031-AC-6 | Adding one model at a new minor version changes only that model's emitted file and the bundle index; every previously emitted file is byte-identical. | Test |
 | FR-031-AC-7 | Each reader-enforced grammar rule has one negative fixture the reader rejects at the declaration's locus, and the FR-006 declaration set reads clean. | Test |
+| FR-031-AC-8 | The emitted schema rejects a `DecimalPolicy` with `precision` 0 or 39 or a negative `scale`, and the semantic-core reader rejects `(2, 3)`; `(1, 0)` and `(38, 38)` are accepted. | Test |
 
 ## Dependencies
 

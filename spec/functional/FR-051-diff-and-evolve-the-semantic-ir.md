@@ -56,6 +56,9 @@ artefacts rather than asserted in a pull-request description.
 | Required field added or any field removed | `field` | `semantic` | `breaking` |
 | Stable identity changed | `identity` | `semantic` | `breaking` |
 | Scalar domain widened | `type` | `semantic` | `conditional` |
+| A subject's numeric scalar changed ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)): `float32` to `float64`; any other change among `integer`, `decimal`, `float32`, `float64` | `type` | `semantic` | `conditional`; `breaking` |
+| A decimal policy changed: neither `precision - scale` nor `scale` decreased; either decreased | `type` | `semantic` | `conditional`; `breaking` |
+| An `integer` subject moved between safe and wide ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)), in either direction and by any change (a widened or added bound can only move it safe to wide, a tightened or removed bound only wide to safe), which changes its instance wire form and generated types; this row takes precedence over "Scalar domain widened" | `type` | `semantic` | `breaking` |
 | Union variant removed | `union` | `semantic` | `breaking` |
 | Constraint operand corrected with no semantic value change | `constraint` | `semantic` | `patch` |
 | Enum member added, consumer policy `reject` | `enum` | `semantic` | `breaking` |
@@ -112,6 +115,8 @@ artefacts rather than asserted in a pull-request description.
 | FR-051-AC-15 | A revision that removes a member, retypes a member, or narrows a closed vocabulary is classified `breaking`; one that adds an optional member or widens a vocabulary is not. | Test |
 | FR-051-AC-16 | A revision changing a type's `supertypes` (added or removed), a field's `subsets`, or a field's `redefines` target is classified `breaking`; one setting `abstract` is `breaking` and one clearing it is `additive`; a population or construct table entry added is `additive`, and one removed or changed is `breaking`; an operation's `frame` changed is classified `breaking`, with the owning operation (`type`), not as a family of its own. | Test (TC-1804) |
 | FR-051-AC-17 | A construct table entry whose `identity`, `shape`, `members`, `rules`, `references`, or `immutable` changed, with `meaning` unchanged, is classified `breaking`; it is never absorbed into the document's own "equal fingerprints" `patch`. | Test (TC-1804) |
+| FR-051-AC-18 | A revision changing a subject from `float32` to `float64` is `conditional`, from `integer` to `decimal` or `float64` to `float32` is `breaking`, a decimal policy `(5, 2)` to `(7, 3)` is `conditional` and `(5, 2)` to `(5, 3)` is `breaking`, and integer and decimal bounds are compared by exact value, so `"18446744073709551615"` to `"18446744073709551614"` is a tightening. | Test |
+| FR-051-AC-19 | A revision widening an `integer` subject's `max` from `"100"` to `"18446744073709551615"`, one removing the `max` `"18446744073709551615"` of a subject whose `min` is `"0"` (wide to safe), and one tightening a `max` from `"18446744073709551615"` to `"100"` on a subject with `min` `"0"` are each classified `breaking`; widening `max` from `"100"` to `"200"` is classified by the "Scalar domain widened" row. | Test |
 
 ## Dependencies
 
