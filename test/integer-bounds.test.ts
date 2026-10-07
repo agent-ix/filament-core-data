@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
+import { lowerConstraints } from "../src/compiler/backends/rust-serde/constraints.mjs";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { createHost } from "../src/compiler/host.mjs";
@@ -109,5 +111,57 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		);
 		expect(unsafe.state).toBe("unsupported");
 		expect(unsafe.diagnostics[0]?.message).toContain("9007199254740993");
+	});
+
+	it("the Rust backend emits an in-range string bound as the exact i64 literal and refuses one past i64 (TC-1825)", () => {
+		const lowered = (value: string) =>
+			(
+				lowerConstraints as (
+					definition: unknown,
+					resolved: unknown,
+				) => {
+					checks: { value: unknown; form: string }[];
+					diagnostics: { code: string }[];
+				}
+			)(
+				{
+					constraints: [
+						{
+							identity: "ix://acme/pkg/constraint/N-max",
+							keyword: "max",
+							appliesTo: "ix://acme/pkg/N",
+							operands: { value },
+						},
+					],
+				},
+				{ kind: "scalar", scalar: "integer" },
+			);
+		// i64::MAX is kept as written, exact where a double would round it.
+		const inRange = lowered("9223372036854775807");
+		expect(inRange.diagnostics).toEqual([]);
+		expect(inRange.checks[0]).toMatchObject({
+			form: "numeric",
+			value: "9223372036854775807",
+		});
+		// One past i64::MAX, and i64::MIN - 1, are refused.
+		for (const value of ["9223372036854775808", "-9223372036854775809"]) {
+			const refused = lowered(value);
+			expect(refused.checks).toEqual([]);
+			expect(refused.diagnostics.map((one) => one.code)).toEqual([
+				"agent-ix.rust-backend.INVALID_OPERAND",
+			]);
+		}
+		// A non-canonical spelling is refused too.
+		expect(lowered("0123").diagnostics).toHaveLength(1);
+
+		// Through generation, the literal is the one the Rust source carries.
+		const generated = rustBackend.generate({
+			ir: withBound("9223372036854775807"),
+		} as never, { host } as never) as {
+			files?: unknown;
+			diagnostics: { code: string; blocking: boolean }[];
+		};
+		expect(generated.diagnostics.filter((one) => one.blocking)).toEqual([]);
+		expect(JSON.stringify(generated.files)).toContain("9223372036854775807i64");
 	});
 });

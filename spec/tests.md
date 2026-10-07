@@ -237,7 +237,7 @@ blocked as stated above.
 | FR-052 | FR-052-AC-1..16, FR-052-CON-1..4 | TC-547..TC-566 | ✅ Complete |
 | FR-053 | FR-053-AC-1..15, FR-053-CON-1..5 | TC-412..TC-431, TC-604 | ✅ Complete |
 | FR-063 | FR-063-AC-1..21, FR-063-CON-1..6 | TC-745..TC-754 | 🚧 In progress |
-| FR-064 | FR-064-AC-1..26, FR-064-CON-1..7 | TC-755..TC-765, TC-1763, TC-1767, TC-1773, TC-1781 | 🚧 In progress |
+| FR-064 | FR-064-AC-1..27, FR-064-CON-1..7 | TC-755..TC-765, TC-1763, TC-1767, TC-1773, TC-1781, TC-1825 | 🚧 In progress |
 | FR-065 | FR-065-AC-1..22, FR-065-CON-1..6 | TC-766..TC-775 | 🚧 In progress |
 | FR-066 | FR-066-AC-1..29, FR-066-CON-1..9 | TC-776..TC-786 | 🚧 In progress |
 | FR-067 | FR-067-AC-1..20, FR-067-CON-1..6 | TC-787..TC-794, TC-1763, TC-1773 | 🚧 In progress |
