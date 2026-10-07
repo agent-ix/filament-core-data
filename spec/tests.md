@@ -2557,13 +2557,13 @@ now asserts `rust-version.workspace = true`, and TC-1326 carries clippy's `--no-
 | Manual | 62 | 46 | 0 | 16 | 100% mapped (62/62) |
 | Analysis | 42 | 26 | 0 | 16 | 100% mapped (42/42) |
 | Property | 124 | 79 | 0 | 45 | 100% mapped (124/124) |
-| Unit | 600 | 499 | 0 | 101 | 100% mapped (600/600) |
+| Unit | 601 | 500 | 0 | 101 | 100% mapped (601/601) |
 | Integration | 152 | 94 | 0 | 58 | 100% mapped (152/152) |
 | Fuzz | 13 | 8 | 0 | 5 | 100% mapped (13/13) |
 | Snapshot | 65 | 40 | 0 | 25 | 100% mapped (65/65) |
 | Compile | 15 | 4 | 0 | 11 | 100% mapped (15/15) |
 | E2E | 12 | 12 | 0 | 0 | 100% mapped (12/12) |
-| **Total** | **1331** | **1019** | **0** | **312** | **100% mapped (1331/1331)** |
+| **Total** | **1332** | **1020** | **0** | **312** | **100% mapped (1332/1332)** |
 
 Two defects outside issue #23's scope were found and filed rather than absorbed:
 issue #65, the corpus `python-backend` adapter slot, whose owning issue the

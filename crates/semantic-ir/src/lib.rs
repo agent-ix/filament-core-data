@@ -306,11 +306,12 @@ mod tests {
     fn tc_1824_a_text_profile_on_a_non_text_field_is_refused() {
         let field_at = "/ir/types/0/fields/0/textProfile".to_string();
         let profile = r#","textProfile":"nfc""#;
+        let string = r#","kind":"scalar","scalar":"string""#;
         assert_eq!(
-            codes(&text_bundle_of("Integer", profile, "")),
+            codes(&text_bundle_of("Integer", profile, string)),
             [("SCHEMA_VIOLATION".to_string(), field_at)]
         );
-        assert_eq!(codes(&text_bundle_of("String", profile, "")), []);
+        assert_eq!(codes(&text_bundle_of("String", profile, string)), []);
     }
 
     /// An operation that declares no `returns` returns no value (`0..0`), so
@@ -472,7 +473,7 @@ mod tests {
             assert_eq!(codes(&bound_bundle("Integer", accepted)), [], "{accepted}");
         }
         for refused in [
-            r#""01""#, r#""+1""#, r#"" 1""#, r#""1 ""#, r#""-0""#, r#""""#, r#""1.0""#, "true",
+            r#""01""#, r#""+1""#, r#"" 1""#, r#""1 ""#, r#""-0""#, r#""1.0""#, "true",
         ] {
             assert_eq!(
                 codes(&bound_bundle("Integer", refused)),
@@ -480,6 +481,11 @@ mod tests {
                 "{refused}"
             );
         }
+        // The schema refuses an empty string before any rule reads it.
+        assert_eq!(
+            codes(&bound_bundle("Integer", r#""""#)),
+            [("SCHEMA_VIOLATION".to_string(), at.clone())]
+        );
         // Each of the four bound keywords takes the same operand forms.
         for keyword in ["min", "max", "exclusiveMin", "exclusiveMax"] {
             assert_eq!(
