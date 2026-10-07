@@ -29,7 +29,7 @@ an unknown keyword or an operand of the wrong shape.
 
 - The `keyword` value SHALL be one of `min`, `max`, `exclusiveMin`, `exclusiveMax`, `pattern`, `minLength`, `maxLength`, `enumValues`, `nonEmpty`, `unique`, `format`.
 - If a constraint carries a keyword outside that enumeration, then IR validation SHALL fail at the constraint with its locus.
-- The `min`, `max`, `exclusiveMin`, and `exclusiveMax` keywords SHALL take `operands { value }` where `value` is a number for `integer`/`number` scalars and an ISO 8601 string for `date`/`datetime`/`duration` scalars.
+- The `min`, `max`, `exclusiveMin`, and `exclusiveMax` keywords SHALL take `operands { value }` where `value` is spelled for its subject by [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) (a canonical integer string for `integer`, a canonical decimal string for `decimal`, a JSON number for `float32`/`float64`) and is an ISO 8601 string for `date`/`datetime`/`duration` scalars.
 - The `minLength` and `maxLength` keywords SHALL take `operands { value: integer >= 0 }` and apply only to `string` and `bytes` scalars.
 - The `pattern` keyword SHALL take `operands { regex: string, dialect: "ecma-262" }` and apply only to `string` scalars.
 - If a `pattern` regex does not compile under the named dialect, then IR validation SHALL fail at the constraint with its locus.

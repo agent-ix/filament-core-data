@@ -28,7 +28,7 @@ frontend, a generated programming-language package, or an ambient registry.
 - The `json-schema` target-contract row in
   `fixtures/semantic/v1/positive/target-contracts.json`.
 - A JSON Schema 2020-12 vocabulary and the semantic IR's eight structural kinds,
-  nine kernel scalars, multiplicity, nullability, presence, constraints,
+  eleven kernel scalars, multiplicity, nullability, presence, constraints,
   unknown-policy, extensions, and provenance members.
 
 ## Outputs
@@ -121,8 +121,10 @@ frontend, a generated programming-language package, or an ambient registry.
   `additionalProperties` schema for its value definition.
 - A `reference` definition SHALL render a string schema carrying the target
   semantic identity as an `x-agent-ix-reference-target` annotation.
-- A scalar definition SHALL render `boolean` for `boolean`, `integer` for
-  `integer`, `number` for `number`, and `string` for `string`, `bytes`, `date`,
+- A scalar definition SHALL render `boolean` for `boolean`, `integer` for a
+  safe `integer` and `string` with an exact interval `pattern` for a wide one,
+  `string` with a policy `pattern` for `decimal`, and `number` for `float32` and
+  `float64`, as [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) states, and `string` for `string`, `bytes`, `date`,
   `datetime`, `duration`, and `uuid`.
 - The backend SHALL attach `format: date`, `date-time`, `duration`, or `uuid`
   to the corresponding scalar schemas.
@@ -179,7 +181,7 @@ that decision requires.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-100-AC-1 | One fixture containing all eight structural kinds and nine scalars emits a valid 2020-12 schema for every definition. | Test (TC-1361) |
+| FR-100-AC-1 | One fixture containing all eight structural kinds and eleven scalars emits a valid 2020-12 schema for every definition. | Test (TC-1361) |
 | FR-100-AC-2 | The lifted config-version-table `ConfigVersion.json` has its seven field names, the six required field names, and the declared scalar and `min` constraints. | Test (TC-1362) |
 | FR-100-AC-3 | The four presence/nullability combinations and collection bounds accept and reject the independent test values stated by their schemas. | Test (TC-1363) |
 | FR-100-AC-4 | A record at `unknownPolicy: reject` rejects an extra property; `preserve` and `surface` accept it and retain distinct annotations. | Test (TC-1364) |

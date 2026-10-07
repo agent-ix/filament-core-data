@@ -69,7 +69,7 @@ is one diagnostic at the token's source locus.
 ### Kernel scalars
 
 - The frontend SHALL resolve every kernel scalar token to the native reference `ix://quire/native/<KernelScalar>` and mint no package-local node for it (gap 1 of FCD #199/#200); no kernel scalar carries the `ix://agent-ix/semantic-core/ext/kernel-scalar` extension FR-034 and FR-046 stamp on the semantic-core kernel's own declarations, because none is a node this frontend emits.
-- The frontend SHALL map kernel names to IR `scalar` values by the FR-032 table (`UUID→uuid`, `Boolean→boolean`, `Integer→integer`, `Decimal→number`, `String→string`, `Timestamp→datetime`, `Duration→duration`, `Bytes→bytes`, `JsonObject→any`) for constraint applicability (FR-093 RULES.md table); the mapping decides no node's kind, since none is minted.
+- The frontend SHALL map kernel names to IR `scalar` values by the FR-032 table (`UUID→uuid`, `Boolean→boolean`, `Integer→integer`, `Decimal→decimal`, `Float32→float32`, `Float64→float64`, `String→string`, `Timestamp→datetime`, `Duration→duration`, `Bytes→bytes`, `JsonObject→any`) for constraint applicability (FR-093 RULES.md table); the mapping decides no node's kind, since none is minted.
 
 Rationale: the engine has already resolved every token (quire-rs FR-070:
 `id` before `names`, two name matches an `error` `semantic.ambiguous-type`

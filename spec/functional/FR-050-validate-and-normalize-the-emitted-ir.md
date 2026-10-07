@@ -33,6 +33,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 - `schema/semantic/v1/semantic-ir.schema.json` and `common.schema.json`
 - `importedExports`: the type identities the FR-047 resolution exports from imported packages, or the marker `unknown` when no resolution is available
 - `fixtures/semantic/v1/negative/reader-cases.json`, the issue #34 cross-field negative cases
+- The numeric scalar, decimal policy and literal encoding rules of [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)
 
 ## Outputs
 
@@ -63,7 +64,13 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | a constraint keyword is one of the closed eleven | `agent-ix.semantic-ir.UNKNOWN_CONSTRAINT_KEYWORD` |
 | a constraint keyword applies to its resolved subject | `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` |
 | a `pattern` regex compiles under ECMA-262 | `agent-ix.semantic-ir.INVALID_PATTERN` |
-| a bound operand is typed for its scalar (an `integer` bound is a number or a canonical decimal string) | `agent-ix.semantic-ir.INVALID_OPERAND` |
+| a bound operand or an `enumValues` item is spelled for its subject's scalar ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md): a canonical integer string on `integer`, a canonical decimal string within the decimal policy on `decimal`, a finite JSON number on `float64`, one exactly a binary32 value on `float32`) | `agent-ix.semantic-ir.INVALID_OPERAND` |
+| a `defaultValue` on a numeric subject is spelled for its scalar by the same FR-144 rule | `agent-ix.semantic-ir.INVALID_DEFAULT_VALUE` |
+| an integer value lies in `i128::MIN..=i128::MAX` (FR-144) | `agent-ix.semantic-ir.INTEGER_OUTSIDE_I128` |
+| each resolution walk reaching a `decimal` scalar passes a node carrying a decimal policy (FR-144) | `agent-ix.semantic-ir.DECIMAL_POLICY_MISSING` |
+| no resolution walk passes two nodes carrying a decimal policy (FR-144) | `agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT` |
+| read from bytes, no JSON number denotes a whole value of magnitude above 2^53 (FR-144) | `agent-ix.semantic-ir.INEXACT_INTEGER` |
+| read from bytes, every other JSON number has an exact RFC 8785 spelling (FR-144) | `agent-ix.semantic-ir.INEXACT_NUMBER` |
 | `relationships` and `operations` appear only on a `record` | `agent-ix.semantic-ir.NODES_ON_NON_RECORD` |
 | a relationship target resolves to a document type or an imported export | `agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET` |
 | a relationship's `sourceEnd.type`, where present, names the type declaring the relationship | `agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE` |
@@ -93,7 +100,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-050-CON-1 | The compiler's reader is deliberately a third implementation beside the issue #34 TypeScript and Python readers; it SHALL NOT import either, so their agreement remains evidence rather than a tautology. Their agreement is a drift guard; the schema and FR-027..029 remain the authority. | Correctness | Static analysis and differential test |
-| FR-050-CON-2 | This requirement SHALL NOT edit `tests/semantic_ir_reader.py` or `test/semantic-ir-v1-1-reader.ts` to make either agree with the compiler's reader after the fact — that would collapse the third-implementation evidence FR-050-CON-1 protects into a tautology. Invoking the Python reader from a test under `test/` is not an edit. Both files MAY be edited to keep their `multiplicity`/`presence` handling from disagreeing with the schema-required, independently-authored design FR-106 states (neither is ever derived from the other), and to keep their fixture lists current with what is published under `fixtures/semantic/v1/` — the same standard this requirement is itself held to. | Non-disruption | Branch diff |
+| FR-050-CON-2 | This requirement SHALL NOT edit `tests/semantic_ir_reader.py` or `test/semantic-ir-v1-1-reader.ts` to make either agree with the compiler's reader after the fact — that would collapse the third-implementation evidence FR-050-CON-1 protects into a tautology. Invoking the Python reader from a test under `test/` is not an edit. Both files MAY be edited to keep their `multiplicity`/`presence` handling from disagreeing with the schema-required, independently-authored design FR-106 states (neither is ever derived from the other), and to keep their fixture lists current with what is published under `fixtures/semantic/v1/` — the same standard this requirement is itself held to — and to implement a rule a later requirement adds to the contract (such as [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)), written from that requirement rather than copied from the compiler's reader. | Non-disruption | Branch diff |
 | FR-050-CON-3 | Normalization SHALL be idempotent: normalizing a normalized document yields identical bytes. | Correctness | Property test |
 | FR-050-CON-4 | The reader SHALL terminate on every cyclic or oversized input rather than recursing without bound. | Safety | Fuzz |
 
@@ -114,7 +121,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | FR-050-AC-11 | Every rule of the code table fires on a constructed document and produces exactly its named code. | Test |
 | FR-050-AC-12 | With `importedExports` set to `unknown`, a relationship target absent from the document produces no diagnostic and one recorded suppression; with the resolution supplied, the same document produces `UNRESOLVED_RELATIONSHIP_TARGET`. | Test |
 | FR-050-AC-13 | Over 512 mutated documents the reader returns diagnostics and never throws. | Fuzz |
-| FR-050-AC-14 | On an `integer` scalar, `min`, `max`, `exclusiveMin` and `exclusiveMax` accept a number or a canonical decimal string (`0`, or an optional `-` and digits with no leading zero), so a `max` of `"18446744073709551615"` is exact; `"01"`, `"+1"`, `" 1"`, `"-0"` and `"1.0"` raise `INVALID_OPERAND` at the operand, and an empty string or a boolean raises `SCHEMA_VIOLATION` there, the schema refusing it before any rule reads it; on a `number` scalar a string still does. The Node reader, the oracle and the TypeScript and JSON Schema backends' admission accept and refuse the same strings; those two backends emit a bound they can hold exactly and refuse one past 2^53 (`INTEGER_BOUND_NOT_EXACT`, and `UNDECLARED_LOSS` for JSON Schema). | Test (TC-1825) |
+| FR-050-AC-14 | Every code the table adds for [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) (`INVALID_DEFAULT_VALUE`, `INTEGER_OUTSIDE_I128`, `DECIMAL_POLICY_MISSING`, `DECIMAL_POLICY_CONFLICT`, `INEXACT_INTEGER`, `INEXACT_NUMBER`) and the FR-144 `INVALID_OPERAND` spellings fire from the compiler's reader on a constructed document, and the compiler's reader, the TypeScript reader and the Python reader produce the same codes at the same pointers for each; an `integer` bound written as the JSON number `1` raises `INVALID_OPERAND` and `"1"` raises nothing. | Test |
 
 ## Dependencies
 

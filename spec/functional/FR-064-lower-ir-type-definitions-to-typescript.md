@@ -36,7 +36,7 @@ rather than the raw document.
 - A contract IR `2.0.0` document that [FR-068](./FR-068-decide-and-report-ir-admissibility.md) has admitted
 - The eight `kind` values of `schema/semantic/v1/semantic-ir.schema.json#/$defs/typeDefinition`: `scalar`, `record`, `enum`, `union`, `alias`, `sequence`, `map`, `reference`
 - At contract `2.0.0`, the module construct kinds of [FR-142](./FR-142-declare-one-construct-per-object-type.md), their declarations in the document's `constructs` table, and their `identityFields`
-- The nine `scalar` values: `boolean`, `integer`, `number`, `string`, `bytes`, `date`, `datetime`, `duration`, `uuid`
+- The eleven `scalar` values: `boolean`, `integer`, `decimal`, `float32`, `float64`, `string`, `bytes`, `date`, `datetime`, `duration`, `uuid`
 - The `unknownPolicy` vocabulary of `common.schema.json`: `preserve`, `reject`, `surface`
 - The `ix://agent-ix/semantic-core/ext/doc` extension carried on declarations and fields
 
@@ -71,7 +71,7 @@ rather than the raw document.
 
 - A `scalar` definition SHALL render as an exported type alias to the TypeScript primitive its `scalar` member names.
 - The `boolean` scalar SHALL render as `boolean`.
-- The `integer` and `number` scalars SHALL each render as `number`.
+- A safe `integer` subject and the `float32` and `float64` scalars SHALL each render as `number`, and a wide `integer` subject and a `decimal` subject SHALL each render as `string`, by [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)'s instance wire.
 - The `string`, `bytes`, `date`, `datetime`, `duration`, and `uuid` scalars SHALL each render as `string`.
 - The `bytes` scalar SHALL render as a `string` carrying standard base64 as RFC 4648 §4 defines it, as a declared backend decision pending `agent-ix/filament-core-data#58`, which records that the published contract states no wire form for the `bytes` kernel scalar.
 - The renderer SHALL name that encoding in the rendered declaration's JSDoc, so that a consumer is never left to guess whether the string holds base64, base64url, or hex.
@@ -135,7 +135,7 @@ rather than the raw document.
 - If a derived identifier is a TypeScript reserved word, then `identifierFor` SHALL mangle it by a stated deterministic rule rather than emitting invalid source.
 - If two distinct identities derive the same identifier, then `reserveNames` SHALL raise a blocking `agent-ix.typescript-backend.IDENTIFIER_COLLISION` diagnostic naming both identities, rather than letting one declaration overwrite the other.
 - `reserveNames` SHALL run while `buildModel` builds the model, so that a collision is reported before any file could be emitted rather than after a partial package exists.
-- If an integer bound is a canonical decimal string whose value is not a safe integer, then the backend SHALL raise the blocking `agent-ix.typescript-backend.INTEGER_BOUND_NOT_EXACT` at the operand's `value` and write no file; the code sits in the representability register of FR-068 and `TARGET_LOSSES` declares it.
+- The backend SHALL generate every integer and decimal bound exactly, as a `bigint` comparison for a wide `integer` or a `decimal` subject ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)); `INTEGER_BOUND_NOT_EXACT` is deleted from the representability register of FR-068 and from `TARGET_LOSSES`.
 - The `IDENTIFIER_COLLISION` code SHALL sit in the `agent-ix.typescript-backend.` representability register of [FR-068](./FR-068-decide-and-report-ir-admissibility.md), because a name that two identities share is a statement about what this target can render and not a statement that the document is invalid.
 - The renderer SHALL treat a change to a definition's `displayName` with an unchanged `identity` as a change to the generated public API, because the identifier is minted from the display name while the contract identity did not move.
 - The generated identity map of [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md) SHALL be what makes that change visible, mapping the new identifier to the unchanged identity so that a consumer diffing the package can see the rename for what it is.
@@ -168,7 +168,7 @@ rather than the raw document.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-064-AC-1 | A model carrying one definition of each of the eight kinds renders eight declarations, one per kind, and the rendered text of each matches its committed snapshot. | Snapshot |
-| FR-064-AC-2 | Each of the nine `scalar` values renders to its declared TypeScript primitive: `boolean` to `boolean`, `integer` and `number` to `number`, and the remaining six to `string`. | Unit |
+| FR-064-AC-2 | Each of the eleven `scalar` values renders to its declared TypeScript primitive: `boolean` to `boolean`; a safe `integer`, `float32` and `float64` to `number`; a wide `integer` and `decimal` to `string`; and the remaining six to `string`. | Unit |
 | FR-064-AC-3 | A record renders as an interface with no `extends` clause, even when its fields' types are themselves records. | Unit |
 | FR-064-AC-4 | An enum renders as a union of its variants' names as string literals, in code-point order of variant identity. | Unit |
 | FR-064-AC-5 | A union with one payload-carrying and one payload-free variant renders both member shapes, and a `switch` over the exported discriminant constant narrows the default arm to `never` under `tsc`. | Compile |
@@ -193,7 +193,7 @@ rather than the raw document.
 | FR-064-AC-24 | Generating the lifted `config-version-table` golden, whose types carry artifact-id identities and declared display names, exports `validateConfigVersion` and a `TYPE_IDENTITY` map whose `ConfigVersion` entry is `ix://agent-ix/config-service/FR-006`, and no exported type name derives from an artifact id. | Test (TC-1767) |
 | FR-064-AC-25 | Generating the contract `2.0.0` constructs fixture succeeds and compiles under `tsc`: each record-shaped construct exports an interface and a validator, `OrderLineEquals` compares members, `OrderEquals` compares `id` alone, `Party` exports an interface with no validator and no `PartyEquals`, `OrderLifecycleState` is the union of the state names, `OrderStatus` is the union of its variants, `OrderRepository` is an interface of its method signatures, `Ordering` exports no type, and `Order` carries its own fields and the fields it redefines once each. | Test (TC-1773) |
 | FR-064-AC-26 | Generating the constructs fixture with `OrderStatus` renamed `OrderLifecycleState`, `OrderEquals` or `OrderLineEquals` raises `IDENTIFIER_COLLISION`; with `Order.status` naming the abstract `Party` raises `ABSTRACT_TYPE_HELD`, while a `reference` type targeting `Party` generates; with `Order.id` redefining nothing raises `IDENTIFIER_COLLISION`; each writes no file. With an unredefined `Party.remark` subsetting `labels`, `FIELD_SUBSETS` keys it `Party.remark` alone. | Test (TC-1781) |
-| FR-064-AC-27 | A `min`, `max`, `exclusiveMin` or `exclusiveMax` on an `integer` whose operand is a canonical decimal string past 2^53 (`"9007199254740993"`) writes no file and raises one blocking `agent-ix.typescript-backend.INTEGER_BOUND_NOT_EXACT` at the operand, since a TypeScript `number` would check the double it rounds to; `"9007199254740991"` generates with that bound. | Test (TC-1825) |
+| FR-064-AC-27 | A `max` of `"9007199254740993"` on an `integer` generates with no diagnostic, the subject renders as `string`, and the generated validator accepts `"9007199254740993"` and rejects `"9007199254740994"` with the constraint's code; a `max` of `"9007199254740991"` keeps the subject a `number`; `TARGET_LOSSES` has no `integer-bound-not-exact` row. | Test |
 
 ## Dependencies
 

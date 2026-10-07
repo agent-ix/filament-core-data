@@ -96,7 +96,7 @@ contract itself rather than against an erased TypeScript type.
 
 | Keyword | Operand read | Generated check |
 |---|---|---|
-| `min`, `max`, `exclusiveMin`, `exclusiveMax` | `value` as a number for `integer` and `number`, and as an ISO-8601 string for `date` and `datetime` | ordered comparison against the resolved scalar's ordering |
+| `min`, `max`, `exclusiveMin`, `exclusiveMax` | `value` as a canonical integer or decimal string for `integer` and `decimal`, as a number for `float32` and `float64` ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)), and as an ISO-8601 string for `date` and `datetime` | ordered comparison against the resolved scalar's ordering, exact by `bigint` for `integer` and `decimal` |
 | `minLength`, `maxLength` | `value` as a non-negative integer | Unicode code points of a `string` subject, or decoded octets of a `bytes` subject |
 | `pattern` | `regex` and `dialect` | ECMA-262 match |
 | `enumValues` | `values` | membership in the declared set |
@@ -131,10 +131,12 @@ contract itself rather than against an erased TypeScript type.
   under that alphabet.
 - A `minLength` or `maxLength` over a `string` subject SHALL count Unicode code points rather than UTF-16 code units, so an astral character counts once.
 - Pending `agent-ix/filament-core-data#58`, a `minLength` or `maxLength` over a `bytes` subject SHALL count the octets the base64 string decodes to, rather than the characters of its encoding.
-- A generated validator for an `integer` subject SHALL reject a non-integral number with its own structural code.
-- A generated validator for an `integer` or `number` subject SHALL reject `NaN` with its own structural code.
-- A generated validator for an `integer` or `number` subject SHALL reject `Infinity` and `-Infinity` with its own structural code.
-- A generated validator for an `integer` subject SHALL reject a magnitude above `Number.MAX_SAFE_INTEGER` with its own structural code, because beyond that bound a JSON number no longer round-trips through a JavaScript number.
+- A generated validator for a safe `integer` subject SHALL reject a non-integral number with its own structural code.
+- A generated validator for a safe `integer`, `float32` or `float64` subject SHALL reject `NaN` with its own structural code.
+- A generated validator for a safe `integer`, `float32` or `float64` subject SHALL reject `Infinity` and `-Infinity` with its own structural code.
+- A generated validator for a safe `integer` subject SHALL reject a value outside its effective range ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)) with its own structural code, so with no declared bound it rejects a magnitude above `Number.MAX_SAFE_INTEGER`, beyond which a JSON number no longer round-trips through a JavaScript number.
+- A generated validator for a wide `integer` subject SHALL reject a value that is not a canonical integer string, and one for a `decimal` subject a value that is not a decimal string of its policy, each with its own structural code.
+- A generated validator for a `float32` subject SHALL reject a number whose nearest binary32 value overflows, with its own structural code.
 - A generated validator SHALL accept `-0` wherever it accepts `0`, and the canonical form of FR-069 SHALL render both as `0`, so a collection declaring `unique: true` treats them as one member.
 - The ISO-8601 `duration` scalar admits no total order, because `P1M` and `P30D` are not comparable without a calendar. The backend SHALL therefore record a representability loss through FR-068 for a `min`, `max`, `exclusiveMin`, or `exclusiveMax` constraint whose resolved subject is a `duration`, rather than inventing an ordering.
 
@@ -230,7 +232,7 @@ contract itself rather than against an erased TypeScript type.
 | FR-066-AC-18 | For every instance case, the generated validator and `ajv@8.20.0` running the case's authored JSON Schema document reach the same accept-or-reject verdict; a seeded defect in either decider makes the check fail. | Test |
 | FR-066-AC-19 | `errors.ts` is emitted, is the eighth member of the FR-065 file set, carries the closed structural-code list, and is reachable through its own `exports` subpath. | Unit |
 | FR-066-AC-20 | A `bytes` subject rejects a string that is not well-formed base64, and a `maxLength` of 3 on a `bytes` subject accepts a four-character base64 string decoding to three octets while rejecting one decoding to four. | Unit |
-| FR-066-AC-21 | An `integer` subject rejects `1.5`, `NaN`, `Infinity`, `-Infinity`, and `Number.MAX_SAFE_INTEGER + 2`, each with its own structural code, and accepts `-0` wherever it accepts `0`. | Unit |
+| FR-066-AC-21 | An unbounded `integer` subject rejects `1.5`, `NaN`, `Infinity`, `-Infinity`, and `Number.MAX_SAFE_INTEGER + 2`, each with its own structural code, and accepts `-0` wherever it accepts `0`. | Unit |
 | FR-066-AC-22 | An ordering constraint whose resolved subject is a `duration` produces a representability loss through FR-068 and no generated package. | Unit |
 | FR-066-AC-23 | An input carrying `__proto__`, `constructor`, and `prototype` as declared member names validates by the ordinary rule; the same names as undeclared members under `preserve` are carried into a null-prototype preserved-member object and mutate no prototype. | Unit |
 | FR-066-AC-24 | An input whose prototype is `null` validates identically to the same value with the default prototype; an input whose declared member is an inherited accessor is rejected as absent; and an input whose getter throws produces a rejection rather than a thrown exception. | Unit |

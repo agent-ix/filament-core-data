@@ -90,7 +90,8 @@ second case — so that a `pattern` constraint is never carried as an unchecked
 
 | Keyword | Subject | Generated check |
 |---|---|---|
-| `min`, `max`, `exclusiveMin`, `exclusiveMax` | `integer`, `number` | IEEE-754 comparison against the operand parsed as `i64` or `f64` |
+| `min`, `max`, `exclusiveMin`, `exclusiveMax` | `integer`, `decimal` | exact comparison against the operand's canonical string parsed into the subject's Rust type ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)): `i64`, `u64` or `i128`, or the `Decimal` coefficient at the subject's scale |
+| `min`, `max`, `exclusiveMin`, `exclusiveMax` | `float32`, `float64` | IEEE-754 comparison against the operand parsed as `f32` or `f64` |
 | `min`, `max`, `exclusiveMin`, `exclusiveMax` | `date`, `datetime` | comparison of the two values parsed to a normalized instant, so `2019-12-31T23:00:00-05:00` orders after `2020-01-01T00:00:00Z` |
 | `min`, `max`, `exclusiveMin`, `exclusiveMax` | `duration` | refused — see below |
 | `minLength`, `maxLength` | `string` | Unicode scalar-value count |
@@ -107,8 +108,8 @@ second case — so that a `pattern` constraint is never carried as an unchecked
   and `PT1H` are one duration written two ways — so any comparison the backend
   chose would be a rule it invented.
 - If an operand's JSON type is not one the subject's Rust type admits — an
-  `enumValues` operand list mixing a string and a number against an `integer`
-  subject, or a bound operand that is not a number for a numeric subject — then
+  `enumValues` operand list holding a JSON number against an `integer`
+  subject, or a bound operand not spelled for its numeric subject by [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) — then
   the backend SHALL raise a blocking
   `agent-ix.rust-backend.INVALID_OPERAND` naming the operand.
 - Numeric equality for `enumValues` and `unique` SHALL be IEEE-754 equality
