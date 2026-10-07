@@ -148,16 +148,19 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 			const refused = lowered(value);
 			expect(refused.checks).toEqual([]);
 			expect(refused.diagnostics.map((one) => one.code)).toEqual([
-				"agent-ix.rust-backend.INVALID_OPERAND",
+				"agent-ix.semantic-ir.INVALID_OPERAND",
 			]);
 		}
 		// A non-canonical spelling is refused too.
 		expect(lowered("0123").diagnostics).toHaveLength(1);
 
 		// Through generation, the literal is the one the Rust source carries.
-		const generated = rustBackend.generate({
-			ir: withBound("9223372036854775807"),
-		} as never, { host } as never) as {
+		const generated = rustBackend.generate(
+			{
+				ir: withBound("9223372036854775807"),
+			} as never,
+			{ host } as never,
+		) as {
 			files?: unknown;
 			diagnostics: { code: string; blocking: boolean }[];
 		};
