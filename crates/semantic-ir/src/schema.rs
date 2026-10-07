@@ -57,7 +57,7 @@ impl Findings {
         let mut sorted: Vec<&str> = self.items.iter().map(|f| f.pointer.as_str()).collect();
         sorted.sort_unstable();
         sorted.dedup();
-        let shadowed: std::collections::HashSet<&str> = sorted
+        let shadowed: std::collections::HashSet<String> = sorted
             .iter()
             .enumerate()
             .filter(|(position, pointer)| {
@@ -65,13 +65,12 @@ impl Findings {
                     .get(position + 1)
                     .is_some_and(|next| next.starts_with(**pointer))
             })
-            .map(|(_, pointer)| *pointer)
+            .map(|(_, pointer)| (*pointer).to_string())
             .collect();
         let mut seen: std::collections::HashSet<String> = std::collections::HashSet::new();
         let mut kept: Vec<Finding> = Vec::new();
         for finding in self.items {
-            if shadowed.contains(finding.pointer.as_str()) || !seen.insert(finding.pointer.clone())
-            {
+            if shadowed.contains(&finding.pointer) || !seen.insert(finding.pointer.clone()) {
                 continue;
             }
             kept.push(finding);

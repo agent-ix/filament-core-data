@@ -9,7 +9,7 @@
 //! rules that range over several types. It reads a kind only as the
 //! `{module, name}` key of its declaration and never matches a kind name.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
 
 use crate::diag::{child, index};
 use crate::json::Json;
@@ -188,6 +188,20 @@ pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
         }
     };
     let cyclic = types_on_a_supertype_cycle(document);
+    // Read only when some operation declares a frame, and once for the document.
+    let has_frame = document.types.iter().any(|definition| {
+        items(definition, "operations")
+            .iter()
+            .any(|op| op.has("frame"))
+    });
+    let features: HashSet<&str> = if has_frame {
+        document_features(document)
+            .into_iter()
+            .filter_map(identity_of)
+            .collect()
+    } else {
+        HashSet::new()
+    };
     for (position, definition) in document.types.iter().enumerate() {
         let type_at = index("/ir/types", position);
         supertypes(
@@ -198,7 +212,7 @@ pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
             sink,
         );
         features(document, definition, &type_at, sink);
-        frames(document, definition, &type_at, sink);
+        frames(document, &features, definition, &type_at, sink);
         inline_clauses(definition, &type_at, sink);
         let Some(declaration) = declarations.of(definition) else {
             continue;
@@ -767,8 +781,13 @@ fn narrows(field: &Json, redefined: &Json) -> bool {
 /// what `creates`/`deletes` differ over, and relationship-end scope) are
 /// still open in QSpec #101 (Q3 open with Peter) and #106; FCD carries no
 /// shape for either question.
-fn frames(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
-    let features = document_features(document);
+fn frames(
+    document: &Document<'_>,
+    features: &HashSet<&str>,
+    definition: &Json,
+    type_at: &str,
+    sink: &mut Sink<'_>,
+) {
     let operations_at = child(type_at, "operations");
     for (position, operation) in items(definition, "operations").iter().enumerate() {
         let Some(frame) = operation.get("frame") else {
@@ -777,7 +796,7 @@ fn frames(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut 
         let frame_at = child(&index(&operations_at, position), "frame");
         let modifies_at = child(&frame_at, "modifies");
         for (slot, name) in strings(frame.get("modifies")) {
-            if !features.iter().any(|node| identity_of(node) == Some(name)) {
+            if !features.contains(name) {
                 sink.emit(
                     index(&modifies_at, slot),
                     UNRESOLVED_FRAME_PATH,

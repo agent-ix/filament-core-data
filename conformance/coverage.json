@@ -330,9 +330,9 @@
 		{
 			"adapter": "rust-backend",
 			"status": "available",
-			"matched": 115,
+			"matched": 0,
 			"unmet": 0,
-			"failed": 0
+			"failed": 115
 		},
 		{
 			"adapter": "typescript-backend",
