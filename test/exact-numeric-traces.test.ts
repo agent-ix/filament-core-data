@@ -296,6 +296,7 @@ function jsonSafeIr() {
 				"DirectDecimalCollection",
 				"NullableDecimalCollection",
 				"DecimalBounded",
+				"DecimalEnum",
 			]).has(type.displayName),
 	);
 	return ir;
