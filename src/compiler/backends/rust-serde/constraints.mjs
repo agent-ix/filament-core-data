@@ -174,6 +174,21 @@ function lowerOne(constraint, keyword, identity, resolved, raise, options) {
 function lowerBound(constraint, keyword, identity, resolved, raise) {
 	const value = constraint.operands?.value;
 	const scalar = resolved.scalar;
+	if (scalar === "integer" && typeof value === "string") {
+		// Preserve exact integer bounds beyond the JSON safe-integer range.
+		const fits =
+			/^(0|-?[1-9][0-9]*)$/.test(value) &&
+			BigInt(value) >= -(2n ** 63n) &&
+			BigInt(value) < 2n ** 63n;
+		if (!fits) {
+			raise(
+				RUST_BACKEND_CODES.INVALID_OPERAND,
+				`the constraint ${fragment(identity)} bounds an integer subject with ${fragment(JSON.stringify(value))}, which is not a canonical decimal integer within i64`,
+			);
+			return undefined;
+		}
+		return { identity, keyword, form: "numeric", scalar, value };
+	}
 	if (
 		scalar === "integer" ||
 		scalar === "number" ||
