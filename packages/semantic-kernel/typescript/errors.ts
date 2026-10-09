@@ -54,6 +54,46 @@ export const MAX_VALIDATION_DEPTH = 256;
 /** The member a record admitting unknowns carries them in. */
 export const PRESERVED_MEMBER = "__unknown";
 
+/** Compare canonical decimal strings by mathematical value. */
+export function compareDecimal(left: string, right: string): number {
+	const parse = (value: string) => {
+		const negative = value.startsWith("-");
+		const unsigned = negative ? value.slice(1) : value;
+		const [whole, fraction = ""] = unsigned.split(".");
+		const coefficient = BigInt(whole + (fraction || "0"));
+		return { negative, coefficient, scale: fraction.length };
+	};
+	const a = parse(left);
+	const b = parse(right);
+	const scale = Math.max(a.scale, b.scale);
+	const av =
+		(a.negative ? -a.coefficient : a.coefficient) *
+		10n ** BigInt(scale - a.scale);
+	const bv =
+		(b.negative ? -b.coefficient : b.coefficient) *
+		10n ** BigInt(scale - b.scale);
+	return av < bv ? -1 : av > bv ? 1 : 0;
+}
+
+/** Whether a string uses the accepted decimal instance spelling. */
+export function isCanonicalDecimal(value: string): boolean {
+	if (!/^-?(0|[1-9][0-9]*)(\.[0-9]+)?$/.test(value)) return false;
+	return !/^-0(?:\.0+)?$/.test(value);
+}
+
+/** Whether a decimal instance fits its precision and scale policy. */
+export function decimalWithinPolicy(
+	value: string,
+	precision: number,
+	scale: number,
+): boolean {
+	if (!isCanonicalDecimal(value)) return false;
+	const unsigned = value.startsWith("-") ? value.slice(1) : value;
+	const [whole, fraction = ""] = unsigned.split(".");
+	const integerDigits = whole === "0" ? 0 : whole.length;
+	return integerDigits <= precision - scale && fraction.length <= scale;
+}
+
 /** One failure: where, which rule, and what it says. */
 export interface ValidationError {
 	readonly pointer: string;
