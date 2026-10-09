@@ -3,14 +3,13 @@ import {
 	appendFileSync,
 	mkdtempSync,
 	mkdirSync,
-	readFileSync,
 	readdirSync,
 	rmSync,
 	statSync,
 	writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, relative, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
@@ -31,7 +30,7 @@ const constraint = (owner: string, keyword: string, value: string) => ({
 	diagnosticCode: `agent-ix.exact-numeric.${owner.toUpperCase()}_${keyword.toUpperCase()}`,
 });
 
-function numericIr() {
+function numericIr(): any {
 	const decimal = {
 		identity: type("Decimal"),
 		displayName: "Decimal",
