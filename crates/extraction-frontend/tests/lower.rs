@@ -411,16 +411,13 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     let order = type_named(&types, "Order");
     let total = field_named(order, "total");
     assert_eq!(total["unit"], "USD");
-    // `min: 0` on the row lives inline on the field (gap 1 of FCD
-    // #199/#200): the typeRef names the resolved native scalar directly, no
-    // alias is minted.
+    // The Decimal policy lives inline on the field (gap 1 of FCD #199/#200):
+    // the typeRef names the resolved native scalar directly, no alias is
+    // minted. Decimal bounds are intentionally absent because JSON Schema
+    // cannot enforce them without loss (FR-144).
     assert_eq!(total["typeRef"], "ix://quire/native/Decimal");
     assert_eq!(total["decimal"], json!({"precision": 10, "scale": 2}));
-    let total_constraints = total["constraints"].as_array().expect("constraints");
-    assert_eq!(total_constraints.len(), 1, "{total_constraints:?}");
-    assert_eq!(total_constraints[0]["keyword"], "min");
-    assert_eq!(total_constraints[0]["operands"], json!({"value": "0"}));
-    assert_eq!(total_constraints[0]["appliesTo"], total["identity"]);
+    assert_eq!(total.get("constraints"), None);
     assert_eq!(total["extensions"], json!([]));
 }
 
