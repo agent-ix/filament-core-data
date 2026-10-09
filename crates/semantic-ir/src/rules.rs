@@ -376,6 +376,10 @@ impl<'a> Document<'a> {
         pointer: String,
         sink: &mut Sink<'_>,
     ) {
+        debug_assert!(
+            TypePositionKind::ALL.contains(&kind),
+            "every type position kind must be in the traversal inventory"
+        );
         let Some(type_ref) = type_ref else {
             return;
         };
