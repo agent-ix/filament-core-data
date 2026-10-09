@@ -111,6 +111,20 @@ impl TypePositionKind {
         Self::MapValues,
         Self::VariantPayload,
     ];
+
+    fn missing_message(self) -> &'static str {
+        match self {
+            Self::FieldType => "a decimal field carries a decimal policy",
+            Self::ParameterType => "a decimal parameter carries a decimal policy",
+            Self::OperationReturn => "a decimal operation return carries a decimal policy",
+            Self::ConstraintSubject => "a decimal constraint carries a decimal policy",
+            Self::AliasTarget => "a decimal alias target carries a decimal policy",
+            Self::ReferenceTarget => "a decimal reference target carries a decimal policy",
+            Self::SequenceItems => "a decimal sequence item type carries a decimal policy",
+            Self::MapValues => "a decimal map value type carries a decimal policy",
+            Self::VariantPayload => "a decimal variant payload type carries a decimal policy",
+        }
+    }
 }
 
 struct TypePosition<'a> {
@@ -356,6 +370,7 @@ impl<'a> Document<'a> {
     /// drifting apart as the IR grows.
     fn check_decimal_position(
         &self,
+        kind: TypePositionKind,
         type_ref: Option<&str>,
         owner: &'a Json,
         pointer: String,
@@ -369,11 +384,7 @@ impl<'a> Document<'a> {
         };
         let policies = self.decimal_policies_from(type_ref, Some(owner));
         if resolved.scalar() == "decimal" && policies.is_empty() {
-            sink.emit(
-                pointer,
-                DECIMAL_POLICY_MISSING,
-                "a decimal subject carries a decimal policy",
-            );
+            sink.emit(pointer, DECIMAL_POLICY_MISSING, kind.missing_message());
         } else if resolved.scalar() == "decimal" && policies.len() > 1 {
             sink.emit(
                 pointer,
@@ -808,6 +819,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
 
     document.type_positions(|position| {
         document.check_decimal_position(
+            position.kind,
             Some(position.identity),
             position.subject,
             position.pointer,
@@ -1710,12 +1722,65 @@ fn package_walk(
 mod tests {
     use super::{
         composite_graph, decide, decide_with, native_scalar, package_cycle, walk_alias, AliasMemo,
-        Document, Resolved, RuleLimits, Sink, Walk, COMPOSITE_CYCLE, CONSTRAINT_NOT_APPLICABLE,
-        DEPTH_LIMIT_EXCEEDED, NATIVE_PREFIX, NATIVE_SCALARS, UNIT_ON_NON_SCALAR,
-        UNRESOLVED_TYPE_REF,
+        Document, Resolved, RuleLimits, Sink, TypePositionKind, Walk, COMPOSITE_CYCLE,
+        CONSTRAINT_NOT_APPLICABLE, DEPTH_LIMIT_EXCEEDED, NATIVE_PREFIX, NATIVE_SCALARS,
+        UNIT_ON_NON_SCALAR, UNRESOLVED_TYPE_REF,
     };
     use crate::json::parse;
     use crate::json::Json;
+
+    fn type_position_fixture(kind: TypePositionKind) -> Json {
+        let definition = match kind {
+            TypePositionKind::FieldType => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"record","fields":[{"typeRef":"ix://quire/native/Decimal"}]}"#
+            }
+            TypePositionKind::ParameterType => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"record","operations":[{"params":[{"typeRef":"ix://quire/native/Decimal"}]}]}"#
+            }
+            TypePositionKind::OperationReturn => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"record","operations":[{"returns":{"typeRef":"ix://quire/native/Decimal"}}]}"#
+            }
+            TypePositionKind::ConstraintSubject => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"record","constraints":[{"appliesTo":"ix://quire/native/Decimal"}]}"#
+            }
+            TypePositionKind::AliasTarget => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"alias","target":"ix://quire/native/Decimal"}"#
+            }
+            TypePositionKind::ReferenceTarget => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"reference","target":"ix://quire/native/Decimal"}"#
+            }
+            TypePositionKind::SequenceItems => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"sequence","items":"ix://quire/native/Decimal"}"#
+            }
+            TypePositionKind::MapValues => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"map","values":"ix://quire/native/Decimal"}"#
+            }
+            TypePositionKind::VariantPayload => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"union","variants":[{"payloadType":"ix://quire/native/Decimal"}]}"#
+            }
+        };
+        parse(&format!(r#"{{"ir":{{"types":[{definition}]}}}}"#)).expect("a type position fixture")
+    }
+
+    /// The Decimal policy check is generated from the one traversal inventory:
+    /// every position kind gets one fixture, and the exhaustive match above
+    /// makes adding a kind without adding its coverage a compile error.
+    #[test]
+    fn tc_1830_every_type_position_kind_is_covered_by_the_shared_traversal() {
+        for kind in TypePositionKind::ALL.iter().copied() {
+            let bundle = type_position_fixture(kind);
+            let document = Document::read(&bundle).expect("an IR document");
+            let mut visited = Vec::new();
+            document.type_positions(|position| visited.push(position.kind));
+            assert_eq!(
+                visited,
+                [kind],
+                "{} was not visited once",
+                kind.missing_message()
+            );
+        }
+        assert_eq!(TypePositionKind::ALL.len(), 9);
+    }
 
     /// Owner ruling (2026-09-19T15:39:32Z) on FCD #199, superseding R2 of the
     /// #199/#200 review round: `FLAGS_ON_NON_COLLECTION` is deleted outright,
