@@ -70,6 +70,7 @@ export const KERNEL_SCALARS = Object.freeze({
 	any: "crate::support::SemanticValue",
 	boolean: "bool",
 	integer: "i64",
+	number: "f64",
 	decimal: "crate::support::Decimal",
 	string: "String",
 	bytes: null,

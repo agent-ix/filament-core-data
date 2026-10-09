@@ -234,7 +234,34 @@
 			"selector": "integer",
 			"rustForm": "i64",
 			"serdeAttributes": [],
-			"mechanism": "JSON number with no fraction or exponent",
+			"mechanism": "canonical integer string; i64, u64 or i128 selected by effective range",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:decimal",
+			"axis": "scalar",
+			"selector": "decimal",
+			"rustForm": "crate::support::Decimal",
+			"serdeAttributes": [],
+			"mechanism": "canonical decimal string through support::Decimal",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:float32",
+			"axis": "scalar",
+			"selector": "float32",
+			"rustForm": "f32",
+			"serdeAttributes": [],
+			"mechanism": "finite JSON number",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:float64",
+			"axis": "scalar",
+			"selector": "float64",
+			"rustForm": "f64",
+			"serdeAttributes": [],
+			"mechanism": "finite JSON number",
 			"diagnosticCode": null
 		},
 		{

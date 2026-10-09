@@ -52,6 +52,10 @@ const SCALAR_PRIMITIVES = Object.freeze({
 	uuid: "string",
 });
 
+function primitiveFor(entry) {
+	return SCALAR_PRIMITIVES[entry.scalar];
+}
+
 /** The extra JSDoc line a scalar earns where its string form needs stating. */
 const SCALAR_NOTES = Object.freeze({
 	bytes:
