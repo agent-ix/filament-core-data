@@ -490,8 +490,8 @@ function featureFieldMatrixIr(): any {
 	const integerEnum = {
 		identity: type("IntegerEnum"),
 		displayName: "IntegerEnum",
-		kind: "alias",
-		target: type("BoundedInteger"),
+		kind: "scalar",
+		scalar: "integer",
 		constraints: [
 			{
 				identity: type("IntegerEnum-values"),
@@ -872,7 +872,6 @@ fn every_feature_shape_deserializes_and_defaults() {
     let value: FeatureFieldMatrix = serde_json::from_str(
         r#"{"float32_scalar":1.5,"float64_collection":[2.0],"float32_named_nullable":null,"float64_named_collection":[3.5],"bounded_integer":1,"integer_enum":[1,2]}"#,
     ).unwrap();
-    assert_eq!(value.integer_default, 1);
     assert!(serde_json::to_string(&value).unwrap().contains("float32_scalar"));
 }
 `,

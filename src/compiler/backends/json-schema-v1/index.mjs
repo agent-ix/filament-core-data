@@ -215,11 +215,14 @@ function constraint(schema, one, subject, decimalPolicy) {
 				? decimalEnumPattern(one.operands.values, decimalPolicy)
 				: undefined;
 		if (pattern !== undefined) schema.pattern = pattern;
+		else if (subject?.scalar === "integer")
+			schema.enum = one.operands.values.map((member) => Number(member));
 		else schema.enum = one.operands.values;
 	} else if (key === "pattern") schema.pattern = one.operands.regex;
 	else if (key === "format") schema.format = FORMAT_MAP[one.operands.name];
 	else if (table[key] && value !== undefined) {
-		schema[table[key]] = value;
+		schema[table[key]] =
+			key === "minLength" || key === "maxLength" ? value : Number(value);
 	}
 	return schema;
 }
