@@ -33,7 +33,7 @@ An authored fixture artifact.
 | status | OrderStatus | 1 | |
 | lines | OrderLine | 1..* | |
 | tags | String | * | |
-| total | Decimal(10,2) [USD] | 1 | min: 0 |
+| total | Decimal(10,2) [USD] | 1 | |
 | note | String | 0..1 | maxLength: 200 |
 
 ## Invariants
