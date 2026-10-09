@@ -1298,13 +1298,19 @@ function moduleHeader(type) {
 	return lines;
 }
 
-function checkConstants(type, checks, byIdentity) {
+function checkConstants(
+	type,
+	checks,
+	byIdentity,
+	prefix = type.constantName,
+	subjectType = type,
+) {
 	const lines = [];
 	checks.forEach((check, index) => {
 		if (check.form === "matcher") {
 			lines.push(
 				...renderProgram(
-					`${type.constantName}_PATTERN_${index}`,
+					`${prefix}_PATTERN_${index}`,
 					`The pattern of ${check.identity}, lowered to a matcher program.`,
 					check.program,
 					{ visibility: "", instPath: "crate::support::MatcherInst" },
@@ -1313,8 +1319,8 @@ function checkConstants(type, checks, byIdentity) {
 			);
 		}
 		if (check.form === "enumValues") {
-			const integerType = rustIntegerTypeFor(type);
-			const floatType = String(type.inner ?? "").endsWith("f32") ? "f32" : "f64";
+			const integerType = rustIntegerTypeFor(subjectType);
+			const floatType = String(subjectType.inner ?? "").endsWith("f32") ? "f32" : "f64";
 			const rustType =
 				check.scalar === "boolean"
 					? "bool"
@@ -1336,7 +1342,7 @@ function checkConstants(type, checks, byIdentity) {
 				`/// The values ${check.identity} admits.`,
 				...constItem(
 					"",
-					`${type.constantName}_ENUM_${index}`,
+					`${prefix}_ENUM_${index}`,
 					`&[${rustType}]`,
 					slice(values.map(atom)),
 				),
@@ -1387,7 +1393,14 @@ function decimalCollectionEquality(field) {
  * arguments go through `callLines` so the emitted form is already the one
  * `rustfmt` would choose.
  */
-function renderCheck(type, check, index, expression, subjectScalar) {
+function renderCheck(
+	type,
+	check,
+	index,
+	expression,
+	subjectScalar,
+	prefix = type.constantName,
+) {
 	const identity = rustString(check.identity);
 	const keyword = rustString(check.keyword);
 	const at = rustString("");
@@ -1407,7 +1420,10 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 	// already the `i64` or `f64` a numeric comparison needs. An alias reaches its
 	// base through one `get()` per hop, which yields a reference, so the copy is
 	// taken here rather than left for the comparison to fail on.
-	const owned = expression === "value" ? "value" : `(*${expression})`;
+	const owned =
+		expression === "value" || expression.startsWith("*")
+			? expression
+			: `(*${expression})`;
 	const COMPARISONS = {
 		min: "<",
 		max: ">",
@@ -1492,7 +1508,7 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 			break;
 		}
 		case "matcher": {
-			const program = `${type.constantName}_PATTERN_${index}`;
+			const program = `${prefix}_PATTERN_${index}`;
 			lines.push(
 				`            if crate::support::matches_pattern(${program}, ${expression}.as_str())`,
 				"                != crate::support::MatchOutcome::Matched",
@@ -1513,7 +1529,7 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 			break;
 		}
 		case "enumValues": {
-			const constant = `${type.constantName}_ENUM_${index}`;
+			const constant = `${prefix}_ENUM_${index}`;
 			const numeric =
 				["integer", "float32", "float64"].includes(check.scalar) ||
 				check.scalar === "boolean";
@@ -1997,6 +2013,19 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	lines.push("use serde::{Deserialize, Serialize};", "");
 
 	lines.push(...recordItems(type));
+	for (const field of type.fields) {
+		if (!field.checks?.length) continue;
+		const subject = { ...type, inner: field.elementType };
+		lines.push(
+			...checkConstants(
+				type,
+				field.checks,
+				byIdentity,
+				`${type.constantName}_${field.ident}`,
+				subject,
+			),
+		);
+	}
 
 	for (const field of type.fields) {
 		if (field.defaultKind !== "semantic") continue;
@@ -2123,7 +2152,7 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	);
 	for (const [index, field] of type.fields.entries()) {
 		lines.push(...renderFieldDecimalNormalization(field, index));
-		lines.push(...renderFieldChecks(field));
+		lines.push(...renderFieldChecks(type, field));
 	}
 	const initialisers = type.fields.map((field) => field.ident);
 	if (retains) initialisers.push("unknown_members");
@@ -2359,8 +2388,7 @@ function renderFieldDecimalNormalization(field, index) {
  * enforced here: `Vec` is ordered, and there is no unordered Rust collection
  * the mapping table declares to switch to.
  */
-function renderFieldChecks(field) {
-	if (!field.collection) return [];
+function renderFieldChecks(type, field) {
 	const lines = [];
 	const multiplicity = field.multiplicity;
 	const identity = rustString(field.identity);
@@ -2416,17 +2444,66 @@ function renderFieldChecks(field) {
 			"            }",
 		);
 	}
-	if (body.length === 0) return [];
-	if (field.presence === "optional") {
+	if (body.length > 0 && field.presence === "optional") {
 		lines.push(`        if let Some(items) = &${field.ident} {`);
 		lines.push(...body);
 		lines.push("        }");
-	} else {
+	} else if (body.length > 0) {
 		lines.push("        {");
 		lines.push(`            let items = &${field.ident};`);
 		lines.push(...body);
 		lines.push("        }");
 	}
+	lines.push(...renderInlineFieldChecks(type, field));
+	return lines;
+}
+
+function renderInlineFieldChecks(type, field) {
+	const checks = field.checks ?? [];
+	if (checks.length === 0) return [];
+	const prefix = `${type.constantName}_${field.ident}`;
+	const subject = {
+		...type,
+		constantName: prefix,
+		inner: field.elementType,
+		itemScalar: field.elementScalar,
+		itemType: field.elementType,
+	};
+	const render = (expression, extraIndent = 0) =>
+		checks.flatMap((check, index) =>
+			renderCheck(subject, check, index, expression, field.elementScalar, prefix).map(
+				(line) => (line.length === 0 ? line : `${" ".repeat(extraIndent)}${line}`),
+			),
+		);
+	const lines = [];
+	const renderValue = (expression, extraIndent = 0) =>
+		lines.push(...render(expression, extraIndent));
+	if (field.collection) {
+		const source = field.presence === "optional" ? "items" : field.ident;
+		if (field.presence === "optional") lines.push(`        if let Some(items) = &${field.ident} {`);
+		lines.push(`            for item in &${source} {`);
+		if (field.nullable) {
+			lines.push("                if let crate::support::Nullable::Value(value) = item {");
+			renderValue("*value", 4);
+			lines.push("                }");
+		} else renderValue("*item");
+		lines.push("            }");
+		if (field.presence === "optional") lines.push("        }");
+		return lines;
+	}
+	if (field.presence === "optional") {
+		lines.push(`        if let Some(value) = &${field.ident} {`);
+		if (field.nullable) {
+			lines.push("            if let crate::support::Nullable::Value(value) = value {");
+			renderValue("*value", 4);
+			lines.push("            }");
+		} else renderValue("*value");
+		lines.push("        }");
+	} else if (field.nullable) {
+		lines.push(`        if let crate::support::Nullable::Value(value) = &${field.ident} {`);
+		renderValue("*value");
+		lines.push("        }");
+	} else renderValue(`&${field.ident}`);
 	return lines;
 }
 

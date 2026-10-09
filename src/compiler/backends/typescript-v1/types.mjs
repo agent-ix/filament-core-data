@@ -41,6 +41,8 @@ const SCALAR_PRIMITIVES = Object.freeze({
 	boolean: "boolean",
 	integer: "number",
 	decimal: "string",
+	float32: "number",
+	float64: "number",
 	string: "string",
 	bytes: "string",
 	date: "string",
@@ -48,10 +50,6 @@ const SCALAR_PRIMITIVES = Object.freeze({
 	duration: "string",
 	uuid: "string",
 });
-
-function primitiveFor(entry) {
-	return SCALAR_PRIMITIVES[entry.scalar];
-}
 
 /** The extra JSDoc line a scalar earns where its string form needs stating. */
 const SCALAR_NOTES = Object.freeze({

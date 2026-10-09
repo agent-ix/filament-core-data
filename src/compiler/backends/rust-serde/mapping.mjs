@@ -657,7 +657,11 @@ function mapType(definition, context) {
 			model.fields = [];
 			for (const field of definition.fields ?? []) {
 				const mapped = mapField(field, definition, context, version);
-				if (mapped !== undefined) model.fields.push(mapped);
+				if (mapped !== undefined) {
+					model.fields.push(mapped);
+					model.diagnostics.push(...(mapped.diagnostics ?? []));
+					delete mapped.diagnostics;
+				}
 			}
 			const memberScope = model.fields.map((field) => ({
 				identifier: field.ident,
@@ -1076,6 +1080,11 @@ function mapField(field, owner, context, version) {
 		kind: "scalar",
 		scalar: nativeScalar(field.typeRef),
 	};
+	const loweredField = lowerConstraints(
+		{ identity: field.identity, constraints: field.constraints ?? [] },
+		resolvedField,
+		{},
+	);
 	const targetDefinition = context.byIdentity.get(field.typeRef);
 	const integerFieldType =
 		resolvedField?.scalar === "integer" &&
@@ -1140,6 +1149,8 @@ function mapField(field, owner, context, version) {
 		defaultKind: field.defaultKind,
 		defaultValue: field.defaultValue,
 		boxed: graph.boxed.has(`${field.identity}#typeRef`),
+		checks: loweredField.checks,
+		diagnostics: loweredField.diagnostics,
 		row,
 		doc: docParts(field, {
 			fallbackIdentity: field.identity,

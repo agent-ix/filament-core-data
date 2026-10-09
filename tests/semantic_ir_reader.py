@@ -18,6 +18,7 @@ from __future__ import annotations
 import copy
 import json
 import re
+import struct
 import sys
 from pathlib import Path
 from typing import Any
@@ -226,13 +227,24 @@ def _exact_numeric_admitted(
         return integer_digits <= policy["precision"] - policy["scale"] and len(
             fraction
         ) <= policy["scale"]
-    if scalar in {"float32", "float64"}:
+    if scalar == "float64":
         return (
             isinstance(value, (int, float))
             and not isinstance(value, bool)
             and value == value
             and value not in {float("inf"), float("-inf")}
         )
+    if scalar == "float32":
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            return False
+        try:
+            binary64 = float(value)
+            if binary64 != binary64 or binary64 in {float("inf"), float("-inf")}:
+                return False
+            binary32 = struct.unpack(">f", struct.pack(">f", binary64))[0]
+        except (OverflowError, ValueError):
+            return False
+        return binary32 == binary64
     return isinstance(value, str)
 
 

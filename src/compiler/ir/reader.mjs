@@ -526,9 +526,9 @@ export function readContractIr(document, options = {}) {
 			}
 			if (
 				Object.hasOwn(field, "defaultValue") &&
-				!valueAdmitted(
+				!defaultValueAdmitted(
+					field,
 					resolved.scalar,
-					field.defaultValue,
 					policies[0]?.decimal,
 				)
 			) {
@@ -609,7 +609,7 @@ export function readContractIr(document, options = {}) {
 			["min", "max", "exclusiveMin", "exclusiveMax"].includes(keyword) &&
 			resolved.kind === "scalar"
 		) {
-			const numeric = ["integer", "decimal", "number"].includes(
+			const numeric = ["integer", "decimal", "float32", "float64"].includes(
 				resolved.scalar,
 			);
 			const value = operands.value;
@@ -971,6 +971,27 @@ function valueAdmitted(scalar, value, policy) {
 		);
 
 	return true;
+}
+
+/**
+ * Validate a field default after applying the field's value wrappers. A
+ * nullable field may default to null, and a collection field defaults to an
+ * array whose members are checked against the element scalar. Keeping those
+ * wrappers at this boundary prevents a valid null or array from being handed
+ * to the scalar validator as though it were an element.
+ */
+function defaultValueAdmitted(field, scalar, policy) {
+	const value = field.defaultValue;
+	if (value === null && field.nullable === true) return true;
+	const upper = field.multiplicity?.upper;
+	const collection = upper === undefined || upper > 1;
+	if (collection) {
+		return (
+			Array.isArray(value) &&
+			value.every((item) => valueAdmitted(scalar, item, policy))
+		);
+	}
+	return valueAdmitted(scalar, value, policy);
 }
 
 function operandAdmitted(numeric, scalar, value, policy) {

@@ -1028,7 +1028,6 @@ fn exact_numbers(bundle: &Json, sink: &mut Sink<'_>) {
     }
 }
 
-
 fn duplicate_identities(document: &Document<'_>, sink: &mut Sink<'_>) {
     let mut seen: HashSet<String> = HashSet::new();
     for (pointer, _node, identity) in document.identity_declarations() {
@@ -1471,7 +1470,7 @@ fn field_rules(
         }
         if let (Some(default), Some(type_ref)) = (field.get("defaultValue"), type_ref) {
             if let Some(resolved) = document.resolve(type_ref) {
-                validate_value_site(
+                validate_default_value(
                     default,
                     resolved.scalar(),
                     field
@@ -1479,7 +1478,7 @@ fn field_rules(
                         .and_then(Json::as_str)
                         .and_then(|identity| document.decimal_policy(identity)),
                     child(&field_at, "defaultValue"),
-                    true,
+                    field,
                     sink,
                 );
             }
@@ -1572,9 +1571,15 @@ fn validate_value_site(
     };
     let valid = match scalar {
         "integer" => matches!(value, Json::Str(text) if parse_i128(text).is_some()),
-        "decimal" => matches!(value, Json::Str(text) if policy.is_some_and(|policy| decimal_within_policy(text, policy))),
-        "float32" => matches!(value, Json::Number(number) if number.parse::<f64>().ok().is_some_and(float32_exact)),
-        "float64" => matches!(value, Json::Number(number) if number.parse::<f64>().ok().is_some_and(f64::is_finite)),
+        "decimal" => {
+            matches!(value, Json::Str(text) if policy.is_some_and(|policy| decimal_within_policy(text, policy)))
+        }
+        "float32" => {
+            matches!(value, Json::Number(number) if number.parse::<f64>().ok().is_some_and(float32_exact))
+        }
+        "float64" => {
+            matches!(value, Json::Number(number) if number.parse::<f64>().ok().is_some_and(f64::is_finite))
+        }
         _ => true,
     };
     if !valid {
@@ -1584,6 +1589,38 @@ fn validate_value_site(
             "the numeric value is not spelled for its subject scalar",
         );
     }
+}
+
+fn validate_default_value(
+    value: &Json,
+    scalar: &str,
+    policy: Option<(u32, u32)>,
+    pointer: String,
+    field: &Json,
+    sink: &mut Sink<'_>,
+) {
+    if field.get("nullable").and_then(Json::as_bool) == Some(true) && matches!(value, Json::Null) {
+        return;
+    }
+    let collection = field
+        .get("multiplicity")
+        .and_then(|multiplicity| multiplicity.get("upper"))
+        .is_none_or(|upper| upper.as_i64().is_none_or(|value| value > 1));
+    if collection {
+        if let Json::Array(items) = value {
+            for (position, item) in items.iter().enumerate() {
+                validate_value_site(item, scalar, policy, index(&pointer, position), true, sink);
+            }
+        } else {
+            sink.emit(
+                pointer,
+                INVALID_DEFAULT_VALUE,
+                "a collection default is an array of values for its element scalar",
+            );
+        }
+        return;
+    }
+    validate_value_site(value, scalar, policy, pointer, true, sink);
 }
 
 fn float32_exact(value: f64) -> bool {
