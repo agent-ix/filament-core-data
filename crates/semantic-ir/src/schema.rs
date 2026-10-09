@@ -200,8 +200,8 @@ fn is_unit(text: &str) -> bool {
 }
 
 const SCALARS: &[&str] = &[
-    "boolean", "integer", "decimal", "number", "string", "bytes", "date", "datetime", "duration", "uuid",
-    "any",
+    "boolean", "integer", "decimal", "number", "string", "bytes", "date", "datetime", "duration",
+    "uuid", "any",
 ];
 /// The core kinds: every `typeDefinition.kind` that is a string. Every other
 /// kind is a construct kind, `{module, name}`, that the document's
