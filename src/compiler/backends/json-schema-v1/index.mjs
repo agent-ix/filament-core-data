@@ -28,7 +28,11 @@ const REPO_ROOT = resolve(
 
 const scalarSchema = Object.freeze({
 	boolean: { type: "boolean" },
-	integer: { type: "string", pattern: "^(0|-?[1-9][0-9]*)$" },
+	integer: {
+		type: "integer",
+		minimum: -(2 ** 53 - 1),
+		maximum: 2 ** 53 - 1,
+	},
 	number: { type: "number" },
 	float32: { type: "number" },
 	float64: { type: "number" },
@@ -137,6 +141,76 @@ const NATIVE_SCALARS = Object.freeze({
 	Bytes: "bytes",
 	JsonObject: "any",
 });
+
+const SAFE_INTEGER = 2n ** 53n - 1n;
+
+function unsignedAtMost(max) {
+	if (max < 0n) return "(?!)";
+	const text = max.toString();
+	const parts = ["0"];
+	for (let length = 1; length < text.length; length += 1)
+		parts.push(`[1-9][0-9]{${length - 1}}`);
+	for (let position = 0; position < text.length; position += 1) {
+		const digit = Number(text[position]);
+		if (digit === 0) continue;
+		const range = position === 0 ? `[1-${digit - 1}]` : `[0-${digit - 1}]`;
+		if (digit > 1 || position > 0)
+			parts.push(`${text.slice(0, position)}${range}[0-9]{${text.length - position - 1}}`);
+	}
+	parts.push(text);
+	return `(?:${parts.join("|")})`;
+}
+
+function integerPattern(lower, upper) {
+	const alternatives = [];
+	if (lower < 0n) {
+		const maxAbs = -lower;
+		const minAbs = upper < 0n ? -upper : 1n;
+		const bounded = unsignedAtMost(maxAbs);
+		const excluded = unsignedAtMost(minAbs - 1n);
+		alternatives.push(`-(?!${excluded}$)${bounded}`);
+	}
+	if (upper >= 0n) alternatives.push(unsignedAtMost(upper));
+	return `^(?:${alternatives.join("|")})$`;
+}
+
+function integerRange(constraints) {
+	let lower = -SAFE_INTEGER;
+	let upper = SAFE_INTEGER;
+	let lowerExplicit = false;
+	let upperExplicit = false;
+	for (const one of constraints ?? []) {
+		const value = one?.operands?.value;
+		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value)) continue;
+		const parsed = BigInt(value);
+		if (one.keyword === "min") {
+			lower = lowerExplicit && lower > parsed ? lower : parsed;
+			lowerExplicit = true;
+		}
+		if (one.keyword === "exclusiveMin") {
+			const effective = parsed + 1n;
+			lower = lowerExplicit && lower > effective ? lower : effective;
+			lowerExplicit = true;
+		}
+		if (one.keyword === "max") {
+			upper = upperExplicit && upper < parsed ? upper : parsed;
+			upperExplicit = true;
+		}
+		if (one.keyword === "exclusiveMax") {
+			const effective = parsed - 1n;
+			upper = upperExplicit && upper < effective ? upper : effective;
+			upperExplicit = true;
+		}
+	}
+	return { lower, upper };
+}
+
+function integerSchema(constraints) {
+	const { lower, upper } = integerRange(constraints);
+	if (lower >= -SAFE_INTEGER && upper <= SAFE_INTEGER)
+		return { type: "integer", minimum: Number(lower), maximum: Number(upper) };
+	return { type: "string", pattern: integerPattern(lower, upper) };
+}
 function decimalSchema(policy) {
 	const precision = Number(policy?.precision);
 	const scale = Number(policy?.scale);
@@ -146,10 +220,11 @@ function decimalSchema(policy) {
 	if (integerDigits < 0 || scale < 0) return { type: "string" };
 	const integer =
 		integerDigits === 0 ? "0" : `(?:0|[1-9][0-9]{0,${integerDigits - 1}})`;
-	const fraction = scale > 0 ? `(?:\\.[0-9]{0,${scale - 1}}[1-9])?` : "";
+	const fraction = scale > 0 ? `(?:\\.[0-9]{1,${scale}})?` : "";
 	const negativeInteger =
 		integerDigits === 0 ? "" : `[1-9][0-9]{0,${integerDigits - 1}}`;
-	const negativeFraction = scale > 0 ? `0\\.[0-9]{0,${scale - 1}}[1-9]` : "";
+	const negativeFraction =
+		scale > 0 ? `0\\.(?=[0-9]*[1-9])[0-9]{1,${scale}}` : "";
 	const negative = [
 		negativeInteger && `${negativeInteger}${fraction}`,
 		negativeFraction,
@@ -214,7 +289,11 @@ function constraint(schema, one, subject, decimalPolicy) {
 				? decimalEnumPattern(one.operands.values, decimalPolicy)
 				: undefined;
 		if (pattern !== undefined) schema.pattern = pattern;
-		else if (subject?.scalar === "integer") schema.enum = one.operands.values;
+		else if (subject?.scalar === "integer")
+			schema.enum =
+				schema.type === "integer"
+					? one.operands.values.map((entry) => Number(entry))
+					: one.operands.values;
 		else schema.enum = one.operands.values;
 	} else if (key === "pattern") schema.pattern = one.operands.regex;
 	else if (key === "format") schema.format = FORMAT_MAP[one.operands.name];
@@ -247,6 +326,28 @@ function decimalScalar(types, identity, seen = new Set()) {
 	if (type?.kind === "alias" || type?.kind === "reference")
 		return decimalScalar(types, type.target, seen);
 	return undefined;
+}
+
+function integerScalar(types, identity, seen = new Set()) {
+	if (identity === "ix://quire/native/Integer") return "integer";
+	if (typeof identity !== "string" || seen.has(identity)) return undefined;
+	seen.add(identity);
+	const type = types.get(identity);
+	if (type?.kind === "scalar") return type.scalar === "integer" ? "integer" : undefined;
+	if (type?.kind === "alias" || type?.kind === "reference")
+		return integerScalar(types, type.target, seen);
+	return undefined;
+}
+
+function integerConstraints(types, identity, seen = new Set()) {
+	if (typeof identity !== "string" || seen.has(identity)) return [];
+	seen.add(identity);
+	const type = types.get(identity);
+	if (!type) return [];
+	const own = [...(type.constraints ?? [])];
+	return type.kind === "alias" || type.kind === "reference"
+		? [...integerConstraints(types, type.target, seen), ...own]
+		: own;
 }
 function decimalPolicy(types, identity, seen = new Set()) {
 	if (typeof identity !== "string" || seen.has(identity)) return undefined;
@@ -333,6 +434,10 @@ function annotated(schema, node) {
 function fieldSchema(field, types) {
 	let schema = ref(types, field.typeRef);
 	if (field.decimal) schema = decimalSchema(field.decimal);
+	const inheritedIntegerConstraints =
+		integerScalar(types, field.typeRef) === "integer"
+			? integerConstraints(types, field.typeRef)
+			: [];
 	// An authored alias a field references may itself declare constraints
 	// (gap 1 of FCD #199/#200: a field's own constraints are now inline on the
 	// field, below, with no synthetic alias minted for them, but an authored
@@ -359,6 +464,13 @@ function fieldSchema(field, types) {
 		target = types.get(target.target);
 	}
 	if (
+		integerScalar(types, field.typeRef) === "integer" &&
+		inheritedIntegerConstraints.length > 0
+	) {
+		const integer = integerSchema(inheritedIntegerConstraints);
+		schema = schema.enum ? { ...integer, enum: schema.enum } : integer;
+	}
+	if (
 		field.multiplicity &&
 		(field.multiplicity.upper === undefined || field.multiplicity.upper > 1)
 	) {
@@ -379,6 +491,18 @@ function fieldSchema(field, types) {
 				: target,
 			effectiveDecimalPolicy,
 		);
+	if (
+		integerScalar(types, field.typeRef) === "integer" &&
+		(field.constraints ?? []).some((one) =>
+			["min", "max", "exclusiveMin", "exclusiveMax"].includes(one.keyword),
+		)
+	) {
+		const integer = integerSchema([
+			...inheritedIntegerConstraints,
+			...(field.constraints ?? []),
+		]);
+		schema = schema.enum ? { ...integer, enum: schema.enum } : integer;
+	}
 	return annotated(schema, field);
 }
 /**
@@ -432,7 +556,9 @@ function renderType(ir, type, types, authored) {
 	switch (true) {
 		case type.kind === "scalar":
 			schema =
-				type.scalar === "decimal" && type.decimal
+				type.scalar === "integer"
+					? integerSchema(type.constraints)
+					: type.scalar === "decimal" && type.decimal
 					? decimalSchema(type.decimal)
 					: { ...(scalarSchema[type.scalar] ?? {}) };
 			break;
@@ -488,7 +614,9 @@ function renderType(ir, type, types, authored) {
 			};
 			break;
 		case type.kind === "alias":
-			schema = type.decimal
+			schema = integerScalar(types, type.identity) === "integer"
+				? integerSchema(integerConstraints(types, type.identity))
+				: type.decimal
 				? decimalSchema(type.decimal)
 				: { allOf: [ref(types, type.target)] };
 			break;

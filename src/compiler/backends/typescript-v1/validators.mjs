@@ -157,6 +157,14 @@ function constraintCondition(constraint, subject) {
 		case "enumValues": {
 			if (scalar === "decimal")
 				return `[${(operands.values ?? []).map((entry) => literal(entry)).join(", ")}].some((member) => compareDecimal(member, candidate) === 0)`;
+			if (scalar === "integer") {
+				const values = (operands.values ?? [])
+					.map((entry) =>
+						subject.wideInteger ? literal(entry) : literal(Number(entry)),
+					)
+					.join(", ");
+				return `[${values}].some((member) => Object.is(member, candidate))`;
+			}
 			const values = (operands.values ?? [])
 				.map((entry) => literal(entry))
 				.join(", ");
@@ -314,14 +322,36 @@ function scalarCheckBody(model, entry) {
 		);
 		return lines;
 	}
+	const wideInteger = entry.scalar === "integer" && entry.wideInteger;
+	const guardTest = wideInteger ? 'typeof candidate === "string"' : guard.test;
+	const guardCode = wideInteger ? "NOT_A_INTEGER" : guard.code;
 	lines.push(
-		`\tif (!(${guard.test})) {`,
-		`\t\tfail(errors, pointer, CODES.${guard.code}, "the value is of the wrong type");`,
+		`\tif (!(${guardTest})) {`,
+		`\t\tfail(errors, pointer, CODES.${guardCode}, "the value is of the wrong type");`,
 		"\t\treturn false;",
 		"\t}",
 	);
+	if (wideInteger) {
+		lines.push(
+			'\tif (!/^(0|-?[1-9][0-9]*)$/.test(candidate)) {',
+			'\t\tfail(errors, pointer, CODES.NOT_A_INTEGER, "the value is not a canonical integer string");',
+			"\t\treturn false;",
+			"\t}",
+			...constraintStatements(model, entry.identity, "\t"),
+			"\treturn errors.length === before;",
+		);
+		return lines;
+	}
 	if (["integer", "number", "float32", "float64"].includes(entry.scalar)) {
 		lines.push(...numericStatements(entry.scalar, "\t"));
+		if (entry.scalar === "float32") {
+			lines.push(
+				'\tif (Math.fround(candidate) !== candidate) {',
+				'\t\tfail(errors, pointer, CODES.NOT_A_NUMBER_VALUE, "the value is not exactly representable as binary32");',
+				"\t\treturn false;",
+				"\t}",
+			);
+		}
 	}
 	if (entry.scalar === "bytes") {
 		lines.push(
@@ -774,7 +804,7 @@ function recordPrepareBody(entry) {
 		if (field.defaultKind === "semantic") {
 			lines.push(
 				'\t\t} else if (member.state === "absent") {',
-				`\t\t\tout[${name}] = ${literal(field.defaultValue ?? null)};`,
+				`\t\t\tout[${name}] = ${defaultLiteral(field)};`,
 			);
 		}
 		lines.push(
@@ -820,6 +850,15 @@ function recordPrepareBody(entry) {
 	// whole pass exists not to invoke.
 	lines.push("\treturn accessor ? out : { ...out };");
 	return lines;
+}
+
+function defaultLiteral(field) {
+	const value = field.defaultValue ?? null;
+	if (field.element?.scalar === "integer" && field.element.wideInteger !== true) {
+		if (Array.isArray(value)) return literal(value.map((one) => Number(one)));
+		if (typeof value === "string") return literal(Number(value));
+	}
+	return literal(value);
 }
 
 /**

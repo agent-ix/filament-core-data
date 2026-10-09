@@ -61,22 +61,8 @@ const SCALAR_NOTES = Object.freeze({
 	uuid: "A UUID in its canonical hyphenated form.",
 });
 
-function wideInteger(entry) {
-	return (
-		entry.scalar === "integer" &&
-		(entry.constraints ?? []).some((constraint) => {
-			const value = constraint?.operands?.value;
-			return (
-				typeof value === "string" &&
-				/^(0|-?[1-9][0-9]*)$/.test(value) &&
-				!Number.isSafeInteger(Number(value))
-			);
-		})
-	);
-}
-
 function primitiveFor(entry) {
-	if (wideInteger(entry)) return "string";
+	if (entry.wideInteger === true) return "string";
 	return SCALAR_PRIMITIVES[entry.scalar];
 }
 

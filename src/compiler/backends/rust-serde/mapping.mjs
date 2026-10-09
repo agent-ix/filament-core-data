@@ -116,30 +116,30 @@ const SAFE_INTEGER = 2n ** 53n - 1n;
 
 function integerRustType(definition) {
 	const bounds = { lower: -SAFE_INTEGER, upper: SAFE_INTEGER };
+	let lowerExplicit = false;
+	let upperExplicit = false;
 	for (const constraint of definition?.constraints ?? []) {
 		const value = constraint?.operands?.value;
 		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
 			continue;
 		const parsed = BigInt(value);
-		if (constraint.keyword === "min")
-			bounds.lower = bounds.lower > parsed ? bounds.lower : parsed;
-		if (constraint.keyword === "exclusiveMin")
-			bounds.lower = bounds.lower > parsed + 1n ? bounds.lower : parsed + 1n;
-		if (constraint.keyword === "max")
-			bounds.upper =
-				bounds.upper === SAFE_INTEGER && parsed > SAFE_INTEGER
-					? parsed
-					: bounds.upper < parsed
-						? bounds.upper
-						: parsed;
+		if (constraint.keyword === "min") {
+			bounds.lower = lowerExplicit && bounds.lower > parsed ? bounds.lower : parsed;
+			lowerExplicit = true;
+		}
+		if (constraint.keyword === "exclusiveMin") {
+			const effective = parsed + 1n;
+			bounds.lower = lowerExplicit && bounds.lower > effective ? bounds.lower : effective;
+			lowerExplicit = true;
+		}
+		if (constraint.keyword === "max") {
+			bounds.upper = upperExplicit && bounds.upper < parsed ? bounds.upper : parsed;
+			upperExplicit = true;
+		}
 		if (constraint.keyword === "exclusiveMax") {
 			const effective = parsed - 1n;
-			bounds.upper =
-				bounds.upper === SAFE_INTEGER && effective > SAFE_INTEGER
-					? effective
-					: bounds.upper < effective
-						? bounds.upper
-						: effective;
+			bounds.upper = upperExplicit && bounds.upper < effective ? bounds.upper : effective;
+			upperExplicit = true;
 		}
 	}
 	if (bounds.lower >= I64_MIN && bounds.upper <= I64_MAX) return "i64";
@@ -656,6 +656,8 @@ function mapType(definition, context) {
 				scalar === "integer"
 					? integerRustType(definition)
 					: KERNEL_SCALARS[scalar];
+			model.wideInteger = scalar === "integer" &&
+				(model.inner === "u64" || model.inner === "i128");
 			model.row = `scalar:${scalar}`;
 			break;
 		}
@@ -836,6 +838,7 @@ function mapType(definition, context) {
 						...(definition.constraints ?? []),
 					],
 				});
+				model.wideInteger = model.inner === "u64" || model.inner === "i128";
 			} else {
 				model.inner = target(
 					definition.target,

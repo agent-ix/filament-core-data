@@ -214,6 +214,42 @@ function documentOf(types) {
 
 const NS = "ix://agent-ix/detector";
 
+function serdeProbeDocument(includeStatus) {
+	const types = [scalarType("Text", "string")];
+	if (includeStatus)
+		types.push({
+			identity: `${NS}/type/Status`,
+			displayName: "Status",
+			kind: "enum",
+			roles: [],
+			constraints: [],
+			extensions: [],
+			unknownPolicy: "reject",
+			variants: [{ identity: `${NS}/variant/in-progress`, name: "inProgress" }],
+		});
+	types.push({
+		identity: `${NS}/type/SerdeProbe`,
+		displayName: "SerdeProbe",
+		kind: "record",
+		roles: [],
+		constraints: [],
+		extensions: [],
+		unknownPolicy: "reject",
+		fields: [
+			{
+				identity: `${NS}/field/serde-probe-created-at`,
+				name: "createdAt",
+				typeRef: `${NS}/type/Text`,
+				presence: "optional",
+				nullable: true,
+				defaultKind: "none",
+				multiplicity: { lower: 0, upper: 1 },
+			},
+		],
+	});
+	return documentOf(types);
+}
+
 function scalarType(name, scalar, constraints = []) {
 	return {
 		identity: `${NS}/type/${name}`,
@@ -286,44 +322,7 @@ export const DETECTORS = Object.freeze([
 					`${base.name} no longer emits the bytes the pristine emitter produced`,
 				);
 			}
-			const serdeProbe = documentOf([
-				scalarType("Text", "string"),
-				{
-					identity: `${NS}/type/Status`,
-					displayName: "Status",
-					kind: "enum",
-					roles: [],
-					constraints: [],
-					extensions: [],
-					unknownPolicy: "reject",
-					variants: [
-						{
-							identity: `${NS}/variant/in-progress`,
-							name: "inProgress",
-						},
-					],
-				},
-				{
-					identity: `${NS}/type/SerdeProbe`,
-					displayName: "SerdeProbe",
-					kind: "record",
-					roles: [],
-					constraints: [],
-					extensions: [],
-					unknownPolicy: "reject",
-					fields: [
-						{
-							identity: `${NS}/field/serde-probe-created-at`,
-							name: "createdAt",
-							typeRef: `${NS}/type/Text`,
-							presence: "optional",
-							nullable: true,
-							defaultKind: "none",
-							multiplicity: { lower: 0, upper: 1 },
-						},
-					],
-				},
-			]);
+			const serdeProbe = serdeProbeDocument(true);
 			const serdeResult = backend.crate.emitCrate(
 				backend.properties.requestForIr(serdeProbe, "serde-probe"),
 				{ licenseText: backend.licenseText },
@@ -711,29 +710,7 @@ export const DETECTORS = Object.freeze([
 			// Exercise the emitted serde surface as well as the mapping metadata.
 			// These attributes are required to preserve absent versus null and the
 			// semantic wire name, so dropping any one is a detectable regression.
-			const serdeProbe = documentOf([
-				scalarType("Text", "string"),
-				{
-					identity: `${NS}/type/SerdeProbe`,
-					displayName: "SerdeProbe",
-					kind: "record",
-					roles: [],
-					constraints: [],
-					extensions: [],
-					unknownPolicy: "reject",
-					fields: [
-						{
-							identity: `${NS}/field/serde-probe-created-at`,
-							name: "createdAt",
-							typeRef: `${NS}/type/Text`,
-							presence: "optional",
-							nullable: true,
-							defaultKind: "none",
-							multiplicity: { lower: 0, upper: 1 },
-						},
-					],
-				},
-			]);
+			const serdeProbe = serdeProbeDocument(false);
 			const serdeText = bytesOf(backend, serdeProbe, "serde-probe");
 			for (const attribute of [
 				'skip_serializing_if = "Option::is_none"',

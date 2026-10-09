@@ -276,7 +276,10 @@ function subjectAccess(definition, byIdentity) {
 			target.displayName === "Decimal"
 				? "crate::support::Decimal"
 				: undefined;
-		if (targetSupport === undefined) expression = `${expression}.get()`;
+		// A scalar declaration maps directly to its primitive inner type. Only
+		// another alias contributes a newtype wrapper and therefore a get().
+		if (targetSupport === undefined && target?.kind !== "scalar")
+			expression = `${expression}.get()`;
 		current = target;
 	}
 	if (current === undefined) return undefined;
@@ -1453,15 +1456,23 @@ function renderCheck(
 			break;
 		}
 		case "numeric": {
+			const integerType = rustIntegerTypeFor(type);
+			const integerValue = check.scalar === "integer" ? BigInt(check.value) : undefined;
+			const compareExpression =
+				check.scalar === "integer" &&
+				integerType === "i64" &&
+				(integerValue < -(2n ** 63n) || integerValue > 2n ** 63n - 1n)
+					? `i128::from(${owned})`
+					: owned;
 			const literal =
 				check.scalar === "integer"
-					? `${check.value}${rustIntegerTypeFor(type)}`
+					? `${check.value}${integerType === "i64" && integerValue < -(2n ** 63n) || integerType === "i64" && integerValue > 2n ** 63n - 1n ? "i128" : integerType}`
 					: renderFloat(
 							check.value,
 							String(type.inner ?? "").endsWith("f32") ? "f32" : "f64",
 						);
 			lines.push(
-				`            if ${owned} ${COMPARISONS[check.keyword]} ${literal} {`,
+				`            if ${compareExpression} ${COMPARISONS[check.keyword]} ${literal} {`,
 				...fail(rustString(String(check.value))),
 				"            }",
 			);
@@ -1638,9 +1649,13 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 	lines.push(...docLines(type.doc));
 	lines.push(
 		// A newtype an identity field reaches has `Eq` and `Hash` (FR-054).
-		type.derivesHash === true
-			? "#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize)]"
-			: "#[derive(Clone, Debug, PartialEq, Serialize)]",
+			type.derivesHash === true
+				? type.wideInteger
+					? "#[derive(Clone, Debug, PartialEq, Eq, Hash)]"
+					: "#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize)]"
+				: type.wideInteger
+					? "#[derive(Clone, Debug, PartialEq)]"
+					: "#[derive(Clone, Debug, PartialEq, Serialize)]",
 		"#[serde(transparent)]",
 		`pub struct ${type.typeName}(${inner});`,
 		"",
@@ -1703,16 +1718,45 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 		"    }",
 		"}",
 		"",
-		`impl<'de> Deserialize<'de> for ${type.typeName} {`,
-		"    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>",
-		"    where",
-		"        D: serde::Deserializer<'de>,",
-		"    {",
-		...innerDeserialize("        ", inner),
-		"        Self::try_new(inner).map_err(serde::de::Error::custom)",
-		"    }",
-		"}",
 	);
+	if (type.wideInteger) {
+		lines.push(
+			`impl serde::Serialize for ${type.typeName} {`,
+			"    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>",
+			"    where",
+			"        S: serde::Serializer,",
+			"    {",
+			"        serializer.serialize_str(&self.0.to_string())",
+			"    }",
+			"}",
+			"",
+			`impl<'de> serde::Deserialize<'de> for ${type.typeName} {`,
+			"    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>",
+			"    where",
+			"        D: serde::Deserializer<'de>,",
+			"    {",
+			"        let wire = String::deserialize(deserializer)?;",
+			`        let inner = wire.parse::<${inner}>().map_err(serde::de::Error::custom)?;`,
+			"        if inner.to_string() != wire {",
+				"            return Err(serde::de::Error::custom(\"integer is not canonical\"));",
+			"        }",
+			"        Self::try_new(inner).map_err(serde::de::Error::custom)",
+			"    }",
+			"}",
+		);
+	} else {
+		lines.push(
+			`impl<'de> Deserialize<'de> for ${type.typeName} {`,
+			"    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>",
+			"    where",
+			"        D: serde::Deserializer<'de>,",
+			"    {",
+			...innerDeserialize("        ", inner),
+			"        Self::try_new(inner).map_err(serde::de::Error::custom)",
+			"    }",
+			"}",
+		);
+	}
 	return `${lines.join("\n")}\n`;
 }
 

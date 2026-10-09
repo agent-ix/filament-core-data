@@ -917,11 +917,35 @@ pub fn decide_with(bundle: &Json, limits: RuleLimits) -> Vec<Located> {
     sink.out
 }
 
+const MAX_EXACT_EXPANSION: i64 = 4096;
+
+/// Refuse to expand an exponent whose canonical spelling would exceed the
+/// bounded scanner budget. A non-zero value outside that budget cannot be
+/// represented exactly by the JSON number comparison below; zero remains
+/// exactly zero regardless of its exponent.
+fn expansion_would_exceed_budget(lexeme: &str) -> Option<bool> {
+	let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
+	let (mantissa, exponent) = match unsigned.find(['e', 'E']) {
+		Some(at) => (&unsigned[..at], unsigned[at + 1..].parse::<i64>().ok()?),
+		None => return Some(false),
+	};
+	if mantissa
+		.chars()
+		.filter(|ch| *ch != '.')
+		.all(|ch| ch == '0')
+	{
+		return Some(false);
+	}
+	let whole_len = mantissa.split_once('.').map_or(mantissa.len(), |(whole, _)| whole.len()) as i64;
+	let decimal_at = whole_len.checked_add(exponent)?;
+	Some(decimal_at > MAX_EXACT_EXPANSION || decimal_at < -MAX_EXACT_EXPANSION)
+}
+
 fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
     let negative = lexeme.starts_with('-');
     let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
     let (mantissa, exponent) = match unsigned.find(['e', 'E']) {
-        Some(at) => (&unsigned[..at], unsigned[at + 1..].parse::<i32>().ok()?),
+		Some(at) => (&unsigned[..at], unsigned[at + 1..].parse::<i64>().ok()?),
         None => (unsigned, 0),
     };
     let (whole, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
@@ -932,7 +956,7 @@ fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
         return None;
     }
     let digits = format!("{whole}{fraction}");
-    let decimal_at = whole.len() as i32 + exponent;
+	let decimal_at = whole.len() as i64 + exponent;
     let zero = digits.chars().all(|ch| ch == '0');
     let (mut integer, mut fraction_out) = if decimal_at <= 0 {
         (
@@ -967,7 +991,10 @@ fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
 }
 
 fn exact_number_kind(lexeme: &str) -> Option<&'static str> {
-    let (negative, normalized, whole) = normalized_number(lexeme)?;
+	if expansion_would_exceed_budget(lexeme) == Some(true) {
+		return Some(INEXACT_NUMBER);
+	}
+	let (negative, normalized, whole) = normalized_number(lexeme)?;
     let digits = normalized
         .split_once('.')
         .map_or_else(|| normalized.clone(), |(head, _)| head.to_string());

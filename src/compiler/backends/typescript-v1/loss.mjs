@@ -99,12 +99,6 @@ export const TARGET_LOSSES = Object.freeze([
 			"ISO-8601 designators admit no total order — P1M and P30D are not comparable without a calendar — so an ordering constraint on a duration subject is refused rather than answered by an invented comparison",
 	}),
 	Object.freeze({
-		construct: "integer-bound-not-exact",
-		code: LOSS_CODES.INTEGER_BOUND_NOT_EXACT.code,
-		rationale:
-			"a TypeScript number is a double, so an integer bound past 2^53 given as a decimal string would be checked against the double it rounds to, which loosens or tightens it silently; it is refused until the backend carries a bigint check",
-	}),
-	Object.freeze({
 		construct: "abstract-type-held",
 		code: LOSS_CODES.ABSTRACT_TYPE_HELD.code,
 		rationale:
@@ -263,15 +257,6 @@ export function representability(ir, options = {}) {
 
 		for (const [position, constraint] of (type.constraints ?? []).entries()) {
 			if (constraint === null || typeof constraint !== "object") continue;
-			if (inexactIntegerBound(constraint)) {
-				record({
-					code: LOSS_CODES.INTEGER_BOUND_NOT_EXACT.code,
-					construct: "integer-bound-not-exact",
-					owner,
-					pointer: `/ir/types/${index}/constraints/${position}/operands/value`,
-					detail: constraint.operands.value,
-				});
-			}
 			if (
 				constraint.keyword === "format" &&
 				!formats.has(constraint.operands?.name)
@@ -294,21 +279,6 @@ export function representability(ir, options = {}) {
 					owner,
 					pointer: `/ir/types/${index}/constraints/${position}/keyword`,
 					detail: constraint.keyword,
-				});
-			}
-		}
-
-		for (const [slot, field] of (type.fields ?? []).entries()) {
-			for (const [position, constraint] of (
-				field?.constraints ?? []
-			).entries()) {
-				if (!inexactIntegerBound(constraint)) continue;
-				record({
-					code: LOSS_CODES.INTEGER_BOUND_NOT_EXACT.code,
-					construct: "integer-bound-not-exact",
-					owner,
-					pointer: `/ir/types/${index}/fields/${slot}/constraints/${position}/operands/value`,
-					detail: constraint.operands.value,
 				});
 			}
 		}

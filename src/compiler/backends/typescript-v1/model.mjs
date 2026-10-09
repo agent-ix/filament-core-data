@@ -119,31 +119,30 @@ function wideInteger(constraints, scalar) {
 	const safe = 2n ** 53n - 1n;
 	let lower = -safe;
 	let upper = safe;
+	let lowerExplicit = false;
+	let upperExplicit = false;
 	for (const constraint of constraints ?? []) {
 		const value = constraint?.operands?.value;
 		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
 			continue;
 		const parsed = BigInt(value);
-		if (constraint.keyword === "min") lower = lower > parsed ? lower : parsed;
+		if (constraint.keyword === "min") {
+			lower = lowerExplicit && lower > parsed ? lower : parsed;
+			lowerExplicit = true;
+		}
 		if (constraint.keyword === "exclusiveMin") {
 			const effective = parsed + 1n;
-			lower = lower > effective ? lower : effective;
+			lower = lowerExplicit && lower > effective ? lower : effective;
+			lowerExplicit = true;
 		}
-		if (constraint.keyword === "max")
-			upper =
-				upper === safe && parsed > safe
-					? parsed
-					: upper < parsed
-						? upper
-						: parsed;
+		if (constraint.keyword === "max") {
+			upper = upperExplicit && upper < parsed ? upper : parsed;
+			upperExplicit = true;
+		}
 		if (constraint.keyword === "exclusiveMax") {
 			const effective = parsed - 1n;
-			upper =
-				upper === safe && effective > safe
-					? effective
-					: upper < effective
-						? upper
-						: effective;
+			upper = upperExplicit && upper < effective ? upper : effective;
+			upperExplicit = true;
 		}
 	}
 	return lower < -safe || upper > safe;
@@ -161,6 +160,9 @@ function summaryOf(types, identifiers, identity) {
 		identifier: identifiers.get(identity),
 		kind: type === undefined ? undefined : kindName(type.kind),
 		scalar: resolveScalar(types, identity),
+		wideInteger:
+			resolveScalar(types, identity) === "integer" &&
+			wideInteger(type?.constraints, "integer"),
 		decimal: type?.decimal,
 		declared: type !== undefined,
 	});

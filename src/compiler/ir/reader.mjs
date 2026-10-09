@@ -997,13 +997,14 @@ function operandAdmitted(numeric, scalar, value, policy) {
 	if (!numeric) return typeof value === "string";
 	if (scalar === "integer") {
 		return (
-			(typeof value === "number" && Number.isSafeInteger(value)) ||
-			(typeof value === "string" &&
-				/^(0|-?[1-9][0-9]*)$/.test(value) &&
-				withinI128(value))
+			typeof value === "string" &&
+			/^(0|-?[1-9][0-9]*)$/.test(value) &&
+			withinI128(value)
 		);
 	}
 	if (scalar === "decimal") return decimalAdmitted(value, policy);
+	if (scalar === "float32")
+		return typeof value === "number" && Number.isFinite(value) && Math.fround(value) === value;
 	return typeof value === "number" && Number.isFinite(value);
 }
 
