@@ -1557,24 +1557,6 @@ fn is_canonical_decimal(text: &str) -> bool {
     fraction.chars().all(|ch| ch.is_ascii_digit()) && !fraction.ends_with('0')
 }
 
-/// Whether a canonical decimal fits the subject's declared policy.
-fn decimal_admitted(text: &str, policy: &Json) -> bool {
-    let Some(precision) = policy.get("precision").and_then(Json::as_i64) else {
-        return false;
-    };
-    let Some(scale) = policy.get("scale").and_then(Json::as_i64) else {
-        return false;
-    };
-    if precision < 1 || scale < 0 || scale > precision {
-        return false;
-    }
-    let unsigned = text.strip_prefix('-').unwrap_or(text);
-    let (whole, fraction) = unsigned.split_once('.').unwrap_or((unsigned, ""));
-    i64::try_from(whole.len()).is_ok_and(|integer_digits| {
-        integer_digits <= precision - scale && fraction.len() as i64 <= scale
-    })
-}
-
 fn validate_value_site(
     value: &Json,
     scalar: &str,
@@ -1659,11 +1641,6 @@ fn constraint_rules(
         if matches!(keyword, "min" | "max" | "exclusiveMin" | "exclusiveMax")
             && matches!(scalar, "integer" | "decimal" | "float32" | "float64")
         {
-            let policies = if scalar == "decimal" {
-                document.decimal_policies(applies.unwrap_or_default())
-            } else {
-                Vec::new()
-            };
             let value_at = child(&child(constraint_at, "operands"), "value");
             match constraint.get("operands").and_then(|o| o.get("value")) {
                 Some(Json::Number(number))
