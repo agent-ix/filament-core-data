@@ -287,6 +287,168 @@ function numericIr(): any {
 	};
 }
 
+/**
+ * Rust serde's field-check matrix.  The generated crate below is compiled by
+ * the Rust boundary test, so every shape in this record is checked by rustc:
+ * native and named scalar values, collections, nullable values, optional
+ * values, and a semantic default.
+ */
+function wrapperFieldMatrixIr(): any {
+	const ir = structuredClone(numericIr());
+	const namedText = {
+		identity: type("NamedText"),
+		displayName: "NamedText",
+		kind: "scalar",
+		scalar: "string",
+		constraints: [],
+		extensions: [],
+	};
+	const namedDecimal = {
+		identity: type("NamedDecimal"),
+		displayName: "NamedDecimal",
+		kind: "scalar",
+		scalar: "decimal",
+		decimal: { precision: 5, scale: 2 },
+		constraints: [],
+		extensions: [],
+	};
+	const fieldIdentity = (name: string) =>
+		type(`WrapperFieldMatrix-field-${name}`);
+	const minLength = (identity: string) => ({
+		identity: `${identity}-minLength`,
+		keyword: "minLength",
+		operands: { value: 1 },
+		appliesTo: identity,
+		diagnosticCode: "agent-ix.exact-numeric.WRAPPER_MIN_LENGTH",
+	});
+	const minDecimal = (identity: string) => ({
+		identity: `${identity}-min`,
+		keyword: "min",
+		operands: { value: "0.1" },
+		appliesTo: identity,
+		diagnosticCode: "agent-ix.exact-numeric.WRAPPER_MIN_DECIMAL",
+	});
+	const field = (
+		name: string,
+		typeRef: string,
+		multiplicity: {
+			lower: number;
+			upper?: number;
+			ordered: boolean;
+			unique: boolean;
+		},
+		nullable: boolean,
+		constraints: unknown[] = [],
+		defaultValue?: unknown,
+	) => ({
+		identity: fieldIdentity(name),
+		name,
+		typeRef,
+		constraints,
+		presence: multiplicity.lower === 0 ? "optional" : "required",
+		nullable,
+		multiplicity,
+		...(defaultValue === undefined
+			? { defaultKind: "none" }
+			: { defaultKind: "semantic", defaultValue }),
+		extensions: [],
+	});
+	const matrix = {
+		identity: type("WrapperFieldMatrix"),
+		displayName: "WrapperFieldMatrix",
+		kind: "record",
+		unknownPolicy: "reject",
+		fields: [
+			field(
+				"native_scalar",
+				"ix://quire/native/String",
+				{ lower: 1, upper: 1, ordered: false, unique: false },
+				false,
+				[],
+			),
+			field(
+				"native_collection",
+				"ix://quire/native/String",
+				{ lower: 1, upper: 3, ordered: true, unique: false },
+				false,
+				[],
+			),
+			field(
+				"required_text",
+				namedText.identity,
+				{ lower: 1, upper: 1, ordered: false, unique: false },
+				false,
+				[minLength(fieldIdentity("required_text"))],
+			),
+			field(
+				"optional_text",
+				namedText.identity,
+				{ lower: 0, upper: 1, ordered: false, unique: false },
+				false,
+				[minLength(fieldIdentity("optional_text"))],
+			),
+			field(
+				"nullable_text",
+				namedText.identity,
+				{ lower: 1, upper: 1, ordered: false, unique: false },
+				true,
+				[minLength(fieldIdentity("nullable_text"))],
+			),
+			field(
+				"text_items",
+				namedText.identity,
+				{ lower: 1, upper: 3, ordered: true, unique: false },
+				false,
+				[minLength(fieldIdentity("text_items"))],
+			),
+			field(
+				"nullable_decimal",
+				namedDecimal.identity,
+				{ lower: 0, upper: 1, ordered: false, unique: false },
+				true,
+				[minDecimal(fieldIdentity("nullable_decimal"))],
+			),
+			field(
+				"optional_decimal_items",
+				namedDecimal.identity,
+				{ lower: 0, upper: 3, ordered: true, unique: false },
+				true,
+				[minDecimal(fieldIdentity("optional_decimal_items"))],
+			),
+			field(
+				"required_default",
+				namedText.identity,
+				{ lower: 1, upper: 1, ordered: false, unique: false },
+				false,
+				[],
+				"hello",
+			),
+		],
+		extensions: [],
+	};
+	ir.types.push(namedText, namedDecimal, matrix);
+	const origin = ir.source;
+	for (const definition of [namedText, namedDecimal, matrix] as any[]) {
+		definition.roles = [];
+		definition.constraints ??= [];
+		definition.unknownPolicy ??= "reject";
+		definition.origin = {
+			source: {
+				sourceIdentity: origin.identity,
+				path: "numeric.json",
+				startLine: 1,
+				startColumn: 1,
+			},
+		};
+		for (const one of definition.fields ?? []) {
+			one.origin = definition.origin;
+			for (const constraint of one.constraints ?? [])
+				constraint.origin = definition.origin;
+		}
+	}
+	return ir;
+}
+
 function jsonSafeIr() {
 	const ir = structuredClone(numericIr());
 	ir.types = ir.types.filter(
@@ -395,7 +557,7 @@ it("renders decimal equality and uniqueness checks in the generated validator", 
 it("executes Rust decimal read/write boundaries", () => {
 	const result = emitCrate(
 		{
-			ir: numericIr(),
+			ir: wrapperFieldMatrixIr(),
 			outputRoot: "generated/rust",
 			limits: RUST_LIMITS,
 		} as never,
@@ -435,7 +597,7 @@ it("executes Rust decimal read/write boundaries", () => {
 use agent_ix_exact_numeric::{
     DecimalAlias, DecimalBounded, DecimalEnum, DecimalList, DeepDecimalAlias,
     DirectDecimalCollection, NestedDecimalRoutes, NullableDecimalCollection,
-    RuntimeNumeric,
+    RuntimeNumeric, WrapperFieldMatrix,
 };
 
 #[test]
@@ -490,6 +652,21 @@ fn decimal_boundaries_round_trip() {
     assert!(serde_json::to_string(&absent).unwrap().contains(r#""items":["1.10"]"#));
     assert!(serde_json::from_str::<NestedDecimalRoutes>(
         r#"{"items":["1234.1"]}"#,
+    ).is_err());
+}
+
+#[test]
+fn field_check_matrix_compiles_and_validates() {
+    let valid: WrapperFieldMatrix = serde_json::from_str(
+        r#"{"native_scalar":"ok","native_collection":["ok"],"required_text":"ok","nullable_text":null,"text_items":["ok"],"nullable_decimal":"0.10","optional_decimal_items":[null,"0.10"],"required_default":"hello"}"#,
+    ).unwrap();
+    let wire = serde_json::to_string(&valid).unwrap();
+    assert!(wire.contains(r#""required_text":"ok""#));
+    assert!(serde_json::from_str::<WrapperFieldMatrix>(
+        r#"{"native_scalar":"ok","native_collection":["ok"],"required_text":"","nullable_text":null,"text_items":["ok"],"required_default":"hello"}"#,
+    ).is_err());
+    assert!(serde_json::from_str::<WrapperFieldMatrix>(
+        r#"{"native_scalar":"ok","native_collection":["ok"],"required_text":"ok","nullable_text":null,"text_items":[""],"required_default":"hello"}"#,
     ).is_err());
 }
 `,
