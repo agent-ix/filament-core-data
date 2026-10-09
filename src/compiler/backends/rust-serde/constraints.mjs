@@ -32,7 +32,7 @@
  */
 
 import { applies, isKeyword } from "../../ir/applicability.mjs";
-import { RUST_BACKEND_CODES, diagnostic, fragment } from "./diagnostics.mjs";
+import { diagnostic, fragment, RUST_BACKEND_CODES } from "./diagnostics.mjs";
 import {
 	classifyPattern,
 	lowerPattern,

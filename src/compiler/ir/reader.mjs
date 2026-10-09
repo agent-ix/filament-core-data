@@ -477,7 +477,6 @@ export function readContractIr(document, options = {}) {
 				);
 			}
 		}
-		let multiplicity;
 		if (field.multiplicity === undefined) {
 			raise(
 				DIAGNOSTIC_CODES.MISSING_MULTIPLICITY,
@@ -485,7 +484,7 @@ export function readContractIr(document, options = {}) {
 				locusOf(field),
 			);
 		} else {
-			multiplicity = checkMultiplicity(field.multiplicity, field);
+			checkMultiplicity(field.multiplicity, field);
 		}
 		if (field.unit !== undefined) {
 			if (typeof field.unit !== "string" || field.unit.length === 0) {
@@ -526,11 +525,7 @@ export function readContractIr(document, options = {}) {
 			}
 			if (
 				Object.hasOwn(field, "defaultValue") &&
-				!defaultValueAdmitted(
-					field,
-					resolved.scalar,
-					policies[0]?.decimal,
-				)
+				!defaultValueAdmitted(field, resolved.scalar, policies[0]?.decimal)
 			) {
 				raise(
 					DIAGNOSTIC_CODES.INVALID_DEFAULT_VALUE,

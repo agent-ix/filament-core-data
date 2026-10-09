@@ -24,8 +24,8 @@
 
 import {
 	abstractAncestors,
-	adoptDeclaration,
 	admits,
+	adoptDeclaration,
 	bindConstructs,
 	constructOf,
 	declarationOf,
@@ -117,14 +117,28 @@ function integerRustType(definition) {
 	const bounds = { lower: -SAFE_INTEGER, upper: SAFE_INTEGER };
 	for (const constraint of definition?.constraints ?? []) {
 		const value = constraint?.operands?.value;
-		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value)) continue;
+		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
+			continue;
 		const parsed = BigInt(value);
-		if (constraint.keyword === "min") bounds.lower = bounds.lower > parsed ? bounds.lower : parsed;
-		if (constraint.keyword === "exclusiveMin") bounds.lower = bounds.lower > parsed + 1n ? bounds.lower : parsed + 1n;
-		if (constraint.keyword === "max") bounds.upper = bounds.upper === SAFE_INTEGER && parsed > SAFE_INTEGER ? parsed : bounds.upper < parsed ? bounds.upper : parsed;
+		if (constraint.keyword === "min")
+			bounds.lower = bounds.lower > parsed ? bounds.lower : parsed;
+		if (constraint.keyword === "exclusiveMin")
+			bounds.lower = bounds.lower > parsed + 1n ? bounds.lower : parsed + 1n;
+		if (constraint.keyword === "max")
+			bounds.upper =
+				bounds.upper === SAFE_INTEGER && parsed > SAFE_INTEGER
+					? parsed
+					: bounds.upper < parsed
+						? bounds.upper
+						: parsed;
 		if (constraint.keyword === "exclusiveMax") {
 			const effective = parsed - 1n;
-			bounds.upper = bounds.upper === SAFE_INTEGER && effective > SAFE_INTEGER ? effective : bounds.upper < effective ? bounds.upper : effective;
+			bounds.upper =
+				bounds.upper === SAFE_INTEGER && effective > SAFE_INTEGER
+					? effective
+					: bounds.upper < effective
+						? bounds.upper
+						: effective;
 		}
 	}
 	if (bounds.lower >= I64_MIN && bounds.upper <= I64_MAX) return "i64";
@@ -637,7 +651,10 @@ function mapType(definition, context) {
 			}
 			model.scalar = scalar;
 			if (scalar === "decimal") model.decimal = definition.decimal;
-			model.inner = scalar === "integer" ? integerRustType(definition) : KERNEL_SCALARS[scalar];
+			model.inner =
+				scalar === "integer"
+					? integerRustType(definition)
+					: KERNEL_SCALARS[scalar];
 			model.row = `scalar:${scalar}`;
 			break;
 		}
@@ -1044,7 +1061,7 @@ function mapMethod(operation, owner, context, version) {
 	};
 }
 
-function mapField(field, owner, context, version) {
+function mapField(field, owner, context, _version) {
 	const { raise, graph } = context;
 	const locus = field.origin?.source ?? owner.origin?.source;
 	// fcd#179: 2.0.0 is the only contract, and its schema requires
@@ -1095,7 +1112,7 @@ function mapField(field, owner, context, version) {
 						...(targetDefinition?.constraints ?? []),
 						...field.constraints,
 					],
-			  })
+				})
 			: undefined;
 	const element =
 		integerFieldType ??

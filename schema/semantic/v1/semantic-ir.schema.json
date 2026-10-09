@@ -799,6 +799,8 @@
 						"integer",
 						"number",
 						"decimal",
+						"float32",
+						"float64",
 						"string",
 						"bytes",
 						"date",

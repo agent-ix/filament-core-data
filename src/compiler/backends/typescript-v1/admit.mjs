@@ -503,12 +503,32 @@ function resolvedKind(types, fields, identity, maxDepth) {
  * `src/compiler/ir/applicability.mjs`, which FR-068-CON-1 forbids.
  */
 const APPLICABILITY = Object.freeze({
-	min: ["integer", "number", "decimal", "date", "datetime", "duration"],
-	max: ["integer", "number", "decimal", "date", "datetime", "duration"],
+	min: [
+		"integer",
+		"number",
+		"decimal",
+		"float32",
+		"float64",
+		"date",
+		"datetime",
+		"duration",
+	],
+	max: [
+		"integer",
+		"number",
+		"decimal",
+		"float32",
+		"float64",
+		"date",
+		"datetime",
+		"duration",
+	],
 	exclusiveMin: [
 		"integer",
 		"number",
 		"decimal",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
@@ -517,6 +537,8 @@ const APPLICABILITY = Object.freeze({
 		"integer",
 		"number",
 		"decimal",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
@@ -529,6 +551,8 @@ const APPLICABILITY = Object.freeze({
 		"integer",
 		"number",
 		"decimal",
+		"float32",
+		"float64",
 		"string",
 		"bytes",
 		"date",
@@ -541,7 +565,13 @@ const APPLICABILITY = Object.freeze({
 	format: ["string"],
 });
 
-const NUMERIC_SCALARS = new Set(["integer", "number", "decimal"]);
+const NUMERIC_SCALARS = new Set([
+	"integer",
+	"number",
+	"decimal",
+	"float32",
+	"float64",
+]);
 const TEMPORAL_SCALARS = new Set(["date", "datetime", "duration"]);
 
 /* ----------------------------------------------------------------- the reader */
@@ -1029,7 +1059,6 @@ export function admitIr(bundle, options = {}) {
 			}
 			if (constraint.keyword === "pattern") {
 				try {
-					// biome-ignore lint/complexity/useRegexLiterals: the pattern is data
 					new RegExp(constraint.operands?.regex ?? "");
 				} catch {
 					emit(
