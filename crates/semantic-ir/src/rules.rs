@@ -34,6 +34,11 @@ pub struct RuleLimits {
 /// naming one resolves against this closed set instead of `document.types`.
 pub const NATIVE_PREFIX: &str = "ix://quire/native/";
 
+const INEXACT_INTEGER: &str = "agent-ix.semantic-ir.INEXACT_INTEGER";
+const INEXACT_NUMBER: &str = "agent-ix.semantic-ir.INEXACT_NUMBER";
+const INTEGER_OUTSIDE_I128: &str = "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128";
+const INVALID_DEFAULT_VALUE: &str = "agent-ix.semantic-ir.INVALID_DEFAULT_VALUE";
+
 /// The FR-032 kernel scalar library's names, each with the `irScalar` value
 /// `KernelScalar::ir_scalar` (`crates/extraction-frontend/src/scalars.rs`)
 /// gives it; this reader carries the same closed set independently, since it
@@ -476,6 +481,16 @@ impl<'a> Document<'a> {
             .first
             .into_iter()
             .collect()
+    }
+
+    fn decimal_policy(&self, identity: &str) -> Option<(u32, u32)> {
+        let policy = self.decimal_policies_from(identity, None).first?;
+        let precision = policy.get("precision").and_then(Json::as_i64)?;
+        let scale = policy.get("scale").and_then(Json::as_i64)?;
+        if precision < 0 || scale < 0 {
+            return None;
+        }
+        Some((precision as u32, scale as u32))
     }
 
     /// Apply the Decimal policy rule to any type reference position. Keeping
