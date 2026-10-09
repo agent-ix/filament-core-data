@@ -529,6 +529,53 @@ it("executes decimal enum equality and unique collection rejection", async () =>
 });
 
 /** Traces: FR-144-AC-15, FR-144-AC-19. */
+it("renders normalized Decimal forms and refuses alias, enum, and native losses", () => {
+	const scalarIr = structuredClone(numericIr());
+	scalarIr.types = scalarIr.types.filter(
+		(type: { displayName: string }) => type.displayName === "Decimal",
+	);
+	const scalarResult = jsonSchemaBackend.generate({ ir: scalarIr } as never);
+	expect(scalarResult.state).toBe("success");
+	const scalarSchema = JSON.parse(
+		scalarResult.files.find(([path]) => path === "Decimal.json")?.[1] ?? "{}",
+	);
+	const decimalPattern = new RegExp(scalarSchema.pattern);
+	for (const value of ["1.10", "0.00", "999.90"]) {
+		expect(decimalPattern.test(value)).toBe(true);
+	}
+
+	const aliasBoundedIr = structuredClone(numericIr());
+	aliasBoundedIr.types = aliasBoundedIr.types.filter(
+		(type: { displayName: string }) =>
+			["Decimal", "DecimalBounded"].includes(type.displayName),
+	);
+	const aliasBounded = jsonSchemaBackend.generate({
+		ir: aliasBoundedIr,
+	} as never);
+	expect(aliasBounded.state).toBe("unsupported");
+	expect(aliasBounded.diagnostics[0].message).toContain("decimal min");
+
+	const enumIr = structuredClone(numericIr());
+	enumIr.types = enumIr.types.filter((type: { displayName: string }) =>
+		["Decimal", "DecimalEnum"].includes(type.displayName),
+	);
+	const enumResult = jsonSchemaBackend.generate({ ir: enumIr } as never);
+	expect(enumResult.state).toBe("unsupported");
+	expect(enumResult.diagnostics[0].message).toContain("decimal enumValues");
+
+	const nativeUniqueIr = structuredClone(numericIr());
+	nativeUniqueIr.types = nativeUniqueIr.types.filter(
+		(type: { displayName: string }) =>
+			type.displayName === "DirectDecimalCollection",
+	);
+	const nativeUnique = jsonSchemaBackend.generate({
+		ir: nativeUniqueIr,
+	} as never);
+	expect(nativeUnique.state).toBe("unsupported");
+	expect(nativeUnique.diagnostics[0].message).toContain("decimal uniqueness");
+});
+
+/** Traces: FR-144-AC-15, FR-144-AC-19. */
 it("refuses JSON Schema decimal bounds and decimal unique collections as declared loss", () => {
 	const bounded = structuredClone(jsonSafeIr());
 	const decimal = bounded.types.find(

@@ -139,19 +139,21 @@ function decimalSchema(policy) {
 	if (!Number.isInteger(precision) || !Number.isInteger(scale))
 		return { type: "string" };
 	const integerDigits = precision - scale;
-	const fraction = scale > 0 ? `0\\.[0-9]{0,${scale - 1}}[1-9]` : undefined;
-	const nonzero =
-		integerDigits > 0
-			? `[1-9][0-9]{0,${integerDigits - 1}}${
-					scale > 0 ? `(?:\\.[0-9]{0,${scale - 1}}[1-9])?` : ""
-				}`
-			: undefined;
-	const alternatives = [fraction, nonzero].filter(
-		(value) => value !== undefined,
-	);
+	if (integerDigits < 0 || scale < 0) return { type: "string" };
+	const integer =
+		integerDigits === 0 ? "0" : `(?:0|[1-9][0-9]{0,${integerDigits - 1}})`;
+	const fraction = scale > 0 ? `(?:\\.[0-9]{1,${scale}})?` : "";
+	const negativeInteger =
+		integerDigits === 0 ? "" : `[1-9][0-9]{0,${integerDigits - 1}}`;
+	const negativeFraction =
+		scale > 0 ? `0\\.(?=[0-9]*[1-9])[0-9]{1,${scale}}` : "";
+	const negative = [
+		negativeInteger && `${negativeInteger}${fraction}`,
+		negativeFraction,
+	].filter(Boolean);
 	return {
 		type: "string",
-		pattern: `^(?:0|-?(?:${alternatives.join("|")}))$`,
+		pattern: `^(?:${integer}${fraction}|-(?:${negative.join("|")}))$`,
 	};
 }
 function nativeScalar(id) {
@@ -189,6 +191,7 @@ function constraint(schema, one, subject) {
 	return schema;
 }
 function decimalScalar(types, identity, seen = new Set()) {
+	if (identity === "ix://quire/native/Decimal") return "decimal";
 	if (typeof identity !== "string" || seen.has(identity)) return undefined;
 	seen.add(identity);
 	const type = types.get(identity);
@@ -197,21 +200,27 @@ function decimalScalar(types, identity, seen = new Set()) {
 		return decimalScalar(types, type.target, seen);
 	return undefined;
 }
-
 function decimalLosses(ir, types) {
 	const losses = [];
-	for (const type of ir.types ?? []) {
-		if (
-			type.scalar === "decimal" &&
-			(type.constraints ?? []).some((one) =>
-				["min", "max", "exclusiveMin", "exclusiveMax"].includes(one.keyword),
-			)
-		)
+	const boundKeywords = new Set(["min", "max", "exclusiveMin", "exclusiveMax"]);
+	const lossFor = (identity, keyword) => {
+		if (boundKeywords.has(keyword))
 			losses.push({
 				code: DIAGNOSTIC_CODES.UNDECLARED_LOSS,
 				blocking: true,
-				message: `JSON Schema cannot enforce decimal bounds on ${type.identity}`,
+				message: `JSON Schema cannot enforce decimal ${keyword} on ${identity}`,
 			});
+		else if (keyword === "enumValues")
+			losses.push({
+				code: DIAGNOSTIC_CODES.UNDECLARED_LOSS,
+				blocking: true,
+				message: `JSON Schema cannot enforce decimal enumValues on ${identity}`,
+			});
+	};
+	for (const type of ir.types ?? []) {
+		if (decimalScalar(types, type.identity) === "decimal")
+			for (const one of type.constraints ?? [])
+				lossFor(type.identity, one.keyword);
 		for (const field of type.fields ?? []) {
 			if (
 				field.multiplicity?.unique &&
@@ -222,6 +231,9 @@ function decimalLosses(ir, types) {
 					blocking: true,
 					message: `JSON Schema cannot enforce decimal uniqueness on ${field.identity}`,
 				});
+			if (decimalScalar(types, field.typeRef) === "decimal")
+				for (const one of field.constraints ?? [])
+					lossFor(field.identity, one.keyword);
 		}
 	}
 	return losses;
