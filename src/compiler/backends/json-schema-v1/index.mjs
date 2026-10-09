@@ -170,7 +170,15 @@ function integerPattern(lower, upper) {
 		const excluded = unsignedAtMost(minAbs - 1n);
 		alternatives.push(`-(?!${excluded}$)${bounded}`);
 	}
-	if (upper >= 0n) alternatives.push(unsignedAtMost(upper));
+	if (upper >= 0n) {
+		const positive = unsignedAtMost(upper);
+		const excluded = lower > 0n ? unsignedAtMost(lower - 1n) : undefined;
+		alternatives.push(
+			excluded === undefined
+				? positive
+				: `(?!(?:${excluded})$)${positive}`,
+		);
+	}
 	return `^(?:${alternatives.join("|")})$`;
 }
 
@@ -464,13 +472,6 @@ function fieldSchema(field, types) {
 		target = types.get(target.target);
 	}
 	if (
-		integerScalar(types, field.typeRef) === "integer" &&
-		inheritedIntegerConstraints.length > 0
-	) {
-		const integer = integerSchema(inheritedIntegerConstraints);
-		schema = schema.enum ? { ...integer, enum: schema.enum } : integer;
-	}
-	if (
 		field.multiplicity &&
 		(field.multiplicity.upper === undefined || field.multiplicity.upper > 1)
 	) {
@@ -486,22 +487,30 @@ function fieldSchema(field, types) {
 		constraint(
 			schema,
 			one,
-			decimalScalar(types, field.typeRef) === "decimal"
-				? { ...(target ?? {}), scalar: "decimal" }
-				: target,
+			(integerScalar(types, field.typeRef) === "integer"
+				? { ...(target ?? {}), scalar: "integer" }
+				: decimalScalar(types, field.typeRef) === "decimal"
+					? { ...(target ?? {}), scalar: "decimal" }
+					: target),
 			effectiveDecimalPolicy,
 		);
 	if (
 		integerScalar(types, field.typeRef) === "integer" &&
-		(field.constraints ?? []).some((one) =>
-			["min", "max", "exclusiveMin", "exclusiveMax"].includes(one.keyword),
-		)
+		(inheritedIntegerConstraints.length > 0 ||
+			(field.constraints ?? []).some((one) =>
+				["min", "max", "exclusiveMin", "exclusiveMax"].includes(one.keyword),
+			))
 	) {
 		const integer = integerSchema([
 			...inheritedIntegerConstraints,
 			...(field.constraints ?? []),
 		]);
-		schema = schema.enum ? { ...integer, enum: schema.enum } : integer;
+		const bounded = schema.enum ? { ...integer, enum: schema.enum } : integer;
+		schema = Array.isArray(schema.items)
+			? { ...schema, items: bounded }
+			: schema.type === "array"
+				? { ...schema, items: bounded }
+				: bounded;
 	}
 	return annotated(schema, field);
 }

@@ -278,7 +278,10 @@ function subjectAccess(definition, byIdentity) {
 				: undefined;
 		// A scalar declaration maps directly to its primitive inner type. Only
 		// another alias contributes a newtype wrapper and therefore a get().
-		if (targetSupport === undefined && target?.kind !== "scalar")
+		if (
+			targetSupport === undefined &&
+			!(target?.kind === "scalar" && target.scalar === "integer")
+		)
 			expression = `${expression}.get()`;
 		current = target;
 	}
@@ -1656,7 +1659,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 				: type.wideInteger
 					? "#[derive(Clone, Debug, PartialEq)]"
 					: "#[derive(Clone, Debug, PartialEq, Serialize)]",
-		"#[serde(transparent)]",
+		...(type.wideInteger ? [] : ["#[serde(transparent)]"]),
 		`pub struct ${type.typeName}(${inner});`,
 		"",
 		`impl ${type.typeName} {`,

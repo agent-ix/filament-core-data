@@ -148,6 +148,20 @@ function wideInteger(constraints, scalar) {
 	return lower < -safe || upper > safe;
 }
 
+function effectiveWideInteger(types, identity, seen = new Set()) {
+	if (typeof identity !== "string" || seen.has(identity)) return false;
+	seen.add(identity);
+	const type = types.get(identity);
+	if (type === undefined) return false;
+	if (type.kind === "scalar") return wideInteger(type.constraints, type.scalar);
+	if (type.kind === "alias" || type.kind === "reference")
+		return (
+			wideInteger(type.constraints, resolveScalar(types, identity)) ||
+			effectiveWideInteger(types, type.target, seen)
+		);
+	return false;
+}
+
 /**
  * The acyclic summary of the entry `identity` names: what a renderer needs to
  * write a reference to it, and no object reference that could close a cycle.
@@ -160,9 +174,7 @@ function summaryOf(types, identifiers, identity) {
 		identifier: identifiers.get(identity),
 		kind: type === undefined ? undefined : kindName(type.kind),
 		scalar: resolveScalar(types, identity),
-		wideInteger:
-			resolveScalar(types, identity) === "integer" &&
-			wideInteger(type?.constraints, "integer"),
+		wideInteger: effectiveWideInteger(types, identity),
 		decimal: type?.decimal,
 		declared: type !== undefined,
 	});
@@ -298,7 +310,7 @@ export function buildModel(ir, options = {}) {
 		const scalar = resolveScalar(types, type.identity);
 		if (scalar !== undefined) entry.scalar = scalar;
 		if (type.decimal !== undefined) entry.decimal = type.decimal;
-		entry.wideInteger = wideInteger(entry.constraints, scalar);
+		entry.wideInteger = effectiveWideInteger(types, type.identity);
 
 		if (isRecordShaped(type) || isInstanceless(type)) {
 			// An interface and a namespace construct carry no fields: they have no

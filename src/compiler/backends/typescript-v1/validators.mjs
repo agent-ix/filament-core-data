@@ -344,14 +344,6 @@ function scalarCheckBody(model, entry) {
 	}
 	if (["integer", "number", "float32", "float64"].includes(entry.scalar)) {
 		lines.push(...numericStatements(entry.scalar, "\t"));
-		if (entry.scalar === "float32") {
-			lines.push(
-				'\tif (Math.fround(candidate) !== candidate) {',
-				'\t\tfail(errors, pointer, CODES.NOT_A_NUMBER_VALUE, "the value is not exactly representable as binary32");',
-				"\t\treturn false;",
-				"\t}",
-			);
-		}
 	}
 	if (entry.scalar === "bytes") {
 		lines.push(

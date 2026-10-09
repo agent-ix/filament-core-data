@@ -612,6 +612,11 @@ export function readContractIr(document, options = {}) {
 				"float64",
 			].includes(resolved.scalar);
 			const value = operands.value;
+			const outsideI128 =
+				resolved.scalar === "integer" &&
+				typeof value === "string" &&
+				/^(0|-?[1-9][0-9]*)$/.test(value) &&
+				!withinI128(value);
 			if (
 				!operandAdmitted(
 					numeric,
@@ -621,8 +626,12 @@ export function readContractIr(document, options = {}) {
 				)
 			) {
 				raise(
-					DIAGNOSTIC_CODES.INVALID_OPERAND,
-					`${fragment(keyword)} on ${fragment(String(resolved.scalar))} takes an exact numeric operand`,
+					outsideI128
+						? DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128
+						: DIAGNOSTIC_CODES.INVALID_OPERAND,
+					outsideI128
+						? `${fragment(keyword)} on integer is outside the exact i128 domain`
+						: `${fragment(keyword)} on ${fragment(String(resolved.scalar))} takes an exact numeric operand`,
 					locusOf(constraint) ?? locusOf(owner),
 				);
 			}

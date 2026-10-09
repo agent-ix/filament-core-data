@@ -958,6 +958,9 @@ fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
     let digits = format!("{whole}{fraction}");
 	let decimal_at = whole.len() as i64 + exponent;
     let zero = digits.chars().all(|ch| ch == '0');
+	if zero {
+		return Some((false, "0".to_string(), true));
+	}
     let (mut integer, mut fraction_out) = if decimal_at <= 0 {
         (
             "0".to_string(),

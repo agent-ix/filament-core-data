@@ -10,7 +10,7 @@ import { readContractIr } from "../src/compiler/ir/reader.mjs";
 
 /**
  * FR-144 (TC-1825): an integer bound is a canonical decimal string. The Node
- * reader and the oracle accept the canonical strings and refuse the rest with INVALID_OPERAND; the TypeScript and JSON Schema
+ * reader and the oracle accept canonical strings, distinguish i128 overflow, and refuse malformed operands; the TypeScript and JSON Schema
  * backends preserve a bound past 2^53 without a representability refusal.
  */
 
@@ -62,8 +62,14 @@ const generated = (backend: typeof typescriptBackend, ir: Ir) =>
 	};
 
 const operand = "agent-ix.semantic-ir.INVALID_OPERAND";
+const outsideI128 = "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128";
 const ACCEPTED = ["18446744073709551615", "-9223372036854775809", "0"];
 const REFUSED = ["01", "+1", " 1", "1 ", "-0", "1.0", "007", "zero", 7];
+const REFUSED_STRINGS = REFUSED.filter((value) => typeof value === "string");
+const OUTSIDE_I128 = [
+	"170141183460469231731687303715884105728",
+	"-170141183460469231731687303715884105729",
+];
 
 describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 	/** Trace: FR-144-AC-2. */
@@ -74,13 +80,16 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		for (const value of REFUSED) {
 			expect(readerCodes(withBound(value)), value).toContain(operand);
 		}
+		for (const value of OUTSIDE_I128) {
+			expect(readerCodes(withBound(value)), value).toContain(outsideI128);
+		}
 	});
 
 	it("the oracle accepts canonical strings and refuses the rest (TC-1825)", () => {
 		for (const value of ACCEPTED) {
 			expect(oracleCodes(withBound(value)), String(value)).toEqual([]);
 		}
-		for (const value of REFUSED) {
+		for (const value of REFUSED_STRINGS) {
 			expect(oracleCodes(withBound(value)), value).toContain(operand);
 		}
 	});
