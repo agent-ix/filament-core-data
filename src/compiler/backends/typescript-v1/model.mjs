@@ -181,6 +181,7 @@ function fieldEntry(types, identifiers, field) {
 		extensions: Object.freeze([...(field.extensions ?? [])]),
 		origin: field.origin,
 	};
+	if (field.decimal !== undefined) entry.decimal = field.decimal;
 	// `defaultValue` is present exactly when `defaultKind` is not `none`, which
 	// the published schema enforces; carrying the member only when the document
 	// does keeps the two states distinguishable rather than collapsing an
@@ -259,6 +260,7 @@ export function buildModel(ir, options = {}) {
 		};
 		const scalar = resolveScalar(types, type.identity);
 		if (scalar !== undefined) entry.scalar = scalar;
+		if (type.decimal !== undefined) entry.decimal = type.decimal;
 
 		if (isRecordShaped(type) || isInstanceless(type)) {
 			// An interface and a namespace construct carry no fields: they have no

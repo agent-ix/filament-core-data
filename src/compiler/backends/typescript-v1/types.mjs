@@ -41,6 +41,7 @@ const SCALAR_PRIMITIVES = Object.freeze({
 	boolean: "boolean",
 	integer: "number",
 	number: "number",
+	decimal: "string",
 	string: "string",
 	bytes: "string",
 	date: "string",
@@ -48,6 +49,10 @@ const SCALAR_PRIMITIVES = Object.freeze({
 	duration: "string",
 	uuid: "string",
 });
+
+function primitiveFor(entry) {
+	return SCALAR_PRIMITIVES[entry.scalar];
+}
 
 /** The extra JSDoc line a scalar earns where its string form needs stating. */
 const SCALAR_NOTES = Object.freeze({
@@ -129,7 +134,7 @@ function fieldType(field) {
 }
 
 function renderScalar(entry) {
-	const primitive = SCALAR_PRIMITIVES[entry.scalar];
+	const primitive = primitiveFor(entry);
 	const note = SCALAR_NOTES[entry.scalar];
 	return [
 		jsdoc([docTextOf(entry), note], ""),
@@ -138,9 +143,10 @@ function renderScalar(entry) {
 }
 
 function renderAlias(entry) {
+	const scalar = entry.scalar === undefined ? undefined : primitiveFor(entry);
 	return [
 		jsdoc([docTextOf(entry)], ""),
-		`export type ${entry.identifier} = ${elementType(entry.targetEntry)};`,
+		`export type ${entry.identifier} = ${scalar ?? elementType(entry.targetEntry)};`,
 	].join("");
 }
 

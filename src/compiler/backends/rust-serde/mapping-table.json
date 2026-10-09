@@ -234,7 +234,16 @@
 			"selector": "integer",
 			"rustForm": "i64",
 			"serdeAttributes": [],
-			"mechanism": "JSON number with no fraction or exponent",
+			"mechanism": "canonical integer string; i64, u64 or i128 selected by effective range",
+			"diagnosticCode": null
+		},
+		{
+			"rowKey": "scalar:decimal",
+			"axis": "scalar",
+			"selector": "decimal",
+			"rustForm": "crate::support::Decimal",
+			"serdeAttributes": [],
+			"mechanism": "canonical decimal string through support::Decimal",
 			"diagnosticCode": null
 		},
 		{
@@ -531,7 +540,7 @@
 			"rustForm": null,
 			"serdeAttributes": ["default = \"<generated fn>\""],
 			"mechanism": "a serde default drawn from defaultValue, plus the metadata record",
-			"diagnosticCode": "agent-ix.rust-backend.INVALID_DEFAULT_VALUE"
+			"diagnosticCode": "agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE"
 		},
 		{
 			"rowKey": "defaultKind:representation",

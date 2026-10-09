@@ -30,6 +30,7 @@ const scalarSchema = Object.freeze({
 	boolean: { type: "boolean" },
 	integer: { type: "integer" },
 	number: { type: "number" },
+	decimal: { type: "string", pattern: "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$" },
 	string: { type: "string" },
 	bytes: { type: "string", contentEncoding: "base64" },
 	date: { type: "string", format: "date" },
@@ -125,13 +126,36 @@ const NATIVE_SCALARS = Object.freeze({
 	UUID: "uuid",
 	Boolean: "boolean",
 	Integer: "integer",
-	Decimal: "number",
+	Decimal: "decimal",
 	String: "string",
 	Timestamp: "datetime",
 	Duration: "duration",
 	Bytes: "bytes",
 	JsonObject: "any",
 });
+function decimalSchema(policy) {
+	const precision = Number(policy?.precision);
+	const scale = Number(policy?.scale);
+	if (!Number.isInteger(precision) || !Number.isInteger(scale))
+		return { type: "string" };
+	const integerDigits = precision - scale;
+	if (integerDigits < 0 || scale < 0) return { type: "string" };
+	const integer =
+		integerDigits === 0 ? "0" : `(?:0|[1-9][0-9]{0,${integerDigits - 1}})`;
+	const fraction = scale > 0 ? `(?:\\.[0-9]{1,${scale}})?` : "";
+	const negativeInteger =
+		integerDigits === 0 ? "" : `[1-9][0-9]{0,${integerDigits - 1}}`;
+	const negativeFraction =
+		scale > 0 ? `0\\.(?=[0-9]*[1-9])[0-9]{1,${scale}}` : "";
+	const negative = [
+		negativeInteger && `${negativeInteger}${fraction}`,
+		negativeFraction,
+	].filter(Boolean);
+	return {
+		type: "string",
+		pattern: `^(?:${integer}${fraction}|-(?:${negative.join("|")}))$`,
+	};
+}
 function nativeScalar(id) {
 	if (typeof id !== "string" || !id.startsWith(NATIVE_PREFIX)) return undefined;
 	return NATIVE_SCALARS[id.slice(NATIVE_PREFIX.length)];
@@ -142,7 +166,30 @@ function ref(types, id) {
 	const target = types.get(id);
 	return target ? { $ref: `./${nameOf(target)}.json` } : {};
 }
-function constraint(schema, one, subject) {
+function decimalEnumPattern(values, policy) {
+	const scale = Number.isInteger(Number(policy?.scale))
+		? Number(policy.scale)
+		: 38;
+	const patterns = [];
+	for (const value of values ?? []) {
+		if (typeof value !== "string") continue;
+		const match = value.match(/^(-?)(0|[1-9][0-9]*)(?:\.([0-9]+))?$/);
+		if (!match) continue;
+		const [, sign, whole, rawFraction = ""] = match;
+		const fraction = rawFraction.replace(/0+$/, "");
+		if (sign === "-" && whole === "0" && fraction.length === 0) continue;
+		if (fraction.length > scale) continue;
+		const trailing = scale - fraction.length;
+		const fractionPattern = fraction
+			? `\\.${fraction}0{0,${trailing}}`
+			: trailing > 0
+				? `(?:\\.0{1,${trailing}})?`
+				: "";
+		patterns.push(`${sign === "-" ? "-" : ""}${whole}${fractionPattern}`);
+	}
+	return patterns.length > 0 ? `^(?:${patterns.join("|")})$` : undefined;
+}
+function constraint(schema, one, subject, decimalPolicy) {
 	const value = one?.operands?.value;
 	const key = one?.keyword;
 	const table = {
@@ -158,18 +205,89 @@ function constraint(schema, one, subject) {
 		else if (subject?.kind === "map") schema.minProperties ??= 1;
 		else schema.minLength ??= 1;
 	} else if (key === "unique") schema.uniqueItems = true;
-	else if (key === "enumValues") schema.enum = one.operands.values;
-	else if (key === "pattern") schema.pattern = one.operands.regex;
+	else if (key === "enumValues") {
+		const pattern =
+			subject?.scalar === "decimal"
+				? decimalEnumPattern(one.operands.values, decimalPolicy)
+				: undefined;
+		if (pattern !== undefined) schema.pattern = pattern;
+		else schema.enum = one.operands.values;
+	} else if (key === "pattern") schema.pattern = one.operands.regex;
 	else if (key === "format") schema.format = FORMAT_MAP[one.operands.name];
 	else if (table[key] && value !== undefined) {
-		// An integer bound may be a canonical decimal string (contracts-v1); the
-		// backend has refused one past 2^53, so the number written is exact.
-		schema[table[key]] =
-			subject?.scalar === "integer" && typeof value === "string"
-				? Number(value)
-				: value;
+		schema[table[key]] = value;
 	}
 	return schema;
+}
+
+function decimalScalar(types, identity, seen = new Set()) {
+	if (identity === "ix://quire/native/Decimal") return "decimal";
+	if (typeof identity !== "string" || seen.has(identity)) return undefined;
+	seen.add(identity);
+	const type = types.get(identity);
+	if (type?.kind === "scalar") return type.scalar;
+	if (type?.kind === "alias" || type?.kind === "reference")
+		return decimalScalar(types, type.target, seen);
+	return undefined;
+}
+function decimalPolicy(types, identity, seen = new Set()) {
+	if (typeof identity !== "string" || seen.has(identity)) return undefined;
+	seen.add(identity);
+	const type = types.get(identity);
+	if (
+		type?.decimal !== undefined &&
+		decimalScalar(types, identity) === "decimal"
+	)
+		return type.decimal;
+	if (type?.kind === "scalar")
+		return type.scalar === "decimal" ? type.decimal : undefined;
+	if (type?.kind === "alias" || type?.kind === "reference")
+		return decimalPolicy(types, type.target, seen);
+	return undefined;
+}
+
+function decimalLosses(ir, types) {
+	const losses = [];
+	const boundKeywords = new Set(["min", "max", "exclusiveMin", "exclusiveMax"]);
+	const lossFor = (identity, keyword) => {
+		if (boundKeywords.has(keyword))
+			losses.push({
+				code: DIAGNOSTIC_CODES.UNDECLARED_LOSS,
+				blocking: true,
+				message: `JSON Schema cannot enforce decimal ${keyword} on ${identity}`,
+			});
+	};
+	for (const type of ir.types ?? []) {
+		if (
+			type.kind === "sequence" &&
+			decimalScalar(types, type.items) === "decimal" &&
+			(type.multiplicity?.unique === true ||
+				(type.constraints ?? []).some((one) => one.keyword === "unique"))
+		)
+			losses.push({
+				code: DIAGNOSTIC_CODES.UNDECLARED_LOSS,
+				blocking: true,
+				message: `JSON Schema cannot enforce decimal uniqueness on ${type.identity}`,
+			});
+		if (decimalScalar(types, type.identity) === "decimal")
+			for (const one of type.constraints ?? [])
+				lossFor(type.identity, one.keyword);
+		for (const field of type.fields ?? []) {
+			if (
+				field.multiplicity?.unique &&
+				decimalScalar(types, field.typeRef) === "decimal"
+			)
+				losses.push({
+					code: DIAGNOSTIC_CODES.UNDECLARED_LOSS,
+					blocking: true,
+					message: `JSON Schema cannot enforce decimal uniqueness on ${field.identity}`,
+				});
+			if (decimalScalar(types, field.typeRef) === "decimal")
+				for (const one of field.constraints ?? [])
+					lossFor(field.identity, one.keyword);
+		}
+	}
+	return losses;
 }
 function annotated(schema, node) {
 	schema["x-agent-ix-semantic-id"] = node.identity;
@@ -196,6 +314,7 @@ function annotated(schema, node) {
 }
 function fieldSchema(field, types) {
 	let schema = ref(types, field.typeRef);
+	if (field.decimal) schema = decimalSchema(field.decimal);
 	// An authored alias a field references may itself declare constraints
 	// (gap 1 of FCD #199/#200: a field's own constraints are now inline on the
 	// field, below, with no synthetic alias minted for them, but an authored
@@ -203,10 +322,20 @@ function fieldSchema(field, types) {
 	// those beside the reference: a bare sibling reference would erase the
 	// constraint at the API boundary this backend exists to enforce.
 	let target = types.get(field.typeRef);
+	const effectiveDecimalPolicy =
+		field.decimal ?? decimalPolicy(types, field.typeRef);
 	const seen = new Set();
 	while (target?.kind === "alias" && !seen.has(target.identity)) {
 		seen.add(target.identity);
-		for (const one of target.constraints ?? []) constraint(schema, one, target);
+		for (const one of target.constraints ?? [])
+			constraint(
+				schema,
+				one,
+				decimalScalar(types, field.typeRef) === "decimal"
+					? { ...target, scalar: "decimal" }
+					: target,
+				effectiveDecimalPolicy,
+			);
 		target = types.get(target.target);
 	}
 	if (
@@ -221,7 +350,15 @@ function fieldSchema(field, types) {
 		if (field.multiplicity.unique) schema.uniqueItems = true;
 	}
 	if (field.nullable) schema = { anyOf: [schema, { type: "null" }] };
-	for (const one of field.constraints ?? []) constraint(schema, one, target);
+	for (const one of field.constraints ?? [])
+		constraint(
+			schema,
+			one,
+			decimalScalar(types, field.typeRef) === "decimal"
+				? { ...(target ?? {}), scalar: "decimal" }
+				: target,
+			effectiveDecimalPolicy,
+		);
 	return annotated(schema, field);
 }
 /**
@@ -274,7 +411,10 @@ function renderType(ir, type, types, authored) {
 	const facts = constructOf(authored.get(type.identity) ?? type, authored);
 	switch (true) {
 		case type.kind === "scalar":
-			schema = { ...(scalarSchema[type.scalar] ?? {}) };
+			schema =
+				type.scalar === "decimal" && type.decimal
+					? decimalSchema(type.decimal)
+					: { ...(scalarSchema[type.scalar] ?? {}) };
 			break;
 		case isRecordShaped(type): {
 			// A record-shaped construct is the record schema over its effective
@@ -328,7 +468,9 @@ function renderType(ir, type, types, authored) {
 			};
 			break;
 		case type.kind === "alias":
-			schema = { allOf: [ref(types, type.target)] };
+			schema = type.decimal
+				? decimalSchema(type.decimal)
+				: { allOf: [ref(types, type.target)] };
 			break;
 		case type.kind === "sequence":
 			schema = { type: "array", items: ref(types, type.items) };
@@ -345,7 +487,15 @@ function renderType(ir, type, types, authored) {
 		default:
 			schema = {};
 	}
-	for (const one of type.constraints ?? []) constraint(schema, one, type);
+	for (const one of type.constraints ?? [])
+		constraint(
+			schema,
+			one,
+			decimalScalar(types, type.identity) === "decimal"
+				? { ...type, scalar: "decimal" }
+				: type,
+			decimalPolicy(types, type.identity),
+		);
 	return {
 		$schema: DRAFT,
 		$id: schemaId(ir, type),
@@ -389,11 +539,7 @@ function unsupportedFormat(ir) {
 	}
 	return undefined;
 }
-/**
- * A bound given as a canonical decimal string past 2^53: a JSON Schema bound is
- * a number, which would be written as the double it rounds to, loosening or
- * tightening the bound silently, so the backend refuses it.
- */
+/** Refuse integer bounds that JSON Schema would round through binary64. */
 function inexactIntegerBound(ir) {
 	for (const type of ir.types ?? []) {
 		for (const node of [type, ...(type.fields ?? [])]) {
@@ -534,6 +680,17 @@ export const jsonSchemaBackend = Object.freeze({
 		const types = new Map(
 			(ir.types ?? []).map((type) => [type.identity, type]),
 		);
+		const decimalLoss = decimalLosses(ir, types);
+		if (decimalLoss.length > 0)
+			return {
+				state: "unsupported",
+				files: [],
+				diagnostics: decimalLoss.map((one) =>
+					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
+						message: one.message,
+					}),
+				),
+			};
 		const authored = typeIndex(request.ir);
 		// Two definitions whose names derive one file name, or a definition whose
 		// name derives `index.json`, would overwrite one another. Each is refused

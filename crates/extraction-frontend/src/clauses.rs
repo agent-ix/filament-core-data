@@ -32,7 +32,9 @@
 
 use std::collections::BTreeSet;
 
-use quire_rs::semantic::{ClauseRef, Multiplicity, OperationDecl, SemanticExtraction};
+use quire_rs::semantic::{
+    ClauseRef, DecimalPolicy, Multiplicity, OperationDecl, SemanticExtraction,
+};
 use serde::Serialize;
 
 use crate::diagnostics::Locus;
@@ -96,6 +98,8 @@ pub struct Clause {
 #[serde(rename_all = "camelCase")]
 pub struct Returns {
     pub type_ref: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decimal: Option<DecimalPolicy>,
     pub multiplicity: Multiplicity,
     pub nullable: bool,
 }
@@ -212,6 +216,7 @@ pub fn lower_operations(
                 };
                 Some(Returns {
                     type_ref: type_ref_identity,
+                    decimal: type_ref.decimal.clone(),
                     multiplicity: crate::document::normalized_multiplicity(
                         type_ref
                             .multiplicity

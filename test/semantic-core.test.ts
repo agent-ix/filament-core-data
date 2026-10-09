@@ -745,6 +745,7 @@ describe("FR-032 kernel scalar table and FR-031 grammar reader (Task-044)", () =
 		const irScalars = new Set([
 			"boolean",
 			"integer",
+			"decimal",
 			"number",
 			"string",
 			"bytes",

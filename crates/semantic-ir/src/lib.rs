@@ -442,12 +442,30 @@ mod tests {
         bound_bundle_of("max", native, operand)
     }
 
+    fn bound_bundle_with_decimal_policy(native: &str, operand: &str) -> Json {
+        bound_bundle_of_with_policy("max", native, operand, true)
+    }
+
     fn bound_bundle_of(keyword: &str, native: &str, operand: &str) -> Json {
+        bound_bundle_of_with_policy(keyword, native, operand, false)
+    }
+
+    fn bound_bundle_of_with_policy(
+        keyword: &str,
+        native: &str,
+        operand: &str,
+        decimal_policy: bool,
+    ) -> Json {
         let constraint = format!(
             r#"{{"identity":"ix://acme/pkg/constraint/Item-count-max","appliesTo":"ix://acme/pkg/Item/count","keyword":"{keyword}","operands":{{"value":{operand}}},"diagnosticCode":"acme.pkg.ITEM_COUNT_MAX","origin":{GENERATED}}}"#
         );
+        let policy = if native == "Decimal" && decimal_policy {
+            r#", "decimal":{"precision":38,"scale":0}"#
+        } else {
+            ""
+        };
         let field = format!(
-            r#"{{"identity":"ix://acme/pkg/Item/count","name":"count","typeRef":"ix://quire/native/{native}","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{},"constraints":[{constraint}]}}"#,
+            r#"{{"identity":"ix://acme/pkg/Item/count","name":"count","typeRef":"ix://quire/native/{native}","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{}{policy},"constraints":[{constraint}]}}"#,
             multiplicity(1, 1)
         );
         let item = format!(
@@ -507,10 +525,30 @@ mod tests {
                 "{keyword}"
             );
         }
-        // A `number` bound stays a JSON number.
+        // A Decimal bound requires a policy on its resolution walk.
         assert_eq!(
             codes(&bound_bundle("Decimal", r#""18446744073709551615""#)),
-            [("INVALID_OPERAND".to_string(), at)]
+            [
+                (
+                    "DECIMAL_POLICY_MISSING".to_string(),
+                    "/ir/types/0/fields/0".to_string(),
+                ),
+                (
+                    "DECIMAL_POLICY_MISSING".to_string(),
+                    "/ir/types/0/fields/0/constraints/0".to_string(),
+                ),
+                (
+                    "INVALID_OPERAND".to_string(),
+                    "/ir/types/0/fields/0/constraints/0/operands/value".to_string(),
+                ),
+            ]
+        );
+        assert_eq!(
+            codes(&bound_bundle_with_decimal_policy(
+                "Decimal",
+                r#""18446744073709551615""#
+            )),
+            []
         );
     }
 

@@ -32,7 +32,7 @@ const CONSTRUCTS_FIXTURE = new URL(
 	import.meta.url,
 );
 
-/** The nine kernel scalar names, read from the table rather than restated. */
+/** The eleven kernel scalar names, read from the table rather than restated. */
 function kernelScalars(table) {
 	return table.rows
 		.filter((row) => row.axis === "scalar")
@@ -234,6 +234,7 @@ function operandsFor(keyword, subject) {
 		if (subject === "datetime") return { value: "2020-01-01T00:00:00Z" };
 		if (subject === "duration") return { value: "P1D" };
 		if (subject === "number") return { value: 1.5 };
+		if (subject === "decimal") return { value: "1.1" };
 		return { value: 1 };
 	}
 	if (keyword === "minLength" || keyword === "maxLength") return { value: 2 };
@@ -243,6 +244,7 @@ function operandsFor(keyword, subject) {
 		if (subject === "boolean") return { values: [true] };
 		if (subject === "integer") return { values: [1] };
 		if (subject === "number") return { values: [1.5] };
+		if (subject === "decimal") return { values: ["1.1"] };
 		return { values: ["a"] };
 	}
 	return {};
@@ -543,8 +545,8 @@ export const DETECTORS = Object.freeze([
 		run(backend) {
 			const rows = backend.table.rows.filter((row) => row.axis === "scalar");
 			assert(
-				rows.length === 10,
-				`the table declares ${rows.length} kernel scalars, not ten`,
+				rows.length === 11,
+				`the table declares ${rows.length} kernel scalars, not eleven`,
 			);
 			for (const row of rows) {
 				const result = backend.mapping.mapDocument(
@@ -575,7 +577,7 @@ export const DETECTORS = Object.freeze([
 			}
 			// A scalar outside the kernel is refused rather than admitted.
 			const outside = backend.mapping.mapDocument(
-				documentOf([scalarType("Odd", "decimal")]),
+				documentOf([scalarType("Odd", "not-a-scalar")]),
 				{},
 			);
 			assert(
@@ -834,9 +836,10 @@ export const DETECTORS = Object.freeze([
 			assert(
 				bad.files.size === 0 &&
 					bad.diagnostics.some((one) =>
-						one.code.endsWith(".INVALID_DEFAULT_VALUE"),
+						one.code.endsWith(".UNREPRESENTABLE_DEFAULT_VALUE"),
 					),
-				"a semantic default outside the member's Rust type raised no INVALID_DEFAULT_VALUE",
+				"a semantic default outside the member's Rust type raised no " +
+					"UNREPRESENTABLE_DEFAULT_VALUE",
 			);
 		},
 	},

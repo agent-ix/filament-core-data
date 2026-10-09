@@ -275,6 +275,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
         total["returns"],
         json!({
             "typeRef": "ix://quire/native/Decimal",
+            "decimal": { "precision": 10, "scale": 2 },
             "multiplicity": { "lower": 1, "upper": 1, "ordered": false, "unique": false },
             "nullable": false,
         })

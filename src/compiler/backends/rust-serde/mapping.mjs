@@ -71,6 +71,7 @@ export const KERNEL_SCALARS = Object.freeze({
 	boolean: "bool",
 	integer: "i64",
 	number: "f64",
+	decimal: "crate::support::Decimal",
 	string: "String",
 	bytes: null,
 	date: "crate::support::Date",
@@ -96,7 +97,7 @@ const NATIVE_SCALARS = new Map([
 	["UUID", "uuid"],
 	["Boolean", "boolean"],
 	["Integer", "integer"],
-	["Decimal", "number"],
+	["Decimal", "decimal"],
 	["String", "string"],
 	["Timestamp", "datetime"],
 	["Duration", "duration"],
@@ -471,6 +472,18 @@ export function resolveKind(byIdentity, typeRef, seen = new Set()) {
 	};
 }
 
+/** Resolves a decimal policy carried by a scalar or inherited through aliases. */
+function decimalPolicyOf(byIdentity, typeRef, seen = new Set()) {
+	if (typeof typeRef !== "string" || seen.has(typeRef)) return undefined;
+	const definition = byIdentity.get(typeRef);
+	if (definition === undefined) return undefined;
+	seen.add(typeRef);
+	if (definition.decimal !== undefined) return definition.decimal;
+	if (definition.kind === "alias")
+		return decimalPolicyOf(byIdentity, definition.target, seen);
+	return undefined;
+}
+
 function docParts(node, { fallbackIdentity, roles, unit } = {}) {
 	const parts = [];
 	const identity = fallbackIdentity ?? node.identity;
@@ -596,6 +609,7 @@ function mapType(definition, context) {
 				return undefined;
 			}
 			model.scalar = scalar;
+			if (scalar === "decimal") model.decimal = definition.decimal;
 			model.inner = KERNEL_SCALARS[scalar];
 			model.row = `scalar:${scalar}`;
 			break;
@@ -762,6 +776,9 @@ function mapType(definition, context) {
 		}
 		case "alias": {
 			model.row = "kind:alias";
+			const resolvedAlias = resolveKind(context.byIdentity, identity);
+			model.scalar = resolvedAlias?.scalar;
+			model.decimal = decimalPolicyOf(context.byIdentity, identity);
 			model.inner = target(
 				definition.target,
 				`${identity}#target`,
@@ -772,12 +789,17 @@ function mapType(definition, context) {
 		}
 		case "sequence": {
 			model.row = "kind:sequence";
-			model.items = target(
+			model.itemScalar = resolveKind(
+				context.byIdentity,
+				definition.items,
+			)?.scalar;
+			model.itemType = target(
 				definition.items,
 				`${identity}#items`,
 				"sequence items",
 			);
-			if (model.items === undefined) return undefined;
+			if (model.itemType === undefined) return undefined;
+			model.items = model.itemType;
 			model.inner = `Vec<${model.items}>`;
 			break;
 		}
@@ -1047,6 +1069,12 @@ function mapField(field, owner, context, version) {
 		rename: serdeRename(rendered.value, field.name),
 		typeRef: field.typeRef,
 		element,
+		elementType: element,
+		elementScalar:
+			resolveKind(context.byIdentity, field.typeRef)?.scalar ??
+			nativeScalar(field.typeRef),
+		decimal:
+			decimalPolicyOf(context.byIdentity, field.typeRef) ?? field.decimal,
 		rustType,
 		serdeAttributes,
 		collection,

@@ -32,10 +32,12 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 
 | Code | Severity | Blocking | Owner |
 |---|---|---|---|
+| `agent-ix.compiler.AMBIGUOUS_NUMERIC` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.AMBIGUOUS_PROFILE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.BACKEND_CONTRACT_VIOLATION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.BACKEND_NOT_IMPLEMENTED` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.CONSTRUCT_MEMBER_UNENFORCED` | info | no | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.DECIMAL_PRECISION_EXCEEDS_BASE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DEFAULT_KIND_WITHOUT_VALUE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DIAGNOSTIC_LIMIT_REACHED` | warning | no | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DIGEST_CONFLICT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
@@ -91,9 +93,12 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.semantic-ir.COMPOSITE_CYCLE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DANGLING_CLAUSE_REF` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.DECIMAL_POLICY_MISSING` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_CLAUSE_ID` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_PARAM` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.INVALID_DEFAULT_VALUE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_DOCUMENT` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_MULTIPLICITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_OPERAND` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |

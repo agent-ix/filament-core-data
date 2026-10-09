@@ -89,7 +89,7 @@ model Artifact {
 
   /** A decimal policy, carried as the semantic-core extension. */
   @decimal(12, 2)
-  weight?: Seconds;
+	weight?: decimal;
 }
 
 /** The relationship target, so the edge resolves inside this package. */

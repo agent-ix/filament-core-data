@@ -150,7 +150,7 @@ fn tc_1210_every_kernel_name_is_kernel_scalar_and_snapshot_uses_five_native_refs
             ("UUID", Some("uuid")),
             ("Boolean", Some("boolean")),
             ("Integer", Some("integer")),
-            ("Decimal", Some("number")),
+            ("Decimal", Some("decimal")),
             ("String", Some("string")),
             ("Timestamp", Some("datetime")),
             ("Duration", Some("duration")),

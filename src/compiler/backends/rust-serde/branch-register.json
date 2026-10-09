@@ -11,11 +11,11 @@
 	],
 	"contributions": {
 		"diagnostics.mjs": 21,
-		"mapping-table.json": 69,
+		"mapping-table.json": 70,
 		"names.mjs": 10,
-		"src/compiler/ir/applicability.mjs": 40
+		"src/compiler/ir/applicability.mjs": 45
 	},
-	"rowCount": 140,
+	"rowCount": 146,
 	"unmetCount": 0,
 	"unreachableCount": 1,
 	"rows": [
@@ -51,6 +51,15 @@
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
 			"construct": "the keyword `enumValues` lowered onto a datetime subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:enumValues/decimal",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `enumValues` lowered onto a decimal subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -119,6 +128,15 @@
 			]
 		},
 		{
+			"branchId": "constraint:exclusiveMax/decimal",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `exclusiveMax` lowered onto a decimal subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
 			"branchId": "constraint:exclusiveMax/duration",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
@@ -159,6 +177,15 @@
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
 			"construct": "the keyword `exclusiveMin` lowered onto a datetime subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:exclusiveMin/decimal",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `exclusiveMin` lowered onto a decimal subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -213,6 +240,15 @@
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
 			"construct": "the keyword `max` lowered onto a datetime subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:max/decimal",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `max` lowered onto a decimal subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -276,6 +312,15 @@
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
 			"construct": "the keyword `min` lowered onto a datetime subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:min/decimal",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `min` lowered onto a decimal subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -464,7 +509,7 @@
 			"branchId": "defaultKind:semantic",
 			"axis": "defaultKind",
 			"vocabulary": "mapping-table.json",
-			"construct": "null — agent-ix.rust-backend.INVALID_DEFAULT_VALUE",
+			"construct": "null — agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE",
 			"cases": [
 				"TC-725 every defaultKind, extension and metadata row reaches the emitted crate"
 			]
@@ -483,15 +528,6 @@
 			"axis": "diagnostic",
 			"vocabulary": "diagnostics.mjs",
 			"construct": "warning: the diagnostic count reached the request's maxDiagnostics",
-			"cases": [
-				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
-			]
-		},
-		{
-			"branchId": "diagnostic:agent-ix.rust-backend.INVALID_DEFAULT_VALUE",
-			"axis": "diagnostic",
-			"vocabulary": "diagnostics.mjs",
-			"construct": "error, blocking: a defaultValue is not a value the field's mapped Rust type admits",
 			"cases": [
 				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
 			]
@@ -564,6 +600,15 @@
 			"axis": "diagnostic",
 			"vocabulary": "diagnostics.mjs",
 			"construct": "error, blocking: a name derives no legal Rust identifier, and the backend refuses rather than dropping the characters it cannot carry",
+			"cases": [
+				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
+			]
+		},
+		{
+			"branchId": "diagnostic:agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE",
+			"axis": "diagnostic",
+			"vocabulary": "diagnostics.mjs",
+			"construct": "error, blocking: a defaultValue is not a value the field's mapped Rust type admits",
 			"cases": [
 				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
 			]
@@ -1045,6 +1090,15 @@
 			"axis": "scalar",
 			"vocabulary": "mapping-table.json",
 			"construct": "DateTime",
+			"cases": [
+				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
+			]
+		},
+		{
+			"branchId": "scalar:decimal",
+			"axis": "scalar",
+			"vocabulary": "mapping-table.json",
+			"construct": "crate::support::Decimal",
 			"cases": [
 				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
 			]

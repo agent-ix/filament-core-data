@@ -269,8 +269,15 @@ function subjectAccess(definition, byIdentity) {
 	while (current !== undefined && current.kind === "alias") {
 		if (seen.has(current.identity)) return undefined;
 		seen.add(current.identity);
-		expression = `${expression}.get()`;
-		current = byIdentity.get(current.target);
+		const target = byIdentity.get(current.target);
+		const targetSupport =
+			target?.kind === "scalar" &&
+			target.scalar === "decimal" &&
+			target.displayName === "Decimal"
+				? "crate::support::Decimal"
+				: undefined;
+		if (targetSupport === undefined) expression = `${expression}.get()`;
+		current = target;
 	}
 	if (current === undefined) return undefined;
 	return { expression, definition: current };
@@ -1315,13 +1322,13 @@ function checkConstants(type, checks, byIdentity) {
 							? "f64"
 							: "&str";
 			const values = check.values.map((value) =>
-				typeof value === "string"
-					? rustString(value)
-					: typeof value === "boolean"
-						? String(value)
-						: check.scalar === "integer"
-							? `${value}i64`
-							: `${renderF64(value)}`,
+				check.scalar === "integer"
+					? `${value}i64`
+					: typeof value === "string"
+						? rustString(value)
+						: typeof value === "boolean"
+							? String(value)
+							: renderF64(value),
 			);
 			lines.push(
 				`/// The values ${check.identity} admits.`,
@@ -1340,6 +1347,22 @@ function checkConstants(type, checks, byIdentity) {
 
 function renderF64(value) {
 	return Number.isInteger(value) ? `${value}.0f64` : `${value}f64`;
+}
+
+function decimalStringExpression(expression, rustType) {
+	return rustType === "crate::support::Decimal"
+		? `${expression}.as_str()`
+		: `${expression}.get().as_str()`;
+}
+
+function decimalCollectionEquality(field) {
+	const left = "items[left]";
+	const right = "items[right]";
+	if (!field.nullable)
+		return `matches!(crate::support::decimal_cmp(${decimalStringExpression(left, field.elementType)}, ${decimalStringExpression(right, field.elementType)}), Some(std::cmp::Ordering::Equal))`;
+	const leftValue = decimalStringExpression("left", field.elementType);
+	const rightValue = decimalStringExpression("right", field.elementType);
+	return `match (&${left}, &${right}) { (crate::support::Nullable::Null, crate::support::Nullable::Null) => true, (crate::support::Nullable::Value(left), crate::support::Nullable::Value(right)) => matches!(crate::support::decimal_cmp(${leftValue}, ${rightValue}), Some(std::cmp::Ordering::Equal)), _ => false }`;
 }
 
 /**
@@ -1395,6 +1418,23 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 			lines.push(
 				`            if ${owned} ${COMPARISONS[check.keyword]} ${literal} {`,
 				...fail(rustString(String(check.value))),
+				"            }",
+			);
+			break;
+		}
+		case "decimal": {
+			const comparison = `crate::support::decimal_cmp(${expression}.as_str(), ${rustString(check.value)})`;
+			const failure = {
+				min: "Some(std::cmp::Ordering::Less)",
+				max: "Some(std::cmp::Ordering::Greater)",
+				exclusiveMin:
+					"Some(std::cmp::Ordering::Less | std::cmp::Ordering::Equal)",
+				exclusiveMax:
+					"Some(std::cmp::Ordering::Greater | std::cmp::Ordering::Equal)",
+			}[check.keyword];
+			lines.push(
+				`            if matches!(${comparison}, ${failure}) {`,
+				...fail(rustString(check.value), `${expression}.as_str()`),
 				"            }",
 			);
 			break;
@@ -1457,15 +1497,22 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 		case "enumValues": {
 			const constant = `${type.constantName}_ENUM_${index}`;
 			const numeric =
-				check.scalar === "integer" ||
-				check.scalar === "number" ||
+				["integer", "number"].includes(check.scalar) ||
 				check.scalar === "boolean";
-			const subject = numeric ? owned : `${expression}.as_str()`;
-			lines.push(
-				`            if !${constant}.contains(&${subject}) {`,
-				...fail(rustString(canonicalJson(check.values))),
-				"            }",
-			);
+			if (check.scalar === "decimal") {
+				lines.push(
+					`            if !${constant}.iter().any(|member| matches!(crate::support::decimal_cmp(${expression}.as_str(), member), Some(std::cmp::Ordering::Equal))) {`,
+					...fail(rustString(canonicalJson(check.values))),
+					"            }",
+				);
+			} else {
+				const subject = numeric ? owned : `${expression}.as_str()`;
+				lines.push(
+					`            if !${constant}.contains(&${subject}) {`,
+					...fail(rustString(canonicalJson(check.values))),
+					"            }",
+				);
+			}
 			break;
 		}
 		case "nonEmpty": {
@@ -1481,10 +1528,20 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 			break;
 		}
 		case "unique": {
+			const decimalItems = type.itemScalar === "decimal";
+			const left = decimalItems
+				? decimalStringExpression(`${expression}[left]`, type.itemType)
+				: `${expression}[left]`;
+			const right = decimalItems
+				? decimalStringExpression(`${expression}[right]`, type.itemType)
+				: `${expression}[right]`;
+			const equal = decimalItems
+				? `matches!(crate::support::decimal_cmp(${left}, ${right}), Some(std::cmp::Ordering::Equal))`
+				: `${left} == ${right}`;
 			lines.push(
 				`            for left in 0..${expression}.len() {`,
 				`                for right in (left + 1)..${expression}.len() {`,
-				`                    if ${expression}[left] == ${expression}[right] {`,
+				`                    if ${equal} {`,
 				...callLines(
 					"                        ",
 					"return Err(crate::support::ValidationError::new",
@@ -1553,6 +1610,27 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			"Result<Self, crate::support::ValidationError>",
 		),
 	);
+	if (
+		type.scalar === "decimal" &&
+		type.decimal !== undefined &&
+		type.inner === "crate::support::Decimal"
+	) {
+		const decimalError = [
+			rustString(type.identity),
+			rustString("decimal"),
+			rustString(""),
+			rustString("the declared decimal policy"),
+			"&value",
+		];
+		lines.push(
+			"        let value = crate::support::decimal_normalize(",
+			`            &value, ${type.decimal.precision}, ${type.decimal.scale},`,
+			"        )",
+			"        .ok_or_else(|| {",
+			`            crate::support::ValidationError::with_input(${decimalError.join(", ")})`,
+			"        })?;",
+		);
+	}
 	if (checks.length > 0) {
 		lines.push("        {");
 		checks.forEach((check, index) => {
@@ -1907,7 +1985,7 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		const rendered = renderDefault(field, model, byIdentity);
 		if (rendered === undefined) {
 			diagnostics.push(
-				diagnostic(RUST_BACKEND_CODES.INVALID_DEFAULT_VALUE, {
+				diagnostic(RUST_BACKEND_CODES.UNREPRESENTABLE_DEFAULT_VALUE, {
 					message: `the field ${fragment(field.identity)} declares the default ${fragment(JSON.stringify(field.defaultValue))}, which its mapped Rust type \`${field.rustType}\` does not admit`,
 					...(field.origin?.source ? { locus: field.origin.source } : {}),
 				}),
@@ -2025,7 +2103,8 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 			"Result<Self, crate::support::ValidationError>",
 		),
 	);
-	for (const field of type.fields) {
+	for (const [index, field] of type.fields.entries()) {
+		lines.push(...renderFieldDecimalNormalization(field, index));
 		lines.push(...renderFieldChecks(field));
 	}
 	const initialisers = type.fields.map((field) => field.ident);
@@ -2198,6 +2277,63 @@ function renderAbstract(type) {
 	return `${lines.join("\n")}\n`;
 }
 
+/** Normalizes a direct native Decimal field before its record checks run. */
+function renderFieldDecimalNormalization(field, index) {
+	// Alias constructors already normalize their wrapped Decimal value. The
+	// field-level path is for a native Decimal wire value, where there is no
+	// generated newtype constructor to enforce the field policy.
+	if (
+		field.elementScalar !== "decimal" ||
+		field.elementType !== "crate::support::Decimal" ||
+		field.decimal === undefined
+	)
+		return [];
+	const { precision, scale } = field.decimal;
+	const name = field.ident;
+	const normalize = `normalize_decimal_${index}`;
+	const path = rustString(field.name);
+	const error = `crate::support::ValidationError::with_input(${rustString(field.identity)}, ${rustString("decimal")}, ${path}, ${rustString("the declared decimal policy")}, &value)`;
+	const lines = [
+		`        let ${normalize} = |value: String| {`,
+		`            crate::support::decimal_normalize(&value, ${precision}usize, ${scale}usize)`,
+		`                .ok_or_else(|| ${error})`,
+		"        };",
+	];
+	const item = field.nullable
+		? `|item| match item { crate::support::Nullable::Null => Ok(crate::support::Nullable::Null), crate::support::Nullable::Value(value) => ${normalize}(value).map(crate::support::Nullable::Value) }`
+		: `|value| ${normalize}(value)`;
+	const mapItems = (expression) =>
+		field.collection
+			? `${expression}.into_iter().map(${item}).collect::<Result<Vec<_>, _>>()?`
+			: expression;
+	if (field.collection) {
+		const mapped = mapItems("items");
+		lines.push(
+			field.presence === "optional"
+				? `        let ${name} = match ${name} { Some(items) => Some(${mapped}), None => None };`
+				: `        let ${name} = ${mapItems(name)};`,
+		);
+		return lines;
+	}
+	if (field.nullable) {
+		const value = `${normalize}(value)?`;
+		const nullable = `match value { crate::support::Nullable::Null => crate::support::Nullable::Null, crate::support::Nullable::Value(value) => crate::support::Nullable::Value(${value}) }`;
+		lines.push(
+			field.presence === "optional"
+				? `        let ${name} = match ${name} { Some(value) => Some(${nullable}), None => None };`
+				: `        let ${name} = ${nullable};`,
+		);
+		return lines;
+	}
+	const value = `${normalize}(${name})?`;
+	lines.push(
+		field.presence === "optional"
+			? `        let ${name} = ${name}.map(${normalize}).transpose()?;`
+			: `        let ${name} = ${value};`,
+	);
+	return lines;
+}
+
 /**
  * The bounds and uniqueness a collection member carries.
  *
@@ -2244,10 +2380,14 @@ function renderFieldChecks(field) {
 		);
 	}
 	if (multiplicity.unique === true) {
+		const decimalItems = field.elementScalar === "decimal";
+		const equal = decimalItems
+			? decimalCollectionEquality(field)
+			: "items[left] == items[right]";
 		body.push(
 			"            for left in 0..items.len() {",
 			"                for right in (left + 1)..items.len() {",
-			"                    if items[left] == items[right] {",
+			`                    if ${equal} {`,
 			...boundFailure(
 				"multiplicity.unique",
 				rustString("pairwise distinct items"),
@@ -2276,7 +2416,7 @@ function renderFieldChecks(field) {
  * The Rust expression for a `semantic` default.
  *
  * A default that the mapped Rust type does not admit is `undefined`, and the
- * caller raises `INVALID_DEFAULT_VALUE` rather than rendering a value that
+ * caller raises `UNREPRESENTABLE_DEFAULT_VALUE` rather than rendering a value that
  * would not compile.
  */
 function renderDefault(field, model, byIdentity) {
@@ -2291,7 +2431,7 @@ function renderDefault(field, model, byIdentity) {
 				: `crate::${target.typeName}::${variant.ident}`;
 		}
 		if (target.kind === "scalar") {
-			const literal = scalarLiteral(target.scalar, value);
+			const literal = scalarLiteral(target.scalar, value, target.inner);
 			return literal === undefined
 				? undefined
 				: `crate::${target.typeName}::try_new(${literal})\n        .expect("the contract declares a default its own constraints reject")`;
@@ -2325,13 +2465,17 @@ function renderDefault(field, model, byIdentity) {
 	return field.presence === "optional" ? `Some(${expression})` : expression;
 }
 
-function scalarLiteral(scalar, value) {
+function scalarLiteral(scalar, value, rustType = "i64") {
 	switch (scalar) {
 		case "boolean":
 			return typeof value === "boolean" ? String(value) : undefined;
 		case "integer":
-			return typeof value === "number" && Number.isInteger(value)
-				? `${value}i64`
+			return typeof value === "number" && Number.isSafeInteger(value)
+				? `${value}${rustType}`
+				: undefined;
+		case "decimal":
+			return typeof value === "string"
+				? `String::from(${rustString(value)})`
 				: undefined;
 		case "number":
 			return typeof value === "number" && Number.isFinite(value)

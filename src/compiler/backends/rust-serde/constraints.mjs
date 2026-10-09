@@ -175,9 +175,7 @@ function lowerBound(constraint, keyword, identity, resolved, raise) {
 	const value = constraint.operands?.value;
 	const scalar = resolved.scalar;
 	if (scalar === "integer" && typeof value === "string") {
-		// The IR carries an integer bound as a canonical decimal string so it is
-		// exact past 2^53 (contracts-v1). This backend's integer is `i64`, so the
-		// string is emitted as it is when it fits one and refused when it does not.
+		// Preserve exact integer bounds beyond the JSON safe-integer range.
 		const fits =
 			/^(0|-?[1-9][0-9]*)$/.test(value) &&
 			BigInt(value) >= -(2n ** 63n) &&
@@ -192,7 +190,11 @@ function lowerBound(constraint, keyword, identity, resolved, raise) {
 		return { identity, keyword, form: "numeric", scalar, value };
 	}
 	if (scalar === "integer" || scalar === "number") {
-		if (typeof value !== "number" || !Number.isFinite(value)) {
+		if (
+			typeof value !== "number" ||
+			!Number.isFinite(value) ||
+			(scalar === "integer" && !Number.isInteger(value))
+		) {
 			raise(
 				RUST_BACKEND_CODES.INVALID_OPERAND,
 				`the constraint ${fragment(identity)} bounds a ${scalar} subject with ${fragment(JSON.stringify(value))}, which is not a finite JSON number`,
@@ -207,6 +209,9 @@ function lowerBound(constraint, keyword, identity, resolved, raise) {
 			return undefined;
 		}
 		return { identity, keyword, form: "numeric", scalar, value };
+	}
+	if (scalar === "decimal" && typeof value === "string") {
+		return { identity, keyword, form: "decimal", scalar, value };
 	}
 	if (typeof value !== "string") {
 		raise(
@@ -276,6 +281,11 @@ function lowerEnumValues(constraint, identity, resolved, raise) {
 				return typeof value === "number" && Number.isInteger(value);
 			case "number":
 				return typeof value === "number" && Number.isFinite(value);
+			case "decimal":
+				return (
+					typeof value === "string" &&
+					/^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$/.test(value)
+				);
 			default:
 				return typeof value === "string";
 		}

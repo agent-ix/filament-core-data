@@ -418,7 +418,7 @@ const NATIVE_SCALARS = new Map([
 	["UUID", "uuid"],
 	["Boolean", "boolean"],
 	["Integer", "integer"],
-	["Decimal", "number"],
+	["Decimal", "decimal"],
 	["String", "string"],
 	["Timestamp", "datetime"],
 	["Duration", "duration"],
@@ -503,10 +503,24 @@ function resolvedKind(types, fields, identity, maxDepth) {
  * `src/compiler/ir/applicability.mjs`, which FR-068-CON-1 forbids.
  */
 const APPLICABILITY = Object.freeze({
-	min: ["integer", "number", "date", "datetime", "duration"],
-	max: ["integer", "number", "date", "datetime", "duration"],
-	exclusiveMin: ["integer", "number", "date", "datetime", "duration"],
-	exclusiveMax: ["integer", "number", "date", "datetime", "duration"],
+	min: ["integer", "number", "decimal", "date", "datetime", "duration"],
+	max: ["integer", "number", "decimal", "date", "datetime", "duration"],
+	exclusiveMin: [
+		"integer",
+		"number",
+		"decimal",
+		"date",
+		"datetime",
+		"duration",
+	],
+	exclusiveMax: [
+		"integer",
+		"number",
+		"decimal",
+		"date",
+		"datetime",
+		"duration",
+	],
 	minLength: ["string", "bytes"],
 	maxLength: ["string", "bytes"],
 	pattern: ["string"],
@@ -514,6 +528,7 @@ const APPLICABILITY = Object.freeze({
 		"boolean",
 		"integer",
 		"number",
+		"decimal",
 		"string",
 		"bytes",
 		"date",
@@ -526,7 +541,7 @@ const APPLICABILITY = Object.freeze({
 	format: ["string"],
 });
 
-const NUMERIC_SCALARS = new Set(["integer", "number"]);
+const NUMERIC_SCALARS = new Set(["integer", "number", "decimal"]);
 const TEMPORAL_SCALARS = new Set(["date", "datetime", "duration"]);
 
 /* ----------------------------------------------------------------- the reader */
@@ -1367,7 +1382,11 @@ function operandDefect(constraint, subject) {
 					subject === "integer" &&
 					typeof value === "string" &&
 					/^(0|-?[1-9][0-9]*)$/.test(value);
-				return canonical ? undefined : "value";
+				const decimal =
+					subject === "decimal" &&
+					typeof value === "string" &&
+					/^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$/.test(value);
+				return canonical || decimal ? undefined : "value";
 			}
 			if (TEMPORAL_SCALARS.has(subject) && typeof value !== "string") {
 				return "value";

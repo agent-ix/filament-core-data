@@ -201,7 +201,7 @@ const NATIVE_SCALARS = new Map([
 	["UUID", "uuid"],
 	["Boolean", "boolean"],
 	["Integer", "integer"],
-	["Decimal", "number"],
+	["Decimal", "decimal"],
 	["String", "string"],
 	["Timestamp", "datetime"],
 	["Duration", "duration"],
@@ -339,6 +339,69 @@ export function readContractIr(document, options = {}) {
 		}
 	}
 
+	// Keep the policy walk separate from resolveKind.  resolveKind intentionally
+	// returns only the terminal kind, while decimal policy ownership depends on
+	// every node traversed from a field or alias to that terminal scalar.
+	const walkDecimal = (typeRef, initialNode) => {
+		const policies = [];
+		const policyNodes = new Set();
+		const seen = new Set();
+		let ref = typeRef;
+		let node = initialNode;
+		while (typeof ref === "string" && !seen.has(ref)) {
+			seen.add(ref);
+			if (node && Object.hasOwn(node, "decimal") && !policyNodes.has(node)) {
+				policyNodes.add(node);
+				policies.push(node);
+			}
+			const native = nativeScalar(ref);
+			if (native !== undefined) return { scalar: native, policies };
+			node = undefined;
+			const field = fields.get(ref);
+			if (field) {
+				node = field;
+				ref = field.typeRef;
+				continue;
+			}
+			const definition = types.get(ref);
+			if (!definition) return undefined;
+			node = definition;
+			if (definition.kind === "alias") {
+				ref = definition.target;
+				continue;
+			}
+			if (
+				Object.hasOwn(definition, "decimal") &&
+				!policyNodes.has(definition)
+			) {
+				policyNodes.add(definition);
+				policies.push(definition);
+			}
+			return {
+				scalar:
+					typeof definition.scalar === "string" ? definition.scalar : undefined,
+				policies,
+			};
+		}
+		return undefined;
+	};
+
+	// Composite definitions carry type references outside fields. A native
+	// Decimal has no definition of its own to reach checkDefinition, so inspect
+	// these edges here. Named Decimal aliases and scalar definitions are checked
+	// by their own definition pass; limiting this edge check to native Decimal
+	// avoids reporting the same missing policy twice through an alias route.
+	const checkCompositeDecimalRef = (typeRef, owner) => {
+		if (nativeScalar(typeRef) !== "decimal") return;
+		const walked = walkDecimal(typeRef, owner);
+		if (walked?.scalar !== "decimal" || walked.policies.length > 0) return;
+		raise(
+			DIAGNOSTIC_CODES.DECIMAL_POLICY_MISSING,
+			"a decimal subject carries a decimal policy",
+			locusOf(owner),
+		);
+	};
+
 	const checkMultiplicity = (value, owner) => {
 		if (!isObject(value)) return undefined;
 		const { lower, upper } = value;
@@ -437,6 +500,43 @@ export function readContractIr(document, options = {}) {
 				);
 			}
 		}
+		if (resolved?.kind === "scalar") {
+			const walked = walkDecimal(field.typeRef, field);
+			const policies = walked?.policies ?? [];
+			if (resolved.scalar === "decimal" && policies.length === 0) {
+				raise(
+					DIAGNOSTIC_CODES.DECIMAL_POLICY_MISSING,
+					"a decimal field carries a decimal policy",
+					locusOf(field),
+				);
+			} else if (resolved.scalar === "decimal" && policies.length > 1) {
+				raise(
+					DIAGNOSTIC_CODES.DECIMAL_POLICY_CONFLICT,
+					"a decimal resolution walk carries more than one policy",
+					locusOf(policies[0]),
+				);
+			} else if (resolved.scalar !== "decimal" && policies.length > 0) {
+				raise(
+					DIAGNOSTIC_CODES.DECIMAL_POLICY_CONFLICT,
+					"a decimal policy applies only to a decimal field",
+					locusOf(field),
+				);
+			}
+			if (
+				Object.hasOwn(field, "defaultValue") &&
+				!valueAdmitted(
+					resolved.scalar,
+					field.defaultValue,
+					policies[0]?.decimal,
+				)
+			) {
+				raise(
+					DIAGNOSTIC_CODES.INVALID_DEFAULT_VALUE,
+					"the default value is outside the exact scalar wire domain",
+					locusOf(field),
+				);
+			}
+		}
 		// Gap 1 of FCD #199/#200: a constrained field keeps its constraints
 		// inline rather than on a synthetic alias, so the field's own
 		// `constraints[]` needs the same check a type's does.
@@ -464,6 +564,23 @@ export function readContractIr(document, options = {}) {
 			);
 			return;
 		}
+		const walked = walkDecimal(
+			constraint.appliesTo,
+			fields.get(constraint.appliesTo) ?? types.get(constraint.appliesTo),
+		);
+		if (walked?.scalar === "decimal" && walked.policies.length === 0) {
+			raise(
+				DIAGNOSTIC_CODES.DECIMAL_POLICY_MISSING,
+				"a decimal constraint carries a decimal policy",
+				locusOf(constraint) ?? locusOf(owner),
+			);
+		} else if (walked?.scalar === "decimal" && walked.policies.length > 1) {
+			raise(
+				DIAGNOSTIC_CODES.DECIMAL_POLICY_CONFLICT,
+				"a decimal resolution walk carries more than one policy",
+				locusOf(walked.policies[0]),
+			);
+		}
 		if (!applies(keyword, resolved.kind, resolved.scalar)) {
 			raise(
 				DIAGNOSTIC_CODES.CONSTRAINT_NOT_APPLICABLE,
@@ -490,20 +607,74 @@ export function readContractIr(document, options = {}) {
 			["min", "max", "exclusiveMin", "exclusiveMax"].includes(keyword) &&
 			resolved.kind === "scalar"
 		) {
-			const numeric =
-				resolved.scalar === "integer" || resolved.scalar === "number";
+			const numeric = ["integer", "decimal", "number"].includes(
+				resolved.scalar,
+			);
 			const value = operands.value;
-			if (!operandAdmitted(numeric, resolved.scalar, value)) {
+			if (
+				!operandAdmitted(
+					numeric,
+					resolved.scalar,
+					value,
+					walked?.policies[0]?.decimal,
+				)
+			) {
 				raise(
 					DIAGNOSTIC_CODES.INVALID_OPERAND,
-					`${fragment(keyword)} on ${fragment(String(resolved.scalar))} takes ${numeric ? "a number" : "an ISO 8601 string"}`,
+					`${fragment(keyword)} on ${fragment(String(resolved.scalar))} takes an exact numeric operand`,
 					locusOf(constraint) ?? locusOf(owner),
 				);
+			}
+		}
+		if (keyword === "enumValues" && resolved.kind === "scalar") {
+			const values = Array.isArray(operands.values) ? operands.values : [];
+			for (const value of values) {
+				if (
+					!valueAdmitted(resolved.scalar, value, walked?.policies[0]?.decimal)
+				) {
+					raise(
+						DIAGNOSTIC_CODES.INVALID_OPERAND,
+						"an enum value is outside the exact scalar wire domain",
+						locusOf(constraint) ?? locusOf(owner),
+					);
+				}
 			}
 		}
 	};
 
 	const checkDefinition = (definition) => {
+		const resolvedSelf = resolveKind(
+			types,
+			fields,
+			definition.identity,
+			undefined,
+			false,
+		);
+		const walkedSelf = walkDecimal(definition.identity, definition);
+		if (resolvedSelf?.kind === "scalar") {
+			const policies = walkedSelf?.policies ?? [];
+			if (resolvedSelf.scalar === "decimal" && policies.length > 1) {
+				raise(
+					DIAGNOSTIC_CODES.DECIMAL_POLICY_CONFLICT,
+					"a decimal resolution walk carries more than one policy",
+					locusOf(policies[0]),
+				);
+			} else if (resolvedSelf.scalar !== "decimal" && policies.length > 0) {
+				raise(
+					DIAGNOSTIC_CODES.DECIMAL_POLICY_CONFLICT,
+					"a decimal policy applies only to a decimal subject",
+					locusOf(definition),
+				);
+			}
+		}
+		if (definition.kind === "sequence")
+			checkCompositeDecimalRef(definition.items, definition);
+		if (definition.kind === "map")
+			checkCompositeDecimalRef(definition.values, definition);
+		if (definition.kind === "reference")
+			checkCompositeDecimalRef(definition.target, definition);
+		for (const variant of asArray(definition.variants))
+			checkCompositeDecimalRef(variant.payloadType, variant);
 		// Relationships and operations belong to a record among the core kinds;
 		// a construct kind's declaration decides their presence (FR-142).
 		const isRecord =
@@ -663,6 +834,7 @@ export function readContractIr(document, options = {}) {
 						locusOf(operation),
 					);
 				}
+				checkCompositeDecimalRef(operation.returns.typeRef, operation.returns);
 				checkMultiplicity(operation.returns.multiplicity, operation);
 			}
 			// FR-141: `quire` is the one checked clause language; an inline
@@ -780,12 +952,41 @@ export function readContractIr(document, options = {}) {
  * string (`0`, or an optional `-` and digits with no leading zero), so a value
  * past 2^53 is exact; every other scalar's bound is a string.
  */
-function operandAdmitted(numeric, scalar, value) {
+function valueAdmitted(scalar, value, policy) {
+	if (scalar === "integer") {
+		return (
+			(typeof value === "number" && Number.isSafeInteger(value)) ||
+			(typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value))
+		);
+	}
+	if (scalar === "decimal") return decimalAdmitted(value, policy);
+
+	return true;
+}
+
+function operandAdmitted(numeric, scalar, value, policy) {
 	if (!numeric) return typeof value === "string";
-	if (typeof value === "number") return true;
+	if (scalar === "integer")
+		return (
+			(typeof value === "number" && Number.isSafeInteger(value)) ||
+			(typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value))
+		);
+	if (scalar === "decimal") return decimalAdmitted(value, policy);
+	return typeof value === "number" && Number.isFinite(value);
+}
+
+function decimalAdmitted(value, policy) {
+	if (
+		typeof value !== "string" ||
+		!/^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$/.test(value) ||
+		!policy
+	)
+		return false;
+	const unsigned = value.startsWith("-") ? value.slice(1) : value;
+	const [whole, fraction = ""] = unsigned.split(".");
+	const integerDigits = whole === "0" ? 0 : whole.length;
 	return (
-		scalar === "integer" &&
-		typeof value === "string" &&
-		/^(0|-?[1-9][0-9]*)$/.test(value)
+		integerDigits <= policy.precision - policy.scale &&
+		fraction.length <= policy.scale
 	);
 }

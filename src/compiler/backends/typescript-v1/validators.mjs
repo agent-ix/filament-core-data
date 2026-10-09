@@ -141,13 +141,13 @@ function constraintCondition(constraint, subject) {
 	const length = lengthExpression(subject);
 	switch (constraint.keyword) {
 		case "min":
-			return orderedCondition(scalar, ">=", operands.value);
+			return orderedCondition(subject, ">=", operands.value);
 		case "max":
-			return orderedCondition(scalar, "<=", operands.value);
+			return orderedCondition(subject, "<=", operands.value);
 		case "exclusiveMin":
-			return orderedCondition(scalar, ">", operands.value);
+			return orderedCondition(subject, ">", operands.value);
 		case "exclusiveMax":
-			return orderedCondition(scalar, "<", operands.value);
+			return orderedCondition(subject, "<", operands.value);
 		case "minLength":
 			return length && `${length} >= ${literal(operands.value)}`;
 		case "maxLength":
@@ -155,6 +155,8 @@ function constraintCondition(constraint, subject) {
 		case "pattern":
 			return `new RegExp(${literal(operands.regex)}).test(candidate)`;
 		case "enumValues": {
+			if (scalar === "decimal")
+				return `[${(operands.values ?? []).map((entry) => literal(entry)).join(", ")}].some((member) => compareDecimal(member, candidate) === 0)`;
 			const values = (operands.values ?? [])
 				.map((entry) => literal(entry))
 				.join(", ");
@@ -163,7 +165,10 @@ function constraintCondition(constraint, subject) {
 		case "nonEmpty":
 			return length && `${length} > 0`;
 		case "unique":
-			return "isUniqueCollection(candidate)";
+			return subject.kind === "sequence" &&
+				subject.itemsEntry?.scalar === "decimal"
+				? "isUniqueDecimalCollection(candidate)"
+				: "isUniqueCollection(candidate)";
 		case "format":
 			return formatCondition(operands.name);
 		default:
@@ -180,13 +185,13 @@ function constraintCondition(constraint, subject) {
  * constraint on a duration subject as a representability loss, because ISO-8601
  * designators admit no total order without a calendar.
  */
-function orderedCondition(scalar, operator, value) {
+function orderedCondition(subject, operator, value) {
+	const scalar = subject.scalar;
 	if (scalar === "date" || scalar === "datetime") {
 		return `Date.parse(candidate) ${operator} Date.parse(${literal(value)})`;
 	}
-	// An integer bound may be a canonical decimal string (contracts-v1). The
-	// backend refuses one past 2^53 (`INTEGER_BOUND_NOT_EXACT`), so the number
-	// written is exact.
+	if (scalar === "decimal")
+		return `compareDecimal(candidate, ${literal(value)}) ${operator} 0`;
 	if (typeof value === "string")
 		return `candidate ${operator} ${Number(value)}`;
 	return `candidate ${operator} ${literal(value)}`;
@@ -257,6 +262,7 @@ const SCALAR_GUARDS = Object.freeze({
 	boolean: { test: 'typeof candidate === "boolean"', code: "NOT_A_BOOLEAN" },
 	integer: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
 	number: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
+	decimal: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
 	string: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
 	bytes: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
 	date: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
@@ -308,13 +314,21 @@ function scalarCheckBody(model, entry) {
 		"\t\treturn false;",
 		"\t}",
 	);
-	if (entry.scalar === "integer" || entry.scalar === "number") {
+	if (["integer", "number"].includes(entry.scalar)) {
 		lines.push(...numericStatements(entry.scalar, "\t"));
 	}
 	if (entry.scalar === "bytes") {
 		lines.push(
 			"\tif (!isBase64(candidate)) {",
 			'\t\tfail(errors, pointer, CODES.NOT_BASE64, "the value is not well-formed base64");',
+			"\t\treturn false;",
+			"\t}",
+		);
+	}
+	if (entry.scalar === "decimal" && entry.decimal !== undefined) {
+		lines.push(
+			`\tif (!isCanonicalDecimal(candidate) || !decimalWithinPolicy(candidate, ${entry.decimal.precision}, ${entry.decimal.scale})) {`,
+			'\t\tfail(errors, pointer, CODES.SHAPE_MISMATCH, "the decimal value is not canonical or is outside its policy");',
 			"\t\treturn false;",
 			"\t}",
 		);
@@ -445,6 +459,18 @@ function mapCheckBody(model, entry) {
 /** The body of an `alias` or `reference` type's `check` predicate. */
 function delegatingCheckBody(model, entry) {
 	const lines = [];
+	if (entry.kind === "alias" && entry.scalar === "decimal" && entry.decimal) {
+		lines.push(
+			'\tif (typeof candidate !== "string" || !isCanonicalDecimal(candidate) || !decimalWithinPolicy(candidate, ' +
+				`${entry.decimal.precision}, ${entry.decimal.scale})) {`,
+			'\t\tfail(errors, pointer, CODES.SHAPE_MISMATCH, "the decimal value is not canonical or is outside its policy");',
+			"\t\treturn false;",
+			"\t}",
+			...constraintStatements(model, entry.identity, "\t"),
+			"\treturn errors.length === before;",
+		);
+		return lines;
+	}
 	if (entry.kind === "reference") {
 		lines.push(
 			'\tif (typeof candidate !== "string") {',
@@ -521,8 +547,12 @@ function fieldStatements(field) {
 			);
 		}
 		if (field.multiplicity?.unique === true) {
+			const uniqueness =
+				field.element?.scalar === "decimal"
+					? "isUniqueDecimalCollection"
+					: "isUniqueCollection";
 			lines.push(
-				"\t\t\t\tif (!isUniqueCollection(member.value)) {",
+				`\t\t\t\tif (!${uniqueness}(member.value)) {`,
 				'\t\t\t\t\tfail(errors, at, CODES.COLLECTION_NOT_UNIQUE, "two members share a canonical form");',
 				"\t\t\t\t}",
 			);
@@ -880,6 +910,38 @@ export const MAX_VALIDATION_DEPTH = ${MAX_VALIDATION_DEPTH};
 /** The member a record admitting unknowns carries them in. */
 export const PRESERVED_MEMBER = ${literal(PRESERVED_MEMBER)};
 
+/** Compare canonical decimal strings by mathematical value. */
+export function compareDecimal(left: string, right: string): number {
+	const parse = (value: string) => {
+		const negative = value.startsWith("-");
+		const unsigned = negative ? value.slice(1) : value;
+		const [whole, fraction = ""] = unsigned.split(".");
+		const coefficient = BigInt(whole + (fraction || "0"));
+		return { negative, coefficient, scale: fraction.length };
+	};
+	const a = parse(left);
+	const b = parse(right);
+	const scale = Math.max(a.scale, b.scale);
+	const av = (a.negative ? -a.coefficient : a.coefficient) * 10n ** BigInt(scale - a.scale);
+	const bv = (b.negative ? -b.coefficient : b.coefficient) * 10n ** BigInt(scale - b.scale);
+	return av < bv ? -1 : av > bv ? 1 : 0;
+}
+
+/** Whether a string uses the accepted decimal instance spelling. */
+export function isCanonicalDecimal(value: string): boolean {
+	if (!/^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$/.test(value)) return false;
+	return !/^-0(?:\\.0+)?$/.test(value);
+}
+
+/** Whether a decimal instance fits its precision and scale policy. */
+export function decimalWithinPolicy(value: string, precision: number, scale: number): boolean {
+	if (!isCanonicalDecimal(value)) return false;
+	const unsigned = value.startsWith("-") ? value.slice(1) : value;
+	const [whole, fraction = ""] = unsigned.split(".");
+	const integerDigits = whole === "0" ? 0 : whole.length;
+	return integerDigits <= precision - scale && fraction.length <= scale;
+}
+
 /** One failure: where, which rule, and what it says. */
 export interface ValidationError {
 	readonly pointer: string;
@@ -1192,15 +1254,39 @@ export function renderValidators(model) {
 	// Only the helpers the generated source reaches are imported, because
 	// `noUnusedLocals` is on for the generated package and an unused import is a
 	// compile error rather than a tidiness question.
-	const body = blocks.join("\n\n");
+	const decimalUnique = [
+		"/** Decimal collection uniqueness compares mathematical values, including scale padding. */",
+		"function isUniqueDecimalCollection(value: unknown): boolean {",
+		"\tif (!Array.isArray(value)) return true;",
+		"\tconst seen = new Set<string>();",
+		"\tfor (const member of value) {",
+		'\t\tif (typeof member !== "string") continue;',
+		'\t\tconst negative = member.startsWith("-");',
+		"\t\tconst unsigned = negative ? member.slice(1) : member;",
+		'\t\tconst [whole, fraction = ""] = unsigned.split(".");',
+		'\t\tconst normalizedFraction = fraction.replace(/0+$/, "") || "0";',
+		'\t\tconst normalized = (negative ? "-" : "") + whole + "." + normalizedFraction;',
+		"\t\tif (seen.has(normalized)) return false;",
+		"\t\tseen.add(normalized);",
+		"\t}",
+		"\treturn true;",
+		"}",
+	].join("\n");
+	const blockBody = blocks.join("\n\n");
+	const body = blockBody.includes("isUniqueDecimalCollection")
+		? [decimalUnique, blockBody].join("\n\n")
+		: blockBody;
 	const helpers = [
 		"VALIDATION_CODES as CODES",
 		"MAX_VALIDATION_DEPTH",
 		"base64OctetLength",
 		"codePointLength",
+		"compareDecimal",
 		"copyAccessor",
+		"decimalWithinPolicy",
 		"fail",
 		"isBase64",
+		"isCanonicalDecimal",
 		"isPlainObject",
 		"isUniqueCollection",
 		"join",

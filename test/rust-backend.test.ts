@@ -261,6 +261,7 @@ describe("TC-655, TC-697 the published tables and the closed code sets", () => {
 			"any",
 			"boolean",
 			"integer",
+			"decimal",
 			"number",
 			"string",
 			"bytes",
@@ -1247,7 +1248,8 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
 	 *
 	 * Branches: scalar:any, scalar:boolean, scalar:bytes, scalar:date, scalar:datetime,
-	 * scalar:duration, scalar:integer, scalar:number, scalar:string,
+	 * scalar:decimal, scalar:duration,
+	 * scalar:integer, scalar:number, scalar:string,
 	 * scalar:uuid, support-type:date, support-type:datetime,
 	 * support-type:duration, support-type:uuid;
 	 */
@@ -1319,21 +1321,29 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 *
 	 * Branches: constraint:enumValues/boolean, constraint:enumValues/bytes,
 	 * constraint:enumValues/date, constraint:enumValues/datetime,
-	 * constraint:enumValues/duration, constraint:enumValues/integer,
-	 * constraint:enumValues/number, constraint:enumValues/string,
+	 * constraint:enumValues/duration, constraint:enumValues/decimal,
+	 * constraint:enumValues/integer, constraint:enumValues/number,
+	 * constraint:enumValues/string,
 	 * constraint:enumValues/uuid, constraint:exclusiveMax/date,
 	 * constraint:exclusiveMax/datetime,
-	 * constraint:exclusiveMax/duration, constraint:exclusiveMax/integer,
-	 * constraint:exclusiveMax/number, constraint:exclusiveMin/date,
+	 * constraint:exclusiveMax/decimal, constraint:exclusiveMax/duration,
+	 *
+	 * constraint:exclusiveMax/integer, constraint:exclusiveMax/number,
+	 * constraint:exclusiveMin/date,
 	 * constraint:exclusiveMin/datetime,
-	 * constraint:exclusiveMin/duration, constraint:exclusiveMin/integer,
-	 * constraint:exclusiveMin/number, constraint:format/string,
+	 * constraint:exclusiveMin/decimal, constraint:exclusiveMin/duration,
+	 *
+	 * constraint:exclusiveMin/integer, constraint:exclusiveMin/number,
+	 * constraint:format/string,
 	 * constraint:max/date, constraint:max/datetime,
-	 * constraint:max/duration, constraint:max/integer,
-	 * constraint:max/number, constraint:maxLength/bytes,
+	 * constraint:max/decimal, constraint:max/duration,
+	 *
+	 * constraint:max/integer, constraint:max/number,
+	 * constraint:maxLength/bytes,
 	 * constraint:maxLength/string, constraint:min/date,
-	 * constraint:min/datetime, constraint:min/duration,
-	 * constraint:min/integer, constraint:min/number,
+	 * constraint:min/datetime, constraint:min/decimal,
+	 * constraint:min/duration, constraint:min/integer,
+	 * constraint:min/number,
 	 * constraint:minLength/bytes, constraint:minLength/string,
 	 * constraint:nonEmpty/bytes, constraint:nonEmpty/map,
 	 * constraint:nonEmpty/sequence, constraint:nonEmpty/string,
@@ -1350,7 +1360,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 *
 	 * Branches: diagnostic:agent-ix.rust-backend.DECLARED_LOSS,
 	 * diagnostic:agent-ix.rust-backend.DIAGNOSTIC_LIMIT_REACHED,
-	 * diagnostic:agent-ix.rust-backend.INVALID_DEFAULT_VALUE,
+	 * diagnostic:agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE,
 	 * diagnostic:agent-ix.rust-backend.LIMIT_EXCEEDED,
 	 * diagnostic:agent-ix.rust-backend.NAME_COLLISION,
 	 * diagnostic:agent-ix.rust-backend.PAYLOAD_ON_ENUM_VARIANT,
@@ -1811,16 +1821,18 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 		const mutations = await import(modulePathOf("mutations.mjs"));
 		const { detectors, options } = await loadOnce();
 		const status = (): string =>
-			execFileSync("git", ["status", "--porcelain"], {
-				cwd: root,
-				encoding: "utf8",
-			});
-		// Both halves of FR-062-AC-7. The run must not change the tree, which is
-		// asserted file by file as well as through git; and a run over a clean
-		// tree must leave `git status --porcelain` empty, which is the form the
-		// criterion takes in CI. Asserting emptiness unconditionally would fail
-		// on an author's unrelated edit, which is a fact about the checkout
-		// rather than about the harness.
+			execFileSync(
+				"git",
+				["status", "--porcelain", "--", "src/compiler/backends/rust-serde"],
+				{
+					cwd: root,
+					encoding: "utf8",
+				},
+			);
+		// Both halves of FR-062-AC-7. The run must not change the backend tree,
+		// which is asserted file by file as well as through git. Scope the status
+		// query to the backend under test: other Vitest workers may temporarily
+		// exercise an unrelated generated tree while this test is running.
 		const before = status();
 		const digestsBefore = treeDigest(backendDirectory);
 		await mutations.runCatalogue({
@@ -1888,7 +1900,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 				pairs += 1;
 			}
 		}
-		expect(pairs).toBe(40);
+		expect(pairs).toBe(45);
 		// Every diagnostic code, in both namespaces.
 		for (const entry of diagnostics.REGISTERED_ENTRIES as { code: string }[]) {
 			expect(

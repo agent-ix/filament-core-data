@@ -29,7 +29,7 @@ const KERNEL: Record<string, { scalar?: string; open?: boolean }> = {
 	UUID: { scalar: "uuid" },
 	Boolean: { scalar: "boolean" },
 	Integer: { scalar: "integer" },
-	Decimal: { scalar: "number" },
+	Decimal: { scalar: "decimal" },
 	String: { scalar: "string" },
 	Timestamp: { scalar: "datetime" },
 	Duration: { scalar: "duration" },

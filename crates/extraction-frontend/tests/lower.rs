@@ -13,7 +13,7 @@ use agent_ix_extraction_frontend::document::assemble;
 use agent_ix_extraction_frontend::enumeration::VALUE_COLUMN;
 use agent_ix_extraction_frontend::lower::{
     applies_to, diagnostic_code, loss_register, roles, screaming, Kind, Presence,
-    DECIMAL_POLICY_EXTENSION, IDENTITY_FIELD_EXTENSION, KEYWORDS,
+    IDENTITY_FIELD_EXTENSION, KEYWORDS,
 };
 use agent_ix_extraction_frontend::resolve::{Outcome, Resolved};
 use agent_ix_extraction_frontend::rows::field_rows;
@@ -405,30 +405,20 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     );
     assert_eq!(parent["extensions"], json!([]));
 
-    // The decimal policy rides the same extension mechanism.
+    // The decimal policy is carried directly by the field subject.
     let business = self::lift("business");
     let types = types_json(&business);
     let order = type_named(&types, "Order");
     let total = field_named(order, "total");
     assert_eq!(total["unit"], "USD");
-    // `min: 0` on the row lives inline on the field (gap 1 of FCD
-    // #199/#200): the typeRef names the resolved native scalar directly, no
-    // alias is minted.
+    // The Decimal policy lives inline on the field (gap 1 of FCD #199/#200):
+    // the typeRef names the resolved native scalar directly, no alias is
+    // minted. Decimal bounds are intentionally absent because JSON Schema
+    // cannot enforce them without loss (FR-144).
     assert_eq!(total["typeRef"], "ix://quire/native/Decimal");
-    let total_constraints = total["constraints"].as_array().expect("constraints");
-    assert_eq!(total_constraints.len(), 1, "{total_constraints:?}");
-    assert_eq!(total_constraints[0]["keyword"], "min");
-    assert_eq!(total_constraints[0]["operands"], json!({"value": 0}));
-    assert_eq!(total_constraints[0]["appliesTo"], total["identity"]);
-    assert_eq!(
-        total["extensions"],
-        json!([{
-            "identity": DECIMAL_POLICY_EXTENSION,
-            "version": "1.0.0",
-            "required": false,
-            "payload": {"precision": 10, "scale": 2}
-        }])
-    );
+    assert_eq!(total["decimal"], json!({"precision": 10, "scale": 2}));
+    assert_eq!(total.get("constraints"), None);
+    assert_eq!(total["extensions"], json!([]));
 }
 
 #[trace("TC-1223", "FR-093-AC-4")]
@@ -585,7 +575,9 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         "unknownPolicy": "reject"
     });
     match kind {
-        "scalar" => target["scalar"] = json!(scalar),
+        "scalar" => {
+            target["scalar"] = json!(scalar);
+        }
         "record" => target["fields"] = json!([]),
         "enum" => {
             target["variants"] = json!([{
@@ -604,29 +596,50 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         other => panic!("unknown kind {other}"),
     }
     let operands = match keyword {
-        "min" | "max" | "exclusiveMin" | "exclusiveMax" => json!({"value": 1}),
+        "min" | "max" | "exclusiveMin" | "exclusiveMax" => {
+            if scalar == "decimal" {
+                json!({"value": "1"})
+            } else {
+                json!({"value": 1})
+            }
+        }
         "minLength" | "maxLength" => json!({"value": 1}),
         "pattern" => json!({"regex": "^a$", "dialect": "ecma-262"}),
-        "enumValues" => json!({"values": ["a"]}),
+        "enumValues" => {
+            if scalar == "decimal" {
+                json!({"values": ["1"]})
+            } else {
+                json!({"values": ["a"]})
+            }
+        }
         "nonEmpty" | "unique" => json!({}),
         "format" => json!({"name": "iana:email"}),
         other => panic!("unknown keyword {other}"),
     };
+    let applies_to = if scalar == "decimal" {
+        "ix://agent-ix/test/R/f"
+    } else {
+        "ix://agent-ix/test/T"
+    };
+    let mut field = json!({
+        "identity": "ix://agent-ix/test/R/f", "name": "f",
+        "typeRef": "ix://agent-ix/test/T", "presence": "required",
+        "nullable": false, "defaultKind": "none", "origin": origin,
+        "multiplicity": {"lower": 1, "upper": 1, "ordered": false, "unique": false}
+    });
+    if scalar == "decimal" {
+        field["decimal"] = json!({"precision": 10, "scale": 2});
+    }
     let record = json!({
         "identity": "ix://agent-ix/test/R", "displayName": "R", "kind": "record",
         "roles": [], "origin": origin, "extensions": [], "unknownPolicy": "reject",
         "constraints": [{
             "identity": "ix://agent-ix/test/constraint/r-f-k",
             "keyword": keyword, "operands": operands,
-            "appliesTo": "ix://agent-ix/test/T",
+            "appliesTo": applies_to,
             "diagnosticCode": "agent-ix.test.F_K", "origin": origin
         }],
-        "fields": [{
-            "identity": "ix://agent-ix/test/R/f", "name": "f",
-            "typeRef": "ix://agent-ix/test/T", "presence": "required",
-            "nullable": false, "defaultKind": "none", "origin": origin,
-            "multiplicity": {"lower": 1, "upper": 1, "ordered": false, "unique": false}
-        }]
+        "fields": [field]
     });
     json!({"ir": {
         "contractVersion": "2.0.0",
@@ -683,6 +696,7 @@ fn tc_1225_min_on_string_is_blocking_constraint_not_applicable_and_the_reader_ag
     let kinds: Vec<(&str, &str)> = vec![
         ("scalar", "boolean"),
         ("scalar", "integer"),
+        ("scalar", "decimal"),
         ("scalar", "number"),
         ("scalar", "string"),
         ("scalar", "bytes"),

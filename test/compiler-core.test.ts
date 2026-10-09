@@ -1440,7 +1440,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			["safeint", "integer"],
 			["uint8", "integer"],
 			["float64", "number"],
-			["decimal128", "number"],
+			["decimal128", "decimal"],
 			["numeric", "number"],
 			["string", "string"],
 			["url", "string"],
@@ -5917,6 +5917,84 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 });
 
 describe("diagnostic coverage (FR-049 closing gate)", () => {
+	it("covers the exact numeric reader and frontend diagnostics", async () => {
+		const field = (typeRef: string, extra: Json = {}) => ({
+			identity: "ix://probe/field/value",
+			name: "value",
+			typeRef,
+			multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
+			...extra,
+		});
+		const missingPolicy = {
+			contractVersion: "2.0.0",
+			types: [
+				{
+					identity: "ix://probe/Values",
+					kind: "sequence",
+					items: "ix://quire/native/Decimal",
+				},
+			],
+		};
+		note(readContractIr(missingPolicy as never) as never);
+
+		const conflict = {
+			contractVersion: "2.0.0",
+			types: [
+				{
+					identity: "ix://probe/DecimalAlias",
+					kind: "scalar",
+					scalar: "decimal",
+					decimal: { precision: 5, scale: 2 },
+				},
+				{
+					identity: "ix://probe/Record",
+					kind: "record",
+					fields: [
+						field("ix://probe/DecimalAlias", {
+							decimal: { precision: 5, scale: 2 },
+						}),
+					],
+				},
+			],
+		};
+		note(readContractIr(conflict as never) as never);
+
+		const invalidDefault = {
+			contractVersion: "2.0.0",
+			types: [
+				{
+					identity: "ix://probe/Record",
+					kind: "record",
+					fields: [field("ix://quire/native/Integer", { defaultValue: 1.5 })],
+				},
+			],
+		};
+		note(readContractIr(invalidDefault as never) as never);
+
+		const ambiguousNumeric = await compileSource(
+			["namespace AgentIx.Semantic;", "model Bad { value: numeric; }"].join(
+				"\n",
+			),
+		);
+		const ambiguousNumericDiagnostics = note(
+			(ambiguousNumeric.diagnostics ?? []) as never,
+		);
+		expect(codesOf(ambiguousNumericDiagnostics as never)).toContain(
+			DIAGNOSTIC_CODES.AMBIGUOUS_NUMERIC.code,
+		);
+		note(
+			((
+				await compileSource(
+					[
+						"using AgentIx.Semantic.Decorators;",
+						"namespace AgentIx.Semantic;",
+						"model Bad { @decimal(39, 2) value: decimal; }",
+					].join("\n"),
+				)
+			).diagnostics ?? []) as never,
+		);
+	});
+
 	/** Traces: TC-494, TC-609; FR-049-AC-3. */
 	it("fires every registry code at least once across the fixture corpus", () => {
 		const declared = (
