@@ -189,28 +189,6 @@ export function codePointLength(value: string): number {
 	return count;
 }
 
-/** Compare canonical decimal strings by coefficient, without binary rounding. */
-function compareDecimal(left: string, right: string): number {
-	const parse = (value: string) => {
-		const negative = value.startsWith("-");
-		const unsigned = negative ? value.slice(1) : value;
-		const [whole, fraction = ""] = unsigned.split(".");
-		const coefficient = BigInt(whole + (fraction || "0"));
-		const scale = fraction.length;
-		return { negative, coefficient, scale };
-	};
-	const a = parse(left);
-	const b = parse(right);
-	const scale = Math.max(a.scale, b.scale);
-	const av =
-		(a.negative ? -a.coefficient : a.coefficient) *
-		10n ** BigInt(scale - a.scale);
-	const bv =
-		(b.negative ? -b.coefficient : b.coefficient) *
-		10n ** BigInt(scale - b.scale);
-	return av < bv ? -1 : av > bv ? 1 : 0;
-}
-
 /**
  * Well-formed standard base64, RFC 4648 §4.
  *
