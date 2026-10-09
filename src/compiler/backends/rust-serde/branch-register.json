@@ -11,7 +11,7 @@
 	],
 	"contributions": {
 		"diagnostics.mjs": 21,
-		"mapping-table.json": 67,
+		"mapping-table.json": 72,
 		"names.mjs": 10,
 		"src/compiler/ir/applicability.mjs": 55
 	},
@@ -599,7 +599,7 @@
 			"branchId": "defaultKind:semantic",
 			"axis": "defaultKind",
 			"vocabulary": "mapping-table.json",
-			"construct": "null \u2014 agent-ix.rust-backend.INVALID_DEFAULT_VALUE",
+			"construct": "null — agent-ix.rust-backend.INVALID_DEFAULT_VALUE",
 			"cases": [
 				"TC-725 every defaultKind, extension and metadata row reaches the emitted crate"
 			]
@@ -662,7 +662,7 @@
 			"branchId": "diagnostic:agent-ix.rust-backend.UNDECLARED_WIRE_FORM",
 			"axis": "diagnostic",
 			"vocabulary": "diagnostics.mjs",
-			"construct": "error, blocking: a construct's JSON wire form is declared by no published artifact \u2014 the bytes kernel scalar at this revision",
+			"construct": "error, blocking: a construct's JSON wire form is declared by no published artifact — the bytes kernel scalar at this revision",
 			"cases": [
 				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
 			]
@@ -689,7 +689,7 @@
 			"branchId": "diagnostic:agent-ix.rust-backend.UNORDERED_SUBJECT",
 			"axis": "diagnostic",
 			"vocabulary": "diagnostics.mjs",
-			"construct": "error, blocking: a bound keyword names a subject the contract does not order \u2014 an ISO 8601 duration at this revision",
+			"construct": "error, blocking: a bound keyword names a subject the contract does not order — an ISO 8601 duration at this revision",
 			"cases": [
 				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
 			]
@@ -797,7 +797,7 @@
 			"branchId": "extension:node",
 			"axis": "extension",
 			"vocabulary": "mapping-table.json",
-			"construct": "Vec<Extension>, with the value type Extension carrying identity, version, required, capability and a SemanticValue payload \u2014 agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION",
+			"construct": "Vec<Extension>, with the value type Extension carrying identity, version, required, capability and a SemanticValue payload — agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION",
 			"cases": [
 				"TC-725 every defaultKind, extension and metadata row reaches the emitted crate"
 			]
@@ -854,7 +854,7 @@
 			"branchId": "field:multiplicity/upper-zero",
 			"axis": "field",
 			"vocabulary": "mapping-table.json",
-			"construct": "null \u2014 agent-ix.rust-backend.UNSUPPORTED_MULTIPLICITY",
+			"construct": "null — agent-ix.rust-backend.UNSUPPORTED_MULTIPLICITY",
 			"cases": [
 				"TC-725 the eight field-axis rows produce the member type and the serde attributes the table states"
 			]
@@ -1161,7 +1161,7 @@
 			"branchId": "scalar:bytes",
 			"axis": "scalar",
 			"vocabulary": "mapping-table.json",
-			"construct": "null \u2014 agent-ix.rust-backend.UNDECLARED_WIRE_FORM",
+			"construct": "null — agent-ix.rust-backend.UNDECLARED_WIRE_FORM",
 			"cases": [
 				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
 			]
@@ -1388,63 +1388,49 @@
 			"axis": "unknownPolicy",
 			"vocabulary": "mapping-table.json",
 			"construct": "null",
-			"cases": [
-				"TC-725 the unknownPolicy rows dispose each kind exactly once"
-			]
+			"cases": ["TC-725 the unknownPolicy rows dispose each kind exactly once"]
 		},
 		{
 			"branchId": "unknownPolicy:record/preserve",
 			"axis": "unknownPolicy",
 			"vocabulary": "mapping-table.json",
 			"construct": "UnknownMembers",
-			"cases": [
-				"TC-725 the unknownPolicy rows dispose each kind exactly once"
-			]
+			"cases": ["TC-725 the unknownPolicy rows dispose each kind exactly once"]
 		},
 		{
 			"branchId": "unknownPolicy:record/reject",
 			"axis": "unknownPolicy",
 			"vocabulary": "mapping-table.json",
 			"construct": "pub struct N { .. }",
-			"cases": [
-				"TC-725 the unknownPolicy rows dispose each kind exactly once"
-			]
+			"cases": ["TC-725 the unknownPolicy rows dispose each kind exactly once"]
 		},
 		{
 			"branchId": "unknownPolicy:record/surface",
 			"axis": "unknownPolicy",
 			"vocabulary": "mapping-table.json",
-			"construct": "UnknownMembers \u2014 agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED",
-			"cases": [
-				"TC-725 the unknownPolicy rows dispose each kind exactly once"
-			]
+			"construct": "UnknownMembers — agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED",
+			"cases": ["TC-725 the unknownPolicy rows dispose each kind exactly once"]
 		},
 		{
 			"branchId": "unknownPolicy:variants/preserve",
 			"axis": "unknownPolicy",
 			"vocabulary": "mapping-table.json",
 			"construct": "a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union",
-			"cases": [
-				"TC-725 the unknownPolicy rows dispose each kind exactly once"
-			]
+			"cases": ["TC-725 the unknownPolicy rows dispose each kind exactly once"]
 		},
 		{
 			"branchId": "unknownPolicy:variants/reject",
 			"axis": "unknownPolicy",
 			"vocabulary": "mapping-table.json",
 			"construct": "pub enum N { .. }",
-			"cases": [
-				"TC-725 the unknownPolicy rows dispose each kind exactly once"
-			]
+			"cases": ["TC-725 the unknownPolicy rows dispose each kind exactly once"]
 		},
 		{
 			"branchId": "unknownPolicy:variants/surface",
 			"axis": "unknownPolicy",
 			"vocabulary": "mapping-table.json",
-			"construct": "a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union \u2014 agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED",
-			"cases": [
-				"TC-725 the unknownPolicy rows dispose each kind exactly once"
-			]
+			"construct": "a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union — agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED",
+			"cases": ["TC-725 the unknownPolicy rows dispose each kind exactly once"]
 		}
 	]
 }

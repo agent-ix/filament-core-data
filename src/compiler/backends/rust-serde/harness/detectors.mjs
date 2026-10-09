@@ -233,7 +233,8 @@ function operandsFor(keyword, subject) {
 		if (subject === "date") return { value: "2020-01-01" };
 		if (subject === "datetime") return { value: "2020-01-01T00:00:00Z" };
 		if (subject === "duration") return { value: "P1D" };
-		if (subject === "number") return { value: 1.5 };
+		if (subject === "number" || subject === "float32" || subject === "float64") return { value: 1.5 };
+		if (subject === "decimal") return { value: "1.1" };
 		return { value: 1 };
 	}
 	if (keyword === "minLength" || keyword === "maxLength") return { value: 2 };
@@ -242,7 +243,8 @@ function operandsFor(keyword, subject) {
 	if (keyword === "enumValues") {
 		if (subject === "boolean") return { values: [true] };
 		if (subject === "integer") return { values: [1] };
-		if (subject === "number") return { values: [1.5] };
+		if (subject === "number" || subject === "float32" || subject === "float64") return { values: [1.5] };
+		if (subject === "decimal") return { values: ["1.1"] };
 		return { values: ["a"] };
 	}
 	return {};
@@ -543,8 +545,8 @@ export const DETECTORS = Object.freeze([
 		run(backend) {
 			const rows = backend.table.rows.filter((row) => row.axis === "scalar");
 			assert(
-				rows.length === 10,
-				`the table declares ${rows.length} kernel scalars, not ten`,
+				rows.length === 13,
+				`the table declares ${rows.length} kernel scalars, not thirteen`,
 			);
 			for (const row of rows) {
 				const result = backend.mapping.mapDocument(
@@ -575,7 +577,7 @@ export const DETECTORS = Object.freeze([
 			}
 			// A scalar outside the kernel is refused rather than admitted.
 			const outside = backend.mapping.mapDocument(
-				documentOf([scalarType("Odd", "decimal")]),
+				documentOf([scalarType("Odd", "not-a-scalar")]),
 				{},
 			);
 			assert(
