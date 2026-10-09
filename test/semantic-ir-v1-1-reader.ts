@@ -69,6 +69,7 @@ function nativeScalar(identity: unknown): string | undefined {
 const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	min: new Set([
 		"integer",
+		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -78,6 +79,7 @@ const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	]),
 	max: new Set([
 		"integer",
+		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -87,6 +89,7 @@ const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	]),
 	exclusiveMin: new Set([
 		"integer",
+		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -96,6 +99,7 @@ const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	]),
 	exclusiveMax: new Set([
 		"integer",
+		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -109,6 +113,7 @@ const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	enumValues: new Set([
 		"boolean",
 		"integer",
+		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -325,15 +330,21 @@ function checkConstraint(
 		["min", "max", "exclusiveMin", "exclusiveMax"].includes(keyword) &&
 		resolved.kind === "scalar"
 	) {
-		const numeric = ["integer", "decimal", "float32", "float64"].includes(
-			resolved.scalar,
-		);
+		const numeric = [
+			"integer",
+			"number",
+			"decimal",
+			"float32",
+			"float64",
+		].includes(resolved.scalar);
 		const value = operands.value;
-		const valid = numeric
-			? ["float32", "float64"].includes(resolved.scalar)
-				? typeof value === "number"
-				: typeof value === "string"
-			: typeof value === "string";
+		const valid =
+			numeric && resolved.scalar === "integer"
+				? (typeof value === "number" && Number.isSafeInteger(value)) ||
+					(typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value))
+				: numeric
+					? typeof value === "number" && Number.isFinite(value)
+					: typeof value === "string";
 		if (!valid) {
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.INVALID_OPERAND",

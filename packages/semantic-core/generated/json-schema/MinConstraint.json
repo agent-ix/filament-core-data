@@ -22,6 +22,6 @@
 	"unevaluatedProperties": {
 		"not": {}
 	},
-	"description": "`min`: number for numeric scalars, ISO 8601 string for temporal scalars.",
+	"description": "`min`: an exact numeric literal or ISO 8601 string for temporal scalars.",
 	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/MinConstraint"
 }

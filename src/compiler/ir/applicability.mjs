@@ -46,6 +46,7 @@ export const PART_OF = "part_of";
 export const KEYWORD_APPLICABILITY = Object.freeze({
 	min: [
 		"integer",
+		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -55,6 +56,7 @@ export const KEYWORD_APPLICABILITY = Object.freeze({
 	],
 	max: [
 		"integer",
+		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -64,6 +66,7 @@ export const KEYWORD_APPLICABILITY = Object.freeze({
 	],
 	exclusiveMin: [
 		"integer",
+		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -73,6 +76,7 @@ export const KEYWORD_APPLICABILITY = Object.freeze({
 	],
 	exclusiveMax: [
 		"integer",
+		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -86,6 +90,7 @@ export const KEYWORD_APPLICABILITY = Object.freeze({
 	enumValues: [
 		"boolean",
 		"integer",
+		"number",
 		"decimal",
 		"float32",
 		"float64",

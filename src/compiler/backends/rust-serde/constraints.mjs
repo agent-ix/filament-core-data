@@ -189,7 +189,7 @@ function lowerBound(constraint, keyword, identity, resolved, raise) {
 		}
 		return { identity, keyword, form: "numeric", scalar, value };
 	}
-	if (scalar === "float32" || scalar === "float64") {
+	if (scalar === "number" || scalar === "float32" || scalar === "float64") {
 		if (
 			typeof value !== "number" ||
 			!Number.isFinite(value) ||
@@ -277,12 +277,15 @@ function lowerEnumValues(constraint, identity, resolved, raise) {
 					BigInt(value) >= -(2n ** 127n) &&
 					BigInt(value) <= 2n ** 127n - 1n
 				);
+			case "number":
 			case "float32":
 			case "float64":
 				return (
 					typeof value === "number" &&
 					Number.isFinite(value) &&
-					(scalar === "float64" || Math.fround(value) === value)
+					(scalar === "number" ||
+						scalar === "float64" ||
+						Math.fround(value) === value)
 				);
 			case "decimal":
 				return (

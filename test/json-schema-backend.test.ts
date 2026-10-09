@@ -7,8 +7,8 @@ import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index
 import type { BackendGeneration } from "../src/compiler/backends/seam.mjs";
 import { generateTarget } from "../src/compiler/backends/seam.mjs";
 import { DEFAULT_LIMITS } from "../src/compiler/diagnostics.mjs";
-import { createHost } from "../src/compiler/host.mjs";
 import type { CompilerFileHost } from "../src/compiler/host.mjs";
+import { createHost } from "../src/compiler/host.mjs";
 
 /**
  * `jsonSchemaBackend.generate`'s own declaration (`json-schema-v1/index.d.mts`)
@@ -99,6 +99,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 					identity: ref(scalar),
 					kind: "scalar",
 					scalar,
+					displayName: scalar === "decimal" ? "DecimalBuiltin" : undefined,
 					extensions: [],
 				})),
 				{
@@ -191,7 +192,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		const schemas = generate({ ir })
 			.files.filter((file) => file.path !== "index.json")
 			.map((file) => JSON.parse(file.text));
-		expect(schemas).toHaveLength(19);
+		expect(schemas).toHaveLength(21);
 		const ajv = new Ajv2020({ strict: false });
 		addFormats(ajv);
 		for (const schema of schemas) ajv.addSchema(schema);

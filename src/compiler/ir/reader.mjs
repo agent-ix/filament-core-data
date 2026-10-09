@@ -604,9 +604,13 @@ export function readContractIr(document, options = {}) {
 			["min", "max", "exclusiveMin", "exclusiveMax"].includes(keyword) &&
 			resolved.kind === "scalar"
 		) {
-			const numeric = ["integer", "decimal", "float32", "float64"].includes(
-				resolved.scalar,
-			);
+			const numeric = [
+				"integer",
+				"number",
+				"decimal",
+				"float32",
+				"float64",
+			].includes(resolved.scalar);
 			const value = operands.value;
 			if (
 				!operandAdmitted(
@@ -991,12 +995,14 @@ function defaultValueAdmitted(field, scalar, policy) {
 
 function operandAdmitted(numeric, scalar, value, policy) {
 	if (!numeric) return typeof value === "string";
-	if (scalar === "integer")
+	if (scalar === "integer") {
 		return (
-			typeof value === "string" &&
-			/^(0|-?[1-9][0-9]*)$/.test(value) &&
-			withinI128(value)
+			(typeof value === "number" && Number.isSafeInteger(value)) ||
+			(typeof value === "string" &&
+				/^(0|-?[1-9][0-9]*)$/.test(value) &&
+				withinI128(value))
 		);
+	}
 	if (scalar === "decimal") return decimalAdmitted(value, policy);
 	return typeof value === "number" && Number.isFinite(value);
 }

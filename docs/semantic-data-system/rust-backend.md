@@ -68,6 +68,8 @@ construction, not by claim.
 | `integer` | `i64` | — | canonical integer string; i64, u64 or i128 selected by effective range | — |
 | `decimal` | `crate::support::Decimal` | — | canonical decimal string through support::Decimal | — |
 | `number` | `f64` | — | JSON number | — |
+| `float32` | `f32` | — | finite JSON number | — |
+| `float64` | `f64` | — | finite JSON number | — |
 | `string` | `String` | — | JSON string | — |
 | `bytes` | `null` | — | refused: no published artifact states the JSON wire form of bytes (issue #58) | `agent-ix.rust-backend.UNDECLARED_WIRE_FORM` |
 | `date` | `Date` | — | generated RFC 3339 full-date newtype over String; JSON string | — |

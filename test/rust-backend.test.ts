@@ -262,6 +262,8 @@ describe("TC-655, TC-697 the published tables and the closed code sets", () => {
 			"boolean",
 			"integer",
 			"decimal",
+			"float32",
+			"float64",
 			"number",
 			"string",
 			"bytes",
@@ -1248,7 +1250,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 * Traces: TC-725; FR-062-AC-1, FR-062-AC-8.
 	 *
 	 * Branches: scalar:any, scalar:boolean, scalar:bytes, scalar:date, scalar:datetime,
-	 * scalar:decimal, scalar:duration,
+	 * scalar:decimal, scalar:duration, scalar:float32, scalar:float64,
 	 * scalar:integer, scalar:number, scalar:string,
 	 * scalar:uuid, support-type:date, support-type:datetime,
 	 * support-type:duration, support-type:uuid;
@@ -1322,26 +1324,31 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 * Branches: constraint:enumValues/boolean, constraint:enumValues/bytes,
 	 * constraint:enumValues/date, constraint:enumValues/datetime,
 	 * constraint:enumValues/duration, constraint:enumValues/decimal,
+	 * constraint:enumValues/float32, constraint:enumValues/float64,
 	 * constraint:enumValues/integer, constraint:enumValues/number,
 	 * constraint:enumValues/string,
 	 * constraint:enumValues/uuid, constraint:exclusiveMax/date,
 	 * constraint:exclusiveMax/datetime,
-	 * constraint:exclusiveMax/decimal, constraint:exclusiveMax/duration,
+	 * constraint:exclusiveMax/decimal, constraint:exclusiveMax/float32,
+	 * constraint:exclusiveMax/float64, constraint:exclusiveMax/duration,
 	 *
 	 * constraint:exclusiveMax/integer, constraint:exclusiveMax/number,
 	 * constraint:exclusiveMin/date,
 	 * constraint:exclusiveMin/datetime,
-	 * constraint:exclusiveMin/decimal, constraint:exclusiveMin/duration,
+	 * constraint:exclusiveMin/decimal, constraint:exclusiveMin/float32,
+	 * constraint:exclusiveMin/float64, constraint:exclusiveMin/duration,
 	 *
 	 * constraint:exclusiveMin/integer, constraint:exclusiveMin/number,
 	 * constraint:format/string,
 	 * constraint:max/date, constraint:max/datetime,
-	 * constraint:max/decimal, constraint:max/duration,
+	 * constraint:max/decimal, constraint:max/float32,
+	 * constraint:max/float64, constraint:max/duration,
 	 *
 	 * constraint:max/integer, constraint:max/number,
 	 * constraint:maxLength/bytes,
 	 * constraint:maxLength/string, constraint:min/date,
 	 * constraint:min/datetime, constraint:min/decimal,
+	 * constraint:min/float32, constraint:min/float64,
 	 * constraint:min/duration, constraint:min/integer,
 	 * constraint:min/number,
 	 * constraint:minLength/bytes, constraint:minLength/string,
@@ -1900,7 +1907,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 				pairs += 1;
 			}
 		}
-		expect(pairs).toBe(45);
+		expect(pairs).toBe(55);
 		// Every diagnostic code, in both namespaces.
 		for (const entry of diagnostics.REGISTERED_ENTRIES as { code: string }[]) {
 			expect(

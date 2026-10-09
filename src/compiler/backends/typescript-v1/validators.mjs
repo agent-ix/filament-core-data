@@ -266,6 +266,8 @@ const SCALAR_GUARDS = Object.freeze({
 	boolean: { test: 'typeof candidate === "boolean"', code: "NOT_A_BOOLEAN" },
 	integer: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
 	number: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
+	float32: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
+	float64: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
 	decimal: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
 	string: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
 	bytes: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
@@ -318,7 +320,7 @@ function scalarCheckBody(model, entry) {
 		"\t\treturn false;",
 		"\t}",
 	);
-	if (["integer", "number"].includes(entry.scalar)) {
+	if (["integer", "number", "float32", "float64"].includes(entry.scalar)) {
 		lines.push(...numericStatements(entry.scalar, "\t"));
 	}
 	if (entry.scalar === "bytes") {
@@ -757,7 +759,7 @@ function recordPrepareBody(entry) {
 			lines.push(`\t\t\tout[${name}] = member.value;`);
 		} else if (field.collection) {
 			lines.push(
-				"\t\t\tout[" + name + "] = Array.isArray(member.value)",
+				`\t\t\tout[${name}] = Array.isArray(member.value)`,
 				`\t\t\t\t? member.value.map((item) => ${prepareCall}(item, depth + 1))`,
 				"\t\t\t\t: member.value;",
 			);

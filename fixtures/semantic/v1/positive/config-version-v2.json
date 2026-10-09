@@ -123,7 +123,7 @@
 					"identity": "ix://agent-ix/config-service/constraint/version-number-min",
 					"keyword": "min",
 					"operands": {
-						"value": 1
+						"value": "1"
 					},
 					"appliesTo": "ix://agent-ix/config-service/type/VersionNumber",
 					"diagnosticCode": "agent-ix.config-service.VERSION_NUMBER_MIN",

@@ -419,6 +419,8 @@ const NATIVE_SCALARS = new Map([
 	["Boolean", "boolean"],
 	["Integer", "integer"],
 	["Decimal", "decimal"],
+	["Float32", "float32"],
+	["Float64", "float64"],
 	["String", "string"],
 	["Timestamp", "datetime"],
 	["Duration", "duration"],

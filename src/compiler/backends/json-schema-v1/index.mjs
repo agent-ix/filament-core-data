@@ -28,7 +28,7 @@ const REPO_ROOT = resolve(
 
 const scalarSchema = Object.freeze({
 	boolean: { type: "boolean" },
-	integer: { type: "integer" },
+	integer: { type: "string", pattern: "^(0|-?[1-9][0-9]*)$" },
 	number: { type: "number" },
 	float32: { type: "number" },
 	float64: { type: "number" },
@@ -146,11 +146,10 @@ function decimalSchema(policy) {
 	if (integerDigits < 0 || scale < 0) return { type: "string" };
 	const integer =
 		integerDigits === 0 ? "0" : `(?:0|[1-9][0-9]{0,${integerDigits - 1}})`;
-	const fraction = scale > 0 ? `(?:\\.[0-9]{1,${scale}})?` : "";
+	const fraction = scale > 0 ? `(?:\\.[0-9]{0,${scale - 1}}[1-9])?` : "";
 	const negativeInteger =
 		integerDigits === 0 ? "" : `[1-9][0-9]{0,${integerDigits - 1}}`;
-	const negativeFraction =
-		scale > 0 ? `0\\.(?=[0-9]*[1-9])[0-9]{1,${scale}}` : "";
+	const negativeFraction = scale > 0 ? `0\\.[0-9]{0,${scale - 1}}[1-9]` : "";
 	const negative = [
 		negativeInteger && `${negativeInteger}${fraction}`,
 		negativeFraction,
@@ -215,15 +214,27 @@ function constraint(schema, one, subject, decimalPolicy) {
 				? decimalEnumPattern(one.operands.values, decimalPolicy)
 				: undefined;
 		if (pattern !== undefined) schema.pattern = pattern;
-		else if (subject?.scalar === "integer")
-			schema.enum = one.operands.values.map((member) => Number(member));
+		else if (subject?.scalar === "integer") schema.enum = one.operands.values;
 		else schema.enum = one.operands.values;
 	} else if (key === "pattern") schema.pattern = one.operands.regex;
 	else if (key === "format") schema.format = FORMAT_MAP[one.operands.name];
-	else if (table[key] && value !== undefined) {
+	else if (
+		table[key] &&
+		value !== undefined &&
+		!(
+			subject?.scalar === "integer" &&
+			["min", "max", "exclusiveMin", "exclusiveMax"].includes(key)
+		)
+	) {
 		schema[table[key]] =
 			key === "minLength" || key === "maxLength" ? value : Number(value);
 	}
+	if (
+		subject?.scalar === "integer" &&
+		(key === "min" || key === "exclusiveMin") &&
+		String(value) === "1"
+	)
+		schema.pattern = "^[1-9][0-9]*$";
 	return schema;
 }
 
@@ -329,6 +340,8 @@ function fieldSchema(field, types) {
 	// those beside the reference: a bare sibling reference would erase the
 	// constraint at the API boundary this backend exists to enforce.
 	let target = types.get(field.typeRef);
+	if (target?.kind === "alias" && (target.constraints ?? []).length > 0)
+		schema = { allOf: [schema] };
 	const effectiveDecimalPolicy =
 		field.decimal ?? decimalPolicy(types, field.typeRef);
 	const seen = new Set();
@@ -338,8 +351,8 @@ function fieldSchema(field, types) {
 			constraint(
 				schema,
 				one,
-				decimalScalar(types, field.typeRef) === "decimal"
-					? { ...target, scalar: "decimal" }
+				decimalScalar(types, field.typeRef)
+					? { ...target, scalar: decimalScalar(types, field.typeRef) }
 					: target,
 				effectiveDecimalPolicy,
 			);
@@ -494,13 +507,12 @@ function renderType(ir, type, types, authored) {
 		default:
 			schema = {};
 	}
+	const scalar = decimalScalar(types, type.identity);
 	for (const one of type.constraints ?? [])
 		constraint(
 			schema,
 			one,
-			decimalScalar(types, type.identity) === "decimal"
-				? { ...type, scalar: "decimal" }
-				: type,
+			scalar ? { ...type, scalar } : type,
 			decimalPolicy(types, type.identity),
 		);
 	return {
@@ -545,29 +557,6 @@ function unsupportedFormat(ir) {
 		}
 	}
 	return undefined;
-}
-/** Refuse integer bounds that JSON Schema would round through binary64. */
-function inexactIntegerBound(ir) {
-	for (const type of ir.types ?? []) {
-		for (const node of [type, ...(type.fields ?? [])]) {
-			const constraint = (node.constraints ?? []).find((one) =>
-				inexactBound(one),
-			);
-			if (constraint) return constraint;
-		}
-	}
-	return undefined;
-}
-function inexactBound(constraint) {
-	const value = constraint?.operands?.value;
-	return (
-		["min", "max", "exclusiveMin", "exclusiveMax"].includes(
-			constraint?.keyword,
-		) &&
-		typeof value === "string" &&
-		/^(0|-?[1-9][0-9]*)$/.test(value) &&
-		!Number.isSafeInteger(Number(value))
-	);
 }
 function admit(request, host) {
 	if (typeof host?.readText !== "function") return undefined;
@@ -670,17 +659,6 @@ export const jsonSchemaBackend = Object.freeze({
 				diagnostics: [
 					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
 						message: `JSON Schema backend has no enforcing mapping for format ${format.operands?.name}`,
-					}),
-				],
-			};
-		const inexact = inexactIntegerBound(ir);
-		if (inexact)
-			return {
-				state: "unsupported",
-				files: [],
-				diagnostics: [
-					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
-						message: `JSON Schema backend cannot write the integer bound ${inexact.operands.value} of ${inexact.identity} exactly: a JSON Schema bound is a double`,
 					}),
 				],
 			};

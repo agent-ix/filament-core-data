@@ -350,7 +350,7 @@ export function emitCrate(request, options = {}) {
 /** The intended-language predicate of FR-057, applied to the output root. */
 export function isTraversalFree(value) {
 	if (value.length === 0) return false;
-	if (/[\u0000\n\r\u2028\u2029]/.test(value)) return false;
+	if (value.includes("\0") || /[\n\r\u2028\u2029]/.test(value)) return false;
 	if (value.includes("\\")) return false;
 	if (value.startsWith("/")) return false;
 	if (/^[A-Za-z]:/.test(value)) return false;
@@ -1320,13 +1320,15 @@ function checkConstants(
 		}
 		if (check.form === "enumValues") {
 			const integerType = rustIntegerTypeFor(subjectType);
-			const floatType = String(subjectType.inner ?? "").endsWith("f32") ? "f32" : "f64";
+			const floatType = String(subjectType.inner ?? "").endsWith("f32")
+				? "f32"
+				: "f64";
 			const rustType =
 				check.scalar === "boolean"
 					? "bool"
 					: check.scalar === "integer"
 						? integerType
-						: ["float32", "float64"].includes(check.scalar)
+						: ["number", "float32", "float64"].includes(check.scalar)
 							? floatType
 							: "&str";
 			const values = check.values.map((value) =>
@@ -1336,7 +1338,7 @@ function checkConstants(
 						? rustString(value)
 						: typeof value === "boolean"
 							? String(value)
-						: renderFloat(value, floatType),
+							: renderFloat(value, floatType),
 			);
 			lines.push(
 				`/// The values ${check.identity} admits.`,
@@ -1423,9 +1425,7 @@ function renderCheck(
 	// so one `get()` reaches the primitive while preserving the expression's
 	// existing borrowing shape.  Native support types expose their string
 	// methods directly and must keep the primitive path below.
-	const subject = unwrapNamedWrapper
-		? `(${expression}).get()`
-		: expression;
+	const subject = unwrapNamedWrapper ? `(${expression}).get()` : expression;
 	// A scalar newtype hands its constructor the base by value, so `value` is
 	// already the `i64` or `f64` a numeric comparison needs. An alias reaches its
 	// base through one `get()` per hop, which yields a reference, so the copy is
@@ -1542,7 +1542,7 @@ function renderCheck(
 		case "enumValues": {
 			const constant = `${prefix}_ENUM_${index}`;
 			const numeric =
-				["integer", "float32", "float64"].includes(check.scalar) ||
+				["integer", "number", "float32", "float64"].includes(check.scalar) ||
 				check.scalar === "boolean";
 			if (check.scalar === "decimal") {
 				lines.push(
@@ -2496,8 +2496,8 @@ function renderInlineFieldChecks(type, field) {
 				prefix,
 				field.elementType.startsWith("crate::") &&
 					!field.elementType.startsWith("crate::support::"),
-			).map(
-				(line) => (line.length === 0 ? line : `${" ".repeat(extraIndent)}${line}`),
+			).map((line) =>
+				line.length === 0 ? line : `${" ".repeat(extraIndent)}${line}`,
 			),
 		);
 	const lines = [];
@@ -2505,12 +2505,15 @@ function renderInlineFieldChecks(type, field) {
 		lines.push(...render(expression, extraIndent));
 	if (field.collection) {
 		const source = field.presence === "optional" ? "items" : field.ident;
-		if (field.presence === "optional") lines.push(`        if let Some(items) = &${field.ident} {`);
+		if (field.presence === "optional")
+			lines.push(`        if let Some(items) = &${field.ident} {`);
 		lines.push(
 			`            for item in ${field.presence === "optional" ? source : `&${source}`} {`,
 		);
 		if (field.nullable) {
-			lines.push("                if let crate::support::Nullable::Value(value) = item {");
+			lines.push(
+				"                if let crate::support::Nullable::Value(value) = item {",
+			);
 			renderValue("*value", 4);
 			lines.push("                }");
 		} else renderValue("*item");
@@ -2521,13 +2524,17 @@ function renderInlineFieldChecks(type, field) {
 	if (field.presence === "optional") {
 		lines.push(`        if let Some(value) = &${field.ident} {`);
 		if (field.nullable) {
-			lines.push("            if let crate::support::Nullable::Value(value) = value {");
+			lines.push(
+				"            if let crate::support::Nullable::Value(value) = value {",
+			);
 			renderValue("*value", 4);
 			lines.push("            }");
 		} else renderValue("*value");
 		lines.push("        }");
 	} else if (field.nullable) {
-		lines.push(`        if let crate::support::Nullable::Value(value) = &${field.ident} {`);
+		lines.push(
+			`        if let crate::support::Nullable::Value(value) = &${field.ident} {`,
+		);
 		renderValue("*value");
 		lines.push("        }");
 	} else renderValue(`&${field.ident}`);
@@ -2603,6 +2610,7 @@ function scalarLiteral(scalar, value, rustType = "i64") {
 			return typeof value === "number" && Number.isSafeInteger(value)
 				? `${value}${rustType}`
 				: undefined;
+		case "number":
 		case "float32":
 		case "float64":
 			return typeof value === "number" && Number.isFinite(value)

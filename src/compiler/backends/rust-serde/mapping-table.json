@@ -238,6 +238,15 @@
 			"diagnosticCode": null
 		},
 		{
+			"rowKey": "scalar:number",
+			"axis": "scalar",
+			"selector": "number",
+			"rustForm": "f64",
+			"serdeAttributes": [],
+			"mechanism": "finite JSON number; retained legacy scalar",
+			"diagnosticCode": null
+		},
+		{
 			"rowKey": "scalar:decimal",
 			"axis": "scalar",
 			"selector": "decimal",
@@ -549,7 +558,7 @@
 			"rustForm": null,
 			"serdeAttributes": ["default = \"<generated fn>\""],
 			"mechanism": "a serde default drawn from defaultValue, plus the metadata record",
-			"diagnosticCode": "agent-ix.rust-backend.INVALID_DEFAULT_VALUE"
+			"diagnosticCode": "agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE"
 		},
 		{
 			"rowKey": "defaultKind:representation",

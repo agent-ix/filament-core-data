@@ -20,7 +20,7 @@
  * it is named as such and no branch-register row rests on it alone.
  */
 
-import { readFileSync, readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { CONSTRUCT_VOCABULARY } from "../../../constructs.mjs";
@@ -244,6 +244,7 @@ function operandsFor(keyword, subject) {
 	if (keyword === "enumValues") {
 		if (subject === "boolean") return { values: [true] };
 		if (subject === "integer") return { values: ["1"] };
+		if (subject === "number") return { values: [1] };
 		if (subject === "decimal") return { values: ["1.5"] };
 		if (subject === "float32" || subject === "float64")
 			return { values: [1.5] };
@@ -283,6 +284,66 @@ export const DETECTORS = Object.freeze([
 				assert(
 					observed === expected,
 					`${base.name} no longer emits the bytes the pristine emitter produced`,
+				);
+			}
+			const serdeProbe = documentOf([
+				scalarType("Text", "string"),
+				{
+					identity: `${NS}/type/Status`,
+					displayName: "Status",
+					kind: "enum",
+					roles: [],
+					constraints: [],
+					extensions: [],
+					unknownPolicy: "reject",
+					variants: [
+						{
+							identity: `${NS}/variant/in-progress`,
+							name: "inProgress",
+						},
+					],
+				},
+				{
+					identity: `${NS}/type/SerdeProbe`,
+					displayName: "SerdeProbe",
+					kind: "record",
+					roles: [],
+					constraints: [],
+					extensions: [],
+					unknownPolicy: "reject",
+					fields: [
+						{
+							identity: `${NS}/field/serde-probe-created-at`,
+							name: "createdAt",
+							typeRef: `${NS}/type/Text`,
+							presence: "optional",
+							nullable: true,
+							defaultKind: "none",
+							multiplicity: { lower: 0, upper: 1 },
+						},
+					],
+				},
+			]);
+			const serdeResult = backend.crate.emitCrate(
+				backend.properties.requestForIr(serdeProbe, "serde-probe"),
+				{ licenseText: backend.licenseText },
+			);
+			const serdeText = [...serdeResult.files.values()]
+				.filter(
+					(text) =>
+						text.includes("pub struct SerdeProbe") ||
+						text.includes("pub enum Status"),
+				)
+				.join("\n");
+			for (const attribute of [
+				'skip_serializing_if = "Option::is_none"',
+				'deserialize_with = "crate::support::present_or_absent"',
+				'rename = "createdAt"',
+				'rename = "inProgress"',
+			]) {
+				assert(
+					serdeText.includes(attribute),
+					`the emitted serde probe carries no ${attribute} attribute`,
 				);
 			}
 		},
@@ -547,8 +608,8 @@ export const DETECTORS = Object.freeze([
 		run(backend) {
 			const rows = backend.table.rows.filter((row) => row.axis === "scalar");
 			assert(
-				rows.length === 12,
-				`the table declares ${rows.length} kernel scalars, not twelve`,
+				rows.length === 13,
+				`the table declares ${rows.length} kernel scalars, not thirteen`,
 			);
 			for (const row of rows) {
 				const result = backend.mapping.mapDocument(
@@ -579,7 +640,7 @@ export const DETECTORS = Object.freeze([
 			}
 			// A scalar outside the kernel is refused rather than admitted.
 			const outside = backend.mapping.mapDocument(
-				documentOf([scalarType("Odd", "number")]),
+				documentOf([scalarType("Odd", "unsupported")]),
 				{},
 			);
 			assert(
@@ -646,6 +707,44 @@ export const DETECTORS = Object.freeze([
 				new Set(record.fields.map((one) => one.rustType)).size === 8,
 				"the eight axis rows did not produce eight distinct member types",
 			);
+
+			// Exercise the emitted serde surface as well as the mapping metadata.
+			// These attributes are required to preserve absent versus null and the
+			// semantic wire name, so dropping any one is a detectable regression.
+			const serdeProbe = documentOf([
+				scalarType("Text", "string"),
+				{
+					identity: `${NS}/type/SerdeProbe`,
+					displayName: "SerdeProbe",
+					kind: "record",
+					roles: [],
+					constraints: [],
+					extensions: [],
+					unknownPolicy: "reject",
+					fields: [
+						{
+							identity: `${NS}/field/serde-probe-created-at`,
+							name: "createdAt",
+							typeRef: `${NS}/type/Text`,
+							presence: "optional",
+							nullable: true,
+							defaultKind: "none",
+							multiplicity: { lower: 0, upper: 1 },
+						},
+					],
+				},
+			]);
+			const serdeText = bytesOf(backend, serdeProbe, "serde-probe");
+			for (const attribute of [
+				'skip_serializing_if = "Option::is_none"',
+				'deserialize_with = "crate::support::present_or_absent"',
+				'rename = "createdAt"',
+			]) {
+				assert(
+					serdeText.includes(attribute),
+					`the emitted serde probe carries no ${attribute} attribute`,
+				);
+			}
 
 			// The ninth field row: an upper bound of zero is refused.
 			const zero = backend.mapping.mapDocument(
@@ -838,9 +937,9 @@ export const DETECTORS = Object.freeze([
 			assert(
 				bad.files.size === 0 &&
 					bad.diagnostics.some((one) =>
-						one.code.endsWith(".INVALID_DEFAULT_VALUE"),
+						one.code.endsWith(".UNREPRESENTABLE_DEFAULT_VALUE"),
 					),
-				"a semantic default outside the member's Rust type raised no INVALID_DEFAULT_VALUE",
+				"a semantic default outside the member's Rust type raised no UNREPRESENTABLE_DEFAULT_VALUE",
 			);
 		},
 	},
