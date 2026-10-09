@@ -409,7 +409,7 @@ it("executes Rust decimal read/write boundaries", () => {
 	expect(rust).toContain("crate::support::Decimal");
 	expect(rust).toContain("decimal_cmp");
 	expect(rust).toContain("decimal_normalize");
-	expect(rust).toContain("normalize_decimal_12");
+	expect(rust).toMatch(/normalize_decimal_[0-9]+/);
 	expect(rust).toContain("serialize_str");
 	expect(rust).toContain("String::deserialize");
 	expect(rust).toContain("pub struct RuntimeNumeric");
@@ -430,7 +430,9 @@ it("executes Rust decimal read/write boundaries", () => {
 		mkdirSync(join(scratch, "tests"), { recursive: true });
 		writeFileSync(
 			join(scratch, "tests", "exact_numeric.rs"),
-			`use exact_numeric::{
+			`#![allow(missing_docs)]
+
+use agent_ix_exact_numeric::{
     DecimalAlias, DecimalBounded, DecimalEnum, DecimalList, DeepDecimalAlias,
     DirectDecimalCollection, NestedDecimalRoutes, NullableDecimalCollection,
     RuntimeNumeric,

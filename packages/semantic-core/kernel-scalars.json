@@ -20,9 +20,9 @@
 			"unitAllowed": true
 		},
 		"Decimal": {
-			"irScalar": "number",
-			"bounds": "TypeRef.decimal { precision, scale } required by the grammar rule",
-			"serialization": "JSON number or decimal string per target contract",
+			"irScalar": "decimal",
+			"bounds": "Canonical decimal string within the declared TypeRef.decimal { precision, scale } policy",
+			"serialization": "Canonical decimal string with no exponent or trailing fractional zero",
 			"unitAllowed": true
 		},
 		"String": {

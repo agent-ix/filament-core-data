@@ -683,6 +683,7 @@ fn tc_1225_min_on_string_is_blocking_constraint_not_applicable_and_the_reader_ag
     let kinds: Vec<(&str, &str)> = vec![
         ("scalar", "boolean"),
         ("scalar", "integer"),
+        ("scalar", "decimal"),
         ("scalar", "number"),
         ("scalar", "string"),
         ("scalar", "bytes"),

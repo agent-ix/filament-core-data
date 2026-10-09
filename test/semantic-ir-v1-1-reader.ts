@@ -49,7 +49,7 @@ const NATIVE_SCALARS: Record<string, string> = {
 	UUID: "uuid",
 	Boolean: "boolean",
 	Integer: "integer",
-	Decimal: "number",
+	Decimal: "decimal",
 	String: "string",
 	Timestamp: "datetime",
 	Duration: "duration",
@@ -65,16 +65,45 @@ function nativeScalar(identity: unknown): string | undefined {
 
 /** Keyword → the resolved structural kinds (or scalar names) it may apply to. */
 const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
-	min: new Set(["integer", "number", "date", "datetime", "duration"]),
-	max: new Set(["integer", "number", "date", "datetime", "duration"]),
-	exclusiveMin: new Set(["integer", "number", "date", "datetime", "duration"]),
-	exclusiveMax: new Set(["integer", "number", "date", "datetime", "duration"]),
+	min: new Set([
+		"integer",
+		"decimal",
+		"number",
+		"date",
+		"datetime",
+		"duration",
+	]),
+	max: new Set([
+		"integer",
+		"decimal",
+		"number",
+		"date",
+		"datetime",
+		"duration",
+	]),
+	exclusiveMin: new Set([
+		"integer",
+		"decimal",
+		"number",
+		"date",
+		"datetime",
+		"duration",
+	]),
+	exclusiveMax: new Set([
+		"integer",
+		"decimal",
+		"number",
+		"date",
+		"datetime",
+		"duration",
+	]),
 	minLength: new Set(["string", "bytes"]),
 	maxLength: new Set(["string", "bytes"]),
 	pattern: new Set(["string"]),
 	enumValues: new Set([
 		"boolean",
 		"integer",
+		"decimal",
 		"number",
 		"string",
 		"bytes",
@@ -290,9 +319,17 @@ function checkConstraint(
 		resolved.kind === "scalar"
 	) {
 		const numeric =
-			resolved.scalar === "integer" || resolved.scalar === "number";
+			resolved.scalar === "integer" ||
+			resolved.scalar === "decimal" ||
+			resolved.scalar === "number";
 		const value = operands.value;
-		if (numeric ? typeof value !== "number" : typeof value !== "string") {
+		const valid =
+			resolved.scalar === "decimal"
+				? typeof value === "string"
+				: numeric
+					? typeof value === "number"
+					: typeof value === "string";
+		if (!valid) {
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.INVALID_OPERAND",
 				path: `${path}.operands.value`,

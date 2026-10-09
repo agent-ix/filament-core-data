@@ -269,8 +269,15 @@ function subjectAccess(definition, byIdentity) {
 	while (current !== undefined && current.kind === "alias") {
 		if (seen.has(current.identity)) return undefined;
 		seen.add(current.identity);
-		expression = `${expression}.get()`;
-		current = byIdentity.get(current.target);
+		const target = byIdentity.get(current.target);
+		const targetSupport =
+			target?.kind === "scalar" &&
+			target.scalar === "decimal" &&
+			target.displayName === "Decimal"
+				? "crate::support::Decimal"
+				: undefined;
+		if (targetSupport === undefined) expression = `${expression}.get()`;
+		current = target;
 	}
 	if (current === undefined) return undefined;
 	return { expression, definition: current };
@@ -1603,7 +1610,11 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			"Result<Self, crate::support::ValidationError>",
 		),
 	);
-	if (type.scalar === "decimal" && type.decimal !== undefined) {
+	if (
+		type.scalar === "decimal" &&
+		type.decimal !== undefined &&
+		type.inner === "crate::support::Decimal"
+	) {
 		const decimalError = [
 			rustString(type.identity),
 			rustString("decimal"),
@@ -1616,7 +1627,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			`            &value, ${type.decimal.precision}, ${type.decimal.scale},`,
 			"        )",
 			"        .ok_or_else(|| {",
-			`            crate::support::ValidationError::with_input(${decimalError.join(", ")}),`,
+			`            crate::support::ValidationError::with_input(${decimalError.join(", ")})`,
 			"        })?;",
 		);
 	}
@@ -2268,7 +2279,14 @@ function renderAbstract(type) {
 
 /** Normalizes a direct native Decimal field before its record checks run. */
 function renderFieldDecimalNormalization(field, index) {
-	if (field.elementScalar !== "decimal" || field.decimal === undefined)
+	// Alias constructors already normalize their wrapped Decimal value. The
+	// field-level path is for a native Decimal wire value, where there is no
+	// generated newtype constructor to enforce the field policy.
+	if (
+		field.elementScalar !== "decimal" ||
+		field.elementType !== "crate::support::Decimal" ||
+		field.decimal === undefined
+	)
 		return [];
 	const { precision, scale } = field.decimal;
 	const name = field.ident;
@@ -2299,7 +2317,7 @@ function renderFieldDecimalNormalization(field, index) {
 	}
 	if (field.nullable) {
 		const value = `${normalize}(value)?`;
-		const nullable = `match ${name} { crate::support::Nullable::Null => crate::support::Nullable::Null, crate::support::Nullable::Value(value) => crate::support::Nullable::Value(${value}) }`;
+		const nullable = `match value { crate::support::Nullable::Null => crate::support::Nullable::Null, crate::support::Nullable::Value(value) => crate::support::Nullable::Value(${value}) }`;
 		lines.push(
 			field.presence === "optional"
 				? `        let ${name} = match ${name} { Some(value) => Some(${nullable}), None => None };`

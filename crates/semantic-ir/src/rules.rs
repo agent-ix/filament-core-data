@@ -42,7 +42,7 @@ const NATIVE_SCALARS: &[(&str, &str)] = &[
     ("UUID", "uuid"),
     ("Boolean", "boolean"),
     ("Integer", "integer"),
-    ("Decimal", "number"),
+    ("Decimal", "decimal"),
     ("String", "string"),
     ("Timestamp", "datetime"),
     ("Duration", "duration"),
@@ -935,7 +935,7 @@ fn applies_to(keyword: &str, kind: &str, scalar: &str) -> bool {
             kind == "scalar"
                 && matches!(
                     scalar,
-                    "integer" | "number" | "date" | "datetime" | "duration"
+                    "integer" | "decimal" | "number" | "date" | "datetime" | "duration"
                 )
         }
         "minLength" | "maxLength" => kind == "scalar" && matches!(scalar, "string" | "bytes"),
@@ -959,6 +959,27 @@ fn is_canonical_integer(text: &str) -> bool {
         [first, rest @ ..] => (b'1'..=b'9').contains(first) && rest.iter().all(u8::is_ascii_digit),
         [] => false,
     }
+}
+
+/// A canonical decimal value: no exponent, no trailing fractional zero and no
+/// negative zero. Precision and scale limits belong to the Decimal policy
+/// reader; this helper checks only the wire spelling.
+fn is_canonical_decimal(text: &str) -> bool {
+    let unsigned = text.strip_prefix('-').unwrap_or(text);
+    if text.starts_with('-') && unsigned == "0" {
+        return false;
+    }
+    let (whole, fraction) = unsigned.split_once('.').unwrap_or((unsigned, ""));
+    if whole.is_empty()
+        || !whole.chars().all(|ch| ch.is_ascii_digit())
+        || (whole.len() > 1 && whole.starts_with('0'))
+    {
+        return false;
+    }
+    if fraction.is_empty() {
+        return true;
+    }
+    fraction.chars().all(|ch| ch.is_ascii_digit()) && !fraction.ends_with('0')
 }
 
 fn constraint_rules(
@@ -999,20 +1020,23 @@ fn constraint_rules(
             return;
         }
         if matches!(keyword, "min" | "max" | "exclusiveMin" | "exclusiveMax")
-            && matches!(scalar, "integer" | "number")
+            && matches!(scalar, "integer" | "decimal" | "number")
         {
             // An integer bound may be a canonical decimal string, so a value
             // past 2^53 is exact; a `number` bound is a JSON number.
             let admitted = match constraint.get("operands").and_then(|o| o.get("value")) {
-                Some(Json::Number(_)) | None => true,
-                Some(Json::Str(text)) => scalar == "integer" && is_canonical_integer(text),
+                Some(Json::Number(_)) | None => scalar != "decimal",
+                Some(Json::Str(text)) => {
+                    (scalar == "integer" && is_canonical_integer(text))
+                        || (scalar == "decimal" && is_canonical_decimal(text))
+                }
                 Some(_) => false,
             };
             if !admitted {
                 sink.emit(
                     child(&child(constraint_at, "operands"), "value"),
                     INVALID_OPERAND,
-                    "a numeric keyword on a numeric scalar takes a number operand, or a canonical decimal string on an integer",
+                    "a numeric keyword on a numeric scalar takes an exact numeric operand",
                 );
             }
         }

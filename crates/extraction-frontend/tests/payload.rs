@@ -42,7 +42,7 @@ fn native_ir_scalar(name: &str) -> &'static str {
         "UUID" => "uuid",
         "Boolean" => "boolean",
         "Integer" => "integer",
-        "Decimal" => "number",
+        "Decimal" => "decimal",
         "String" => "string",
         "Timestamp" => "datetime",
         "Duration" => "duration",

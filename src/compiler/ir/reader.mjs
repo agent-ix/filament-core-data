@@ -928,7 +928,10 @@ export function readContractIr(document, options = {}) {
  */
 function valueAdmitted(scalar, value, policy) {
 	if (scalar === "integer") {
-		return typeof value === "number" && Number.isSafeInteger(value);
+		return (
+			(typeof value === "number" && Number.isSafeInteger(value)) ||
+			(typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value))
+		);
 	}
 	if (scalar === "decimal") return decimalAdmitted(value, policy);
 
@@ -938,7 +941,10 @@ function valueAdmitted(scalar, value, policy) {
 function operandAdmitted(numeric, scalar, value, policy) {
 	if (!numeric) return typeof value === "string";
 	if (scalar === "integer")
-		return typeof value === "number" && Number.isSafeInteger(value);
+		return (
+			(typeof value === "number" && Number.isSafeInteger(value)) ||
+			(typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value))
+		);
 	if (scalar === "decimal") return decimalAdmitted(value, policy);
 	return typeof value === "number" && Number.isFinite(value);
 }

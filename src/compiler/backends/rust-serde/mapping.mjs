@@ -1073,7 +1073,8 @@ function mapField(field, owner, context, version) {
 		elementScalar:
 			resolveKind(context.byIdentity, field.typeRef)?.scalar ??
 			nativeScalar(field.typeRef),
-		decimal: field.decimal,
+		decimal:
+			decimalPolicyOf(context.byIdentity, field.typeRef) ?? field.decimal,
 		rustType,
 		serdeAttributes,
 		collection,

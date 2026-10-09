@@ -47,7 +47,7 @@ NATIVE_SCALARS = {
     "UUID": "uuid",
     "Boolean": "boolean",
     "Integer": "integer",
-    "Decimal": "number",
+    "Decimal": "decimal",
     "String": "string",
     "Timestamp": "datetime",
     "Duration": "duration",
@@ -63,16 +63,17 @@ def _native_scalar(identity: Any) -> str | None:
 
 
 APPLICABILITY: dict[str, set[str]] = {
-    "min": {"integer", "number", *TEMPORAL},
-    "max": {"integer", "number", *TEMPORAL},
-    "exclusiveMin": {"integer", "number", *TEMPORAL},
-    "exclusiveMax": {"integer", "number", *TEMPORAL},
+    "min": {"integer", "decimal", "number", *TEMPORAL},
+    "max": {"integer", "decimal", "number", *TEMPORAL},
+    "exclusiveMin": {"integer", "decimal", "number", *TEMPORAL},
+    "exclusiveMax": {"integer", "decimal", "number", *TEMPORAL},
     "minLength": {"string", "bytes"},
     "maxLength": {"string", "bytes"},
     "pattern": {"string"},
     "enumValues": {
         "boolean",
         "integer",
+        "decimal",
         "number",
         "string",
         "bytes",
@@ -335,10 +336,14 @@ def _check_constraint(
                 )
             )
     if keyword in BOUNDS and kind == "scalar":
-        numeric = scalar in {"integer", "number"}
+        numeric = scalar in {"integer", "decimal", "number"}
         value = operands.get("value")
         ok = (
-            (isinstance(value, (int, float)) and not isinstance(value, bool))
+            (
+                isinstance(value, str)
+                if scalar == "decimal"
+                else isinstance(value, (int, float)) and not isinstance(value, bool)
+            )
             if numeric
             else isinstance(value, str)
         )
