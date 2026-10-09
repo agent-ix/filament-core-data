@@ -541,8 +541,7 @@ const APPLICABILITY = Object.freeze({
 	format: ["string"],
 });
 
-const NUMERIC_SCALARS = new Set(["integer", "number"]);
-const DECIMAL_SCALARS = new Set(["decimal"]);
+const NUMERIC_SCALARS = new Set(["integer", "number", "decimal"]);
 const TEMPORAL_SCALARS = new Set(["date", "datetime", "duration"]);
 
 /* ----------------------------------------------------------------- the reader */
@@ -1383,14 +1382,12 @@ function operandDefect(constraint, subject) {
 					subject === "integer" &&
 					typeof value === "string" &&
 					/^(0|-?[1-9][0-9]*)$/.test(value);
-				return canonical ? undefined : "value";
+				const decimal =
+					subject === "decimal" &&
+					typeof value === "string" &&
+					/^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$/.test(value);
+				return canonical || decimal ? undefined : "value";
 			}
-			if (
-				DECIMAL_SCALARS.has(subject) &&
-				(typeof value !== "string" ||
-					!/^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$/.test(value))
-			)
-				return "value";
 			if (TEMPORAL_SCALARS.has(subject) && typeof value !== "string") {
 				return "value";
 			}
