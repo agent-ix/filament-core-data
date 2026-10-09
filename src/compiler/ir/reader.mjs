@@ -344,13 +344,18 @@ export function readContractIr(document, options = {}) {
 	// every node traversed from a field or alias to that terminal scalar.
 	const walkDecimal = (typeRef, initialNode) => {
 		const policies = [];
+		const policyNodes = new Set();
 		const seen = new Set();
 		let ref = typeRef;
 		let node = initialNode;
 		while (typeof ref === "string" && !seen.has(ref)) {
 			seen.add(ref);
-			const previousNode = node;
-			if (node && Object.hasOwn(node, "decimal")) {
+			if (
+				node &&
+				Object.hasOwn(node, "decimal") &&
+				!policyNodes.has(node)
+			) {
+				policyNodes.add(node);
 				policies.push(node);
 			}
 			node = undefined;
@@ -364,9 +369,6 @@ export function readContractIr(document, options = {}) {
 			}
 			const definition = types.get(ref);
 			if (!definition) return undefined;
-			if (previousNode !== definition && Object.hasOwn(definition, "decimal")) {
-				policies.push(definition);
-			}
 			node = definition;
 			if (definition.kind === "alias") {
 				ref = definition.target;
@@ -379,6 +381,22 @@ export function readContractIr(document, options = {}) {
 			};
 		}
 		return undefined;
+	};
+
+	// Composite definitions carry type references outside fields. A native
+	// Decimal has no definition of its own to reach checkDefinition, so inspect
+	// these edges here. Named Decimal aliases and scalar definitions are checked
+	// by their own definition pass; limiting this edge check to native Decimal
+	// avoids reporting the same missing policy twice through an alias route.
+	const checkCompositeDecimalRef = (typeRef, owner) => {
+		if (nativeScalar(typeRef) !== "decimal") return;
+		const walked = walkDecimal(typeRef);
+		if (walked?.scalar !== "decimal" || walked.policies.length > 0) return;
+		raise(
+			DIAGNOSTIC_CODES.DECIMAL_POLICY_MISSING,
+			"a decimal subject carries a decimal policy",
+			locusOf(owner),
+		);
 	};
 
 	const checkMultiplicity = (value, owner) => {
@@ -650,6 +668,14 @@ export function readContractIr(document, options = {}) {
 				);
 			}
 		}
+		if (definition.kind === "sequence")
+			checkCompositeDecimalRef(definition.items, definition);
+		if (definition.kind === "map")
+			checkCompositeDecimalRef(definition.values, definition);
+		if (definition.kind === "reference")
+			checkCompositeDecimalRef(definition.target, definition);
+		for (const variant of asArray(definition.variants))
+			checkCompositeDecimalRef(variant.payloadType, variant);
 		// Relationships and operations belong to a record among the core kinds;
 		// a construct kind's declaration decides their presence (FR-142).
 		const isRecord =
@@ -810,6 +836,7 @@ export function readContractIr(document, options = {}) {
 					);
 				}
 				checkMultiplicity(operation.returns.multiplicity, operation);
+				checkCompositeDecimalRef(operation.returns.typeRef, operation.returns);
 			}
 			// FR-141: `quire` is the one checked clause language; an inline
 			// clause in any other admitted language is carried unchecked.
