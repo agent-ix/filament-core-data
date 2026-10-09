@@ -203,6 +203,48 @@ enum Cached {
     Node(usize),
 }
 
+/// A policy node that can be recovered without storing a document borrow in
+/// the document's interior cache.
+#[derive(Clone, Debug, Eq, PartialEq)]
+enum PolicyOrigin {
+    Feature(String),
+    Type(usize),
+}
+
+/// The policy information needed by the rules. Keeping only the count and
+/// first origin avoids cloning every policy prefix for every alias.
+#[derive(Clone, Debug, Default)]
+struct DecimalPolicySummary {
+    count: usize,
+    first: Option<PolicyOrigin>,
+}
+
+impl DecimalPolicySummary {
+    fn prepend(&mut self, origin: Option<PolicyOrigin>) {
+        if let Some(origin) = origin {
+            self.count += 1;
+            if self.first.is_none() {
+                self.first = Some(origin);
+            }
+        }
+    }
+
+    fn first<'a>(&self, document: &Document<'a>) -> Option<&'a Json> {
+        match self.first.as_ref()? {
+            PolicyOrigin::Feature(identity) => document.field_of(identity),
+            PolicyOrigin::Type(position) => document.types.get(*position),
+        }
+    }
+}
+
+/// The policy summary for one reference, including a policy carried directly
+/// by a composite position such as an operation return.
+#[derive(Clone, Copy, Debug, Default)]
+struct DecimalPolicies<'a> {
+    count: usize,
+    first: Option<&'a Json>,
+}
+
 /// The reading of the document the cross-field rules and the classifier share.
 pub struct Document<'a> {
     /// The whole input bundle.
@@ -224,7 +266,7 @@ pub struct Document<'a> {
     resolved: RefCell<HashMap<String, Cached>>,
     /// Decimal policies on each identity's resolution suffix.  Alias walks
     /// are shared here so checking every edge in a long chain stays linear.
-    decimal_policy_cache: RefCell<HashMap<String, Vec<&'a Json>>>,
+    decimal_policy_cache: RefCell<HashMap<String, DecimalPolicySummary>>,
 }
 
 impl<'a> Document<'a> {
@@ -322,33 +364,41 @@ impl<'a> Document<'a> {
     /// scalar. `initial` is the owner of a composite type position such as a
     /// sequence's `items` member or an operation return; those positions have
     /// no identity of their own but may carry the policy beside the reference.
-    fn decimal_policies_from(&self, identity: &str, initial: Option<&'a Json>) -> Vec<&'a Json> {
-        let mut policies = Vec::new();
-        let mut policy_nodes: HashSet<*const Json> = HashSet::new();
-        if let Some(subject) = initial {
-            if subject.get("decimal").is_some() && policy_nodes.insert(subject as *const Json) {
-                policies.push(subject);
-            }
+    fn decimal_policies_from(
+        &self,
+        identity: &str,
+        initial: Option<&'a Json>,
+    ) -> DecimalPolicies<'a> {
+        let suffix = self.decimal_policy_suffix(identity);
+        let suffix_first = suffix.first(self);
+        let initial = initial.filter(|subject| subject.get("decimal").is_some());
+        let duplicate = initial
+            .zip(suffix_first)
+            .is_some_and(|(initial, first)| std::ptr::eq(initial, first));
+        let include_initial = initial.is_some() && !duplicate;
+        DecimalPolicies {
+            count: suffix.count + usize::from(include_initial),
+            first: if include_initial {
+                initial
+            } else {
+                suffix_first
+            },
         }
-        for subject in self.decimal_policy_suffix(identity) {
-            if policy_nodes.insert(subject as *const Json) {
-                policies.push(subject);
-            }
-        }
-        policies
     }
 
     /// Returns and memoizes the policy suffix for one identity. Every alias
     /// visited on the way to the terminal scalar is memoized, so checking all
-    /// edges in a long chain remains linear.
-    fn decimal_policy_suffix(&self, identity: &str) -> Vec<&'a Json> {
+    /// edges in a long chain remains linear. The cached value is a count and
+    /// one origin rather than a growing vector, so policy-bearing chains stay
+    /// linear in both time and space.
+    fn decimal_policy_suffix(&self, identity: &str) -> DecimalPolicySummary {
         if let Some(cached) = self.decimal_policy_cache.borrow().get(identity) {
             return cached.clone();
         }
-        let mut path: Vec<(String, Option<&'a Json>)> = Vec::new();
+        let mut path: Vec<(String, Option<PolicyOrigin>)> = Vec::new();
         let mut seen = BTreeSet::new();
         let mut current = identity;
-        let mut suffix = Vec::new();
+        let mut suffix = DecimalPolicySummary::default();
         loop {
             if let Some(cached) = self.decimal_policy_cache.borrow().get(current) {
                 suffix = cached.clone();
@@ -361,7 +411,10 @@ impl<'a> Document<'a> {
                 let Some(type_ref) = field.get("typeRef").and_then(Json::as_str) else {
                     break;
                 };
-                path.push((current.to_string(), field.get("decimal").map(|_| field)));
+                path.push((
+                    current.to_string(),
+                    field.get("decimal").and_then(|_| self.policy_origin(field)),
+                ));
                 current = type_ref;
                 continue;
             }
@@ -374,20 +427,20 @@ impl<'a> Document<'a> {
                 };
                 path.push((
                     current.to_string(),
-                    definition.get("decimal").map(|_| definition),
+                    definition
+                        .get("decimal")
+                        .and_then(|_| self.policy_origin(definition)),
                 ));
                 current = target;
                 continue;
             }
             if definition.get("decimal").is_some() {
-                suffix.push(definition);
+                suffix.prepend(self.policy_origin(definition));
             }
             break;
         }
         while let Some((name, policy)) = path.pop() {
-            if let Some(policy) = policy {
-                suffix.insert(0, policy);
-            }
+            suffix.prepend(policy);
             self.decimal_policy_cache
                 .borrow_mut()
                 .insert(name, suffix.clone());
@@ -398,10 +451,29 @@ impl<'a> Document<'a> {
         suffix
     }
 
+    fn policy_origin(&self, node: &'a Json) -> Option<PolicyOrigin> {
+        let identity = node.get("identity").and_then(Json::as_str)?;
+        if self
+            .by_feature
+            .get(identity)
+            .is_some_and(|feature| std::ptr::eq(*feature, node))
+        {
+            return Some(PolicyOrigin::Feature(identity.to_string()));
+        }
+        self.by_identity
+            .get(identity)
+            .copied()
+            .filter(|&position| std::ptr::eq(&self.types[position], node))
+            .map(PolicyOrigin::Type)
+    }
+
     /// The policy nodes crossed while resolving an identity that owns its
     /// policy, such as a field, alias, or scalar definition.
     fn decimal_policies(&self, identity: &str) -> Vec<&'a Json> {
         self.decimal_policies_from(identity, None)
+            .first
+            .into_iter()
+            .collect()
     }
 
     /// Apply the Decimal policy rule to any type reference position. Keeping
@@ -426,15 +498,15 @@ impl<'a> Document<'a> {
             return;
         };
         let policies = self.decimal_policies_from(type_ref, Some(owner));
-        if resolved.scalar() == "decimal" && policies.is_empty() {
+        if resolved.scalar() == "decimal" && policies.count == 0 {
             sink.emit(pointer, DECIMAL_POLICY_MISSING, kind.missing_message());
-        } else if resolved.scalar() == "decimal" && policies.len() > 1 {
+        } else if resolved.scalar() == "decimal" && policies.count > 1 {
             sink.emit(
                 pointer,
                 DECIMAL_POLICY_CONFLICT,
                 "a decimal resolution walk carries more than one policy",
             );
-        } else if resolved.scalar() != "decimal" && !policies.is_empty() {
+        } else if resolved.scalar() != "decimal" && policies.count > 0 {
             sink.emit(
                 pointer,
                 DECIMAL_POLICY_CONFLICT,
@@ -1766,8 +1838,8 @@ mod tests {
     use super::{
         composite_graph, decide, decide_with, native_scalar, package_cycle, walk_alias, AliasMemo,
         Document, Resolved, RuleLimits, Sink, TypePositionKind, Walk, COMPOSITE_CYCLE,
-        CONSTRAINT_NOT_APPLICABLE, DEPTH_LIMIT_EXCEEDED, NATIVE_PREFIX, NATIVE_SCALARS,
-        UNIT_ON_NON_SCALAR, UNRESOLVED_TYPE_REF,
+        CONSTRAINT_NOT_APPLICABLE, DECIMAL_POLICY_CONFLICT, DEPTH_LIMIT_EXCEEDED, NATIVE_PREFIX,
+        NATIVE_SCALARS, UNIT_ON_NON_SCALAR, UNRESOLVED_TYPE_REF,
     };
     use crate::json::parse;
     use crate::json::Json;
@@ -2146,6 +2218,59 @@ mod tests {
         }
         text.push_str(r#",{"identity":"ix://acme/pkg/Leaf","kind":"record"}]}}"#);
         parse(&text).expect("a document")
+    }
+
+    /// `count` aliases, each carrying a Decimal policy and naming the next,
+    /// so a policy walk must retain conflict semantics without copying every
+    /// growing suffix for every alias.
+    fn decimal_policy_alias_chain(count: usize) -> Json {
+        let mut text = String::from(r#"{"ir":{"contractVersion":"2.0.0","types":["#);
+        for position in 0..count {
+            if position > 0 {
+                text.push(',');
+            }
+            let target = if position + 1 < count {
+                format!("ix://acme/pkg/A{}", position + 1)
+            } else {
+                "ix://quire/native/Decimal".to_string()
+            };
+            text.push_str(&format!(
+                r#"{{"identity":"ix://acme/pkg/A{position}","kind":"alias","target":"{target}","decimal":{{"precision":18,"scale":2}}}}"#
+            ));
+        }
+        text.push_str("]}}\n");
+        parse(&text).expect("a document")
+    }
+
+    /// A 100,000-link policy-bearing alias chain stays linear when the shared
+    /// type-position traversal checks every edge and preserves each conflict.
+    #[test]
+    fn tc_1821_decimal_policy_alias_chain_is_linear() {
+        const COUNT: usize = 100_000;
+        let bundle = decimal_policy_alias_chain(COUNT);
+        let document = Document::read(&bundle).expect("an IR document");
+        let mut sink = Sink {
+            bundle: &bundle,
+            out: Vec::new(),
+        };
+        let started = std::time::Instant::now();
+        document.type_positions(|position| {
+            document.check_decimal_position(
+                position.kind,
+                Some(position.identity),
+                position.subject,
+                position.pointer,
+                &mut sink,
+            );
+        });
+        assert_eq!(
+            sink.out
+                .iter()
+                .filter(|located| located.code == DECIMAL_POLICY_CONFLICT)
+                .count(),
+            COUNT - 1
+        );
+        assert!(started.elapsed() < std::time::Duration::from_secs(60));
     }
 
     /// An acyclic alias chain of any length resolves and walks without a
