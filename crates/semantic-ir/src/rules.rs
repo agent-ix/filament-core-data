@@ -80,6 +80,46 @@ pub enum Resolved<'a> {
     Native(&'static str),
 }
 
+/// Every place in the IR where a reference to a type can occur.
+///
+/// Keep this list as the single inventory used by [`Document::type_positions`]
+/// and by its coverage tests.  Rules which depend on the resolved subject of
+/// a type reference must consume that traversal rather than growing another
+/// position-specific loop in `per_type`.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum TypePositionKind {
+    FieldType,
+    ParameterType,
+    OperationReturn,
+    ConstraintSubject,
+    AliasTarget,
+    ReferenceTarget,
+    SequenceItems,
+    MapValues,
+    VariantPayload,
+}
+
+impl TypePositionKind {
+    const ALL: &'static [Self] = &[
+        Self::FieldType,
+        Self::ParameterType,
+        Self::OperationReturn,
+        Self::ConstraintSubject,
+        Self::AliasTarget,
+        Self::ReferenceTarget,
+        Self::SequenceItems,
+        Self::MapValues,
+        Self::VariantPayload,
+    ];
+}
+
+struct TypePosition<'a> {
+    kind: TypePositionKind,
+    identity: &'a str,
+    subject: &'a Json,
+    pointer: String,
+}
+
 impl<'a> Resolved<'a> {
     /// The core kind of the resolved type: the document node's `kind`, or
     /// `"scalar"` for a native type reference.
@@ -261,16 +301,18 @@ impl<'a> Document<'a> {
     }
 
     /// The policy nodes crossed while resolving `identity` to its terminal
-    /// scalar. A field, alias, and scalar definition can each carry policy;
-    /// keeping every node here lets the caller enforce the exactly-one rule.
-    fn decimal_policies(&self, identity: &str) -> Vec<&'a Json> {
+    /// scalar. `initial` is the owner of a composite type position such as a
+    /// sequence's `items` member or an operation return; those positions have
+    /// no identity of their own but may carry the policy beside the reference.
+    fn decimal_policies_from(&self, identity: &str, initial: Option<&'a Json>) -> Vec<&'a Json> {
         let mut policies = Vec::new();
+        let mut policy_nodes: HashSet<*const Json> = HashSet::new();
         let mut seen = BTreeSet::new();
         let mut current = identity;
-        let mut subject: Option<&'a Json> = None;
+        let mut subject = initial;
         loop {
             if let Some(subject) = subject.take() {
-                if subject.get("decimal").is_some() {
+                if subject.get("decimal").is_some() && policy_nodes.insert(subject as *const Json) {
                     policies.push(subject);
                 }
             }
@@ -300,6 +342,200 @@ impl<'a> Document<'a> {
                 continue;
             }
             return policies;
+        }
+    }
+
+    /// The policy nodes crossed while resolving an identity that owns its
+    /// policy, such as a field, alias, or scalar definition.
+    fn decimal_policies(&self, identity: &str) -> Vec<&'a Json> {
+        self.decimal_policies_from(identity, None)
+    }
+
+    /// Apply the Decimal policy rule to any type reference position. Keeping
+    /// this check at the shared edge helper prevents composite positions from
+    /// drifting apart as the IR grows.
+    fn check_decimal_position(
+        &self,
+        type_ref: Option<&str>,
+        owner: &'a Json,
+        pointer: String,
+        sink: &mut Sink<'_>,
+    ) {
+        let Some(type_ref) = type_ref else {
+            return;
+        };
+        let Some(resolved) = self.resolve(type_ref) else {
+            return;
+        };
+        let policies = self.decimal_policies_from(type_ref, Some(owner));
+        if resolved.scalar() == "decimal" && policies.is_empty() {
+            sink.emit(
+                pointer,
+                DECIMAL_POLICY_MISSING,
+                "a decimal subject carries a decimal policy",
+            );
+        } else if resolved.scalar() == "decimal" && policies.len() > 1 {
+            sink.emit(
+                pointer,
+                DECIMAL_POLICY_CONFLICT,
+                "a decimal resolution walk carries more than one policy",
+            );
+        } else if resolved.scalar() != "decimal" && !policies.is_empty() {
+            sink.emit(
+                pointer,
+                DECIMAL_POLICY_CONFLICT,
+                "a decimal policy applies only to a decimal subject",
+            );
+        }
+    }
+
+    /// Visit every type-bearing position in the document exactly once.
+    ///
+    /// The subject is the node that owns the reference.  It matters for
+    /// operation returns, whose policy is carried by the returns object and
+    /// therefore cannot be found through `field_of`.  The same traversal is
+    /// also used for fields, parameters and inline constraints so a rule does
+    /// not acquire a new, incomplete copy for each position kind.
+    fn type_positions(&self, mut visit: impl FnMut(TypePosition<'a>)) {
+        fn visit_constraints<'a>(
+            items: &'a [Json],
+            at: &str,
+            visit: &mut impl FnMut(TypePosition<'a>),
+        ) {
+            for (position, constraint) in items.iter().enumerate() {
+                let constraint_at = index(at, position);
+                if let Some(identity) = constraint.get("appliesTo").and_then(Json::as_str) {
+                    visit(TypePosition {
+                        kind: TypePositionKind::ConstraintSubject,
+                        identity,
+                        subject: constraint,
+                        pointer: constraint_at.clone(),
+                    });
+                }
+            }
+        }
+
+        fn fields<'a>(
+            items: &'a [Json],
+            at: &str,
+            kind: TypePositionKind,
+            visit: &mut impl FnMut(TypePosition<'a>),
+        ) {
+            for (position, field) in items.iter().enumerate() {
+                let field_at = index(at, position);
+                if let Some(identity) = field.get("typeRef").and_then(Json::as_str) {
+                    visit(TypePosition {
+                        kind,
+                        identity,
+                        subject: field,
+                        pointer: field_at.clone(),
+                    });
+                }
+                if let Some(constraints_items) = field.get("constraints").and_then(Json::as_array) {
+                    visit_constraints(constraints_items, &child(&field_at, "constraints"), visit);
+                }
+            }
+        }
+
+        for (position, definition) in self.types.iter().enumerate() {
+            let type_at = index("/ir/types", position);
+            match definition.get("kind").and_then(Json::as_str) {
+                Some("alias") => {
+                    if let Some(identity) = definition.get("target").and_then(Json::as_str) {
+                        visit(TypePosition {
+                            kind: TypePositionKind::AliasTarget,
+                            identity,
+                            subject: definition,
+                            pointer: child(&type_at, "target"),
+                        });
+                    }
+                }
+                Some("reference") => {
+                    if let Some(identity) = definition.get("target").and_then(Json::as_str) {
+                        visit(TypePosition {
+                            kind: TypePositionKind::ReferenceTarget,
+                            identity,
+                            subject: definition,
+                            pointer: child(&type_at, "target"),
+                        });
+                    }
+                }
+                Some("sequence") => {
+                    if let Some(identity) = definition.get("items").and_then(Json::as_str) {
+                        visit(TypePosition {
+                            kind: TypePositionKind::SequenceItems,
+                            identity,
+                            subject: definition,
+                            pointer: child(&type_at, "items"),
+                        });
+                    }
+                }
+                Some("map") => {
+                    if let Some(identity) = definition.get("values").and_then(Json::as_str) {
+                        visit(TypePosition {
+                            kind: TypePositionKind::MapValues,
+                            identity,
+                            subject: definition,
+                            pointer: child(&type_at, "values"),
+                        });
+                    }
+                }
+                _ => {}
+            }
+
+            if let Some(variants) = definition.get("variants").and_then(Json::as_array) {
+                let variants_at = child(&type_at, "variants");
+                for (member, variant) in variants.iter().enumerate() {
+                    if let Some(identity) = variant.get("payloadType").and_then(Json::as_str) {
+                        visit(TypePosition {
+                            kind: TypePositionKind::VariantPayload,
+                            identity,
+                            subject: variant,
+                            pointer: child(&index(&variants_at, member), "payloadType"),
+                        });
+                    }
+                }
+            }
+            if let Some(constraints_items) = definition.get("constraints").and_then(Json::as_array)
+            {
+                visit_constraints(
+                    constraints_items,
+                    &child(&type_at, "constraints"),
+                    &mut visit,
+                );
+            }
+            if let Some(fields_items) = definition.get("fields").and_then(Json::as_array) {
+                fields(
+                    fields_items,
+                    &child(&type_at, "fields"),
+                    TypePositionKind::FieldType,
+                    &mut visit,
+                );
+            }
+            if let Some(operations) = definition.get("operations").and_then(Json::as_array) {
+                let operations_at = child(&type_at, "operations");
+                for (member, operation) in operations.iter().enumerate() {
+                    let operation_at = index(&operations_at, member);
+                    if let Some(params) = operation.get("params").and_then(Json::as_array) {
+                        fields(
+                            params,
+                            &child(&operation_at, "params"),
+                            TypePositionKind::ParameterType,
+                            &mut visit,
+                        );
+                    }
+                    if let Some(returns) = operation.get("returns") {
+                        if let Some(identity) = returns.get("typeRef").and_then(Json::as_str) {
+                            visit(TypePosition {
+                                kind: TypePositionKind::OperationReturn,
+                                identity,
+                                subject: returns,
+                                pointer: child(&operation_at, "returns"),
+                            });
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -570,28 +806,18 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         .map(str::to_string)
         .collect();
 
+    document.type_positions(|position| {
+        document.check_decimal_position(
+            Some(position.identity),
+            position.subject,
+            position.pointer,
+            sink,
+        );
+    });
     let mut alias_memo = AliasMemo::new();
     for (position, definition) in document.types.iter().enumerate() {
         let type_at = index("/ir/types", position);
         let kind = definition.get("kind").and_then(Json::as_str).unwrap_or("");
-        if let Some(identity) = definition.get("identity").and_then(Json::as_str) {
-            if let Some(resolved) = document.resolve(identity) {
-                let policies = document.decimal_policies(identity);
-                if resolved.scalar() != "decimal" && !policies.is_empty() {
-                    sink.emit(
-                        type_at.clone(),
-                        DECIMAL_POLICY_CONFLICT,
-                        "a decimal policy applies only to a decimal subject",
-                    );
-                } else if resolved.scalar() == "decimal" && policies.len() > 1 {
-                    sink.emit(
-                        type_at.clone(),
-                        DECIMAL_POLICY_CONFLICT,
-                        "a decimal resolution walk carries more than one policy",
-                    );
-                }
-            }
-        }
 
         if matches!(kind, "alias" | "reference") {
             if let Some(target) = definition.get("target").and_then(Json::as_str) {
@@ -628,9 +854,10 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
             let variants_at = child(&type_at, "variants");
             for (member, variant) in variants.iter().enumerate() {
                 if let Some(payload) = variant.get("payloadType").and_then(Json::as_str) {
+                    let variant_at = index(&variants_at, member);
                     if !resolves(&declared, payload) {
                         sink.emit(
-                            child(&index(&variants_at, member), "payloadType"),
+                            child(&variant_at, "payloadType"),
                             UNRESOLVED_VARIANT_PAYLOAD,
                             "the union variant payload type resolves to no declared type",
                         );
@@ -926,32 +1153,6 @@ fn field_rules(
                 );
             }
         }
-        if let Some(resolved) = type_ref.and_then(|identity| document.resolve(identity)) {
-            let policies = field
-                .get("identity")
-                .and_then(Json::as_str)
-                .map(|identity| document.decimal_policies(identity))
-                .unwrap_or_default();
-            if resolved.scalar() == "decimal" && policies.is_empty() {
-                sink.emit(
-                    field_at.clone(),
-                    DECIMAL_POLICY_MISSING,
-                    "a decimal field carries a decimal policy",
-                );
-            } else if resolved.scalar() == "decimal" && policies.len() > 1 {
-                sink.emit(
-                    field_at.clone(),
-                    DECIMAL_POLICY_CONFLICT,
-                    "a decimal resolution walk carries more than one policy",
-                );
-            } else if resolved.scalar() != "decimal" && !policies.is_empty() {
-                sink.emit(
-                    field_at.clone(),
-                    DECIMAL_POLICY_CONFLICT,
-                    "a decimal policy applies only to a decimal field",
-                );
-            }
-        }
         if let Some(multiplicity) = field.get("multiplicity") {
             let multiplicity_at = child(&field_at, "multiplicity");
             let lower = multiplicity.get("lower").and_then(Json::as_i64);
@@ -1134,19 +1335,6 @@ fn constraint_rules(
             } else {
                 Vec::new()
             };
-            if scalar == "decimal" && policies.is_empty() {
-                sink.emit(
-                    constraint_at.to_string(),
-                    DECIMAL_POLICY_MISSING,
-                    "a decimal constraint carries a decimal policy",
-                );
-            } else if scalar == "decimal" && policies.len() > 1 {
-                sink.emit(
-                    constraint_at.to_string(),
-                    DECIMAL_POLICY_CONFLICT,
-                    "a decimal resolution walk carries more than one policy",
-                );
-            }
             // An integer bound may be a canonical decimal string, so a value
             // past 2^53 is exact; a `number` bound is a JSON number.
             let admitted = match constraint.get("operands").and_then(|o| o.get("value")) {
