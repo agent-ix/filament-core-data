@@ -509,7 +509,7 @@
 			"branchId": "defaultKind:semantic",
 			"axis": "defaultKind",
 			"vocabulary": "mapping-table.json",
-			"construct": "null — agent-ix.rust-backend.INVALID_DEFAULT_VALUE",
+			"construct": "null — agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE",
 			"cases": [
 				"TC-725 every defaultKind, extension and metadata row reaches the emitted crate"
 			]
@@ -528,15 +528,6 @@
 			"axis": "diagnostic",
 			"vocabulary": "diagnostics.mjs",
 			"construct": "warning: the diagnostic count reached the request's maxDiagnostics",
-			"cases": [
-				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
-			]
-		},
-		{
-			"branchId": "diagnostic:agent-ix.rust-backend.INVALID_DEFAULT_VALUE",
-			"axis": "diagnostic",
-			"vocabulary": "diagnostics.mjs",
-			"construct": "error, blocking: a defaultValue is not a value the field's mapped Rust type admits",
 			"cases": [
 				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
 			]
@@ -609,6 +600,15 @@
 			"axis": "diagnostic",
 			"vocabulary": "diagnostics.mjs",
 			"construct": "error, blocking: a name derives no legal Rust identifier, and the backend refuses rather than dropping the characters it cannot carry",
+			"cases": [
+				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
+			]
+		},
+		{
+			"branchId": "diagnostic:agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE",
+			"axis": "diagnostic",
+			"vocabulary": "diagnostics.mjs",
+			"construct": "error, blocking: a defaultValue is not a value the field's mapped Rust type admits",
 			"cases": [
 				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
 			]

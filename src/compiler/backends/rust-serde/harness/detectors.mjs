@@ -836,9 +836,10 @@ export const DETECTORS = Object.freeze([
 			assert(
 				bad.files.size === 0 &&
 					bad.diagnostics.some((one) =>
-						one.code.endsWith(".INVALID_DEFAULT_VALUE"),
+						one.code.endsWith(".UNREPRESENTABLE_DEFAULT_VALUE"),
 					),
-				"a semantic default outside the member's Rust type raised no INVALID_DEFAULT_VALUE",
+				"a semantic default outside the member's Rust type raised no " +
+					"UNREPRESENTABLE_DEFAULT_VALUE",
 			);
 		},
 	},

@@ -261,6 +261,7 @@ const SCALAR_GUARDS = Object.freeze({
 	any: { test: "true", code: "SHAPE_MISMATCH" },
 	boolean: { test: 'typeof candidate === "boolean"', code: "NOT_A_BOOLEAN" },
 	integer: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
+	number: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
 	decimal: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
 	string: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
 	bytes: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },

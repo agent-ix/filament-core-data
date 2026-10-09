@@ -225,7 +225,7 @@
 				"spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md"
 			],
 			"rule": "A decimal scalar or field carries no decimal policy.",
-			"citation": "A decimal policy is required for each decimal subject",
+			"citation": "Each resolution walk that reaches decimal SHALL pass exactly one node carrying",
 			"exercisedBy": "test:TC-279"
 		},
 		{
@@ -236,7 +236,7 @@
 				"spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md"
 			],
 			"rule": "A decimal policy is attached to a non-decimal subject or is duplicated.",
-			"citation": "A policy belongs on an alias or decimal scalar subject",
+			"citation": "If a walk passes two nodes carrying `decimal`, then each reader SHALL raise",
 			"exercisedBy": "test:TC-279"
 		},
 		{

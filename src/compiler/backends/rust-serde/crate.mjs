@@ -1985,7 +1985,7 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		const rendered = renderDefault(field, model, byIdentity);
 		if (rendered === undefined) {
 			diagnostics.push(
-				diagnostic(RUST_BACKEND_CODES.INVALID_DEFAULT_VALUE, {
+				diagnostic(RUST_BACKEND_CODES.UNREPRESENTABLE_DEFAULT_VALUE, {
 					message: `the field ${fragment(field.identity)} declares the default ${fragment(JSON.stringify(field.defaultValue))}, which its mapped Rust type \`${field.rustType}\` does not admit`,
 					...(field.origin?.source ? { locus: field.origin.source } : {}),
 				}),
@@ -2416,7 +2416,7 @@ function renderFieldChecks(field) {
  * The Rust expression for a `semantic` default.
  *
  * A default that the mapped Rust type does not admit is `undefined`, and the
- * caller raises `INVALID_DEFAULT_VALUE` rather than rendering a value that
+ * caller raises `UNREPRESENTABLE_DEFAULT_VALUE` rather than rendering a value that
  * would not compile.
  */
 function renderDefault(field, model, byIdentity) {

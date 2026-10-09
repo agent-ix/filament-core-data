@@ -61,7 +61,7 @@ const DECLARED = {
 	UNORDERED_SUBJECT: blocking(
 		"a bound keyword names a subject the contract does not order — an ISO 8601 duration at this revision",
 	),
-	INVALID_DEFAULT_VALUE: blocking(
+	UNREPRESENTABLE_DEFAULT_VALUE: blocking(
 		"a defaultValue is not a value the field's mapped Rust type admits",
 	),
 	UNKNOWN_FORMAT: blocking(

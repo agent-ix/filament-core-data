@@ -266,7 +266,7 @@ construct's disposition is written down rather than decided at the keyboard.
 - Where the field's subject is numeric, the backend SHALL read `defaultValue` in its [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) IR spelling, parse it exactly into the subject's Rust type, and serialize it in the subject's instance wire form, so `"42"` on a safe `integer` field is the `i64` `42` and `"1.5"` on a `decimal(5, 2)` field is written `"1.50"`.
 - If `defaultValue` is not a JSON value the field's mapped Rust type admits,
   then the backend SHALL raise a blocking
-  `agent-ix.rust-backend.INVALID_DEFAULT_VALUE` naming the field identity,
+  `agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE` naming the field identity,
   rather than rendering a value that will not compile.
 - Where `defaultKind` is `representation` or `migration`, the backend SHALL
   record the default in the field's metadata constant and SHALL NOT emit a serde
@@ -370,7 +370,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-6 | A record whose `unknownPolicy` is `reject` fails to deserialize an unknown member; `preserve` retains it with no diagnostic; `surface` retains it and reports one `UNKNOWN_MEMBER_SURFACED`; an `enum` or `union` under `preserve` or `surface` deserializes an unrecognised variant into the catch-all and re-serializes it unchanged, and under `reject` refuses it; the declared policy of each of the five inert kinds appears verbatim in its metadata constant; and no unknown member ever becomes a default value of a known field. | Test (TC-650) |
 | FR-054-AC-7 | A direct self-reference, a two-record cycle, a cycle closing through an `alias` target, a cycle closing through a `union` variant `payloadType`, and a cycle through a `sequence` each generate a crate that compiles, and the boxed edge set is identical across two runs. | Test (TC-651) |
 | FR-054-AC-8 | `relationships`, `operations`, `clauses`, `roles`, `origin`, and `occurrences` survive generation into metadata with every member the IR carried, checked by reading the metadata back and comparing to the input document. | Test (TC-652) |
-| FR-054-AC-9 | `defaultKind: "semantic"` emits a serde default that applies on an absent member; `representation` and `migration` emit no serde default and appear only in metadata; a `defaultValue` the mapped type does not admit raises `INVALID_DEFAULT_VALUE`. | Test (TC-653) |
+| FR-054-AC-9 | `defaultKind: "semantic"` emits a serde default that applies on an absent member; `representation` and `migration` emit no serde default and appear only in metadata; a `defaultValue` the mapped type does not admit raises `UNREPRESENTABLE_DEFAULT_VALUE`. | Test (TC-653) |
 | FR-054-AC-10 | A field whose `multiplicity.upper` is `0` raises `UNSUPPORTED_MULTIPLICITY`. | Test (TC-654) |
 | FR-054-AC-11 | `mapping-table.json`, the rows this requirement states, and the rendered `docs/semantic-data-system/rust-backend.md` agree exactly in all three directions, checked by a script that parses the requirement's tables rather than by eye, and run by `make lint` in `--check` mode. | Analysis (TC-655) |
 | FR-054-AC-12 | A construct with no mapping row and no named refusal raises a blocking diagnostic and writes no file, demonstrated by removing a row and re-running. | Test (TC-656) |
@@ -382,7 +382,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-18 | Generating the constructs fixture renders each `entity`, `nested_entity`, `aggregate_root` and `process` with no derived `PartialEq` and with `PartialEq`, `Eq` and `Hash` over its identity fields, and a `value_object` with the derived `PartialEq`; a newtype an identity field reaches derives `Eq` and `Hash`; and an identity field of a `float64` scalar is refused with `UNSUPPORTED_CONSTRUCT` and no file. | Test (TC-1777) |
 | FR-054-AC-19 | Generating the constructs fixture renders the abstract `Party` as a trait of accessors with no struct or constructor and `Order` implementing it; a `reference` type targeting `Party` generates; a field naming `Party`, and an `Order` field redefining an inherited field with another Rust type, are each refused with `UNSUPPORTED_CONSTRUCT` and no file. | Test (TC-1778) |
 | FR-054-AC-20 | A repository operation whose frame is empty renders a method taking `&self`, and an operation with no frame renders a method taking `&mut self`. | Test (TC-1780) |
-| FR-054-AC-21 | An alias carrying `min` `"0"` and `max` `"18446744073709551615"` over an unbounded `integer` definition renders as a newtype over `u64` while its target renders over `i64`; a safe `integer` field with semantic `defaultValue` `"42"` deserializes an absent member as `42` and raises no `INVALID_DEFAULT_VALUE`, and a `decimal(5, 2)` field with `defaultValue` `"1.5"` serializes the default as `"1.50"`. | Test |
+| FR-054-AC-21 | An alias carrying `min` `"0"` and `max` `"18446744073709551615"` over an unbounded `integer` definition renders as a newtype over `u64` while its target renders over `i64`; a safe `integer` field with semantic `defaultValue` `"42"` deserializes an absent member as `42` and raises no `UNREPRESENTABLE_DEFAULT_VALUE`, and a `decimal(5, 2)` field with `defaultValue` `"1.5"` serializes the default as `"1.50"`. | Test |
 
 ## Dependencies
 

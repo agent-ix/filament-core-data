@@ -9,7 +9,7 @@ status: normative
 # Rust/Serde backend mapping and declared decisions
 
 Rendered from `src/compiler/backends/rust-serde/mapping-table.json`, which is
-the single machine-readable mapping table. 64 rows across
+the single machine-readable mapping table. 65 rows across
 12 axes. A construct that selects no row and no named refusal is an
 `agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT`; the mapping is total by
 construction, not by claim.
@@ -65,7 +65,8 @@ construction, not by claim.
 |---|---|---|---|---|
 | `any` | `SemanticValue` | — | lossless JSON value retained by crate::support::SemanticValue | — |
 | `boolean` | `bool` | — | JSON boolean | — |
-| `integer` | `i64` | — | JSON number with no fraction or exponent | — |
+| `integer` | `i64` | — | canonical integer string; i64, u64 or i128 selected by effective range | — |
+| `decimal` | `crate::support::Decimal` | — | canonical decimal string through support::Decimal | — |
 | `number` | `f64` | — | JSON number | — |
 | `string` | `String` | — | JSON string | — |
 | `bytes` | `null` | — | refused: no published artifact states the JSON wire form of bytes (issue #58) | `agent-ix.rust-backend.UNDECLARED_WIRE_FORM` |
@@ -105,7 +106,7 @@ construction, not by claim.
 | Selector | Rust form | Serde | Mechanism | Refusal |
 |---|---|---|---|---|
 | `none` | `null` | — | no serde default, no metadata default | — |
-| `semantic` | `null` | `default = "<generated fn>"` | a serde default drawn from defaultValue, plus the metadata record | `agent-ix.rust-backend.INVALID_DEFAULT_VALUE` |
+| `semantic` | `null` | `default = "<generated fn>"` | a serde default drawn from defaultValue, plus the metadata record | `agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE` |
 | `representation` | `null` | — | metadata only: the default belongs to a representation boundary | — |
 | `migration` | `null` | — | metadata only: the default belongs to a migration boundary | — |
 

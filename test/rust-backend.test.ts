@@ -261,6 +261,7 @@ describe("TC-655, TC-697 the published tables and the closed code sets", () => {
 			"any",
 			"boolean",
 			"integer",
+			"decimal",
 			"number",
 			"string",
 			"bytes",
@@ -1359,7 +1360,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 *
 	 * Branches: diagnostic:agent-ix.rust-backend.DECLARED_LOSS,
 	 * diagnostic:agent-ix.rust-backend.DIAGNOSTIC_LIMIT_REACHED,
-	 * diagnostic:agent-ix.rust-backend.INVALID_DEFAULT_VALUE,
+	 * diagnostic:agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE,
 	 * diagnostic:agent-ix.rust-backend.LIMIT_EXCEEDED,
 	 * diagnostic:agent-ix.rust-backend.NAME_COLLISION,
 	 * diagnostic:agent-ix.rust-backend.PAYLOAD_ON_ENUM_VARIANT,
@@ -1897,7 +1898,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 				pairs += 1;
 			}
 		}
-		expect(pairs).toBe(40);
+		expect(pairs).toBe(45);
 		// Every diagnostic code, in both namespaces.
 		for (const entry of diagnostics.REGISTERED_ENTRIES as { code: string }[]) {
 			expect(

@@ -98,7 +98,7 @@ visible in the run rather than invisible in the generated source.
 | `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` | error | yes | a constraint keyword does not apply to its resolved subject |
 | `UNORDERED_SUBJECT` | error | yes | a bound keyword names a subject the contract does not order |
 | `agent-ix.semantic-ir.INVALID_OPERAND` | error | yes | an operand's JSON type is not one the subject's Rust type admits |
-| `INVALID_DEFAULT_VALUE` | error | yes | a `defaultValue` is not a value the field's mapped Rust type admits |
+| `UNREPRESENTABLE_DEFAULT_VALUE` | error | yes | a `defaultValue` is not a value the field's mapped Rust type admits |
 | `UNKNOWN_FORMAT` | error | yes | a `format` operand names an unregistered format |
 | `UNRENDERABLE_NAME` | error | yes | a name derives no legal Rust identifier |
 | `NAME_COLLISION` | error | yes | two identities derive one identifier in one declared scope |

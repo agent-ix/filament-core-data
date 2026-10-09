@@ -30,7 +30,7 @@ input.
 | `agent-ix.rust-backend.UNSUPPORTED_MULTIPLICITY` | error | yes | a field's multiplicity.upper is 0, so the member may never be present and has no Rust form that serde round-trips |
 | `agent-ix.rust-backend.PAYLOAD_ON_ENUM_VARIANT` | error | yes | a kind: "enum" variant carries a payloadType, which the schema permits and no contract rule reconciles with the kind |
 | `agent-ix.rust-backend.UNORDERED_SUBJECT` | error | yes | a bound keyword names a subject the contract does not order — an ISO 8601 duration at this revision |
-| `agent-ix.rust-backend.INVALID_DEFAULT_VALUE` | error | yes | a defaultValue is not a value the field's mapped Rust type admits |
+| `agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE` | error | yes | a defaultValue is not a value the field's mapped Rust type admits |
 | `agent-ix.rust-backend.UNKNOWN_FORMAT` | error | yes | a format operand names a format the generated registry does not carry |
 | `agent-ix.rust-backend.UNRENDERABLE_NAME` | error | yes | a name derives no legal Rust identifier, and the backend refuses rather than dropping the characters it cannot carry |
 | `agent-ix.rust-backend.NAME_COLLISION` | error | yes | two semantic identities derive one identifier in one declared scope |
