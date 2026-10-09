@@ -8,7 +8,13 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+	mkdtempSync,
+	mkdirSync,
+	readFileSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 
 import {
@@ -30,12 +36,6 @@ const COVERAGE_PATH = join(ROOT, "coverage.json");
 const MUTATIONS_PATH = join(ROOT, "mutations.json");
 
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
-
-/**
- * Distinguishes two runs inside one process, so that the staging directory a
- * run materializes into is its own even when a second `run()` overlaps it.
- */
-let stagingCounter = 0;
 
 /**
  * Runs one adapter over the corpus.
@@ -157,11 +157,9 @@ export function run(options = {}) {
 	// was there a moment ago. It is nested under the ignored `.cases/` so the
 	// staging tree stays out of the working tree's changed set, and it is removed
 	// when the run ends.
-	stagingCounter += 1;
-	const stagingDirectory = join(
-		ROOT,
-		".cases",
-		`run-${process.pid}-${stagingCounter}`,
+	mkdirSync(join(ROOT, ".cases"), { recursive: true });
+	const stagingDirectory = mkdtempSync(
+		join(ROOT, ".cases", `run-${process.pid}-`),
 	);
 	materializeCases(stagingDirectory);
 	try {
