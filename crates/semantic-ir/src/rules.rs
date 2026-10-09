@@ -125,6 +125,8 @@ codes! {
     DANGLING_CLAUSE_REF => "agent-ix.semantic-ir.DANGLING_CLAUSE_REF",
     MISSING_SOURCE_SPAN => "agent-ix.semantic-ir.MISSING_SOURCE_SPAN",
     CONSTRAINT_NOT_APPLICABLE => "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
+    DECIMAL_POLICY_MISSING => "agent-ix.semantic-ir.DECIMAL_POLICY_MISSING",
+    DECIMAL_POLICY_CONFLICT => "agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT",
     INVALID_OPERAND => "agent-ix.semantic-ir.INVALID_OPERAND",
     INVALID_PATTERN => "agent-ix.semantic-ir.INVALID_PATTERN",
     UNRESOLVED_RELATIONSHIP_TARGET => "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
@@ -256,6 +258,49 @@ impl<'a> Document<'a> {
     /// its constraints inline, with no alias node between them).
     fn field_of(&self, identity: &str) -> Option<&'a Json> {
         self.by_feature.get(identity).copied()
+    }
+
+    /// The policy nodes crossed while resolving `identity` to its terminal
+    /// scalar. A field, alias, and scalar definition can each carry policy;
+    /// keeping every node here lets the caller enforce the exactly-one rule.
+    fn decimal_policies(&self, identity: &str) -> Vec<&'a Json> {
+        let mut policies = Vec::new();
+        let mut seen = BTreeSet::new();
+        let mut current = identity;
+        let mut subject: Option<&'a Json> = None;
+        loop {
+            if let Some(subject) = subject.take() {
+                if subject.get("decimal").is_some() {
+                    policies.push(subject);
+                }
+            }
+            if native_scalar(current).is_some() {
+                return policies;
+            }
+            if !seen.insert(current) {
+                return policies;
+            }
+            if let Some(field) = self.field_of(current) {
+                subject = Some(field);
+                let Some(type_ref) = field.get("typeRef").and_then(Json::as_str) else {
+                    return policies;
+                };
+                current = type_ref;
+                continue;
+            }
+            let Some(definition) = self.type_of(current) else {
+                return policies;
+            };
+            subject = Some(definition);
+            if definition.get("kind").and_then(Json::as_str) == Some("alias") {
+                let Some(target) = definition.get("target").and_then(Json::as_str) else {
+                    return policies;
+                };
+                current = target;
+                continue;
+            }
+            return policies;
+        }
     }
 
     /// What an identity resolves to: a native type reference; a field or
@@ -529,6 +574,24 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
     for (position, definition) in document.types.iter().enumerate() {
         let type_at = index("/ir/types", position);
         let kind = definition.get("kind").and_then(Json::as_str).unwrap_or("");
+        if let Some(identity) = definition.get("identity").and_then(Json::as_str) {
+            if let Some(resolved) = document.resolve(identity) {
+                let policies = document.decimal_policies(identity);
+                if resolved.scalar() != "decimal" && !policies.is_empty() {
+                    sink.emit(
+                        type_at.clone(),
+                        DECIMAL_POLICY_CONFLICT,
+                        "a decimal policy applies only to a decimal subject",
+                    );
+                } else if resolved.scalar() == "decimal" && policies.len() > 1 {
+                    sink.emit(
+                        type_at.clone(),
+                        DECIMAL_POLICY_CONFLICT,
+                        "a decimal resolution walk carries more than one policy",
+                    );
+                }
+            }
+        }
 
         if matches!(kind, "alias" | "reference") {
             if let Some(target) = definition.get("target").and_then(Json::as_str) {
@@ -863,6 +926,32 @@ fn field_rules(
                 );
             }
         }
+        if let Some(resolved) = type_ref.and_then(|identity| document.resolve(identity)) {
+            let policies = field
+                .get("identity")
+                .and_then(Json::as_str)
+                .map(|identity| document.decimal_policies(identity))
+                .unwrap_or_default();
+            if resolved.scalar() == "decimal" && policies.is_empty() {
+                sink.emit(
+                    field_at.clone(),
+                    DECIMAL_POLICY_MISSING,
+                    "a decimal field carries a decimal policy",
+                );
+            } else if resolved.scalar() == "decimal" && policies.len() > 1 {
+                sink.emit(
+                    field_at.clone(),
+                    DECIMAL_POLICY_CONFLICT,
+                    "a decimal resolution walk carries more than one policy",
+                );
+            } else if resolved.scalar() != "decimal" && !policies.is_empty() {
+                sink.emit(
+                    field_at.clone(),
+                    DECIMAL_POLICY_CONFLICT,
+                    "a decimal policy applies only to a decimal field",
+                );
+            }
+        }
         if let Some(multiplicity) = field.get("multiplicity") {
             let multiplicity_at = child(&field_at, "multiplicity");
             let lower = multiplicity.get("lower").and_then(Json::as_i64);
@@ -982,6 +1071,24 @@ fn is_canonical_decimal(text: &str) -> bool {
     fraction.chars().all(|ch| ch.is_ascii_digit()) && !fraction.ends_with('0')
 }
 
+/// Whether a canonical decimal fits the subject's declared policy.
+fn decimal_admitted(text: &str, policy: &Json) -> bool {
+    let Some(precision) = policy.get("precision").and_then(Json::as_i64) else {
+        return false;
+    };
+    let Some(scale) = policy.get("scale").and_then(Json::as_i64) else {
+        return false;
+    };
+    if precision < 1 || scale < 0 || scale > precision {
+        return false;
+    }
+    let unsigned = text.strip_prefix('-').unwrap_or(text);
+    let (whole, fraction) = unsigned.split_once('.').unwrap_or((unsigned, ""));
+    i64::try_from(whole.len()).is_ok_and(|integer_digits| {
+        integer_digits <= precision - scale && fraction.len() as i64 <= scale
+    })
+}
+
 fn constraint_rules(
     document: &Document<'_>,
     constraint: &Json,
@@ -1022,13 +1129,37 @@ fn constraint_rules(
         if matches!(keyword, "min" | "max" | "exclusiveMin" | "exclusiveMax")
             && matches!(scalar, "integer" | "decimal" | "number")
         {
+            let policies = if scalar == "decimal" {
+                document.decimal_policies(applies.unwrap_or_default())
+            } else {
+                Vec::new()
+            };
+            if scalar == "decimal" && policies.is_empty() {
+                sink.emit(
+                    constraint_at.to_string(),
+                    DECIMAL_POLICY_MISSING,
+                    "a decimal constraint carries a decimal policy",
+                );
+            } else if scalar == "decimal" && policies.len() > 1 {
+                sink.emit(
+                    constraint_at.to_string(),
+                    DECIMAL_POLICY_CONFLICT,
+                    "a decimal resolution walk carries more than one policy",
+                );
+            }
             // An integer bound may be a canonical decimal string, so a value
             // past 2^53 is exact; a `number` bound is a JSON number.
             let admitted = match constraint.get("operands").and_then(|o| o.get("value")) {
                 Some(Json::Number(_)) | None => scalar != "decimal",
                 Some(Json::Str(text)) => {
                     (scalar == "integer" && is_canonical_integer(text))
-                        || (scalar == "decimal" && is_canonical_decimal(text))
+                        || (scalar == "decimal"
+                            && policies
+                                .first()
+                                .and_then(|subject| subject.get("decimal"))
+                                .is_some_and(|policy| {
+                                    is_canonical_decimal(text) && decimal_admitted(text, policy)
+                                }))
                 }
                 Some(_) => false,
             };
