@@ -529,7 +529,7 @@ it("executes decimal enum equality and unique collection rejection", async () =>
 });
 
 /** Traces: FR-144-AC-15, FR-144-AC-19. */
-it("renders normalized Decimal forms and refuses alias, enum, and native losses", () => {
+it("renders normalized Decimal forms and refuses alias, bound, and native losses", () => {
 	const scalarIr = structuredClone(numericIr());
 	scalarIr.types = scalarIr.types.filter(
 		(type: { displayName: string }) => type.displayName === "Decimal",
@@ -537,7 +537,8 @@ it("renders normalized Decimal forms and refuses alias, enum, and native losses"
 	const scalarResult = jsonSchemaBackend.generate({ ir: scalarIr } as never);
 	expect(scalarResult.state).toBe("success");
 	const scalarSchema = JSON.parse(
-		scalarResult.files.find(([path]) => path === "Decimal.json")?.[1] ?? "{}",
+		scalarResult.files.find((file) => file.path === "Decimal.json")?.text ??
+			"{}",
 	);
 	const decimalPattern = new RegExp(scalarSchema.pattern);
 	for (const value of ["1.10", "0.00", "999.90"]) {
@@ -560,8 +561,15 @@ it("renders normalized Decimal forms and refuses alias, enum, and native losses"
 		["Decimal", "DecimalEnum"].includes(type.displayName),
 	);
 	const enumResult = jsonSchemaBackend.generate({ ir: enumIr } as never);
-	expect(enumResult.state).toBe("unsupported");
-	expect(enumResult.diagnostics[0].message).toContain("decimal enumValues");
+	expect(enumResult.state).toBe("success");
+	const enumSchema = JSON.parse(
+		enumResult.files.find((file) => file.path === "DecimalEnum.json")?.text ??
+			"{}",
+	);
+	const enumPattern = new RegExp(enumSchema.pattern);
+	expect(enumPattern.test("1.1")).toBe(true);
+	expect(enumPattern.test("1.10")).toBe(true);
+	expect(enumPattern.test("1.2")).toBe(false);
 
 	const nativeUniqueIr = structuredClone(numericIr());
 	nativeUniqueIr.types = nativeUniqueIr.types.filter(

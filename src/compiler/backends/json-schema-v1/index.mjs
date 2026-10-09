@@ -166,7 +166,30 @@ function ref(types, id) {
 	const target = types.get(id);
 	return target ? { $ref: `./${nameOf(target)}.json` } : {};
 }
-function constraint(schema, one, subject) {
+function decimalEnumPattern(values, policy) {
+	const scale = Number.isInteger(Number(policy?.scale))
+		? Number(policy.scale)
+		: 38;
+	const patterns = [];
+	for (const value of values ?? []) {
+		if (typeof value !== "string") continue;
+		const match = value.match(/^(-?)(0|[1-9][0-9]*)(?:\.([0-9]+))?$/);
+		if (!match) continue;
+		const [, sign, whole, rawFraction = ""] = match;
+		const fraction = rawFraction.replace(/0+$/, "");
+		if (sign === "-" && whole === "0" && fraction.length === 0) continue;
+		if (fraction.length > scale) continue;
+		const trailing = scale - fraction.length;
+		const fractionPattern = fraction
+			? `\\.${fraction}0{0,${trailing}}`
+			: trailing > 0
+				? `(?:\\.0{1,${trailing}})?`
+				: "";
+		patterns.push(`${sign === "-" ? "-" : ""}${whole}${fractionPattern}`);
+	}
+	return patterns.length > 0 ? `^(?:${patterns.join("|")})$` : undefined;
+}
+function constraint(schema, one, subject, decimalPolicy) {
 	const value = one?.operands?.value;
 	const key = one?.keyword;
 	const table = {
@@ -182,14 +205,21 @@ function constraint(schema, one, subject) {
 		else if (subject?.kind === "map") schema.minProperties ??= 1;
 		else schema.minLength ??= 1;
 	} else if (key === "unique") schema.uniqueItems = true;
-	else if (key === "enumValues") schema.enum = one.operands.values;
-	else if (key === "pattern") schema.pattern = one.operands.regex;
+	else if (key === "enumValues") {
+		const pattern =
+			subject?.scalar === "decimal"
+				? decimalEnumPattern(one.operands.values, decimalPolicy)
+				: undefined;
+		if (pattern !== undefined) schema.pattern = pattern;
+		else schema.enum = one.operands.values;
+	} else if (key === "pattern") schema.pattern = one.operands.regex;
 	else if (key === "format") schema.format = FORMAT_MAP[one.operands.name];
 	else if (table[key] && value !== undefined) {
 		schema[table[key]] = value;
 	}
 	return schema;
 }
+
 function decimalScalar(types, identity, seen = new Set()) {
 	if (identity === "ix://quire/native/Decimal") return "decimal";
 	if (typeof identity !== "string" || seen.has(identity)) return undefined;
@@ -200,6 +230,17 @@ function decimalScalar(types, identity, seen = new Set()) {
 		return decimalScalar(types, type.target, seen);
 	return undefined;
 }
+function decimalPolicy(types, identity, seen = new Set()) {
+	if (typeof identity !== "string" || seen.has(identity)) return undefined;
+	seen.add(identity);
+	const type = types.get(identity);
+	if (type?.kind === "scalar")
+		return type.scalar === "decimal" ? type.decimal : undefined;
+	if (type?.kind === "alias" || type?.kind === "reference")
+		return decimalPolicy(types, type.target, seen);
+	return undefined;
+}
+
 function decimalLosses(ir, types) {
 	const losses = [];
 	const boundKeywords = new Set(["min", "max", "exclusiveMin", "exclusiveMax"]);
@@ -209,12 +250,6 @@ function decimalLosses(ir, types) {
 				code: DIAGNOSTIC_CODES.UNDECLARED_LOSS,
 				blocking: true,
 				message: `JSON Schema cannot enforce decimal ${keyword} on ${identity}`,
-			});
-		else if (keyword === "enumValues")
-			losses.push({
-				code: DIAGNOSTIC_CODES.UNDECLARED_LOSS,
-				blocking: true,
-				message: `JSON Schema cannot enforce decimal enumValues on ${identity}`,
 			});
 	};
 	for (const type of ir.types ?? []) {
@@ -274,7 +309,15 @@ function fieldSchema(field, types) {
 	const seen = new Set();
 	while (target?.kind === "alias" && !seen.has(target.identity)) {
 		seen.add(target.identity);
-		for (const one of target.constraints ?? []) constraint(schema, one, target);
+		for (const one of target.constraints ?? [])
+			constraint(
+				schema,
+				one,
+				decimalScalar(types, field.typeRef) === "decimal"
+					? { ...target, scalar: "decimal" }
+					: target,
+				decimalPolicy(types, field.typeRef),
+			);
 		target = types.get(target.target);
 	}
 	if (
@@ -289,7 +332,15 @@ function fieldSchema(field, types) {
 		if (field.multiplicity.unique) schema.uniqueItems = true;
 	}
 	if (field.nullable) schema = { anyOf: [schema, { type: "null" }] };
-	for (const one of field.constraints ?? []) constraint(schema, one, target);
+	for (const one of field.constraints ?? [])
+		constraint(
+			schema,
+			one,
+			decimalScalar(types, field.typeRef) === "decimal"
+				? { ...(target ?? {}), scalar: "decimal" }
+				: target,
+			decimalPolicy(types, field.typeRef),
+		);
 	return annotated(schema, field);
 }
 /**
@@ -418,7 +469,15 @@ function renderType(ir, type, types, authored) {
 		default:
 			schema = {};
 	}
-	for (const one of type.constraints ?? []) constraint(schema, one, type);
+	for (const one of type.constraints ?? [])
+		constraint(
+			schema,
+			one,
+			decimalScalar(types, type.identity) === "decimal"
+				? { ...type, scalar: "decimal" }
+				: type,
+			decimalPolicy(types, type.identity),
+		);
 	return {
 		$schema: DRAFT,
 		$id: schemaId(ir, type),
