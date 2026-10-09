@@ -189,17 +189,11 @@ function lowerBound(constraint, keyword, identity, resolved, raise) {
 		}
 		return { identity, keyword, form: "numeric", scalar, value };
 	}
-	if (
-		scalar === "integer" ||
-		scalar === "number" ||
-		scalar === "float32" ||
-		scalar === "float64"
-	) {
+	if (scalar === "integer" || scalar === "number") {
 		if (
 			typeof value !== "number" ||
 			!Number.isFinite(value) ||
-			(scalar === "integer" && !Number.isInteger(value)) ||
-			(scalar === "float32" && Math.fround(value) !== value)
+			(scalar === "integer" && !Number.isInteger(value))
 		) {
 			raise(
 				RUST_BACKEND_CODES.INVALID_OPERAND,
@@ -285,13 +279,8 @@ function lowerEnumValues(constraint, identity, resolved, raise) {
 				return typeof value === "boolean";
 			case "integer":
 				return typeof value === "number" && Number.isInteger(value);
-			case "float32":
-			case "float64":
-				return (
-					typeof value === "number" &&
-					Number.isFinite(value) &&
-					(scalar === "float64" || Math.fround(value) === value)
-				);
+			case "number":
+				return typeof value === "number" && Number.isFinite(value);
 			case "decimal":
 				return (
 					typeof value === "string" &&

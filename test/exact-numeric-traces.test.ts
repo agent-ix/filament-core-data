@@ -72,22 +72,6 @@ function numericIr(): any {
 		],
 		extensions: [],
 	};
-	const float32 = {
-		identity: type("Float32"),
-		displayName: "Float32",
-		kind: "scalar",
-		scalar: "float32",
-		constraints: [],
-		extensions: [],
-	};
-	const float64 = {
-		identity: type("Float64"),
-		displayName: "Float64",
-		kind: "scalar",
-		scalar: "float64",
-		constraints: [],
-		extensions: [],
-	};
 	const decimalEnum = {
 		identity: type("DecimalEnum"),
 		displayName: "DecimalEnum",
@@ -234,11 +218,7 @@ function numericIr(): any {
 		kind: "record",
 		unknownPolicy: "reject",
 		fields: [
-			...[
-				["decimal", "DecimalAlias"],
-				["single", "Float32"],
-				["double", "Float64"],
-			].map(([name, target]) => ({
+			...[["decimal", "DecimalAlias"]].map(([name, target]) => ({
 				identity: `${PACKAGE}/field/RuntimeNumeric-${name}`,
 				name,
 				typeRef: type(target),
@@ -258,8 +238,6 @@ function numericIr(): any {
 		decimalEnum,
 		decimalBounded,
 		decimalList,
-		float32,
-		float64,
 		decimalCollection,
 		directDecimalCollection,
 		nullableDecimalCollection,
@@ -412,7 +390,7 @@ it("renders decimal equality and uniqueness checks in the generated validator", 
 });
 
 /** Traces: FR-144-AC-13, FR-144-AC-17, FR-144-AC-19. */
-it("executes Rust decimal, float32, and float64 read/write boundaries", () => {
+it("executes Rust decimal read/write boundaries", () => {
 	const result = emitCrate(
 		{
 			ir: numericIr(),
@@ -433,8 +411,6 @@ it("executes Rust decimal, float32, and float64 read/write boundaries", () => {
 	expect(rust).toContain("serialize_str");
 	expect(rust).toContain("String::deserialize");
 	expect(rust).toContain("pub struct RuntimeNumeric");
-	expect(rust).toMatch(/single:\s*f32/);
-	expect(rust).toMatch(/double:\s*f64/);
 	expect(rust).toContain("impl<'de> Deserialize");
 	expect(rust).toContain("impl Serialize");
 	expect(rust).toContain("pub struct DecimalAlias");
@@ -459,16 +435,14 @@ it("executes Rust decimal, float32, and float64 read/write boundaries", () => {
 };
 
 #[test]
-fn decimal_and_float_boundaries_round_trip() {
+fn decimal_boundaries_round_trip() {
     let value: RuntimeNumeric = serde_json::from_str(
-        r#"{"decimal":"1.10","single":3.4028234663852886e38,"double":0.1}"#,
+        r#"{"decimal":"1.10"}"#,
     ).unwrap();
     let wire = serde_json::to_string(&value).unwrap();
     assert!(wire.contains(r#""decimal":"1.10""#));
-    assert!(wire.contains(r#""single":3.4028235e38"#));
-    assert!(wire.contains(r#""double":0.1"#));
     assert!(serde_json::from_str::<RuntimeNumeric>(
-        r#"{"decimal":"1.001","single":3.5e38,"double":0.1}"#,
+        r#"{"decimal":"1.001"}"#,
     ).is_err());
     let one: DecimalAlias = serde_json::from_str(r#""1.1""#).unwrap();
     let padded: DecimalAlias = serde_json::from_str(r#""1.10""#).unwrap();

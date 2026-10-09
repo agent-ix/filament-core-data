@@ -42,8 +42,6 @@ const SCALAR_PRIMITIVES = Object.freeze({
 	integer: "number",
 	number: "number",
 	decimal: "string",
-	float32: "number",
-	float64: "number",
 	string: "string",
 	bytes: "string",
 	date: "string",

@@ -262,8 +262,6 @@ const SCALAR_GUARDS = Object.freeze({
 	boolean: { test: 'typeof candidate === "boolean"', code: "NOT_A_BOOLEAN" },
 	integer: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
 	decimal: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
-	float32: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
-	float64: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
 	string: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
 	bytes: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
 	date: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
@@ -284,19 +282,6 @@ function numericStatements(scalar, indent) {
 		`${indent}\treturn false;`,
 		`${indent}}`,
 	];
-	if (scalar === "float32") {
-		return [
-			...lines,
-			`${indent}if (Math.fround(candidate) !== candidate) {`,
-			`${indent}\tfail(errors, pointer, CODES.SHAPE_MISMATCH, "the value is not exactly representable as float32");`,
-			`${indent}\treturn false;`,
-			`${indent}}`,
-			`${indent}if (!Number.isFinite(Math.fround(candidate))) {`,
-			`${indent}\tfail(errors, pointer, CODES.NOT_FINITE, "the value overflows float32");`,
-			`${indent}\treturn false;`,
-			`${indent}}`,
-		];
-	}
 	if (scalar !== "integer") return lines;
 	return [
 		...lines,
@@ -328,7 +313,7 @@ function scalarCheckBody(model, entry) {
 		"\t\treturn false;",
 		"\t}",
 	);
-	if (["integer", "float32", "float64"].includes(entry.scalar)) {
+	if (["integer", "number"].includes(entry.scalar)) {
 		lines.push(...numericStatements(entry.scalar, "\t"));
 	}
 	if (entry.scalar === "bytes") {

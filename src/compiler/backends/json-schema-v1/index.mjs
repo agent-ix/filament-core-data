@@ -586,7 +586,11 @@ export const jsonSchemaBackend = Object.freeze({
 			return {
 				state: "unsupported",
 				files: [],
-				diagnostics: decimalLoss.map((one) => diagnostic(one)),
+				diagnostics: decimalLoss.map((one) =>
+					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
+						message: one.message,
+					}),
+				),
 			};
 		const authored = typeIndex(request.ir);
 		// Two definitions whose names derive one file name, or a definition whose

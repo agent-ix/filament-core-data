@@ -63,11 +63,12 @@ const BUILTIN_SCALARS = new Map([
 	["uint16", "integer"],
 	["uint32", "integer"],
 	["uint64", "integer"],
-	["float", "float64"],
-	["float32", "float32"],
-	["float64", "float64"],
+	["float", "number"],
+	["float32", "number"],
+	["float64", "number"],
 	["decimal", "decimal"],
 	["decimal128", "decimal"],
+	["numeric", "number"],
 	["string", "string"],
 	["url", "string"],
 	["bytes", "bytes"],
@@ -92,9 +93,8 @@ const KERNEL_NAMES = new Map([
 	["any", "JsonObject"],
 	["boolean", "Boolean"],
 	["integer", "Integer"],
+	["number", "Decimal"],
 	["decimal", "Decimal"],
-	["float32", "Float32"],
-	["float64", "Float64"],
 	["string", "String"],
 	["bytes", "Bytes"],
 	["datetime", "Timestamp"],
@@ -506,8 +506,6 @@ export function lowerProgram(options) {
 			Number.isFinite(value)
 		)
 			return String(value);
-		if (scalar === "float32" && typeof value === "number")
-			return Math.fround(value);
 		return value;
 	};
 	const constraintsOf = (target) => {

@@ -247,24 +247,6 @@
 			"diagnosticCode": null
 		},
 		{
-			"rowKey": "scalar:float32",
-			"axis": "scalar",
-			"selector": "float32",
-			"rustForm": "f32",
-			"serdeAttributes": [],
-			"mechanism": "finite JSON number",
-			"diagnosticCode": null
-		},
-		{
-			"rowKey": "scalar:float64",
-			"axis": "scalar",
-			"selector": "float64",
-			"rustForm": "f64",
-			"serdeAttributes": [],
-			"mechanism": "finite JSON number",
-			"diagnosticCode": null
-		},
-		{
 			"rowKey": "scalar:number",
 			"axis": "scalar",
 			"selector": "number",
