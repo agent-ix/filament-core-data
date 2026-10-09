@@ -233,7 +233,8 @@ function operandsFor(keyword, subject) {
 		if (subject === "date") return { value: "2020-01-01" };
 		if (subject === "datetime") return { value: "2020-01-01T00:00:00Z" };
 		if (subject === "duration") return { value: "P1D" };
-		if (subject === "number" || subject === "float32" || subject === "float64") return { value: 1.5 };
+		if (subject === "number" || subject === "float32" || subject === "float64")
+			return { value: 1.5 };
 		if (subject === "decimal") return { value: "1.1" };
 		return { value: 1 };
 	}
@@ -243,7 +244,8 @@ function operandsFor(keyword, subject) {
 	if (keyword === "enumValues") {
 		if (subject === "boolean") return { values: [true] };
 		if (subject === "integer") return { values: [1] };
-		if (subject === "number" || subject === "float32" || subject === "float64") return { values: [1.5] };
+		if (subject === "number" || subject === "float32" || subject === "float64")
+			return { values: [1.5] };
 		if (subject === "decimal") return { values: ["1.1"] };
 		return { values: ["a"] };
 	}
