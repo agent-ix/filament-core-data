@@ -2506,7 +2506,9 @@ function renderInlineFieldChecks(type, field) {
 	if (field.collection) {
 		const source = field.presence === "optional" ? "items" : field.ident;
 		if (field.presence === "optional") lines.push(`        if let Some(items) = &${field.ident} {`);
-		lines.push(`            for item in &${source} {`);
+		lines.push(
+			`            for item in ${field.presence === "optional" ? source : `&${source}`} {`,
+		);
 		if (field.nullable) {
 			lines.push("                if let crate::support::Nullable::Value(value) = item {");
 			renderValue("*value", 4);
