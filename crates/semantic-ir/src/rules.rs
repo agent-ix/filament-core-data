@@ -347,13 +347,17 @@ impl<'a> Document<'a> {
             let Some(definition) = self.type_of(current) else {
                 return policies;
             };
-            subject = Some(definition);
             if definition.get("kind").and_then(Json::as_str) == Some("alias") {
+                subject = Some(definition);
                 let Some(target) = definition.get("target").and_then(Json::as_str) else {
                     return policies;
                 };
                 current = target;
                 continue;
+            }
+            if definition.get("decimal").is_some() && policy_nodes.insert(definition as *const Json)
+            {
+                policies.push(definition);
             }
             return policies;
         }

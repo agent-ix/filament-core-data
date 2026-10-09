@@ -580,9 +580,6 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
     match kind {
         "scalar" => {
             target["scalar"] = json!(scalar);
-            if scalar == "decimal" {
-                target["decimal"] = json!({"precision": 10, "scale": 2});
-            }
         }
         "record" => target["fields"] = json!([]),
         "enum" => {
@@ -622,21 +619,30 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         "format" => json!({"name": "iana:email"}),
         other => panic!("unknown keyword {other}"),
     };
+    let applies_to = if scalar == "decimal" {
+        "ix://agent-ix/test/R/f"
+    } else {
+        "ix://agent-ix/test/T"
+    };
+    let mut field = json!({
+        "identity": "ix://agent-ix/test/R/f", "name": "f",
+        "typeRef": "ix://agent-ix/test/T", "presence": "required",
+        "nullable": false, "defaultKind": "none", "origin": origin,
+        "multiplicity": {"lower": 1, "upper": 1, "ordered": false, "unique": false}
+    });
+    if scalar == "decimal" {
+        field["decimal"] = json!({"precision": 10, "scale": 2});
+    }
     let record = json!({
         "identity": "ix://agent-ix/test/R", "displayName": "R", "kind": "record",
         "roles": [], "origin": origin, "extensions": [], "unknownPolicy": "reject",
         "constraints": [{
             "identity": "ix://agent-ix/test/constraint/r-f-k",
             "keyword": keyword, "operands": operands,
-            "appliesTo": "ix://agent-ix/test/T",
+            "appliesTo": applies_to,
             "diagnosticCode": "agent-ix.test.F_K", "origin": origin
         }],
-        "fields": [{
-            "identity": "ix://agent-ix/test/R/f", "name": "f",
-            "typeRef": "ix://agent-ix/test/T", "presence": "required",
-            "nullable": false, "defaultKind": "none", "origin": origin,
-            "multiplicity": {"lower": 1, "upper": 1, "ordered": false, "unique": false}
-        }]
+        "fields": [field]
     });
     json!({"ir": {
         "contractVersion": "2.0.0",
