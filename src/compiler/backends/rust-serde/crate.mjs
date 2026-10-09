@@ -1400,6 +1400,7 @@ function renderCheck(
 	expression,
 	subjectScalar,
 	prefix = type.constantName,
+	unwrapNamedWrapper = false,
 ) {
 	const identity = rustString(check.identity);
 	const keyword = rustString(check.keyword);
@@ -1416,12 +1417,22 @@ function renderCheck(
 			");",
 		);
 	const lines = [];
+	// A field whose type names a scalar declaration carries that declaration's
+	// newtype, rather than the primitive the constraint operates on.  Field
+	// expressions arrive here after the optional/nullable/collection matches,
+	// so one `get()` reaches the primitive while preserving the expression's
+	// existing borrowing shape.  Native support types expose their string
+	// methods directly and must keep the primitive path below.
+	const subject = unwrapNamedWrapper
+		? `(${expression}).get()`
+		: expression;
 	// A scalar newtype hands its constructor the base by value, so `value` is
 	// already the `i64` or `f64` a numeric comparison needs. An alias reaches its
 	// base through one `get()` per hop, which yields a reference, so the copy is
 	// taken here rather than left for the comparison to fail on.
-	const owned =
-		expression === "value" || expression.startsWith("*")
+	const owned = unwrapNamedWrapper
+		? `*${subject}`
+		: expression === "value" || expression.startsWith("*")
 			? expression
 			: `(*${expression})`;
 	const COMPARISONS = {
@@ -1435,8 +1446,8 @@ function renderCheck(
 		case "length": {
 			const comparison = check.keyword === "minLength" ? "<" : ">";
 			lines.push(
-				`            if ${expression}.chars().count() ${comparison} ${check.value}usize {`,
-				...fail(rustString(String(check.value)), `${expression}.as_str()`),
+				`            if ${subject}.chars().count() ${comparison} ${check.value}usize {`,
+				...fail(rustString(String(check.value)), `${subject}.as_str()`),
 				"            }",
 			);
 			break;
@@ -1457,7 +1468,7 @@ function renderCheck(
 			break;
 		}
 		case "decimal": {
-			const comparison = `crate::support::decimal_cmp(${expression}.as_str(), ${rustString(check.value)})`;
+			const comparison = `crate::support::decimal_cmp(${subject}.as_str(), ${rustString(check.value)})`;
 			const failure = {
 				min: "Some(std::cmp::Ordering::Less)",
 				max: "Some(std::cmp::Ordering::Greater)",
@@ -1468,7 +1479,7 @@ function renderCheck(
 			}[check.keyword];
 			lines.push(
 				`            if matches!(${comparison}, ${failure}) {`,
-				...fail(rustString(check.value), `${expression}.as_str()`),
+				...fail(rustString(check.value), `${subject}.as_str()`),
 				"            }",
 			);
 			break;
@@ -1478,7 +1489,7 @@ function renderCheck(
 				check.scalar === "date"
 					? "crate::support::date_instant"
 					: "crate::support::date_time_instant";
-			const head = `            let instant_${index} = ${reader}(${expression}.as_str())`;
+			const head = `            let instant_${index} = ${reader}(${subject}.as_str())`;
 			const opener = `${head}.ok_or_else(|| {`;
 			lines.push(
 				...(opener.length <= MAX_WIDTH
@@ -1494,7 +1505,7 @@ function renderCheck(
 						keyword,
 						at,
 						rustString(check.value),
-						`${expression}.as_str()`,
+						`${subject}.as_str()`,
 					],
 					"",
 				),
@@ -1502,7 +1513,7 @@ function renderCheck(
 					? "            })?;"
 					: "                })?;",
 				`            if instant_${index} ${COMPARISONS[check.keyword]} ${check.instant.toString()}i128 {`,
-				...fail(rustString(check.value), `${expression}.as_str()`),
+				...fail(rustString(check.value), `${subject}.as_str()`),
 				"            }",
 			);
 			break;
@@ -1510,20 +1521,20 @@ function renderCheck(
 		case "matcher": {
 			const program = `${prefix}_PATTERN_${index}`;
 			lines.push(
-				`            if crate::support::matches_pattern(${program}, ${expression}.as_str())`,
+				`            if crate::support::matches_pattern(${program}, ${subject}.as_str())`,
 				"                != crate::support::MatchOutcome::Matched",
 				"            {",
-				...fail(rustString(check.regex), `${expression}.as_str()`),
+				...fail(rustString(check.regex), `${subject}.as_str()`),
 				"            }",
 			);
 			break;
 		}
 		case "proved": {
 			lines.push(
-				`            if crate::support::${check.validator}::try_new(${expression}.to_string())`,
+				`            if crate::support::${check.validator}::try_new(${subject}.to_string())`,
 				"                .is_err()",
 				"            {",
-				...fail(rustString(check.regex), `${expression}.as_str()`),
+				...fail(rustString(check.regex), `${subject}.as_str()`),
 				"            }",
 			);
 			break;
@@ -1535,14 +1546,14 @@ function renderCheck(
 				check.scalar === "boolean";
 			if (check.scalar === "decimal") {
 				lines.push(
-					`            if !${constant}.iter().any(|member| matches!(crate::support::decimal_cmp(${expression}.as_str(), member), Some(std::cmp::Ordering::Equal))) {`,
+					`            if !${constant}.iter().any(|member| matches!(crate::support::decimal_cmp(${subject}.as_str(), member), Some(std::cmp::Ordering::Equal))) {`,
 					...fail(rustString(canonicalJson(check.values))),
 					"            }",
 				);
 			} else {
-				const subject = numeric ? owned : `${expression}.as_str()`;
+				const value = numeric ? owned : `${subject}.as_str()`;
 				lines.push(
-					`            if !${constant}.contains(&${subject}) {`,
+					`            if !${constant}.contains(&${value}) {`,
 					...fail(rustString(canonicalJson(check.values))),
 					"            }",
 				);
@@ -1552,8 +1563,8 @@ function renderCheck(
 		case "nonEmpty": {
 			const test =
 				check.subject === "string"
-					? `${expression}.chars().count() == 0`
-					: `${expression}.is_empty()`;
+					? `${subject}.chars().count() == 0`
+					: `${subject}.is_empty()`;
 			lines.push(
 				`            if ${test} {`,
 				...fail(rustString("a non-empty value")),
@@ -2389,6 +2400,11 @@ function renderFieldDecimalNormalization(field, index) {
  * the mapping table declares to switch to.
  */
 function renderFieldChecks(type, field) {
+	// Multiplicity is meaningful only for collection-shaped members.  A scalar
+	// field has the same metadata axes, but applying collection bounds to its
+	// value emits `.is_empty()`/`.len()` against a scalar and produces invalid
+	// Rust (or, for string scalars, enforces the wrong contract).
+	if (!field.collection) return renderInlineFieldChecks(type, field);
 	const lines = [];
 	const multiplicity = field.multiplicity;
 	const identity = rustString(field.identity);
@@ -2471,7 +2487,16 @@ function renderInlineFieldChecks(type, field) {
 	};
 	const render = (expression, extraIndent = 0) =>
 		checks.flatMap((check, index) =>
-			renderCheck(subject, check, index, expression, field.elementScalar, prefix).map(
+			renderCheck(
+				subject,
+				check,
+				index,
+				expression,
+				field.elementScalar,
+				prefix,
+				field.elementType.startsWith("crate::") &&
+					!field.elementType.startsWith("crate::support::"),
+			).map(
 				(line) => (line.length === 0 ? line : `${" ".repeat(extraIndent)}${line}`),
 			),
 		);
