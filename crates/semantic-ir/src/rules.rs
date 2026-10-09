@@ -222,6 +222,9 @@ pub struct Document<'a> {
     /// What each identity resolved to, so a chain is walked once however many
     /// fields and constraints name its head.
     resolved: RefCell<HashMap<String, Cached>>,
+    /// Decimal policies on each identity's resolution suffix.  Alias walks
+    /// are shared here so checking every edge in a long chain stays linear.
+    decimal_policy_cache: RefCell<HashMap<String, Vec<&'a Json>>>,
 }
 
 impl<'a> Document<'a> {
@@ -277,6 +280,7 @@ impl<'a> Document<'a> {
             by_identity,
             by_feature,
             resolved: RefCell::new(HashMap::new()),
+            decimal_policy_cache: RefCell::new(HashMap::new()),
         })
     }
 
@@ -321,46 +325,77 @@ impl<'a> Document<'a> {
     fn decimal_policies_from(&self, identity: &str, initial: Option<&'a Json>) -> Vec<&'a Json> {
         let mut policies = Vec::new();
         let mut policy_nodes: HashSet<*const Json> = HashSet::new();
+        if let Some(subject) = initial {
+            if subject.get("decimal").is_some() && policy_nodes.insert(subject as *const Json) {
+                policies.push(subject);
+            }
+        }
+        for subject in self.decimal_policy_suffix(identity) {
+            if policy_nodes.insert(subject as *const Json) {
+                policies.push(subject);
+            }
+        }
+        policies
+    }
+
+    /// Returns and memoizes the policy suffix for one identity. Every alias
+    /// visited on the way to the terminal scalar is memoized, so checking all
+    /// edges in a long chain remains linear.
+    fn decimal_policy_suffix(&self, identity: &str) -> Vec<&'a Json> {
+        if let Some(cached) = self.decimal_policy_cache.borrow().get(identity) {
+            return cached.clone();
+        }
+        let mut path: Vec<(String, Option<&'a Json>)> = Vec::new();
         let mut seen = BTreeSet::new();
         let mut current = identity;
-        let mut subject = initial;
+        let mut suffix = Vec::new();
         loop {
-            if let Some(subject) = subject.take() {
-                if subject.get("decimal").is_some() && policy_nodes.insert(subject as *const Json) {
-                    policies.push(subject);
-                }
+            if let Some(cached) = self.decimal_policy_cache.borrow().get(current) {
+                suffix = cached.clone();
+                break;
             }
-            if native_scalar(current).is_some() {
-                return policies;
-            }
-            if !seen.insert(current) {
-                return policies;
+            if native_scalar(current).is_some() || !seen.insert(current) {
+                break;
             }
             if let Some(field) = self.field_of(current) {
-                subject = Some(field);
                 let Some(type_ref) = field.get("typeRef").and_then(Json::as_str) else {
-                    return policies;
+                    break;
                 };
+                path.push((current.to_string(), field.get("decimal").map(|_| field)));
                 current = type_ref;
                 continue;
             }
             let Some(definition) = self.type_of(current) else {
-                return policies;
+                break;
             };
             if definition.get("kind").and_then(Json::as_str) == Some("alias") {
-                subject = Some(definition);
                 let Some(target) = definition.get("target").and_then(Json::as_str) else {
-                    return policies;
+                    break;
                 };
+                path.push((
+                    current.to_string(),
+                    definition.get("decimal").map(|_| definition),
+                ));
                 current = target;
                 continue;
             }
-            if definition.get("decimal").is_some() && policy_nodes.insert(definition as *const Json)
-            {
-                policies.push(definition);
+            if definition.get("decimal").is_some() {
+                suffix.push(definition);
             }
-            return policies;
+            break;
         }
+        while let Some((name, policy)) = path.pop() {
+            if let Some(policy) = policy {
+                suffix.insert(0, policy);
+            }
+            self.decimal_policy_cache
+                .borrow_mut()
+                .insert(name, suffix.clone());
+        }
+        self.decimal_policy_cache
+            .borrow_mut()
+            .insert(identity.to_string(), suffix.clone());
+        suffix
     }
 
     /// The policy nodes crossed while resolving an identity that owns its
