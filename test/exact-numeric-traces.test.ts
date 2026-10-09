@@ -571,6 +571,55 @@ it("renders normalized Decimal forms and refuses alias, bound, and native losses
 	expect(enumPattern.test("1.10")).toBe(true);
 	expect(enumPattern.test("1.2")).toBe(false);
 
+	const aliasPolicyIr = structuredClone(enumIr);
+	(
+		aliasPolicyIr.types.find(
+			(type: { displayName: string }) => type.displayName === "DecimalEnum",
+		) as { decimal?: unknown }
+	).decimal = { precision: 3, scale: 1 };
+	const aliasPolicyResult = jsonSchemaBackend.generate({
+		ir: aliasPolicyIr,
+	} as never);
+	const aliasPolicySchema = JSON.parse(
+		aliasPolicyResult.files.find((file) => file.path === "DecimalEnum.json")
+			?.text ?? "{}",
+	);
+	const aliasPolicyPattern = new RegExp(aliasPolicySchema.pattern);
+	expect(aliasPolicyPattern.test("1.1")).toBe(true);
+	expect(aliasPolicyPattern.test("1.10")).toBe(false);
+
+	const fieldPolicyIr = structuredClone(numericIr());
+	fieldPolicyIr.types = fieldPolicyIr.types.filter(
+		(type: { displayName: string }) =>
+			["Decimal", "DecimalAlias", "RuntimeNumeric"].includes(type.displayName),
+	);
+	const runtime = fieldPolicyIr.types.find(
+		(type: { displayName: string }) => type.displayName === "RuntimeNumeric",
+	);
+	const decimalField = runtime.fields[0];
+	decimalField.decimal = { precision: 3, scale: 1 };
+	decimalField.constraints = [
+		{
+			identity: `${decimalField.identity}-enum`,
+			keyword: "enumValues",
+			operands: { values: ["1.1"] },
+			appliesTo: decimalField.identity,
+			diagnosticCode: "agent-ix.exact-numeric.RUNTIME_DECIMAL_ENUM",
+		},
+	];
+	const fieldPolicyResult = jsonSchemaBackend.generate({
+		ir: fieldPolicyIr,
+	} as never);
+	const fieldPolicySchema = JSON.parse(
+		fieldPolicyResult.files.find((file) => file.path === "RuntimeNumeric.json")
+			?.text ?? "{}",
+	);
+	const fieldPolicyPattern = new RegExp(
+		fieldPolicySchema.properties.decimal.pattern,
+	);
+	expect(fieldPolicyPattern.test("1.1")).toBe(true);
+	expect(fieldPolicyPattern.test("1.10")).toBe(false);
+
 	const nativeUniqueIr = structuredClone(numericIr());
 	nativeUniqueIr.types = nativeUniqueIr.types.filter(
 		(type: { displayName: string }) =>

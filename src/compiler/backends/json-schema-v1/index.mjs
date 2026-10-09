@@ -234,6 +234,11 @@ function decimalPolicy(types, identity, seen = new Set()) {
 	if (typeof identity !== "string" || seen.has(identity)) return undefined;
 	seen.add(identity);
 	const type = types.get(identity);
+	if (
+		type?.decimal !== undefined &&
+		decimalScalar(types, identity) === "decimal"
+	)
+		return type.decimal;
 	if (type?.kind === "scalar")
 		return type.scalar === "decimal" ? type.decimal : undefined;
 	if (type?.kind === "alias" || type?.kind === "reference")
@@ -306,6 +311,8 @@ function fieldSchema(field, types) {
 	// those beside the reference: a bare sibling reference would erase the
 	// constraint at the API boundary this backend exists to enforce.
 	let target = types.get(field.typeRef);
+	const effectiveDecimalPolicy =
+		field.decimal ?? decimalPolicy(types, field.typeRef);
 	const seen = new Set();
 	while (target?.kind === "alias" && !seen.has(target.identity)) {
 		seen.add(target.identity);
@@ -316,7 +323,7 @@ function fieldSchema(field, types) {
 				decimalScalar(types, field.typeRef) === "decimal"
 					? { ...target, scalar: "decimal" }
 					: target,
-				decimalPolicy(types, field.typeRef),
+				effectiveDecimalPolicy,
 			);
 		target = types.get(target.target);
 	}
@@ -339,7 +346,7 @@ function fieldSchema(field, types) {
 			decimalScalar(types, field.typeRef) === "decimal"
 				? { ...(target ?? {}), scalar: "decimal" }
 				: target,
-			decimalPolicy(types, field.typeRef),
+			effectiveDecimalPolicy,
 		);
 	return annotated(schema, field);
 }
