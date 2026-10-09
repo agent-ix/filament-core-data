@@ -115,36 +115,50 @@ const U64_MAX = 2n ** 64n - 1n;
 const SAFE_INTEGER = 2n ** 53n - 1n;
 
 function integerRustType(definition) {
+	const bounds = integerBounds(definition?.constraints);
+	if (bounds.lower >= I64_MIN && bounds.upper <= I64_MAX) return "i64";
+	if (bounds.lower >= 0n && bounds.upper <= U64_MAX) return "u64";
+	return "i128";
+}
+
+function integerBounds(constraints) {
 	const bounds = { lower: -SAFE_INTEGER, upper: SAFE_INTEGER };
 	let lowerExplicit = false;
 	let upperExplicit = false;
-	for (const constraint of definition?.constraints ?? []) {
+	for (const constraint of constraints ?? []) {
 		const value = constraint?.operands?.value;
 		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
 			continue;
 		const parsed = BigInt(value);
 		if (constraint.keyword === "min") {
-			bounds.lower = lowerExplicit && bounds.lower > parsed ? bounds.lower : parsed;
+			bounds.lower =
+				lowerExplicit && bounds.lower > parsed ? bounds.lower : parsed;
 			lowerExplicit = true;
 		}
 		if (constraint.keyword === "exclusiveMin") {
 			const effective = parsed + 1n;
-			bounds.lower = lowerExplicit && bounds.lower > effective ? bounds.lower : effective;
+			bounds.lower =
+				lowerExplicit && bounds.lower > effective ? bounds.lower : effective;
 			lowerExplicit = true;
 		}
 		if (constraint.keyword === "max") {
-			bounds.upper = upperExplicit && bounds.upper < parsed ? bounds.upper : parsed;
+			bounds.upper =
+				upperExplicit && bounds.upper < parsed ? bounds.upper : parsed;
 			upperExplicit = true;
 		}
 		if (constraint.keyword === "exclusiveMax") {
 			const effective = parsed - 1n;
-			bounds.upper = upperExplicit && bounds.upper < effective ? bounds.upper : effective;
+			bounds.upper =
+				upperExplicit && bounds.upper < effective ? bounds.upper : effective;
 			upperExplicit = true;
 		}
 	}
-	if (bounds.lower >= I64_MIN && bounds.upper <= I64_MAX) return "i64";
-	if (bounds.lower >= 0n && bounds.upper <= U64_MAX) return "u64";
-	return "i128";
+	return bounds;
+}
+
+function integerIsWide(constraints) {
+	const bounds = integerBounds(constraints);
+	return bounds.lower < -SAFE_INTEGER || bounds.upper > SAFE_INTEGER;
 }
 
 function nativeScalar(ref) {
@@ -514,6 +528,22 @@ export function resolveKind(byIdentity, typeRef, seen = new Set()) {
 	};
 }
 
+/** Returns constraints inherited through an alias chain, base first. */
+function constraintsThroughAliases(byIdentity, typeRef) {
+	const chain = [];
+	const seen = new Set();
+	let current = typeRef;
+	while (typeof current === "string" && !seen.has(current)) {
+		seen.add(current);
+		const definition = byIdentity.get(current);
+		if (definition === undefined) break;
+		chain.unshift(...(definition.constraints ?? []));
+		if (definition.kind !== "alias") break;
+		current = definition.target;
+	}
+	return chain;
+}
+
 /** Resolves a decimal policy carried by a scalar or inherited through aliases. */
 function decimalPolicyOf(byIdentity, typeRef, seen = new Set()) {
 	if (typeof typeRef !== "string" || seen.has(typeRef)) return undefined;
@@ -581,7 +611,15 @@ function mapType(definition, context) {
 	typeScope.push({ identifier: resolvedName.value, identity });
 
 	const resolved = resolveKind(byIdentity, identity);
-	const lowered = lowerConstraints(definition, resolved, {});
+	const inheritedConstraints =
+		definition.kind === "alias"
+			? constraintsThroughAliases(byIdentity, identity)
+			: (definition.constraints ?? []);
+	const lowered = lowerConstraints(
+		{ ...definition, constraints: inheritedConstraints },
+		resolved,
+		{},
+	);
 	for (const entry of lowered.diagnostics) {
 		if (entry.locus === undefined && locus !== undefined) entry.locus = locus;
 	}
@@ -654,10 +692,10 @@ function mapType(definition, context) {
 			if (scalar === "decimal") model.decimal = definition.decimal;
 			model.inner =
 				scalar === "integer"
-					? integerRustType(definition)
+					? integerRustType({ constraints: inheritedConstraints })
 					: KERNEL_SCALARS[scalar];
-			model.wideInteger = scalar === "integer" &&
-				(model.inner === "u64" || model.inner === "i128");
+			model.wideInteger =
+				scalar === "integer" && integerIsWide(inheritedConstraints);
 			model.row = `scalar:${scalar}`;
 			break;
 		}
@@ -831,14 +869,10 @@ function mapType(definition, context) {
 			model.scalar = resolvedAlias?.scalar;
 			model.decimal = decimalPolicyOf(context.byIdentity, identity);
 			if (resolvedAlias?.scalar === "integer") {
-				const targetDefinition = context.byIdentity.get(definition.target);
 				model.inner = integerRustType({
-					constraints: [
-						...(targetDefinition?.constraints ?? []),
-						...(definition.constraints ?? []),
-					],
+					constraints: inheritedConstraints,
 				});
-				model.wideInteger = model.inner === "u64" || model.inner === "i128";
+				model.wideInteger = integerIsWide(inheritedConstraints);
 			} else {
 				model.inner = target(
 					definition.target,
@@ -1101,21 +1135,24 @@ function mapField(field, owner, context, _version) {
 		kind: "scalar",
 		scalar: nativeScalar(field.typeRef),
 	};
+	const inheritedFieldConstraints = constraintsThroughAliases(
+		context.byIdentity,
+		field.typeRef,
+	);
 	const loweredField = lowerConstraints(
-		{ identity: field.identity, constraints: field.constraints ?? [] },
+		{
+			identity: field.identity,
+			constraints: [...inheritedFieldConstraints, ...(field.constraints ?? [])],
+		},
 		resolvedField,
 		{},
 	);
-	const targetDefinition = context.byIdentity.get(field.typeRef);
 	const integerFieldType =
 		resolvedField?.scalar === "integer" &&
 		Array.isArray(field.constraints) &&
 		field.constraints.length > 0
 			? integerRustType({
-					constraints: [
-						...(targetDefinition?.constraints ?? []),
-						...field.constraints,
-					],
+					constraints: [...inheritedFieldConstraints, ...field.constraints],
 				})
 			: undefined;
 	const element =

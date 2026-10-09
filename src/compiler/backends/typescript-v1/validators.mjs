@@ -297,6 +297,14 @@ function numericStatements(scalar, indent) {
 		`${indent}\treturn false;`,
 		`${indent}}`,
 	];
+	if (scalar === "float32") {
+		lines.push(
+			`${indent}if (!Number.isFinite(Math.fround(candidate))) {`,
+			`${indent}\tfail(errors, pointer, CODES.NOT_A_NUMBER_VALUE, "the value is outside the binary32 range");`,
+			`${indent}\treturn false;`,
+			`${indent}}`,
+		);
+	}
 	if (scalar !== "integer") return lines;
 	return [
 		...lines,
@@ -333,7 +341,7 @@ function scalarCheckBody(model, entry) {
 	);
 	if (wideInteger) {
 		lines.push(
-			'\tif (!/^(0|-?[1-9][0-9]*)$/.test(candidate)) {',
+			"\tif (!/^(0|-?[1-9][0-9]*)$/.test(candidate)) {",
 			'\t\tfail(errors, pointer, CODES.NOT_A_INTEGER, "the value is not a canonical integer string");',
 			"\t\treturn false;",
 			"\t}",
@@ -846,7 +854,10 @@ function recordPrepareBody(entry) {
 
 function defaultLiteral(field) {
 	const value = field.defaultValue ?? null;
-	if (field.element?.scalar === "integer" && field.element.wideInteger !== true) {
+	if (
+		field.element?.scalar === "integer" &&
+		field.element.wideInteger !== true
+	) {
 		if (Array.isArray(value)) return literal(value.map((one) => Number(one)));
 		if (typeof value === "string") return literal(Number(value));
 	}

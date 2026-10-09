@@ -25,6 +25,7 @@ const REPO_ROOT = resolve(
 	"..",
 	"..",
 );
+const FLOAT32_MAX = 3.4028234663852886e38;
 
 const scalarSchema = Object.freeze({
 	boolean: { type: "boolean" },
@@ -34,7 +35,7 @@ const scalarSchema = Object.freeze({
 		maximum: 2 ** 53 - 1,
 	},
 	number: { type: "number" },
-	float32: { type: "number" },
+	float32: { type: "number", minimum: -FLOAT32_MAX, maximum: FLOAT32_MAX },
 	float64: { type: "number" },
 	decimal: { type: "string", pattern: "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$" },
 	string: { type: "string" },
@@ -155,7 +156,9 @@ function unsignedAtMost(max) {
 		if (digit === 0) continue;
 		const range = position === 0 ? `[1-${digit - 1}]` : `[0-${digit - 1}]`;
 		if (digit > 1 || position > 0)
-			parts.push(`${text.slice(0, position)}${range}[0-9]{${text.length - position - 1}}`);
+			parts.push(
+				`${text.slice(0, position)}${range}[0-9]{${text.length - position - 1}}`,
+			);
 	}
 	parts.push(text);
 	return `(?:${parts.join("|")})`;
@@ -174,9 +177,7 @@ function integerPattern(lower, upper) {
 		const positive = unsignedAtMost(upper);
 		const excluded = lower > 0n ? unsignedAtMost(lower - 1n) : undefined;
 		alternatives.push(
-			excluded === undefined
-				? positive
-				: `(?!(?:${excluded})$)${positive}`,
+			excluded === undefined ? positive : `(?!(?:${excluded})$)${positive}`,
 		);
 	}
 	return `^(?:${alternatives.join("|")})$`;
@@ -189,7 +190,8 @@ function integerRange(constraints) {
 	let upperExplicit = false;
 	for (const one of constraints ?? []) {
 		const value = one?.operands?.value;
-		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value)) continue;
+		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
+			continue;
 		const parsed = BigInt(value);
 		if (one.keyword === "min") {
 			lower = lowerExplicit && lower > parsed ? lower : parsed;
@@ -341,7 +343,8 @@ function integerScalar(types, identity, seen = new Set()) {
 	if (typeof identity !== "string" || seen.has(identity)) return undefined;
 	seen.add(identity);
 	const type = types.get(identity);
-	if (type?.kind === "scalar") return type.scalar === "integer" ? "integer" : undefined;
+	if (type?.kind === "scalar")
+		return type.scalar === "integer" ? "integer" : undefined;
 	if (type?.kind === "alias" || type?.kind === "reference")
 		return integerScalar(types, type.target, seen);
 	return undefined;
@@ -487,11 +490,11 @@ function fieldSchema(field, types) {
 		constraint(
 			schema,
 			one,
-			(integerScalar(types, field.typeRef) === "integer"
+			integerScalar(types, field.typeRef) === "integer"
 				? { ...(target ?? {}), scalar: "integer" }
 				: decimalScalar(types, field.typeRef) === "decimal"
 					? { ...(target ?? {}), scalar: "decimal" }
-					: target),
+					: target,
 			effectiveDecimalPolicy,
 		);
 	if (
@@ -568,8 +571,8 @@ function renderType(ir, type, types, authored) {
 				type.scalar === "integer"
 					? integerSchema(type.constraints)
 					: type.scalar === "decimal" && type.decimal
-					? decimalSchema(type.decimal)
-					: { ...(scalarSchema[type.scalar] ?? {}) };
+						? decimalSchema(type.decimal)
+						: { ...(scalarSchema[type.scalar] ?? {}) };
 			break;
 		case isRecordShaped(type): {
 			// A record-shaped construct is the record schema over its effective
@@ -623,11 +626,12 @@ function renderType(ir, type, types, authored) {
 			};
 			break;
 		case type.kind === "alias":
-			schema = integerScalar(types, type.identity) === "integer"
-				? integerSchema(integerConstraints(types, type.identity))
-				: type.decimal
-				? decimalSchema(type.decimal)
-				: { allOf: [ref(types, type.target)] };
+			schema =
+				integerScalar(types, type.identity) === "integer"
+					? integerSchema(integerConstraints(types, type.identity))
+					: type.decimal
+						? decimalSchema(type.decimal)
+						: { allOf: [ref(types, type.target)] };
 			break;
 		case type.kind === "sequence":
 			schema = { type: "array", items: ref(types, type.items) };

@@ -162,6 +162,21 @@ function effectiveWideInteger(types, identity, seen = new Set()) {
 	return false;
 }
 
+function inheritedConstraintEntries(types, applied, identity) {
+	const chain = [];
+	const seen = new Set();
+	let current = identity;
+	while (typeof current === "string" && !seen.has(current)) {
+		seen.add(current);
+		const type = types.get(current);
+		if (type === undefined) break;
+		chain.unshift(current);
+		if (type.kind !== "alias") break;
+		current = type.target;
+	}
+	return chain.flatMap((one) => applied.get(one) ?? []);
+}
+
 /**
  * The acyclic summary of the entry `identity` names: what a renderer needs to
  * write a reference to it, and no object reference that could close a cycle.
@@ -303,7 +318,9 @@ export function buildModel(ir, options = {}) {
 			rendering: renderingOf(type),
 			roles: Object.freeze([...(type.roles ?? [])]),
 			unknownPolicy: type.unknownPolicy,
-			constraints: Object.freeze(byIdentity(applied.get(type.identity) ?? [])),
+			constraints: Object.freeze(
+				byIdentity(inheritedConstraintEntries(types, applied, type.identity)),
+			),
 			extensions: Object.freeze([...(type.extensions ?? [])]),
 			origin: type.origin,
 		};

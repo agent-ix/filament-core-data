@@ -78,7 +78,7 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 			expect(readerCodes(withBound(value)), String(value)).toEqual([]);
 		}
 		for (const value of REFUSED) {
-			expect(readerCodes(withBound(value)), value).toContain(operand);
+			expect(readerCodes(withBound(value)), String(value)).toContain(operand);
 		}
 		for (const value of OUTSIDE_I128) {
 			expect(readerCodes(withBound(value)), value).toContain(outsideI128);
@@ -90,7 +90,7 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 			expect(oracleCodes(withBound(value)), String(value)).toEqual([]);
 		}
 		for (const value of REFUSED_STRINGS) {
-			expect(oracleCodes(withBound(value)), value).toContain(operand);
+			expect(oracleCodes(withBound(value)), String(value)).toContain(operand);
 		}
 	});
 

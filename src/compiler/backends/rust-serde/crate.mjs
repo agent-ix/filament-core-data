@@ -33,7 +33,12 @@ import {
 	hasBlocking,
 	RUST_BACKEND_CODES,
 } from "./diagnostics.mjs";
-import { byCodePoint, enforceLimits, mapDocument } from "./mapping.mjs";
+import {
+	byCodePoint,
+	enforceLimits,
+	mapDocument,
+	resolveKind,
+} from "./mapping.mjs";
 import { lowerPattern, PUBLISHED_PATTERNS } from "./patterns.mjs";
 import {
 	atom,
@@ -266,6 +271,8 @@ function subjectAccess(definition, byIdentity) {
 	let current = definition;
 	let expression = "value";
 	const seen = new Set();
+	const flattenedInteger =
+		resolveKind(byIdentity, definition?.identity)?.scalar === "integer";
 	while (current !== undefined && current.kind === "alias") {
 		if (seen.has(current.identity)) return undefined;
 		seen.add(current.identity);
@@ -278,10 +285,7 @@ function subjectAccess(definition, byIdentity) {
 				: undefined;
 		// A scalar declaration maps directly to its primitive inner type. Only
 		// another alias contributes a newtype wrapper and therefore a get().
-		if (
-			targetSupport === undefined &&
-			!(target?.kind === "scalar" && target.scalar === "integer")
-		)
+		if (targetSupport === undefined && !flattenedInteger)
 			expression = `${expression}.get()`;
 		current = target;
 	}
@@ -1460,7 +1464,8 @@ function renderCheck(
 		}
 		case "numeric": {
 			const integerType = rustIntegerTypeFor(type);
-			const integerValue = check.scalar === "integer" ? BigInt(check.value) : undefined;
+			const integerValue =
+				check.scalar === "integer" ? BigInt(check.value) : undefined;
 			const compareExpression =
 				check.scalar === "integer" &&
 				integerType === "i64" &&
@@ -1469,10 +1474,10 @@ function renderCheck(
 					: owned;
 			const literal =
 				check.scalar === "integer"
-					? `${check.value}${integerType === "i64" && integerValue < -(2n ** 63n) || integerType === "i64" && integerValue > 2n ** 63n - 1n ? "i128" : integerType}`
+					? `${check.value}${(integerType === "i64" && integerValue < -(2n ** 63n)) || (integerType === "i64" && integerValue > 2n ** 63n - 1n) ? "i128" : integerType}`
 					: renderFloat(
 							check.value,
-							String(type.inner ?? "").endsWith("f32") ? "f32" : "f64",
+							subjectScalar === "float32" ? "f32" : "f64",
 						);
 			lines.push(
 				`            if ${compareExpression} ${COMPARISONS[check.keyword]} ${literal} {`,
@@ -1647,18 +1652,23 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 	const expression = access?.expression ?? "value";
 	const checks = type.checks ?? [];
 
-	lines.push("use serde::{Deserialize, Serialize};", "");
+	lines.push(
+		type.wideInteger
+			? "use serde::Deserialize;"
+			: "use serde::{Deserialize, Serialize};",
+		"",
+	);
 	lines.push(...checkConstants(type, checks, byIdentity));
 	lines.push(...docLines(type.doc));
 	lines.push(
 		// A newtype an identity field reaches has `Eq` and `Hash` (FR-054).
-			type.derivesHash === true
-				? type.wideInteger
-					? "#[derive(Clone, Debug, PartialEq, Eq, Hash)]"
-					: "#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize)]"
-				: type.wideInteger
-					? "#[derive(Clone, Debug, PartialEq)]"
-					: "#[derive(Clone, Debug, PartialEq, Serialize)]",
+		type.derivesHash === true
+			? type.wideInteger
+				? "#[derive(Clone, Debug, PartialEq, Eq, Hash)]"
+				: "#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize)]"
+			: type.wideInteger
+				? "#[derive(Clone, Debug, PartialEq)]"
+				: "#[derive(Clone, Debug, PartialEq, Serialize)]",
 		...(type.wideInteger ? [] : ["#[serde(transparent)]"]),
 		`pub struct ${type.typeName}(${inner});`,
 		"",
@@ -1741,7 +1751,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			"        let wire = String::deserialize(deserializer)?;",
 			`        let inner = wire.parse::<${inner}>().map_err(serde::de::Error::custom)?;`,
 			"        if inner.to_string() != wire {",
-				"            return Err(serde::de::Error::custom(\"integer is not canonical\"));",
+			'            return Err(serde::de::Error::custom("integer is not canonical"));',
 			"        }",
 			"        Self::try_new(inner).map_err(serde::de::Error::custom)",
 			"    }",
@@ -2524,7 +2534,7 @@ function renderFieldChecks(type, field) {
 function renderInlineFieldChecks(type, field) {
 	const checks = field.checks ?? [];
 	if (checks.length === 0) return [];
-	const prefix = `${type.constantName}_${field.ident}`;
+	const prefix = `${type.constantName}_${field.ident.toUpperCase()}`;
 	const subject = {
 		...type,
 		constantName: prefix,

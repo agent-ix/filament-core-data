@@ -458,7 +458,11 @@ function wrapperFieldMatrixIr(): any {
  */
 function featureFieldMatrixIr(): any {
 	const ir = structuredClone(numericIr());
-	const scalar = (name: string, kind: string, extra: Record<string, unknown> = {}) => ({
+	const scalar = (
+		name: string,
+		kind: string,
+		extra: Record<string, unknown> = {},
+	) => ({
 		identity: type(name),
 		displayName: name,
 		kind: "scalar",
@@ -517,7 +521,12 @@ function featureFieldMatrixIr(): any {
 		constraints: [],
 		presence: lower === 0 ? "optional" : "required",
 		nullable,
-		multiplicity: { lower, ...(upper === undefined ? {} : { upper }), ordered: upper !== 1, unique: false },
+		multiplicity: {
+			lower,
+			...(upper === undefined ? {} : { upper }),
+			ordered: upper !== 1,
+			unique: false,
+		},
 		...(defaultValue === undefined
 			? { defaultKind: "none" }
 			: { defaultKind: "semantic", defaultValue }),
@@ -541,7 +550,13 @@ function featureFieldMatrixIr(): any {
 	};
 	ir.types.push(float32, float64, boundedInteger, integerEnum, matrix);
 	const origin = ir.source;
-	for (const definition of [float32, float64, boundedInteger, integerEnum, matrix] as any[]) {
+	for (const definition of [
+		float32,
+		float64,
+		boundedInteger,
+		integerEnum,
+		matrix,
+	] as any[]) {
 		definition.roles = [];
 		definition.constraints ??= [];
 		definition.unknownPolicy ??= "reject";
@@ -553,10 +568,12 @@ function featureFieldMatrixIr(): any {
 				startColumn: 1,
 			},
 		};
-		for (const constraint of definition.constraints ?? []) constraint.origin = definition.origin;
+		for (const constraint of definition.constraints ?? [])
+			constraint.origin = definition.origin;
 		for (const one of definition.fields ?? []) {
 			one.origin = definition.origin;
-			for (const constraint of one.constraints ?? []) constraint.origin = definition.origin;
+			for (const constraint of one.constraints ?? [])
+				constraint.origin = definition.origin;
 		}
 	}
 	return ir;
@@ -574,27 +591,6 @@ function featureOnlyIr(): any {
 	ir.types = ir.types.filter((definition: { displayName?: string }) =>
 		names.has(definition.displayName ?? ""),
 	);
-	return ir;
-}
-
-function admittedFeatureFieldMatrixIr(): any {
-	const ir = featureOnlyIr();
-	ir.types = ir.types.filter(
-		(definition: { displayName?: string }) =>
-			!new Set(["Float32Value", "Float64Value"]).has(
-				definition.displayName ?? "",
-			),
-	);
-	const matrix = ir.types.find(
-		(definition: { displayName?: string }) =>
-			definition.displayName === "FeatureFieldMatrix",
-	) as { fields: { name: string; typeRef: string }[] };
-	for (const field of matrix.fields) {
-		if (field.name === "float32_named_nullable")
-			field.typeRef = "ix://quire/native/Float32";
-		if (field.name === "float64_named_collection")
-			field.typeRef = "ix://quire/native/Float64";
-	}
 	return ir;
 }
 
@@ -645,7 +641,10 @@ function filesUnder(directory: string): string[] {
 	});
 }
 
-async function generatedNumericValidators(directory: string, ir = typescriptSafeIr()) {
+async function generatedNumericValidators(
+	directory: string,
+	ir = typescriptSafeIr(),
+) {
 	const generated = resolve(directory, "generated");
 	const compiled = resolve(directory, "compiled");
 	const irPath = resolve(directory, "numeric.json");
@@ -838,7 +837,7 @@ fn field_check_matrix_compiles_and_validates() {
 	}
 });
 
-/** Trace: FR-144-AC-2, FR-144-AC-4, FR-144-AC-6, FR-144-AC-7, FR-144-AC-8, FR-144-AC-9, FR-144-AC-10, FR-144-AC-11, FR-144-AC-12, FR-144-AC-13, FR-144-AC-17, FR-144-AC-18, FR-144-AC-20, FR-144-AC-21, FR-144-AC-23, FR-144-CON-1. */
+/** Trace: FR-144-AC-2, FR-144-AC-13, FR-144-AC-15. */
 it("compiles the float, bounded-integer, enum, and default Rust field matrix", () => {
 	const result = emitCrate(
 		{
@@ -914,15 +913,17 @@ it("executes decimal enum equality and unique collection rejection", async () =>
 	}
 });
 
-/** Trace: FR-144-AC-3, FR-144-AC-14, FR-144-AC-16, FR-144-AC-18. */
+/** Trace: FR-144-AC-2, FR-144-AC-13, FR-144-AC-15. */
 it("typechecks the float, bounded-integer, enum, and default TypeScript matrix", async () => {
 	const scratch = mkdtempSync(join(tmpdir(), "fcd-feature-matrix-ts-"));
 	try {
 		const generated = await generatedNumericValidators(
 			scratch,
-			admittedFeatureFieldMatrixIr(),
+			featureOnlyIr(),
 		);
-		const validate = generated.validateFeatureFieldMatrix as (value: unknown) => {
+		const validate = generated.validateFeatureFieldMatrix as (
+			value: unknown,
+		) => {
 			ok: boolean;
 			value?: unknown;
 		};
@@ -938,12 +939,17 @@ it("typechecks the float, bounded-integer, enum, and default TypeScript matrix",
 		expect(enumValue(1).ok).toBe(true);
 		expect(enumValue(3).ok).toBe(false);
 		expect(validate({}).ok).toBe(false);
+		const float32 = generated.validateFloat32Value as (value: unknown) => {
+			ok: boolean;
+		};
+		expect(float32(0.1).ok).toBe(true);
+		expect(float32(3.5e38).ok).toBe(false);
 	} finally {
 		rmSync(scratch, { recursive: true, force: true });
 	}
 });
 
-/** Trace: FR-144-AC-15, FR-144-AC-17, FR-144-AC-19, FR-144-AC-20. */
+/** Trace: FR-144-AC-2, FR-144-AC-13, FR-144-AC-15. */
 it("AJV-compiles the JSON Schema feature matrix and preserves named wrappers", () => {
 	const result = jsonSchemaBackend.generate({
 		ir: featureOnlyIr(),
@@ -976,7 +982,7 @@ it("AJV-compiles the JSON Schema feature matrix and preserves named wrappers", (
 	expect(validate({ float32_scalar: 1.5 })).toBe(false);
 });
 
-/** Trace: FR-144-AC-1, FR-144-AC-5, FR-144-AC-7, FR-144-AC-10, FR-144-AC-22. */
+/** Trace: FR-144-AC-2, FR-144-AC-13, FR-144-AC-15. */
 it("admits the feature matrix through the semantic reader before generation", () => {
 	expect([...readContractIr(featureFieldMatrixIr())]).toEqual([]);
 });
