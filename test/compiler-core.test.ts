@@ -5971,14 +5971,16 @@ describe("diagnostic coverage (FR-049 closing gate)", () => {
 		};
 		note(readContractIr(invalidDefault as never) as never);
 
-		note(
-			((
-				await compileSource(
-					["namespace AgentIx.Semantic;", "scalar Bad extends numeric;"].join(
-						"\n",
-					),
-				)
-			).diagnostics ?? []) as never,
+		const ambiguousNumeric = await compileSource(
+			["namespace AgentIx.Semantic;", "model Bad { value: numeric; }"].join(
+				"\n",
+			),
+		);
+		const ambiguousNumericDiagnostics = note(
+			(ambiguousNumeric.diagnostics ?? []) as never,
+		);
+		expect(codesOf(ambiguousNumericDiagnostics as never)).toContain(
+			DIAGNOSTIC_CODES.AMBIGUOUS_NUMERIC.code,
 		);
 		note(
 			((

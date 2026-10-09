@@ -354,9 +354,9 @@ export function readContractIr(document, options = {}) {
 				policyNodes.add(node);
 				policies.push(node);
 			}
-			node = undefined;
 			const native = nativeScalar(ref);
 			if (native !== undefined) return { scalar: native, policies };
+			node = undefined;
 			const field = fields.get(ref);
 			if (field) {
 				node = field;
@@ -369,6 +369,13 @@ export function readContractIr(document, options = {}) {
 			if (definition.kind === "alias") {
 				ref = definition.target;
 				continue;
+			}
+			if (
+				Object.hasOwn(definition, "decimal") &&
+				!policyNodes.has(definition)
+			) {
+				policyNodes.add(definition);
+				policies.push(definition);
 			}
 			return {
 				scalar:
@@ -827,6 +834,7 @@ export function readContractIr(document, options = {}) {
 						locusOf(operation),
 					);
 				}
+				checkCompositeDecimalRef(operation.returns.typeRef, operation.returns);
 				checkMultiplicity(operation.returns.multiplicity, operation);
 			}
 			// FR-141: `quire` is the one checked clause language; an inline
