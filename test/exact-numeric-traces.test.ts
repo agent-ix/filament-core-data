@@ -542,7 +542,16 @@ it("refuses JSON Schema decimal bounds and decimal unique collections as declare
 	expect(boundResult.diagnostics[0].code).toBe(
 		"agent-ix.compiler.UNDECLARED_LOSS",
 	);
-	const uniqueResult = jsonSchemaBackend.generate({ ir: numericIr() } as never);
+	const aliasUniqueIr = structuredClone(numericIr());
+	aliasUniqueIr.types = aliasUniqueIr.types.filter(
+		(type: { displayName: string }) =>
+			["DecimalCollection", "DecimalAlias", "Decimal"].includes(
+				type.displayName,
+			),
+	);
+	const uniqueResult = jsonSchemaBackend.generate({
+		ir: aliasUniqueIr,
+	} as never);
 	expect(uniqueResult.state).toBe("unsupported");
 	expect(uniqueResult.files).toEqual([]);
 	expect(uniqueResult.diagnostics[0].message).toContain("decimal uniqueness");

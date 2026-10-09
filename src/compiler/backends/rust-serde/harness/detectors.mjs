@@ -32,7 +32,7 @@ const CONSTRUCTS_FIXTURE = new URL(
 	import.meta.url,
 );
 
-/** The nine kernel scalar names, read from the table rather than restated. */
+/** The eleven kernel scalar names, read from the table rather than restated. */
 function kernelScalars(table) {
 	return table.rows
 		.filter((row) => row.axis === "scalar")
@@ -545,8 +545,8 @@ export const DETECTORS = Object.freeze([
 		run(backend) {
 			const rows = backend.table.rows.filter((row) => row.axis === "scalar");
 			assert(
-				rows.length === 13,
-				`the table declares ${rows.length} kernel scalars, not thirteen`,
+				rows.length === 11,
+				`the table declares ${rows.length} kernel scalars, not eleven`,
 			);
 			for (const row of rows) {
 				const result = backend.mapping.mapDocument(

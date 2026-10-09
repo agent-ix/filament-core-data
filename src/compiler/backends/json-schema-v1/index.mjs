@@ -188,6 +188,16 @@ function constraint(schema, one, subject) {
 	}
 	return schema;
 }
+function decimalScalar(types, identity, seen = new Set()) {
+	if (typeof identity !== "string" || seen.has(identity)) return undefined;
+	seen.add(identity);
+	const type = types.get(identity);
+	if (type?.kind === "scalar") return type.scalar;
+	if (type?.kind === "alias" || type?.kind === "reference")
+		return decimalScalar(types, type.target, seen);
+	return undefined;
+}
+
 function decimalLosses(ir, types) {
 	const losses = [];
 	for (const type of ir.types ?? []) {
@@ -205,7 +215,7 @@ function decimalLosses(ir, types) {
 		for (const field of type.fields ?? []) {
 			if (
 				field.multiplicity?.unique &&
-				types.get(field.typeRef)?.scalar === "decimal"
+				decimalScalar(types, field.typeRef) === "decimal"
 			)
 				losses.push({
 					code: DIAGNOSTIC_CODES.UNDECLARED_LOSS,
