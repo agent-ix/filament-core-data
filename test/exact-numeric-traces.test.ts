@@ -11,6 +11,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import Ajv2020 from "ajv/dist/2020.js";
 import { expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { emitCrate } from "../src/compiler/backends/rust-serde/crate.mjs";
@@ -19,6 +20,7 @@ import {
 	renderErrors,
 	renderValidators,
 } from "../src/compiler/backends/typescript-v1/validators.mjs";
+import { readContractIr } from "../src/compiler/ir/reader.mjs";
 
 const PACKAGE = "ix://agent-ix/exact-numeric";
 const type = (name: string) => `${PACKAGE}/type/${name}`;
@@ -449,6 +451,153 @@ function wrapperFieldMatrixIr(): any {
 	return ir;
 }
 
+/**
+ * The admitted scalar feature matrix used by all three code generators.  The
+ * Rust test compiles this document, the TypeScript test runs tsc over it, and
+ * the JSON Schema test asks Ajv to compile and validate every emitted schema.
+ */
+function featureFieldMatrixIr(): any {
+	const ir = structuredClone(numericIr());
+	const scalar = (name: string, kind: string, extra: Record<string, unknown> = {}) => ({
+		identity: type(name),
+		displayName: name,
+		kind: "scalar",
+		scalar: kind,
+		constraints: [],
+		extensions: [],
+		...extra,
+	});
+	const float32 = scalar("Float32Value", "float32");
+	const float64 = scalar("Float64Value", "float64");
+	const boundedInteger = scalar("BoundedInteger", "integer", {
+		constraints: [
+			{
+				identity: type("BoundedInteger-min"),
+				keyword: "min",
+				operands: { value: "-10" },
+				appliesTo: type("BoundedInteger"),
+				diagnosticCode: "agent-ix.exact-numeric.BOUNDED_INTEGER_MIN",
+			},
+			{
+				identity: type("BoundedInteger-max"),
+				keyword: "max",
+				operands: { value: "100" },
+				appliesTo: type("BoundedInteger"),
+				diagnosticCode: "agent-ix.exact-numeric.BOUNDED_INTEGER_MAX",
+			},
+		],
+	});
+	const integerEnum = {
+		identity: type("IntegerEnum"),
+		displayName: "IntegerEnum",
+		kind: "alias",
+		target: type("BoundedInteger"),
+		constraints: [
+			{
+				identity: type("IntegerEnum-values"),
+				keyword: "enumValues",
+				operands: { values: ["1", "2", "100"] },
+				appliesTo: type("IntegerEnum"),
+				diagnosticCode: "agent-ix.exact-numeric.INTEGER_ENUM",
+			},
+		],
+		extensions: [],
+	};
+	const field = (
+		name: string,
+		typeRef: string,
+		lower: number,
+		upper: number | undefined,
+		nullable = false,
+		defaultValue?: unknown,
+	) => ({
+		identity: type(`FeatureFieldMatrix-field-${name}`),
+		name,
+		typeRef,
+		constraints: [],
+		presence: lower === 0 ? "optional" : "required",
+		nullable,
+		multiplicity: { lower, ...(upper === undefined ? {} : { upper }), ordered: upper !== 1, unique: false },
+		...(defaultValue === undefined
+			? { defaultKind: "none" }
+			: { defaultKind: "semantic", defaultValue }),
+		extensions: [],
+	});
+	const matrix = {
+		identity: type("FeatureFieldMatrix"),
+		displayName: "FeatureFieldMatrix",
+		kind: "record",
+		unknownPolicy: "reject",
+		fields: [
+			field("float32_scalar", "ix://quire/native/Float32", 1, 1),
+			field("float64_collection", "ix://quire/native/Float64", 1, 2),
+			field("float32_named_nullable", float32.identity, 0, 1, true),
+			field("float64_named_collection", float64.identity, 1, 2),
+			field("bounded_integer", boundedInteger.identity, 1, 1),
+			field("integer_enum", integerEnum.identity, 1, 2),
+			field("integer_default", boundedInteger.identity, 1, 1, false, "1"),
+		],
+		extensions: [],
+	};
+	ir.types.push(float32, float64, boundedInteger, integerEnum, matrix);
+	const origin = ir.source;
+	for (const definition of [float32, float64, boundedInteger, integerEnum, matrix] as any[]) {
+		definition.roles = [];
+		definition.constraints ??= [];
+		definition.unknownPolicy ??= "reject";
+		definition.origin = {
+			source: {
+				sourceIdentity: origin.identity,
+				path: "numeric.json",
+				startLine: 1,
+				startColumn: 1,
+			},
+		};
+		for (const constraint of definition.constraints ?? []) constraint.origin = definition.origin;
+		for (const one of definition.fields ?? []) {
+			one.origin = definition.origin;
+			for (const constraint of one.constraints ?? []) constraint.origin = definition.origin;
+		}
+	}
+	return ir;
+}
+
+function featureOnlyIr(): any {
+	const ir = featureFieldMatrixIr();
+	const names = new Set([
+		"Float32Value",
+		"Float64Value",
+		"BoundedInteger",
+		"IntegerEnum",
+		"FeatureFieldMatrix",
+	]);
+	ir.types = ir.types.filter((definition: { displayName?: string }) =>
+		names.has(definition.displayName ?? ""),
+	);
+	return ir;
+}
+
+function admittedFeatureFieldMatrixIr(): any {
+	const ir = featureOnlyIr();
+	ir.types = ir.types.filter(
+		(definition: { displayName?: string }) =>
+			!new Set(["Float32Value", "Float64Value"]).has(
+				definition.displayName ?? "",
+			),
+	);
+	const matrix = ir.types.find(
+		(definition: { displayName?: string }) =>
+			definition.displayName === "FeatureFieldMatrix",
+	) as { fields: { name: string; typeRef: string }[] };
+	for (const field of matrix.fields) {
+		if (field.name === "float32_named_nullable")
+			field.typeRef = "ix://quire/native/Float32";
+		if (field.name === "float64_named_collection")
+			field.typeRef = "ix://quire/native/Float64";
+	}
+	return ir;
+}
+
 function jsonSafeIr() {
 	const ir = structuredClone(numericIr());
 	ir.types = ir.types.filter(
@@ -496,11 +645,11 @@ function filesUnder(directory: string): string[] {
 	});
 }
 
-async function generatedNumericValidators(directory: string) {
+async function generatedNumericValidators(directory: string, ir = typescriptSafeIr()) {
 	const generated = resolve(directory, "generated");
 	const compiled = resolve(directory, "compiled");
 	const irPath = resolve(directory, "numeric.json");
-	writeFileSync(irPath, `${JSON.stringify(typescriptSafeIr())}\n`, "utf8");
+	writeFileSync(irPath, `${JSON.stringify(ir)}\n`, "utf8");
 	const generator = resolve("src/compiler/cli.mjs");
 	const tsc = resolve("node_modules/.bin/tsc");
 	execFileSync(
@@ -689,6 +838,63 @@ fn field_check_matrix_compiles_and_validates() {
 	}
 });
 
+/** Traces: FR-144-AC-2, FR-144-AC-13, FR-144-AC-15. */
+it("compiles the float, bounded-integer, enum, and default Rust field matrix", () => {
+	const result = emitCrate(
+		{
+			ir: featureFieldMatrixIr(),
+			outputRoot: "generated/rust",
+			limits: RUST_LIMITS,
+		} as never,
+		{ licenseText: "" },
+	);
+	expect(result.diagnostics.filter((one) => one.blocking)).toEqual([]);
+	const scratch = mkdtempSync(join(tmpdir(), "fcd-feature-matrix-rust-"));
+	try {
+		for (const [path, text] of result.files) {
+			const destination = join(scratch, path);
+			mkdirSync(resolve(destination, ".."), { recursive: true });
+			writeFileSync(destination, text, "utf8");
+		}
+		appendFileSync(
+			join(scratch, "Cargo.toml"),
+			'\n[dev-dependencies]\nserde_json = "1.0.145"\n',
+		);
+		mkdirSync(join(scratch, "tests"), { recursive: true });
+		writeFileSync(
+			join(scratch, "tests", "feature_matrix.rs"),
+			`#![allow(missing_docs)]
+
+use agent_ix_exact_numeric::FeatureFieldMatrix;
+
+#[test]
+fn every_feature_shape_deserializes_and_defaults() {
+    let value: FeatureFieldMatrix = serde_json::from_str(
+        r#"{"float32_scalar":1.5,"float64_collection":[2.0],"float32_named_nullable":null,"float64_named_collection":[3.5],"bounded_integer":1,"integer_enum":[1,2]}"#,
+    ).unwrap();
+    assert_eq!(value.integer_default, 1);
+    assert!(serde_json::to_string(&value).unwrap().contains("float32_scalar"));
+}
+`,
+			"utf8",
+		);
+		execFileSync(
+			"cargo",
+			[
+				"test",
+				"--offline",
+				"--manifest-path",
+				join(scratch, "Cargo.toml"),
+				"--test",
+				"feature_matrix",
+			],
+			{ cwd: scratch, stdio: "pipe", env: process.env },
+		);
+	} finally {
+		rmSync(scratch, { recursive: true, force: true });
+	}
+});
+
 /** Traces: FR-144-AC-15, FR-144-AC-19. */
 it("executes decimal enum equality and unique collection rejection", async () => {
 	const scratch = mkdtempSync(join(tmpdir(), "fcd-exact-numeric-ts-"));
@@ -707,6 +913,58 @@ it("executes decimal enum equality and unique collection rejection", async () =>
 	} finally {
 		rmSync(scratch, { recursive: true, force: true });
 	}
+});
+
+/** Traces: FR-144-AC-2, FR-144-AC-13, FR-144-AC-15. */
+it("typechecks the float, bounded-integer, enum, and default TypeScript matrix", async () => {
+	const scratch = mkdtempSync(join(tmpdir(), "fcd-feature-matrix-ts-"));
+	try {
+		const generated = await generatedNumericValidators(
+			scratch,
+			admittedFeatureFieldMatrixIr(),
+		);
+		expect(generated.validateFeatureFieldMatrix).toBeTypeOf("function");
+	} finally {
+		rmSync(scratch, { recursive: true, force: true });
+	}
+});
+
+/** Traces: FR-144-AC-2, FR-144-AC-13, FR-144-AC-15. */
+it("AJV-compiles the JSON Schema feature matrix and preserves named wrappers", () => {
+	const result = jsonSchemaBackend.generate({
+		ir: featureOnlyIr(),
+	} as never);
+	expect(result.diagnostics.filter((one) => one.blocking)).toEqual([]);
+	const schemas = result.files
+		.filter((file) => file.path !== "index.json")
+		.map((file) => JSON.parse(file.text));
+	const ajv = new Ajv2020({ strict: false });
+	for (const schema of schemas) ajv.addSchema(schema);
+	const matrix = schemas.find(
+		(schema) => schema.title === "FeatureFieldMatrix",
+	);
+	expect(matrix).toBeDefined();
+	if (!matrix) throw new Error("FeatureFieldMatrix schema was not emitted");
+	const validate = ajv.getSchema(matrix.$id);
+	expect(validate).toBeDefined();
+	if (!validate) throw new Error("FeatureFieldMatrix schema did not compile");
+	expect(
+		validate({
+			float32_scalar: 1.5,
+			float64_collection: [2],
+			float32_named_nullable: null,
+			float64_named_collection: [3.5],
+			bounded_integer: 1,
+			integer_enum: [1, 2],
+			integer_default: 1,
+		}),
+	).toBe(true);
+	expect(validate({ float32_scalar: 1.5 })).toBe(false);
+});
+
+/** Traces: FR-144-AC-2, FR-144-AC-13, FR-144-AC-15. */
+it("admits the feature matrix through the semantic reader before generation", () => {
+	expect([...readContractIr(featureFieldMatrixIr())]).toEqual([]);
 });
 
 /** Traces: FR-144-AC-15, FR-144-AC-19. */
