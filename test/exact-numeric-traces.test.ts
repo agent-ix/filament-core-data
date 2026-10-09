@@ -251,7 +251,7 @@ function numericIr(): any {
 		],
 		extensions: [],
 	};
-	const types = [
+	const types: any[] = [
 		decimal,
 		decimalAlias,
 		deepDecimalAlias,
