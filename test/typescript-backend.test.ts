@@ -323,6 +323,53 @@ describe("TypeScript Decimal applicability (FR-144)", () => {
 		const result = admitIr({ ir }, { schemas: admissionSchemas });
 		expect(result.diagnostics).toEqual([]);
 	});
+
+	it("admits a Decimal bound on a native Decimal field reference", () => {
+		const ir = JSON.parse(readFileSync(fixtureIr, "utf8"));
+		const origin = ir.types[0].origin;
+		const fieldIdentity = "ix://agent-ix/conformance/type/Invoice/total";
+		ir.types.push({
+			identity: "ix://agent-ix/conformance/type/Invoice",
+			displayName: "Invoice",
+			kind: "record",
+			roles: [],
+			origin,
+			constraints: [],
+			extensions: [],
+			unknownPolicy: "reject",
+			fields: [
+				{
+					identity: fieldIdentity,
+					name: "total",
+					typeRef: "ix://quire/native/Decimal",
+					decimal: { precision: 10, scale: 2 },
+					presence: "required",
+					nullable: false,
+					defaultKind: "none",
+					multiplicity: {
+						lower: 1,
+						upper: 1,
+						ordered: false,
+						unique: false,
+					},
+					origin,
+					constraints: [
+						{
+							identity:
+								"ix://agent-ix/conformance/constraint/invoice-total-min",
+							keyword: "min",
+							operands: { value: "0" },
+							appliesTo: fieldIdentity,
+							diagnosticCode: "agent-ix.conformance.INVOICE_TOTAL_MIN",
+							origin,
+						},
+					],
+				},
+			],
+		});
+		const result = admitIr({ ir }, { schemas: admissionSchemas });
+		expect(result.diagnostics).toEqual([]);
+	});
 });
 
 describe("TypeScript backend fixture (FR-071)", () => {
