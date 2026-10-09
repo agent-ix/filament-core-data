@@ -207,6 +207,33 @@
 			"exercisedBy": "case"
 		},
 		{
+			"code": "agent-ix.semantic-ir.INVALID_DEFAULT_VALUE",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md"],
+			"rule": "A field default value is not in the exact wire domain of its resolved scalar.",
+			"citation": "a defaultValue uses the same wire rule as an instance value",
+			"exercisedBy": "test:TC-279"
+		},
+		{
+			"code": "agent-ix.semantic-ir.DECIMAL_POLICY_MISSING",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md"],
+			"rule": "A decimal scalar or field carries no decimal policy.",
+			"citation": "A decimal policy is required for each decimal subject",
+			"exercisedBy": "test:TC-279"
+		},
+		{
+			"code": "agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md"],
+			"rule": "A decimal policy is attached to a non-decimal subject or is duplicated.",
+			"citation": "A policy belongs on an alias or decimal scalar subject",
+			"exercisedBy": "test:TC-279"
+		},
+		{
 			"code": "agent-ix.semantic-ir.INVALID_PATTERN",
 			"provenance": "frozen",
 			"decidedBy": "cross-field",

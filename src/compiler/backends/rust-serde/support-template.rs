@@ -22,6 +22,79 @@ use serde::{Deserialize, Serialize};
 /// The longest input-derived fragment a validation message echoes.
 pub const MAX_ECHOED_CODE_POINTS: usize = 120;
 
+/// Exact decimal strings carried by the decimal scalar.
+pub type Decimal = String;
+
+/// Validates and renders one decimal instance at its declared scale.
+pub fn decimal_normalize(value: &str, precision: usize, scale: usize) -> Option<String> {
+    let (negative, unsigned) = match value.strip_prefix('-') {
+        Some(rest) => (true, rest),
+        None => (false, value),
+    };
+    if unsigned.is_empty() || unsigned.starts_with('+') {
+        return None;
+    }
+    let (whole, fraction) = unsigned.split_once('.').unwrap_or((unsigned, ""));
+    if whole.is_empty()
+        || !whole.chars().all(|ch| ch.is_ascii_digit())
+        || !fraction.chars().all(|ch| ch.is_ascii_digit())
+        || (whole.len() > 1 && whole.starts_with('0'))
+        || value.contains('.') && fraction.is_empty()
+        || fraction.len() > scale
+    {
+        return None;
+    }
+    if negative && whole == "0" && (fraction.is_empty() || fraction.chars().all(|ch| ch == '0')) {
+        return None;
+    }
+    let integer_digits = if whole == "0" { 0 } else { whole.len() };
+    if integer_digits > precision.saturating_sub(scale) {
+        return None;
+    }
+    let mut out = String::new();
+    if negative {
+        out.push('-');
+    }
+    out.push_str(whole);
+    if scale > 0 {
+        out.push('.');
+        out.push_str(fraction);
+        for _ in fraction.len()..scale {
+            out.push('0');
+        }
+    }
+    Some(out)
+}
+
+/// Compares canonical decimal strings without converting through a float.
+pub fn decimal_cmp(left: &str, right: &str) -> Option<Ordering> {
+    fn parts(value: &str) -> Option<(bool, i128, u32)> {
+        if value.is_empty() || value == "-0" || value.starts_with('+') {
+            return None;
+        }
+        let negative = value.starts_with('-');
+        let unsigned = if negative { &value[1..] } else { value };
+        let (whole, fraction) = unsigned.split_once('.').unwrap_or((unsigned, ""));
+        if whole.is_empty()
+            || !whole.chars().all(|ch| ch.is_ascii_digit())
+            || !fraction.chars().all(|ch| ch.is_ascii_digit())
+            || (whole.len() > 1 && whole.starts_with('0'))
+        {
+            return None;
+        }
+        let coefficient = format!("{whole}{fraction}").parse::<i128>().ok()?;
+        Some((negative, coefficient, fraction.len() as u32))
+    }
+    let (left_negative, left_coefficient, left_scale) = parts(left)?;
+    let (right_negative, right_coefficient, right_scale) = parts(right)?;
+    let scale = left_scale.max(right_scale);
+    let left = left_coefficient.checked_mul(10i128.checked_pow(scale - left_scale)?)?;
+    let right = right_coefficient.checked_mul(10i128.checked_pow(scale - right_scale)?)?;
+    let left = if left_negative { -left } else { left };
+    let right = if right_negative { -right } else { right };
+    Some(left.cmp(&right))
+}
+
 /// Truncates input-derived text at the declared code-point bound.
 ///
 /// The cut is on a code point rather than on a byte, because slicing a `String`

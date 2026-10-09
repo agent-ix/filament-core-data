@@ -196,6 +196,9 @@ export const CROSS_MODULE_INTERNALS = Object.freeze({
 	codePointLength: "counts a string in code points for minLength and maxLength",
 	isBase64: "decides the base64 form of a `bytes` scalar",
 	base64OctetLength: "counts a `bytes` value in decoded octets",
+	compareDecimal: "compares canonical decimal strings without binary rounding",
+	isCanonicalDecimal: "checks canonical decimal spelling",
+	decimalWithinPolicy: "checks a decimal value against precision and scale",
 	Member:
 		"the return type of `ownMember`, needed to name it across the boundary",
 	MemberState: "the discriminant of `Member`, for the same reason",

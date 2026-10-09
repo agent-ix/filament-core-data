@@ -63,12 +63,11 @@ const BUILTIN_SCALARS = new Map([
 	["uint16", "integer"],
 	["uint32", "integer"],
 	["uint64", "integer"],
-	["float", "number"],
-	["float32", "number"],
-	["float64", "number"],
-	["decimal", "number"],
-	["decimal128", "number"],
-	["numeric", "number"],
+	["float", "float64"],
+	["float32", "float32"],
+	["float64", "float64"],
+	["decimal", "decimal"],
+	["decimal128", "decimal"],
 	["string", "string"],
 	["url", "string"],
 	["bytes", "bytes"],
@@ -93,7 +92,9 @@ const KERNEL_NAMES = new Map([
 	["any", "JsonObject"],
 	["boolean", "Boolean"],
 	["integer", "Integer"],
-	["number", "Decimal"],
+	["decimal", "Decimal"],
+	["float32", "Float32"],
+	["float64", "Float64"],
 	["string", "String"],
 	["bytes", "Bytes"],
 	["datetime", "Timestamp"],
@@ -445,6 +446,14 @@ export function lowerProgram(options) {
 				);
 				return undefined;
 			}
+			if (base === "numeric") {
+				context.raise(
+					DIAGNOSTIC_CODES.AMBIGUOUS_NUMERIC,
+					`${fragment(type.name)} resolves to the ambiguous numeric scalar`,
+					at,
+				);
+				return undefined;
+			}
 			return useKernel(BUILTIN_SCALARS.get(base), at);
 		}
 		if (
@@ -488,20 +497,43 @@ export function lowerProgram(options) {
 		context.locusOf(target, record?.node) ?? context.locusOf(target);
 
 	/** The core constraint decorators, lowered to the closed keyword set. */
+	const literalFor = (target, value) => {
+		const base = builtinBase(target?.kind === "Scalar" ? target : target?.type);
+		const scalar = base ? BUILTIN_SCALARS.get(base) : undefined;
+		if (
+			scalar === "decimal" &&
+			typeof value === "number" &&
+			Number.isFinite(value)
+		)
+			return String(value);
+		if (scalar === "float32" && typeof value === "number")
+			return Math.fround(value);
+		return value;
+	};
 	const constraintsOf = (target) => {
 		const found = [];
 		const push = (keyword, operands, decorator) =>
 			found.push({ keyword, operands, decorator });
 		const min = getMinValue(program, target);
-		if (min !== undefined) push("min", { value: min }, "@minValue");
+		if (min !== undefined)
+			push("min", { value: literalFor(target, min) }, "@minValue");
 		const max = getMaxValue(program, target);
-		if (max !== undefined) push("max", { value: max }, "@maxValue");
+		if (max !== undefined)
+			push("max", { value: literalFor(target, max) }, "@maxValue");
 		const exclusiveMin = getMinValueExclusive(program, target);
 		if (exclusiveMin !== undefined)
-			push("exclusiveMin", { value: exclusiveMin }, "@minValueExclusive");
+			push(
+				"exclusiveMin",
+				{ value: literalFor(target, exclusiveMin) },
+				"@minValueExclusive",
+			);
 		const exclusiveMax = getMaxValueExclusive(program, target);
 		if (exclusiveMax !== undefined)
-			push("exclusiveMax", { value: exclusiveMax }, "@maxValueExclusive");
+			push(
+				"exclusiveMax",
+				{ value: literalFor(target, exclusiveMax) },
+				"@maxValueExclusive",
+			);
 		const pattern = getPattern(program, target);
 		if (pattern !== undefined)
 			push("pattern", { regex: pattern, dialect: "ecma-262" }, "@pattern");
@@ -865,16 +897,26 @@ export function lowerProgram(options) {
 			});
 		}
 		const decimalPolicy = context.state("decimal", property);
-		if (decimalPolicy) {
-			extensions.push({
-				identity: `${EXTENSION_BASE}/decimal`,
-				version: "1.0.0",
-				required: true,
-				payload: {
-					precision: decimalPolicy.precision,
-					scale: decimalPolicy.scale,
-				},
-			});
+		const resolvedProperty = resolvedKindOf(typeRef);
+		if (resolvedProperty?.scalar === "decimal" && !decimalPolicy) {
+			context.raise(
+				DIAGNOSTIC_CODES.DECIMAL_POLICY_MISSING,
+				`${fragment(property.name)} resolves to decimal but declares no precision and scale policy`,
+				at,
+			);
+			return undefined;
+		}
+		if (
+			decimalPolicy &&
+			(decimalPolicy.precision > 38 ||
+				decimalPolicy.scale > decimalPolicy.precision)
+		) {
+			context.raise(
+				DIAGNOSTIC_CODES.DECIMAL_PRECISION_EXCEEDS_BASE,
+				`${fragment(property.name)} declares decimal precision and scale outside the 1..38 policy`,
+				at,
+			);
+			return undefined;
 		}
 		for (const extension of context.state("semanticExtension", property) ??
 			[]) {
@@ -899,6 +941,14 @@ export function lowerProgram(options) {
 			origin: context.originOf(property),
 			extensions: extensions.sort(byIdentity),
 			...(fieldConstraints ? { constraints: fieldConstraints } : {}),
+			...(decimalPolicy
+				? {
+						decimal: {
+							precision: decimalPolicy.precision,
+							scale: decimalPolicy.scale,
+						},
+					}
+				: {}),
 		};
 
 		const kindDecorator = context.state("defaultKind", property);
