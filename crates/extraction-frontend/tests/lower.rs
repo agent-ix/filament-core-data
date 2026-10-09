@@ -418,7 +418,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     let total_constraints = total["constraints"].as_array().expect("constraints");
     assert_eq!(total_constraints.len(), 1, "{total_constraints:?}");
     assert_eq!(total_constraints[0]["keyword"], "min");
-    assert_eq!(total_constraints[0]["operands"], json!({"value": 0}));
+    assert_eq!(total_constraints[0]["operands"], json!({"value": "0"}));
     assert_eq!(total_constraints[0]["appliesTo"], total["identity"]);
     assert_eq!(
         total["extensions"],
@@ -585,7 +585,17 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         "unknownPolicy": "reject"
     });
     match kind {
-        "scalar" => target["scalar"] = json!(scalar),
+        "scalar" => {
+            target["scalar"] = json!(scalar);
+            if scalar == "decimal" {
+                target["extensions"] = json!([{
+                    "identity": "ix://agent-ix/semantic-core/ext/decimal-policy",
+                    "version": "1.0.0",
+                    "required": false,
+                    "payload": {"precision": 10, "scale": 2}
+                }]);
+            }
+        }
         "record" => target["fields"] = json!([]),
         "enum" => {
             target["variants"] = json!([{
@@ -604,10 +614,22 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         other => panic!("unknown kind {other}"),
     }
     let operands = match keyword {
-        "min" | "max" | "exclusiveMin" | "exclusiveMax" => json!({"value": 1}),
+        "min" | "max" | "exclusiveMin" | "exclusiveMax" => {
+            if scalar == "decimal" {
+                json!({"value": "1"})
+            } else {
+                json!({"value": 1})
+            }
+        }
         "minLength" | "maxLength" => json!({"value": 1}),
         "pattern" => json!({"regex": "^a$", "dialect": "ecma-262"}),
-        "enumValues" => json!({"values": ["a"]}),
+        "enumValues" => {
+            if scalar == "decimal" {
+                json!({"values": ["1"]})
+            } else {
+                json!({"values": ["a"]})
+            }
+        }
         "nonEmpty" | "unique" => json!({}),
         "format" => json!({"name": "iana:email"}),
         other => panic!("unknown keyword {other}"),

@@ -513,7 +513,7 @@ pub fn applies_to(keyword: &str, kind: &str, scalar: &str) -> bool {
     };
     let ordered = matches!(
         scalar,
-        "integer" | "number" | "date" | "datetime" | "duration"
+        "integer" | "decimal" | "number" | "date" | "datetime" | "duration"
     );
     let sized = matches!(scalar, "string" | "bytes");
     match (keyword, kind) {
@@ -901,7 +901,7 @@ fn lower_constraints(
 ) {
     let mut row_keywords: BTreeSet<String> = BTreeSet::new();
     for constraint in decl.constraints.as_deref().unwrap_or(&[]) {
-        let (keyword, operands) = keyword_and_operands(constraint);
+        let (keyword, mut operands) = keyword_and_operands(constraint);
         if !row_keywords.insert(keyword.clone()) {
             sink.push(Diagnostic::frontend(
                 Code::DuplicateConstraint,
@@ -945,6 +945,21 @@ fn lower_constraints(
                     Some(locus.clone()),
                 ));
                 continue;
+            }
+        }
+        // FR-144:97-99 carries Decimal bounds in the exact decimal-string
+        // domain. The engine may deserialize an authored `min: 0` as a JSON
+        // number, so normalize numeric bound operands before the IR reader
+        // checks the exact wire spelling.
+        if matches!(kind, Some(ResolvedKind::Scalar("decimal")))
+            && matches!(
+                keyword.as_str(),
+                "min" | "max" | "exclusiveMin" | "exclusiveMax"
+            )
+        {
+            if let Some(value) = operands.get("value").and_then(Value::as_number) {
+                let value = value.to_string();
+                operands.insert("value".to_string(), Value::String(value));
             }
         }
         let identity = match ctx
