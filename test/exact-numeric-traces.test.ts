@@ -630,6 +630,18 @@ it("renders normalized Decimal forms and refuses alias, bound, and native losses
 	} as never);
 	expect(nativeUnique.state).toBe("unsupported");
 	expect(nativeUnique.diagnostics[0].message).toContain("decimal uniqueness");
+
+	const sequenceUniqueIr = structuredClone(numericIr());
+	sequenceUniqueIr.types = sequenceUniqueIr.types.filter(
+		(type: { displayName: string }) =>
+			["Decimal", "DecimalAlias", "DecimalList"].includes(type.displayName),
+	);
+	const sequenceUnique = jsonSchemaBackend.generate({
+		ir: sequenceUniqueIr,
+	} as never);
+	expect(sequenceUnique.state).toBe("unsupported");
+	expect(sequenceUnique.files).toEqual([]);
+	expect(sequenceUnique.diagnostics[0].message).toContain("decimal uniqueness");
 });
 
 /** Traces: FR-144-AC-15, FR-144-AC-19. */

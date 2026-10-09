@@ -258,6 +258,17 @@ function decimalLosses(ir, types) {
 			});
 	};
 	for (const type of ir.types ?? []) {
+		if (
+			type.kind === "sequence" &&
+			decimalScalar(types, type.items) === "decimal" &&
+			(type.multiplicity?.unique === true ||
+				(type.constraints ?? []).some((one) => one.keyword === "unique"))
+		)
+			losses.push({
+				code: DIAGNOSTIC_CODES.UNDECLARED_LOSS,
+				blocking: true,
+				message: `JSON Schema cannot enforce decimal uniqueness on ${type.identity}`,
+			});
 		if (decimalScalar(types, type.identity) === "decimal")
 			for (const one of type.constraints ?? [])
 				lossFor(type.identity, one.keyword);
