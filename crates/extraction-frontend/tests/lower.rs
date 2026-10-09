@@ -13,7 +13,7 @@ use agent_ix_extraction_frontend::document::assemble;
 use agent_ix_extraction_frontend::enumeration::VALUE_COLUMN;
 use agent_ix_extraction_frontend::lower::{
     applies_to, diagnostic_code, loss_register, roles, screaming, Kind, Presence,
-    DECIMAL_POLICY_EXTENSION, IDENTITY_FIELD_EXTENSION, KEYWORDS,
+    IDENTITY_FIELD_EXTENSION, KEYWORDS,
 };
 use agent_ix_extraction_frontend::resolve::{Outcome, Resolved};
 use agent_ix_extraction_frontend::rows::field_rows;
@@ -405,7 +405,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     );
     assert_eq!(parent["extensions"], json!([]));
 
-    // The decimal policy rides the same extension mechanism.
+    // The decimal policy is carried directly by the field subject.
     let business = self::lift("business");
     let types = types_json(&business);
     let order = type_named(&types, "Order");
@@ -415,20 +415,13 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     // #199/#200): the typeRef names the resolved native scalar directly, no
     // alias is minted.
     assert_eq!(total["typeRef"], "ix://quire/native/Decimal");
+    assert_eq!(total["decimal"], json!({"precision": 10, "scale": 2}));
     let total_constraints = total["constraints"].as_array().expect("constraints");
     assert_eq!(total_constraints.len(), 1, "{total_constraints:?}");
     assert_eq!(total_constraints[0]["keyword"], "min");
     assert_eq!(total_constraints[0]["operands"], json!({"value": "0"}));
     assert_eq!(total_constraints[0]["appliesTo"], total["identity"]);
-    assert_eq!(
-        total["extensions"],
-        json!([{
-            "identity": DECIMAL_POLICY_EXTENSION,
-            "version": "1.0.0",
-            "required": false,
-            "payload": {"precision": 10, "scale": 2}
-        }])
-    );
+    assert_eq!(total["extensions"], json!([]));
 }
 
 #[trace("TC-1223", "FR-093-AC-4")]
@@ -588,12 +581,7 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         "scalar" => {
             target["scalar"] = json!(scalar);
             if scalar == "decimal" {
-                target["extensions"] = json!([{
-                    "identity": "ix://agent-ix/semantic-core/ext/decimal-policy",
-                    "version": "1.0.0",
-                    "required": false,
-                    "payload": {"precision": 10, "scale": 2}
-                }]);
+                target["decimal"] = json!({"precision": 10, "scale": 2});
             }
         }
         "record" => target["fields"] = json!([]),

@@ -71,7 +71,9 @@ use std::fmt;
 
 use agent_ix_semantic_ir::vocabulary::Shape;
 use quire_rs::semantic::decl::is_identifier;
-use quire_rs::semantic::{AvailabilityState, Constraint, Multiplicity, SemanticExtraction};
+use quire_rs::semantic::{
+    AvailabilityState, Constraint, DecimalPolicy, Multiplicity, SemanticExtraction,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -200,6 +202,8 @@ pub struct Field {
     pub identity: String,
     pub name: String,
     pub type_ref: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decimal: Option<DecimalPolicy>,
     pub presence: Presence,
     pub nullable: bool,
     pub default_kind: DefaultKind,
@@ -856,21 +860,11 @@ pub(crate) fn lower_field(
             payload: serde_json::json!({}),
         });
     }
-    if let Some(decimal) = &decl.type_ref.decimal {
-        extensions.push(Extension {
-            identity: DECIMAL_POLICY_EXTENSION.to_string(),
-            version: FIELD_EXTENSION_VERSION.to_string(),
-            required: false,
-            payload: serde_json::json!({
-                "precision": decimal.precision,
-                "scale": decimal.scale,
-            }),
-        });
-    }
     Ok(Field {
         identity,
         name: decl.name.clone(),
         type_ref,
+        decimal: decl.type_ref.decimal.clone(),
         presence: Presence::of(&multiplicity),
         nullable: decl.nullable.unwrap_or(false),
         default_kind: DefaultKind::None,

@@ -393,7 +393,7 @@ export function readContractIr(document, options = {}) {
 	// avoids reporting the same missing policy twice through an alias route.
 	const checkCompositeDecimalRef = (typeRef, owner) => {
 		if (nativeScalar(typeRef) !== "decimal") return;
-		const walked = walkDecimal(typeRef);
+		const walked = walkDecimal(typeRef, owner);
 		if (walked?.scalar !== "decimal" || walked.policies.length > 0) return;
 		raise(
 			DIAGNOSTIC_CODES.DECIMAL_POLICY_MISSING,

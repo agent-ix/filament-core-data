@@ -507,10 +507,13 @@ mod tests {
                 "{keyword}"
             );
         }
-        // A `number` bound stays a JSON number.
+        // A Decimal bound is an exact canonical decimal string. Integer
+        // spellings are valid decimal values once the subject carries its
+        // policy; this fixture exercises the wire spelling independently of
+        // the policy walk.
         assert_eq!(
             codes(&bound_bundle("Decimal", r#""18446744073709551615""#)),
-            [("INVALID_OPERAND".to_string(), at)]
+            []
         );
     }
 

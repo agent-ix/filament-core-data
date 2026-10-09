@@ -897,6 +897,7 @@ const TYPE_MEMBERS: &[&str] = &[
     "extensions",
     "unknownPolicy",
     "scalar",
+    "decimal",
     "fields",
     "variants",
     "target",
@@ -1385,6 +1386,7 @@ const FIELD_MEMBERS: &[&str] = &[
     "identity",
     "name",
     "typeRef",
+    "decimal",
     "presence",
     "nullable",
     "defaultKind",
@@ -1777,7 +1779,7 @@ fn has_duplicate_items(items: &[Json]) -> bool {
     false
 }
 
-const RETURNS_MEMBERS: &[&str] = &["typeRef", "multiplicity", "nullable"];
+const RETURNS_MEMBERS: &[&str] = &["typeRef", "decimal", "multiplicity", "nullable"];
 
 fn operation_schema(operation: &Json, at: &str, f: &mut Findings) {
     if !expect_object(operation, at, "an operation", f) {
@@ -1839,7 +1841,12 @@ fn operation_schema(operation: &Json, at: &str, f: &mut Findings) {
     if let Some(returns) = operation.get("returns") {
         let returns_at = child(at, "returns");
         if expect_object(returns, &returns_at, "a return", f) {
-            require_members(returns, &returns_at, RETURNS_MEMBERS, f);
+            require_members(
+                returns,
+                &returns_at,
+                &["typeRef", "multiplicity", "nullable"],
+                f,
+            );
             forbid_extra(returns, &returns_at, RETURNS_MEMBERS, f);
             expect_shape(
                 returns.get("typeRef"),
