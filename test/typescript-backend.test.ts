@@ -303,6 +303,28 @@ describe("TC-1355 extension identity admission (FR-068)", () => {
 	});
 });
 
+describe("TypeScript Decimal applicability (FR-144)", () => {
+	/** Traces: FR-144-AC-13, FR-144-AC-15, FR-144-AC-17. */
+	it("admits Decimal bounds and enum operands through alias-free IR", () => {
+		const ir = JSON.parse(readFileSync(fixtureIr, "utf8"));
+		const decimal = ir.types.find(
+			(type: { displayName: string }) => type.displayName === "Count",
+		);
+		decimal.scalar = "decimal";
+		decimal.decimal = { precision: 5, scale: 2 };
+		decimal.constraints[0].operands.value = "1.1";
+		decimal.constraints.push({
+			...decimal.constraints[0],
+			identity: "ix://agent-ix/conformance/constraint/count-enum",
+			keyword: "enumValues",
+			operands: { values: ["1.1"] },
+			diagnosticCode: "agent-ix.conformance.COUNT_ENUM",
+		});
+		const result = admitIr({ ir }, { schemas: admissionSchemas });
+		expect(result.diagnostics).toEqual([]);
+	});
+});
+
 describe("TypeScript backend fixture (FR-071)", () => {
 	it("TC-834 generates byte-identically across directories and C/Turkish locales", () => {
 		const scratch = mkdtempSync(
