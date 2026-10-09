@@ -11,11 +11,11 @@
 	],
 	"contributions": {
 		"diagnostics.mjs": 21,
-		"mapping-table.json": 70,
+		"mapping-table.json": 71,
 		"names.mjs": 10,
-		"src/compiler/ir/applicability.mjs": 45
+		"src/compiler/ir/applicability.mjs": 50
 	},
-	"rowCount": 146,
+	"rowCount": 152,
 	"unmetCount": 0,
 	"unreachableCount": 1,
 	"rows": [
@@ -74,19 +74,28 @@
 			]
 		},
 		{
-			"branchId": "constraint:enumValues/integer",
+			"branchId": "constraint:enumValues/float32",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
-			"construct": "the keyword `enumValues` lowered onto a integer subject",
+			"construct": "the keyword `enumValues` lowered onto a float32 subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
 		},
 		{
-			"branchId": "constraint:enumValues/number",
+			"branchId": "constraint:enumValues/float64",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
-			"construct": "the keyword `enumValues` lowered onto a number subject",
+			"construct": "the keyword `enumValues` lowered onto a float64 subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:enumValues/integer",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `enumValues` lowered onto a integer subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -146,19 +155,28 @@
 			]
 		},
 		{
-			"branchId": "constraint:exclusiveMax/integer",
+			"branchId": "constraint:exclusiveMax/float32",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
-			"construct": "the keyword `exclusiveMax` lowered onto a integer subject",
+			"construct": "the keyword `exclusiveMax` lowered onto a float32 subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
 		},
 		{
-			"branchId": "constraint:exclusiveMax/number",
+			"branchId": "constraint:exclusiveMax/float64",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
-			"construct": "the keyword `exclusiveMax` lowered onto a number subject",
+			"construct": "the keyword `exclusiveMax` lowered onto a float64 subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:exclusiveMax/integer",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `exclusiveMax` lowered onto a integer subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -200,19 +218,28 @@
 			]
 		},
 		{
-			"branchId": "constraint:exclusiveMin/integer",
+			"branchId": "constraint:exclusiveMin/float32",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
-			"construct": "the keyword `exclusiveMin` lowered onto a integer subject",
+			"construct": "the keyword `exclusiveMin` lowered onto a float32 subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
 		},
 		{
-			"branchId": "constraint:exclusiveMin/number",
+			"branchId": "constraint:exclusiveMin/float64",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
-			"construct": "the keyword `exclusiveMin` lowered onto a number subject",
+			"construct": "the keyword `exclusiveMin` lowered onto a float64 subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:exclusiveMin/integer",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `exclusiveMin` lowered onto a integer subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -263,19 +290,28 @@
 			]
 		},
 		{
-			"branchId": "constraint:max/integer",
+			"branchId": "constraint:max/float32",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
-			"construct": "the keyword `max` lowered onto a integer subject",
+			"construct": "the keyword `max` lowered onto a float32 subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
 		},
 		{
-			"branchId": "constraint:max/number",
+			"branchId": "constraint:max/float64",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
-			"construct": "the keyword `max` lowered onto a number subject",
+			"construct": "the keyword `max` lowered onto a float64 subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:max/integer",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `max` lowered onto a integer subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -335,19 +371,28 @@
 			]
 		},
 		{
-			"branchId": "constraint:min/integer",
+			"branchId": "constraint:min/float32",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
-			"construct": "the keyword `min` lowered onto a integer subject",
+			"construct": "the keyword `min` lowered onto a float32 subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
 		},
 		{
-			"branchId": "constraint:min/number",
+			"branchId": "constraint:min/float64",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
-			"construct": "the keyword `min` lowered onto a number subject",
+			"construct": "the keyword `min` lowered onto a float64 subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:min/integer",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `min` lowered onto a integer subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -509,7 +554,7 @@
 			"branchId": "defaultKind:semantic",
 			"axis": "defaultKind",
 			"vocabulary": "mapping-table.json",
-			"construct": "null — agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE",
+			"construct": "null — agent-ix.rust-backend.INVALID_DEFAULT_VALUE",
 			"cases": [
 				"TC-725 every defaultKind, extension and metadata row reaches the emitted crate"
 			]
@@ -528,6 +573,15 @@
 			"axis": "diagnostic",
 			"vocabulary": "diagnostics.mjs",
 			"construct": "warning: the diagnostic count reached the request's maxDiagnostics",
+			"cases": [
+				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
+			]
+		},
+		{
+			"branchId": "diagnostic:agent-ix.rust-backend.INVALID_DEFAULT_VALUE",
+			"axis": "diagnostic",
+			"vocabulary": "diagnostics.mjs",
+			"construct": "error, blocking: a defaultValue is not a value the field's mapped Rust type admits",
 			"cases": [
 				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
 			]
@@ -600,15 +654,6 @@
 			"axis": "diagnostic",
 			"vocabulary": "diagnostics.mjs",
 			"construct": "error, blocking: a name derives no legal Rust identifier, and the backend refuses rather than dropping the characters it cannot carry",
-			"cases": [
-				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
-			]
-		},
-		{
-			"branchId": "diagnostic:agent-ix.rust-backend.UNREPRESENTABLE_DEFAULT_VALUE",
-			"axis": "diagnostic",
-			"vocabulary": "diagnostics.mjs",
-			"construct": "error, blocking: a defaultValue is not a value the field's mapped Rust type admits",
 			"cases": [
 				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
 			]
@@ -1113,19 +1158,28 @@
 			]
 		},
 		{
-			"branchId": "scalar:integer",
+			"branchId": "scalar:float32",
 			"axis": "scalar",
 			"vocabulary": "mapping-table.json",
-			"construct": "i64",
+			"construct": "f32",
 			"cases": [
 				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
 			]
 		},
 		{
-			"branchId": "scalar:number",
+			"branchId": "scalar:float64",
 			"axis": "scalar",
 			"vocabulary": "mapping-table.json",
 			"construct": "f64",
+			"cases": [
+				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
+			]
+		},
+		{
+			"branchId": "scalar:integer",
+			"axis": "scalar",
+			"vocabulary": "mapping-table.json",
+			"construct": "i64",
 			"cases": [
 				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
 			]

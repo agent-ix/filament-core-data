@@ -1313,22 +1313,24 @@ function checkConstants(type, checks, byIdentity) {
 			);
 		}
 		if (check.form === "enumValues") {
+			const integerType = rustIntegerTypeFor(type);
+			const floatType = String(type.inner ?? "").endsWith("f32") ? "f32" : "f64";
 			const rustType =
 				check.scalar === "boolean"
 					? "bool"
 					: check.scalar === "integer"
-						? "i64"
-						: check.scalar === "number"
-							? "f64"
+						? integerType
+						: ["float32", "float64"].includes(check.scalar)
+							? floatType
 							: "&str";
 			const values = check.values.map((value) =>
 				check.scalar === "integer"
-					? `${value}i64`
+					? `${value}${integerType}`
 					: typeof value === "string"
 						? rustString(value)
 						: typeof value === "boolean"
 							? String(value)
-							: renderF64(value),
+						: renderFloat(value, floatType),
 			);
 			lines.push(
 				`/// The values ${check.identity} admits.`,
@@ -1345,8 +1347,21 @@ function checkConstants(type, checks, byIdentity) {
 	return lines;
 }
 
+function rustIntegerTypeFor(type) {
+	const inner = String(type.inner ?? "");
+	if (inner.endsWith("i128")) return "i128";
+	if (inner.endsWith("u64")) return "u64";
+	return "i64";
+}
+
 function renderF64(value) {
 	return Number.isInteger(value) ? `${value}.0f64` : `${value}f64`;
+}
+
+function renderFloat(value, rustType) {
+	return Number.isInteger(value)
+		? `${value}.0${rustType}`
+		: `${value}${rustType}`;
 }
 
 function decimalStringExpression(expression, rustType) {
@@ -1413,8 +1428,11 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 		case "numeric": {
 			const literal =
 				check.scalar === "integer"
-					? `${check.value}i64`
-					: renderF64(check.value);
+					? `${check.value}${rustIntegerTypeFor(type)}`
+					: renderFloat(
+							check.value,
+							String(type.inner ?? "").endsWith("f32") ? "f32" : "f64",
+						);
 			lines.push(
 				`            if ${owned} ${COMPARISONS[check.keyword]} ${literal} {`,
 				...fail(rustString(String(check.value))),
@@ -1497,7 +1515,7 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 		case "enumValues": {
 			const constant = `${type.constantName}_ENUM_${index}`;
 			const numeric =
-				["integer", "number"].includes(check.scalar) ||
+				["integer", "float32", "float64"].includes(check.scalar) ||
 				check.scalar === "boolean";
 			if (check.scalar === "decimal") {
 				lines.push(
@@ -2470,16 +2488,21 @@ function scalarLiteral(scalar, value, rustType = "i64") {
 		case "boolean":
 			return typeof value === "boolean" ? String(value) : undefined;
 		case "integer":
+			if (typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value)) {
+				try {
+					BigInt(value);
+					return `${value}${rustType}`;
+				} catch {
+					return undefined;
+				}
+			}
 			return typeof value === "number" && Number.isSafeInteger(value)
 				? `${value}${rustType}`
 				: undefined;
-		case "decimal":
-			return typeof value === "string"
-				? `String::from(${rustString(value)})`
-				: undefined;
-		case "number":
+		case "float32":
+		case "float64":
 			return typeof value === "number" && Number.isFinite(value)
-				? renderF64(value)
+				? renderFloat(value, scalar === "float32" ? "f32" : "f64")
 				: undefined;
 		default:
 			return typeof value === "string"

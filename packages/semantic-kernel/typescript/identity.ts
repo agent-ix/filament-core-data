@@ -1558,6 +1558,16 @@ export const TYPE_VARIANTS = {
 			payloadType: "",
 		},
 		{
+			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/Float32",
+			name: "Float32",
+			payloadType: "",
+		},
+		{
+			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/Float64",
+			name: "Float64",
+			payloadType: "",
+		},
+		{
 			identity: "ix://agent-ix/semantic-core/KernelScalar/variant/Integer",
 			name: "Integer",
 			payloadType: "",

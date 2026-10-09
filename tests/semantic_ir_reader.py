@@ -48,6 +48,8 @@ NATIVE_SCALARS = {
     "Boolean": "boolean",
     "Integer": "integer",
     "Decimal": "decimal",
+    "Float32": "float32",
+    "Float64": "float64",
     "String": "string",
     "Timestamp": "datetime",
     "Duration": "duration",
@@ -63,10 +65,10 @@ def _native_scalar(identity: Any) -> str | None:
 
 
 APPLICABILITY: dict[str, set[str]] = {
-    "min": {"integer", "decimal", "number", *TEMPORAL},
-    "max": {"integer", "decimal", "number", *TEMPORAL},
-    "exclusiveMin": {"integer", "decimal", "number", *TEMPORAL},
-    "exclusiveMax": {"integer", "decimal", "number", *TEMPORAL},
+    "min": {"integer", "decimal", "float32", "float64", *TEMPORAL},
+    "max": {"integer", "decimal", "float32", "float64", *TEMPORAL},
+    "exclusiveMin": {"integer", "decimal", "float32", "float64", *TEMPORAL},
+    "exclusiveMax": {"integer", "decimal", "float32", "float64", *TEMPORAL},
     "minLength": {"string", "bytes"},
     "maxLength": {"string", "bytes"},
     "pattern": {"string"},
@@ -74,7 +76,8 @@ APPLICABILITY: dict[str, set[str]] = {
         "boolean",
         "integer",
         "decimal",
-        "number",
+        "float32",
+        "float64",
         "string",
         "bytes",
         "date",
@@ -171,6 +174,66 @@ def _field_index(types: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
                 if isinstance(identity, str):
                     index[identity] = param
     return index
+
+
+_INTEGER_LITERAL = re.compile(r"^(0|-?[1-9][0-9]*)$")
+_DECIMAL_LITERAL = re.compile(
+    r"^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$"
+)
+
+
+def _decimal_policy(
+    types: dict[str, dict[str, Any]],
+    fields: dict[str, dict[str, Any]],
+    type_ref: Any,
+    seen: set[str] | None = None,
+) -> dict[str, Any] | None:
+    seen = seen or set()
+    if not isinstance(type_ref, str) or type_ref in seen:
+        return None
+    seen.add(type_ref)
+    node = fields.get(type_ref) or types.get(type_ref)
+    if not isinstance(node, dict):
+        return None
+    policy = node.get("decimal")
+    if isinstance(policy, dict):
+        return policy
+    if node.get("kind") == "alias":
+        return _decimal_policy(types, fields, node.get("target"), seen)
+    return None
+
+
+def _exact_numeric_admitted(
+    scalar: str | None, value: Any, policy: dict[str, Any] | None
+) -> bool:
+    if scalar == "integer":
+        if not isinstance(value, str) or not _INTEGER_LITERAL.fullmatch(value):
+            return False
+        try:
+            return -(2**127) <= int(value) <= 2**127 - 1
+        except ValueError:
+            return False
+    if scalar == "decimal":
+        if (
+            not isinstance(value, str)
+            or not _DECIMAL_LITERAL.fullmatch(value)
+            or not isinstance(policy, dict)
+        ):
+            return False
+        unsigned = value[1:] if value.startswith("-") else value
+        whole, _, fraction = unsigned.partition(".")
+        integer_digits = 0 if whole == "0" else len(whole)
+        return integer_digits <= policy["precision"] - policy["scale"] and len(
+            fraction
+        ) <= policy["scale"]
+    if scalar in {"float32", "float64"}:
+        return (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and value == value
+            and value not in {float("inf"), float("-inf")}
+        )
+    return isinstance(value, str)
 
 
 def _check_multiplicity(
@@ -336,16 +399,11 @@ def _check_constraint(
                 )
             )
     if keyword in BOUNDS and kind == "scalar":
-        numeric = scalar in {"integer", "decimal", "number"}
         value = operands.get("value")
-        ok = (
-            (
-                isinstance(value, str)
-                if scalar == "decimal"
-                else isinstance(value, (int, float)) and not isinstance(value, bool)
-            )
-            if numeric
-            else isinstance(value, str)
+        ok = _exact_numeric_admitted(
+            scalar,
+            value,
+            _decimal_policy(types, fields, constraint.get("appliesTo")),
         )
         if not ok:
             out.append(

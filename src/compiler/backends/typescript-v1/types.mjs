@@ -40,7 +40,6 @@ const SCALAR_PRIMITIVES = Object.freeze({
 	any: "unknown",
 	boolean: "boolean",
 	integer: "number",
-	number: "number",
 	decimal: "string",
 	string: "string",
 	bytes: "string",
@@ -63,6 +62,25 @@ const SCALAR_NOTES = Object.freeze({
 	duration: "An ISO 8601 duration.",
 	uuid: "A UUID in its canonical hyphenated form.",
 });
+
+function wideInteger(entry) {
+	return (
+		entry.scalar === "integer" &&
+		(entry.constraints ?? []).some((constraint) => {
+			const value = constraint?.operands?.value;
+			return (
+				typeof value === "string" &&
+				/^(0|-?[1-9][0-9]*)$/.test(value) &&
+				!Number.isSafeInteger(Number(value))
+			);
+		})
+	);
+}
+
+function primitiveFor(entry) {
+	if (wideInteger(entry)) return "string";
+	return SCALAR_PRIMITIVES[entry.scalar];
+}
 
 /** A JSON string literal, which is also a valid TypeScript string literal. */
 function literal(value) {

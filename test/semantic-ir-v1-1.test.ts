@@ -1070,7 +1070,7 @@ describe("FR-006 ConfigVersion worked example (Task-039)", () => {
 		);
 		expect(constraint).toMatchObject({
 			keyword: "min",
-			operands: { value: 1 },
+			operands: { value: "1" },
 		});
 	});
 });

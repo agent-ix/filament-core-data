@@ -6,12 +6,12 @@
 		"precision": {
 			"type": "integer",
 			"minimum": 1,
-			"maximum": 2147483647
+			"maximum": 38
 		},
 		"scale": {
 			"type": "integer",
 			"minimum": 0,
-			"maximum": 2147483647
+			"maximum": 38
 		}
 	},
 	"required": ["precision", "scale"],

@@ -44,20 +44,22 @@ export const PART_OF = "part_of";
 
 /** Keyword to the resolved subjects it may apply to — a scalar name, or a kind. */
 export const KEYWORD_APPLICABILITY = Object.freeze({
-	min: ["integer", "number", "decimal", "date", "datetime", "duration"],
-	max: ["integer", "number", "decimal", "date", "datetime", "duration"],
+	min: ["integer", "decimal", "float32", "float64", "date", "datetime", "duration"],
+	max: ["integer", "decimal", "float32", "float64", "date", "datetime", "duration"],
 	exclusiveMin: [
 		"integer",
-		"number",
 		"decimal",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
 	],
 	exclusiveMax: [
 		"integer",
-		"number",
 		"decimal",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
@@ -68,8 +70,9 @@ export const KEYWORD_APPLICABILITY = Object.freeze({
 	enumValues: [
 		"boolean",
 		"integer",
-		"number",
 		"decimal",
+		"float32",
+		"float64",
 		"string",
 		"bytes",
 		"date",

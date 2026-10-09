@@ -7,6 +7,8 @@
 		"Boolean",
 		"Integer",
 		"Decimal",
+		"Float32",
+		"Float64",
 		"String",
 		"Timestamp",
 		"Duration",

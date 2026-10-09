@@ -3450,6 +3450,8 @@ function checkKernelScalar(
 		"Bytes",
 		"Decimal",
 		"Duration",
+		"Float32",
+		"Float64",
 		"Integer",
 		"JsonObject",
 		"String",

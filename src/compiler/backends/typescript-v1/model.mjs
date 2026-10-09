@@ -114,6 +114,41 @@ function resolveScalar(types, identity, seen = new Set(), depth = 0) {
 	return undefined;
 }
 
+function wideInteger(constraints, scalar) {
+	if (scalar !== "integer") return false;
+	const safe = 2n ** 53n - 1n;
+	let lower = -safe;
+	let upper = safe;
+	for (const constraint of constraints ?? []) {
+		const value = constraint?.operands?.value;
+		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
+			continue;
+		const parsed = BigInt(value);
+		if (constraint.keyword === "min") lower = lower > parsed ? lower : parsed;
+		if (constraint.keyword === "exclusiveMin") {
+			const effective = parsed + 1n;
+			lower = lower > effective ? lower : effective;
+		}
+		if (constraint.keyword === "max")
+			upper =
+				upper === safe && parsed > safe
+					? parsed
+					: upper < parsed
+						? upper
+						: parsed;
+		if (constraint.keyword === "exclusiveMax") {
+			const effective = parsed - 1n;
+			upper =
+				upper === safe && effective > safe
+					? effective
+					: upper < effective
+						? upper
+						: effective;
+		}
+	}
+	return lower < -safe || upper > safe;
+}
+
 /**
  * The acyclic summary of the entry `identity` names: what a renderer needs to
  * write a reference to it, and no object reference that could close a cycle.
@@ -126,6 +161,7 @@ function summaryOf(types, identifiers, identity) {
 		identifier: identifiers.get(identity),
 		kind: type === undefined ? undefined : kindName(type.kind),
 		scalar: resolveScalar(types, identity),
+		decimal: type?.decimal,
 		declared: type !== undefined,
 	});
 }
@@ -181,7 +217,6 @@ function fieldEntry(types, identifiers, field) {
 		extensions: Object.freeze([...(field.extensions ?? [])]),
 		origin: field.origin,
 	};
-	if (field.decimal !== undefined) entry.decimal = field.decimal;
 	// `defaultValue` is present exactly when `defaultKind` is not `none`, which
 	// the published schema enforces; carrying the member only when the document
 	// does keeps the two states distinguishable rather than collapsing an
@@ -261,6 +296,7 @@ export function buildModel(ir, options = {}) {
 		const scalar = resolveScalar(types, type.identity);
 		if (scalar !== undefined) entry.scalar = scalar;
 		if (type.decimal !== undefined) entry.decimal = type.decimal;
+		entry.wideInteger = wideInteger(entry.constraints, scalar);
 
 		if (isRecordShaped(type) || isInstanceless(type)) {
 			// An interface and a namespace construct carry no fields: they have no

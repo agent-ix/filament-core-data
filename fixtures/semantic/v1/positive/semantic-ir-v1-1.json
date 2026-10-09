@@ -221,7 +221,7 @@
 			],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"scalar": "number",
+			"scalar": "float64",
 			"clauses": [
 				{
 					"identity": "ix://agent-ix/assurance/clause/seconds-bounded",

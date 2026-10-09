@@ -304,7 +304,7 @@
 					"identity": "ix://agent-ix/instances/constraint/at-least",
 					"keyword": "min",
 					"operands": {
-						"value": 0
+						"value": "0"
 					},
 					"appliesTo": "ix://agent-ix/instances/type/AtLeast",
 					"diagnosticCode": "agent-ix.instances.AT_LEAST",
@@ -340,7 +340,7 @@
 					"identity": "ix://agent-ix/instances/constraint/at-most",
 					"keyword": "max",
 					"operands": {
-						"value": 10
+						"value": "10"
 					},
 					"appliesTo": "ix://agent-ix/instances/type/AtMost",
 					"diagnosticCode": "agent-ix.instances.AT_MOST",
@@ -392,7 +392,7 @@
 			],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"scalar": "number"
+			"scalar": "float64"
 		},
 		{
 			"identity": "ix://agent-ix/instances/type/Below",
@@ -428,7 +428,7 @@
 			],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"scalar": "number"
+			"scalar": "float64"
 		},
 		{
 			"identity": "ix://agent-ix/instances/type/Octets",

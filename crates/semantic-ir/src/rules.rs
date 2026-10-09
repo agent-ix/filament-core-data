@@ -43,6 +43,8 @@ const NATIVE_SCALARS: &[(&str, &str)] = &[
     ("Boolean", "boolean"),
     ("Integer", "integer"),
     ("Decimal", "decimal"),
+    ("Float32", "float32"),
+    ("Float64", "float64"),
     ("String", "string"),
     ("Timestamp", "datetime"),
     ("Duration", "duration"),
@@ -890,6 +892,7 @@ pub fn decide_with(bundle: &Json, limits: RuleLimits) -> Vec<Located> {
         Some(document) => document,
         None => return sink.out,
     };
+    exact_numbers(bundle, &mut sink);
     duplicate_identities(&document, &mut sink);
     per_type(&document, &mut sink);
     occurrences(&document, &mut sink);
@@ -898,6 +901,118 @@ pub fn decide_with(bundle: &Json, limits: RuleLimits) -> Vec<Located> {
     package_context(&document, &mut sink);
     sink.out
 }
+
+fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
+    let negative = lexeme.starts_with('-');
+    let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
+    let (mantissa, exponent) = match unsigned.find(['e', 'E']) {
+        Some(at) => (&unsigned[..at], unsigned[at + 1..].parse::<i32>().ok()?),
+        None => (unsigned, 0),
+    };
+    let (whole, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
+    if whole.is_empty()
+        || fraction.chars().any(|ch| !ch.is_ascii_digit())
+        || whole.chars().any(|ch| !ch.is_ascii_digit())
+    {
+        return None;
+    }
+    let digits = format!("{whole}{fraction}");
+    let decimal_at = whole.len() as i32 + exponent;
+    let zero = digits.chars().all(|ch| ch == '0');
+    let (mut integer, mut fraction_out) = if decimal_at <= 0 {
+        (
+            "0".to_string(),
+            format!("{}{}", "0".repeat((-decimal_at) as usize), digits),
+        )
+    } else if decimal_at as usize >= digits.len() {
+        (
+            format!(
+                "{}{}",
+                digits,
+                "0".repeat(decimal_at as usize - digits.len())
+            ),
+            String::new(),
+        )
+    } else {
+        let at = decimal_at as usize;
+        (digits[..at].to_string(), digits[at..].to_string())
+    };
+    while integer.len() > 1 && integer.starts_with('0') {
+        integer.remove(0);
+    }
+    while fraction_out.ends_with('0') {
+        fraction_out.pop();
+    }
+    let canonical = if fraction_out.is_empty() {
+        integer
+    } else {
+        format!("{integer}.{fraction_out}")
+    };
+    Some((negative && !zero, canonical, fraction_out.is_empty()))
+}
+
+fn exact_number_kind(lexeme: &str) -> Option<&'static str> {
+    let (negative, normalized, whole) = normalized_number(lexeme)?;
+    let digits = normalized
+        .split_once('.')
+        .map_or_else(|| normalized.clone(), |(head, _)| head.to_string());
+    let magnitude = digits.trim_start_matches('0');
+    if whole && magnitude.len() > 16
+        || (whole && magnitude.len() == 16 && magnitude > "9007199254740992")
+    {
+        return Some(INEXACT_INTEGER);
+    }
+    let parsed = lexeme.parse::<f64>().ok()?;
+    if !parsed.is_finite() {
+        return Some(INEXACT_NUMBER);
+    }
+    let rendered = crate::number::ecma_number_to_string(parsed);
+    let rendered =
+        normalized_number(&rendered).map(
+            |(negative, value, _)| {
+                if negative {
+                    format!("-{value}")
+                } else {
+                    value
+                }
+            },
+        )?;
+    let source = if negative {
+        format!("-{normalized}")
+    } else {
+        normalized
+    };
+    (source != rendered).then_some(INEXACT_NUMBER)
+}
+
+fn exact_numbers(bundle: &Json, sink: &mut Sink<'_>) {
+    let mut stack = vec![(bundle, String::new())];
+    while let Some((value, pointer)) = stack.pop() {
+        match value {
+            Json::Number(lexeme) => {
+                if let Some(code) = exact_number_kind(lexeme) {
+                    sink.emit(
+                        pointer,
+                        code,
+                        "the JSON number is not an exact contract number",
+                    );
+                }
+            }
+            Json::Array(items) => {
+                for (position, item) in items.iter().enumerate().rev() {
+                    stack.push((item, index(&pointer, position)));
+                }
+            }
+            Json::Object(members) => {
+                for (name, item) in members.iter().rev() {
+                    stack.push((item, child(&pointer, name)));
+                }
+            }
+            Json::Null | Json::Bool(_) | Json::Str(_) => {}
+        }
+    }
+}
+
 
 fn duplicate_identities(document: &Document<'_>, sink: &mut Sink<'_>) {
     let mut seen: HashSet<String> = HashSet::new();
@@ -1339,6 +1454,21 @@ fn field_rules(
                 constraint_rules(document, constraint, &index(&constraints_at, member), sink);
             }
         }
+        if let (Some(default), Some(type_ref)) = (field.get("defaultValue"), type_ref) {
+            if let Some(resolved) = document.resolve(type_ref) {
+                validate_value_site(
+                    default,
+                    resolved.scalar(),
+                    field
+                        .get("identity")
+                        .and_then(Json::as_str)
+                        .and_then(|identity| document.decimal_policy(identity)),
+                    child(&field_at, "defaultValue"),
+                    true,
+                    sink,
+                );
+            }
+        }
     }
 }
 
@@ -1352,7 +1482,13 @@ fn applies_to(keyword: &str, kind: &str, scalar: &str) -> bool {
             kind == "scalar"
                 && matches!(
                     scalar,
-                    "integer" | "decimal" | "number" | "date" | "datetime" | "duration"
+                    "integer"
+                        | "decimal"
+                        | "float32"
+                        | "float64"
+                        | "date"
+                        | "datetime"
+                        | "duration"
                 )
         }
         "minLength" | "maxLength" => kind == "scalar" && matches!(scalar, "string" | "bytes"),
@@ -1376,6 +1512,13 @@ fn is_canonical_integer(text: &str) -> bool {
         [first, rest @ ..] => (b'1'..=b'9').contains(first) && rest.iter().all(u8::is_ascii_digit),
         [] => false,
     }
+}
+
+fn parse_i128(text: &str) -> Option<i128> {
+    if !is_canonical_integer(text) {
+        return None;
+    }
+    text.parse::<i128>().ok()
 }
 
 /// A canonical decimal value: no exponent, no trailing fractional zero and no
@@ -1417,6 +1560,50 @@ fn decimal_admitted(text: &str, policy: &Json) -> bool {
     })
 }
 
+fn validate_value_site(
+    value: &Json,
+    scalar: &str,
+    policy: Option<(u32, u32)>,
+    pointer: String,
+    default: bool,
+    sink: &mut Sink<'_>,
+) {
+    let code = if default {
+        INVALID_DEFAULT_VALUE
+    } else {
+        INVALID_OPERAND
+    };
+    let valid = match scalar {
+        "integer" => matches!(value, Json::Str(text) if parse_i128(text).is_some()),
+        "decimal" => matches!(value, Json::Str(text) if policy.is_some_and(|policy| decimal_within_policy(text, policy))),
+        "float32" => matches!(value, Json::Number(number) if number.parse::<f64>().ok().is_some_and(float32_exact)),
+        "float64" => matches!(value, Json::Number(number) if number.parse::<f64>().ok().is_some_and(f64::is_finite)),
+        _ => true,
+    };
+    if !valid {
+        sink.emit(
+            pointer,
+            code,
+            "the numeric value is not spelled for its subject scalar",
+        );
+    }
+}
+
+fn float32_exact(value: f64) -> bool {
+    let narrowed = value as f32;
+    narrowed.is_finite() && narrowed as f64 == value
+}
+
+fn decimal_within_policy(text: &str, (precision, scale): (u32, u32)) -> bool {
+    if !is_canonical_decimal(text) {
+        return false;
+    }
+    let unsigned = text.strip_prefix('-').unwrap_or(text);
+    let (whole, fraction) = unsigned.split_once('.').unwrap_or((unsigned, ""));
+    let integer_digits = if whole == "0" { 0 } else { whole.len() as u32 };
+    integer_digits <= precision.saturating_sub(scale) && fraction.len() as u32 <= scale
+}
+
 fn constraint_rules(
     document: &Document<'_>,
     constraint: &Json,
@@ -1455,35 +1642,59 @@ fn constraint_rules(
             return;
         }
         if matches!(keyword, "min" | "max" | "exclusiveMin" | "exclusiveMax")
-            && matches!(scalar, "integer" | "decimal" | "number")
+            && matches!(scalar, "integer" | "decimal" | "float32" | "float64")
         {
             let policies = if scalar == "decimal" {
                 document.decimal_policies(applies.unwrap_or_default())
             } else {
                 Vec::new()
             };
-            // An integer bound may be a canonical decimal string, so a value
-            // past 2^53 is exact; a `number` bound is a JSON number.
-            let admitted = match constraint.get("operands").and_then(|o| o.get("value")) {
-                Some(Json::Number(_)) | None => scalar != "decimal",
-                Some(Json::Str(text)) => {
-                    (scalar == "integer" && is_canonical_integer(text))
-                        || (scalar == "decimal"
-                            && policies
-                                .first()
-                                .and_then(|subject| subject.get("decimal"))
-                                .is_some_and(|policy| {
-                                    is_canonical_decimal(text) && decimal_admitted(text, policy)
-                                }))
+            let value_at = child(&child(constraint_at, "operands"), "value");
+            match constraint.get("operands").and_then(|o| o.get("value")) {
+                Some(Json::Number(number))
+                    if scalar == "float64"
+                        && number.parse::<f64>().ok().is_some_and(f64::is_finite) => {}
+                Some(Json::Number(number))
+                    if scalar == "float32"
+                        && number.parse::<f64>().ok().is_some_and(float32_exact) => {}
+                Some(Json::Str(text)) if scalar == "integer" && is_canonical_integer(text) => {
+                    if parse_i128(text).is_none() {
+                        sink.emit(
+                            value_at,
+                            INTEGER_OUTSIDE_I128,
+                            "the integer value lies outside i128",
+                        );
+                    }
                 }
-                Some(_) => false,
-            };
-            if !admitted {
-                sink.emit(
-                    child(&child(constraint_at, "operands"), "value"),
+                Some(Json::Str(text))
+                    if scalar == "decimal"
+                        && document
+                            .decimal_policy(applies.unwrap_or_default())
+                            .is_some_and(|policy| decimal_within_policy(text, policy)) => {}
+                _ => sink.emit(
+                    value_at,
                     INVALID_OPERAND,
-                    "a numeric keyword on a numeric scalar takes an exact numeric operand",
-                );
+                    "a numeric keyword takes an exact string for integer and decimal, or a JSON number for float32 and float64",
+                ),
+            }
+        }
+        if keyword == "enumValues" {
+            if let Some(values) = constraint
+                .get("operands")
+                .and_then(|operands| operands.get("values"))
+                .and_then(Json::as_array)
+            {
+                let values_at = child(&child(constraint_at, "operands"), "values");
+                for (position, value) in values.iter().enumerate() {
+                    validate_value_site(
+                        value,
+                        scalar,
+                        applies.and_then(|identity| document.decimal_policy(identity)),
+                        index(&values_at, position),
+                        false,
+                        sink,
+                    );
+                }
             }
         }
     }

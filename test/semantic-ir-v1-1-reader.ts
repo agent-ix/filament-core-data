@@ -50,6 +50,8 @@ const NATIVE_SCALARS: Record<string, string> = {
 	Boolean: "boolean",
 	Integer: "integer",
 	Decimal: "decimal",
+	Float32: "float32",
+	Float64: "float64",
 	String: "string",
 	Timestamp: "datetime",
 	Duration: "duration",
@@ -68,7 +70,8 @@ const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	min: new Set([
 		"integer",
 		"decimal",
-		"number",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
@@ -76,7 +79,8 @@ const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	max: new Set([
 		"integer",
 		"decimal",
-		"number",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
@@ -84,7 +88,8 @@ const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	exclusiveMin: new Set([
 		"integer",
 		"decimal",
-		"number",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
@@ -92,7 +97,8 @@ const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	exclusiveMax: new Set([
 		"integer",
 		"decimal",
-		"number",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
@@ -104,7 +110,8 @@ const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 		"boolean",
 		"integer",
 		"decimal",
-		"number",
+		"float32",
+		"float64",
 		"string",
 		"bytes",
 		"date",
@@ -217,11 +224,6 @@ function checkField(
 	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
 ): void {
-	// FR-144 value-site rules use the published spellings
-	// `agent-ix.semantic-ir.INVALID_DEFAULT_VALUE`,
-	// `agent-ix.semantic-ir.DECIMAL_POLICY_MISSING`, and
-	// `agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT` when a decimal policy is
-	// absent, duplicated, or attached to a non-decimal field.
 	const resolved = resolveKind(types, field.typeRef);
 	if (!resolved) {
 		diagnostics.push({
@@ -323,17 +325,15 @@ function checkConstraint(
 		["min", "max", "exclusiveMin", "exclusiveMax"].includes(keyword) &&
 		resolved.kind === "scalar"
 	) {
-		const numeric =
-			resolved.scalar === "integer" ||
-			resolved.scalar === "decimal" ||
-			resolved.scalar === "number";
+		const numeric = ["integer", "decimal", "float32", "float64"].includes(
+			resolved.scalar,
+		);
 		const value = operands.value;
-		const valid =
-			resolved.scalar === "decimal"
-				? typeof value === "string"
-				: numeric
-					? typeof value === "number"
-					: typeof value === "string";
+		const valid = numeric
+			? ["float32", "float64"].includes(resolved.scalar)
+				? typeof value === "number"
+				: typeof value === "string"
+			: typeof value === "string";
 		if (!valid) {
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.INVALID_OPERAND",

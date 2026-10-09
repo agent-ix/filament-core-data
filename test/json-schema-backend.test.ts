@@ -75,13 +75,15 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		).toBe(true);
 	});
 
-	/** Traces: TC-1361; FR-100-AC-1. */
+	/** Trace: FR-100-AC-1. */
 	it("maps every IR structural kind and kernel scalar to a compilable schema", () => {
 		const prefix = "ix://agent-ix/all-kinds/type";
 		const scalarNames = [
 			"boolean",
 			"integer",
-			"number",
+			"decimal",
+			"float32",
+			"float64",
 			"string",
 			"bytes",
 			"date",
@@ -99,6 +101,36 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 					scalar,
 					extensions: [],
 				})),
+				{
+					identity: ref("WideInteger"),
+					displayName: "WideInteger",
+					kind: "scalar",
+					scalar: "integer",
+					constraints: [
+						{ keyword: "min", operands: { value: "0" } },
+						{
+							keyword: "max",
+							operands: { value: "18446744073709551615" },
+						},
+					],
+					extensions: [],
+				},
+				{
+					identity: ref("Decimal"),
+					displayName: "Decimal",
+					kind: "scalar",
+					scalar: "decimal",
+					decimal: { precision: 5, scale: 2 },
+					extensions: [],
+				},
+				{
+					identity: ref("DecimalAlias"),
+					displayName: "DecimalAlias",
+					kind: "alias",
+					target: ref("Decimal"),
+					decimal: { precision: 5, scale: 2 },
+					extensions: [],
+				},
 				{
 					identity: ref("Record"),
 					kind: "record",
@@ -159,11 +191,26 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		const schemas = generate({ ir })
 			.files.filter((file) => file.path !== "index.json")
 			.map((file) => JSON.parse(file.text));
-		expect(schemas).toHaveLength(16);
+		expect(schemas).toHaveLength(19);
 		const ajv = new Ajv2020({ strict: false });
 		addFormats(ajv);
 		for (const schema of schemas) ajv.addSchema(schema);
 		expect(schemas.every((schema) => ajv.getSchema(schema.$id))).toBe(true);
+
+		const schema = (name: string) =>
+			schemas.find((entry) => entry.title === name) as Record<string, unknown>;
+		const wideInteger = schema("WideInteger");
+		expect(wideInteger.type).toBe("string");
+		expect(wideInteger.pattern).toBe("^(0|-?[1-9][0-9]*)$");
+		expect(
+			new RegExp(String(wideInteger.pattern)).test("18446744073709551615"),
+		).toBe(true);
+		const decimal = schema("Decimal");
+		expect(decimal.type).toBe("string");
+		expect(new RegExp(String(decimal.pattern)).test("-0.5")).toBe(true);
+		expect(new RegExp(String(decimal.pattern)).test("-0")).toBe(false);
+		expect(new RegExp(String(decimal.pattern)).test("1.10")).toBe(false);
+		expect(schema("DecimalAlias").pattern).toBe(decimal.pattern);
 	});
 
 	/** Traces: TC-1749; FR-142-AC-5, FR-142-CON-2. */
@@ -353,7 +400,10 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			"id",
 			"versionNumber",
 		]);
-		expect(schema.properties.versionNumber.minimum).toBe(1);
+		expect(schema.properties.versionNumber).toMatchObject({
+			type: "string",
+			pattern: "^(0|-?[1-9][0-9]*)$",
+		});
 		expect(result.files.some((one) => one.path === "index.json")).toBe(true);
 	});
 
@@ -529,7 +579,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(
 			validate({
 				id: "0b6e6a2c-1d2a-4f0e-9c0f-7a3b1d2e3f40",
-				versionNumber: 1,
+				versionNumber: "1",
 				data: {},
 				hash: "sha256:abc",
 				createdAt: "2026-01-01T00:00:00Z",
@@ -539,7 +589,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(
 			validate({
 				id: "0b6e6a2c-1d2a-4f0e-9c0f-7a3b1d2e3f40",
-				versionNumber: 0,
+				versionNumber: "0",
 				data: {},
 				hash: "sha256:abc",
 				createdAt: "2026-01-01T00:00:00Z",

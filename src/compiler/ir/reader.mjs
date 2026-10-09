@@ -202,6 +202,8 @@ const NATIVE_SCALARS = new Map([
 	["Boolean", "boolean"],
 	["Integer", "integer"],
 	["Decimal", "decimal"],
+	["Float32", "float32"],
+	["Float64", "float64"],
 	["String", "string"],
 	["Timestamp", "datetime"],
 	["Duration", "duration"],
@@ -955,11 +957,18 @@ export function readContractIr(document, options = {}) {
 function valueAdmitted(scalar, value, policy) {
 	if (scalar === "integer") {
 		return (
-			(typeof value === "number" && Number.isSafeInteger(value)) ||
-			(typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value))
+			typeof value === "string" &&
+			/^(0|-?[1-9][0-9]*)$/.test(value) &&
+			withinI128(value)
 		);
 	}
 	if (scalar === "decimal") return decimalAdmitted(value, policy);
+	if (scalar === "float32" || scalar === "float64")
+		return (
+			typeof value === "number" &&
+			Number.isFinite(value) &&
+			(scalar !== "float32" || Math.fround(value) === value)
+		);
 
 	return true;
 }
@@ -968,8 +977,9 @@ function operandAdmitted(numeric, scalar, value, policy) {
 	if (!numeric) return typeof value === "string";
 	if (scalar === "integer")
 		return (
-			(typeof value === "number" && Number.isSafeInteger(value)) ||
-			(typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value))
+			typeof value === "string" &&
+			/^(0|-?[1-9][0-9]*)$/.test(value) &&
+			withinI128(value)
 		);
 	if (scalar === "decimal") return decimalAdmitted(value, policy);
 	return typeof value === "number" && Number.isFinite(value);
@@ -989,4 +999,13 @@ function decimalAdmitted(value, policy) {
 		integerDigits <= policy.precision - policy.scale &&
 		fraction.length <= policy.scale
 	);
+}
+
+function withinI128(value) {
+	try {
+		const parsed = BigInt(value);
+		return parsed >= -(2n ** 127n) && parsed <= 2n ** 127n - 1n;
+	} catch {
+		return false;
+	}
 }

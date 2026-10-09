@@ -70,8 +70,9 @@ export const KERNEL_SCALARS = Object.freeze({
 	any: "crate::support::SemanticValue",
 	boolean: "bool",
 	integer: "i64",
-	number: "f64",
 	decimal: "crate::support::Decimal",
+	float32: "f32",
+	float64: "f64",
 	string: "String",
 	bytes: null,
 	date: "crate::support::Date",
@@ -98,12 +99,38 @@ const NATIVE_SCALARS = new Map([
 	["Boolean", "boolean"],
 	["Integer", "integer"],
 	["Decimal", "decimal"],
+	["Float32", "float32"],
+	["Float64", "float64"],
 	["String", "string"],
 	["Timestamp", "datetime"],
 	["Duration", "duration"],
 	["Bytes", "bytes"],
 	["JsonObject", "any"],
 ]);
+
+const I64_MAX = 2n ** 63n - 1n;
+const I64_MIN = -(2n ** 63n);
+const U64_MAX = 2n ** 64n - 1n;
+const SAFE_INTEGER = 2n ** 53n - 1n;
+
+function integerRustType(definition) {
+	const bounds = { lower: -SAFE_INTEGER, upper: SAFE_INTEGER };
+	for (const constraint of definition?.constraints ?? []) {
+		const value = constraint?.operands?.value;
+		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value)) continue;
+		const parsed = BigInt(value);
+		if (constraint.keyword === "min") bounds.lower = bounds.lower > parsed ? bounds.lower : parsed;
+		if (constraint.keyword === "exclusiveMin") bounds.lower = bounds.lower > parsed + 1n ? bounds.lower : parsed + 1n;
+		if (constraint.keyword === "max") bounds.upper = bounds.upper === SAFE_INTEGER && parsed > SAFE_INTEGER ? parsed : bounds.upper < parsed ? bounds.upper : parsed;
+		if (constraint.keyword === "exclusiveMax") {
+			const effective = parsed - 1n;
+			bounds.upper = bounds.upper === SAFE_INTEGER && effective > SAFE_INTEGER ? effective : bounds.upper < effective ? bounds.upper : effective;
+		}
+	}
+	if (bounds.lower >= I64_MIN && bounds.upper <= I64_MAX) return "i64";
+	if (bounds.lower >= 0n && bounds.upper <= U64_MAX) return "u64";
+	return "i128";
+}
 
 function nativeScalar(ref) {
 	if (typeof ref !== "string" || !ref.startsWith(NATIVE_PREFIX))
@@ -610,7 +637,7 @@ function mapType(definition, context) {
 			}
 			model.scalar = scalar;
 			if (scalar === "decimal") model.decimal = definition.decimal;
-			model.inner = KERNEL_SCALARS[scalar];
+			model.inner = scalar === "integer" ? integerRustType(definition) : KERNEL_SCALARS[scalar];
 			model.row = `scalar:${scalar}`;
 			break;
 		}
@@ -779,11 +806,21 @@ function mapType(definition, context) {
 			const resolvedAlias = resolveKind(context.byIdentity, identity);
 			model.scalar = resolvedAlias?.scalar;
 			model.decimal = decimalPolicyOf(context.byIdentity, identity);
-			model.inner = target(
-				definition.target,
-				`${identity}#target`,
-				"alias target",
-			);
+			if (resolvedAlias?.scalar === "integer") {
+				const targetDefinition = context.byIdentity.get(definition.target);
+				model.inner = integerRustType({
+					constraints: [
+						...(targetDefinition?.constraints ?? []),
+						...(definition.constraints ?? []),
+					],
+				});
+			} else {
+				model.inner = target(
+					definition.target,
+					`${identity}#target`,
+					"alias target",
+				);
+			}
 			if (model.inner === undefined) return undefined;
 			break;
 		}
@@ -1035,13 +1072,31 @@ function mapField(field, owner, context, version) {
 	const nullable = field.nullable === true;
 	const optional = multiplicity.lower === 0;
 
-	const element = referenceTo(
-		field.typeRef,
-		`${field.identity}#typeRef`,
-		"field typeRef",
-		owner,
-		context,
-	);
+	const resolvedField = resolveKind(context.byIdentity, field.typeRef) ?? {
+		kind: "scalar",
+		scalar: nativeScalar(field.typeRef),
+	};
+	const targetDefinition = context.byIdentity.get(field.typeRef);
+	const integerFieldType =
+		resolvedField?.scalar === "integer" &&
+		Array.isArray(field.constraints) &&
+		field.constraints.length > 0
+			? integerRustType({
+					constraints: [
+						...(targetDefinition?.constraints ?? []),
+						...field.constraints,
+					],
+			  })
+			: undefined;
+	const element =
+		integerFieldType ??
+		referenceTo(
+			field.typeRef,
+			`${field.identity}#typeRef`,
+			"field typeRef",
+			owner,
+			context,
+		);
 	if (element === undefined) return undefined;
 
 	let rustType = element;

@@ -525,7 +525,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
 					"keyword": "min",
 					"operands": {
-						"value": 1
+						"value": "1"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MIN",
 					"origin": {
@@ -542,7 +542,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
 					"keyword": "max",
 					"operands": {
-						"value": 2147483647
+						"value": "2147483647"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {
@@ -578,7 +578,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/DecimalPolicyScale",
 					"keyword": "min",
 					"operands": {
-						"value": 0
+						"value": "0"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MIN",
 					"origin": {
@@ -595,7 +595,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/DecimalPolicyScale",
 					"keyword": "max",
 					"operands": {
-						"value": 2147483647
+						"value": "2147483647"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {
@@ -1059,7 +1059,7 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"scalar": "number"
+			"scalar": "float64"
 		},
 		{
 			"identity": "ix://agent-ix/semantic-core/EnumValuesConstraintValuesBoolean",
@@ -1256,7 +1256,7 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"scalar": "number"
+			"scalar": "float64"
 		},
 		{
 			"identity": "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueString",
@@ -1440,7 +1440,7 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"scalar": "number"
+			"scalar": "float64"
 		},
 		{
 			"identity": "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueString",
@@ -1936,6 +1936,30 @@
 					}
 				},
 				{
+					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/Float32",
+					"name": "Float32",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/semantic-core",
+							"path": "packages/semantic-core/generated/json-schema/KernelScalar.json",
+							"startLine": 1,
+							"startColumn": 1
+						}
+					}
+				},
+				{
+					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/Float64",
+					"name": "Float64",
+					"origin": {
+						"source": {
+							"sourceIdentity": "ix://agent-ix/semantic-core",
+							"path": "packages/semantic-core/generated/json-schema/KernelScalar.json",
+							"startLine": 1,
+							"startColumn": 1
+						}
+					}
+				},
+				{
 					"identity": "ix://agent-ix/semantic-core/KernelScalar/variant/String",
 					"name": "String",
 					"origin": {
@@ -2107,7 +2131,7 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"scalar": "number"
+			"scalar": "float64"
 		},
 		{
 			"identity": "ix://agent-ix/semantic-core/MaxConstraintValueString",
@@ -2294,7 +2318,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
 					"keyword": "min",
 					"operands": {
-						"value": 0
+						"value": "0"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MIN",
 					"origin": {
@@ -2311,7 +2335,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
 					"keyword": "max",
 					"operands": {
-						"value": 2147483647
+						"value": "2147483647"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {
@@ -2438,7 +2462,7 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"scalar": "number"
+			"scalar": "float64"
 		},
 		{
 			"identity": "ix://agent-ix/semantic-core/MinConstraintValueString",
@@ -2625,7 +2649,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/MinLengthConstraintValue",
 					"keyword": "min",
 					"operands": {
-						"value": 0
+						"value": "0"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MIN",
 					"origin": {
@@ -2642,7 +2666,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/MinLengthConstraintValue",
 					"keyword": "max",
 					"operands": {
-						"value": 2147483647
+						"value": "2147483647"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {
@@ -2785,7 +2809,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/MultiplicityLower",
 					"keyword": "min",
 					"operands": {
-						"value": 0
+						"value": "0"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MIN",
 					"origin": {
@@ -2802,7 +2826,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/MultiplicityLower",
 					"keyword": "max",
 					"operands": {
-						"value": 2147483647
+						"value": "2147483647"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {
@@ -2838,7 +2862,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/MultiplicityUpper",
 					"keyword": "min",
 					"operands": {
-						"value": 0
+						"value": "0"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MIN",
 					"origin": {
@@ -2855,7 +2879,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/MultiplicityUpper",
 					"keyword": "max",
 					"operands": {
-						"value": 2147483647
+						"value": "2147483647"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {
@@ -3624,7 +3648,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusStartLine",
 					"keyword": "min",
 					"operands": {
-						"value": 1
+						"value": "1"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MIN",
 					"origin": {
@@ -3641,7 +3665,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusStartLine",
 					"keyword": "max",
 					"operands": {
-						"value": 2147483647
+						"value": "2147483647"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {
@@ -3677,7 +3701,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusStartColumn",
 					"keyword": "min",
 					"operands": {
-						"value": 1
+						"value": "1"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MIN",
 					"origin": {
@@ -3694,7 +3718,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusStartColumn",
 					"keyword": "max",
 					"operands": {
-						"value": 2147483647
+						"value": "2147483647"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {
@@ -3730,7 +3754,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusEndLine",
 					"keyword": "min",
 					"operands": {
-						"value": 1
+						"value": "1"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MIN",
 					"origin": {
@@ -3747,7 +3771,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusEndLine",
 					"keyword": "max",
 					"operands": {
-						"value": 2147483647
+						"value": "2147483647"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {
@@ -3783,7 +3807,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusEndColumn",
 					"keyword": "min",
 					"operands": {
-						"value": 1
+						"value": "1"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MIN",
 					"origin": {
@@ -3800,7 +3824,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/SourceLocusEndColumn",
 					"keyword": "max",
 					"operands": {
-						"value": 2147483647
+						"value": "2147483647"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {

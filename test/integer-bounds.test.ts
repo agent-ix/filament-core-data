@@ -9,10 +9,9 @@ import { createHost } from "../src/compiler/host.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
 
 /**
- * FR-050-AC-14 (TC-1825): an integer bound is a JSON number or a canonical
- * decimal string. The Node reader and the oracle accept the canonical strings
- * and refuse the rest with INVALID_OPERAND; the TypeScript and JSON Schema
- * backends emit a bound they can hold exactly and refuse one past 2^53.
+ * FR-144 (TC-1825): an integer bound is a canonical decimal string. The Node
+ * reader and the oracle accept the canonical strings and refuse the rest with INVALID_OPERAND; the TypeScript and JSON Schema
+ * backends preserve a bound past 2^53 without a representability refusal.
  */
 
 type Loose = { [name: string]: (...args: unknown[]) => unknown };
@@ -63,10 +62,11 @@ const generated = (backend: typeof typescriptBackend, ir: Ir) =>
 	};
 
 const operand = "agent-ix.semantic-ir.INVALID_OPERAND";
-const ACCEPTED = ["18446744073709551615", "-9223372036854775809", "0", 7];
-const REFUSED = ["01", "+1", " 1", "1 ", "-0", "1.0", "007", "zero"];
+const ACCEPTED = ["18446744073709551615", "-9223372036854775809", "0"];
+const REFUSED = ["01", "+1", " 1", "1 ", "-0", "1.0", "007", "zero", 7];
 
 describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
+	/** Trace: FR-144-AC-2. */
 	it("the reader accepts canonical strings and refuses the rest (TC-1825)", () => {
 		for (const value of ACCEPTED) {
 			expect(readerCodes(withBound(value)), String(value)).toEqual([]);
@@ -85,19 +85,17 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		}
 	});
 
-	it("the TypeScript backend emits a safe bound and refuses one past 2^53 (TC-1825)", () => {
+	it("the TypeScript backend preserves a wide bound as a string subject (TC-1825)", () => {
 		const safe = generated(typescriptBackend, withBound("9007199254740991"));
 		expect(safe.diagnostics.filter((one) => one.blocking)).toEqual([]);
 		expect(safe.state).toBe("success");
 		expect(JSON.stringify(safe.files)).toContain("9007199254740991");
-		const unsafe = generated(typescriptBackend, withBound("9007199254740993"));
-		expect(unsafe.state).not.toBe("success");
-		expect(unsafe.diagnostics.map((one) => one.code)).toContain(
-			"agent-ix.typescript-backend.INTEGER_BOUND_NOT_EXACT",
-		);
+		const wide = generated(typescriptBackend, withBound("9007199254740993"));
+		expect(wide.state).toBe("success");
+		expect(JSON.stringify(wide.files)).toContain("9007199254740993");
 	});
 
-	it("the JSON Schema backend emits a safe bound and refuses one past 2^53 (TC-1825)", () => {
+	it("the JSON Schema backend preserves a wide bound as a string schema (TC-1825)", () => {
 		const safe = generated(
 			jsonSchemaBackend as never,
 			withBound("9007199254740991"),
@@ -105,15 +103,15 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		expect(safe.diagnostics.filter((one) => one.blocking)).toEqual([]);
 		expect(safe.state).toBe("success");
 		expect(JSON.stringify(safe.files)).toContain("9007199254740991");
-		const unsafe = generated(
+		const wide = generated(
 			jsonSchemaBackend as never,
 			withBound("9007199254740993"),
 		);
-		expect(unsafe.state).toBe("unsupported");
-		expect(unsafe.diagnostics[0]?.message).toContain("9007199254740993");
+		expect(wide.state).toBe("success");
+		expect(JSON.stringify(wide.files)).toContain("9007199254740993");
 	});
 
-	it("the Rust backend emits an in-range string bound as the exact i64 literal and refuses one past i64 (TC-1825)", () => {
+	it("the Rust backend accepts canonical i128 bounds and keeps an i64 bound exact (TC-1825)", () => {
 		const lowered = (value: string) =>
 			(
 				lowerConstraints as (
@@ -143,13 +141,11 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 			form: "numeric",
 			value: "9223372036854775807",
 		});
-		// One past i64::MAX, and i64::MIN - 1, are refused.
+		// The i128 ceiling admits values just beyond the i64 range.
 		for (const value of ["9223372036854775808", "-9223372036854775809"]) {
-			const refused = lowered(value);
-			expect(refused.checks).toEqual([]);
-			expect(refused.diagnostics.map((one) => one.code)).toEqual([
-				"agent-ix.semantic-ir.INVALID_OPERAND",
-			]);
+			const accepted = lowered(value);
+			expect(accepted.diagnostics).toEqual([]);
+			expect(accepted.checks[0]).toMatchObject({ form: "numeric", value });
 		}
 		// A non-canonical spelling is refused too.
 		expect(lowered("0123").diagnostics).toHaveLength(1);

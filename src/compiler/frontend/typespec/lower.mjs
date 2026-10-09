@@ -501,6 +501,12 @@ export function lowerProgram(options) {
 		const base = builtinBase(target?.kind === "Scalar" ? target : target?.type);
 		const scalar = base ? BUILTIN_SCALARS.get(base) : undefined;
 		if (
+			scalar === "integer" &&
+			typeof value === "number" &&
+			Number.isInteger(value)
+		)
+			return String(value);
+		if (
 			scalar === "decimal" &&
 			typeof value === "number" &&
 			Number.isFinite(value)

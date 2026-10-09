@@ -421,7 +421,7 @@
 				}
 			},
 			"roles": [],
-			"scalar": "number",
+			"scalar": "float64",
 			"unknownPolicy": "reject"
 		},
 		{
@@ -2542,7 +2542,7 @@
 					"identity": "ix://agent-ix/orders/constraint/VO-001-quantity-min",
 					"keyword": "min",
 					"operands": {
-						"value": 1
+						"value": "1"
 					},
 					"origin": {
 						"source": {

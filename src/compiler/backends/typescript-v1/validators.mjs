@@ -192,6 +192,10 @@ function orderedCondition(subject, operator, value) {
 	}
 	if (scalar === "decimal")
 		return `compareDecimal(candidate, ${literal(value)}) ${operator} 0`;
+	// Safe integer bounds can be compared as numbers. Wide integer subjects use
+	// the BigInt branch below and retain their decimal string exactly.
+	if (subject.wideInteger && typeof value === "string")
+		return `BigInt(candidate) ${operator} BigInt(${literal(value)})`;
 	if (typeof value === "string")
 		return `candidate ${operator} ${Number(value)}`;
 	return `candidate ${operator} ${literal(value)}`;
@@ -464,6 +468,17 @@ function delegatingCheckBody(model, entry) {
 			'\tif (typeof candidate !== "string" || !isCanonicalDecimal(candidate) || !decimalWithinPolicy(candidate, ' +
 				`${entry.decimal.precision}, ${entry.decimal.scale})) {`,
 			'\t\tfail(errors, pointer, CODES.SHAPE_MISMATCH, "the decimal value is not canonical or is outside its policy");',
+			"\t\treturn false;",
+			"\t}",
+			...constraintStatements(model, entry.identity, "\t"),
+			"\treturn errors.length === before;",
+		);
+		return lines;
+	}
+	if (entry.kind === "alias" && entry.wideInteger) {
+		lines.push(
+			'\tif (typeof candidate !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(candidate)) {',
+			'\t\tfail(errors, pointer, CODES.NOT_A_INTEGER, "the value is not a canonical integer string");',
 			"\t\treturn false;",
 			"\t}",
 			...constraintStatements(model, entry.identity, "\t"),
