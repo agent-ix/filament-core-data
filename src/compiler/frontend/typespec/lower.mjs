@@ -895,6 +895,17 @@ export function lowerProgram(options) {
 			});
 		}
 		const decimalPolicy = context.state("decimal", property);
+		if (decimalPolicy) {
+			extensions.push({
+				identity: `${EXTENSION_BASE}/decimal`,
+				version: "1.0.0",
+				required: true,
+				payload: {
+					precision: decimalPolicy.precision,
+					scale: decimalPolicy.scale,
+				},
+			});
+		}
 		const resolvedProperty = resolvedKindOf(typeRef);
 		if (resolvedProperty?.scalar === "decimal" && !decimalPolicy) {
 			context.raise(

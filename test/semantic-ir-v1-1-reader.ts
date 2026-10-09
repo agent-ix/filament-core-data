@@ -217,6 +217,11 @@ function checkField(
 	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
 ): void {
+	// FR-144 value-site rules use the published spellings
+	// `agent-ix.semantic-ir.INVALID_DEFAULT_VALUE`,
+	// `agent-ix.semantic-ir.DECIMAL_POLICY_MISSING`, and
+	// `agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT` when a decimal policy is
+	// absent, duplicated, or attached to a non-decimal field.
 	const resolved = resolveKind(types, field.typeRef);
 	if (!resolved) {
 		diagnostics.push({

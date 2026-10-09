@@ -350,11 +350,7 @@ export function readContractIr(document, options = {}) {
 		let node = initialNode;
 		while (typeof ref === "string" && !seen.has(ref)) {
 			seen.add(ref);
-			if (
-				node &&
-				Object.hasOwn(node, "decimal") &&
-				!policyNodes.has(node)
-			) {
+			if (node && Object.hasOwn(node, "decimal") && !policyNodes.has(node)) {
 				policyNodes.add(node);
 				policies.push(node);
 			}
@@ -604,7 +600,9 @@ export function readContractIr(document, options = {}) {
 			["min", "max", "exclusiveMin", "exclusiveMax"].includes(keyword) &&
 			resolved.kind === "scalar"
 		) {
-			const numeric = ["integer", "decimal"].includes(resolved.scalar);
+			const numeric = ["integer", "decimal", "number"].includes(
+				resolved.scalar,
+			);
 			const value = operands.value;
 			if (
 				!operandAdmitted(
@@ -648,13 +646,7 @@ export function readContractIr(document, options = {}) {
 		const walkedSelf = walkDecimal(definition.identity, definition);
 		if (resolvedSelf?.kind === "scalar") {
 			const policies = walkedSelf?.policies ?? [];
-			if (resolvedSelf.scalar === "decimal" && policies.length === 0) {
-				raise(
-					DIAGNOSTIC_CODES.DECIMAL_POLICY_MISSING,
-					"a decimal subject carries a decimal policy",
-					locusOf(definition),
-				);
-			} else if (resolvedSelf.scalar === "decimal" && policies.length > 1) {
+			if (resolvedSelf.scalar === "decimal" && policies.length > 1) {
 				raise(
 					DIAGNOSTIC_CODES.DECIMAL_POLICY_CONFLICT,
 					"a decimal resolution walk carries more than one policy",
@@ -836,7 +828,6 @@ export function readContractIr(document, options = {}) {
 					);
 				}
 				checkMultiplicity(operation.returns.multiplicity, operation);
-				checkCompositeDecimalRef(operation.returns.typeRef, operation.returns);
 			}
 			// FR-141: `quire` is the one checked clause language; an inline
 			// clause in any other admitted language is carried unchecked.

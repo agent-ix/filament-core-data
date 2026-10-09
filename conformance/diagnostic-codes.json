@@ -214,7 +214,7 @@
 				"spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md"
 			],
 			"rule": "A field default value is not in the exact wire domain of its resolved scalar.",
-			"citation": "a defaultValue uses the same wire rule as an instance value",
+			"citation": "If a `defaultValue` breaks the rule for its subject",
 			"exercisedBy": "test:TC-279"
 		},
 		{
