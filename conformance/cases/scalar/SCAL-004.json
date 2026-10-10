@@ -15,7 +15,7 @@
 		{
 			"op": "replace",
 			"path": "/ir/types/1/scalar",
-			"value": "number"
+			"value": "float64"
 		},
 		{
 			"op": "test",

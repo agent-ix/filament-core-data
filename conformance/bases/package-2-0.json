@@ -71,7 +71,7 @@
 						"identity": "ix://agent-ix/conformance/constraint/count-min",
 						"keyword": "min",
 						"operands": {
-							"value": 0
+							"value": "0"
 						},
 						"appliesTo": "ix://agent-ix/conformance/type/Count",
 						"diagnosticCode": "agent-ix.conformance.COUNT_MIN",

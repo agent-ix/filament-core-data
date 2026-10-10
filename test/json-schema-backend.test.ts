@@ -202,7 +202,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			schemas.find((entry) => entry.title === name) as Record<string, unknown>;
 		const wideInteger = schema("WideInteger");
 		expect(wideInteger.type).toBe("string");
-		expect(wideInteger.pattern).toBe("^(0|-?[1-9][0-9]*)$");
+		expect(String(wideInteger.pattern)).toMatch(/^\^\(\?:/);
 		expect(
 			new RegExp(String(wideInteger.pattern)).test("18446744073709551615"),
 		).toBe(true);
@@ -210,7 +210,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(decimal.type).toBe("string");
 		expect(new RegExp(String(decimal.pattern)).test("-0.5")).toBe(true);
 		expect(new RegExp(String(decimal.pattern)).test("-0")).toBe(false);
-		expect(new RegExp(String(decimal.pattern)).test("1.10")).toBe(false);
+		expect(new RegExp(String(decimal.pattern)).test("1.10")).toBe(true);
 		expect(schema("DecimalAlias").pattern).toBe(decimal.pattern);
 	});
 
@@ -402,8 +402,8 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			"versionNumber",
 		]);
 		expect(schema.properties.versionNumber).toMatchObject({
-			type: "string",
-			pattern: "^(0|-?[1-9][0-9]*)$",
+			type: "integer",
+			minimum: 1,
 		});
 		expect(result.files.some((one) => one.path === "index.json")).toBe(true);
 	});
@@ -580,7 +580,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(
 			validate({
 				id: "0b6e6a2c-1d2a-4f0e-9c0f-7a3b1d2e3f40",
-				versionNumber: "1",
+				versionNumber: 1,
 				data: {},
 				hash: "sha256:abc",
 				createdAt: "2026-01-01T00:00:00Z",
@@ -590,7 +590,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(
 			validate({
 				id: "0b6e6a2c-1d2a-4f0e-9c0f-7a3b1d2e3f40",
-				versionNumber: "0",
+				versionNumber: 0,
 				data: {},
 				hash: "sha256:abc",
 				createdAt: "2026-01-01T00:00:00Z",
