@@ -314,7 +314,7 @@ pub struct Declaration {
     pub references: Vec<(Member, Vec<String>)>,
     /// The selected core rules, in declaration order.
     pub rules: Vec<Rule>,
-    /// The Quire meaning id, carried opaquely.
+    /// The Quire meaning id, retained verbatim.
     pub meaning: String,
     /// Whether an instance never changes once created; `false` when the
     /// declaration does not state it.

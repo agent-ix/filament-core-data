@@ -15,22 +15,6 @@ class ContractVersion(Enum):
     field_2_0_0 = '2.0.0'
 
 
-class Package(Struct):
-    identity: common_schema.PackageIdentity
-    lockDigest: common_schema.Sha256
-    manifestDigest: common_schema.Sha256
-    mappingVersions: list[common_schema.Semver]
-    profileVersions: list[common_schema.Semver]
-    version: common_schema.Semver
-
-
-class Source(Struct):
-    dialect: common_schema.FrontendDialect
-    digest: common_schema.Sha256
-    identity: common_schema.SemanticIdentity
-    version: common_schema.Semver
-
-
 class Keyword(Enum):
     min = 'min'
     max = 'max'
@@ -341,6 +325,23 @@ class Returns(Struct):
     decimal: DecimalPolicy | UnsetType = UNSET
 
 
+type PackageRevision1 = Annotated[
+    str,
+    Meta(
+        description='A package or source revision: SemVer or a canonical non-negative integer string, preserved as authored.',
+        pattern='^(0|[1-9][0-9]*)(?![\\s\\S])',
+    ),
+]
+
+
+type PackageRevision = Annotated[
+    common_schema.Semver | PackageRevision1,
+    Meta(
+        description='A package or source revision: SemVer or a canonical non-negative integer string, preserved as authored.'
+    ),
+]
+
+
 class Extent(Enum):
     closed = 'closed'
     open = 'open'
@@ -424,6 +425,22 @@ class Scalar(Enum):
     duration = 'duration'
     uuid = 'uuid'
     any = 'any'
+
+
+class Package(Struct):
+    identity: common_schema.PackageIdentity
+    lockDigest: common_schema.Sha256
+    manifestDigest: common_schema.Sha256
+    mappingVersions: list[common_schema.Semver]
+    profileVersions: list[common_schema.Semver]
+    version: PackageRevision
+
+
+class Source(Struct):
+    dialect: common_schema.FrontendDialect
+    digest: common_schema.Sha256
+    identity: common_schema.SemanticIdentity
+    version: PackageRevision
 
 
 class Clause(Struct):

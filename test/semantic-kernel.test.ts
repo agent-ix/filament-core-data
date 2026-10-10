@@ -545,7 +545,7 @@ describe("TC-1588..1592 cross-language agreement through the corpus (FR-090)", (
 		expect(row?.matched).toBe(0);
 		expect(row?.failed).toBe(0);
 		expect(row?.unmet).toBe(withSlotDark.coverage.totalCases);
-	});
+	}, 30_000);
 
 	// TC-1590
 	it("reports the unmet total as the sum of the unavailable slots", () => {

@@ -116,6 +116,8 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.semantic-ir.UNKNOWN_EDGE_CATEGORY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.sysml-target.DECLARED_LOSS` | warning | no | `ix://agent-ix/filament-core-data/sysml-target` |
+| `agent-ix.sysml-target.UNSUPPORTED_CONSTRUCT` | error | yes | `ix://agent-ix/filament-core-data/sysml-target` |
 
 ## Limits
 

@@ -275,6 +275,7 @@ describe("FR-030 version discriminator, source dialect, and manifest targets", (
 			"typescript",
 			"python-pydantic-v2",
 			"python-dataclass",
+			"sysml-v2-textual",
 		]);
 		expect(
 			object(common.representationFormat, "representationFormat").enum,

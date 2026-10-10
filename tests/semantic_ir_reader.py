@@ -734,10 +734,16 @@ def _check_composite_cycles(
 def read_semantic_ir(
     document: Any, lock_exports: set[str] | None = None
 ) -> list[dict[str, str]]:
-    """Return the cross-field diagnostics; schema validity is checked separately."""
-    out: list[dict[str, str]] = []
+    """Return construct admission and cross-field diagnostics.
+
+    JSON Schema validity is checked separately. Construct admission depends on
+    another document node, so it runs here before semantic rules as well.
+    """
     if not isinstance(document, dict):
         return [_diag("agent-ix.semantic-ir.INVALID_DOCUMENT", "", "not an object")]
+    out = construct_diagnostics(document)
+    if out:
+        return out
     version = str(document.get("contractVersion"))
     types = {
         str(definition.get("identity")): definition
@@ -810,32 +816,102 @@ MEMBER_DEFAULTS = {
     member["name"]: member["default"] for member in VOCABULARY["members"]
 }
 # A rule that states a cardinality: the member it names holds at least one item.
-NON_EMPTY_RULES = {"min_clauses": "clauses", "min_operations": "operations"}
+RULES_BY_NAME = {rule["name"]: rule for rule in VOCABULARY["rules"]}
+NON_EMPTY_RULES = {
+    rule["name"]: rule["member"]
+    for rule in VOCABULARY["rules"]
+    if rule.get("nonEmpty", False)
+}
 
 
-def construct_findings(document: Any) -> list[str]:
-    """The schema-stage requirements a 2.0.0 construct declaration places on types.
+def _declaration_requirement(
+    declaration: dict[str, Any], at: str
+) -> tuple[str, str] | None:
+    """The declaration integrity obligations beyond its JSON Schema shape."""
+    members = declaration.get("members") or {}
 
-    A type of a construct kind must name a `constructs` entry, carry each member
-    the declaration requires, carry none it forbids, and hold at least one item
-    in a member a cardinality rule names; a type of a core kind carries no
-    construct member; every declaration is used by some type.
+    def presence(member: str) -> str:
+        return members.get(member, MEMBER_DEFAULTS[member])
+
+    for selected, requirements in (
+        ("identity", VOCABULARY.get("identityRequirements", [])),
+        ("shape", VOCABULARY.get("shapeRequirements", [])),
+    ):
+        for requirement in requirements:
+            if declaration.get(selected) != requirement[selected]:
+                continue
+            member, required = requirement["member"], requirement["presence"]
+            if presence(member) != required:
+                return (
+                    f"{at}.{selected}",
+                    f"a {declaration[selected]} declaration requires "
+                    f"{member} to be {required}",
+                )
+    for index, name in enumerate(declaration.get("rules") or []):
+        rule = RULES_BY_NAME.get(name)
+        if rule is None:
+            continue  # Unknown rule names are rejected by the published schema.
+        if presence(rule["member"]) != rule["presence"]:
+            return (
+                f"{at}.rules.{index}",
+                f"the rule {name} requires {rule['member']} to be {rule['presence']}",
+            )
+    for member in declaration.get("references") or {}:
+        if member in MEMBER_DEFAULTS and presence(member) == "forbidden":
+            return (
+                f"{at}.references.{member}",
+                f"the reference {member} is to a member the declaration forbids",
+            )
+    return None
+
+
+def construct_diagnostics(document: Any) -> list[dict[str, str]]:
+    """Schema-stage construct obligations with stable codes and member paths.
+
+    The published schema handles vocabulary shapes. These checks resolve kinds,
+    enforce declaration integrity and apply member presence/cardinality data to
+    type definitions; every declaration is checked regardless of use.
     """
     if not isinstance(document, dict) or document.get("contractVersion") != "2.0.0":
         return []
-    out: list[str] = []
+    out: list[dict[str, str]] = []
+
+    def emit(path: str, message: str) -> None:
+        out.append(_diag("agent-ix.semantic-ir.SCHEMA_VIOLATION", path, message))
+
     entries = [
         (entry.get("kind"), entry.get("construct") or {})
         for entry in _objects(document.get("constructs"))
     ]
     used: set[int] = set()
+    seen: set[tuple[str, str]] = set()
+    for index, (kind, declaration) in enumerate(entries):
+        if isinstance(declaration, dict):
+            defect = _declaration_requirement(
+                declaration, f"constructs.{index}.construct"
+            )
+            if defect is not None:
+                emit(*defect)
+        if not isinstance(kind, dict):
+            continue
+        module, name = kind.get("module"), kind.get("name")
+        if not isinstance(module, str) or not isinstance(name, str):
+            continue
+        key = (module, name)
+        if key in seen:
+            emit(
+                f"constructs.{index}.kind",
+                f"constructs declares the kind {module}/{name} once",
+            )
+        seen.add(key)
+
     for index, definition in enumerate(_objects(document.get("types"))):
         at = f"types.{index}"
         kind = definition.get("kind")
         if not isinstance(kind, dict):
             for name, default in MEMBER_DEFAULTS.items():
                 if default == "forbidden" and name in definition:
-                    out.append(f"{at}.{name}: carried by a construct kind only")
+                    emit(f"{at}.{name}", "carried by a construct kind only")
             continue
         found = next(
             (
@@ -848,7 +924,7 @@ def construct_findings(document: Any) -> list[str]:
             None,
         )
         if found is None:
-            out.append(f"{at}.kind: names no constructs entry")
+            emit(f"{at}.kind", "names no constructs entry")
             continue
         used.add(found)
         declaration = entries[found][1]
@@ -856,22 +932,16 @@ def construct_findings(document: Any) -> list[str]:
         for name, default in MEMBER_DEFAULTS.items():
             presence = presences.get(name, default)
             if presence == "required" and name not in definition:
-                out.append(f"{at}: requires {name}")
+                emit(at, f"requires {name}")
             elif presence == "forbidden" and name in definition:
-                out.append(f"{at}.{name}: forbidden")
+                emit(f"{at}.{name}", "forbidden")
         for rule in declaration.get("rules") or []:
             name = NON_EMPTY_RULES.get(rule)
             if name is not None and definition.get(name) == []:
-                out.append(f"{at}.{name}: declares at least one")
+                emit(f"{at}.{name}", "declares at least one")
         if definition.get("identityFields") == []:
-            out.append(f"{at}.identityFields: names at least one field")
-    # A population's kind resolves against the same constructs table exactly
-    # like a type definition's kind (QSpec FR-154 row 2/AC-7, FR-208): a
-    # dangling kind is a finding, and a resolved kind counts as used so the
-    # "no type is of that kind" check below does not misfire on a constructs
-    # entry a population alone uses.
+            emit(f"{at}.identityFields", "names at least one field")
     for index, population in enumerate(_objects(document.get("populations"))):
-        at = f"populations.{index}"
         kind = population.get("kind")
         if not isinstance(kind, dict):
             continue
@@ -886,15 +956,28 @@ def construct_findings(document: Any) -> list[str]:
             None,
         )
         if found is None:
-            out.append(f"{at}.kind: names no constructs entry")
-            continue
-        used.add(found)
-    for position, (declared, _) in enumerate(entries):
-        if isinstance(declared, dict) and position not in used:
-            out.append(
-                f"constructs.{position}.kind: no type or population is of that kind"
+            emit(f"populations.{index}.kind", "names no constructs entry")
+        else:
+            used.add(found)
+    for position, (declared, declaration) in enumerate(entries):
+        if (
+            isinstance(declared, dict)
+            and position not in used
+            and isinstance(declaration, dict)
+            and declaration.get("meaning") != "quire.meaning.model.population/v1"
+        ):
+            emit(
+                f"constructs.{position}.kind",
+                "no type or population is of that kind",
             )
     return out
+
+
+def construct_findings(document: Any) -> list[str]:
+    """Readable schema findings; codes and member paths remain available separately."""
+    return [
+        f"{row['path']}: {row['message']}" for row in construct_diagnostics(document)
+    ]
 
 
 def schema_valid(validator: Any, document: Any) -> bool:

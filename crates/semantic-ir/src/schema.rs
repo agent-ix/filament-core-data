@@ -147,6 +147,14 @@ fn is_semver(text: &str) -> bool {
     numeric_ok && tail_ok(pre) && tail_ok(build)
 }
 
+/// Source and package revisions retain either SemVer or a canonical integer string.
+fn is_package_revision(text: &str) -> bool {
+    is_semver(text)
+        || (!text.is_empty()
+            && text.chars().all(|c| c.is_ascii_digit())
+            && (text.len() == 1 || !text.starts_with('0')))
+}
+
 fn is_sha256(text: &str) -> bool {
     match text.strip_prefix("sha256:") {
         Some(rest) => {
@@ -515,7 +523,6 @@ struct ConstructEntry<'a> {
     name: &'a str,
     /// The declaration, when the entry's `construct` reads as one.
     declaration: Option<Declaration>,
-    /// Whether a type definition's kind names the entry.
     used: bool,
 }
 
@@ -717,6 +724,7 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
             }
         }
     }
+    // TC-235 K2 retains its population declaration without an instance.
     {
         let entries = ir.get("constructs").and_then(Json::as_array).unwrap_or(&[]);
         for (position, entry) in entries.iter().enumerate() {
@@ -731,6 +739,11 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
             if table
                 .position(module, name)
                 .is_some_and(|found| !table.entries[found].used)
+                && entry
+                    .get("construct")
+                    .and_then(|declaration| declaration.get("meaning"))
+                    .and_then(Json::as_str)
+                    != Some("quire.meaning.model.population/v1")
             {
                 f.push(
                     &child(&index(&constructs_at, position), "kind"),
@@ -790,11 +803,7 @@ fn population_schema(
         f,
     );
     let kind_at = child(at, "kind");
-    // A population's kind resolves against the document's own constructs
-    // table exactly like a type definition's kind (QSpec FR-154 row 2/AC-7,
-    // FR-208): a dangling kind refuses, and a resolved kind counts as used so
-    // the "no type definition or population is of that kind" check below
-    // does not misfire on a constructs entry a population alone uses.
+    // Every population kind resolves against the document's constructs table.
     if let Some((module, name)) = population
         .get("kind")
         .and_then(|kind| construct_kind(kind, &kind_at, f))
@@ -843,8 +852,8 @@ fn ir_source(source: &Json, at: &str, f: &mut Findings) {
     expect_shape(
         source.get("version"),
         &child(at, "version"),
-        is_semver,
-        "a version is SemVer",
+        is_package_revision,
+        "a revision is SemVer or a canonical non-negative integer string",
         f,
     );
     expect_shape(
@@ -891,8 +900,8 @@ fn ir_package(package: &Json, at: &str, f: &mut Findings) {
     expect_shape(
         package.get("version"),
         &child(at, "version"),
-        is_semver,
-        "a version is SemVer",
+        is_package_revision,
+        "a revision is SemVer or a canonical non-negative integer string",
         f,
     );
     for name in ["manifestDigest", "lockDigest"] {
