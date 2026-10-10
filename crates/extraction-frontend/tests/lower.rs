@@ -507,7 +507,7 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
         &entity(
             "FR-001",
             "NumericRows",
-            "| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n| unpriced | Decimal | 1 | |\n",
+            "| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n",
         ),
     );
 
@@ -534,7 +534,18 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
     );
 
     let document = ir_document(&lift);
-    let missing = reader_codes(&document);
+    let mut missing_document = document.clone();
+    let alias = missing_document["ir"]["types"]
+        .as_array_mut()
+        .expect("types")
+        .iter_mut()
+        .find(|definition| definition["displayName"] == "NumericRows.price")
+        .expect("price alias");
+    alias
+        .as_object_mut()
+        .expect("alias object")
+        .remove("decimal");
+    let missing = reader_codes(&missing_document);
     assert!(
         missing
             .iter()
