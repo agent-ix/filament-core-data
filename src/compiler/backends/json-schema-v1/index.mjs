@@ -620,8 +620,6 @@ function fieldSchema(field, types) {
 				: nativeScalar(field.typeRef) !== undefined
 					? { ...(target ?? {}), scalar: nativeScalar(field.typeRef) }
 					: target;
-	for (const one of field.constraints ?? [])
-		constraint(schema, one, fieldSubject, effectiveDecimalPolicy);
 	if (
 		integerScalar(types, field.typeRef) === "integer" &&
 		(inheritedIntegerConstraints.length > 0 ||
@@ -633,8 +631,18 @@ function fieldSchema(field, types) {
 			...inheritedIntegerConstraints,
 			...(field.constraints ?? []),
 		]);
-		schema = schema.enum ? { ...integer, enum: schema.enum } : integer;
+		schema = schema.enum
+			? {
+					...integer,
+					enum:
+						integer.type === "integer"
+							? schema.enum.map((entry) => Number(entry))
+							: schema.enum,
+				}
+			: integer;
 	}
+	for (const one of field.constraints ?? [])
+		constraint(schema, one, fieldSubject, effectiveDecimalPolicy);
 	if (
 		field.multiplicity &&
 		(field.multiplicity.upper === undefined || field.multiplicity.upper > 1)

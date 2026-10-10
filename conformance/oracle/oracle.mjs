@@ -193,6 +193,21 @@ function render(bundle, rows) {
 
 /* ------------------------------------------------------------ resolver ---- */
 
+/** The reader's closed set of native scalar references, with no IR definition. */
+const NATIVE_SCALARS = new Map([
+	["UUID", "uuid"],
+	["Boolean", "boolean"],
+	["Integer", "integer"],
+	["Decimal", "decimal"],
+	["Float32", "float32"],
+	["Float64", "float64"],
+	["String", "string"],
+	["Timestamp", "datetime"],
+	["Duration", "duration"],
+	["Bytes", "bytes"],
+	["JsonObject", "any"],
+]);
+
 /** Indexes `types[]` by identity, keeping the first declaration of each. */
 function indexTypes(ir) {
 	const byIdentity = new Map();
@@ -224,6 +239,13 @@ export function resolve(types, identity, limit = DEPTH_LIMIT) {
 		if (seen.has(current)) return { status: "cycle", chain };
 		seen.add(current);
 		chain.push(current);
+		if (current.startsWith("ix://quire/native/")) {
+			const scalar = NATIVE_SCALARS.get(
+				current.slice("ix://quire/native/".length),
+			);
+			if (scalar !== undefined)
+				return { status: "resolved", kind: "scalar", scalar, chain };
+		}
 		const definition = types.get(current);
 		if (!definition) return { status: "unresolved", chain };
 		if (definition.kind !== "alias") {
@@ -1152,6 +1174,23 @@ export function verdict(bundle, schemaRows = []) {
 	};
 }
 
+/** Compare canonical decimal wire values using integer coefficients. */
+function compareDecimalWire(leftWire, rightWire) {
+	const parts = (wire) => {
+		const negative = wire.startsWith("-");
+		const [whole, fraction = ""] = (negative ? wire.slice(1) : wire).split(".");
+		return {
+			coefficient: BigInt(`${negative ? "-" : ""}${whole}${fraction}`),
+			scale: fraction.length,
+		};
+	};
+	const left = parts(leftWire);
+	const right = parts(rightWire);
+	const a = left.coefficient * 10n ** BigInt(right.scale);
+	const b = right.coefficient * 10n ** BigInt(left.scale);
+	return a < b ? -1 : a > b ? 1 : 0;
+}
+
 /**
  * Decides one generated numeric instance against the IR type graph. This is
  * deliberately separate from `verdict`: the latter validates an IR document,
@@ -1180,22 +1219,7 @@ function enumMemberEquals(scalar, member, value) {
 		);
 	if (scalar === "decimal") {
 		if (typeof value !== "string") return false;
-		const parts = (wire) => {
-			const negative = wire.startsWith("-");
-			const [whole, fraction = ""] = (negative ? wire.slice(1) : wire).split(
-				".",
-			);
-			return {
-				coefficient: BigInt(`${negative ? "-" : ""}${whole}${fraction}`),
-				scale: fraction.length,
-			};
-		};
-		const left = parts(member);
-		const right = parts(value);
-		return (
-			left.coefficient * 10n ** BigInt(right.scale) ===
-			right.coefficient * 10n ** BigInt(left.scale)
-		);
+		return compareDecimalWire(member, value) === 0;
 	}
 	return typeof member === typeof value && member === value;
 }
@@ -1353,20 +1377,28 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 					scalar === "integer"
 						? BigInt(constraint.operands?.value)
 						: Number(constraint.operands?.value);
+				const ordering =
+					scalar === "decimal"
+						? compareDecimalWire(value, constraint.operands?.value)
+						: numeric < operand
+							? -1
+							: numeric > operand
+								? 1
+								: 0;
 				const violated =
 					constraint.keyword === "min"
-						? numeric < operand
+						? ordering < 0
 						: constraint.keyword === "max"
-							? numeric > operand
+							? ordering > 0
 							: constraint.keyword === "exclusiveMin"
-								? numeric <= operand
-								: numeric >= operand;
+								? ordering <= 0
+								: ordering >= 0;
 				if (violated) {
 					const failure = { ok: false, code: constraint.diagnosticCode };
 					if (
 						(constraint.keyword === "exclusiveMin" ||
 							constraint.keyword === "exclusiveMax") &&
-						numeric === operand
+						ordering === 0
 					)
 						return failure;
 					firstFailure ??= failure;

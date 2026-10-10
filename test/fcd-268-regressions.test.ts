@@ -288,17 +288,25 @@ function scalarEnumIr(name: string, typeRef: string, values: unknown[]) {
 	]);
 }
 
-function nativeBoundIr(name: string, typeRef: string, bound: string | number) {
+function nativeBoundIr(
+	name: string,
+	typeRef: string,
+	bound: string | number,
+	keyword: "min" | "max" = "min",
+) {
 	const recordIdentity = `ix://agent-ix/age-2229-regressions/type/${name}`;
 	const fieldIdentity = `${recordIdentity}#value`;
 	return document([
 		record(
 			recordIdentity,
 			field(recordIdentity, typeRef, {
+				...(typeRef === "ix://quire/native/Decimal"
+					? { decimal: { precision: 5, scale: 2 } }
+					: {}),
 				constraints: [
 					{
-						identity: `${fieldIdentity}/constraint/min`,
-						keyword: "min",
+						identity: `${fieldIdentity}/constraint/${keyword}`,
+						keyword,
 						operands: { value: bound },
 						appliesTo: fieldIdentity,
 						diagnosticCode: "ix://agent-ix/age-2229-regressions/NATIVE_BOUND",
@@ -958,6 +966,47 @@ it("rejects hostile native bound inputs without coercion or a thrown exception",
 					}),
 				);
 			}
+		}
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
+});
+
+/** Trace: FR-144-AC-14. */
+it("checks Decimal bounds in the exact instance oracle", async () => {
+	const name = "BoundDecimal";
+	const ir = nativeBoundIr(name, "ix://quire/native/Decimal", "10.5", "max");
+	expect([...readContractIr(ir)]).toEqual([]);
+	const directory = mkdtempSync(join(tmpdir(), "fcd-268-decimal-bound-"));
+	try {
+		const generated = await writeValidators(directory, ir);
+		const validate = generated.validateBoundDecimal as (input: unknown) => {
+			ok: boolean;
+			errors: { code: string; pointer: string }[];
+		};
+		for (const [value, expected] of [
+			["10.50", true],
+			["1.10", true],
+			["10.51", false],
+		] as const) {
+			const input = { value };
+			const result = validate(input);
+			expect(result.ok, `${value} TS`).toBe(expected);
+			expect(
+				admitInstance(
+					{ ir },
+					"ix://agent-ix/age-2229-regressions/type/BoundDecimal",
+					input,
+				).ok,
+				`${value} oracle`,
+			).toBe(expected);
+			if (!expected)
+				expect(result.errors).toContainEqual(
+					expect.objectContaining({
+						code: "ix://agent-ix/age-2229-regressions/NATIVE_BOUND",
+						pointer: "/value",
+					}),
+				);
 		}
 	} finally {
 		rmSync(directory, { recursive: true, force: true });
