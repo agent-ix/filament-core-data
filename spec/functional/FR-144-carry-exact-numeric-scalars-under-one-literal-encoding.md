@@ -340,6 +340,35 @@ agreement (NFR-009).
   effective range, decimal policy, or bounds with a structural or constraint
   code, never by narrowing or rounding it.
 
+### Instance refusals and empty integer domains
+
+- A generated instance validator and the independent oracle SHALL use the
+  numeric instance diagnostic table in
+  [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md), including its
+  full codes, pointer roots, wire-type precedence and distinction between
+  bytes and parsed-value entry points. IR readers continue to apply FR-050's
+  separate cross-field table to numeric declarations.
+- If an integer subject has `lo > hi`, then its instance domain SHALL be empty;
+  a backend SHALL NOT swap the endpoints, widen the interval, or substitute a
+  default value to make that domain inhabited.
+- If a required, non-nullable collection has `multiplicity.lower > 0` and an
+  empty integer element domain, then generated validators SHALL reject every
+  instance of that field. This combination SHALL remain a valid input to code
+  generation: the generated Rust type and constructor SHALL compile, and
+  construction or validation SHALL return a rejection instead of fabricating
+  an element or panicking.
+- For such a collection, a missing field SHALL raise
+  `agent-ix.typescript-backend.MISSING_REQUIRED` at the field, and an empty
+  array SHALL raise `agent-ix.typescript-backend.COLLECTION_TOO_SHORT` at the
+  field. A nonempty array whose elements have valid integer wire form SHALL
+  raise each violated authored bound's `diagnosticCode` at the corresponding
+  element pointer. For `min: "0"` and `max: "-1"`, `[0]` violates `max` and
+  `[-1]` violates `min`; neither is a structural wire-type failure.
+- If that collection instead has lower multiplicity zero, then an empty array
+  SHALL remain admissible. Presence and nullability remain independent:
+  omission is admissible only for an optional field, and `null` only for a
+  nullable field.
+
 ### Backends
 
 - Each backend SHALL render a field, alias or other definition whose walk
@@ -434,7 +463,7 @@ round (AGE-2229's same-slice rule). For reference, the mapping is:
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-144-CON-1 | The Rust reader, the Node reader, the Python reader and the oracle SHALL raise the same codes at the same pointers for every document of this requirement's corpus cases; each implements the rules independently (FR-050-CON-1). | Correctness | Differential test |
+| FR-144-CON-1 | The independent implementations SHALL agree on diagnostic codes and pointers within each input layer: the Rust, Node and Python readers and the oracle on IR codes and IR pointers for document cases; generated validators, their conformance adapters and the independent instance oracle on the full codes and instance pointers named by FR-050's numeric instance table for instance cases (FR-050-CON-1). | Correctness | Differential test |
 | FR-144-CON-2 | No reader, frontend, or backend SHALL hold a decimal value as a binary double at any step, nor an integer value until an exact check has placed it within ±(2^53 - 1), where every integer is a binary double exactly; a safe subject's bounds and instance values are then held as doubles (the TypeScript `number`, the JSON Schema `minimum`/`maximum`). | Correctness | Inspection |
 | FR-144-CON-3 | This requirement SHALL NOT carry a rational scalar, a quantity type, unit algebra, dimension checks, or unit conversions; AGE-2229 row 4 is undecided. | Scope | Inspection |
 | FR-144-CON-4 | FCD SHALL reference QSL's and QSpec's numeric rules by requirement id only, with none of their files or vectors copied into this repository. | Integrity | Inspection |
@@ -456,7 +485,7 @@ round (AGE-2229's same-slice rule). For reference, the mapping is:
 | FR-144-AC-11 | The TypeSpec frontend lowers members typed `int8`, `uint64`, `safeint`, `float`, `float32` and `decimal` with `@decimal(12, 2)` to the scalars and bounds of the lifting table. An undecorated `int8` member's field references a minted alias carrying `min` `"-128"` and `max` `"127"` over the package-local `Integer` definition, which carries no bound, and `scalar Age extends uint8` carries `min` `"0"` and `max` `"255"` on its own definition. `int8` with `@minValue(0)` carries one `min` of `"0"` and one `max` of `"127"`. An unconstrained `decimal` member with `@decimal(12, 2)` carries the policy on its field, and one also carrying `@minValue(0)` carries it on its minted alias and none on the field. A `float32` member with `@minValue(0.1)` carries the bound `0.10000000149011612`. `decimal` without `@decimal` raises `DECIMAL_POLICY_MISSING`, `decimal128` with `@decimal(35, 2)` raises `DECIMAL_PRECISION_EXCEEDS_BASE` while `@decimal(34, 2)` is accepted, and `numeric` raises `AMBIGUOUS_NUMERIC`, each blocking. | Test |
 | FR-144-AC-12 | The spec-bundle frontend lifts `versionNumber \| Integer \| 1 \| min: 1` with operand `"1"`, a constrained `Decimal` row with policy `(10, 2)` and `min: 1.50` to an alias carrying `decimal` `{precision: 10, scale: 2}` and operand `"1.5"`, and a `Decimal` row with no policy to a blocking `DECIMAL_POLICY_MISSING` at the row. | Test |
 | FR-144-AC-13 | The Rust backend types integer subjects with effective ranges `[0, 9]`, unbounded, `[0, 18446744073709551615]` and `[-1, 18446744073709551615]` as `i64`, `i64`, `u64` and `i128`; a generated `u64` field reads `"18446744073709551615"` and rejects `"18446744073709551616"` and the JSON number `5`; a `decimal(5, 2)` field reads `"1.1"` and `"1.10"` as one value, writes `"1.10"`, and rejects `"1.001"`, `"1000"`, `"-0"` and `"-0.00"`; `f32` and `f64` fields generate for `float32` and `float64`, and the `f32` field reads `3.4028234663852886e38` and rejects `3.5e38`. | Test |
-| FR-144-AC-14 | The TypeScript backend generates a `max` of `"9007199254740993"` on an `integer` without refusing; the subject is a `string`, its validator accepts `"9007199254740993"`, rejects `"9007199254740994"` with the constraint's code and rejects the JSON number `5` with a structural code; an unbounded `integer` stays `number` and rejects `9007199254740992`; a `decimal(5, 2)` subject with `max` `"10.5"` accepts `"10.50"` and `"1.10"` and rejects `"10.51"`, `"-0"` and `"-0.00"`; a `float32` subject accepts `3.4028234663852886e38` and rejects `3.5e38` with a structural code. | Test |
+| FR-144-AC-14 | The TypeScript backend generates a `max` of `"9007199254740993"` on an `integer` without refusing; the subject is a `string`, its validator accepts `"9007199254740993"`, rejects `"9007199254740994"` with the constraint's code and rejects the JSON number `5` with `agent-ix.typescript-backend.NOT_AN_INTEGER` at the value; an unbounded `integer` stays `number` and rejects `9007199254740992` with `agent-ix.typescript-backend.INTEGER_OUT_OF_SAFE_RANGE` at the value; a `decimal(5, 2)` subject with `max` `"10.5"` accepts `"10.50"` and `"1.10"` and rejects `"10.51"`, `"-0"` and `"-0.00"`; a `float32` subject accepts `3.4028234663852886e38` and rejects `3.5e38` with `agent-ix.typescript-backend.NOT_A_NUMBER_VALUE` at the value. | Test |
 | FR-144-AC-15 | The JSON Schema backend renders an unbounded `integer` with `minimum` `-9007199254740991` and `maximum` `9007199254740991`, a `[0, 18446744073709551615]` subject as a string whose pattern accepts `"0"` and `"18446744073709551615"` and rejects `"18446744073709551616"`, `"01"` and `"-1"`, and a `decimal(5, 2)` subject as a string whose pattern accepts `"999.99"` and `"1.1"` and rejects `"1000"` and `"1.001"`; a `decimal` subject with a bound raises `UNDECLARED_LOSS` and writes no file. A safe subject with `exclusiveMax` `"100"` renders `maximum` `99` and no `exclusiveMaximum`, and a wide subject renders no `minimum` or `maximum`. The Python backends generate from that output with the same acceptances. | Test |
 | FR-144-AC-16 | No source file of the readers, the oracle, the frontends or the backends converts a decimal value site to a JavaScript `number`, a Rust `f64` or a Python `float`, or converts an integer value site to one before an exact check places it within ±(2^53 - 1); and no backend declares `INTEGER_BOUND_NOT_EXACT`. | Inspection |
 | FR-144-AC-17 | An alias over the package-local `Integer` definition carrying `min` `"0"` and `max` `"18446744073709551615"` renders as a `u64` newtype in Rust, `string` in TypeScript and a string schema with the interval pattern in JSON Schema, while its target renders as `i64`, `number` and `{"type": "integer"}`; an alias carrying `decimal` `{precision: 5, scale: 2}` over the `Decimal` definition renders as `Decimal` at scale 2, `string` and the policy pattern. | Test |
@@ -466,6 +495,8 @@ round (AGE-2229's same-slice rule). For reference, the mapping is:
 | FR-144-AC-21 | The SysML v2 target over a document with an `integer`, a `decimal(5, 2)` and a `float32` field writes its file, maps the three to `ScalarValues::Integer`, `ScalarValues::Real` and `ScalarValues::Real`, and emits one non-blocking `agent-ix.sysml-target.DECLARED_LOSS` for each of the two `Real` fields naming the policy or the width. | Test |
 | FR-144-AC-22 | Given the parsed value of a document whose `float64` bound is `0.1000000000000000000001`, a reader's parsed-value entry point raises no `INEXACT_NUMBER`, while given the parsed value of a document whose `integer` bound is `"01"` it raises `INVALID_OPERAND` at the operand, as the bytes entry point does. | Test |
 | FR-144-AC-23 | An integer indexer typed `uint8`, a union variant typed `int16` and an operation parameter typed `uint64` each reference a minted alias over the package-local `Integer` definition carrying that width's `min` and `max` (`"0"`/`"255"`, `"-32768"`/`"32767"`, `"0"`/`"18446744073709551615"`) from `items`, `payloadType` and the parameter's `typeRef`; the `uint64` parameter generates `u64` in Rust. A record `Order` with fields `cancelReason` and `cancel_reason`, each typed `uint8`, and an operation `cancel(reason: uint8)` mints the alias identities `OrderCancelReason`, `OrderCancel-reason` and `Order/cancel/reason/width` and the constraints `constraint/Order-cancelReason-min`, `constraint/Order-cancel-reason-min` and `constraint/Order/cancel/reason/min`, and raises no `DUPLICATE_IDENTITY`; with a further field `cancel_param_reason` typed `uint8`, the four `min` constraints carry the distinct codes `ORDER_CANCELREASON_MIN`, `ORDER_CANCEL_REASON_MIN`, `ORDER_CANCEL_PARAM_REASON_MIN` and `ORDER_CANCEL__REASON_MIN` under `agent-ix.<package>.`. | Test |
+| FR-144-AC-24 | The numeric instance cases in FR-050-AC-15 produce its exact full codes and pointers in the generated validators, conformance adapters and independent oracle, including safe integer `"5"`, `1.5` and `9007199254740992`, wide integer `5`, `9007199254740992`, `"01"` and `"1e0"`, and float32 `3.5e38`. Safe `5`, wide `"5"` and the largest finite binary32 instance are accepted when their authored bounds admit them. A canonical wide value outside an authored bound reports that constraint's code, while one outside a missing side's default reports `INTEGER_OUT_OF_SAFE_RANGE`. | Test |
+| FR-144-AC-25 | A required non-nullable collection `value` with lower multiplicity 1 and integer element bounds `min: "0"`, `max: "-1"` generates Rust whose type and constructor compile without warnings; construction and validation admit no instance. Omission reports `MISSING_REQUIRED` at `/value`, `[]` reports `COLLECTION_TOO_SHORT` at `/value`, `[0]` reports the max constraint's code at `/value/0`, and `[-1]` reports the min constraint's code there. These codes use FR-050's full instance-code namespace. Changing only lower multiplicity to 0 admits `[]`; making only presence optional admits omission, and making only nullability true admits `null`. | Test |
 
 ## Dependencies
 
