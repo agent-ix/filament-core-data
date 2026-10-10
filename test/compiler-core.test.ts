@@ -1037,7 +1037,12 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			expect(pattern.test(code), code).toBe(true);
 		}
 		for (const type of (compiled.ir as never as { types: Json[] }).types) {
-			for (const constraint of (type.constraints as Json[]) ?? []) {
+			for (const constraint of [
+				...((type.constraints as Json[]) ?? []),
+				...((type.fields as Json[]) ?? []).flatMap(
+					(field) => (field.constraints as Json[]) ?? [],
+				),
+			]) {
 				expect(
 					pattern.test(String(constraint.diagnosticCode)),
 					String(constraint.diagnosticCode),
@@ -1516,6 +1521,14 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(typesText).toBeDefined();
 		expect(typesText).not.toContain("export type WidthCorpusNarrowed = never;");
 		expect(typesText).toContain("export type WidthCorpusNarrowed = number;");
+		const rust = rustBackend.generate(
+			{ ir: result.ir, outputRoot: "generated/rust" } as never,
+			{ host: result.host } as never,
+		);
+		expect(
+			rust.diagnostics.filter((one) => one.blocking),
+			JSON.stringify(rust.diagnostics),
+		).toEqual([]);
 	}, 120000);
 
 	/** Traces: TC-435; FR-046-AC-4. */

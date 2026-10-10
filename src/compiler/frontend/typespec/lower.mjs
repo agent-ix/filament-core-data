@@ -858,19 +858,19 @@ export function lowerProgram(options) {
 					target: typeRef,
 					constraints: [
 						...["min", "max"].map((keyword) => ({
-						identity: mintIdentity(packageIdentity, "constraint", [
-							aliasName,
+							identity: mintIdentity(packageIdentity, "constraint", [
+								aliasName,
+								keyword,
+							]),
 							keyword,
-						]),
-						keyword,
-						operands: { value: width[keyword] },
-						appliesTo: aliasIdentity,
-						diagnosticCode: constraintDiagnosticCode(
-							packageIdentity,
-							[aliasName],
-							keyword,
-						),
-						origin: context.originOf(property),
+							operands: { value: width[keyword] },
+							appliesTo: aliasIdentity,
+							diagnosticCode: constraintDiagnosticCode(
+								packageIdentity,
+								[aliasName],
+								keyword,
+							),
+							origin: context.originOf(property),
 						})),
 						...constraints.map((item) => ({
 							identity: mintIdentity(packageIdentity, "constraint", [
@@ -883,7 +883,8 @@ export function lowerProgram(options) {
 							appliesTo: aliasIdentity,
 							diagnosticCode: constraintDiagnosticCode(
 								packageIdentity,
-								[aliasName, item.keyword, "narrowed"],
+								[aliasName, "narrowed"],
+								item.keyword,
 							),
 							origin: context.originOf(property),
 						})),

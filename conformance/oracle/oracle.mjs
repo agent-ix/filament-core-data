@@ -37,6 +37,7 @@ const KEYWORD_APPLICABILITY = {
 		"duration",
 		"integer",
 		"number",
+		"decimal",
 		"float32",
 		"float64",
 	],
@@ -46,6 +47,7 @@ const KEYWORD_APPLICABILITY = {
 		"duration",
 		"integer",
 		"number",
+		"decimal",
 		"float32",
 		"float64",
 	],
@@ -55,6 +57,7 @@ const KEYWORD_APPLICABILITY = {
 		"duration",
 		"integer",
 		"number",
+		"decimal",
 		"float32",
 		"float64",
 	],
@@ -64,6 +67,7 @@ const KEYWORD_APPLICABILITY = {
 		"duration",
 		"integer",
 		"number",
+		"decimal",
 		"float32",
 		"float64",
 	],
@@ -479,9 +483,7 @@ function checkConstraint(constraint, at, types, out, field = undefined) {
 			"decimal",
 			"float32",
 			"float64",
-		].includes(
-			resolved.scalar,
-		);
+		].includes(resolved.scalar);
 		const value = operands.value;
 		if (
 			!operandAdmitted(

@@ -442,7 +442,7 @@ export function readContractIr(document, options = {}) {
 		return value;
 	};
 
-	const checkField = (field) => {
+	const checkField = (field, fieldPointer = undefined) => {
 		const resolved = resolveKind(
 			types,
 			fields,
@@ -537,12 +537,24 @@ export function readContractIr(document, options = {}) {
 		// Gap 1 of FCD #199/#200: a constrained field keeps its constraints
 		// inline rather than on a synthetic alias, so the field's own
 		// `constraints[]` needs the same check a type's does.
-		for (const constraint of asArray(field.constraints)) {
-			checkConstraint(constraint, field);
+		for (const [constraintIndex, constraint] of asArray(
+			field.constraints,
+		).entries()) {
+			checkConstraint(
+				constraint,
+				field,
+				fieldPointer === undefined
+					? undefined
+					: `${fieldPointer}/constraints/${constraintIndex}`,
+			);
 		}
 	};
 
-	const checkConstraint = (constraint, owner) => {
+	const checkConstraint = (
+		constraint,
+		owner,
+		constraintPointer = undefined,
+	) => {
 		const keyword = String(constraint.keyword);
 		if (!isKeyword(keyword)) {
 			raise(
@@ -625,7 +637,10 @@ export function readContractIr(document, options = {}) {
 					walked?.policies[0]?.decimal,
 				)
 			) {
-				const operandPointer = "/operands/value";
+				const operandPointer =
+					constraintPointer === undefined
+						? "/operands/value"
+						: `${constraintPointer}/operands/value`;
 				raise(
 					outsideI128
 						? DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128
@@ -671,7 +686,8 @@ export function readContractIr(document, options = {}) {
 		}
 	};
 
-	const checkDefinition = (definition) => {
+	const checkDefinition = (definition, definitionIndex) => {
+		const definitionPointer = `/types/${definitionIndex}`;
 		const resolvedSelf = resolveKind(
 			types,
 			fields,
@@ -738,9 +754,17 @@ export function readContractIr(document, options = {}) {
 			);
 			return;
 		}
-		for (const field of ownFields) checkField(field);
-		for (const constraint of asArray(definition.constraints)) {
-			checkConstraint(constraint, definition);
+		for (const [fieldIndex, field] of ownFields.entries()) {
+			checkField(field, `${definitionPointer}/fields/${fieldIndex}`);
+		}
+		for (const [constraintIndex, constraint] of asArray(
+			definition.constraints,
+		).entries()) {
+			checkConstraint(
+				constraint,
+				definition,
+				`${definitionPointer}/constraints/${constraintIndex}`,
+			);
 		}
 
 		const relationships = asArray(definition.relationships);
@@ -840,9 +864,11 @@ export function readContractIr(document, options = {}) {
 			checkMultiplicity(relationship.targetEnd?.multiplicity, relationship);
 		}
 
-		for (const operation of operations) {
+		for (const [operationIndex, operation] of operations.entries()) {
 			const names = new Set();
-			for (const parameter of asArray(operation.params)) {
+			for (const [parameterIndex, parameter] of asArray(
+				operation.params,
+			).entries()) {
 				const name = String(parameter.name);
 				if (names.has(name)) {
 					raise(
@@ -852,7 +878,10 @@ export function readContractIr(document, options = {}) {
 					);
 				}
 				names.add(name);
-				checkField(parameter);
+				checkField(
+					parameter,
+					`${definitionPointer}/operations/${operationIndex}/params/${parameterIndex}`,
+				);
 			}
 			if (isObject(operation.returns)) {
 				if (
@@ -930,7 +959,7 @@ export function readContractIr(document, options = {}) {
 	checkConstructs(document, definitions, raise, locusOf);
 
 	const identities = new Set();
-	for (const definition of definitions) {
+	for (const [definitionIndex, definition] of definitions.entries()) {
 		const identity = String(definition.identity);
 		if (identities.has(identity)) {
 			raise(
@@ -940,7 +969,7 @@ export function readContractIr(document, options = {}) {
 			);
 		}
 		identities.add(identity);
-		checkDefinition(definition);
+		checkDefinition(definition, definitionIndex);
 	}
 
 	// A document too deep to canonicalise cannot be fingerprinted, so the bound

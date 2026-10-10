@@ -516,6 +516,8 @@ function bindAbstractSupertypes(models, raise) {
 /** Resolves a `typeRef` through alias definitions to a kind and a scalar. */
 export function resolveKind(byIdentity, typeRef, seen = new Set()) {
 	if (typeof typeRef !== "string" || seen.has(typeRef)) return undefined;
+	const scalar = nativeScalar(typeRef);
+	if (scalar !== undefined) return { kind: "scalar", scalar };
 	const definition = byIdentity.get(typeRef);
 	if (definition === undefined) return undefined;
 	seen.add(typeRef);
@@ -1215,11 +1217,15 @@ function mapField(field, owner, context, _version) {
 		elementInner:
 			resolvedField?.scalar === "integer"
 				? integerRustType({
-						constraints: [...inheritedFieldConstraints, ...(field.constraints ?? [])],
+						constraints: [
+							...inheritedFieldConstraints,
+							...(field.constraints ?? []),
+						],
 					})
 				: resolvedField?.scalar === "float32"
 					? "f32"
-					: resolvedField?.scalar === "float64" || resolvedField?.scalar === "number"
+					: resolvedField?.scalar === "float64" ||
+							resolvedField?.scalar === "number"
 						? "f64"
 						: undefined,
 		decimal:

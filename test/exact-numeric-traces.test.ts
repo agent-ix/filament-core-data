@@ -22,6 +22,15 @@ import {
 } from "../src/compiler/backends/typescript-v1/validators.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
 
+const oracle = (await import(
+	/* @vite-ignore */ resolve(
+		import.meta.dirname,
+		"../conformance/oracle/oracle.mjs",
+	)
+)) as unknown as {
+	verdict: (ir: unknown, options: unknown[]) => unknown;
+};
+
 const PACKAGE = "ix://agent-ix/exact-numeric";
 const type = (name: string) => `${PACKAGE}/type/${name}`;
 const constraint = (owner: string, keyword: string, value: string) => ({
@@ -989,6 +998,12 @@ it("admits the feature matrix through the semantic reader before generation", ()
 
 /** Trace: FR-144-AC-15, FR-144-AC-19. */
 it("renders normalized Decimal forms and refuses alias, bound, and native losses", () => {
+	const oracleResult = oracle.verdict(numericIr(), []) as {
+		diagnostics: { diagnostic: { code: string } }[];
+	};
+	expect(
+		oracleResult.diagnostics.map((one) => one.diagnostic.code),
+	).not.toContain("agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE");
 	const scalarIr = structuredClone(numericIr());
 	scalarIr.types = scalarIr.types.filter(
 		(type: { displayName: string }) => type.displayName === "Decimal",
@@ -1169,7 +1184,7 @@ it("compares the independent Node and Python numeric reader verdicts", () => {
 		expect(node).toHaveLength(1);
 		expect(python.diagnostics).toHaveLength(1);
 		expect(node[0].code).toBe(python.diagnostics[0].code);
-		expect(node[0].message).toContain("/operands/value");
+		expect(node[0].message).toContain("/types/0/constraints/0/operands/value");
 		expect(python.diagnostics[0].path).toBe(
 			"types.0.constraints.0.operands.value",
 		);
