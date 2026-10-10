@@ -243,6 +243,16 @@ function wideIntegerWithConstraints(types, identity, constraints) {
 	return lower < -safe || lower > safe || upper < -safe || upper > safe;
 }
 
+function stringIntegerBounds(constraints) {
+	const bounds = integerBounds(constraints);
+	return Object.freeze({
+		lower: bounds.lower.toString(),
+		upper: bounds.upper.toString(),
+		lowerExplicit: bounds.lowerExplicit,
+		upperExplicit: bounds.upperExplicit,
+	});
+}
+
 function inheritedConstraintEntries(types, applied, identity) {
 	const chain = [];
 	const seen = new Set();
@@ -317,6 +327,7 @@ function fieldEntry(types, identifiers, field) {
 			? Object.freeze({
 					...summary,
 					constraints: Object.freeze([...(field.constraints ?? [])]),
+					effectiveIntegerBounds: stringIntegerBounds(field.constraints),
 					impossibleIntegerBounds:
 						integerBounds(field.constraints).lower > integerBounds(field.constraints).upper,
 					wideInteger: wideIntegerWithConstraints(
@@ -329,6 +340,7 @@ function fieldEntry(types, identifiers, field) {
 				? Object.freeze({
 						...summary,
 						constraints: Object.freeze([...(field.constraints ?? [])]),
+						effectiveIntegerBounds: stringIntegerBounds(field.constraints),
 					})
 				: summary;
 	const entry = {

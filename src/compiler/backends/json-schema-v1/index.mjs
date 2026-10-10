@@ -26,11 +26,13 @@ const REPO_ROOT = resolve(
 	"..",
 );
 const FLOAT32_MAX = 3.4028234663852886e38;
+const FLOAT32_MIN_SUBNORMAL = 2 ** -149;
 
 // JSON Schema compares binary64 values directly, while FR-144 compares a
 // float32 subject after rounding the instance to binary32. Use the midpoint
 // between adjacent binary32 values as the schema boundary.
 function nextFloat32(value, direction) {
+	if (value === 0) return direction < 0 ? -FLOAT32_MIN_SUBNORMAL : FLOAT32_MIN_SUBNORMAL;
 	const view = new DataView(new ArrayBuffer(4));
 	view.setFloat32(0, value);
 	let bits = view.getUint32(0);
@@ -44,10 +46,67 @@ function float32Boundary(value, side) {
 	const rounded = Math.fround(value);
 	const previous = nextFloat32(rounded, -1);
 	const next = nextFloat32(rounded, 1);
-	if (side === "min") return (previous + rounded) / 2;
+	if (side === "min") {
+		if (Number.isFinite(previous)) return (previous + rounded) / 2;
+		const towardFinite = next;
+		return rounded - (towardFinite - rounded) / 2;
+	}
 	if (Number.isFinite(next)) return (rounded + next) / 2;
 	// The next value after binary32 MAX is infinity; use the overflow midpoint.
 	return rounded + (rounded - previous) / 2;
+}
+
+function sameFloat32(left, right) {
+	return left === right || (Object.is(left, -0) && Object.is(right, 0));
+}
+
+/** The exact binary64 preimage boundary for one Float32 comparison. */
+function float32Preimage(value, keyword) {
+	const rounded = Math.fround(Number(value));
+	const lower = keyword === "min" || keyword === "exclusiveMin";
+	const accepted = lower
+		? keyword === "min"
+			? rounded
+			: nextFloat32(rounded, 1)
+		: keyword === "max"
+			? rounded
+			: nextFloat32(rounded, -1);
+	if (!Number.isFinite(accepted)) return undefined;
+	const boundary = float32Boundary(
+		lower ? (keyword === "min" ? rounded : accepted) : (keyword === "max" ? rounded : accepted),
+		lower ? "min" : "max",
+	);
+	return {
+		keyword: lower
+			? sameFloat32(Math.fround(boundary), accepted)
+				? "minimum"
+				: "exclusiveMinimum"
+			: sameFloat32(Math.fround(boundary), accepted)
+				? "maximum"
+				: "exclusiveMaximum",
+		value: boundary,
+	};
+}
+
+function applyFloat32Constraint(schema, keyword, value) {
+	const boundary = float32Preimage(value, keyword);
+	if (boundary === undefined) {
+		schema.not = {};
+		return;
+	}
+	schema[boundary.keyword] = boundary.value;
+}
+
+function float32EnumSchema(values) {
+	const anyOf = [];
+	for (const value of values ?? []) {
+		if (typeof value !== "number" || !Number.isFinite(value)) continue;
+		const branch = { type: "number" };
+		applyFloat32Constraint(branch, "min", value);
+		applyFloat32Constraint(branch, "max", value);
+		anyOf.push(branch);
+	}
+	return anyOf;
 }
 
 const FLOAT32_MINIMUM = float32Boundary(-FLOAT32_MAX, "min");
@@ -320,10 +379,18 @@ function constraint(schema, one, subject, decimalPolicy) {
 		else schema.minLength ??= 1;
 	} else if (key === "unique") schema.uniqueItems = true;
 	else if (key === "enumValues") {
+		if (subject?.scalar === "float32") {
+			const branches = float32EnumSchema(one.operands.values);
+			if (branches.length > 0) {
+				schema.anyOf = branches;
+				delete schema.enum;
+			}
+		}
 		const pattern =
 			subject?.scalar === "decimal"
 				? decimalEnumPattern(one.operands.values, decimalPolicy)
 				: undefined;
+		if (subject?.scalar === "float32") return schema;
 		if (pattern !== undefined) schema.pattern = pattern;
 		else if (subject?.scalar === "integer")
 			schema.enum =
@@ -341,6 +408,10 @@ function constraint(schema, one, subject, decimalPolicy) {
 			["min", "max", "exclusiveMin", "exclusiveMax"].includes(key)
 		)
 	) {
+		if (subject?.scalar === "float32") {
+			applyFloat32Constraint(schema, key, value);
+			return schema;
+		}
 		schema[table[key]] =
 			key === "minLength" || key === "maxLength"
 				? value

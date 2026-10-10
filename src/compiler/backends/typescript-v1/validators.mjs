@@ -165,6 +165,8 @@ function constraintCondition(constraint, subject) {
 					.join(", ");
 				return `[${values}].some((member) => Object.is(member, candidate))`;
 			}
+			if (scalar === "float32")
+				return `[${(operands.values ?? []).map((entry) => literal(entry)).join(", ")}].some((member) => Object.is(Math.fround(member), Math.fround(candidate)))`;
 			const values = (operands.values ?? [])
 				.map((entry) => literal(entry))
 				.join(", ");
@@ -173,10 +175,13 @@ function constraintCondition(constraint, subject) {
 		case "nonEmpty":
 			return length && `${length} > 0`;
 		case "unique":
-			return subject.kind === "sequence" &&
+		return subject.kind === "sequence" &&
 				subject.itemsEntry?.scalar === "decimal"
 				? "isUniqueDecimalCollection(candidate)"
-				: "isUniqueCollection(candidate)";
+				: subject.kind === "sequence" &&
+					  subject.itemsEntry?.scalar === "float32"
+					? "isUniqueFloat32Collection(candidate)"
+					: "isUniqueCollection(candidate)";
 		case "format":
 			return formatCondition(operands.name);
 		default:
@@ -496,9 +501,22 @@ function checkCall(element, valueExpression, pointerExpression) {
 				);
 		}
 		if (scalar === "integer" && element.wideInteger === true) {
+			const canonicalWideInteger =
+				`typeof ${valueExpression} === "string" && /^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression}))`;
 			checks.push(
-				`if (typeof ${valueExpression} !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression}))) fail(errors, ${pointerExpression}, CODES.NOT_AN_INTEGER, "the native integer wire value has the wrong type")`,
+				`if (!(${canonicalWideInteger})) fail(errors, ${pointerExpression}, CODES.NOT_AN_INTEGER, "the native integer wire value has the wrong type")`,
 			);
+			const bounds = element.effectiveIntegerBounds;
+			if (bounds?.lowerExplicit === false || bounds?.upperExplicit === false) {
+				const terms = [];
+				if (bounds.lowerExplicit === false)
+					terms.push(`BigInt(String(${valueExpression})) < BigInt(${literal(bounds.lower)})`);
+				if (bounds.upperExplicit === false)
+					terms.push(`BigInt(String(${valueExpression})) > BigInt(${literal(bounds.upper)})`);
+				checks.push(
+					`if (${canonicalWideInteger} && (${terms.join(" || ")})) fail(errors, ${pointerExpression}, CODES.INTEGER_OUT_OF_SAFE_RANGE, "the integer is outside its effective range")`,
+				);
+			}
 		} else {
 			const guard =
 				scalar === "boolean"
@@ -615,10 +633,11 @@ function delegatingCheckBody(model, entry) {
 		entry.constraints.length > 0
 	) {
 		lines.push(
-			'\tif (typeof candidate !== "number" || !Number.isSafeInteger(candidate)) {',
+			'\tif (typeof candidate !== "number") {',
 			'\t\tfail(errors, pointer, CODES.NOT_AN_INTEGER, "the value is not a safe integer number");',
 			"\t\treturn false;",
 			"\t}",
+			...numericStatements("integer", "\t"),
 			...constraintStatements(model, entry.identity, "\t"),
 			"\treturn errors.length === before;",
 		);
@@ -1463,10 +1482,28 @@ export function renderValidators(model) {
 		"\treturn true;",
 		"}",
 	].join("\n");
+	const float32Unique = [
+		"/** Float32 collection uniqueness compares the rounded binary32 values. */",
+		"function isUniqueFloat32Collection(value: unknown): boolean {",
+		"\tif (!Array.isArray(value)) return true;",
+		"\tconst seen = new Set<number>();",
+		"\tfor (const member of value) {",
+		"\t\tif (typeof member !== \"number\") continue;",
+		"\t\tconst rounded = Math.fround(member);",
+		"\t\tif (seen.has(rounded)) return false;",
+		"\t\tseen.add(rounded);",
+		"\t}",
+		"\treturn true;",
+		"}",
+	].join("\n");
 	const blockBody = blocks.join("\n\n");
-	const body = blockBody.includes("isUniqueDecimalCollection")
-		? [decimalUnique, blockBody].join("\n\n")
-		: blockBody;
+	const body = [
+		blockBody.includes("isUniqueDecimalCollection") ? decimalUnique : undefined,
+		blockBody.includes("isUniqueFloat32Collection") ? float32Unique : undefined,
+		blockBody,
+	]
+		.filter(Boolean)
+		.join("\n\n");
 	const helpers = [
 		"VALIDATION_CODES as CODES",
 		"MAX_VALIDATION_DEPTH",
@@ -1480,6 +1517,7 @@ export function renderValidators(model) {
 		"isCanonicalDecimal",
 		"isPlainObject",
 		"isUniqueCollection",
+		"isUniqueFloat32Collection",
 		"join",
 		"ownKeys",
 		"ownMember",

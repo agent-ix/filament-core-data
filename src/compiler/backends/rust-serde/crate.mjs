@@ -1880,7 +1880,25 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			),
 		);
 	} else {
-		const effectiveRange = effectiveIntegerRange(checks);
+		const effectiveRange =
+			type.scalar === "integer"
+				? effectiveIntegerRange(checks) ?? {
+						lower: -(2n ** 53n - 1n),
+						upper: 2n ** 53n - 1n,
+						lowerExplicit: false,
+						upperExplicit: false,
+						lowerCheck: {
+							identity: type.identity,
+							keyword: "min",
+							value: String(-(2n ** 53n - 1n)),
+						},
+						upperCheck: {
+							identity: type.identity,
+							keyword: "max",
+							value: String(2n ** 53n - 1n),
+						},
+					}
+				: effectiveIntegerRange(checks);
 		if (effectiveRange !== undefined) {
 			const rustInteger = rustIntegerTypeFor(type);
 			const safe = 2n ** 53n - 1n;
@@ -2365,6 +2383,7 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		if (field.presence === "optional") {
 			attributes.push('skip_serializing_if = "Option::is_none"');
 		}
+		attributes.push(...(field.serdeAttributes ?? []));
 		if (attributes.length > 0) {
 			lines.push(`    #[serde(${attributes.join(", ")})]`);
 		}
@@ -2409,6 +2428,7 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		if (field.presence === "optional" && field.nullable) {
 			attributes.push('deserialize_with = "crate::support::present_or_absent"');
 		}
+		attributes.push(...(field.serdeAttributes ?? []));
 		if (attributes.length > 0) {
 			lines.push(`    #[serde(${attributes.join(", ")})]`);
 		}
@@ -2775,10 +2795,23 @@ function renderInlineFieldChecks(type, field) {
 	const checks = (field.checks ?? [])
 		.map((check, index) => ({ check, index }))
 		.filter(({ check }) => !isRedundantIntegerBound(subject, check));
+	const implicitIntegerRange =
+		field.elementScalar === "integer" &&
+		["i64", "u64", "i128"].includes(field.elementType)
+			? effectiveIntegerRange(field.checks ?? []) ?? {
+					lower: -(2n ** 53n - 1n),
+					upper: 2n ** 53n - 1n,
+					lowerExplicit: false,
+					upperExplicit: false,
+					lowerCheck: undefined,
+					upperCheck: undefined,
+				}
+			: undefined;
 	const finiteFloat =
 		["float32", "float64", "number"].includes(field.elementScalar) &&
 		["f32", "f64"].includes(field.elementType);
-	if (checks.length === 0 && !finiteFloat) return [];
+	if (checks.length === 0 && !finiteFloat && implicitIntegerRange === undefined)
+		return [];
 	const renderFinite = (expression, extraIndent = 0) => {
 		if (!finiteFloat) return [];
 		const indent = " ".repeat(extraIndent);
@@ -2797,26 +2830,76 @@ function renderInlineFieldChecks(type, field) {
 			),
 			`${indent}}`,
 		];
+				};
+	const impossibleRange =
+		field.elementScalar === "integer"
+			? impossibleIntegerRangeCheck(field.checks ?? [])
+			: undefined;
+	const render = (expression, extraIndent = 0) => {
+		const impossible =
+			impossibleRange === undefined
+				? []
+				: callLines(
+						" ".repeat(extraIndent),
+						"return Err(crate::support::ValidationError::new",
+						[
+							rustString(impossibleRange.identity),
+							rustString(impossibleRange.keyword),
+							rustString(field.name),
+							rustString(String(impossibleRange.value)),
+						],
+						");",
+					);
+		const renderedChecks =
+			impossibleRange === undefined
+				? checks.flatMap(({ check, index }) =>
+						renderCheck(
+							subject,
+							check,
+							index,
+							expression,
+							field.elementScalar,
+							prefix,
+							field.wrapperDepth,
+						).map((line) =>
+							line.length === 0
+								? line
+								: `${" ".repeat(extraIndent)}${line}`,
+						),
+						)
+				: [];
+		return [...renderFinite(expression, extraIndent), ...impossible, ...renderedChecks];
 	};
-	const render = (expression, extraIndent = 0) => [
-		...renderFinite(expression, extraIndent),
-		...checks.flatMap(({ check, index }) =>
-			renderCheck(
-				subject,
-				check,
-				index,
-				expression,
-				field.elementScalar,
-				prefix,
-				field.wrapperDepth,
-			).map((line) =>
-				line.length === 0 ? line : `${" ".repeat(extraIndent)}${line}`,
-			),
-		),
-	];
 	const lines = [];
 	const renderValue = (expression, extraIndent = 0) =>
-		lines.push(...render(expression, extraIndent));
+		lines.push(...renderIntegerImplicit(expression, extraIndent), ...render(expression, extraIndent));
+	const renderIntegerImplicit = (expression, extraIndent = 0) => {
+		if (implicitIntegerRange === undefined) return [];
+		const indent = " ".repeat(extraIndent);
+		const rustInteger = rustIntegerTypeFor({ inner: field.elementType });
+		const owned = expression.startsWith("*") ? expression : `*${expression}`;
+		const emit = (keyword, value, operator) => [
+			`${indent}if ${owned} ${operator} ${value}${rustInteger} {`,
+			...callLines(
+				`${indent}    `,
+				"return Err(crate::support::ValidationError::new",
+				[
+					rustString(field.identity),
+					rustString(keyword),
+					rustString(field.name),
+					rustString(String(value)),
+				],
+				");",
+			),
+			`${indent}}`,
+		];
+		const out = [];
+		if (!implicitIntegerRange.lowerExplicit && rustInteger !== "u64")
+			out.push(emit("min", implicitIntegerRange.lower, "<"));
+		if (!implicitIntegerRange.upperExplicit)
+			out.push(emit("max", implicitIntegerRange.upper, ">"));
+		return out.flat();
+	};
 	if (field.collection) {
 		const source = field.presence === "optional" ? "items" : field.ident;
 		if (field.presence === "optional")

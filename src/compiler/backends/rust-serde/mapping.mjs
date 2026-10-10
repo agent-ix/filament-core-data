@@ -1198,11 +1198,46 @@ function mapField(field, owner, context, _version) {
 	if (optional) {
 		serdeAttributes.push("default");
 		serdeAttributes.push('skip_serializing_if = "Option::is_none"');
-		if (nullable) {
-			serdeAttributes.push(
-				'deserialize_with = "crate::support::present_or_absent"',
-			);
-		}
+	}
+	// A native integer with an effective range outside JSON's exact number
+	// interval has no generated newtype to carry its wire adapter.  Attach the
+	// fixed support adapter at the record field so scalar and collection forms
+	// reject numeric JSON and preserve the canonical decimal string.
+	const nativeInteger = nativeScalar(field.typeRef) === "integer";
+	const wideNativeInteger =
+		nativeInteger &&
+		integerIsWide([...inheritedFieldConstraints, ...(field.constraints ?? [])]);
+	const nativeIntegerType =
+		nativeInteger &&
+		integerRustType({
+			constraints: [
+				...inheritedFieldConstraints,
+				...(field.constraints ?? []),
+			],
+		});
+	if (optional && nullable && !wideNativeInteger) {
+		serdeAttributes.push(
+			'deserialize_with = "crate::support::present_or_absent"',
+		);
+	}
+	if (wideNativeInteger) {
+		const moduleName =
+			optional && nullable
+				? collection
+					? "wide_option_nullable_vec"
+					: "wide_option_nullable"
+				: optional
+					? collection
+						? "wide_option_vec"
+						: "wide_option"
+					: nullable
+					? collection
+						? "wide_nullable_vec"
+						: "wide_nullable"
+					: collection
+						? `wide_vec_${nativeIntegerType}`
+						: `wide_${nativeIntegerType}`;
+		serdeAttributes.push(`with = "crate::support::${moduleName}"`);
 	}
 
 	const row = `field:${collection ? "collection" : "single"}/${nullable ? "nullable" : "non-null"}/${optional ? "optional" : "required"}`;

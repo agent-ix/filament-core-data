@@ -19,6 +19,314 @@ use serde::de::{self, Deserializer, MapAccess, SeqAccess, Visitor};
 use serde::ser::{SerializeMap, SerializeSeq, Serializer};
 use serde::{Deserialize, Serialize};
 
+// Native integer members whose effective range exceeds the JSON safe-number
+// interval use the canonical string wire form even when they are not minted
+// aliases.  These adapters are kept in the fixed support module so records,
+// optional fields, and collections all share the same parser and reject JSON
+// numbers instead of silently rounding them.
+macro_rules! wide_integer_scalar {
+    ($module:ident, $ty:ty) => {
+        pub mod $module {
+            use serde::{Deserialize, Deserializer, Serializer};
+
+            pub fn serialize<S>(value: &$ty, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer,
+            {
+                serializer.serialize_str(&value.to_string())
+            }
+
+            pub fn deserialize<'de, D>(deserializer: D) -> Result<$ty, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                let wire = <String as Deserialize>::deserialize(deserializer)?;
+                let value = wire.parse::<$ty>().map_err(serde::de::Error::custom)?;
+                if value.to_string() != wire {
+                    return Err(serde::de::Error::custom("integer is not canonical"));
+                }
+                Ok(value)
+            }
+        }
+    };
+}
+
+wide_integer_scalar!(wide_i64, i64);
+wide_integer_scalar!(wide_u64, u64);
+wide_integer_scalar!(wide_i128, i128);
+
+macro_rules! wide_integer_vec {
+    ($module:ident, $ty:ty) => {
+        pub mod $module {
+            use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+            pub fn serialize<S>(values: &Vec<$ty>, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer,
+            {
+                values
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+                    .serialize(serializer)
+            }
+
+            pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<$ty>, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                let wires = <Vec<String> as Deserialize>::deserialize(deserializer)?;
+                wires
+                    .into_iter()
+                    .map(|wire| {
+                        let value = wire.parse::<$ty>().map_err(serde::de::Error::custom)?;
+                        if value.to_string() != wire {
+                            return Err(serde::de::Error::custom("integer is not canonical"));
+                        }
+                        Ok(value)
+                    })
+                    .collect()
+            }
+        }
+    };
+}
+
+wide_integer_vec!(wide_vec_i64, i64);
+wide_integer_vec!(wide_vec_u64, u64);
+wide_integer_vec!(wide_vec_i128, i128);
+
+/// Generic adapters for the remaining member-axis compositions.  The
+/// `serde(with = ...)` contract monomorphizes these functions for the field's
+/// concrete integer type, so one implementation covers every width.
+pub mod wide_option {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    pub fn serialize<S, T>(value: &Option<T>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        value.as_ref().map(ToString::to_string).serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr,
+        T::Err: Display,
+    {
+        <Option<String> as Deserialize>::deserialize(deserializer)?
+            .map(|wire| {
+                let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
+                if value.to_string() != wire {
+                    return Err(serde::de::Error::custom("integer is not canonical"));
+                }
+                Ok(value)
+            })
+            .transpose()
+    }
+}
+
+pub mod wide_option_vec {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    pub fn serialize<S, T>(value: &Option<Vec<T>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        value
+            .as_ref()
+            .map(|values| values.iter().map(ToString::to_string).collect::<Vec<_>>())
+            .serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Vec<T>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr,
+        T::Err: Display,
+    {
+        <Option<Vec<String>> as Deserialize>::deserialize(deserializer)?
+            .map(|wires| {
+                wires
+                    .into_iter()
+                    .map(|wire| {
+                        let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
+                        if value.to_string() != wire {
+                            return Err(serde::de::Error::custom("integer is not canonical"));
+                        }
+                        Ok(value)
+                    })
+                    .collect()
+            })
+            .transpose()
+    }
+}
+
+pub mod wide_nullable {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    pub fn serialize<S, T>(value: &Nullable<T>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        match value {
+            Nullable::Null => serializer.serialize_none(),
+            Nullable::Value(inner) => serializer.serialize_str(&inner.to_string()),
+        }
+    }
+
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Nullable<T>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr,
+        T::Err: Display,
+    {
+        match <Option<String> as Deserialize>::deserialize(deserializer)? {
+            None => Ok(Nullable::Null),
+            Some(wire) => {
+                let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
+                if value.to_string() != wire {
+                    return Err(serde::de::Error::custom("integer is not canonical"));
+                }
+                Ok(Nullable::Value(value))
+            }
+        }
+    }
+}
+
+pub mod wide_nullable_vec {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    pub fn serialize<S, T>(value: &Nullable<Vec<T>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        match value {
+            Nullable::Null => serializer.serialize_none(),
+            Nullable::Value(values) => serializer.serialize_some(
+                &values.iter().map(ToString::to_string).collect::<Vec<_>>(),
+            ),
+        }
+    }
+
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Nullable<Vec<T>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr,
+        T::Err: Display,
+    {
+        match <Option<Vec<String>> as Deserialize>::deserialize(deserializer)? {
+            None => Ok(Nullable::Null),
+            Some(wires) => wires
+                    .into_iter()
+                    .map(|wire| {
+                        let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
+                        if value.to_string() != wire {
+                            return Err(serde::de::Error::custom("integer is not canonical"));
+                        }
+                        Ok(value)
+                    })
+                .collect::<Result<Vec<_>, _>>()
+                .map(Nullable::Value),
+        }
+    }
+}
+
+pub mod wide_option_nullable {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    pub fn serialize<S, T>(value: &Option<Nullable<T>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        match value {
+            None => serializer.serialize_none(),
+            Some(Nullable::Null) => serializer.serialize_none(),
+            Some(Nullable::Value(inner)) => serializer.serialize_str(&inner.to_string()),
+        }
+    }
+
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Nullable<T>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr,
+        T::Err: Display,
+    {
+        match <Option<String> as Deserialize>::deserialize(deserializer)? {
+            None => Ok(Some(Nullable::Null)),
+            Some(wire) => {
+                let inner = wire.parse::<T>().map_err(serde::de::Error::custom)?;
+                if inner.to_string() != wire {
+                    return Err(serde::de::Error::custom("integer is not canonical"));
+                }
+                Ok(Some(Nullable::Value(inner)))
+            }
+        }
+    }
+}
+
+pub mod wide_option_nullable_vec {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    pub fn serialize<S, T>(
+        value: &Option<Nullable<Vec<T>>>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        match value {
+            None | Some(Nullable::Null) => serializer.serialize_none(),
+            Some(Nullable::Value(values)) => serializer
+                .serialize_some(&values.iter().map(ToString::to_string).collect::<Vec<_>>()),
+        }
+    }
+
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Nullable<Vec<T>>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr,
+        T::Err: Display,
+    {
+        match <Option<Vec<String>> as Deserialize>::deserialize(deserializer)? {
+            None => Ok(Some(Nullable::Null)),
+            Some(wires) => wires
+                .into_iter()
+                .map(|wire| {
+                    let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
+                    if value.to_string() != wire {
+                        return Err(serde::de::Error::custom("integer is not canonical"));
+                    }
+                    Ok(value)
+                })
+                .collect::<Result<Vec<_>, _>>()
+                .map(|values| Some(Nullable::Value(values))),
+        }
+    }
+}
+
 /// The longest input-derived fragment a validation message echoes.
 pub const MAX_ECHOED_CODE_POINTS: usize = 120;
 
