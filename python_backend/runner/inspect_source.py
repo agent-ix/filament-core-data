@@ -396,9 +396,11 @@ def inspect_generated(
                 and node.func.id == "Field"
             ):
                 for keyword in node.keywords:
-                    if keyword.arg == "alias" and isinstance(
-                        keyword.value, ast.Constant
-                    ) and isinstance(keyword.value.value, str):
+                    if (
+                        keyword.arg == "alias"
+                        and isinstance(keyword.value, ast.Constant)
+                        and isinstance(keyword.value.value, str)
+                    ):
                         return keyword.value.value
         assert isinstance(body.target, ast.Name)
         return body.target.id

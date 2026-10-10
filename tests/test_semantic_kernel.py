@@ -43,6 +43,7 @@ BACKEND = REPO / "python_backend"
 DOCUMENTS = 30
 ABSOLUTE_REFS = 35
 
+
 def _bundle_bytes() -> dict[str, bytes]:
     return {
         path.name: path.read_bytes() for path in sorted(KERNEL_SCHEMAS.glob("*.json"))

@@ -30,6 +30,7 @@ GENERATED = ROOT / "generated"
 EXAMPLES = ROOT / "examples"
 PUBLISHED = ROOT.parent / "schema" / "semantic" / "v1"
 
+
 class LayoutError(RuntimeError):
     """Two documents declare the same type name, or a package cannot be written."""
 
