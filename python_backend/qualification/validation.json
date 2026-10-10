@@ -61,7 +61,7 @@
 				"target_contract_schema.NativeApiItem"
 			],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
-			"lost": ["constraints-array-unique", "constraints-decimal-policy"],
+			"lost": ["constraints-array-unique"],
 			"exercised": [
 				{
 					"module": "common_schema",
@@ -2614,7 +2614,6 @@
 				"closure-additional",
 				"closure-unevaluated",
 				"constraints-array-unique",
-				"constraints-decimal-policy",
 				"default-non-nullable",
 				"map-pattern",
 				"string-format"

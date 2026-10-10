@@ -108,9 +108,20 @@ def _expand_conditional_numeric(
     ):
         return schema
 
+    precision_schema = properties["precision"]
+    scale_schema = properties["scale"]
+    if not isinstance(precision_schema, dict) or not isinstance(scale_schema, dict):
+        return schema
+    minimum = precision_schema.get("minimum")
+    maximum = precision_schema.get("maximum")
+    if not isinstance(minimum, int) or not isinstance(maximum, int):
+        return schema
+
     rules: list[tuple[int, int]] = []
     for clause in clauses:
         if not isinstance(clause, dict):
+            return schema
+        if set(clause) != {"if", "then"}:
             return schema
         condition = clause.get("if", {}).get("properties", {})
         consequent = clause.get("then", {}).get("properties", {})
@@ -123,18 +134,31 @@ def _expand_conditional_numeric(
             or bounded_name != "scale"
             or not isinstance(guarded, dict)
             or not isinstance(bounded, dict)
+            or set(guarded) != {"const"}
+            or not set(bounded) <= {"type", "maximum"}
             or not isinstance(guarded.get("const"), int)
             or not isinstance(bounded.get("maximum"), int)
+            or (
+                "type" in bounded
+                and bounded["type"] != scale_schema.get("type")
+            )
         ):
             return schema
         rules.append((guarded["const"], bounded["maximum"]))
+
+    expected = set(range(minimum, maximum + 1))
+    if {precision for precision, _ in rules} != expected:
+        return schema
 
     branches: list[dict[str, Any]] = []
     for precision, maximum in rules:
         branch = copy.deepcopy(schema)
         branch.pop("allOf")
         branch["properties"]["precision"]["const"] = precision
-        branch["properties"]["scale"]["maximum"] = maximum
+        base_maximum = scale_schema.get("maximum")
+        branch["properties"]["scale"]["maximum"] = (
+            min(base_maximum, maximum) if isinstance(base_maximum, int) else maximum
+        )
         branches.append(branch)
 
     wrapper = {

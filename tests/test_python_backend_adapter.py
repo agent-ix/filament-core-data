@@ -177,6 +177,38 @@ def test_unevaluated_properties_is_rewritten_at_any_depth(closure: Any) -> None:
     assert len(prepared.preparation) == 2
 
 
+def test_conditional_numeric_rewrite_preserves_domain_and_existing_bounds() -> None:
+    """TC-870: FR-074-AC-8, FR-074-CON-2."""
+    policy = {
+        "type": "object",
+        "required": ["precision", "scale"],
+        "properties": {
+            "precision": {"type": "integer", "minimum": 1, "maximum": 2},
+            "scale": {"type": "integer", "minimum": 0, "maximum": 0},
+        },
+        "allOf": [
+            {
+                "if": {"properties": {"precision": {"const": precision}}},
+                "then": {"properties": {"scale": {"maximum": precision}}},
+            }
+            for precision in (1, 2)
+        ],
+        "additionalProperties": False,
+    }
+    prepared = prepare.prepare_for_python(policy)
+    document = prepared.documents["input.schema.json"]
+    assert len(document["oneOf"]) == 2
+    assert [
+        branch["properties"]["scale"]["maximum"] for branch in document["oneOf"]
+    ] == [0, 0]
+
+    partial = dict(policy)
+    partial["allOf"] = partial["allOf"][:1]
+    unchanged = prepare.prepare_for_python(partial)
+    assert unchanged.preparation == []
+    assert "allOf" in unchanged.documents["input.schema.json"]
+
+
 def test_conflicting_closure_raises_and_agreeing_closure_does_not() -> None:
     """TC-866: FR-074-AC-4."""
     with pytest.raises(prepare.PreparationConflictError) as raised:

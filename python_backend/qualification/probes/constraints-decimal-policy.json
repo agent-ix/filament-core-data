@@ -5,22 +5,637 @@
 	"note": "Scale must not exceed precision when both properties are present.",
 	"detector": {
 		"kind": "regex",
-		"pattern": "RootModel|pydantic\\.dataclasses|from msgspec import"
+		"pattern": "(?s)(?:(?=.*Literal\\[1\\])(?=.*le=1)|(?=.*tag=1)(?=.*Meta\\(.*le=1))"
 	},
 	"schema": {
 		"$defs": {
 			"decimalPolicy": {
 				"type": "object",
 				"title": "DecimalPolicy",
-				"required": ["precision", "scale"],
+				"required": [
+					"precision",
+					"scale"
+				],
 				"properties": {
-					"precision": { "type": "integer", "minimum": 1, "maximum": 38 },
-					"scale": { "type": "integer", "minimum": 0, "maximum": 38 }
+					"precision": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 38
+					},
+					"scale": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 38
+					}
 				},
 				"allOf": [
 					{
-						"if": { "properties": { "precision": { "const": 1 } } },
-						"then": { "properties": { "scale": { "maximum": 1 } } }
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 1
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 1
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 2
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 2
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 3
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 3
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 4
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 4
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 5
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 5
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 6
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 6
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 7
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 7
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 8
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 8
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 9
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 9
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 10
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 10
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 11
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 11
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 12
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 12
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 13
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 13
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 14
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 14
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 15
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 15
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 16
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 16
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 17
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 17
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 18
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 18
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 19
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 19
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 20
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 20
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 21
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 21
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 22
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 22
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 23
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 23
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 24
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 24
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 25
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 25
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 26
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 26
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 27
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 27
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 28
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 28
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 29
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 29
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 30
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 30
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 31
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 31
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 32
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 32
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 33
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 33
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 34
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 34
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 35
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 35
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 36
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 36
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 37
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 37
+								}
+							}
+						}
+					},
+					{
+						"if": {
+							"properties": {
+								"precision": {
+									"const": 38
+								}
+							}
+						},
+						"then": {
+							"properties": {
+								"scale": {
+									"maximum": 38
+								}
+							}
+						}
 					}
 				],
 				"additionalProperties": false
