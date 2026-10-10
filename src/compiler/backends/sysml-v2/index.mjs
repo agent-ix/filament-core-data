@@ -49,7 +49,14 @@ function scalarName(type) {
 function refuseUnmappedMembers(node, names, diagnostics) {
 	for (const name of names) {
 		for (const member of node[name] ?? []) {
-			unsupported(member, `${name} has no SysML mapping`, diagnostics);
+			unsupported(
+				{
+					identity: typeof member === "string" ? member : member.identity,
+					origin: member.origin ?? node.origin,
+				},
+				`${name} has no SysML mapping`,
+				diagnostics,
+			);
 		}
 	}
 }
@@ -177,6 +184,7 @@ export const sysmlBackend = Object.freeze({
 	identity: "ix://agent-ix/filament-core-data/sysml-target",
 	version: "0.1.0",
 	target: "sysml-v2-textual",
+	roundTrip: "one-way",
 	owningIssue: "agent-ix/filament-core-data#37",
 	supportedIrVersions: Object.freeze(["2.0.0"]),
 	supportedFeatures: Object.freeze(Object.keys(KIND_CONSTRUCTS)),

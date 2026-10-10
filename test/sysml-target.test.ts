@@ -56,6 +56,17 @@ function numericDocument() {
 }
 
 describe("SysML v2 textual target", () => {
+	/** Trace: FR-138-AC-7. */
+	it("declares one-way generation with no filesystem reader in the backend", () => {
+		expect(sysmlBackend.roundTrip).toBe("one-way");
+		const source = readFileSync(
+			resolve(root, "src/compiler/backends/sysml-v2/index.mjs"),
+			"utf8",
+		);
+		expect(source).not.toMatch(/from ["']node:fs["']/);
+		expect(source).not.toMatch(/readFileSync|readText/);
+	});
+
 	/** Trace: FR-138-AC-1, FR-138-AC-7, FR-144-AC-21. */
 	it("writes the SysML file through the generate command", () => {
 		const scratch = mkdtempSync(resolve(tmpdir(), "age-2232-sysml-"));

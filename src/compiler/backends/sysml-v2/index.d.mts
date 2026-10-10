@@ -4,6 +4,7 @@ export declare const sysmlBackend: Readonly<{
 	identity: string;
 	version: string;
 	target: "sysml-v2-textual";
+	roundTrip: "one-way";
 	owningIssue: string;
 	supportedIrVersions: readonly string[];
 	supportedFeatures: readonly string[];
