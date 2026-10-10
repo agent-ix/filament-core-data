@@ -4712,6 +4712,7 @@ describe("compatibility (FR-051)", () => {
 		decimal?: { precision: number; scale: number };
 	}[] = [
 		{ key: "IntegerSafe", scalar: "integer", max: "100" },
+		{ key: "IntegerSafe200", scalar: "integer", max: "200" },
 		{ key: "IntegerWide", scalar: "integer", max: "18446744073709551615" },
 		{ key: "Float32", scalar: "float32" },
 		{ key: "Float64", scalar: "float64" },
@@ -4724,6 +4725,18 @@ describe("compatibility (FR-051)", () => {
 			key: "Decimal73",
 			scalar: "decimal",
 			decimal: { precision: 7, scale: 3 },
+		},
+		{
+			key: "Decimal52Max105",
+			scalar: "decimal",
+			decimal: { precision: 5, scale: 2 },
+			max: "10.5",
+		},
+		{
+			key: "Decimal52Max1051",
+			scalar: "decimal",
+			decimal: { precision: 5, scale: 2 },
+			max: "10.51",
 		},
 	];
 	type NumericState = (typeof numericStates)[number];
@@ -4780,10 +4793,30 @@ describe("compatibility (FR-051)", () => {
 		if (before.key === after.key) return "patch";
 		if (before.scalar === "float32" && after.scalar === "float64")
 			return "conditional";
+		if (before.scalar === "integer" && after.scalar === "integer") {
+			if (before.key === "IntegerWide" || after.key === "IntegerWide")
+				return "breaking";
+			return before.max === "100" && after.max === "200"
+				? "conditional"
+				: "breaking";
+		}
 		if (before.scalar === "decimal" && after.scalar === "decimal") {
+			const oldMax =
+				before.max === "10.5"
+					? 1050
+					: before.max === "10.51"
+						? 1051
+						: Number.POSITIVE_INFINITY;
+			const newMax =
+				after.max === "10.5"
+					? 1050
+					: after.max === "10.51"
+						? 1051
+						: Number.POSITIVE_INFINITY;
 			return after.decimal!.scale >= before.decimal!.scale &&
 				after.decimal!.precision - after.decimal!.scale >=
-					before.decimal!.precision - before.decimal!.scale
+					before.decimal!.precision - before.decimal!.scale &&
+				newMax >= oldMax
 				? "conditional"
 				: "breaking";
 		}
@@ -4794,6 +4827,7 @@ describe("compatibility (FR-051)", () => {
 		"alias-target",
 		"native-field",
 		"alias-field",
+		"alias-retarget",
 	] as const) {
 		for (const before of numericStates) {
 			/** Trace: FR-051-AC-18, FR-051-AC-19. */
@@ -4821,10 +4855,25 @@ describe("compatibility (FR-051)", () => {
 							configureField(document, before, true);
 							configureField(document, after, true);
 						}
-						duration(pair.old).typeRef =
-							`ix://agent-ix/assurance/type/Numeric${before.key}`;
-						duration(pair.next).typeRef =
-							`ix://agent-ix/assurance/type/Numeric${after.key}`;
+						if (surface === "alias-field") {
+							duration(pair.old).typeRef =
+								`ix://agent-ix/assurance/type/Numeric${before.key}`;
+							duration(pair.next).typeRef =
+								`ix://agent-ix/assurance/type/Numeric${after.key}`;
+						} else {
+							for (const [document, state] of [
+								[pair.old, before],
+								[pair.next, after],
+							] as const) {
+								const alias = seconds(document);
+								alias.kind = "alias";
+								delete alias.scalar;
+								delete alias.decimal;
+								alias.constraints = [];
+								alias.target = `ix://agent-ix/assurance/type/Numeric${state.key}`;
+								duration(document).typeRef = alias.identity;
+							}
+						}
 					}
 					const label = `${surface}: ${before.key}>${after.key}`;
 					expect(validateIrDocument(pair.old as never), label).toEqual([]);
