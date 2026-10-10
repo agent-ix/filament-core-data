@@ -1662,6 +1662,62 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		).toBeUndefined();
 	}, 120000);
 
+	/** Traces: FR-144-AC-23; indexers, union payloads and operation returns retain native integer widths. */
+	it("mints width aliases at every non-field TypeSpec member site", async () => {
+		const result = await compileSource(
+			[
+				"using AgentIx.Semantic.Decorators;",
+				"namespace AgentIx.Semantic;",
+				"model Bytes is Array<uint8>;",
+				"union ChoiceValue { small: int16, text: string, }",
+				"model Choice { value: string; }",
+				'@operations("Choice")',
+				"interface ChoiceOperations { read(): int16; }",
+			].join("\n"),
+		);
+		expect(
+			codesOf(result.diagnostics as never),
+			JSON.stringify(result.diagnostics),
+		).toEqual([]);
+		const types = (result.ir as never as { types: Json[] }).types;
+		const bytes = types.find((type) => type.displayName === "Bytes") as Json;
+		const bytesItems = types.find(
+			(type) => type.displayName === "BytesItems",
+		) as Json;
+		expect(bytes.kind).toBe("sequence");
+		expect(bytes.items).toBe(bytesItems.identity);
+		expect(bytesItems.target).toBe("ix://agent-ix/probe/Integer");
+		expect(
+			(bytesItems.constraints as Json[]).map((one) => [
+				one.keyword,
+				one.operands?.value,
+			]),
+		).toEqual([
+			["min", "0"],
+			["max", "255"],
+		]);
+		const choice = types.find(
+			(type) => type.displayName === "ChoiceValue",
+		) as Json;
+		const small = (choice.variants as Json[]).find(
+			(variant) => variant.name === "small",
+		) as Json;
+		const smallAlias = types.find(
+			(type) => type.identity === small.payloadType,
+		) as Json;
+		expect(small.payloadType).toBe(smallAlias.identity);
+		expect(smallAlias.target).toBe("ix://agent-ix/probe/Integer");
+		const operation = types.find(
+			(type) => type.displayName === "Choice",
+		) as Json;
+		const returns = operation.operations[0].returns as Json;
+		const returnAlias = types.find(
+			(type) => type.identity === returns.typeRef,
+		) as Json;
+		expect(returns.typeRef).toBe(returnAlias.identity);
+		expect(returnAlias.target).toBe("ix://agent-ix/probe/Integer");
+	}, 120000);
+
 	/** Traces: TC-435; FR-046-AC-4. */
 	it("takes roles from @role and never from a declaration's name", () => {
 		expect(typeOf("AuditEvent").roles).toEqual([]);

@@ -212,7 +212,12 @@ function effectiveWideInteger(types, identity) {
 	const bounds = effectiveIntegerBounds(types, identity);
 	if (!bounds) return false;
 	const safe = 2n ** 53n - 1n;
-	return bounds.lower < -safe || bounds.upper > safe;
+	return (
+		bounds.lower < -safe ||
+		bounds.lower > safe ||
+		bounds.upper < -safe ||
+		bounds.upper > safe
+	);
 }
 
 function wideIntegerWithConstraints(types, identity, constraints) {
@@ -220,20 +225,22 @@ function wideIntegerWithConstraints(types, identity, constraints) {
 	const base = effectiveIntegerBounds(types, identity) ?? {
 		lower: -(2n ** 53n - 1n),
 		upper: 2n ** 53n - 1n,
+		lowerExplicit: false,
+		upperExplicit: false,
 	};
 	const own = integerBounds(constraints);
 	const lower = own.lowerExplicit
-		? base.lower > own.lower
+		? base.lowerExplicit && base.lower > own.lower
 			? base.lower
 			: own.lower
 		: base.lower;
 	const upper = own.upperExplicit
-		? base.upper < own.upper
+		? base.upperExplicit && base.upper < own.upper
 			? base.upper
 			: own.upper
 		: base.upper;
 	const safe = 2n ** 53n - 1n;
-	return lower < -safe || upper > safe;
+	return lower < -safe || lower > safe || upper < -safe || upper > safe;
 }
 
 function inheritedConstraintEntries(types, applied, identity) {
@@ -309,13 +316,19 @@ function fieldEntry(types, identifiers, field) {
 		summary?.scalar === "integer" && (field.constraints ?? []).length > 0
 			? Object.freeze({
 					...summary,
+					constraints: Object.freeze([...(field.constraints ?? [])]),
 					wideInteger: wideIntegerWithConstraints(
 						types,
 						field.typeRef,
 						field.constraints,
 					),
 				})
-			: summary;
+			: summary?.scalar === "integer"
+				? Object.freeze({
+						...summary,
+						constraints: Object.freeze([...(field.constraints ?? [])]),
+					})
+				: summary;
 	const entry = {
 		identity: field.identity,
 		name: field.name,

@@ -108,7 +108,7 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 					kind: "scalar",
 					scalar: "integer",
 					constraints: [
-						{ keyword: "min", operands: { value: "0" } },
+						{ keyword: "min", operands: { value: "1" } },
 						{
 							keyword: "max",
 							operands: { value: "18446744073709551615" },
@@ -206,6 +206,9 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(
 			new RegExp(String(wideInteger.pattern)).test("18446744073709551615"),
 		).toBe(true);
+		expect(
+			new RegExp(String(wideInteger.pattern)).test("18446744073709551616"),
+		).toBe(false);
 		const decimal = schema("Decimal");
 		expect(decimal.type).toBe("string");
 		expect(new RegExp(String(decimal.pattern)).test("-0.5")).toBe(true);

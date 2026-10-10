@@ -459,13 +459,52 @@ function checkCall(element, valueExpression, pointerExpression) {
 	if (element.native === true) {
 		const scalar = element.scalar;
 		if (scalar === "any") return "void 0";
-		const guard =
-			scalar === "boolean"
-				? `typeof ${valueExpression} !== "boolean"`
-				: ["integer", "float32", "float64"].includes(scalar)
-					? `typeof ${valueExpression} !== "number" || !Number.isFinite(${valueExpression})${scalar === "integer" ? ` || !Number.isSafeInteger(${valueExpression})` : ""}`
-					: `typeof ${valueExpression} !== "string"`;
-		return `if (${guard}) fail(errors, ${pointerExpression}, CODES.SHAPE_MISMATCH, "the native scalar wire value has the wrong type")`;
+		const checks = [];
+		if (scalar === "integer" && element.wideInteger === true) {
+			checks.push(
+				`if (typeof ${valueExpression} !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression}))) fail(errors, ${pointerExpression}, CODES.NOT_AN_INTEGER, "the native integer wire value has the wrong type")`,
+			);
+		} else {
+			const guard =
+				scalar === "boolean"
+					? `typeof ${valueExpression} !== "boolean"`
+					: ["integer", "float32", "float64"].includes(scalar)
+						? `typeof ${valueExpression} !== "number" || !Number.isFinite(${valueExpression})${scalar === "float32" ? ` || !Number.isFinite(Math.fround(${valueExpression}))` : ""}${scalar === "integer" ? ` || !Number.isSafeInteger(${valueExpression})` : ""}`
+						: `typeof ${valueExpression} !== "string"`;
+			checks.push(
+				`if (${guard}) fail(errors, ${pointerExpression}, CODES.SHAPE_MISMATCH, "the native scalar wire value has the wrong type")`,
+			);
+		}
+		for (const constraint of element.constraints ?? []) {
+			const value = constraint.operands?.value;
+			if (
+				!["min", "max", "exclusiveMin", "exclusiveMax"].includes(
+					constraint.keyword,
+				) ||
+				value === undefined
+			)
+				continue;
+			const operator = {
+				min: ">=",
+				max: "<=",
+				exclusiveMin: ">",
+				exclusiveMax: "<",
+			}[constraint.keyword];
+			const rhs =
+				element.wideInteger === true
+					? `BigInt(${literal(value)})`
+					: typeof value === "string"
+						? literal(Number(value))
+						: literal(value);
+			const lhs =
+				element.wideInteger === true
+					? `BigInt(String(${valueExpression}))`
+					: `Number(${valueExpression})`;
+			checks.push(
+				`if (!(${lhs} ${operator} ${rhs})) fail(errors, ${pointerExpression}, ${literal(constraint.diagnosticCode)}, ${literal(`the ${constraint.keyword} constraint is not satisfied`)})`,
+			);
+		}
+		return checks.join("; ");
 	}
 	return `check${element.identifier}(${valueExpression}, ${pointerExpression}, errors, surfaced, depth + 1)`;
 }

@@ -645,6 +645,65 @@ export function lowerProgram(options) {
 		return { kind: definition.kind, scalar: definition.scalar };
 	};
 
+	// Native integer widths also occur at declaration sites that have no field
+	// node: sequence items, union payloads, and operation returns.  Preserve
+	// those value-site bounds in a package-local alias just as lowerField does;
+	// otherwise all three sites silently collapse `int16`/`uint64` to native
+	// Integer and lose the authored interval before any backend sees it.
+	const ensureIntegerWidthAlias = (type, typeRef, nameParts, origin) => {
+		const width = BUILTIN_INTEGER_BOUNDS[builtinBase(type)];
+		if (
+			!width ||
+			typeof typeRef !== "string" ||
+			!typeRef.startsWith(NATIVE_PREFIX)
+		)
+			return typeRef;
+		const integerIdentity = typeIdentity("Integer");
+		if (!definitions.has(integerIdentity))
+			emit({
+				identity: integerIdentity,
+				displayName: "Integer",
+				kind: "scalar",
+				scalar: "integer",
+				constraints: [],
+				extensions: [],
+				roles: [],
+				unknownPolicy: "reject",
+				origin,
+			});
+		const aliasName = nameParts.join("");
+		const aliasIdentity = typeIdentity(aliasName);
+		if (!definitions.has(aliasIdentity)) {
+			const constraints = ["min", "max"].map((keyword) => ({
+				identity: mintIdentity(packageIdentity, "constraint", [
+					aliasName,
+					keyword,
+				]),
+				keyword,
+				operands: { value: width[keyword] },
+				appliesTo: aliasIdentity,
+				diagnosticCode: constraintDiagnosticCode(
+					packageIdentity,
+					[aliasName],
+					keyword,
+				),
+				origin,
+			}));
+			emit({
+				identity: aliasIdentity,
+				displayName: aliasName,
+				kind: "alias",
+				target: integerIdentity,
+				constraints,
+				extensions: [],
+				roles: [],
+				unknownPolicy: "reject",
+				origin,
+			});
+		}
+		return aliasIdentity;
+	};
+
 	// ---- pass one: every declaration becomes a definition -------------------
 	for (const declaration of declarations) {
 		// A declaration the IR cannot carry in full is declared loss, not a
@@ -743,7 +802,7 @@ export function lowerProgram(options) {
 			continue;
 		}
 		if (classification.kind === "sequence") {
-			const items = resolveMemberType(
+			let items = resolveMemberType(
 				declaration.indexer.value,
 				context.locusOf(declaration),
 			);
@@ -755,6 +814,12 @@ export function lowerProgram(options) {
 				);
 				continue;
 			}
+			items = ensureIntegerWidthAlias(
+				declaration.indexer.value,
+				items,
+				[declaration.name, "Items"],
+				context.originOf(declaration),
+			);
 			emit({ ...base, items });
 			continue;
 		}
@@ -809,9 +874,15 @@ export function lowerProgram(options) {
 					);
 					continue;
 				}
-				const payloadType = resolveMemberType(
+				let payloadType = resolveMemberType(
 					variant.type,
 					context.locusOf(declaration),
+				);
+				payloadType = ensureIntegerWidthAlias(
+					variant.type,
+					payloadType,
+					[declaration.name, name ?? "Variant"],
+					context.originOf(declaration),
 				);
 				variants.push({
 					identity: mintIdentity(packageIdentity, "variant", [
@@ -1338,9 +1409,15 @@ export function lowerProgram(options) {
 					};
 					const returnType = unwrapNullable(operation.returnType);
 					const returnItem = collectionItem(returnType.type);
-					const typeRef = resolveMemberType(
+					let typeRef = resolveMemberType(
 						returnItem ?? returnType.type,
 						context.locusOf(operation),
+					);
+					typeRef = ensureIntegerWidthAlias(
+						returnItem ?? returnType.type,
+						typeRef,
+						[declaration.name, operation.name, "Return"],
+						context.originOf(operation),
 					);
 					if (typeRef) {
 						node.returns = {

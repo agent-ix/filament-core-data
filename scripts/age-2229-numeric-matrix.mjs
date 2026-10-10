@@ -66,8 +66,8 @@ const matrixFamilies = [
 	["string-alias", "string", ["none"], ["string-safe"]],
 ];
 
-export const MATRIX_CELLS = Object.freeze(
-	matrixFamilies.flatMap(([family, kind, ranges, wires]) =>
+const baseMatrixCells = matrixFamilies.flatMap(
+	([family, kind, ranges, wires]) =>
 		ranges.flatMap((range) =>
 			DEPTHS.flatMap((depth) =>
 				NESTINGS.flatMap((nesting) =>
@@ -112,8 +112,85 @@ export const MATRIX_CELLS = Object.freeze(
 				),
 			),
 		),
+);
+
+const BOUND_SHAPES = [
+	"min",
+	"max",
+	"exclusiveMin",
+	"exclusiveMax",
+	"min+max",
+	"min+exclusiveMin",
+	"min+exclusiveMax",
+	"max+exclusiveMin",
+	"max+exclusiveMax",
+	"exclusiveMin+exclusiveMax",
+];
+const BOUND_VALUES = ["0", "1", "edge", "edge+1"];
+const UINT64_EDGE = 18446744073709551615n;
+
+const boundProbeCells = BOUND_SHAPES.flatMap((shape) =>
+	BOUND_VALUES.map((boundValue) =>
+		Object.freeze({
+			name: `native-integer-inline-${shape}-${boundValue}`,
+			kind: "integer",
+			range: "inline-bounds",
+			depth: 0,
+			nesting: "field",
+			wire: "native-inline",
+			aliasMode: "none",
+			nullable: false,
+			lexeme: "ordinary",
+			rawLexeme: "ordinary",
+			oracleWidth: "numeric7",
+			native: true,
+			boundShape: shape,
+			boundValue,
+			columns: MATRIX_COLUMNS,
+		}),
 	),
 );
+
+const nativeFloat32Cells = ["in-range", "above-binary32-max"].map((range) =>
+	Object.freeze({
+		name: `native-float32-${range}`,
+		kind: "float32",
+		range,
+		depth: 0,
+		nesting: "field",
+		wire: "native",
+		aliasMode: "none",
+		nullable: false,
+		lexeme: "ordinary",
+		rawLexeme: "ordinary",
+		oracleWidth: "safe",
+		native: true,
+		columns: MATRIX_COLUMNS,
+	}),
+);
+
+const decimalRegexCell = Object.freeze({
+	name: "decimal-regex-escaped-dot",
+	kind: "decimal",
+	range: "regex-escaped-dot",
+	depth: 0,
+	nesting: "field",
+	wire: "string-safe",
+	aliasMode: "none",
+	nullable: false,
+	lexeme: "ordinary",
+	rawLexeme: "ordinary",
+	oracleWidth: "safe",
+	decimalRegex: true,
+	columns: MATRIX_COLUMNS,
+});
+
+export const MATRIX_CELLS = Object.freeze([
+	...baseMatrixCells,
+	...boundProbeCells,
+	...nativeFloat32Cells,
+	decimalRegexCell,
+]);
 
 const origin = {
 	source: {
@@ -126,6 +203,10 @@ const origin = {
 
 function identity(name) {
 	return `${ROOT}/type/${name}`;
+}
+
+function safeStem(name) {
+	return name.replaceAll(/[^A-Za-z0-9_]/g, "_");
 }
 
 function constraint(owner, keyword, value, scalar) {
@@ -216,6 +297,65 @@ function rangeConstraints(name, range, kind) {
 	);
 }
 
+function boundProbeConstraints(cell) {
+	const edge = UINT64_EDGE;
+	const center =
+		cell.boundValue === "edge"
+			? edge
+			: cell.boundValue === "edge+1"
+				? edge + 1n
+				: BigInt(cell.boundValue);
+	const values = {
+		min: ["min", center],
+		max: ["max", center],
+		exclusiveMin: ["exclusiveMin", center],
+		exclusiveMax: ["exclusiveMax", center],
+	};
+	const pairs = {
+		"min+max": [
+			["min", center],
+			["max", center],
+		],
+		"min+exclusiveMin": [
+			["min", center],
+			["exclusiveMin", center - 1n],
+		],
+		"min+exclusiveMax": [
+			["min", center],
+			["exclusiveMax", center + 1n],
+		],
+		"max+exclusiveMin": [
+			["max", center],
+			["exclusiveMin", center - 1n],
+		],
+		"max+exclusiveMax": [
+			["max", center],
+			["exclusiveMax", center + 1n],
+		],
+		"exclusiveMin+exclusiveMax": [
+			["exclusiveMin", center - 1n],
+			["exclusiveMax", center + 1n],
+		],
+	};
+	const entries = pairs[cell.boundShape] ?? [values[cell.boundShape]];
+	const fieldIdentity = `${identity(cell.name)}#value`;
+	return entries.map(([keyword, value], index) => ({
+		...constraint(`${cell.name}-${index}`, keyword, String(value), "integer"),
+		appliesTo: fieldIdentity,
+	}));
+}
+
+function fieldConstraints(cell) {
+	return cell.boundShape ? boundProbeConstraints(cell) : [];
+}
+
+export function inlineWideInteger(cell) {
+	return (
+		cell.range === "inline-bounds" &&
+		(cell.boundValue === "edge" || cell.boundValue === "edge+1")
+	);
+}
+
 function scalar(name, kind, constraints) {
 	return {
 		identity: identity(name),
@@ -256,7 +396,7 @@ function field(cell, typeRef, nested = false) {
 		identity: `${identity(cell.name)}#${nested ? "nested" : "value"}`,
 		name: nested ? "nested" : "value",
 		typeRef,
-		constraints: [],
+		constraints: fieldConstraints(cell),
 		presence: multiplicity.lower === 0 ? "optional" : "required",
 		nullable: cell.nullable,
 		multiplicity,
@@ -269,13 +409,17 @@ function field(cell, typeRef, nested = false) {
 export function buildMatrixIr() {
 	const types = [];
 	for (const cell of MATRIX_CELLS) {
-		const baseName = `${cell.name.replaceAll("-", "_")}Base`;
+		const baseName = `${safeStem(cell.name)}Base`;
 		const baseIdentity = identity(baseName);
-		const baseConstraints = rangeConstraints(baseName, cell.range, cell.kind);
+		const baseConstraints = cell.native
+			? []
+			: rangeConstraints(baseName, cell.range, cell.kind);
 		types.push(scalar(baseName, cell.kind, baseConstraints));
-		let valueRef = baseIdentity;
+		let valueRef = cell.native
+			? `ix://quire/native/${cell.kind === "float32" ? "Float32" : "Integer"}`
+			: baseIdentity;
 		for (let depth = 1; depth <= cell.depth; depth += 1) {
-			const name = `${cell.name.replaceAll("-", "_")}Alias${depth}`;
+			const name = `${safeStem(cell.name)}Alias${depth}`;
 			valueRef = identity(name);
 			types.push(
 				alias(
@@ -293,7 +437,7 @@ export function buildMatrixIr() {
 				),
 			);
 		}
-		const recordName = `NumericMatrix_${cell.name.replaceAll("-", "_")}`;
+		const recordName = `NumericMatrix_${safeStem(cell.name)}`;
 		if (cell.nesting === "nested") {
 			const nestedName = `${recordName}_Nested`;
 			types.push({
@@ -344,7 +488,7 @@ export function buildMatrixIr() {
 }
 
 export function cellRecordName(cell) {
-	return `NumericMatrix_${cell.name.replaceAll("-", "_")}`;
+	return `NumericMatrix_${safeStem(cell.name)}`;
 }
 
 export function cellValue(cell, valid = true) {
@@ -374,7 +518,29 @@ export function cellValue(cell, valid = true) {
 	else if (cell.range === "positive") value = valid ? 10 : 9;
 	else if (cell.range === "negative") value = valid ? -1 : 0;
 	else if (cell.range === "narrowed") value = valid ? 1 : 100;
-	else value = valid ? 1 : -11;
+	else if (cell.range === "inline-bounds") {
+		const edge = UINT64_EDGE;
+		const center =
+			cell.boundValue === "edge"
+				? edge
+				: cell.boundValue === "edge+1"
+					? edge + 1n
+					: BigInt(cell.boundValue);
+		const invalid =
+			cell.boundShape.toLowerCase().includes("min") ||
+			cell.boundShape === "exclusiveMin+exclusiveMax"
+				? center - 1n
+				: center + 1n;
+		const validCenter =
+			cell.boundShape === "exclusiveMin"
+				? center + 1n
+				: cell.boundShape === "exclusiveMax"
+					? center - 1n
+					: center;
+		value = inlineWideInteger(cell)
+			? String(valid ? validCenter : invalid)
+			: Number(valid ? validCenter : invalid);
+	} else value = valid ? 1 : -11;
 	// Raw exponent spellings belong to the reader/oracle lexeme probes. Keep
 	// backend instance probes finite JSON values; JavaScript would turn an
 	// overflowing number into Infinity and JSON.stringify would silently turn

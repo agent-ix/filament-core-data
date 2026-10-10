@@ -158,7 +158,12 @@ function integerBounds(constraints) {
 
 function integerIsWide(constraints) {
 	const bounds = integerBounds(constraints);
-	return bounds.lower < -SAFE_INTEGER || bounds.upper > SAFE_INTEGER;
+	return (
+		bounds.lower < -SAFE_INTEGER ||
+		bounds.lower > SAFE_INTEGER ||
+		bounds.upper < -SAFE_INTEGER ||
+		bounds.upper > SAFE_INTEGER
+	);
 }
 
 function nativeScalar(ref) {

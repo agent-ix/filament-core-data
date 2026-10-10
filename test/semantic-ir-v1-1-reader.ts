@@ -105,7 +105,9 @@ function decimalPolicies(
 function valueAdmitted(scalar: string | undefined, value: unknown): boolean {
 	if (scalar === "integer") return canonicalInteger(value) && withinI128(value);
 	if (scalar === "decimal")
-		return typeof value === "string" && /^(0|-?[1-9][0-9]*)(\\.[0-9]+)?$/.test(value);
+		return (
+			typeof value === "string" && /^(0|-?[1-9][0-9]*)(\.[0-9]+)?$/.test(value)
+		);
 	if (scalar === "float32" || scalar === "float64")
 		return typeof value === "number" && Number.isFinite(value);
 	if (scalar === "boolean") return typeof value === "boolean";
@@ -450,7 +452,8 @@ function checkTypeDefinition(
 		diagnostics.push({
 			code: "agent-ix.semantic-ir.SCHEMA_VIOLATION",
 			path: `${path}.scalar`,
-			message: "the legacy number scalar is not admitted; use float32 or float64",
+			message:
+				"the legacy number scalar is not admitted; use float32 or float64",
 		});
 	}
 	for (const [index, field] of asArray(definition.fields).entries())

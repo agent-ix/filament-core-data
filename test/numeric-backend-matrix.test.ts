@@ -18,6 +18,7 @@ import {
 	buildMatrixIr,
 	cellRecordName,
 	cellValue,
+	inlineWideInteger,
 	MATRIX_COLUMNS,
 	MATRIX_CELLS,
 } from "../scripts/age-2229-numeric-matrix.mjs";
@@ -49,6 +50,10 @@ function rustTypeName(cell: (typeof MATRIX_CELLS)[number]) {
 		.split("_")
 		.map((part) => part[0].toUpperCase() + part.slice(1))
 		.join("");
+}
+
+function numericIntegerProbe(cell: (typeof MATRIX_CELLS)[number]) {
+	return { value: 5 };
 }
 
 async function generatedValidators(directory: string, ir: any) {
@@ -92,7 +97,7 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 		"src/compiler/ir/reader.mjs",
 	];
 	expect(MATRIX_COLUMNS).toEqual(requiredColumns);
-	expect(MATRIX_CELLS).toHaveLength(204);
+	expect(MATRIX_CELLS).toHaveLength(247);
 	expect([...readContractIr(ir)]).toEqual([]);
 
 	const scratch = mkdtempSync(join(tmpdir(), "fcd-age-2229-matrix-"));
@@ -128,6 +133,17 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 					validate(nullableValue(cell)).ok,
 					`${cell.name} TypeScript null`,
 				).toBe(true);
+			if (cell.native && cell.kind === "integer" && inlineWideInteger(cell)) {
+				expect(
+					validate(numericIntegerProbe(cell)).ok,
+					`${cell.name} TypeScript native numeric wire`,
+				).toBe(false);
+			}
+			if (cell.decimalRegex)
+				expect(
+					validate({ value: "1\\.5" }).ok,
+					`${cell.name} escaped decimal`,
+				).toBe(false);
 
 			const schema = schemas.find(
 				(one: any) => one.title === cellRecordName(cell),
@@ -145,6 +161,16 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 					validateJson?.(nullableValue(cell)),
 					`${cell.name} JSON null`,
 				).toBe(true);
+			if (cell.native && cell.kind === "integer" && inlineWideInteger(cell))
+				expect(
+					validateJson?.(numericIntegerProbe(cell)),
+					`${cell.name} JSON native numeric wire`,
+				).toBe(false);
+			if (cell.decimalRegex)
+				expect(
+					validateJson?.({ value: "1\\.5" }),
+					`${cell.name} JSON escaped decimal`,
+				).toBe(false);
 		}
 
 		const rust = emitCrate(
@@ -172,7 +198,14 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			const nullProbe = cell.nullable
 				? `let _: ${name} = serde_json::from_str(${JSON.stringify(JSON.stringify(rustNullableValue(cell)))}).unwrap_or_else(|error| panic!("${cell.name} nullable: {error}"));`
 				: "";
-			return `let value: ${name} = serde_json::from_str(${JSON.stringify(rustJson)}).unwrap_or_else(|error| panic!("${cell.name} valid: {error}")); let encoded = serde_json::to_string(&value).unwrap(); assert_eq!(serde_json::from_str::<serde_json::Value>(&encoded).unwrap(), serde_json::from_str::<serde_json::Value>(${JSON.stringify(rustJson)}).unwrap()); let _: ${name} = serde_json::from_str(&encoded).unwrap_or_else(|error| panic!("${cell.name} wire: {error}")); assert!(serde_json::from_str::<${name}>(${JSON.stringify(invalidJson)}).is_err()); ${nullProbe}`;
+			const nativeNumericProbe =
+				cell.native && cell.kind === "integer" && inlineWideInteger(cell)
+					? `assert!(serde_json::from_str::<${name}>("{\\"value\\":5}").is_err());`
+					: "";
+			const escapedDecimalProbe = cell.decimalRegex
+				? `assert!(serde_json::from_str::<${name}>("{\\"value\\":\\"1\\\\.5\\"}").is_err());`
+				: "";
+			return `let value: ${name} = serde_json::from_str(${JSON.stringify(rustJson)}).unwrap_or_else(|error| panic!("${cell.name} valid: {error}")); let encoded = serde_json::to_string(&value).unwrap(); assert_eq!(serde_json::from_str::<serde_json::Value>(&encoded).unwrap(), serde_json::from_str::<serde_json::Value>(${JSON.stringify(rustJson)}).unwrap()); let _: ${name} = serde_json::from_str(&encoded).unwrap_or_else(|error| panic!("${cell.name} wire: {error}")); assert!(serde_json::from_str::<${name}>(${JSON.stringify(invalidJson)}).is_err()); ${nativeNumericProbe} ${escapedDecimalProbe} ${nullProbe}`;
 		}).join("\n    ");
 		writeFileSync(
 			join(scratch, "tests", "numeric_matrix.rs"),

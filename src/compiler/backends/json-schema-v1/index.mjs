@@ -184,6 +184,8 @@ function integerPattern(lower, upper) {
 }
 
 function integerRange(constraints) {
+	const wideMin = -(2n ** 127n);
+	const wideMax = 2n ** 127n - 1n;
 	let lower = -SAFE_INTEGER;
 	let upper = SAFE_INTEGER;
 	let lowerExplicit = false;
@@ -194,20 +196,24 @@ function integerRange(constraints) {
 			continue;
 		const parsed = BigInt(value);
 		if (one.keyword === "min") {
+			if (!lowerExplicit && parsed > upper) upper = wideMax;
 			lower = lowerExplicit && lower > parsed ? lower : parsed;
 			lowerExplicit = true;
 		}
 		if (one.keyword === "exclusiveMin") {
 			const effective = parsed + 1n;
+			if (!lowerExplicit && effective > upper) upper = wideMax;
 			lower = lowerExplicit && lower > effective ? lower : effective;
 			lowerExplicit = true;
 		}
 		if (one.keyword === "max") {
+			if (!upperExplicit && parsed > upper) lower = wideMin;
 			upper = upperExplicit && upper < parsed ? upper : parsed;
 			upperExplicit = true;
 		}
 		if (one.keyword === "exclusiveMax") {
 			const effective = parsed - 1n;
+			if (!upperExplicit && effective > upper) lower = wideMin;
 			upper = upperExplicit && upper < effective ? upper : effective;
 			upperExplicit = true;
 		}
@@ -322,12 +328,6 @@ function constraint(schema, one, subject, decimalPolicy) {
 					? Math.fround(Number(value))
 					: Number(value);
 	}
-	if (
-		subject?.scalar === "integer" &&
-		(key === "min" || key === "exclusiveMin") &&
-		String(value) === "1"
-	)
-		schema.pattern = "^[1-9][0-9]*$";
 	return schema;
 }
 
