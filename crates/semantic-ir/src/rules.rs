@@ -475,7 +475,10 @@ impl<'a> Document<'a> {
     }
 
     fn decimal_policy(&self, identity: &str) -> Option<(u32, u32)> {
-        let policy = self.decimal_policies_from(identity, None).first?;
+        let policy = self
+            .decimal_policies_from(identity, None)
+            .first?
+            .get("decimal")?;
         let precision = policy.get("precision").and_then(Json::as_i64)?;
         let scale = policy.get("scale").and_then(Json::as_i64)?;
         if precision < 0 || scale < 0 {

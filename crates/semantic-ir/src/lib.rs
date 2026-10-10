@@ -587,7 +587,7 @@ mod tests {
         parse(&format!(r#"{{"ir":{{{HEADER},"types":[{item}]}}}}"#)).expect("a bundle")
     }
 
-    /// An integer bound is a number or a canonical decimal string, so a bound
+    /// An integer bound is a canonical decimal string, so a bound
     /// past 2^53 is exact; a non-canonical string is refused.
     ///
     /// Tracing: TC-1825
@@ -599,12 +599,12 @@ mod tests {
             r#""18446744073709551615""#,
             r#""-9223372036854775809""#,
             r#""0""#,
-            "7",
+            r#""7""#,
         ] {
             assert_eq!(codes(&bound_bundle("Integer", accepted)), [], "{accepted}");
         }
         for refused in [
-            r#""01""#, r#""+1""#, r#"" 1""#, r#""1 ""#, r#""-0""#, r#""1.0""#,
+            r#""01""#, r#""+1""#, r#"" 1""#, r#""1 ""#, r#""-0""#, r#""1.0""#, "7",
         ] {
             assert_eq!(
                 codes(&bound_bundle("Integer", refused)),

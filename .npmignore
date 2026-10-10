@@ -1,0 +1,3 @@
+# The private workspace root has no distribution payload. Keep pack inspection
+# from including generated packages or qualification inputs by default.
+*
