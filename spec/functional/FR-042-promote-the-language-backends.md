@@ -28,7 +28,7 @@ issue #4 representative slice only.
 
 - `src/compiler/backends/typescript.mjs` exporting `emitTypeScript(ir)`
 - `src/compiler/backends/rust.mjs` exporting `emitRust(ir)`
-- The qualification limitation recorded against both backends in `src/compiler/inventory.json`
+- The qualification limitation recorded against both backends in the Prototype qualification section of `docs/semantic-data-system/typespec-feasibility.md`
 
 ## Behavior
 
@@ -68,7 +68,7 @@ issue #4 representative slice only.
 | FR-042-AC-7 | A model field whose IR name is not snake_case receives a `#[serde(rename)]` attribute in the Rust output. | Test |
 | FR-042-AC-8 | An enum renders in TypeScript as a union of its member values as string literals. | Test |
 | FR-042-AC-9 | An optional field renders as `Option<…>` in Rust and with a `?` marker in TypeScript. | Test |
-| FR-042-AC-10 | `src/compiler/inventory.json` records both backends as representative-slice-only, naming the four absent gates. | Test |
+| FR-042-AC-10 | The Prototype qualification section of `docs/semantic-data-system/typespec-feasibility.md` records both backends as representative-slice-only, naming the four absent gates. | Test |
 | FR-042-AC-11 | The branch changes no byte of `spikes/typespec-feasibility/generated/custom/typescript/index.ts`, `.../rust/src/lib.rs`, or `.../semantic-ir.json`. | Analysis |
 
 ## Dependencies

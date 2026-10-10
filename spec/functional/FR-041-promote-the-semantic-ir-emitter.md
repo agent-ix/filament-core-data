@@ -5,8 +5,6 @@ type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-009"
     type: "implements"
-  - target: "ix://agent-ix/filament-core-data/FR-040"
-    type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-016"
     type: "depends_on"
 ---
@@ -86,5 +84,5 @@ than a path under `spikes/`.
 
 ## Dependencies
 
-- **Upstream**: [FR-040](./FR-040-disposition-the-prototype-inventory.md), [FR-016](./FR-016-emit-semantic-ir-and-native-types.md), ADR-0002, ADR-0005
+- **Upstream**: [FR-016](./FR-016-emit-semantic-ir-and-native-types.md), ADR-0002, ADR-0005
 - **Downstream**: [FR-042](./FR-042-promote-the-language-backends.md), [FR-044](./FR-044-replay-the-frozen-spike-through-the-promoted-compiler.md), issue #19 semantic compiler

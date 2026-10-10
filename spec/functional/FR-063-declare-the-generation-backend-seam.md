@@ -140,7 +140,7 @@ a guess in either direction.
 | FR-063-CON-3 | The seam SHALL distinguish a caller defect, which throws, from a document defect, which is a diagnostic; no request document a package supplies can make the seam throw. | Safety | Fuzz |
 | FR-063-CON-4 | This requirement SHALL leave `package.json` `exports`, `main`, `module`, `types`, and `files` unchanged; making a backend a runtime entry point remains issue #11. | Non-disruption | Manifest comparison |
 | FR-063-CON-5 | The seam SHALL NOT import `src/compiler/backends/typescript.mjs` or `src/compiler/backends/rust.mjs`; those consume the frozen FR-041 prototype IR and are a different contract, and reusing them here would make a prototype-shaped document reachable through the contract seam. | Integrity | Static analysis |
-| FR-063-CON-6 | The narrow build interface of FR-052 SHALL keep exactly its fifteen symbols; this seam is reached by file path, as `src/compiler/inventory.json` records for every module under `src/compiler/`. | Non-disruption | Export-set test |
+| FR-063-CON-6 | The narrow build interface of FR-052 SHALL keep exactly its fifteen symbols; this seam is reached by file path. | Non-disruption | Export-set test |
 
 ## Acceptance Criteria
 

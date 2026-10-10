@@ -59,7 +59,6 @@ obliges honesty about how the agreement was reached.
 - `conformance/adapters/typescript-backend/adapter.mjs`, the result emitter the harness spawns
 - The rewritten `typescript-backend` row of `conformance/adapters/registry.json`, carrying `status: "available"`, a `command`, and a rationale naming what now exists
 - The regenerated `conformance/coverage.json`
-- The discharged TypeScript half of the FR-042-CON-3 qualification limitation in `src/compiler/inventory.json`
 - The measured conformance figures, including the first-run divergence count, recorded in `spec/tests.md`
 
 ## Behavior
@@ -133,11 +132,9 @@ obliges honesty about how the agreement was reached.
 - The regenerated `coverage.json` SHALL record the `typescript-backend` row's `unmet` falling from 115 to 0 and its `matched` rising to 115.
 - The regenerated `coverage.json` SHALL record a corpus-wide `unmetCases` total 115 lower than the total the committed account carried immediately before this change.
 - No acceptance criterion of this requirement SHALL name a whole-corpus absolute, because `conformance/coverage.json` carries one row per adapter and issues #21 and #23 each flip their own row in the same window, so an absolute encodes a merge order that nobody controls and fails the branch that merges second for work it did not do.
-- `conformance/coverage.json`, `docs/semantic-data-system/compiler-diagnostics.md`, `src/compiler/inventory.json`, and the `spec/tests.md` execution summary are machine-generated or shared with issues #21 and #23, and on rebase they SHALL be regenerated from the rebased tree rather than merged hunk by hunk.
-- `agent-ix/filament-core-data#63` records that three concurrent backend tickets each regenerate those four artifacts and asks for a reconciliation owner, and this requirement SHALL cite it rather than assume a merge order.
+- `conformance/coverage.json`, `docs/semantic-data-system/compiler-diagnostics.md`, and the `spec/tests.md` execution summary are machine-generated or shared with issues #21 and #23, and on rebase they SHALL be regenerated from the rebased tree rather than merged hunk by hunk.
+- `agent-ix/filament-core-data#63` records that three concurrent backend tickets each regenerate the shared artifacts and asks for a reconciliation owner, and this requirement SHALL cite it rather than assume a merge order.
 - `spec/tests.md` SHALL record the measured pass count, the measured divergence count, the first-run divergence count, and what each number counts, rather than a claim that the corpus passes.
-- The `typescript-backend` component of `src/compiler/inventory.json` SHALL have its FR-042-CON-3 limitation discharged for the conformance-corpus clause only, leaving the property and fuzz, release compatibility matrix, and downstream adoption clauses as written.
-- The `rust-serde-backend` component of `src/compiler/inventory.json` SHALL be left byte-unchanged, because its limitation is discharged by issue #21.
 
 ### Corpus isolation
 
@@ -186,5 +183,5 @@ obliges honesty about how the agreement was reached.
 - **Upstream**: [FR-037](./FR-037-run-the-differential-conformance-harness.md), [FR-066](./FR-066-generate-runtime-validators.md), [FR-068](./FR-068-decide-and-report-ir-admissibility.md), [FR-069](./FR-069-canonicalize-and-classify-the-ir-surface.md)
 - **Downstream**: issue #11 (publication), issue #52 (the `compiler-frontend` slot, which this requirement neither wires nor blocks)
 - **Constrained by**: [NFR-025](../non-functional/NFR-025-non-disruptive-typescript-backend.md)
-- **Concurrent tickets**: issues #21 and #23 own the `rust-backend` and `python-backend` slots and regenerate the same `conformance/coverage.json`, `docs/semantic-data-system/compiler-diagnostics.md`, and `src/compiler/inventory.json`. This requirement states every figure as its own slot's delta so that merge order cannot falsify it, and regenerates rather than merges those artifacts on rebase.
+- **Concurrent tickets**: issues #21 and #23 own the `rust-backend` and `python-backend` slots and regenerate the same `conformance/coverage.json`, and `docs/semantic-data-system/compiler-diagnostics.md`. This requirement states every figure as its own slot's delta so that merge order cannot falsify it, and regenerates rather than merges those artifacts on rebase.
 - **Open contract questions**: GAP-011, the unstated resolution rule for a `reference` target, names `agent-ix/filament-core-data#9` as its owner and that issue is closed, so it has no live decider; `agent-ix/filament-core-data#59` records that and asks for one. This adapter answers cases REF-001..004 under the `strict` default of [FR-068](./FR-068-decide-and-report-ir-admissibility.md), which is conformance with the corpus's published reading and not a ruling on the contract. When a live owner settles GAP-011 the other way, those four rows move with a `corpus-defect` verdict and this backend follows by one edit. The contract-version round-trip rule of [FR-069](./FR-069-canonicalize-and-classify-the-ir-surface.md), recorded as `agent-ix/filament-core-data#64`, is a second point where a measured disagreement is reported to the owner rather than absorbed. `agent-ix/filament-core-data#61` and `agent-ix/filament-core-data#62`, which FR-068 cites, bear on the diagnostic comparison this adapter's answers are keyed on.
