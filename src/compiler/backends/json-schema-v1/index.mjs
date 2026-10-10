@@ -618,7 +618,9 @@ function fieldSchema(field, types) {
 				? { ...(target ?? {}), scalar: "integer" }
 				: decimalScalar(types, field.typeRef) === "decimal"
 					? { ...(target ?? {}), scalar: "decimal" }
-					: target,
+					: nativeScalar(field.typeRef) !== undefined
+						? { ...(target ?? {}), scalar: nativeScalar(field.typeRef) }
+						: target,
 			effectiveDecimalPolicy,
 		);
 	if (

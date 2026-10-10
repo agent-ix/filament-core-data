@@ -1991,10 +1991,8 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			"        D: serde::Deserializer<'de>,",
 			"    {",
 			"        let wire = <String as serde::Deserialize>::deserialize(deserializer)?;",
-			`        let inner = wire.parse::<${inner}>().map_err(serde::de::Error::custom)?;`,
-			"        if inner.to_string() != wire {",
-			'            return Err(serde::de::Error::custom("integer is not canonical"));',
-			"        }",
+			`        let inner = crate::support::parse_canonical_integer::<${inner}>(&wire)`,
+			"            .map_err(serde::de::Error::custom)?;",
 			"        Self::try_new(inner).map_err(serde::de::Error::custom)",
 			"    }",
 			"}",
@@ -2438,7 +2436,11 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		} else if (field.presence === "optional") {
 			attributes.push("default");
 		}
-		if (field.presence === "optional" && field.nullable) {
+		if (
+			field.presence === "optional" &&
+			field.nullable &&
+			!(field.serdeAttributes ?? []).some((one) => one.startsWith("with ="))
+		) {
 			attributes.push('deserialize_with = "crate::support::present_or_absent"');
 		}
 		attributes.push(
@@ -2488,6 +2490,8 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	const initialisers = type.fields.map((field) => field.ident);
 	if (retains) initialisers.push("unknown_members");
 	const impossibleField = type.fields.some((field) =>
+		field.presence === "required" &&
+		!field.nullable &&
 		impossibleIntegerRangeCheck(field.checks ?? [], {
 			inner: field.elementInner ?? field.elementType,
 		}) !== undefined,
@@ -2925,13 +2929,17 @@ function renderInlineFieldChecks(type, field) {
 	};
 	if (field.collection) {
 		const source = field.presence === "optional" ? "items" : field.ident;
-		const valueLines = field.nullable
-			? [
-				"                if let crate::support::Nullable::Value(value) = item {",
-				...renderValue("*value", 4),
-				"                }",
-			]
+		const renderedValue = field.nullable
+			? renderValue("*value", 4)
 			: renderValue("*item");
+		const valueLines =
+			field.nullable && renderedValue.length > 0
+				? [
+						"                if let crate::support::Nullable::Value(value) = item {",
+						...renderedValue,
+						"                }",
+					]
+				: renderedValue;
 		if (valueLines.length === 0) return lines;
 		if (field.presence === "optional")
 			lines.push(`        if let Some(items) = &${field.ident} {`);
@@ -2944,13 +2952,17 @@ function renderInlineFieldChecks(type, field) {
 		return lines;
 	}
 	if (field.presence === "optional") {
-		const valueLines = field.nullable
-			? [
-				"            if let crate::support::Nullable::Value(value) = value {",
-				...renderValue("*value", 4),
-				"            }",
-			]
+		const renderedValue = field.nullable
+			? renderValue("*value", 4)
 			: renderValue("*value");
+		const valueLines =
+			field.nullable && renderedValue.length > 0
+				? [
+						"            if let crate::support::Nullable::Value(value) = value {",
+						...renderedValue,
+						"            }",
+					]
+				: renderedValue;
 		if (valueLines.length === 0) return lines;
 		lines.push(`        if let Some(value) = &${field.ident} {`);
 		lines.push(...valueLines);

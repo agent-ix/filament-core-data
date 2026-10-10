@@ -11,8 +11,6 @@
 //! a regular-expression engine, and the instant arithmetic a date or date-time
 //! bound is compared with is written out rather than taken from a date library.
 
-#![allow(missing_docs)]
-
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::fmt;
@@ -21,6 +19,19 @@ use serde::de::{self, Deserializer, MapAccess, SeqAccess, Visitor};
 use serde::ser::{SerializeMap, SerializeSeq, Serializer};
 use serde::{Deserialize, Serialize};
 
+/// Parse one canonical decimal integer carried on the JSON string wire.
+pub fn parse_canonical_integer<T>(wire: &str) -> Result<T, String>
+where
+    T: std::str::FromStr + ToString,
+    T::Err: fmt::Display,
+{
+    let value = wire.parse::<T>().map_err(|error| error.to_string())?;
+    if value.to_string() != wire {
+        return Err("integer is not canonical".to_owned());
+    }
+    Ok(value)
+}
+
 // Native integer members whose effective range exceeds the JSON safe-number
 // interval use the canonical string wire form even when they are not minted
 // aliases.  These adapters are kept in the fixed support module so records,
@@ -28,9 +39,11 @@ use serde::{Deserialize, Serialize};
 // numbers instead of silently rounding them.
 macro_rules! wide_integer_scalar {
     ($module:ident, $ty:ty) => {
+        /// Canonical string adapter for one wide integer.
         pub mod $module {
             use serde::{Deserialize, Deserializer, Serializer};
 
+            /// Serialize the integer as its canonical decimal string.
             pub fn serialize<S>(value: &$ty, serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: Serializer,
@@ -38,16 +51,13 @@ macro_rules! wide_integer_scalar {
                 serializer.serialize_str(&value.to_string())
             }
 
+            /// Deserialize and validate one canonical decimal integer.
             pub fn deserialize<'de, D>(deserializer: D) -> Result<$ty, D::Error>
             where
                 D: Deserializer<'de>,
             {
                 let wire = <String as Deserialize>::deserialize(deserializer)?;
-                let value = wire.parse::<$ty>().map_err(serde::de::Error::custom)?;
-                if value.to_string() != wire {
-                    return Err(serde::de::Error::custom("integer is not canonical"));
-                }
-                Ok(value)
+                super::parse_canonical_integer::<$ty>(&wire).map_err(serde::de::Error::custom)
             }
         }
     };
@@ -59,9 +69,11 @@ wide_integer_scalar!(wide_i128, i128);
 
 macro_rules! wide_integer_vec {
     ($module:ident, $ty:ty) => {
+        /// Canonical string adapter for a vector of wide integers.
         pub mod $module {
             use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+            /// Serialize all members as canonical decimal strings.
             pub fn serialize<S>(values: &Vec<$ty>, serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: Serializer,
@@ -73,6 +85,7 @@ macro_rules! wide_integer_vec {
                     .serialize(serializer)
             }
 
+            /// Deserialize a vector of canonical decimal integers.
             pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<$ty>, D::Error>
             where
                 D: Deserializer<'de>,
@@ -81,11 +94,8 @@ macro_rules! wide_integer_vec {
                 wires
                     .into_iter()
                     .map(|wire| {
-                        let value = wire.parse::<$ty>().map_err(serde::de::Error::custom)?;
-                        if value.to_string() != wire {
-                            return Err(serde::de::Error::custom("integer is not canonical"));
-                        }
-                        Ok(value)
+                        super::parse_canonical_integer::<$ty>(&wire)
+                            .map_err(serde::de::Error::custom)
                     })
                     .collect()
             }
@@ -100,19 +110,25 @@ wide_integer_vec!(wide_vec_i128, i128);
 /// Generic adapters for the remaining member-axis compositions.  The
 /// `serde(with = ...)` contract monomorphizes these functions for the field's
 /// concrete integer type, so one implementation covers every width.
+/// Canonical integer adapter for wide option values.
 pub mod wide_option {
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
     use std::fmt::Display;
     use std::str::FromStr;
 
+    /// Serialize canonical integer wire values.
     pub fn serialize<S, T>(value: &Option<T>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
         T: ToString,
     {
-        value.as_ref().map(ToString::to_string).serialize(serializer)
+        value
+            .as_ref()
+            .map(ToString::to_string)
+            .serialize(serializer)
     }
 
+    /// Deserialize canonical integer wire values.
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
     where
         D: Deserializer<'de>,
@@ -121,21 +137,19 @@ pub mod wide_option {
     {
         <Option<String> as Deserialize>::deserialize(deserializer)?
             .map(|wire| {
-                let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
-                if value.to_string() != wire {
-                    return Err(serde::de::Error::custom("integer is not canonical"));
-                }
-                Ok(value)
+                super::parse_canonical_integer::<T>(&wire).map_err(serde::de::Error::custom)
             })
             .transpose()
     }
 }
 
+/// Canonical integer adapter for wide option vec values.
 pub mod wide_option_vec {
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
     use std::fmt::Display;
     use std::str::FromStr;
 
+    /// Serialize canonical integer wire values.
     pub fn serialize<S, T>(value: &Option<Vec<T>>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -147,6 +161,7 @@ pub mod wide_option_vec {
             .serialize(serializer)
     }
 
+    /// Deserialize canonical integer wire values.
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Vec<T>>, D::Error>
     where
         D: Deserializer<'de>,
@@ -158,11 +173,7 @@ pub mod wide_option_vec {
                 wires
                     .into_iter()
                     .map(|wire| {
-                        let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
-                        if value.to_string() != wire {
-                            return Err(serde::de::Error::custom("integer is not canonical"));
-                        }
-                        Ok(value)
+                        super::parse_canonical_integer::<T>(&wire).map_err(serde::de::Error::custom)
                     })
                     .collect()
             })
@@ -170,12 +181,14 @@ pub mod wide_option_vec {
     }
 }
 
+/// Canonical integer adapter for wide nullable values.
 pub mod wide_nullable {
     use super::Nullable;
     use serde::{Deserialize, Deserializer, Serializer};
     use std::fmt::Display;
     use std::str::FromStr;
 
+    /// Serialize canonical integer wire values.
     pub fn serialize<S, T>(value: &Nullable<T>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -187,6 +200,7 @@ pub mod wide_nullable {
         }
     }
 
+    /// Deserialize canonical integer wire values.
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Nullable<T>, D::Error>
     where
         D: Deserializer<'de>,
@@ -195,23 +209,21 @@ pub mod wide_nullable {
     {
         match <Option<String> as Deserialize>::deserialize(deserializer)? {
             None => Ok(Nullable::Null),
-            Some(wire) => {
-                let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
-                if value.to_string() != wire {
-                    return Err(serde::de::Error::custom("integer is not canonical"));
-                }
-                Ok(Nullable::Value(value))
-            }
+            Some(wire) => super::parse_canonical_integer::<T>(&wire)
+                .map(Nullable::Value)
+                .map_err(serde::de::Error::custom),
         }
     }
 }
 
+/// Canonical integer adapter for wide nullable vec values.
 pub mod wide_nullable_vec {
     use super::Nullable;
     use serde::{Deserialize, Deserializer, Serializer};
     use std::fmt::Display;
     use std::str::FromStr;
 
+    /// Serialize canonical integer wire values.
     pub fn serialize<S, T>(value: &Nullable<Vec<T>>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -219,12 +231,12 @@ pub mod wide_nullable_vec {
     {
         match value {
             Nullable::Null => serializer.serialize_none(),
-            Nullable::Value(values) => serializer.serialize_some(
-                &values.iter().map(ToString::to_string).collect::<Vec<_>>(),
-            ),
+            Nullable::Value(values) => serializer
+                .serialize_some(&values.iter().map(ToString::to_string).collect::<Vec<_>>()),
         }
     }
 
+    /// Deserialize canonical integer wire values.
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Nullable<Vec<T>>, D::Error>
     where
         D: Deserializer<'de>,
@@ -234,30 +246,25 @@ pub mod wide_nullable_vec {
         match <Option<Vec<String>> as Deserialize>::deserialize(deserializer)? {
             None => Ok(Nullable::Null),
             Some(wires) => wires
-                    .into_iter()
-                    .map(|wire| {
-                        let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
-                        if value.to_string() != wire {
-                            return Err(serde::de::Error::custom("integer is not canonical"));
-                        }
-                        Ok(value)
-                    })
+                .into_iter()
+                .map(|wire| {
+                    super::parse_canonical_integer::<T>(&wire).map_err(serde::de::Error::custom)
+                })
                 .collect::<Result<Vec<_>, _>>()
                 .map(Nullable::Value),
         }
     }
 }
 
+/// Canonical integer adapter for wide vec nullable values.
 pub mod wide_vec_nullable {
     use super::Nullable;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
     use std::fmt::Display;
     use std::str::FromStr;
 
-    pub fn serialize<S, T>(
-        value: &Vec<Nullable<T>>,
-        serializer: S,
-    ) -> Result<S::Ok, S::Error>
+    /// Serialize canonical integer wire values.
+    pub fn serialize<S, T>(value: &Vec<Nullable<T>>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
         T: ToString,
@@ -272,6 +279,7 @@ pub mod wide_vec_nullable {
             .serialize(serializer)
     }
 
+    /// Deserialize canonical integer wire values.
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Vec<Nullable<T>>, D::Error>
     where
         D: Deserializer<'de>,
@@ -282,24 +290,22 @@ pub mod wide_vec_nullable {
             .into_iter()
             .map(|wire| match wire {
                 None => Ok(Nullable::Null),
-                Some(wire) => {
-                    let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
-                    if value.to_string() != wire {
-                        return Err(serde::de::Error::custom("integer is not canonical"));
-                    }
-                    Ok(Nullable::Value(value))
-                }
+                Some(wire) => super::parse_canonical_integer::<T>(&wire)
+                    .map(Nullable::Value)
+                    .map_err(serde::de::Error::custom),
             })
             .collect()
     }
 }
 
+/// Canonical integer adapter for wide option nullable values.
 pub mod wide_option_nullable {
     use super::Nullable;
     use serde::{Deserialize, Deserializer, Serializer};
     use std::fmt::Display;
     use std::str::FromStr;
 
+    /// Serialize canonical integer wire values.
     pub fn serialize<S, T>(value: &Option<Nullable<T>>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -312,6 +318,7 @@ pub mod wide_option_nullable {
         }
     }
 
+    /// Deserialize canonical integer wire values.
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Nullable<T>>, D::Error>
     where
         D: Deserializer<'de>,
@@ -320,23 +327,22 @@ pub mod wide_option_nullable {
     {
         match <Option<String> as Deserialize>::deserialize(deserializer)? {
             None => Ok(Some(Nullable::Null)),
-            Some(wire) => {
-                let inner = wire.parse::<T>().map_err(serde::de::Error::custom)?;
-                if inner.to_string() != wire {
-                    return Err(serde::de::Error::custom("integer is not canonical"));
-                }
-                Ok(Some(Nullable::Value(inner)))
-            }
+            Some(wire) => super::parse_canonical_integer::<T>(&wire)
+                .map(Nullable::Value)
+                .map(Some)
+                .map_err(serde::de::Error::custom),
         }
     }
 }
 
+/// Canonical integer adapter for wide option nullable vec values.
 pub mod wide_option_nullable_vec {
     use super::Nullable;
     use serde::{Deserialize, Deserializer, Serializer};
     use std::fmt::Display;
     use std::str::FromStr;
 
+    /// Serialize canonical integer wire values.
     pub fn serialize<S, T>(
         value: &Option<Nullable<Vec<T>>>,
         serializer: S,
@@ -352,6 +358,7 @@ pub mod wide_option_nullable_vec {
         }
     }
 
+    /// Deserialize canonical integer wire values.
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Nullable<Vec<T>>>, D::Error>
     where
         D: Deserializer<'de>,
@@ -363,11 +370,7 @@ pub mod wide_option_nullable_vec {
             Some(wires) => wires
                 .into_iter()
                 .map(|wire| {
-                    let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
-                    if value.to_string() != wire {
-                        return Err(serde::de::Error::custom("integer is not canonical"));
-                    }
-                    Ok(value)
+                    super::parse_canonical_integer::<T>(&wire).map_err(serde::de::Error::custom)
                 })
                 .collect::<Result<Vec<_>, _>>()
                 .map(|values| Some(Nullable::Value(values))),
@@ -375,12 +378,14 @@ pub mod wide_option_nullable_vec {
     }
 }
 
+/// Canonical integer adapter for wide option vec nullable values.
 pub mod wide_option_vec_nullable {
     use super::Nullable;
     use serde::{Deserialize, Deserializer, Serialize, Serializer};
     use std::fmt::Display;
     use std::str::FromStr;
 
+    /// Serialize canonical integer wire values.
     pub fn serialize<S, T>(
         value: &Option<Vec<Nullable<T>>>,
         serializer: S,
@@ -403,9 +408,8 @@ pub mod wide_option_vec_nullable {
             .serialize(serializer)
     }
 
-    pub fn deserialize<'de, D, T>(
-        deserializer: D,
-    ) -> Result<Option<Vec<Nullable<T>>>, D::Error>
+    /// Deserialize canonical integer wire values.
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Vec<Nullable<T>>>, D::Error>
     where
         D: Deserializer<'de>,
         T: FromStr + ToString,
@@ -417,13 +421,9 @@ pub mod wide_option_vec_nullable {
                     .into_iter()
                     .map(|wire| match wire {
                         None => Ok(Nullable::Null),
-                        Some(wire) => {
-                            let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
-                            if value.to_string() != wire {
-                                return Err(serde::de::Error::custom("integer is not canonical"));
-                            }
-                            Ok(Nullable::Value(value))
-                        }
+                        Some(wire) => super::parse_canonical_integer::<T>(&wire)
+                            .map(Nullable::Value)
+                            .map_err(serde::de::Error::custom),
                     })
                     .collect()
             })

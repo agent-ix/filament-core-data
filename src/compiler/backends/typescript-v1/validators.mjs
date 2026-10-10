@@ -493,6 +493,8 @@ function checkCall(element, valueExpression, pointerExpression) {
 		const scalar = element.scalar;
 		if (scalar === "any") return "void 0";
 		const checks = [];
+		const canonicalWideInteger =
+			`typeof ${valueExpression} === "string" && /^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression}))`;
 		if (scalar === "integer" && element.impossibleIntegerBounds === true) {
 			const impossible = element.constraints?.[0];
 			if (impossible !== undefined)
@@ -501,8 +503,6 @@ function checkCall(element, valueExpression, pointerExpression) {
 				);
 		}
 		if (scalar === "integer" && element.wideInteger === true) {
-			const canonicalWideInteger =
-				`typeof ${valueExpression} === "string" && /^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression}))`;
 			checks.push(
 				`if (!(${canonicalWideInteger})) fail(errors, ${pointerExpression}, CODES.NOT_AN_INTEGER, "the native integer wire value has the wrong type")`,
 			);
@@ -530,6 +530,32 @@ function checkCall(element, valueExpression, pointerExpression) {
 		}
 		for (const constraint of element.constraints ?? []) {
 			const value = constraint.operands?.value;
+			if (constraint.keyword === "enumValues") {
+				const values = constraint.operands?.values ?? [];
+				const members = values
+					.map((entry) =>
+						element.wideInteger === true
+							? `BigInt(${literal(entry)})`
+							: literal(Number(entry)),
+					)
+					.join(", ");
+				const lhs =
+					element.wideInteger === true
+						? `BigInt(String(${valueExpression}))`
+						: `Number(${valueExpression})`;
+				const equality =
+					element.scalar === "float32"
+						? `[${members}].some((allowed) => Object.is(Math.fround(allowed), Math.fround(${valueExpression})) || (Math.fround(allowed) === 0 && Math.fround(${valueExpression}) === 0))`
+						: `[${members}].some((allowed) => Object.is(allowed, ${lhs}))`;
+				const guardedEquality =
+					element.wideInteger === true
+						? `(${canonicalWideInteger} && !(${equality}))`
+						: `!(${equality})`;
+				checks.push(
+					`if ${guardedEquality} fail(errors, ${pointerExpression}, ${literal(constraint.diagnosticCode)}, ${literal("the enumValues constraint is not satisfied")})`,
+				);
+				continue;
+			}
 			if (
 				!["min", "max", "exclusiveMin", "exclusiveMax"].includes(
 					constraint.keyword,
@@ -546,12 +572,16 @@ function checkCall(element, valueExpression, pointerExpression) {
 			const rhs =
 				element.wideInteger === true
 					? `BigInt(${literal(value)})`
+					: element.scalar === "float32"
+						? `Math.fround(${literal(value)})`
 					: typeof value === "string"
 						? literal(Number(value))
 						: literal(value);
 			const lhs =
 				element.wideInteger === true
 					? `BigInt(String(${valueExpression}))`
+					: element.scalar === "float32"
+						? `Math.fround(${valueExpression})`
 					: `Number(${valueExpression})`;
 			const condition =
 				element.wideInteger === true
