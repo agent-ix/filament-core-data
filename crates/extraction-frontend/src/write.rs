@@ -98,15 +98,14 @@ impl OutputPaths {
         self
     }
 
-    /// Every configured path with its slot, in the rename order.
+    /// Every configured path with its slot, in diagnostics, digest, document
+    /// rename order.
     pub fn slots(&self) -> Vec<(Slot, &Path)> {
-        let mut slots = vec![
-            (Slot::Diagnostics, &self.diagnostics),
-            (Slot::Document, &self.document),
-        ];
+        let mut slots = vec![(Slot::Diagnostics, &self.diagnostics)];
         if let Some(path) = &self.digest {
             slots.push((Slot::Digest, path));
         }
+        slots.push((Slot::Document, &self.document));
         slots
     }
 }
