@@ -419,15 +419,8 @@ agreement (NFR-009).
   then the JSON Schema backend SHALL raise the blocking
   `agent-ix.semantic-ir.UNDECLARED_LOSS` naming the field and write no file,
   because `uniqueItems` compares strings and would admit `["1.1", "1.10"]`.
-- If a collection field declaring `unique: true` has a `float32` item
-  subject, or a sequence carries a `unique` constraint over a `float32` item
-  subject, then the JSON Schema backend SHALL raise blocking
-  `agent-ix.semantic-ir.UNDECLARED_LOSS` naming the field or constraint and
-  write no file. The refusal applies after alias and native scalar resolution
-  and does not depend on instance values. JSON Schema `uniqueItems` would
-  admit `[0.1, 0.10000000149011612]`, whose members are equal after binary32
-  rounding. [FR-100](./FR-100-map-semantic-ir-to-json-schema.md) defines this
-  refusal instead of a schema that admits those duplicates.
+- The JSON Schema backend SHALL apply the Float32 uniqueness refusal defined
+  by [FR-100](./FR-100-map-semantic-ir-to-json-schema.md).
 - The JSON Schema backend SHALL render `float32` and `float64` subjects as
   `{"type": "number"}` with their bounds as numeric keywords.
 - The Python backends SHALL inherit every numeric rendering and refusal from
