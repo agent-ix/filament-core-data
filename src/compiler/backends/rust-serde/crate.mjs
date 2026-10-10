@@ -271,8 +271,6 @@ function subjectAccess(definition, byIdentity) {
 	let current = definition;
 	let expression = "value";
 	const seen = new Set();
-	const flattenedInteger =
-		resolveKind(byIdentity, definition?.identity)?.scalar === "integer";
 	while (current !== undefined && current.kind === "alias") {
 		if (seen.has(current.identity)) return undefined;
 		seen.add(current.identity);
@@ -285,7 +283,7 @@ function subjectAccess(definition, byIdentity) {
 				: undefined;
 		// A scalar declaration maps directly to its primitive inner type. Only
 		// another alias contributes a newtype wrapper and therefore a get().
-		if (targetSupport === undefined && !flattenedInteger)
+		if (targetSupport === undefined)
 			expression = `${expression}.get()`;
 		current = target;
 	}
@@ -1435,12 +1433,20 @@ function renderCheck(
 	// so one `get()` reaches the primitive while preserving the expression's
 	// existing borrowing shape.  Native support types expose their string
 	// methods directly and must keep the primitive path below.
-	const subject = unwrapNamedWrapper ? `(${expression}).get()` : expression;
+	const wrapperDepth =
+		typeof unwrapNamedWrapper === "number"
+			? unwrapNamedWrapper
+			: unwrapNamedWrapper
+				? 1
+				: 0;
+	let subject = expression;
+	for (let depth = 0; depth < wrapperDepth; depth += 1)
+		subject = `(${subject}).get()`;
 	// A scalar newtype hands its constructor the base by value, so `value` is
 	// already the `i64` or `f64` a numeric comparison needs. An alias reaches its
 	// base through one `get()` per hop, which yields a reference, so the copy is
 	// taken here rather than left for the comparison to fail on.
-	const owned = unwrapNamedWrapper
+	const owned = wrapperDepth > 0
 		? `*${subject}`
 		: expression === "value" || expression.startsWith("*")
 			? expression
@@ -2538,7 +2544,7 @@ function renderInlineFieldChecks(type, field) {
 	const subject = {
 		...type,
 		constantName: prefix,
-		inner: field.elementType,
+		inner: field.elementInner ?? field.elementType,
 		itemScalar: field.elementScalar,
 		itemType: field.elementType,
 	};
@@ -2551,8 +2557,7 @@ function renderInlineFieldChecks(type, field) {
 				expression,
 				field.elementScalar,
 				prefix,
-				field.elementType.startsWith("crate::") &&
-					!field.elementType.startsWith("crate::support::"),
+				field.wrapperDepth,
 			).map((line) =>
 				line.length === 0 ? line : `${" ".repeat(extraIndent)}${line}`,
 			),

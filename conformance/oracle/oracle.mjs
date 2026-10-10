@@ -1506,10 +1506,17 @@ export function classify(beforeBundle, afterBundle) {
  */
 function operandAdmitted(numeric, scalar, value) {
 	if (!numeric) return typeof value === "string";
-	if (typeof value === "number") return true;
+	if (scalar !== "integer") return typeof value === "number" && Number.isFinite(value);
 	return (
-		scalar === "integer" &&
 		typeof value === "string" &&
-		/^(0|-?[1-9][0-9]*)$/.test(value)
+		/^(0|-?[1-9][0-9]*)$/.test(value) &&
+		(() => {
+			try {
+				const parsed = BigInt(value);
+				return parsed >= -(2n ** 127n) && parsed <= 2n ** 127n - 1n;
+			} catch {
+				return false;
+			}
+		})()
 	);
 }

@@ -34,6 +34,25 @@
       "number",
       "string-safe"
     ],
+    "aliasMode": [
+      "none",
+      "child-narrowed",
+      "inherited"
+    ],
+    "nullable": [
+      false,
+      true
+    ],
+    "lexeme": [
+      "ordinary",
+      "zero-huge-exponent",
+      "huge-exponent"
+    ],
+    "oracleWidth": [
+      "safe",
+      "numeric7",
+      "i128"
+    ],
     "backends": [
       "typescript",
       "json-schema",
@@ -48,7 +67,11 @@
       "range": "safe",
       "depth": 0,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-safe-0-collection-number",
@@ -56,7 +79,11 @@
       "range": "safe",
       "depth": 0,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-safe-0-nested-number",
@@ -64,7 +91,11 @@
       "range": "safe",
       "depth": 0,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-safe-0-option-number",
@@ -72,7 +103,11 @@
       "range": "safe",
       "depth": 0,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-safe-1-field-number",
@@ -80,7 +115,11 @@
       "range": "safe",
       "depth": 1,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-safe-1-collection-number",
@@ -88,7 +127,11 @@
       "range": "safe",
       "depth": 1,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-safe-1-nested-number",
@@ -96,7 +139,11 @@
       "range": "safe",
       "depth": 1,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-safe-1-option-number",
@@ -104,7 +151,11 @@
       "range": "safe",
       "depth": 1,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-safe-2-field-number",
@@ -112,7 +163,11 @@
       "range": "safe",
       "depth": 2,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "zero-huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-safe-2-collection-number",
@@ -120,7 +175,11 @@
       "range": "safe",
       "depth": 2,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "zero-huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-safe-2-nested-number",
@@ -128,7 +187,11 @@
       "range": "safe",
       "depth": 2,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "zero-huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-safe-2-option-number",
@@ -136,7 +199,11 @@
       "range": "safe",
       "depth": 2,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "zero-huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-0-field-number",
@@ -144,7 +211,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-0-collection-number",
@@ -152,7 +223,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-0-nested-number",
@@ -160,7 +235,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-0-option-number",
@@ -168,7 +247,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-1-field-number",
@@ -176,7 +259,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-1-collection-number",
@@ -184,7 +271,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-1-nested-number",
@@ -192,7 +283,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-1-option-number",
@@ -200,7 +295,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-2-field-number",
@@ -208,7 +307,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-2-collection-number",
@@ -216,7 +319,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-2-nested-number",
@@ -224,7 +331,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-positive-2-option-number",
@@ -232,7 +343,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-0-field-number",
@@ -240,7 +355,11 @@
       "range": "negative",
       "depth": 0,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-0-collection-number",
@@ -248,7 +367,11 @@
       "range": "negative",
       "depth": 0,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-0-nested-number",
@@ -256,7 +379,11 @@
       "range": "negative",
       "depth": 0,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-0-option-number",
@@ -264,7 +391,11 @@
       "range": "negative",
       "depth": 0,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-1-field-number",
@@ -272,7 +403,11 @@
       "range": "negative",
       "depth": 1,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-1-collection-number",
@@ -280,7 +415,11 @@
       "range": "negative",
       "depth": 1,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-1-nested-number",
@@ -288,7 +427,11 @@
       "range": "negative",
       "depth": 1,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-1-option-number",
@@ -296,7 +439,11 @@
       "range": "negative",
       "depth": 1,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-2-field-number",
@@ -304,7 +451,11 @@
       "range": "negative",
       "depth": 2,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-2-collection-number",
@@ -312,7 +463,11 @@
       "range": "negative",
       "depth": 2,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-2-nested-number",
@@ -320,7 +475,11 @@
       "range": "negative",
       "depth": 2,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-negative-2-option-number",
@@ -328,7 +487,11 @@
       "range": "negative",
       "depth": 2,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-0-field-number",
@@ -336,7 +499,11 @@
       "range": "narrowed",
       "depth": 0,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-0-collection-number",
@@ -344,7 +511,11 @@
       "range": "narrowed",
       "depth": 0,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-0-nested-number",
@@ -352,7 +523,11 @@
       "range": "narrowed",
       "depth": 0,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-0-option-number",
@@ -360,7 +535,11 @@
       "range": "narrowed",
       "depth": 0,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-1-field-number",
@@ -368,7 +547,11 @@
       "range": "narrowed",
       "depth": 1,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-1-collection-number",
@@ -376,7 +559,11 @@
       "range": "narrowed",
       "depth": 1,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-1-nested-number",
@@ -384,7 +571,11 @@
       "range": "narrowed",
       "depth": 1,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-1-option-number",
@@ -392,7 +583,11 @@
       "range": "narrowed",
       "depth": 1,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-2-field-number",
@@ -400,7 +595,11 @@
       "range": "narrowed",
       "depth": 2,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-2-collection-number",
@@ -408,7 +607,11 @@
       "range": "narrowed",
       "depth": 2,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-2-nested-number",
@@ -416,7 +619,11 @@
       "range": "narrowed",
       "depth": 2,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-safe-narrowed-2-option-number",
@@ -424,7 +631,11 @@
       "range": "narrowed",
       "depth": 2,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "safe"
     },
     {
       "name": "integer-wide-i64-wide-i64-0-field-string-safe",
@@ -432,7 +643,11 @@
       "range": "wide-i64",
       "depth": 0,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i64-wide-i64-0-collection-string-safe",
@@ -440,7 +655,11 @@
       "range": "wide-i64",
       "depth": 0,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i64-wide-i64-0-nested-string-safe",
@@ -448,7 +667,11 @@
       "range": "wide-i64",
       "depth": 0,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i64-wide-i64-0-option-string-safe",
@@ -456,7 +679,11 @@
       "range": "wide-i64",
       "depth": 0,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i64-wide-i64-1-field-string-safe",
@@ -464,7 +691,11 @@
       "range": "wide-i64",
       "depth": 1,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i64-wide-i64-1-collection-string-safe",
@@ -472,7 +703,11 @@
       "range": "wide-i64",
       "depth": 1,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i64-wide-i64-1-nested-string-safe",
@@ -480,7 +715,11 @@
       "range": "wide-i64",
       "depth": 1,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i64-wide-i64-1-option-string-safe",
@@ -488,7 +727,11 @@
       "range": "wide-i64",
       "depth": 1,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i64-wide-i64-2-field-string-safe",
@@ -496,7 +739,11 @@
       "range": "wide-i64",
       "depth": 2,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i64-wide-i64-2-collection-string-safe",
@@ -504,7 +751,11 @@
       "range": "wide-i64",
       "depth": 2,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i64-wide-i64-2-nested-string-safe",
@@ -512,7 +763,11 @@
       "range": "wide-i64",
       "depth": 2,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i64-wide-i64-2-option-string-safe",
@@ -520,7 +775,11 @@
       "range": "wide-i64",
       "depth": 2,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-0-field-string-safe",
@@ -528,7 +787,11 @@
       "range": "wide-u64",
       "depth": 0,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-0-collection-string-safe",
@@ -536,7 +799,11 @@
       "range": "wide-u64",
       "depth": 0,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-0-nested-string-safe",
@@ -544,7 +811,11 @@
       "range": "wide-u64",
       "depth": 0,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-0-option-string-safe",
@@ -552,7 +823,11 @@
       "range": "wide-u64",
       "depth": 0,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-1-field-string-safe",
@@ -560,7 +835,11 @@
       "range": "wide-u64",
       "depth": 1,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-1-collection-string-safe",
@@ -568,7 +847,11 @@
       "range": "wide-u64",
       "depth": 1,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-1-nested-string-safe",
@@ -576,7 +859,11 @@
       "range": "wide-u64",
       "depth": 1,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-1-option-string-safe",
@@ -584,7 +871,11 @@
       "range": "wide-u64",
       "depth": 1,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-2-field-string-safe",
@@ -592,7 +883,11 @@
       "range": "wide-u64",
       "depth": 2,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-2-collection-string-safe",
@@ -600,7 +895,11 @@
       "range": "wide-u64",
       "depth": 2,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-2-nested-string-safe",
@@ -608,7 +907,11 @@
       "range": "wide-u64",
       "depth": 2,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-u64-wide-u64-2-option-string-safe",
@@ -616,7 +919,11 @@
       "range": "wide-u64",
       "depth": 2,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "numeric7"
     },
     {
       "name": "integer-wide-i128-wide-i128-0-field-string-safe",
@@ -624,7 +931,11 @@
       "range": "wide-i128",
       "depth": 0,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "i128"
     },
     {
       "name": "integer-wide-i128-wide-i128-0-collection-string-safe",
@@ -632,7 +943,11 @@
       "range": "wide-i128",
       "depth": 0,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "i128"
     },
     {
       "name": "integer-wide-i128-wide-i128-0-nested-string-safe",
@@ -640,7 +955,11 @@
       "range": "wide-i128",
       "depth": 0,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "i128"
     },
     {
       "name": "integer-wide-i128-wide-i128-0-option-string-safe",
@@ -648,7 +967,11 @@
       "range": "wide-i128",
       "depth": 0,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "i128"
     },
     {
       "name": "integer-wide-i128-wide-i128-1-field-string-safe",
@@ -656,7 +979,11 @@
       "range": "wide-i128",
       "depth": 1,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "i128"
     },
     {
       "name": "integer-wide-i128-wide-i128-1-collection-string-safe",
@@ -664,7 +991,11 @@
       "range": "wide-i128",
       "depth": 1,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "i128"
     },
     {
       "name": "integer-wide-i128-wide-i128-1-nested-string-safe",
@@ -672,7 +1003,11 @@
       "range": "wide-i128",
       "depth": 1,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "i128"
     },
     {
       "name": "integer-wide-i128-wide-i128-1-option-string-safe",
@@ -680,7 +1015,11 @@
       "range": "wide-i128",
       "depth": 1,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "i128"
     },
     {
       "name": "integer-wide-i128-wide-i128-2-field-string-safe",
@@ -688,7 +1027,11 @@
       "range": "wide-i128",
       "depth": 2,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "i128"
     },
     {
       "name": "integer-wide-i128-wide-i128-2-collection-string-safe",
@@ -696,7 +1039,11 @@
       "range": "wide-i128",
       "depth": 2,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "i128"
     },
     {
       "name": "integer-wide-i128-wide-i128-2-nested-string-safe",
@@ -704,7 +1051,11 @@
       "range": "wide-i128",
       "depth": 2,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "i128"
     },
     {
       "name": "integer-wide-i128-wide-i128-2-option-string-safe",
@@ -712,7 +1063,11 @@
       "range": "wide-i128",
       "depth": 2,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "huge-exponent",
+      "oracleWidth": "i128"
     },
     {
       "name": "float32-none-0-field-number",
@@ -720,7 +1075,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-none-0-collection-number",
@@ -728,7 +1087,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-none-0-nested-number",
@@ -736,7 +1099,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-none-0-option-number",
@@ -744,7 +1111,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-none-1-field-number",
@@ -752,7 +1123,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-none-1-collection-number",
@@ -760,7 +1135,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-none-1-nested-number",
@@ -768,7 +1147,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-none-1-option-number",
@@ -776,7 +1159,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-none-2-field-number",
@@ -784,7 +1171,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-none-2-collection-number",
@@ -792,7 +1183,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-none-2-nested-number",
@@ -800,7 +1195,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-none-2-option-number",
@@ -808,7 +1207,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-0-field-number",
@@ -816,7 +1219,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-0-collection-number",
@@ -824,7 +1231,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-0-nested-number",
@@ -832,7 +1243,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-0-option-number",
@@ -840,7 +1255,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-1-field-number",
@@ -848,7 +1267,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-1-collection-number",
@@ -856,7 +1279,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-1-nested-number",
@@ -864,7 +1291,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-1-option-number",
@@ -872,7 +1303,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-2-field-number",
@@ -880,7 +1315,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-2-collection-number",
@@ -888,7 +1327,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-2-nested-number",
@@ -896,7 +1339,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float32-positive-2-option-number",
@@ -904,7 +1351,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-0-field-number",
@@ -912,7 +1363,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-0-collection-number",
@@ -920,7 +1375,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-0-nested-number",
@@ -928,7 +1387,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-0-option-number",
@@ -936,7 +1399,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-1-field-number",
@@ -944,7 +1411,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-1-collection-number",
@@ -952,7 +1423,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-1-nested-number",
@@ -960,7 +1435,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-1-option-number",
@@ -968,7 +1447,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-2-field-number",
@@ -976,7 +1459,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-2-collection-number",
@@ -984,7 +1471,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-2-nested-number",
@@ -992,7 +1483,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-none-2-option-number",
@@ -1000,7 +1495,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-0-field-number",
@@ -1008,7 +1507,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-0-collection-number",
@@ -1016,7 +1519,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-0-nested-number",
@@ -1024,7 +1531,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-0-option-number",
@@ -1032,7 +1543,11 @@
       "range": "positive",
       "depth": 0,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-1-field-number",
@@ -1040,7 +1555,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-1-collection-number",
@@ -1048,7 +1567,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-1-nested-number",
@@ -1056,7 +1579,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-1-option-number",
@@ -1064,7 +1591,11 @@
       "range": "positive",
       "depth": 1,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-2-field-number",
@@ -1072,7 +1603,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "field",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-2-collection-number",
@@ -1080,7 +1615,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "collection",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-2-nested-number",
@@ -1088,7 +1627,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "nested",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "float64-positive-2-option-number",
@@ -1096,7 +1639,11 @@
       "range": "positive",
       "depth": 2,
       "nesting": "option",
-      "wire": "number"
+      "wire": "number",
+      "aliasMode": "child-narrowed",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-0-field-string-safe",
@@ -1104,7 +1651,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-0-collection-string-safe",
@@ -1112,7 +1663,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-0-nested-string-safe",
@@ -1120,7 +1675,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-0-option-string-safe",
@@ -1128,7 +1687,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-1-field-string-safe",
@@ -1136,7 +1699,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-1-collection-string-safe",
@@ -1144,7 +1711,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-1-nested-string-safe",
@@ -1152,7 +1723,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-1-option-string-safe",
@@ -1160,7 +1735,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-2-field-string-safe",
@@ -1168,7 +1747,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-2-collection-string-safe",
@@ -1176,7 +1759,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-2-nested-string-safe",
@@ -1184,7 +1771,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "decimal-none-2-option-string-safe",
@@ -1192,7 +1783,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-0-field-string-safe",
@@ -1200,7 +1795,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-0-collection-string-safe",
@@ -1208,7 +1807,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-0-nested-string-safe",
@@ -1216,7 +1819,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-0-option-string-safe",
@@ -1224,7 +1831,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-1-field-string-safe",
@@ -1232,7 +1843,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-1-collection-string-safe",
@@ -1240,7 +1855,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-1-nested-string-safe",
@@ -1248,7 +1867,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-1-option-string-safe",
@@ -1256,7 +1879,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-2-field-string-safe",
@@ -1264,7 +1891,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-2-collection-string-safe",
@@ -1272,7 +1903,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-2-nested-string-safe",
@@ -1280,7 +1915,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-none-2-option-string-safe",
@@ -1288,7 +1927,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-0-field-string-safe",
@@ -1296,7 +1939,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-0-collection-string-safe",
@@ -1304,7 +1951,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-0-nested-string-safe",
@@ -1312,7 +1963,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-0-option-string-safe",
@@ -1320,7 +1975,11 @@
       "range": "none",
       "depth": 0,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "none",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-1-field-string-safe",
@@ -1328,7 +1987,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-1-collection-string-safe",
@@ -1336,7 +1999,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-1-nested-string-safe",
@@ -1344,7 +2011,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-1-option-string-safe",
@@ -1352,7 +2023,11 @@
       "range": "none",
       "depth": 1,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-2-field-string-safe",
@@ -1360,7 +2035,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "field",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-2-collection-string-safe",
@@ -1368,7 +2047,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "collection",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-2-nested-string-safe",
@@ -1376,7 +2059,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "nested",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": true,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     },
     {
       "name": "string-alias-none-2-option-string-safe",
@@ -1384,7 +2071,11 @@
       "range": "none",
       "depth": 2,
       "nesting": "option",
-      "wire": "string-safe"
+      "wire": "string-safe",
+      "aliasMode": "inherited",
+      "nullable": false,
+      "lexeme": "ordinary",
+      "oracleWidth": "safe"
     }
   ]
 }

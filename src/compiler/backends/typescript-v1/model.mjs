@@ -114,8 +114,7 @@ function resolveScalar(types, identity, seen = new Set(), depth = 0) {
 	return undefined;
 }
 
-function wideInteger(constraints, scalar) {
-	if (scalar !== "integer") return false;
+function integerBounds(constraints) {
 	const safe = 2n ** 53n - 1n;
 	let lower = -safe;
 	let upper = safe;
@@ -127,39 +126,52 @@ function wideInteger(constraints, scalar) {
 			continue;
 		const parsed = BigInt(value);
 		if (constraint.keyword === "min") {
-			lower = lowerExplicit && lower > parsed ? lower : parsed;
+			if (!lowerExplicit || parsed > lower) lower = parsed;
 			lowerExplicit = true;
 		}
 		if (constraint.keyword === "exclusiveMin") {
 			const effective = parsed + 1n;
-			lower = lowerExplicit && lower > effective ? lower : effective;
+			if (!lowerExplicit || effective > lower) lower = effective;
 			lowerExplicit = true;
 		}
 		if (constraint.keyword === "max") {
-			upper = upperExplicit && upper < parsed ? upper : parsed;
+			if (!upperExplicit || parsed < upper) upper = parsed;
 			upperExplicit = true;
 		}
 		if (constraint.keyword === "exclusiveMax") {
 			const effective = parsed - 1n;
-			upper = upperExplicit && upper < effective ? upper : effective;
+			if (!upperExplicit || effective < upper) upper = effective;
 			upperExplicit = true;
 		}
 	}
-	return lower < -safe || upper > safe;
+	return { lower, upper };
 }
 
-function effectiveWideInteger(types, identity, seen = new Set()) {
-	if (typeof identity !== "string" || seen.has(identity)) return false;
+function effectiveIntegerBounds(types, identity, seen = new Set()) {
+	if (typeof identity !== "string" || seen.has(identity)) return undefined;
 	seen.add(identity);
 	const type = types.get(identity);
-	if (type === undefined) return false;
-	if (type.kind === "scalar") return wideInteger(type.constraints, type.scalar);
-	if (type.kind === "alias" || type.kind === "reference")
-		return (
-			wideInteger(type.constraints, resolveScalar(types, identity)) ||
-			effectiveWideInteger(types, type.target, seen)
-		);
-	return false;
+	if (type === undefined) return undefined;
+	const parent =
+		type.kind === "alias" || type.kind === "reference"
+			? effectiveIntegerBounds(types, type.target, seen)
+			: undefined;
+	if (type.kind !== "scalar" && type.kind !== "alias" && type.kind !== "reference")
+		return parent;
+	const scalar = resolveScalar(types, identity);
+	if (scalar !== "integer") return parent;
+	const own = integerBounds(type.constraints);
+	return {
+		lower: parent ? (own.lower > parent.lower ? own.lower : parent.lower) : own.lower,
+		upper: parent ? (own.upper < parent.upper ? own.upper : parent.upper) : own.upper,
+	};
+}
+
+function effectiveWideInteger(types, identity) {
+	const bounds = effectiveIntegerBounds(types, identity);
+	if (!bounds) return false;
+	const safe = 2n ** 53n - 1n;
+	return bounds.lower < -safe || bounds.upper > safe;
 }
 
 function inheritedConstraintEntries(types, applied, identity) {

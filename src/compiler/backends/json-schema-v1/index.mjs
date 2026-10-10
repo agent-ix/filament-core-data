@@ -513,6 +513,17 @@ function fieldSchema(field, types) {
 			? { ...schema, items: bounded }
 			: schema.type === "array"
 				? { ...schema, items: bounded }
+				: schema.anyOf
+					? {
+							...schema,
+							anyOf: schema.anyOf.map((branch) =>
+								branch?.type === "null"
+									? branch
+									: branch?.type === "array"
+										? { ...branch, items: bounded }
+										: bounded,
+							),
+						}
 				: bounded;
 	}
 	return annotated(schema, field);

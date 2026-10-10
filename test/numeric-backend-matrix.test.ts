@@ -31,6 +31,14 @@ const RUST_LIMITS = {
 	maxDiagnostics: 1_000,
 };
 
+const lockedBuild =
+	process.env.LOCKED_BUILD ?? resolve(import.meta.dirname, "../../locked-build.sh");
+
+function nullableValue(cell: (typeof MATRIX_CELLS)[number]) {
+	if (cell.nesting === "nested") return { nested: null };
+	return { value: null };
+}
+
 async function generatedValidators(directory: string, ir: any) {
 	writeFileSync(join(directory, "package.json"), '{"type":"module"}\n');
 	writeFileSync(
@@ -76,18 +84,24 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			const functionName = `validate${cellRecordName(cell)}`;
 			const validate = generated[functionName] as (value: unknown) => {
 				ok: boolean;
+				value?: unknown;
 			};
 			expect(validate, `${cell.name} TypeScript validator`).toBeTypeOf(
 				"function",
 			);
+			const valid = cellValue(cell);
+			const validResult = validate(valid);
 			expect(
-				validate(cellValue(cell)).ok,
+				validResult.ok,
 				`${cell.name} TypeScript valid`,
 			).toBe(true);
+			expect(validResult.value, `${cell.name} TypeScript wire`).toEqual(valid);
 			expect(
 				validate(cellValue(cell, false)).ok,
 				`${cell.name} TypeScript invalid`,
-			).toBe(cell.nesting === "option");
+			).toBe(false);
+			if (cell.nullable)
+				expect(validate(nullableValue(cell)).ok, `${cell.name} TypeScript null`).toBe(true);
 
 			const schema = schemas.find(
 				(one: any) => one.title === cellRecordName(cell),
@@ -95,13 +109,15 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			expect(schema, `${cell.name} JSON Schema`).toBeDefined();
 			const validateJson = ajv.getSchema(schema.$id);
 			expect(validateJson, `${cell.name} compiled JSON Schema`).toBeDefined();
-			expect(validateJson?.(cellValue(cell)), `${cell.name} JSON valid`).toBe(
+			expect(validateJson?.(valid), `${cell.name} JSON valid`).toBe(
 				true,
 			);
 			expect(
 				validateJson?.(cellValue(cell, false)),
 				`${cell.name} JSON invalid`,
-			).toBe(cell.nesting === "option");
+			).toBe(false);
+			if (cell.nullable)
+				expect(validateJson?.(nullableValue(cell)), `${cell.name} JSON null`).toBe(true);
 		}
 
 		const rust = emitCrate(
@@ -124,15 +140,19 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 		);
 		const probes = MATRIX_CELLS.map((cell: any) => {
 			const rustJson = JSON.stringify(cellValue(cell));
+			const invalidJson = JSON.stringify(cellValue(cell, false));
 			const name = cellRecordName(cell);
-			return `let value: ${name} = serde_json::from_str(${JSON.stringify(rustJson)}).unwrap(); let encoded = serde_json::to_string(&value).unwrap(); let _: ${name} = serde_json::from_str(&encoded).unwrap();`;
+			const nullProbe = cell.nullable
+				? `let _: ${name} = serde_json::from_str(${JSON.stringify(JSON.stringify(nullableValue(cell)))}).unwrap();`
+				: "";
+			return `let value: ${name} = serde_json::from_str(${JSON.stringify(rustJson)}).unwrap(); let encoded = serde_json::to_string(&value).unwrap(); assert_eq!(serde_json::from_str::<serde_json::Value>(&encoded).unwrap(), serde_json::from_str::<serde_json::Value>(${JSON.stringify(rustJson)}).unwrap()); let _: ${name} = serde_json::from_str(&encoded).unwrap(); assert!(serde_json::from_str::<${name}>(${JSON.stringify(invalidJson)}).is_err()); ${nullProbe}`;
 		}).join("\n    ");
 		writeFileSync(
 			join(scratch, "tests", "numeric_matrix.rs"),
 			`use agent_ix_age_2229_numeric_matrix::{${imports}};\n\n#[test]\nfn every_generated_cell_round_trips() {\n    ${probes}\n}\n`,
 		);
 		execFileSync(
-			"/home/peter/dev/worktrees/locked-build.sh",
+			lockedBuild,
 			[
 				join(scratch, "target"),
 				"cargo",

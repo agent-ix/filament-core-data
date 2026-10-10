@@ -47,8 +47,29 @@ export const MATRIX_CELLS = Object.freeze(
 							kind,
 							range,
 							depth,
-							nesting,
-							wire,
+								nesting,
+								wire,
+								aliasMode:
+									depth === 0
+										? "none"
+										: ["safe", "positive", "negative", "narrowed"].includes(range)
+											? "child-narrowed"
+											: "inherited",
+								nullable: (depth + (nesting === "nested" ? 1 : 0)) % 2 === 1,
+								lexeme:
+									kind === "integer" && depth === 2
+										? range === "safe"
+											? "zero-huge-exponent"
+											: "huge-exponent"
+										: "ordinary",
+								oracleWidth:
+									kind === "integer"
+										? range === "wide-i128"
+											? "i128"
+											: range === "wide-i64" || range === "wide-u64"
+												? "numeric7"
+												: "safe"
+										: "safe",
 						}),
 					),
 				),
@@ -164,7 +185,7 @@ function field(cell, typeRef, nested = false) {
 		typeRef,
 		constraints: [],
 		presence: multiplicity.lower === 0 ? "optional" : "required",
-		nullable: false,
+		nullable: cell.nullable,
 		multiplicity,
 		defaultKind: "none",
 		extensions: [],
@@ -189,7 +210,14 @@ export function buildMatrixIr() {
 					depth === 1
 						? baseIdentity
 						: identity(`${cell.name.replaceAll("-", "_")}Alias${depth - 1}`),
-				),
+					depth === 1 && cell.aliasMode === "child-narrowed"
+						? rangeConstraints(
+								name,
+								cell.range === "negative" ? "negative" : "narrowed",
+								cell.kind,
+							)
+						: [],
+					),
 			);
 		}
 		const recordName = `NumericMatrix_${cell.name.replaceAll("-", "_")}`;
@@ -251,7 +279,7 @@ export function cellValue(cell, valid = true) {
 	if (cell.kind === "string") value = valid ? "ok" : 7;
 	else if (cell.kind === "decimal") value = valid ? "1.10" : "1.001";
 	else if (cell.kind === "float32")
-		value = valid ? (cell.range === "positive" ? 2.5 : 0.1) : 3.5e38;
+		value = valid ? (cell.range === "positive" ? 2.5 : 0.5) : 3.5e38;
 	else if (cell.kind === "float64")
 		value = valid ? (cell.range === "positive" ? 2.5 : 0.1) : "not-a-number";
 	else if (cell.range === "wide-i64")
@@ -264,9 +292,19 @@ export function cellValue(cell, valid = true) {
 	else if (cell.range === "negative") value = valid ? -1 : 0;
 	else if (cell.range === "narrowed") value = valid ? 1 : 100;
 	else value = valid ? 1 : -11;
+	if (cell.wire === "number" && cell.lexeme === "zero-huge-exponent")
+		value = valid ? 0 : 1e10000;
+	if (cell.wire === "number" && cell.lexeme === "huge-exponent")
+		value = valid
+			? cell.range === "positive"
+				? 10
+				: cell.range === "negative"
+					? -1
+					: 1
+			: 1e10000;
 	if (cell.nesting === "collection") return { value: [value] };
 	if (cell.nesting === "nested") return { nested: { value } };
-	if (cell.nesting === "option" && !valid) return {};
+	if (cell.nesting === "option" && !valid) return { value };
 	return { value };
 }
 
@@ -285,6 +323,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 					aliasDepth: [...new Set(MATRIX_CELLS.map((cell) => cell.depth))],
 					nesting: [...new Set(MATRIX_CELLS.map((cell) => cell.nesting))],
 					wire: [...new Set(MATRIX_CELLS.map((cell) => cell.wire))],
+					aliasMode: [...new Set(MATRIX_CELLS.map((cell) => cell.aliasMode))],
+					nullable: [...new Set(MATRIX_CELLS.map((cell) => cell.nullable))],
+					lexeme: [...new Set(MATRIX_CELLS.map((cell) => cell.lexeme))],
+					oracleWidth: [...new Set(MATRIX_CELLS.map((cell) => cell.oracleWidth))],
 					backends: [
 						"typescript",
 						"json-schema",

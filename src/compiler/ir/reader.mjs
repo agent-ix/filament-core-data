@@ -660,6 +660,13 @@ export function readContractIr(document, options = {}) {
 			undefined,
 			false,
 		);
+		if (resolvedSelf?.kind === "scalar" && resolvedSelf.scalar === "number") {
+			raise(
+				DIAGNOSTIC_CODES.UNSUPPORTED_SCALAR_BASE,
+				"the legacy number scalar is not admitted; use float32 or float64",
+				locusOf(definition),
+			);
+		}
 		const walkedSelf = walkDecimal(definition.identity, definition);
 		if (resolvedSelf?.kind === "scalar") {
 			const policies = walkedSelf?.policies ?? [];

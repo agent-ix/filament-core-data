@@ -937,8 +937,22 @@ fn expansion_would_exceed_budget(lexeme: &str) -> Option<bool> {
 		return Some(false);
 	}
 	let whole_len = mantissa.split_once('.').map_or(mantissa.len(), |(whole, _)| whole.len()) as i64;
-	let decimal_at = whole_len.checked_add(exponent)?;
+	let decimal_at = match whole_len.checked_add(exponent) {
+		Some(value) => value,
+		// The non-zero mantissa cannot be represented within the bounded
+		// scanner once the decimal position itself overflows i64.
+		None => return Some(true),
+	};
 	Some(decimal_at > MAX_EXACT_EXPANSION || decimal_at < -MAX_EXACT_EXPANSION)
+}
+
+fn huge_exponent_is_integer(lexeme: &str) -> bool {
+	let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
+	let Some(at) = unsigned.find(['e', 'E']) else { return false; };
+	let Ok(exponent) = unsigned[at + 1..].parse::<i64>() else { return false; };
+	let mantissa = &unsigned[..at];
+	let fraction_len = mantissa.split_once('.').map_or(0, |(_, fraction)| fraction.len());
+	exponent >= fraction_len as i64
 }
 
 fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
@@ -956,7 +970,7 @@ fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
         return None;
     }
     let digits = format!("{whole}{fraction}");
-	let decimal_at = whole.len() as i64 + exponent;
+	let decimal_at = (whole.len() as i64).checked_add(exponent)?;
     let zero = digits.chars().all(|ch| ch == '0');
 	if zero {
 		return Some((false, "0".to_string(), true));
@@ -995,7 +1009,11 @@ fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
 
 fn exact_number_kind(lexeme: &str) -> Option<&'static str> {
 	if expansion_would_exceed_budget(lexeme) == Some(true) {
-		return Some(INEXACT_NUMBER);
+		return Some(if huge_exponent_is_integer(lexeme) {
+			INEXACT_INTEGER
+		} else {
+			INEXACT_NUMBER
+		});
 	}
 	let (negative, normalized, whole) = normalized_number(lexeme)?;
     let digits = normalized
