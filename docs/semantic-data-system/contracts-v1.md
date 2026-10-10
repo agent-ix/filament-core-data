@@ -335,7 +335,9 @@ member; an unlisted member takes its default) and `meaning`, and an optional
 non-empty roles it admits, each spelled `<module short name>:<role>`; `*` is
 not a role, and a module frontend admits only a role some loaded object type
 carries. `rules` is a unique list of rules, each requiring one member
-presence of the declaration. `meaning` is an opaque id owned by QSpec.
+presence of the declaration. `meaning` is an id owned by QSpec, retained
+verbatim; its recognized population meaning permits the unused declaration
+exception stated below.
 
 | Rule | Requires | The reader or frontend refuses |
 |---|---|---|
@@ -352,10 +354,12 @@ presence of the declaration. `meaning` is an opaque id owned by QSpec.
 
 A document using a module construct kind carries a `constructs` table with
 one entry per kind used by a type or population: `kind`, `moduleVersion`,
-`manifestDigest` and the `construct` declaration. Valid unused declarations
-are also admitted and preserved; every declaration is checked against the
-same core vocabulary regardless of use, kind name or meaning. A kind with no
-entry, a kind declared twice and a declaration outside the vocabulary or its
+`manifestDigest` and the `construct` declaration. An unused declaration
+carrying the recognized meaning `quire.meaning.model.population/v1` is admitted
+and preserved, independently of its kind name, for the QSpec TC-235 K2
+boundary. Every other unused kind is refused. Every declaration is checked
+against the same core vocabulary and declaration requirements regardless of
+use. A kind with no entry, a kind declared twice and a declaration outside the vocabulary or its
 declaration requirements are refused with `SCHEMA_VIOLATION` by the Rust, Node
 and Python readers. The Python conformance adapter applies these checks before
 cross-field semantic rules; construct identity axes do not declare semantic
@@ -552,5 +556,6 @@ value and is not converted. JSON numbers, signs, leading zeros on integers,
 fractional revision strings and whitespace are refused at the version member.
 Other version fields retain their existing contracts. See FR-050-AC-16 and
 FR-142-AC-15 for the K2 reader boundary: its unused population declaration is
-retained, and `Instant` continues to resolve to native `Timestamp`, whose
+retained by its recognized `quire.meaning.model.population/v1` meaning, and
+`Instant` continues to resolve to native `Timestamp`, whose
 semantic scalar is `datetime`.

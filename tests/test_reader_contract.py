@@ -115,7 +115,7 @@ def test_construct_schema_refusals_reach_python_reader_and_adapter(
         )
 
 
-def test_unused_valid_declarations_admit_independently_of_revision_or_kind_name():
+def test_unused_population_meaning_admits_independently_of_revision_or_kind_name():
     """Trace: FR-142-AC-15"""
     document = fixture()
     document["source"]["version"] = document["package"]["version"] = "1.0.0"
@@ -258,4 +258,37 @@ def test_unused_declarations_still_validate_and_kinds_must_resolve():
     ]
     unresolved = fixture()
     unresolved["types"][1]["kind"]["name"] = "missing"
-    assert construct_findings(unresolved) == ["types.1.kind: names no constructs entry"]
+    assert construct_findings(unresolved) == [
+        "types.1.kind: names no constructs entry",
+        "constructs.0.kind: no type or population is of that kind",
+    ]
+
+
+@pytest.mark.parametrize(
+    "meaning",
+    [
+        "quire.meaning.model.event-type/v1",
+        "quire.meaning.model.unrecognized/v1",
+        "quire.meaning.model.population/v2",
+    ],
+)
+def test_unused_kinds_outside_the_recognized_population_meaning_refuse(
+    meaning,
+    conformance_adapter,
+):
+    """Trace: FR-142-AC-9, FR-142-AC-15"""
+    document = fixture()
+    document["constructs"][1]["kind"]["name"] = "ledger"
+    document["constructs"][1]["construct"]["meaning"] = meaning
+    assert _schema_validator().is_valid(document)
+    assert not schema_valid(_schema_validator(), document)
+    assert [(row["code"], row["path"]) for row in read_semantic_ir(document)] == [
+        ("agent-ix.semantic-ir.SCHEMA_VIOLATION", "constructs.1.kind")
+    ]
+    result = conformance_adapter.answer(
+        {"caseId": "unused-ledger", "kind": "admissibility", "input": {"ir": document}}
+    )
+    assert result["resultState"] == "invalid"
+    assert [
+        (row["diagnostic"]["code"], row["pointer"]) for row in result["diagnostics"]
+    ] == [("agent-ix.semantic-ir.SCHEMA_VIOLATION", "/ir/constructs/1/kind")]

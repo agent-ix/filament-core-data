@@ -18,7 +18,7 @@ const fixture = () => JSON.parse(fixtureBytes);
 
 describe("package revision and unused construct reader contract", () => {
 	/** Trace: FR-142-AC-15 */
-	it("admits an unused valid declaration independently of revision or kind name", () => {
+	it("admits an unused population meaning independently of revision or kind name", () => {
 		const document = fixture();
 		document.source.version = document.package.version = "1.0.0";
 		expect(validateIrDocument(document)).toEqual([]);
@@ -103,33 +103,55 @@ describe("package revision and unused construct reader contract", () => {
 
 	/** Trace: FR-142-AC-15 */
 	it("keeps refusals for malformed unused declarations, duplicate entries and unresolved kinds", () => {
-		for (const [mutate, pointer] of [
+		for (const [mutate, pointers] of [
 			[
 				(document: ReturnType<typeof fixture>) => {
 					document.constructs[1].construct.shape = "unsupported";
 				},
-				"/ir/constructs/1/construct/shape",
+				["/ir/constructs/1/construct/shape"],
 			],
 			[
 				(document: ReturnType<typeof fixture>) => {
 					document.constructs[1].kind.name = "happened";
 				},
-				"/ir/constructs/1/kind",
+				["/ir/constructs/1/kind"],
 			],
 			[
 				(document: ReturnType<typeof fixture>) => {
 					document.types[1].kind.name = "missing";
 				},
-				"/ir/types/1/kind",
+				["/ir/types/1/kind", "/ir/constructs/0/kind"],
 			],
 		] as const) {
 			const document = fixture();
 			mutate(document);
+			expect([...readContractIr(document)]).toMatchObject(
+				pointers.map((pointer) => ({
+					code: "agent-ix.compiler.INVALID_IR",
+					blocking: true,
+					message: expect.stringContaining(pointer),
+				})),
+			);
+		}
+	});
+
+	/** Trace: FR-142-AC-9, FR-142-AC-15 */
+	it("refuses unused kinds outside the recognized population meaning", () => {
+		for (const meaning of [
+			"quire.meaning.model.event-type/v1",
+			"quire.meaning.model.unrecognized/v1",
+			"quire.meaning.model.population/v2",
+		]) {
+			const document = fixture();
+			document.constructs[1].kind.name = "ledger";
+			document.constructs[1].construct.meaning = meaning;
+			expect(validateIrDocument(document)).toEqual([]);
 			expect([...readContractIr(document)]).toMatchObject([
 				{
 					code: "agent-ix.compiler.INVALID_IR",
 					blocking: true,
-					message: expect.stringContaining(pointer),
+					message:
+						"/ir/constructs/1/kind: constructs declares test/business/ledger, and no type definition or population is of that kind",
 				},
 			]);
 		}

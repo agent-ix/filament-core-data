@@ -22,7 +22,7 @@ fn diagnostics(document: &str) -> Vec<(&'static str, String)> {
 
 /// Trace: FR-142-AC-15
 #[test]
-fn admits_unused_valid_declarations_independently_of_revision_or_kind_name() {
+fn admits_unused_population_meaning_independently_of_revision_or_kind_name() {
     let document = K2_BOUNDARY.replace("\"version\": \"1\"", "\"version\": \"1.0.0\"");
     assert!(diagnostics(&document).is_empty());
     assert!(diagnostics(
@@ -146,23 +146,48 @@ fn revision_admission_preserves_canonical_strings_and_refuses_other_spellings() 
 /// Trace: FR-142-AC-15
 #[test]
 fn unused_declarations_still_refuse_broken_shapes_duplicates_and_dangling_kinds() {
-    for (document, pointer) in [
+    for (document, pointers) in [
         (
             K2_BOUNDARY.replace("\"shape\": \"namespace\"", "\"shape\": \"unsupported\""),
-            "/ir/constructs/1/construct/shape",
+            vec!["/ir/constructs/1/construct/shape"],
         ),
         (
             K2_BOUNDARY.replace("\"name\": \"population\"", "\"name\": \"happened\""),
-            "/ir/constructs/1/kind",
+            vec!["/ir/constructs/1/kind"],
         ),
         (
             K2_BOUNDARY.replacen("\"name\": \"happened\"", "\"name\": \"missing\"", 1),
-            "/ir/types/1/kind",
+            vec!["/ir/constructs/0/kind", "/ir/types/1/kind"],
         ),
     ] {
         assert_eq!(
             diagnostics(&document),
-            vec![("agent-ix.semantic-ir.SCHEMA_VIOLATION", pointer.into())]
+            pointers
+                .into_iter()
+                .map(|pointer| ("agent-ix.semantic-ir.SCHEMA_VIOLATION", pointer.into()))
+                .collect::<Vec<_>>()
+        );
+    }
+}
+
+/// Trace: FR-142-AC-9, FR-142-AC-15
+#[test]
+fn refuses_unused_kinds_outside_the_recognized_population_meaning() {
+    for meaning in [
+        "quire.meaning.model.event-type/v1",
+        "quire.meaning.model.unrecognized/v1",
+        "quire.meaning.model.population/v2",
+    ] {
+        let document = K2_BOUNDARY
+            .replace("\"name\": \"population\"", "\"name\": \"ledger\"")
+            .replace("quire.meaning.model.population/v1", meaning);
+        assert_eq!(
+            diagnostics(&document),
+            vec![(
+                "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+                "/ir/constructs/1/kind".into()
+            )],
+            "{meaning}"
         );
     }
 }

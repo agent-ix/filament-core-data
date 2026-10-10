@@ -102,7 +102,13 @@ function checkConstructs(document, definitions, raise, locusOf) {
 			invalid(`${entryAt}/kind`, `constructs declares the kind ${label} once`);
 			return;
 		}
-		entries.push({ label, declaration });
+		entries.push({
+			label,
+			declaration,
+			at: `${entryAt}/kind`,
+			used: false,
+			meaning: entry.construct?.meaning,
+		});
 	});
 
 	const construct = constructOnlyMembers();
@@ -129,6 +135,7 @@ function checkConstructs(document, definitions, raise, locusOf) {
 			return;
 		}
 		const declaration = entry.declaration;
+		entry.used = true;
 		if (declaration === undefined) return;
 		const name = definition.kind.name;
 		for (const { name: member } of CONSTRUCT_VOCABULARY.members) {
@@ -170,9 +177,18 @@ function checkConstructs(document, definitions, raise, locusOf) {
 			return;
 		const label = kindLabel(kind);
 		const entry = entries.find((one) => one.label === label);
-		if (entry === undefined)
+		if (entry === undefined) {
 			invalid(at, `the kind ${label} names no constructs entry`, population);
+			return;
+		}
+		entry.used = true;
 	});
+	for (const entry of entries)
+		if (!entry.used && entry.meaning !== "quire.meaning.model.population/v1")
+			invalid(
+				entry.at,
+				`constructs declares ${entry.label}, and no type definition or population is of that kind`,
+			);
 }
 
 /**

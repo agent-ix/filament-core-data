@@ -883,6 +883,7 @@ def construct_diagnostics(document: Any) -> list[dict[str, str]]:
         (entry.get("kind"), entry.get("construct") or {})
         for entry in _objects(document.get("constructs"))
     ]
+    used: set[int] = set()
     seen: set[tuple[str, str]] = set()
     for index, (kind, declaration) in enumerate(entries):
         if isinstance(declaration, dict):
@@ -925,6 +926,7 @@ def construct_diagnostics(document: Any) -> list[dict[str, str]]:
         if found is None:
             emit(f"{at}.kind", "names no constructs entry")
             continue
+        used.add(found)
         declaration = entries[found][1]
         presences = declaration.get("members") or {}
         for name, default in MEMBER_DEFAULTS.items():
@@ -943,13 +945,30 @@ def construct_diagnostics(document: Any) -> list[dict[str, str]]:
         kind = population.get("kind")
         if not isinstance(kind, dict):
             continue
-        if not any(
-            isinstance(declared, dict)
-            and (declared.get("module"), declared.get("name"))
-            == (kind.get("module"), kind.get("name"))
-            for declared, _ in entries
-        ):
+        found = next(
+            (
+                position
+                for position, (declared, _) in enumerate(entries)
+                if isinstance(declared, dict)
+                and (declared.get("module"), declared.get("name"))
+                == (kind.get("module"), kind.get("name"))
+            ),
+            None,
+        )
+        if found is None:
             emit(f"populations.{index}.kind", "names no constructs entry")
+        else:
+            used.add(found)
+    for position, (declared, declaration) in enumerate(entries):
+        if (
+            isinstance(declared, dict)
+            and position not in used
+            and declaration.get("meaning") != "quire.meaning.model.population/v1"
+        ):
+            emit(
+                f"constructs.{position}.kind",
+                "no type or population is of that kind",
+            )
     return out
 
 
