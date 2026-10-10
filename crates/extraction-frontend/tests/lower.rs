@@ -565,11 +565,9 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
         &parse_json(&serde_json::to_string(&document).expect("serialize"))
             .expect("parse canonical input"),
     );
-    let round_trip = parse_json(&canonical).expect("canonical JSON");
-    let round_trip_envelope =
-        parse_json(&serde_json::to_string(&json!({"ir": round_trip})).expect("serialize envelope"))
-            .expect("parse canonical envelope");
-    assert_eq!(canonical, normalized(&round_trip_envelope));
+    let round_trip =
+        parse_json(&format!(r#"{{"ir":{canonical}}}"#)).expect("parse canonical envelope");
+    assert_eq!(canonical, normalized(&round_trip));
 }
 
 #[trace("TC-1224", "FR-093-AC-5")]
