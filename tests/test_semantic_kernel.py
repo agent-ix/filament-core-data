@@ -164,13 +164,11 @@ def test_the_emitted_set_the_manifests_and_the_generator_are_as_declared() -> No
         with pytest.raises(emit.KernelEmitError):
             emit.build(profile_id)
 
-    # CON-5: no distribution manifest or workflow publishes the Python tree.
-    # The schema release workflow legitimately fetches Rust parity crates under
-    # the shared semantic-kernel directory; that is not this requirement's
-    # generated Python package.
+    # CON-5: no distribution manifest or workflow names the semantic-kernel
+    # tree.
     for workflow in sorted((REPO / ".github").rglob("*")):
         if workflow.is_file():
-            assert "packages/semantic-kernel/python" not in workflow.read_text(
+            assert "semantic-kernel" not in workflow.read_text(
                 encoding="utf-8"
             ), workflow
     for manifest in (REPO / "package.json", REPO / "pyproject.toml"):

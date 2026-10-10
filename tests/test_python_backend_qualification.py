@@ -45,6 +45,7 @@ CONSTRUCT_AREAS = {
     "closure-unevaluated",
     "constraints-string",
     "constraints-numeric",
+    "constraints-decimal-policy",
     "constraints-array-unique",
     "string-format",
     "alias",
@@ -357,6 +358,22 @@ def test_a_retained_constraint_is_enforced_at_run_time() -> None:
     assert "startLine" in module.rejects_out_of_range()
     assert "extra" in module.rejects_unknown_member()
     assert "path" in module.rejects_escaping_path()
+
+
+@pytest.mark.parametrize(
+    "profile_id", ["pydantic_v2_basemodel", "pydantic_v2_dataclass", "msgspec_struct"]
+)
+def test_decimal_policy_rejects_scale_above_precision(profile_id: str) -> None:
+    """TC-936: FR-136-AC-12, FR-077-AC-3."""
+    import importlib  # noqa: PLC0415
+
+    module = importlib.import_module(
+        f"python_backend.generated.{profile_id}.semantic_ir_schema"
+    )
+    policy = module.DecimalPolicy(precision=3, scale=2)
+    assert policy.precision == 3
+    with pytest.raises(ValueError, match="scale must be <= precision"):
+        module.DecimalPolicy(precision=3, scale=4)
 
 
 def test_a_recorded_loss_is_real(tmp_path: pathlib.Path) -> None:

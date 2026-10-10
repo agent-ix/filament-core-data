@@ -20,7 +20,10 @@ LOCUS: TypeAdapter[SourceLocus] = TypeAdapter(SourceLocus)
 
 CONFORMING_FIELD: dict[str, Any] = {
     "name": "unitSymbol",
-    "type": {"target": "String", "multiplicity": {"lower": 1, "upper": 1}},
+    "type": {
+        "target": "String",
+        "multiplicity": {"lower": 1, "upper": 1, "ordered": False, "unique": False},
+    },
     "identity": False,
     "nullable": False,
 }

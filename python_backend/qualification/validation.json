@@ -1923,6 +1923,7 @@
 				"closure-additional",
 				"closure-unevaluated",
 				"constraints-array-unique",
+				"constraints-decimal-policy",
 				"constraints-numeric",
 				"constraints-string",
 				"description",
@@ -1940,6 +1941,7 @@
 			"statement": "This family was declared, measured, and judged not-qualified. No package is emitted for it, so it is covered by neither static checking nor runtime validation, and it is not counted as either.",
 			"lost": [
 				"constraints-array-unique",
+				"constraints-decimal-policy",
 				"constraints-numeric",
 				"constraints-string",
 				"default-non-nullable",

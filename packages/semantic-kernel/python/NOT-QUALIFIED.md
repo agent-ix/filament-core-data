@@ -14,6 +14,7 @@ Constructs it loses:
 - `closure-additional`
 - `closure-unevaluated`
 - `constraints-array-unique`
+- `constraints-decimal-policy`
 - `constraints-numeric`
 - `constraints-string`
 - `description`
@@ -29,6 +30,7 @@ Output family: `typing.TypedDict`.
 Constructs it loses:
 
 - `constraints-array-unique`
+- `constraints-decimal-policy`
 - `constraints-numeric`
 - `constraints-string`
 - `default-non-nullable`

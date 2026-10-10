@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -40,6 +41,125 @@ class GenerationError(RuntimeError):
 
 class LimitExceededError(GenerationError):
     """A declared limit was exceeded. Names the limit and its value."""
+
+
+def _class_name(definition: str) -> str:
+    """Match datamodel-codegen's class spelling for a ``$defs`` key."""
+
+    return "".join(
+        part[:1].upper() + part[1:]
+        for part in re.split(r"[^A-Za-z0-9]+", definition)
+        if part
+    )
+
+
+def _conditional_rules(
+    documents: dict[str, dict[str, Any]],
+) -> dict[str, list[tuple[int, int]]]:
+    """Find numeric conditional bounds the generator cannot express itself.
+
+    The pinned datamodel-code-generator preserves each property's scalar bounds
+    but drops cross-property ``if``/``then`` constraints.  Keep the source
+    schema as the authority and return only the precise ``const`` to
+    ``maximum`` rules that can be rendered into the generated class.
+    """
+
+    rules: dict[str, list[tuple[int, int]]] = {}
+    for document in documents.values():
+        definitions = document.get("$defs", {})
+        if not isinstance(definitions, dict):
+            continue
+        for definition, schema in definitions.items():
+            if not isinstance(schema, dict):
+                continue
+            for clause in schema.get("allOf", []):
+                if not isinstance(clause, dict):
+                    continue
+                condition = clause.get("if", {})
+                consequent = clause.get("then", {})
+                guarded = condition.get("properties", {})
+                bounded = consequent.get("properties", {})
+                if len(guarded) != 1 or len(bounded) != 1:
+                    continue
+                guarded_name, guarded_schema = next(iter(guarded.items()))
+                bounded_name, bounded_schema = next(iter(bounded.items()))
+                if (
+                    not isinstance(guarded_schema, dict)
+                    or not isinstance(bounded_schema, dict)
+                    or not isinstance(guarded_schema.get("const"), int)
+                    or not isinstance(bounded_schema.get("maximum"), int)
+                ):
+                    continue
+                if guarded_name != "precision" or bounded_name != "scale":
+                    continue
+                rules.setdefault(_class_name(definition), []).append(
+                    (guarded_schema["const"], bounded_schema["maximum"])
+                )
+    return rules
+
+
+def _insert_after_class(source: str, class_name: str, method: str) -> str:
+    """Insert a generated validation method at the end of one class."""
+
+    marker = f"class {class_name}"
+    start = source.find(marker)
+    if start < 0:
+        return source
+    end = source.find("\nclass ", start + len(marker))
+    if end < 0:
+        end = len(source)
+    block = source[start:end].rstrip()
+    return source[:start] + block + "\n\n" + method + "\n\n" + source[end:].lstrip("\n")
+
+
+def _preserve_conditional_constraints(
+    files: dict[str, str], documents: dict[str, dict[str, Any]], profile_id: str
+) -> dict[str, str]:
+    """Restore conditional numeric constraints omitted by the pinned generator."""
+
+    rules = _conditional_rules(documents)
+    if not rules or profile_id not in {
+        "pydantic_v2_basemodel",
+        "pydantic_v2_dataclass",
+        "msgspec_struct",
+    }:
+        return files
+
+    patched = dict(files)
+    for name, source in files.items():
+        if not name.endswith(".py"):
+            continue
+        applicable = {
+            class_name: values
+            for class_name, values in rules.items()
+            if f"class {class_name}" in source
+        }
+        for class_name, values in applicable.items():
+            checks = "\n".join(
+                "        if self.precision == "
+                f"{precision} and self.scale > {maximum}:\n"
+                "            raise ValueError("
+                f'"scale must be <= precision ({maximum})")'
+                for precision, maximum in values
+            )
+            if profile_id == "msgspec_struct":
+                method = "    def __post_init__(self) -> None:\n" + checks
+            else:
+                if "model_validator" not in source:
+                    source = source.replace(
+                        "from pydantic import ",
+                        "from pydantic import model_validator\nfrom pydantic import ",
+                        1,
+                    )
+                method = (
+                    '    @model_validator(mode="after")\n'
+                    "    def _validate_"
+                    f"{class_name[0].lower() + class_name[1:]}"
+                    f"(self) -> {class_name}:\n" + checks + "\n        return self"
+                )
+            source = _insert_after_class(source, class_name, method)
+        patched[name] = source
+    return patched
 
 
 def limits() -> dict[str, Any]:
@@ -246,6 +366,8 @@ def generate(
             raise GenerationError(
                 "generator wrote zero files; an empty output is not a success"
             )
+
+        files = _preserve_conditional_constraints(files, prepared.documents, profile_id)
 
         if inspect is not None:
             inspect(files, prepared.documents)
