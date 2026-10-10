@@ -830,7 +830,7 @@ export function lowerProgram(options) {
 		const nullable = unwrapNullable(property.type);
 		const item = collectionItem(nullable.type);
 		const memberType = item ?? nullable.type;
-		const typeRef = resolveMemberType(memberType, at);
+		let typeRef = resolveMemberType(memberType, at);
 		if (!typeRef) {
 			context.raise(
 				DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
@@ -838,6 +838,45 @@ export function lowerProgram(options) {
 				at,
 			);
 			return undefined;
+		}
+		// Native integer widths are value-site declarations too. Preserve their
+		// closed interval on a package-local alias so fields, collection items and
+		// operation parameters do not silently collapse to unbounded Integer.
+		// Keep the alias name flat (the same owner/member spelling used by the
+		// semantic-core lowerer) so it cannot collide with the field identity.
+		const width = BUILTIN_INTEGER_BOUNDS[builtinBase(memberType)];
+		if (width !== undefined && typeRef.startsWith(NATIVE_PREFIX)) {
+			const memberName = String(property.name);
+			const aliasName = `${ownerParts.join("")}${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`;
+			const aliasIdentity = typeIdentity(aliasName);
+			if (!definitions.has(aliasIdentity)) {
+				emit({
+					identity: aliasIdentity,
+					displayName: aliasName,
+					kind: "alias",
+					target: typeRef,
+					constraints: ["min", "max"].map((keyword) => ({
+						identity: mintIdentity(packageIdentity, "constraint", [
+							aliasName,
+							keyword,
+						]),
+						keyword,
+						operands: { value: width[keyword] },
+						appliesTo: aliasIdentity,
+						diagnosticCode: constraintDiagnosticCode(
+							packageIdentity,
+							[aliasName],
+							keyword,
+						),
+						origin: context.originOf(property),
+					})),
+					extensions: [],
+					roles: [],
+					unknownPolicy: "reject",
+					origin: context.originOf(property),
+				});
+			}
+			typeRef = aliasIdentity;
 		}
 
 		const declared = context.state("multiplicity", property);

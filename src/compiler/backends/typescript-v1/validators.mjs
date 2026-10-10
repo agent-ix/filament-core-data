@@ -509,6 +509,26 @@ function delegatingCheckBody(model, entry) {
 		);
 		return lines;
 	}
+	// A bounded child alias can narrow a wide integer parent back into the
+	// JSON-number domain. Delegating to the parent would then reject valid
+	// numbers (or accept strings) using the parent's wire form. Apply the
+	// child's effective constraints against its own primitive representation.
+	if (
+		entry.kind === "alias" &&
+		entry.scalar === "integer" &&
+		entry.wideInteger !== true &&
+		entry.constraints.length > 0
+	) {
+		lines.push(
+			'\tif (typeof candidate !== "number" || !Number.isSafeInteger(candidate)) {',
+			'\t\tfail(errors, pointer, CODES.NOT_A_INTEGER, "the value is not a safe integer number");',
+			"\t\treturn false;",
+			"\t}",
+			...constraintStatements(model, entry.identity, "\t"),
+			"\treturn errors.length === before;",
+		);
+		return lines;
+	}
 	if (entry.kind === "alias" && entry.wideInteger) {
 		lines.push(
 			'\tif (typeof candidate !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(candidate)) {',
@@ -530,6 +550,19 @@ function delegatingCheckBody(model, entry) {
 		lines.push(...constraintStatements(model, entry.identity, "\t"));
 		lines.push("\treturn errors.length === before;");
 		return lines;
+	}
+	// A child alias may narrow a wide integer target back into the safe number
+	// domain. Delegating that case to the target would apply the target's string
+	// wire guard before the child's effective intersection, rejecting numeric
+	// values and accepting string values that the child deliberately narrowed.
+	// `entry.constraints` already contains the inherited target constraints and
+	// the child's own bounds, so the scalar check is complete here.
+	if (
+		entry.scalar === "integer" &&
+		entry.wideInteger !== true &&
+		entry.targetEntry?.wideInteger === true
+	) {
+		return scalarCheckBody(model, entry);
 	}
 	// The predicate call sits in the condition so its `candidate is T` narrows
 	// the value the alias's own constraints are then applied to. The target's

@@ -37,6 +37,13 @@ function nullableValue(cell: (typeof MATRIX_CELLS)[number]) {
 	return { value: null };
 }
 
+function rustTypeName(cell: (typeof MATRIX_CELLS)[number]) {
+	return cellRecordName(cell)
+		.split("_")
+		.map((part) => part[0].toUpperCase() + part.slice(1))
+		.join("");
+}
+
 async function generatedValidators(directory: string, ir: any) {
 	writeFileSync(join(directory, "package.json"), '{"type":"module"}\n');
 	writeFileSync(
@@ -62,9 +69,29 @@ async function generatedValidators(directory: string, ir: any) {
 	);
 }
 
-/** Trace: FR-144-AC-2, FR-144-AC-13, FR-144-AC-15. */
+/** Trace: FR-144-AC-1, FR-144-AC-2, FR-144-AC-3, FR-144-AC-4, FR-144-AC-5, FR-144-AC-6, FR-144-AC-7, FR-144-AC-8, FR-144-AC-9, FR-144-AC-10, FR-144-AC-11, FR-144-AC-12, FR-144-AC-13, FR-144-AC-14, FR-144-AC-15, FR-144-AC-17, FR-144-AC-18, FR-144-AC-19, FR-144-AC-20, FR-144-AC-21, FR-144-AC-22, FR-144-AC-23. */
 it("runs every generated numeric matrix cell through all consumer probes", async () => {
 	const ir = buildMatrixIr();
+	const requiredColumns = [
+		"src/compiler/backends/json-schema-v1",
+		"src/compiler/backends/python-v1",
+		"src/compiler/backends/rust-serde",
+		"src/compiler/backends/rust-serde/harness",
+		"src/compiler/backends/typescript-v1",
+		"conformance/oracle/index.mjs",
+		"conformance/oracle/json.mjs",
+		"conformance/oracle/oracle.mjs",
+		"conformance/oracle/schema-layer.mjs",
+		"src/compiler/ir/reader.mjs",
+	];
+	expect(MATRIX_COLUMNS).toEqual(requiredColumns);
+	expect(MATRIX_CELLS).toHaveLength(204);
+	for (const dimension of ["rawLexeme", "oracleWidth"] as const) {
+		expect(
+			new Set(MATRIX_CELLS.map((cell) => cell[dimension])).size,
+			`${dimension} dimension coverage`,
+		).toBeGreaterThan(1);
+	}
 	expect([...readContractIr(ir)]).toEqual([]);
 
 	const scratch = mkdtempSync(join(tmpdir(), "fcd-age-2229-matrix-"));
@@ -134,13 +161,13 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			`${[...rust.files].find(([path]) => path === "Cargo.toml")?.[1] ?? ""}\n[dev-dependencies]\nserde_json = "1.0.145"\n`,
 		);
 		mkdirSync(join(scratch, "tests"));
-		const imports = MATRIX_CELLS.map((cell: any) => cellRecordName(cell)).join(
+		const imports = MATRIX_CELLS.map((cell: any) => rustTypeName(cell)).join(
 			", ",
 		);
 		const probes = MATRIX_CELLS.map((cell: any) => {
 			const rustJson = JSON.stringify(cellValue(cell));
 			const invalidJson = JSON.stringify(cellValue(cell, false));
-			const name = cellRecordName(cell);
+			const name = rustTypeName(cell);
 			const nullProbe = cell.nullable
 				? `let _: ${name} = serde_json::from_str(${JSON.stringify(JSON.stringify(nullableValue(cell)))}).unwrap();`
 				: "";

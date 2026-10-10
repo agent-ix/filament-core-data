@@ -367,7 +367,11 @@ function checkField(field, at, types, out) {
 		resolved.status === "resolved" &&
 		resolved.kind === "scalar" &&
 		Object.hasOwn(field, "defaultValue") &&
-		!defaultAdmitted(resolved.scalar, field.defaultValue)
+		!defaultAdmitted(
+			resolved.scalar,
+			field.defaultValue,
+			decimalPolicyFor(types, field, resolved),
+		)
 	) {
 		out.push(
 			diagnostic(
@@ -474,13 +478,14 @@ function checkConstraint(constraint, at, types, out) {
 		);
 		const value = operands.value;
 		if (!operandAdmitted(numeric, resolved.scalar, value)) {
+			const outsideI128 = integerOutsideI128(resolved.scalar, value);
 			out.push(
 				diagnostic(
-					integerOutsideI128(resolved.scalar, value)
-						? "INTEGER_OUTSIDE_I128"
-						: "INVALID_OPERAND",
+					outsideI128 ? "INTEGER_OUTSIDE_I128" : "INVALID_OPERAND",
 					`${at}/operands/value`,
-					`${keyword} on ${String(resolved.scalar)} takes a ${numeric ? "number" : "string"} operand`,
+					outsideI128
+						? `${keyword} operand /operands/value ${value} is outside the exact i128 domain [-170141183460469231731687303715884105728, 170141183460469231731687303715884105727]`
+						: `${keyword} on ${String(resolved.scalar)} takes a ${numeric ? "number" : "string"} operand`,
 				),
 			);
 		}
@@ -1619,7 +1624,16 @@ function defaultOutsideI128(scalar, value) {
 	return integerOutsideI128(scalar, value);
 }
 
-function defaultAdmitted(scalar, value) {
+function decimalPolicyFor(types, field, resolved) {
+	if (isObject(field?.decimal)) return field.decimal;
+	for (const identity of resolved?.chain ?? []) {
+		const definition = types.get(identity);
+		if (isObject(definition?.decimal)) return definition.decimal;
+	}
+	return undefined;
+}
+
+function defaultAdmitted(scalar, value, policy) {
 	if (value === null) return true;
 	const values = Array.isArray(value) ? value : [value];
 	return values.every((item) => {
@@ -1627,16 +1641,11 @@ function defaultAdmitted(scalar, value) {
 		if (scalar === "number" || scalar === "float32" || scalar === "float64")
 			return operandAdmitted(true, scalar, item);
 		if (scalar === "boolean") return typeof item === "boolean";
+		if (scalar === "decimal") return decimalAdmitted(item, policy);
 		if (
-			[
-				"decimal",
-				"string",
-				"bytes",
-				"date",
-				"datetime",
-				"duration",
-				"uuid",
-			].includes(scalar)
+			["string", "bytes", "date", "datetime", "duration", "uuid"].includes(
+				scalar,
+			)
 		)
 			return typeof item === "string";
 		return true;

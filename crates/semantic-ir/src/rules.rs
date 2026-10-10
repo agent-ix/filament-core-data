@@ -924,48 +924,58 @@ const MAX_EXACT_EXPANSION: i128 = 4096;
 /// represented exactly by the JSON number comparison below; zero remains
 /// exactly zero regardless of its exponent.
 fn expansion_would_exceed_budget(lexeme: &str) -> Option<bool> {
-	let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
-	let (mantissa, exponent) = match unsigned.find(['e', 'E']) {
-		Some(at) => (&unsigned[..at], unsigned[at + 1..].parse::<i128>().ok()?),
-		None => return Some(false),
-	};
-	if mantissa
-		.chars()
-		.filter(|ch| *ch != '.')
-		.all(|ch| ch == '0')
-	{
-		return Some(false);
-	}
-	let whole_len = mantissa.split_once('.').map_or(mantissa.len(), |(whole, _)| whole.len()) as i128;
-	let decimal_at = match whole_len.checked_add(exponent) {
-		Some(value) => value,
-		// The non-zero mantissa cannot be represented within the bounded
-		// scanner once the decimal position itself overflows i64.
-		None => return Some(true),
-	};
-	Some(decimal_at > MAX_EXACT_EXPANSION || decimal_at < -MAX_EXACT_EXPANSION)
+    let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
+    let Some(at) = unsigned.find(['e', 'E']) else {
+        return Some(false);
+    };
+    let mantissa = &unsigned[..at];
+    if mantissa.chars().filter(|ch| *ch != '.').all(|ch| ch == '0') {
+        return Some(false);
+    }
+    // A non-zero mantissa with an exponent outside i128 cannot fit the
+    // bounded exact-number scanner. Keep this branch ahead of normalized_number
+    // so the lexeme receives the appropriate INEXACT diagnostic rather than
+    // silently escaping classification when exponent parsing overflows.
+    let exponent = match unsigned[at + 1..].parse::<i128>() {
+        Ok(value) => value,
+        Err(_) => return Some(true),
+    };
+    let whole_len = mantissa
+        .split_once('.')
+        .map_or(mantissa.len(), |(whole, _)| whole.len()) as i128;
+    let decimal_at = match whole_len.checked_add(exponent) {
+        Some(value) => value,
+        // The non-zero mantissa cannot be represented within the bounded
+        // scanner once the decimal position itself overflows i64.
+        None => return Some(true),
+    };
+    Some(decimal_at > MAX_EXACT_EXPANSION || decimal_at < -MAX_EXACT_EXPANSION)
 }
 
 fn huge_exponent_is_integer(lexeme: &str) -> bool {
-	let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
-	let Some(at) = unsigned.find(['e', 'E']) else { return false; };
-	let mantissa = &unsigned[..at];
-	let fraction_len = mantissa.split_once('.').map_or(0, |(_, fraction)| fraction.len());
-	let exponent_text = &unsigned[at + 1..];
-	if let Ok(exponent) = exponent_text.parse::<i128>() {
-		return exponent >= fraction_len as i128;
-	}
-	// A positive exponent that does not fit i128 is necessarily larger than
-	// the finite fractional part, so the value is still an integer. A negative
-	// overflow moves the decimal point farther into the fraction.
-	!exponent_text.starts_with('-')
+    let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
+    let Some(at) = unsigned.find(['e', 'E']) else {
+        return false;
+    };
+    let mantissa = &unsigned[..at];
+    let fraction_len = mantissa
+        .split_once('.')
+        .map_or(0, |(_, fraction)| fraction.len());
+    let exponent_text = &unsigned[at + 1..];
+    if let Ok(exponent) = exponent_text.parse::<i128>() {
+        return exponent >= fraction_len as i128;
+    }
+    // A positive exponent that does not fit i128 is necessarily larger than
+    // the finite fractional part, so the value is still an integer. A negative
+    // overflow moves the decimal point farther into the fraction.
+    !exponent_text.starts_with('-')
 }
 
 fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
     let negative = lexeme.starts_with('-');
     let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
     let (mantissa, exponent) = match unsigned.find(['e', 'E']) {
-		Some(at) => (&unsigned[..at], unsigned[at + 1..].parse::<i64>().ok()?),
+        Some(at) => (&unsigned[..at], unsigned[at + 1..].parse::<i64>().ok()?),
         None => (unsigned, 0),
     };
     let (whole, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
@@ -976,11 +986,11 @@ fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
         return None;
     }
     let digits = format!("{whole}{fraction}");
-	let decimal_at = (whole.len() as i64).checked_add(exponent)?;
+    let decimal_at = (whole.len() as i64).checked_add(exponent)?;
     let zero = digits.chars().all(|ch| ch == '0');
-	if zero {
-		return Some((false, "0".to_string(), true));
-	}
+    if zero {
+        return Some((false, "0".to_string(), true));
+    }
     let (mut integer, mut fraction_out) = if decimal_at <= 0 {
         (
             "0".to_string(),
@@ -1014,14 +1024,14 @@ fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
 }
 
 fn exact_number_kind(lexeme: &str) -> Option<&'static str> {
-	if expansion_would_exceed_budget(lexeme) == Some(true) {
-		return Some(if huge_exponent_is_integer(lexeme) {
-			INEXACT_INTEGER
-		} else {
-			INEXACT_NUMBER
-		});
-	}
-	let (negative, normalized, whole) = normalized_number(lexeme)?;
+    if expansion_would_exceed_budget(lexeme) == Some(true) {
+        return Some(if huge_exponent_is_integer(lexeme) {
+            INEXACT_INTEGER
+        } else {
+            INEXACT_NUMBER
+        });
+    }
+    let (negative, normalized, whole) = normalized_number(lexeme)?;
     let digits = normalized
         .split_once('.')
         .map_or_else(|| normalized.clone(), |(head, _)| head.to_string());
@@ -2130,13 +2140,27 @@ fn package_walk(
 #[cfg(test)]
 mod tests {
     use super::{
-        composite_graph, decide, decide_with, native_scalar, package_cycle, walk_alias, AliasMemo,
-        Document, Resolved, RuleLimits, Sink, TypePositionKind, Walk, COMPOSITE_CYCLE,
-        CONSTRAINT_NOT_APPLICABLE, DECIMAL_POLICY_CONFLICT, DEPTH_LIMIT_EXCEEDED, NATIVE_PREFIX,
-        NATIVE_SCALARS, UNIT_ON_NON_SCALAR, UNRESOLVED_TYPE_REF,
+        composite_graph, decide, decide_with, exact_number_kind, native_scalar, package_cycle,
+        walk_alias, AliasMemo, Document, Resolved, RuleLimits, Sink, TypePositionKind, Walk,
+        COMPOSITE_CYCLE, CONSTRAINT_NOT_APPLICABLE, DECIMAL_POLICY_CONFLICT, DEPTH_LIMIT_EXCEEDED,
+        INEXACT_INTEGER, INEXACT_NUMBER, NATIVE_PREFIX, NATIVE_SCALARS, UNIT_ON_NON_SCALAR,
+        UNRESOLVED_TYPE_REF,
     };
     use crate::json::parse;
     use crate::json::Json;
+
+    #[test]
+    fn huge_exponents_are_classified_even_when_the_exponent_exceeds_i128() {
+        assert_eq!(
+            exact_number_kind("1e170141183460469231731687303715884105728"),
+            Some(INEXACT_INTEGER)
+        );
+        assert_eq!(
+            exact_number_kind("1e-170141183460469231731687303715884105728"),
+            Some(INEXACT_NUMBER)
+        );
+        assert_eq!(exact_number_kind("0e9223372036854775807"), None);
+    }
 
     fn type_position_fixture(kind: TypePositionKind) -> Json {
         let definition = match kind {

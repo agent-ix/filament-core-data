@@ -2563,8 +2563,6 @@ function renderFieldChecks(type, field) {
 }
 
 function renderInlineFieldChecks(type, field) {
-	const checks = field.checks ?? [];
-	if (checks.length === 0) return [];
 	const prefix = `${type.constantName}_${field.ident.toUpperCase()}`;
 	const subject = {
 		...type,
@@ -2573,6 +2571,14 @@ function renderInlineFieldChecks(type, field) {
 		itemScalar: field.elementScalar,
 		itemType: field.elementType,
 	};
+	// A wide integer's representable bound may be redundant for the mapped
+	// primitive. Filter those checks before opening collection/nullable loops;
+	// emitting an empty loop still binds unused `item`/`value` variables and
+	// fails consumers that compile generated code with warnings denied.
+	const checks = (field.checks ?? []).filter(
+		(check) => !isRedundantIntegerBound(subject, check),
+	);
+	if (checks.length === 0) return [];
 	const render = (expression, extraIndent = 0) =>
 		checks.flatMap((check, index) =>
 			renderCheck(

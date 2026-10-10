@@ -56,7 +56,8 @@ const matrixFamilies = [
 	["integer-wide-i64", "integer", ["wide-i64"], ["string-safe"]],
 	["integer-wide-u64", "integer", ["wide-u64"], ["string-safe"]],
 	["integer-wide-i128", "integer", ["wide-i128"], ["string-safe"]],
-	["integer-width", "integer", ["int8", "uint64"], ["number"]],
+	["integer-width-int8", "integer", ["int8"], ["number"]],
+	["integer-width-u64", "integer", ["uint64"], ["string-safe"]],
 	["boolean-enum", "boolean", ["enum"], ["boolean"]],
 	["float32", "float32", ["none", "positive"], ["number"]],
 	["float64", "float64", ["none", "positive"], ["number"]],
@@ -351,12 +352,19 @@ export function cellValue(cell, valid = true) {
 	if (cell.kind === "string") value = valid ? "ok" : 7;
 	else if (cell.kind === "decimal") value = valid ? "1.10" : "1.001";
 	else if (cell.kind === "float32")
-		value = valid ? (cell.range === "positive" ? 2.5 : 0.5) : 3.5e38;
+		value = valid ? 0.5 : cell.range === "positive" ? 1 : 3.5e38;
 	else if (cell.kind === "float64")
-		value = valid ? (cell.range === "positive" ? 2.5 : 0.1) : "not-a-number";
+		value = valid
+			? cell.range === "positive"
+				? 0.5
+				: 0.1
+			: cell.range === "positive"
+				? 1
+				: "not-a-number";
 	else if (cell.kind === "boolean") value = valid ? true : "true";
 	else if (cell.range === "int8") value = valid ? 1 : 128;
-	else if (cell.range === "uint64") value = valid ? 1 : -1;
+	else if (cell.range === "uint64")
+		value = valid ? "1" : "18446744073709551616";
 	else if (cell.range === "wide-i64")
 		value = valid ? "9007199254740993" : "9007199254740994";
 	else if (cell.range === "wide-u64")
@@ -367,16 +375,10 @@ export function cellValue(cell, valid = true) {
 	else if (cell.range === "negative") value = valid ? -1 : 0;
 	else if (cell.range === "narrowed") value = valid ? 1 : 100;
 	else value = valid ? 1 : -11;
-	if (cell.wire === "number" && cell.lexeme === "zero-huge-exponent")
-		value = valid ? 0 : 1e10000;
-	if (cell.wire === "number" && cell.lexeme === "huge-exponent")
-		value = valid
-			? cell.range === "positive"
-				? 10
-				: cell.range === "negative"
-					? -1
-					: 1
-			: 1e10000;
+	// Raw exponent spellings belong to the reader/oracle lexeme probes. Keep
+	// backend instance probes finite JSON values; JavaScript would turn an
+	// overflowing number into Infinity and JSON.stringify would silently turn
+	// that into null, which is a different fixture.
 	if (cell.nesting === "collection") return { value: [value] };
 	if (cell.nesting === "nested") return { nested: { value } };
 	if (cell.nesting === "option" && !valid) return { value };

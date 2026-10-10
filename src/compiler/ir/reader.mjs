@@ -625,13 +625,14 @@ export function readContractIr(document, options = {}) {
 					walked?.policies[0]?.decimal,
 				)
 			) {
+				const operandPointer = "/operands/value";
 				raise(
 					outsideI128
 						? DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128
 						: DIAGNOSTIC_CODES.INVALID_OPERAND,
 					outsideI128
-						? `${fragment(keyword)} operand /operands/value ${fragment(String(value))} is outside the exact i128 domain [-170141183460469231731687303715884105728, 170141183460469231731687303715884105727]`
-						: `${fragment(keyword)} operand /operands/value on ${fragment(String(resolved.scalar))} takes an exact numeric operand`,
+						? `${fragment(keyword)} operand ${operandPointer} ${fragment(String(value))} is outside the exact i128 domain [-170141183460469231731687303715884105728, 170141183460469231731687303715884105727]`
+						: `${fragment(keyword)} operand ${operandPointer} on ${fragment(String(resolved.scalar))} takes an exact numeric operand`,
 					locusOf(constraint) ?? locusOf(owner),
 				);
 			}
@@ -643,13 +644,26 @@ export function readContractIr(document, options = {}) {
 					!valueAdmitted(resolved.scalar, value, walked?.policies[0]?.decimal)
 				) {
 					raise(
-						typeof value === "string" &&
-							resolved.scalar === "integer" &&
-							/^(0|-?[1-9][0-9]*)$/.test(value) &&
-							!withinI128(value)
-							? DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128
-							: DIAGNOSTIC_CODES.INVALID_OPERAND,
-						`enum operand /operands/values/${index} is outside the exact scalar wire domain`,
+						(() => {
+							const outsideI128 =
+								typeof value === "string" &&
+								resolved.scalar === "integer" &&
+								/^(0|-?[1-9][0-9]*)$/.test(value) &&
+								!withinI128(value);
+							return outsideI128
+								? DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128
+								: DIAGNOSTIC_CODES.INVALID_OPERAND;
+						})(),
+						(() => {
+							const outsideI128 =
+								typeof value === "string" &&
+								resolved.scalar === "integer" &&
+								/^(0|-?[1-9][0-9]*)$/.test(value) &&
+								!withinI128(value);
+							return outsideI128
+								? `enum operand /operands/values/${index} ${fragment(String(value))} is outside the exact i128 domain [-170141183460469231731687303715884105728, 170141183460469231731687303715884105727]`
+								: `enum operand /operands/values/${index} on ${fragment(String(resolved.scalar))} is outside the exact scalar wire domain`;
+						})(),
 						locusOf(constraint) ?? locusOf(owner),
 					);
 				}

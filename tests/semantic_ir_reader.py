@@ -182,6 +182,7 @@ _INTEGER_LITERAL = re.compile(r"^(0|-?[1-9][0-9]*)$")
 _DECIMAL_LITERAL = re.compile(
     r"^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$"
 )
+_EXACT_NUMERIC_SCALARS = {"integer", "decimal", "float32", "float64"}
 
 
 def _decimal_policy(
@@ -358,7 +359,11 @@ def _check_field(
         value = field.get("defaultValue")
         scalar = resolved[1] if resolved[0] == "scalar" else None
         values = value if isinstance(value, list) else [value]
-        if value is not None and not all(
+        # `any` defaults are deliberately uninterpreted JSON. Exact scalar
+        # admission applies only after the field resolves to a concrete
+        # value domain; inspecting an arbitrary object here would reject a
+        # valid semantic default merely because one nested value is numeric.
+        if value is not None and scalar not in {None, "any"} and not all(
             _exact_numeric_admitted(
                 scalar,
                 item,
@@ -448,7 +453,13 @@ def _check_constraint(
                     if scalar == "integer" and _integer_outside_i128(value)
                     else "agent-ix.semantic-ir.INVALID_OPERAND",
                     f"{path}.operands.value",
-                    "operand type does not match the scalar",
+                    (
+                        f"{keyword} operand /operands/value {value} is outside the exact i128 domain "
+                        "[-170141183460469231731687303715884105728, "
+                        "170141183460469231731687303715884105727]"
+                        if scalar == "integer" and _integer_outside_i128(value)
+                        else "operand type does not match the scalar"
+                    ),
                 )
             )
     if keyword == "enumValues" and kind == "scalar":
@@ -456,14 +467,27 @@ def _check_constraint(
         if not isinstance(enum_values, list):
             enum_values = []
         for index, value in enumerate(enum_values):
-            if not _exact_numeric_admitted(scalar, value, _decimal_policy(types, fields, constraint.get("appliesTo"))):
+            if (
+                scalar in _EXACT_NUMERIC_SCALARS
+                and not _exact_numeric_admitted(
+                    scalar,
+                    value,
+                    _decimal_policy(types, fields, constraint.get("appliesTo")),
+                )
+            ):
                 out.append(
                     _diag(
                         "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
                         if scalar == "integer" and _integer_outside_i128(value)
                         else "agent-ix.semantic-ir.INVALID_OPERAND",
                         f"{path}.operands.values.{index}",
-                        "an enum value is outside the exact scalar wire domain",
+                        (
+                            f"enum value /operands/values/{index} {value} is outside the exact i128 domain "
+                            "[-170141183460469231731687303715884105728, "
+                            "170141183460469231731687303715884105727]"
+                            if scalar == "integer" and _integer_outside_i128(value)
+                            else "an enum value is outside the exact scalar wire domain"
+                        ),
                     )
                 )
 
