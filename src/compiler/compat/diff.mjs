@@ -92,7 +92,80 @@ function same(left, right) {
 }
 
 /** Widening a scalar's domain is conditional; every other change to it breaks. */
-const WIDENINGS = new Set(["date>datetime"]);
+const WIDENINGS = new Set(["date>datetime", "float32>float64"]);
+
+const SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
+const INTEGER_LITERAL = /^(0|-?[1-9][0-9]*)$/;
+
+function integerRange(constraints) {
+	let lower = -SAFE_INTEGER;
+	let upper = SAFE_INTEGER;
+	let lowerExplicit = false;
+	let upperExplicit = false;
+	for (const constraint of constraints ?? []) {
+		const value = constraint?.operands?.value;
+		if (typeof value !== "string" || !INTEGER_LITERAL.test(value)) continue;
+		let bound = BigInt(value);
+		if (constraint.keyword === "exclusiveMin") bound += 1n;
+		if (constraint.keyword === "exclusiveMax") bound -= 1n;
+		if (constraint.keyword === "min" || constraint.keyword === "exclusiveMin") {
+			lower = lowerExplicit && lower > bound ? lower : bound;
+			lowerExplicit = true;
+		}
+		if (constraint.keyword === "max" || constraint.keyword === "exclusiveMax") {
+			upper = upperExplicit && upper < bound ? upper : bound;
+			upperExplicit = true;
+		}
+	}
+	return { lower, upper };
+}
+
+function wideInteger(constraints) {
+	const { lower, upper } = integerRange(constraints);
+	return (
+		lower < -SAFE_INTEGER ||
+		lower > SAFE_INTEGER ||
+		upper < -SAFE_INTEGER ||
+		upper > SAFE_INTEGER
+	);
+}
+
+function decimalPolicyChange(before, after) {
+	if (same(before ?? null, after ?? null)) return undefined;
+	if (!before || !after) return "breaking";
+	return after.scale >= before.scale &&
+		after.precision - after.scale >= before.precision - before.scale
+		? "conditional"
+		: "breaking";
+}
+
+function exactBound(value, scalar) {
+	if (typeof value !== "string") return undefined;
+	if (scalar === "integer")
+		return INTEGER_LITERAL.test(value)
+			? { coefficient: BigInt(value), scale: 0 }
+			: undefined;
+	if (scalar !== "decimal") return undefined;
+	if (!/^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$/.test(value))
+		return undefined;
+	const negative = value.startsWith("-");
+	const unsigned = negative ? value.slice(1) : value;
+	const [whole, fraction = ""] = unsigned.split(".");
+	return {
+		coefficient: BigInt(`${negative ? "-" : ""}${whole}${fraction}`),
+		scale: fraction.length,
+	};
+}
+
+function compareExactBounds(before, after, scalar) {
+	const left = exactBound(before, scalar);
+	const right = exactBound(after, scalar);
+	if (!left || !right) return undefined;
+	const scale = Math.max(left.scale, right.scale);
+	const l = left.coefficient * 10n ** BigInt(scale - left.scale);
+	const r = right.coefficient * 10n ** BigInt(scale - right.scale);
+	return l < r ? -1 : l > r ? 1 : 0;
+}
 
 function scalarChange(before, after) {
 	if (before === after) return undefined;
@@ -268,6 +341,22 @@ export function diffSemanticContract(request) {
 					"type",
 					scalar,
 					`the scalar domain changed from ${previous.scalar} to ${next.scalar}`,
+				);
+			}
+			const policy = decimalPolicyChange(previous.decimal, next.decimal);
+			if (policy) {
+				record(identity, "type", policy, "the decimal policy changed");
+			}
+			if (
+				previous.scalar === "integer" &&
+				next.scalar === "integer" &&
+				wideInteger(previous.constraints) !== wideInteger(next.constraints)
+			) {
+				record(
+					identity,
+					"type",
+					"breaking",
+					"the integer wire form changed between safe and wide",
 				);
 			}
 		}
@@ -561,6 +650,10 @@ function diffFields(previous, next, record, consumerPolicies, evidence) {
 				`the field's type reference changed from ${original.typeRef} to ${field.typeRef}`,
 			);
 		}
+		const policy = decimalPolicyChange(original.decimal, field.decimal);
+		if (policy) {
+			record(identity, "type", policy, "the field's decimal policy changed");
+		}
 		// Nullability and defaults are semantic values, and a change to either is
 		// a change a consumer has to handle. Leaving them out let a field become
 		// nullable under a `patch`.
@@ -689,10 +782,34 @@ function diffConstraints(previous, next, record) {
 			}
 			continue;
 		}
+		let disposition = "breaking";
+		if (
+			previous.scalar === next.scalar &&
+			["integer", "decimal"].includes(next.scalar) &&
+			original.keyword === constraint.keyword &&
+			["min", "max", "exclusiveMin", "exclusiveMax"].includes(
+				constraint.keyword,
+			) &&
+			Object.keys(original.operands ?? {}).length === 1 &&
+			Object.keys(constraint.operands ?? {}).length === 1
+		) {
+			const direction = compareExactBounds(
+				original.operands?.value,
+				constraint.operands?.value,
+				next.scalar,
+			);
+			if (direction === 0) disposition = "patch";
+			else if (
+				constraint.keyword === "min" || constraint.keyword === "exclusiveMin"
+					? direction > 0
+					: direction < 0
+			)
+				disposition = "conditional";
+		}
 		record(
 			identity,
 			"constraint",
-			"breaking",
+			disposition,
 			`the ${constraint.keyword} operands changed`,
 		);
 	}

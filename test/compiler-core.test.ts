@@ -4499,6 +4499,122 @@ describe("compatibility (FR-051)", () => {
 			family: change.family,
 			disposition: change.disposition,
 		}));
+	const numericPair = () => {
+		const old = structuredClone(constructed("type-domain-widening").old);
+		return { old, next: structuredClone(old) };
+	};
+	const seconds = (document: Json) =>
+		(document as unknown as { types: Record<string, unknown>[] }).types.find(
+			(type) => type.displayName === "Seconds",
+		) as Record<string, unknown>;
+	const bound = (document: Json, keyword: string, value: string) => {
+		const types = (document as unknown as { types: Record<string, unknown>[] })
+			.types;
+		const seed = (
+			types.find((type) => type.displayName === "Text")?.constraints as Record<
+				string,
+				unknown
+			>[]
+		)[0];
+		const subject = seconds(document);
+		subject.constraints = [
+			...((subject.constraints as Record<string, unknown>[]) ?? []),
+			{
+				...seed,
+				identity: `ix://agent-ix/assurance/constraint/Seconds-${keyword}`,
+				keyword,
+				operands: { value },
+				appliesTo: subject.identity,
+			},
+		];
+	};
+	const numericDisposition = (old: Json, next: Json, family: string) => {
+		expect(validateIrDocument(old as never)).toEqual([]);
+		expect(validateIrDocument(next as never)).toEqual([]);
+		return reportOfPair(old, next).changes.find(
+			(change) =>
+				change.identity === "ix://agent-ix/assurance/type/Seconds" &&
+				change.family === family,
+		)?.disposition;
+	};
+
+	/** Trace: FR-051-AC-18. */
+	it("classifies numeric scalar and decimal policy changes by their domain", () => {
+		for (const [before, after, expected] of [
+			["float32", "float64", "conditional"],
+			["float64", "float32", "breaking"],
+			["integer", "decimal", "breaking"],
+		] as const) {
+			const { old, next } = numericPair();
+			seconds(old).scalar = before;
+			seconds(next).scalar = after;
+			if (after === "decimal")
+				seconds(next).decimal = { precision: 5, scale: 2 };
+			expect(numericDisposition(old, next, "type"), `${before}>${after}`).toBe(
+				expected,
+			);
+		}
+		for (const [precision, scale, expected] of [
+			[7, 3, "conditional"],
+			[5, 3, "breaking"],
+		] as const) {
+			const { old, next } = numericPair();
+			seconds(old).scalar = "decimal";
+			seconds(next).scalar = "decimal";
+			seconds(old).decimal = { precision: 5, scale: 2 };
+			seconds(next).decimal = { precision, scale };
+			expect(
+				numericDisposition(old, next, "type"),
+				`${precision},${scale}`,
+			).toBe(expected);
+		}
+	});
+
+	/** Trace: FR-051-AC-18, FR-051-AC-19. */
+	it("compares exact numeric bounds and preserves integer wire transitions", () => {
+		for (const [before, after, expectedType, expectedConstraint] of [
+			["100", "200", undefined, "conditional"],
+			["100", "18446744073709551615", "breaking", "conditional"],
+			["18446744073709551615", "100", "breaking", "breaking"],
+			["18446744073709551615", "18446744073709551614", undefined, "breaking"],
+		] as const) {
+			const { old, next } = numericPair();
+			bound(old, "min", "0");
+			bound(next, "min", "0");
+			bound(old, "max", before);
+			bound(next, "max", after);
+			expect(numericDisposition(old, next, "type"), `${before}>${after}`).toBe(
+				expectedType,
+			);
+			expect(
+				reportOfPair(old, next).changes.find(
+					(change) => change.family === "constraint",
+				)?.disposition,
+			).toBe(expectedConstraint);
+		}
+		const { old, next } = numericPair();
+		bound(old, "min", "0");
+		bound(next, "min", "0");
+		bound(old, "max", "18446744073709551615");
+		expect(numericDisposition(old, next, "type")).toBe("breaking");
+		for (const [before, after, expected] of [
+			["10.5", "10.51", "conditional"],
+			["10.51", "10.5", "breaking"],
+		] as const) {
+			const pair = numericPair();
+			seconds(pair.old).scalar = "decimal";
+			seconds(pair.next).scalar = "decimal";
+			seconds(pair.old).decimal = { precision: 5, scale: 2 };
+			seconds(pair.next).decimal = { precision: 5, scale: 2 };
+			bound(pair.old, "max", before);
+			bound(pair.next, "max", after);
+			expect(
+				reportOfPair(pair.old, pair.next).changes.find(
+					(change) => change.family === "constraint",
+				)?.disposition,
+			).toBe(expected);
+		}
+	});
 
 	/** Traces: TC-527, TC-602; FR-051-AC-1. */
 	it("reproduces every published compatibility case", () => {

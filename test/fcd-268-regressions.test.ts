@@ -696,7 +696,7 @@ it("keeps the Float32 uniqueness helper on the generated export surface", () => 
 	expect(broken).not.toContain("export function isUniqueFloat32Collection");
 });
 
-/** Trace: FR-054-AC-3. */
+/** Trace exclusion: this checks one nullable collection adapter; FR-054-AC-3 requires the full eight-axis pairwise matrix. */
 // The nullable collection cell's serde attribute must name its adapter.
 it("renders native nullable wide collections with the dedicated serde adapter", () => {
 	const ir = nativeNullableCollectionIr();
@@ -1090,7 +1090,7 @@ it("typechecks the generated TypeScript export surface and proves an export muta
 	}
 });
 
-/** Trace: FR-054-AC-3. */
+/** Trace exclusion: this compiles one nullable collection adapter and mutation, not FR-054-AC-3's full eight-axis matrix. */
 // Compile the nullable collection cell with its emitted serde adapter.
 it("compiles the generated Rust nullable collection with warnings denied and proves an adapter mutation is red", () => {
 	const generated = emitCrate(
@@ -1136,7 +1136,7 @@ it("compiles the generated Rust nullable collection with warnings denied and pro
 	}
 });
 
-/** Trace: FR-054-AC-3. */
+/** Trace exclusion: this checks constructor well-formedness for an empty required element domain; no AC states this cell. */
 // Compile the required collection cell even when its element domain is empty.
 it("compiles a required collection whose integer element domain is empty", () => {
 	const generated = emitCrate(
