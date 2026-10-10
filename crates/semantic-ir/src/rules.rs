@@ -917,7 +917,7 @@ pub fn decide_with(bundle: &Json, limits: RuleLimits) -> Vec<Located> {
     sink.out
 }
 
-const MAX_EXACT_EXPANSION: i64 = 4096;
+const MAX_EXACT_EXPANSION: i128 = 4096;
 
 /// Refuse to expand an exponent whose canonical spelling would exceed the
 /// bounded scanner budget. A non-zero value outside that budget cannot be
