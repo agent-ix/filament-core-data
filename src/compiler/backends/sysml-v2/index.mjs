@@ -19,6 +19,46 @@ const KIND_CONSTRUCTS = Object.freeze({
 
 const IDENTIFIER = /^[A-Za-z_][A-Za-z_0-9]*$/;
 
+// KerML/SysML keywords cannot be used as unquoted declaration or feature
+// names. Quoting would change the short-name contract, so refuse them with the
+// IR source locus instead of emitting text the pilot cannot parse.
+const RESERVED_IDENTIFIERS = new Set([
+	"abstract",
+	"action",
+	"alias",
+	"attribute",
+	"binding",
+	"calc",
+	"case",
+	"comment",
+	"connection",
+	"constraint",
+	"def",
+	"enum",
+	"feature",
+	"filter",
+	"flow",
+	"import",
+	"in",
+	"item",
+	"metadata",
+	"occurrence",
+	"package",
+	"part",
+	"port",
+	"private",
+	"protected",
+	"public",
+	"ref",
+	"redefines",
+	"specializes",
+	"state",
+	"subject",
+	"subsets",
+	"transition",
+	"view",
+]);
+
 function sourceLocus(node) {
 	return node?.origin?.source;
 }
@@ -33,7 +73,8 @@ function unsupported(node, reason, diagnostics) {
 }
 
 function identifier(name, node, diagnostics) {
-	if (IDENTIFIER.test(name ?? "")) return name;
+	if (IDENTIFIER.test(name ?? "") && !RESERVED_IDENTIFIERS.has(name))
+		return name;
 	unsupported(
 		node,
 		`name ${fragment(name)} is not a SysML identifier`,
@@ -91,7 +132,15 @@ function fieldType(field, types, diagnostics) {
 		}
 		return scalar;
 	}
-	if (type.kind === "record" || type.kind === "enum")
+	if (type.kind === "record") {
+		unsupported(
+			field,
+			`record-valued field ${fragment(field.name)} has no SysML attribute mapping`,
+			diagnostics,
+		);
+		return null;
+	}
+	if (type.kind === "enum")
 		return identifier(type.displayName, type, diagnostics);
 	unsupported(
 		field,
@@ -122,9 +171,17 @@ function renderRecord(type, types, diagnostics) {
 		const upper = multiplicity?.upper ?? "*";
 		const cardinality =
 			lower === 1 && upper === 1 ? "" : ` [${lower}..${upper}]`;
-		fields.push(`    attribute ${fieldName} : ${target}${cardinality};`);
+		fields.push(
+			`    doc /* semantic identity: ${field.identity} */`,
+			`    attribute ${fieldName} : ${target}${cardinality};`,
+		);
 	}
-	return [`  item def ${name} {`, ...fields, "  }"].join("\n");
+	return [
+		`  doc /* semantic identity: ${type.identity} */`,
+		`  item def ${name} {`,
+		...fields,
+		"  }",
+	].join("\n");
 }
 
 function renderEnum(type, diagnostics) {
@@ -135,7 +192,12 @@ function renderEnum(type, diagnostics) {
 		const variantName = identifier(variant.name, type, diagnostics);
 		if (variantName) variants.push(`    ${variantName};`);
 	}
-	return [`  enum def ${name} {`, ...variants, "  }"].join("\n");
+	return [
+		`  doc /* semantic identity: ${type.identity} */`,
+		`  enum def ${name} {`,
+		...variants,
+		"  }",
+	].join("\n");
 }
 
 function renderType(type, types, diagnostics) {
@@ -159,6 +221,22 @@ function renderType(type, types, diagnostics) {
 		);
 		return null;
 	}
+	if (type.abstract === true) {
+		unsupported(
+			type,
+			"abstract type semantics have no SysML mapping",
+			diagnostics,
+		);
+		return null;
+	}
+	if ((type.abstractSupertypes ?? []).length > 0) {
+		unsupported(type, "abstract supertypes have no SysML mapping", diagnostics);
+		return null;
+	}
+	if ((type.identityFields ?? []).length > 0) {
+		unsupported(type, "identity fields have no SysML mapping", diagnostics);
+		return null;
+	}
 	if (type.kind === "scalar") {
 		if (!scalarName(type))
 			unsupported(
@@ -176,7 +254,10 @@ function renderType(type, types, diagnostics) {
 		scalarName(target) ??
 		identifier(target?.displayName, target ?? type, diagnostics);
 	if (!name || !targetName) return null;
-	return `  alias ${name} for ${targetName};`;
+	return [
+		`  doc /* semantic identity: ${type.identity} */`,
+		`  alias ${name} for ${targetName};`,
+	].join("\n");
 }
 
 /** Seam-facing backend; emission has no IO or process effects. */
