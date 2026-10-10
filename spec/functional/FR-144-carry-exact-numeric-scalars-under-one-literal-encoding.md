@@ -324,7 +324,10 @@ agreement (NFR-009).
   of `["1.1"]` admits `"1.10"`, and a `unique` collection holding `"1.1"` and
   `"1.10"` is rejected. Over an `integer` subject it SHALL decide them by
   integer value, and over a `float32` or `float64` subject by the IEEE 754
-  equality FR-057 states.
+  equality [FR-057](./FR-057-enforce-constraints-in-generated-rust.md) states.
+  For `float32`, uniqueness compares the nearest binary32 values, ties to
+  even: `0.1` and `0.10000000149011612` are duplicates; positive and negative
+  zero are also duplicates.
 - A generated target SHALL convert a numeric `defaultValue` from its IR
   spelling to its subject's instance wire form before it substitutes or checks
   the default. `"42"` becomes the JSON number `42` on a safe `integer` subject
@@ -416,6 +419,8 @@ agreement (NFR-009).
   then the JSON Schema backend SHALL raise the blocking
   `agent-ix.semantic-ir.UNDECLARED_LOSS` naming the field and write no file,
   because `uniqueItems` compares strings and would admit `["1.1", "1.10"]`.
+- The JSON Schema backend SHALL apply the Float32 uniqueness refusal defined
+  by [FR-100](./FR-100-map-semantic-ir-to-json-schema.md).
 - The JSON Schema backend SHALL render `float32` and `float64` subjects as
   `{"type": "number"}` with their bounds as numeric keywords.
 - The Python backends SHALL inherit every numeric rendering and refusal from
@@ -497,6 +502,7 @@ round (AGE-2229's same-slice rule). For reference, the mapping is:
 | FR-144-AC-23 | An integer indexer typed `uint8`, a union variant typed `int16` and an operation parameter typed `uint64` each reference a minted alias over the package-local `Integer` definition carrying that width's `min` and `max` (`"0"`/`"255"`, `"-32768"`/`"32767"`, `"0"`/`"18446744073709551615"`) from `items`, `payloadType` and the parameter's `typeRef`; the `uint64` parameter generates `u64` in Rust. A record `Order` with fields `cancelReason` and `cancel_reason`, each typed `uint8`, and an operation `cancel(reason: uint8)` mints the alias identities `OrderCancelReason`, `OrderCancel-reason` and `Order/cancel/reason/width` and the constraints `constraint/Order-cancelReason-min`, `constraint/Order-cancel-reason-min` and `constraint/Order/cancel/reason/min`, and raises no `DUPLICATE_IDENTITY`; with a further field `cancel_param_reason` typed `uint8`, the four `min` constraints carry the distinct codes `ORDER_CANCELREASON_MIN`, `ORDER_CANCEL_REASON_MIN`, `ORDER_CANCEL_PARAM_REASON_MIN` and `ORDER_CANCEL__REASON_MIN` under `agent-ix.<package>.`. | Test |
 | FR-144-AC-24 | The numeric instance cases in FR-050-AC-15 produce its exact full codes and pointers in the generated validators, conformance adapters and independent oracle, including safe integer `"5"`, `1.5` and `9007199254740992`, wide integer `5`, `9007199254740992`, `"01"` and `"1e0"`, and float32 `3.5e38`. Safe `5`, wide `"5"` and the largest finite binary32 instance are accepted when their authored bounds admit them. A canonical wide value outside an authored bound reports that constraint's code, while one outside a missing side's default reports `INTEGER_OUT_OF_SAFE_RANGE`. | Test |
 | FR-144-AC-25 | A required non-nullable collection `value` with lower multiplicity 1 and integer element bounds `min: "0"`, `max: "-1"` generates Rust whose type and constructor compile without warnings; construction and validation admit no instance. Omission reports `MISSING_REQUIRED` at `/value`, `[]` reports `COLLECTION_TOO_SHORT` at `/value`, `[0]` reports the max constraint's code at `/value/0`, and `[-1]` reports the min constraint's code there. Only `MISSING_REQUIRED` and `COLLECTION_TOO_SHORT` use FR-050's `agent-ix.typescript-backend` namespace; the min and max failures retain their authored `diagnosticCode` unchanged. Changing only lower multiplicity to 0 admits `[]`; making only presence optional admits omission, and making only nullability true admits `null`. | Test |
+| FR-144-AC-26 | Over a `float32` item subject, Rust and TypeScript validators reject unique collections `[0.1, 0.10000000149011612]` and `[0, -0]`, and accept `[0.1, 0.2]`. JSON Schema generation refuses the unique field or sequence constraint with blocking `agent-ix.semantic-ir.UNDECLARED_LOSS` and zero files, and the Python backends inherit that refusal. | Test |
 
 ## Dependencies
 

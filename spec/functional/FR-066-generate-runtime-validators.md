@@ -101,7 +101,7 @@ contract itself rather than against an erased TypeScript type.
 | `pattern` | `regex` and `dialect` | ECMA-262 match |
 | `enumValues` | `values` | membership in the declared set, by mathematical value over a `decimal` subject and by integer value over an `integer` subject ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)) |
 | `nonEmpty` | none | length greater than zero |
-| `unique` | none | no two members share a canonical form, or, over a `decimal` subject, a mathematical value |
+| `unique` | none | no two members share a canonical form; numeric item subjects use the value equality of [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md), including nearest-binary32 equality for `float32` |
 | `format` | `name` | the named format's declared check |
 
 - The backend SHALL resolve a constraint's subject through the alias chain before selecting its check, because a constraint hangs on a type and the frontend mints an alias type per constrained property.
@@ -160,7 +160,7 @@ contract itself rather than against an erased TypeScript type.
 
 ### Collections and defaults
 
-- Where a field's `multiplicity` declares `unique: true`, the generated validator SHALL reject a collection two of whose members share the canonical form FR-069 defines, rather than comparing by reference or by `===`.
+- Where a field's `multiplicity` declares `unique: true`, the generated validator SHALL reject a collection two of whose members share the canonical form FR-069 defines, using [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)'s value equality for numeric item subjects, including nearest-binary32 equality for `float32`.
 - Where that collection's item subject is `decimal`, the generated validator SHALL compare two members by mathematical value ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)), so `"1.1"` and `"1.10"` are one member although their canonical forms differ.
 - Where a field's `multiplicity` declares `ordered: false`, the generated validator SHALL accept any member order.
 - Where a field's `multiplicity` declares `ordered: false`, the generated validator SHALL NOT reorder the value it returns.
@@ -190,8 +190,9 @@ contract itself rather than against an erased TypeScript type.
 - The repository SHALL carry an authored instance corpus under `test/fixtures/backends/typescript/instances/`, each case naming the IR document it is validated against, the semantic identity of the type under test, the payload, and the expected verdict.
 - A case whose expected verdict is a rejection SHALL additionally name the expected RFC 6901 pointer and the expected code.
 - Every instance case SHALL be authored from the published contract and from the IR document it names, and SHALL NOT be recorded from a run of the generated validator, because an expectation minted by the implementation under test is not evidence — the discipline `provenance.blessedFromRun` states for the conformance corpus applies here unchanged.
-- The repository SHALL carry, beside each instance case, a JSON Schema 2020-12 document describing the same type, authored from the same contract.
-- For every instance case, the generated validator's accept-or-reject verdict SHALL equal the verdict `ajv@8.20.0` reaches against that JSON Schema document.
+- Except for the Float32 uniqueness refusal class below, the repository SHALL carry, beside each instance case, a JSON Schema 2020-12 document describing the same type, authored from the same contract.
+- For every instance case outside that refusal class, the generated validator's accept-or-reject verdict SHALL equal the verdict `ajv@8.20.0` reaches against that JSON Schema document.
+- For a unique collection or sequence whose item subject resolves to `float32`, the differential check SHALL assert the JSON Schema generation refusal required by [FR-100](./FR-100-map-semantic-ir-to-json-schema.md): blocking `agent-ix.semantic-ir.UNDECLARED_LOSS` naming the field or constraint and zero files. It SHALL check the TypeScript validator against the contract-authored instance verdicts separately, including rejection of `[0.1, 0.10000000149011612]` and `[0, -0]`, and acceptance of `[0.1, 0.2]`. A schema emitted for this class is a failed refusal check, not an expected Ajv-versus-TypeScript divergence.
 - The differential check SHALL be run by the test suite rather than by the generator, so the generator never sees the second decider's answer.
 - The rationale SHALL be recorded beside the check: two deciders written independently from the same contract are evidence about the contract, and a generator compared only with its own output is evidence about nothing.
 - If the two deciders disagree, then the test SHALL fail rather than record a suppression, and the disagreement SHALL be resolved by fixing whichever decider the contract shows to be wrong.
@@ -231,7 +232,7 @@ contract itself rather than against an erased TypeScript type.
 | FR-066-AC-15 | The generated package's runtime dependency closure is empty, and the generated validators import no module outside the package. | Analysis |
 | FR-066-AC-16 | For one invalid input the error list is byte-identical across two runs and under `LC_ALL=tr_TR.UTF-8`. | Property |
 | FR-066-AC-17 | `tsc --noEmit` accepts a consumer that reads `result.value` only inside an `if (result.ok)` branch and rejects the same consumer reading it outside that branch. | Compile |
-| FR-066-AC-18 | For every instance case, the generated validator and `ajv@8.20.0` running the case's authored JSON Schema document reach the same accept-or-reject verdict; a seeded defect in either decider makes the check fail. | Test |
+| FR-066-AC-18 | For every instance case outside the Float32 uniqueness refusal class of FR-100, the generated validator and `ajv@8.20.0` running the case's authored JSON Schema document reach the same accept-or-reject verdict; a seeded defect in either decider makes the check fail. | Test |
 | FR-066-AC-19 | `errors.ts` is emitted, is the eighth member of the FR-065 file set, carries the closed structural-code list, and is reachable through its own `exports` subpath. | Unit |
 | FR-066-AC-20 | A `bytes` subject rejects a string that is not well-formed base64, and a `maxLength` of 3 on a `bytes` subject accepts a four-character base64 string decoding to three octets while rejecting one decoding to four. | Unit |
 | FR-066-AC-21 | An unbounded `integer` subject rejects `1.5`, `NaN`, `Infinity`, `-Infinity`, and `Number.MAX_SAFE_INTEGER + 2`, each with its own structural code, and accepts `-0` wherever it accepts `0`. | Unit |
@@ -244,6 +245,7 @@ contract itself rather than against an erased TypeScript type.
 | FR-066-AC-28 | A document whose admissibility result is `lossy` generates validators; a document carrying a representability loss generates none. | Unit |
 | FR-066-AC-29 | The `bytes` wire form, its length unit, and the union discriminator's wire shape each appear as a single named declared decision citing `agent-ix/filament-core-data#58`, and `conformance/divergences.json` carries no entry attributed to that question. | Static |
 | FR-066-AC-30 | A safe `integer` field with semantic `defaultValue` `"42"` returns the JSON number `42` for an absent member and reports no defect; a `decimal(5, 2)` field with `defaultValue` `"1.5"` returns `"1.50"`; a `decimal(5, 2)` subject with `enumValues` `["1.1"]` accepts `"1.10"`; a `unique` collection of that subject holding `"1.1"` and `"1.10"` is rejected. | Unit |
+| FR-066-AC-31 | A Float32 unique field and a Float32 sequence with a `unique` constraint each pass the differential check only when JSON Schema generation returns the FR-100 blocking refusal with zero files and the TypeScript validator rejects `[0.1, 0.10000000149011612]` and `[0, -0]` while accepting `[0.1, 0.2]`. Seeding a weaker emitted schema or suppressing an instance disagreement outside this refusal class makes the check fail. | Test |
 
 ## Dependencies
 
