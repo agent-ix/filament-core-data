@@ -16,6 +16,7 @@ import {
 	renderValidators,
 } from "../src/compiler/backends/typescript-v1/validators.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
+import * as conformanceOracle from "../conformance/oracle/oracle.mjs";
 import {
 	buildMatrixIr,
 	buildDifferentialFuzzCases,
@@ -64,6 +65,50 @@ function numericIntegerProbe(cell: (typeof MATRIX_CELLS)[number]) {
 function fuzzRecordValue(testCase: ReturnType<typeof buildDifferentialFuzzCases>[number], value: unknown) {
 	const fieldValue = testCase.nesting === "collection" ? [value] : value;
 	return { value: fieldValue };
+}
+
+function fuzzOracleOutcome(
+	testCase: ReturnType<typeof buildDifferentialFuzzCases>[number],
+	value: unknown,
+) {
+	let numeric: bigint | number;
+	if (testCase.baseType === "integer") {
+		if (testCase.wire === "string") {
+			if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
+				return { ok: false, code: undefined };
+			try {
+				numeric = BigInt(value);
+			} catch {
+				return { ok: false, code: undefined };
+			}
+		} else {
+			if (typeof value !== "number" || !Number.isSafeInteger(value))
+				return { ok: false, code: undefined };
+			numeric = value;
+		}
+	} else {
+		if (typeof value !== "number" || !Number.isFinite(value))
+			return { ok: false, code: undefined };
+		numeric = testCase.baseType === "float32" ? Math.fround(value) : value;
+	}
+	for (const entry of testCase.constraints) {
+		const operand =
+			testCase.baseType === "integer" ? BigInt(entry.operand) : Number(entry.operand);
+		const violated =
+			entry.keyword === "min"
+				? numeric < operand
+				: entry.keyword === "max"
+					? numeric > operand
+					: entry.keyword === "exclusiveMin"
+						? numeric <= operand
+						: numeric >= operand;
+		if (violated)
+			return {
+				ok: false,
+				code: `ix://agent-ix/age-2229-numeric-matrix/FUZZ_${testCase.index}_${entry.keyword.toUpperCase()}`,
+			};
+	}
+	return { ok: true, code: "OK" };
 }
 
 async function generatedValidators(directory: string, ir: any) {
@@ -262,7 +307,28 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 			.map((file) => JSON.parse(file.text));
 		for (const schema of schemas) ajv.addSchema(schema);
 		const disagreements: Array<Record<string, unknown>> = [];
+		let oracleCount = 0;
 		for (const testCase of cases) {
+			const caseNames = new Set([
+				testCase.name,
+				`${testCase.name}Base`,
+				`${testCase.name}Alias1`,
+				`${testCase.name}Alias2`,
+			]);
+			const oracleIr = {
+				...ir,
+				types: ir.types.filter((type: any) => caseNames.has(type.displayName)),
+			};
+			const oracleResult = conformanceOracle.verdict({ ir: oracleIr }, []);
+			oracleCount += 1;
+			const oracleDiagnostics = oracleResult.diagnostics ?? [];
+			if (oracleResult.resultState !== "success" || oracleDiagnostics.length > 0)
+				disagreements.push({
+					backend: "conformance-oracle",
+					name: testCase.name,
+					state: oracleResult.resultState,
+					diagnostics: oracleDiagnostics.slice(0, 1),
+				});
 			const validate = generated[
 				`validate${testCase.name}`
 			] as (value: unknown) => { ok: boolean; errors?: readonly { code?: string }[] };
@@ -272,17 +338,18 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 			const validateJson = ajv.getSchema(schema.$id);
 			expect(validateJson, `${testCase.name} Ajv validator`).toBeDefined();
 			for (const [label, probe, expected] of [
-				["valid", testCase.probes.valid, true],
-				["invalid", testCase.probes.invalid, false],
+				["valid", testCase.probes.valid, fuzzOracleOutcome(testCase, testCase.probes.valid).ok],
+				["invalid", testCase.probes.invalid, fuzzOracleOutcome(testCase, testCase.probes.invalid).ok],
 			] as const) {
 				const record = fuzzRecordValue(testCase, probe);
 				const tsResult = validate(record);
 				const ajvResult = Boolean(validateJson?.(record));
-				const failureKeyword = fuzzFailureKeyword(testCase, testCase.probes.invalid);
+				const failureKeyword = fuzzFailureKeyword(testCase, probe);
 				const referenceCode = expected
 					? "OK"
 					: `ix://agent-ix/age-2229-numeric-matrix/FUZZ_${testCase.index}_${(failureKeyword ?? "INVALID").toUpperCase()}`;
-				if (!expected)
+				const oracleOutcome = fuzzOracleOutcome(testCase, probe);
+				if (!expected && oracleOutcome.code !== undefined)
 					expect(tsResult.errors?.[0]?.code, `${testCase.name} reference diagnostic`).toBe(referenceCode);
 				if (tsResult.ok !== expected || ajvResult !== expected || tsResult.ok !== ajvResult) {
 					disagreements.push({
@@ -338,7 +405,10 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 			const typeName = testCase.name;
 			const valid = JSON.stringify(fuzzRecordValue(testCase, testCase.probes.valid));
 			const invalid = JSON.stringify(fuzzRecordValue(testCase, testCase.probes.invalid));
-			return `let _: ${typeName} = serde_json::from_str(${JSON.stringify(valid)}).unwrap_or_else(|error| panic!("${typeName} valid: {error}")); assert!(serde_json::from_str::<${typeName}>(${JSON.stringify(invalid)}).is_err(), "${typeName} invalid accepted");`;
+			const validProbe = fuzzOracleOutcome(testCase, testCase.probes.valid).ok
+				? `let _: ${typeName} = serde_json::from_str(${JSON.stringify(valid)}).unwrap_or_else(|error| panic!("${typeName} valid: {error}"));`
+				: `assert!(serde_json::from_str::<${typeName}>(${JSON.stringify(valid)}).is_err(), "${typeName} impossible valid accepted");`;
+			return `${validProbe} assert!(serde_json::from_str::<${typeName}>(${JSON.stringify(invalid)}).is_err(), "${typeName} invalid accepted");`;
 		}).join("\n    ");
 		writeFileSync(
 			join(rustRoot, "tests", "differential_fuzz.rs"),
@@ -420,19 +490,22 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 		) as boolean[];
 		expect(pythonAnswers).toHaveLength(pythonCases.length * 2);
 		for (const [index, answer] of pythonAnswers.entries()) {
-			const expected = index % 2 === 0;
+			const testCase = pythonCases[Math.floor(index / 2)];
+			const label = index % 2 === 0 ? "valid" : "invalid";
+			const expected = fuzzOracleOutcome(testCase, testCase.probes[label]).ok;
 			if (answer !== expected)
 				disagreements.push({
 					backend: "python",
-					name: pythonCases[Math.floor(index / 2)].name,
-					label: expected ? "valid" : "invalid",
+					name: testCase.name,
+					label,
 					expected,
 					python: answer,
 				});
 		}
 		process.stdout.write(
-			`AGE-2229 differential fuzz seed: ${0x9e3779b9} count: ${cases.length} rustBatch: ${rustCases.length} pythonBatch: ${pythonCases.length} disagreements: ${disagreements.length}\n`,
+			`AGE-2229 differential fuzz seed: ${0x9e3779b9} count: ${cases.length} oracleCount: ${oracleCount} rustBatch: ${rustCases.length} pythonBatch: ${pythonCases.length} disagreements: ${disagreements.length}\n`,
 		);
+		expect(oracleCount).toBe(cases.length);
 		if (disagreements.length)
 			process.stdout.write(
 				`AGE-2229 minimal disagreement: ${JSON.stringify(disagreements[0])}\n`,

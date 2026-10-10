@@ -303,8 +303,9 @@ export function buildDifferentialFuzzCases() {
 		// inside the normative default interval instead of masking that mismatch.
 		if (baseType === "integer") {
 			const safe = 2n ** 53n - 1n;
-			const hasLower = shape.includes("min");
-			const hasUpper = shape.includes("max");
+			const normalizedShape = shape.toLowerCase();
+			const hasLower = normalizedShape.includes("min");
+			const hasUpper = normalizedShape.includes("max");
 			if (center > safe && hasLower && !hasUpper) center = safe;
 			if (center < -safe && hasUpper && !hasLower) center = -safe;
 		}
@@ -375,7 +376,7 @@ export function buildDifferentialFuzzIr() {
 				target: valueRef,
 				constraints: depth === aliasDepth
 					? constraints.map((entry, constraintIndex) => ({
-						identity: `${ROOT}/fuzz-constraint/${index}-${constraintIndex}`,
+						identity: `${ROOT}/fuzz-constraint/${index}-alias${depth}-${constraintIndex}`,
 						keyword: entry.keyword,
 						operands: { value: entry.operand },
 						appliesTo: aliasIdentity,
@@ -392,16 +393,11 @@ export function buildDifferentialFuzzIr() {
 		}
 		const typeIdentity = identity(name);
 		const fieldIdentity = `${typeIdentity}#value`;
-		const fieldConstraints = aliasDepth === 0
-			? constraints.map((entry, constraintIndex) => ({
-					identity: `${ROOT}/fuzz-constraint/${index}-${constraintIndex}`,
-					keyword: entry.keyword,
-					operands: { value: entry.operand },
-					appliesTo: fieldIdentity,
-					diagnosticCode: `${ROOT}/FUZZ_${index}_${entry.keyword.toUpperCase()}`,
-					origin,
-				}))
-			: [];
+		// Keep fuzz constraints on the scalar/alias definition. The independent
+		// conformance oracle validates type-level `appliesTo` identities; field
+		// constraints are covered by the dedicated reader corpus and would make
+		// the oracle report unresolved field identities before probing values.
+		const fieldConstraints = [];
 		types.push({
 			identity: typeIdentity,
 			displayName: name,

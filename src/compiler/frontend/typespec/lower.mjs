@@ -673,6 +673,7 @@ export function lowerProgram(options) {
 			});
 		const aliasParts = [...nameParts, "width"];
 		const aliasName = nameParts.join("");
+		const aliasConstraintParts = aliasParts;
 		// Width aliases are value-site declarations. Keep each owner/member
 		// segment in the identity so `Order.cancel(reason)` cannot collide with
 		// another `reason` site or collapse into `OrdercancelReason`.
@@ -680,7 +681,7 @@ export function lowerProgram(options) {
 		if (!definitions.has(aliasIdentity)) {
 			const constraints = ["min", "max"].map((keyword) => ({
 				identity: mintIdentity(packageIdentity, "constraint", [
-					aliasName,
+					...aliasConstraintParts,
 					keyword,
 				]),
 				keyword,
@@ -688,7 +689,7 @@ export function lowerProgram(options) {
 				appliesTo: aliasIdentity,
 				diagnosticCode: constraintDiagnosticCode(
 					packageIdentity,
-					[aliasName],
+					aliasConstraintParts,
 					keyword,
 				),
 				origin,
@@ -971,11 +972,13 @@ export function lowerProgram(options) {
 		) {
 			const memberName = String(property.name);
 			const widthAlias = width !== undefined;
+			const operationSite = ownerParts.length > 1;
 			const aliasParts = width
 				? [...ownerParts, memberName, "width"]
 				: [...ownerParts, `${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`];
 			const aliasName = `${ownerParts.join("")}${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`;
-			const aliasIdentity = widthAlias
+			const aliasConstraintParts = widthAlias && operationSite ? aliasParts : [aliasName];
+			const aliasIdentity = widthAlias && operationSite
 				? mintIdentity(packageIdentity, "type", aliasParts)
 				: typeIdentity(aliasName);
 			const widthConstraints = width
@@ -988,7 +991,7 @@ export function lowerProgram(options) {
 							: ["max"]),
 					].map((keyword) => ({
 						identity: mintIdentity(packageIdentity, "constraint", [
-							aliasName,
+							...aliasConstraintParts,
 							keyword,
 						]),
 						keyword,
@@ -996,7 +999,7 @@ export function lowerProgram(options) {
 						appliesTo: aliasIdentity,
 						diagnosticCode: constraintDiagnosticCode(
 							packageIdentity,
-							[aliasName],
+							aliasConstraintParts,
 							keyword,
 						),
 						origin: context.originOf(property),
@@ -1012,7 +1015,7 @@ export function lowerProgram(options) {
 						...widthConstraints,
 						...constraints.map((item) => ({
 							identity: mintIdentity(packageIdentity, "constraint", [
-								aliasName,
+								...aliasConstraintParts,
 								item.keyword,
 								"narrowed",
 							]),
@@ -1021,7 +1024,7 @@ export function lowerProgram(options) {
 							appliesTo: aliasIdentity,
 							diagnosticCode: constraintDiagnosticCode(
 								packageIdentity,
-								[aliasName, "narrowed"],
+								[...aliasConstraintParts, "narrowed"],
 								item.keyword,
 							),
 							origin: context.originOf(property),

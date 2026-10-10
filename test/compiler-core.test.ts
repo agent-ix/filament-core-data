@@ -1671,7 +1671,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"scalar ScalarWidth extends uint8;",
 				"model Bytes is Array<uint8>;",
 				"union ChoiceValue { small: int16, text: string, }",
-				"model Order { value: string; }",
+				"model Order { value: string; cancelReason: int16; }",
 				'@operations("Order")',
 				"interface OrderOperations { cancel(reason: int16): int16; }",
 			].join("\n"),
@@ -1736,6 +1736,13 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			"ix://agent-ix/probe/Order/cancel/Return/width",
 		);
 		expect(returnAlias.target).toBe("ix://agent-ix/probe/Integer");
+		const fieldAlias = types.find(
+			(type) => type.displayName === "OrderCancelReason",
+		) as Json;
+		expect(fieldAlias.identity).toBe("ix://agent-ix/probe/OrderCancelReason");
+		expect(
+			fieldAlias.constraints.map((one: Json) => one.diagnosticCode),
+		).not.toEqual(parameterAlias.constraints.map((one: Json) => one.diagnosticCode));
 		const widthAliases = types.filter(
 			(type) => type.kind === "alias" && String(type.identity).endsWith("/width"),
 		);
