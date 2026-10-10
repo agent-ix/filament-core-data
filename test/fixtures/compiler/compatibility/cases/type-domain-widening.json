@@ -405,7 +405,7 @@
 				"constraints": [],
 				"extensions": [],
 				"unknownPolicy": "reject",
-				"scalar": "float64"
+				"scalar": "number"
 			},
 			{
 				"identity": "ix://agent-ix/assurance/type/Status",
