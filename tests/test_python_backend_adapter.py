@@ -180,7 +180,7 @@ def test_unevaluated_properties_is_rewritten_at_any_depth(closure: Any) -> None:
 
 def test_conditional_numeric_rewrite_preserves_domain_and_existing_bounds() -> None:
     """Conditional numeric rewrites preserve the schema's domain bounds."""
-    # Trace: FR-074-AC-8, FR-074-CON-2, FR-077-AC-3.
+    # Trace: FR-074-AC-8, FR-074-CON-2.
     policy = {
         "type": "object",
         "required": ["precision", "scale"],
@@ -341,7 +341,7 @@ def test_no_constraint_keyword_and_no_reference_is_lost() -> None:
     Two documents validate identically whether or not it is present, so
     dropping it changes nothing this test exists to catch.
     """
-    # Trace: FR-074-AC-8, FR-074-CON-2, FR-077-AC-3.
+    # Trace: FR-074-AC-8, FR-074-CON-2.
     prepared = prepare.prepare_input_set(PUBLISHED)
     for path in PUBLISHED:
         raw_document = json.loads(path.read_text())
