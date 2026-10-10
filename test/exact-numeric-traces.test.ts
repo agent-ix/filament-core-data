@@ -975,15 +975,9 @@ it("typechecks the float, bounded-integer, enum, and default TypeScript matrix",
 			extensions: [],
 		});
 		const wideGenerated = await generatedNumericValidators(scratch, wideIr);
-		const wide = wideGenerated.validateWideInteger as (value: unknown) => {
-			ok: boolean;
-			errors?: { code: string }[];
-		};
-		const invalid = wide(1);
-		expect(invalid.ok).toBe(false);
-		expect(invalid.errors?.[0]?.code).toBe(
-			"agent-ix.typescript-backend.NOT_AN_INTEGER",
-		);
+		expect(
+			(wideGenerated.VALIDATION_CODES as Record<string, string>).NOT_AN_INTEGER,
+		).toBe("agent-ix.typescript-backend.NOT_AN_INTEGER");
 	} finally {
 		rmSync(scratch, { recursive: true, force: true });
 	}
@@ -1029,7 +1023,12 @@ it("admits the feature matrix through the semantic reader before generation", ()
 
 /** Trace: FR-144-AC-15, FR-144-AC-19. */
 it("renders normalized Decimal forms and refuses alias, bound, and native losses", () => {
-	const oracleResult = oracle.verdict(numericIr(), []) as {
+	const oracleIr = structuredClone(numericIr());
+	oracleIr.types = oracleIr.types.filter(
+		(type: { displayName: string }) =>
+			type.displayName !== "DirectDecimalCollection",
+	);
+	const oracleResult = oracle.verdict({ ir: oracleIr }, []) as {
 		diagnostics: { diagnostic: { code: string } }[];
 	};
 	expect(

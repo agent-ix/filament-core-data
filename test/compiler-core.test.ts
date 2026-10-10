@@ -1520,8 +1520,8 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				constraint.operands?.value,
 			]),
 		).toEqual([
-			["min", "0"],
 			["max", "127"],
+			["min", "0"],
 		]);
 		const generated = typescriptBackend.generate(
 			{ ir: result.ir } as never,
@@ -1559,7 +1559,10 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"model DecimalBound { @decimal(5, 2) @minValue(0) value: decimal; }",
 			].join("\n"),
 		);
-		expect(codesOf(boundedDecimal.diagnostics as never)).toEqual([]);
+		expect(
+			codesOf(boundedDecimal.diagnostics as never),
+			JSON.stringify(boundedDecimal.diagnostics),
+		).toEqual([]);
 		const decimalTypes = (boundedDecimal.ir as never as { types: Json[] })
 			.types;
 		const decimalAlias = decimalTypes.find(

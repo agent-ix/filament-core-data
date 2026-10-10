@@ -922,7 +922,14 @@ export function lowerProgram(options) {
 							origin: context.originOf(property),
 						})),
 					],
-					...(decimalBoundAlias ? { decimal: decimalPolicy } : {}),
+					...(decimalBoundAlias
+						? {
+								decimal: {
+									precision: decimalPolicy.precision,
+									scale: decimalPolicy.scale,
+								},
+							}
+						: {}),
 					extensions: [],
 					roles: [],
 					unknownPolicy: "reject",

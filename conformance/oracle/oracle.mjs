@@ -82,6 +82,7 @@ const KEYWORD_APPLICABILITY = {
 		"duration",
 		"integer",
 		"number",
+		"decimal",
 		"float32",
 		"float64",
 		"string",
