@@ -1131,3 +1131,49 @@ it("refuses JSON Schema decimal bounds and decimal unique collections as declare
 	expect(uniqueResult.files).toEqual([]);
 	expect(uniqueResult.diagnostics[0].message).toContain("decimal uniqueness");
 });
+
+/** Trace: FR-144-CON-1. */
+it("compares the independent Node and Python numeric reader verdicts", () => {
+	const document = {
+		contractVersion: "2.0.0",
+		types: [
+			{
+				identity: "ix://probe/Integer",
+				kind: "scalar",
+				scalar: "integer",
+				constraints: [
+					{
+						identity: "ix://probe/IntegerMax",
+						keyword: "max",
+						operands: {
+							value: "170141183460469231731687303715884105728",
+						},
+						appliesTo: "ix://probe/Integer",
+						diagnosticCode: "ix://probe/INTEGER_MAX",
+					},
+				],
+			},
+		],
+	};
+	const directory = mkdtempSync(join(tmpdir(), "fcd-reader-differential-"));
+	const path = join(directory, "probe.json");
+	try {
+		writeFileSync(path, `${JSON.stringify(document)}\n`);
+		const node = [...readContractIr(document as never)];
+		const python = JSON.parse(
+			execFileSync("python3", ["tests/semantic_ir_reader.py", "--read", path], {
+				cwd: resolve("."),
+				encoding: "utf8",
+			}),
+		) as { diagnostics: { code: string; message: string; path: string }[] };
+		expect(node).toHaveLength(1);
+		expect(python.diagnostics).toHaveLength(1);
+		expect(node[0].code).toBe(python.diagnostics[0].code);
+		expect(node[0].message).toContain("/operands/value");
+		expect(python.diagnostics[0].path).toBe(
+			"types.0.constraints.0.operands.value",
+		);
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
+});

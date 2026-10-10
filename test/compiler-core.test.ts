@@ -1472,6 +1472,52 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		);
 	}, 120000);
 
+	/** Traces: FR-144-AC-11, FR-144-AC-20, FR-144-AC-23. */
+	it("lowers a real TypeSpec width and narrowing corpus into usable backend aliases", async () => {
+		const result = await compileSource(
+			[
+				"namespace AgentIx.Semantic;",
+				"model WidthCorpus {",
+				"  signed: int8;",
+				"  wide: uint64;",
+				"  @maxValueExclusive(100) narrowed: uint64;",
+				"}",
+			].join("\n"),
+		);
+		expect(codesOf(result.diagnostics as never)).toEqual([]);
+		const types = (result.ir as never as { types: Json[] }).types;
+		const narrowed = types.find(
+			(type) => type.displayName === "WidthCorpusNarrowed",
+		) as Json;
+		expect(narrowed?.kind).toBe("alias");
+		expect(narrowed?.target).toMatch(/\/Integer$/);
+		expect(
+			(narrowed?.constraints as Json[]).map((constraint) => constraint.keyword),
+		).toEqual(["min", "max"]);
+		const corpus = types.find(
+			(type) => type.displayName === "WidthCorpus",
+		) as Json;
+		const narrowedField = (corpus.fields as Json[]).find(
+			(field) => field.name === "narrowed",
+		) as Json;
+		expect(
+			(narrowedField.constraints as Json[]).map(
+				(constraint) => constraint.keyword,
+			),
+		).toContain("exclusiveMax");
+		const generated = typescriptBackend.generate(
+			{ ir: result.ir } as never,
+			{ host: result.host } as never,
+		);
+		expect(generated.diagnostics.filter((one) => one.blocking)).toEqual([]);
+		const typesText = generated.files.find(
+			(file) => file.path === "types.ts",
+		)?.text;
+		expect(typesText).toBeDefined();
+		expect(typesText).not.toContain("export type WidthCorpusNarrowed = never;");
+		expect(typesText).toMatch(/export type WidthCorpusNarrowed/);
+	}, 120000);
+
 	/** Traces: TC-435; FR-046-AC-4. */
 	it("takes roles from @role and never from a declaration's name", () => {
 		expect(typeOf("AuditEvent").roles).toEqual([]);

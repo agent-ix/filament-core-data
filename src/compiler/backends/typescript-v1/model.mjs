@@ -82,6 +82,27 @@ function isObject(value) {
 const UNTAGGED_UNION_EXTENSION =
 	"ix://agent-ix/semantic-core/extension/untagged-union-wire-form";
 
+const NATIVE_SCALARS = new Map([
+	["UUID", "uuid"],
+	["Boolean", "boolean"],
+	["Integer", "integer"],
+	["Decimal", "decimal"],
+	["Float32", "float32"],
+	["Float64", "float64"],
+	["String", "string"],
+	["Timestamp", "datetime"],
+	["Duration", "duration"],
+	["Bytes", "bytes"],
+	["JsonObject", "any"],
+]);
+
+function nativeScalar(identity) {
+	const prefix = "ix://quire/native/";
+	if (typeof identity !== "string" || !identity.startsWith(prefix))
+		return undefined;
+	return NATIVE_SCALARS.get(identity.slice(prefix.length));
+}
+
 function wireFormOf(extensions) {
 	for (const extension of extensions ?? []) {
 		if (extension?.identity !== UNTAGGED_UNION_EXTENSION) continue;
@@ -104,7 +125,7 @@ function resolveScalar(types, identity, seen = new Set(), depth = 0) {
 	if (seen.has(identity) || depth > MAX_DEPTH) return undefined;
 	seen.add(identity);
 	const type = types.get(identity);
-	if (type === undefined) return undefined;
+	if (type === undefined) return nativeScalar(identity);
 	if (type.kind === "scalar") {
 		return typeof type.scalar === "string" ? type.scalar : undefined;
 	}
@@ -156,7 +177,11 @@ function effectiveIntegerBounds(types, identity, seen = new Set()) {
 		type.kind === "alias" || type.kind === "reference"
 			? effectiveIntegerBounds(types, type.target, seen)
 			: undefined;
-	if (type.kind !== "scalar" && type.kind !== "alias" && type.kind !== "reference")
+	if (
+		type.kind !== "scalar" &&
+		type.kind !== "alias" &&
+		type.kind !== "reference"
+	)
 		return parent;
 	const scalar = resolveScalar(types, identity);
 	if (scalar !== "integer") return parent;
@@ -166,16 +191,18 @@ function effectiveIntegerBounds(types, identity, seen = new Set()) {
 	const upper =
 		own.upperExplicit || !parent?.upperExplicit ? own.upper : parent.upper;
 	return {
-		lower: parent && own.lowerExplicit && parent.lowerExplicit
-			? own.lower > parent.lower
-				? own.lower
-				: parent.lower
-			: lower,
-		upper: parent && own.upperExplicit && parent.upperExplicit
-			? own.upper < parent.upper
-				? own.upper
-				: parent.upper
-			: upper,
+		lower:
+			parent && own.lowerExplicit && parent.lowerExplicit
+				? own.lower > parent.lower
+					? own.lower
+					: parent.lower
+				: lower,
+		upper:
+			parent && own.upperExplicit && parent.upperExplicit
+				? own.upper < parent.upper
+					? own.upper
+					: parent.upper
+				: upper,
 		lowerExplicit: Boolean(own.lowerExplicit || parent?.lowerExplicit),
 		upperExplicit: Boolean(own.upperExplicit || parent?.upperExplicit),
 	};
@@ -210,14 +237,16 @@ function inheritedConstraintEntries(types, applied, identity) {
 function summaryOf(types, identifiers, identity) {
 	if (typeof identity !== "string") return undefined;
 	const type = types.get(identity);
+	const scalar = resolveScalar(types, identity);
 	return Object.freeze({
 		identity,
 		identifier: identifiers.get(identity),
 		kind: type === undefined ? undefined : kindName(type.kind),
-		scalar: resolveScalar(types, identity),
+		scalar,
 		wideInteger: effectiveWideInteger(types, identity),
 		decimal: type?.decimal,
-		declared: type !== undefined,
+		declared: type !== undefined || scalar !== undefined,
+		native: type === undefined && scalar !== undefined,
 	});
 }
 

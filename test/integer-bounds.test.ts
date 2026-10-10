@@ -94,6 +94,18 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		}
 	});
 
+	it("keeps the reader and oracle diagnoses aligned at integer boundaries", () => {
+		for (const value of [
+			"01",
+			"18446744073709551615",
+			"170141183460469231731687303715884105728",
+		]) {
+			expect(readerCodes(withBound(value)), `reader boundary ${value}`).toEqual(
+				oracleCodes(withBound(value)),
+			);
+		}
+	});
+
 	it("the TypeScript backend preserves a wide bound as a string subject (TC-1825)", () => {
 		const safe = generated(typescriptBackend, withBound("9007199254740991"));
 		expect(safe.diagnostics.filter((one) => one.blocking)).toEqual([]);

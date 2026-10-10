@@ -1449,11 +1449,12 @@ function renderCheck(
 	// already the `i64` or `f64` a numeric comparison needs. An alias reaches its
 	// base through one `get()` per hop, which yields a reference, so the copy is
 	// taken here rather than left for the comparison to fail on.
-	const owned = wrapperDepth > 0
-		? `*${subject}`
-		: expression === "value" || expression.startsWith("*")
-			? expression
-			: `(*${expression})`;
+	const owned =
+		wrapperDepth > 0
+			? `*${subject}`
+			: expression === "value" || expression.startsWith("*")
+				? expression
+				: `(*${expression})`;
 	const COMPARISONS = {
 		min: "<",
 		max: ">",
@@ -1684,9 +1685,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 	const checks = type.checks ?? [];
 
 	lines.push(
-		type.wideInteger
-			? ""
-			: "use serde::{Deserialize, Serialize};",
+		type.wideInteger ? "" : "use serde::{Deserialize, Serialize};",
 		"",
 	);
 	lines.push(...checkConstants(type, checks, byIdentity));
@@ -1733,6 +1732,26 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			"        .ok_or_else(|| {",
 			`            crate::support::ValidationError::with_input(${decimalError.join(", ")})`,
 			"        })?;",
+		);
+	}
+	if (
+		["number", "float32", "float64"].includes(type.scalar) &&
+		["f32", "f64"].includes(type.inner)
+	) {
+		lines.push(
+			`        if !value.is_finite() {`,
+			...callLines(
+				"            ",
+				"return Err(crate::support::ValidationError::new",
+				[
+					rustString(type.identity),
+					rustString("finite"),
+					rustString(""),
+					rustString("a finite number"),
+				],
+				");",
+			),
+			"        }",
 		);
 	}
 	if (checks.length > 0) {
@@ -1795,7 +1814,19 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			"    where",
 			"        D: serde::Deserializer<'de>,",
 			"    {",
-			...innerDeserialize("        ", inner),
+		);
+		if (type.scalar === "float32" && inner === "f32") {
+			lines.push(
+				"        let wire = <f64 as serde::Deserialize>::deserialize(deserializer)?;",
+				"        if !wire.is_finite() || wire.abs() > f32::MAX as f64 {",
+				'            return Err(serde::de::Error::custom("float32 is outside its finite range"));',
+				"        }",
+				"        let inner = wire as f32;",
+			);
+		} else {
+			lines.push(...innerDeserialize("        ", inner));
+		}
+		lines.push(
 			"        Self::try_new(inner).map_err(serde::de::Error::custom)",
 			"    }",
 			"}",
@@ -2575,12 +2606,35 @@ function renderInlineFieldChecks(type, field) {
 	// primitive. Filter those checks before opening collection/nullable loops;
 	// emitting an empty loop still binds unused `item`/`value` variables and
 	// fails consumers that compile generated code with warnings denied.
-	const checks = (field.checks ?? []).filter(
-		(check) => !isRedundantIntegerBound(subject, check),
-	);
-	if (checks.length === 0) return [];
-	const render = (expression, extraIndent = 0) =>
-		checks.flatMap((check, index) =>
+	const checks = (field.checks ?? [])
+		.map((check, index) => ({ check, index }))
+		.filter(({ check }) => !isRedundantIntegerBound(subject, check));
+	const finiteFloat =
+		["float32", "float64", "number"].includes(field.elementScalar) &&
+		["f32", "f64"].includes(field.elementType);
+	if (checks.length === 0 && !finiteFloat) return [];
+	const renderFinite = (expression, extraIndent = 0) => {
+		if (!finiteFloat) return [];
+		const indent = " ".repeat(extraIndent);
+		return [
+			`${indent}if !${expression}.is_finite() {`,
+			...callLines(
+				`${indent}    `,
+				"return Err(crate::support::ValidationError::new",
+				[
+					rustString(field.identity),
+					rustString("finite"),
+					rustString(field.name),
+					rustString("a finite number"),
+				],
+				");",
+			),
+			`${indent}}`,
+		];
+	};
+	const render = (expression, extraIndent = 0) => [
+		...renderFinite(expression, extraIndent),
+		...checks.flatMap(({ check, index }) =>
 			renderCheck(
 				subject,
 				check,
@@ -2592,7 +2646,8 @@ function renderInlineFieldChecks(type, field) {
 			).map((line) =>
 				line.length === 0 ? line : `${" ".repeat(extraIndent)}${line}`,
 			),
-		);
+		),
+	];
 	const lines = [];
 	const renderValue = (expression, extraIndent = 0) =>
 		lines.push(...render(expression, extraIndent));

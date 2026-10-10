@@ -1633,6 +1633,22 @@ function decimalPolicyFor(types, field, resolved) {
 	return undefined;
 }
 
+function decimalAdmitted(value, policy) {
+	if (
+		typeof value !== "string" ||
+		!/^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$/.test(value) ||
+		!policy
+	)
+		return false;
+	const unsigned = value.startsWith("-") ? value.slice(1) : value;
+	const [whole, fraction = ""] = unsigned.split(".");
+	const integerDigits = whole === "0" ? 0 : whole.length;
+	return (
+		integerDigits <= policy.precision - policy.scale &&
+		fraction.length <= policy.scale
+	);
+}
+
 function defaultAdmitted(scalar, value, policy) {
 	if (value === null) return true;
 	const values = Array.isArray(value) ? value : [value];

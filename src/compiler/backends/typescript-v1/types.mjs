@@ -116,6 +116,7 @@ function jsdoc(lines, indent) {
  */
 function elementType(element) {
 	if (element === undefined || element.declared !== true) return "never";
+	if (element.native === true) return primitiveFor(element) ?? "never";
 	return element.identifier ?? "never";
 }
 
