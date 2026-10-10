@@ -36,7 +36,6 @@ const KEYWORD_APPLICABILITY = {
 		"datetime",
 		"duration",
 		"integer",
-		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -46,7 +45,6 @@ const KEYWORD_APPLICABILITY = {
 		"datetime",
 		"duration",
 		"integer",
-		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -56,7 +54,6 @@ const KEYWORD_APPLICABILITY = {
 		"datetime",
 		"duration",
 		"integer",
-		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -66,7 +63,6 @@ const KEYWORD_APPLICABILITY = {
 		"datetime",
 		"duration",
 		"integer",
-		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -81,7 +77,6 @@ const KEYWORD_APPLICABILITY = {
 		"datetime",
 		"duration",
 		"integer",
-		"number",
 		"decimal",
 		"float32",
 		"float64",
@@ -480,7 +475,6 @@ function checkConstraint(constraint, at, types, out, field = undefined) {
 		const operands = isObject(constraint.operands) ? constraint.operands : {};
 		const numeric = [
 			"integer",
-			"number",
 			"decimal",
 			"float32",
 			"float64",
@@ -510,7 +504,13 @@ function checkConstraint(constraint, at, types, out, field = undefined) {
 		const operands = isObject(constraint.operands) ? constraint.operands : {};
 		const values = Array.isArray(operands.values) ? operands.values : [];
 		for (const [index, value] of values.entries()) {
-			if (!valueAdmitted(resolved.scalar, value)) {
+			if (
+				!valueAdmitted(
+					resolved.scalar,
+					value,
+					decimalPolicyFor(types, undefined, resolved),
+				)
+			) {
 				out.push(
 					diagnostic(
 						integerOutsideI128(resolved.scalar, value)
@@ -1590,10 +1590,8 @@ export function classify(beforeBundle, afterBundle) {
 }
 
 /**
- * Whether a bound operand fits its scalar: a `number` or `integer` bound is a
- * JSON number, and an `integer` bound may instead be a canonical decimal
- * string (`0`, or an optional `-` and digits with no leading zero), so a value
- * past 2^53 is exact; every other scalar's bound is a string.
+ * Whether a bound operand fits its scalar. Integer and decimal value sites use
+ * canonical strings; float value sites use finite JSON numbers.
  */
 function operandAdmitted(numeric, scalar, value, policy) {
 	if (!numeric) return typeof value === "string";
@@ -1604,7 +1602,7 @@ function operandAdmitted(numeric, scalar, value, policy) {
 			Math.fround(value) === value
 		);
 	if (scalar === "decimal") return decimalAdmitted(value, policy);
-	if (scalar !== "integer")
+	if (scalar === "float64")
 		return typeof value === "number" && Number.isFinite(value);
 	return (
 		typeof value === "string" &&
@@ -1671,7 +1669,7 @@ function defaultAdmitted(scalar, value, policy) {
 	const values = Array.isArray(value) ? value : [value];
 	return values.every((item) => {
 		if (scalar === "integer") return operandAdmitted(true, scalar, item);
-		if (scalar === "number" || scalar === "float32" || scalar === "float64")
+		if (scalar === "float32" || scalar === "float64")
 			return operandAdmitted(true, scalar, item);
 		if (scalar === "boolean") return typeof item === "boolean";
 		if (scalar === "decimal") return decimalAdmitted(item, policy);
@@ -1685,9 +1683,10 @@ function defaultAdmitted(scalar, value, policy) {
 	});
 }
 
-function valueAdmitted(scalar, value) {
+function valueAdmitted(scalar, value, policy) {
 	if (scalar === "integer") return operandAdmitted(true, scalar, value);
-	if (scalar === "number" || scalar === "float32" || scalar === "float64")
+	if (scalar === "decimal") return decimalAdmitted(value, policy);
+	if (scalar === "float32" || scalar === "float64")
 		return operandAdmitted(true, scalar, value);
 	if (scalar === "boolean") return typeof value === "boolean";
 	return true;
