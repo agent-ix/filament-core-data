@@ -1670,10 +1670,10 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"namespace AgentIx.Semantic;",
 				"scalar ScalarWidth extends uint8;",
 				"model Bytes is Array<uint8>;",
-				"union Choice { small: int16, text: string, }",
+				"union Choice { small: int16, smallValue: int16, text: string, }",
 				"model Order { value: string; cancelReason: uint8; cancel_reason: uint8; cancel_param_reason: uint8; }",
 				'@operations("Order")',
-				"interface OrderOperations { cancel(reason: uint8): uint8; wide(value: uint64): uint64; }",
+				"interface OrderOperations { cancel(reason: uint8): uint8; reason(reason: uint64): uint64; wide(value: uint64): uint64; }",
 			].join("\n"),
 		);
 		expect(
@@ -1744,6 +1744,22 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"agent-ix.probe.CHOICE_SMALL_MAX",
 			],
 		]);
+		const smallValue = (choice.variants as Json[]).find(
+			(variant) => variant.name === "smallValue",
+		) as Json;
+		const smallValueAlias = types.find(
+			(type) => type.identity === smallValue.payloadType,
+		) as Json;
+		expect(smallValueAlias.identity).toBe("ix://agent-ix/probe/ChoiceSmallValue");
+		expect(
+			(smallValueAlias.constraints as Json[]).map((one) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toContainEqual([
+			"ix://agent-ix/probe/constraint/Choice-smallValue-min",
+			"agent-ix.probe.CHOICE_SMALLVALUE_MIN",
+		]);
 		const operation = types.find(
 			(type) => type.displayName === "Order",
 		) as Json;
@@ -1810,6 +1826,16 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(parameterAlias.constraints.find((one: Json) => one.keyword === "min").diagnosticCode).toBe(
 			"agent-ix.probe.ORDER_CANCEL__REASON_MIN",
 		);
+		const reasonOperation = operation.operations.find(
+			(one: Json) => one.name === "reason",
+		) as Json;
+		const reasonParameter = types.find(
+			(type) => type.identity === reasonOperation.params[0].typeRef,
+		) as Json;
+		expect(
+			reasonParameter.constraints.find((one: Json) => one.keyword === "min")
+				.diagnosticCode,
+		).toBe("agent-ix.probe.ORDER_REASON__REASON_MIN");
 		const aliases = types.filter((type) => type.kind === "alias");
 		expect(new Set(aliases.map((type) => type.identity)).size).toBe(aliases.length);
 	}, 120000);

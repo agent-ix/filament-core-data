@@ -681,7 +681,11 @@ export function lowerProgram(options) {
 		// Choice-small).  These identities are the stable FR-053 diagnostic
 		// namespace and must not be derived from the display name.
 		const aliasConstraintParts = nameParts.map((part, index) =>
-			index === 0 ? String(part) : String(part).toLowerCase(),
+			index === 0
+				? String(part)
+				: part === "Items"
+					? "items"
+					: String(part),
 		);
 		const aliasIdentity = typeIdentity(aliasName);
 		if (!definitions.has(aliasIdentity)) {
@@ -995,10 +999,16 @@ export function lowerProgram(options) {
 				? mintIdentity(packageIdentity, "type", aliasParts)
 				: typeIdentity(aliasName);
 			const diagnosticCode = (keyword) => {
-				const code = constraintDiagnosticCode(packageIdentity, diagnosticParts, keyword);
-				if (!operationSite) return code;
+				if (!operationSite)
+					return constraintDiagnosticCode(packageIdentity, diagnosticParts, keyword);
+				const ownerCode = constraintDiagnosticCode(packageIdentity, ownerParts, keyword);
+				const keywordToken = keyword.toUpperCase();
+				const ownerPrefix = ownerCode.slice(
+					0,
+					ownerCode.lastIndexOf(`_${keywordToken}`),
+				);
 				const memberToken = memberName.replace(/[^A-Za-z0-9]+/g, "_").toUpperCase();
-				return code.replace(`_${memberToken}_`, `__${memberToken}_`);
+				return `${ownerPrefix}__${memberToken}_${keywordToken}`;
 			};
 			const constraintIdentity = (parts, keyword, suffix = []) =>
 				mintIdentity(
