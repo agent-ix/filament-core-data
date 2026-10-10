@@ -98,8 +98,6 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.semantic-ir.DUPLICATE_CLAUSE_ID` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_PARAM` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
-| `agent-ix.semantic-ir.INEXACT_INTEGER` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
-| `agent-ix.semantic-ir.INEXACT_NUMBER` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INTEGER_OUTSIDE_I128` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_DEFAULT_VALUE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_DOCUMENT` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |

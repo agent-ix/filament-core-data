@@ -1583,7 +1583,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(integer?.constraints).toEqual([]);
 		expect(
 			(narrowed?.constraints as Json[]).map((constraint) => constraint.keyword),
-		).toEqual(["min", "max", "exclusiveMax"]);
+		).toEqual(["exclusiveMax", "max", "min"]);
 		const corpus = types.find(
 			(type) => type.displayName === "WidthCorpus",
 		) as Json;
@@ -3269,13 +3269,13 @@ describe("the diagnostic registry (FR-049)", () => {
 			[
 				...read(
 					resolve(root, "fixtures/semantic/v1/negative/reader-cases.json"),
-				).matchAll(/agent-ix\.semantic-ir\.[A-Z_]+/g),
+				).matchAll(/agent-ix\.semantic-ir\.[A-Z0-9_]+/g),
 			].map((match) => match[0]),
 		);
 		const readerCodes = new Set(
 			[
 				...read(resolve(root, "test/semantic-ir-v1-1-reader.ts")).matchAll(
-					/agent-ix\.semantic-ir\.[A-Z_]+/g,
+					/agent-ix\.semantic-ir\.[A-Z0-9_]+/g,
 				),
 			].map((match) => match[0]),
 		);
@@ -6180,6 +6180,45 @@ describe("diagnostic coverage (FR-049 closing gate)", () => {
 					].join("\n"),
 				)
 			).diagnostics ?? []) as never,
+		);
+
+		// The exact numeric reader additions are exercised with their smallest
+		// valid IR witnesses here rather than being named as strings in the
+		// coverage set.  A legacy `number` scalar is a schema violation, while
+		// an integer bound beyond i128 is a numeric-domain violation.
+		note(
+			readContractIr({
+				contractVersion: "2.0.0",
+				types: [
+					{
+						identity: "ix://probe/LegacyNumber",
+						kind: "scalar",
+						scalar: "number",
+					},
+				],
+			} as never) as never,
+		);
+		note(
+			readContractIr({
+				contractVersion: "2.0.0",
+				types: [
+					{
+						identity: "ix://probe/Integer",
+						kind: "scalar",
+						scalar: "integer",
+						constraints: [
+							{
+								identity: "ix://probe/Integer-max",
+								keyword: "max",
+								operands: {
+									value: "170141183460469231731687303715884105728",
+								},
+								appliesTo: "ix://probe/Integer",
+							},
+						],
+					},
+				],
+			} as never) as never,
 		);
 	});
 
