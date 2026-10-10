@@ -14,7 +14,7 @@
 //!
 //! Every file is first written whole to `.<name>.tmp` beside its final
 //! path, and the temporary files are then renamed into place in the order
-//! diagnostics, document, so that a reader that
+//! diagnostics, document, digest, so that a reader that
 //! observes `<out>` observes its sidecar. A failure while writing any
 //! temporary file removes every temporary file and refuses with
 //! `OUTPUT_UNWRITABLE`; a blocking lift writes only the diagnostics
@@ -145,8 +145,8 @@ fn resolved(path: &Path) -> Option<PathBuf> {
 
 /// Refuse with `OUTPUT_UNWRITABLE` before the bundle is loaded (FR-097
 /// "Atomic write and sidecars"): a path under the bundle root or a module
-/// root, a missing output directory, or the two paths naming one
-/// file. Every refusal names the offending path as the option gave it.
+/// root, a missing output directory, or configured paths naming one file.
+/// Every refusal names the offending path as the option gave it.
 pub fn check_output(
     paths: &OutputPaths,
     bundle_root: &Path,
@@ -264,7 +264,7 @@ impl Drop for Temp {
 /// [`Emission::Document`] both, and an optional digest sidecar. On
 /// [`Emission::Blocked`] the diagnostics sidecar alone is written. Every file is written to a temporary file in
 /// its own directory and renamed over its final path, in the order
-/// diagnostics, document. A failure refuses with
+/// diagnostics, document, digest. A failure refuses with
 /// `OUTPUT_UNWRITABLE` naming the path and leaves no temporary file.
 pub fn write_lift(
     paths: &OutputPaths,
