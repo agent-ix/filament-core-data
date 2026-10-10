@@ -119,6 +119,9 @@ def _expand_conditional_numeric(
     maximum = precision_schema.get("maximum")
     if type(minimum) is not int or type(maximum) is not int:
         return schema
+    base_scale_maximum = scale_schema.get("maximum")
+    if "maximum" in scale_schema and type(base_scale_maximum) is not int:
+        return schema
 
     rules: list[tuple[int, int]] = []
     for clause in clauses:
@@ -163,9 +166,10 @@ def _expand_conditional_numeric(
         branch = copy.deepcopy(schema)
         branch.pop("allOf")
         branch["properties"]["precision"]["const"] = precision
-        base_maximum = scale_schema.get("maximum")
         branch["properties"]["scale"]["maximum"] = (
-            min(base_maximum, maximum) if isinstance(base_maximum, int) else maximum
+            min(base_scale_maximum, maximum)
+            if type(base_scale_maximum) is int
+            else maximum
         )
         branches.append(branch)
 

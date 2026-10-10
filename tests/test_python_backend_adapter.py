@@ -218,6 +218,7 @@ def test_conditional_numeric_rewrite_preserves_domain_and_existing_bounds() -> N
         lambda value: value["allOf"][0]["then"]["properties"]["scale"].update(
             maximum=1.5
         ),
+        lambda value: value["properties"]["scale"].update(maximum=0.5),
         lambda value: value["allOf"][0]["if"]["properties"]["precision"].update(
             const=True
         ),
