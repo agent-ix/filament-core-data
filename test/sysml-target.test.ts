@@ -126,7 +126,7 @@ describe("SysML v2 textual target", () => {
 			);
 			expect(readdirSync(output)).toContain("model.sysml");
 			expect(readFileSync(resolve(output, "model.sysml"), "utf8")).toContain(
-				"attribute decimal : ScalarValues::Real;",
+				"attribute 'decimal' : ScalarValues::Real;",
 			);
 		} finally {
 			rmSync(scratch, { recursive: true, force: true });
@@ -177,9 +177,9 @@ describe("SysML v2 textual target", () => {
 		expect(result.state).toBe("success");
 		expect(result.files).toHaveLength(1);
 		expect(result.files[0].path).toMatch(/\.sysml$/);
-		expect(emitted).toContain("attribute integer : ScalarValues::Integer;");
-		expect(emitted).toContain("attribute decimal : ScalarValues::Real;");
-		expect(emitted).toContain("attribute float32 : ScalarValues::Real;");
+		expect(emitted).toContain("attribute 'integer' : ScalarValues::Integer;");
+		expect(emitted).toContain("attribute 'decimal' : ScalarValues::Real;");
+		expect(emitted).toContain("attribute 'float32' : ScalarValues::Real;");
 		const losses = result.diagnostics.filter(
 			(d) => d.code === "agent-ix.sysml-target.DECLARED_LOSS",
 		);
@@ -204,7 +204,7 @@ describe("SysML v2 textual target", () => {
 		expect(first.files).toHaveLength(1);
 		expect(first.files[0].text.match(/^package /gm)).toHaveLength(1);
 		expect(first.files[0].text).toContain(
-			`item def ${record.identity.split("/").at(-1)}`,
+			`item def '${record.identity.split("/").at(-1)}'`,
 		);
 		expect(first.files[0].text).toContain(
 			`doc /* semantic identity: ${record.identity} */`,
@@ -216,24 +216,60 @@ describe("SysML v2 textual target", () => {
 
 	/** Trace: FR-138-CON-1. */
 	it("is independent of locale, time zone, and working directory", () => {
-		const first = sysmlBackend.generate({ ir: numericDocument() });
+		const ir = numericDocument();
+		const scratch = mkdtempSync(resolve(tmpdir(), "sysml-cwd-"));
 		const saved = {
 			LC_ALL: process.env.LC_ALL,
 			LANG: process.env.LANG,
 			TZ: process.env.TZ,
 		};
+		const script = `
+			import { readFileSync } from "node:fs";
+			import { sysmlBackend } from ${JSON.stringify(resolve(root, "src/compiler/backends/sysml-v2/index.mjs"))};
+			const result = sysmlBackend.generate({ ir: JSON.parse(readFileSync(0, "utf8")) });
+			process.stdout.write(JSON.stringify(result));
+		`;
 		try {
 			process.env.LC_ALL = "C.UTF-8";
 			process.env.LANG = "tr_TR.UTF-8";
 			process.env.TZ = "Pacific/Kiritimati";
-			const second = sysmlBackend.generate({ ir: numericDocument() });
+			const generateFrom = (cwd: string) =>
+				JSON.parse(
+					execFileSync(
+						process.execPath,
+						["--input-type=module", "-e", script],
+						{ cwd, input: JSON.stringify(ir), encoding: "utf8" },
+					),
+				);
+			const first = generateFrom(root);
+			const second = generateFrom(scratch);
 			expect(second).toEqual(first);
 		} finally {
+			rmSync(scratch, { recursive: true, force: true });
 			for (const [key, value] of Object.entries(saved)) {
 				if (value === undefined) delete process.env[key];
 				else process.env[key] = value;
 			}
 		}
+	});
+
+	/** Trace: FR-138-AC-2, FR-138-AC-3. */
+	it("quotes unrestricted names, including SysML keywords", () => {
+		const ir = numericDocument() as TestIr;
+		ir.package.identity = "agent-ix/package";
+		const record = ir.types.find(
+			(type): type is TestRecord => type.kind === "record",
+		);
+		if (!record) throw new Error("record fixture");
+		record.identity = "agent-ix/package/type/package";
+		record.displayName = "package";
+		record.fields[0].identity = `${record.identity}/attribute`;
+		record.fields[0].name = "attribute";
+		const result = sysmlBackend.generate({ ir });
+		expect(result.state).toBe("success");
+		expect(result.files[0].text).toContain("package 'package' {");
+		expect(result.files[0].text).toContain("item def 'package' {");
+		expect(result.files[0].text).toContain("attribute 'attribute'");
 	});
 
 	/** Trace: FR-138-AC-5, FR-138-AC-6. */
@@ -267,10 +303,6 @@ describe("SysML v2 textual target", () => {
 		child.displayName = "Child";
 		child.fields = [];
 		const cases = [
-			[
-				"reserved package",
-				(ir: TestIr) => (ir.package.identity = "agent-ix/package"),
-			],
 			["sequence", (ir: TestIr) => (ir.types[0].kind = "sequence")],
 			["union", (ir: TestIr) => (ir.types[0].kind = "union")],
 			[
@@ -285,16 +317,6 @@ describe("SysML v2 textual target", () => {
 				},
 			],
 			[
-				"reserved field",
-				(ir: TestIr) => {
-					const target = ir.types.find(
-						(type): type is TestRecord => type.kind === "record",
-					);
-					if (!target) throw new Error("record fixture");
-					target.fields[0].name = "package";
-				},
-			],
-			[
 				"abstract",
 				(ir: TestIr) => {
 					const target = ir.types.find(
@@ -302,6 +324,18 @@ describe("SysML v2 textual target", () => {
 					);
 					if (!target) throw new Error("record fixture");
 					target.abstract = true;
+				},
+			],
+			[
+				"supertypes",
+				(ir: TestIr) => {
+					const target = ir.types.find(
+						(type): type is TestRecord => type.kind === "record",
+					);
+					if (!target) throw new Error("record fixture");
+					(target as TestRecord & { supertypes: string[] }).supertypes = [
+						"ix://agent-ix/example/Supertype",
+					];
 				},
 			],
 			[
@@ -331,5 +365,92 @@ describe("SysML v2 textual target", () => {
 				]),
 			);
 		}
+	});
+
+	/** Trace: FR-138-AC-5, FR-138-AC-6. */
+	it("classifies supertype chains instead of silently dropping them", () => {
+		const base = numericDocument() as TestIr;
+		const record = base.types.find(
+			(type): type is TestRecord => type.kind === "record",
+		);
+		if (!record) throw new Error("record fixture");
+		const noSupertype = sysmlBackend.generate({ ir: structuredClone(base) });
+		expect(noSupertype.state).toBe("success");
+		for (const count of [1, 2]) {
+			const ir = structuredClone(base);
+			const target = ir.types.find(
+				(type): type is TestRecord => type.kind === "record",
+			);
+			if (!target) throw new Error("record fixture");
+			(target as TestRecord & { supertypes: string[] }).supertypes = Array.from(
+				{ length: count },
+				(_, index) => `ix://agent-ix/example/Supertype${index + 1}`,
+			);
+			const result = sysmlBackend.generate({ ir });
+			expect(result.state, `supertypes-${count}`).toBe("unsupported");
+			expect(result.files, `supertypes-${count}`).toEqual([]);
+			expect(result.diagnostics, `supertypes-${count}`).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						code: "agent-ix.sysml-target.UNSUPPORTED_CONSTRUCT",
+						blocking: true,
+						locus: expect.any(Object),
+					}),
+				]),
+			);
+		}
+		const chain = structuredClone(base);
+		const parent = structuredClone(record);
+		parent.identity = `${record.identity}/AbstractParent`;
+		parent.displayName = "AbstractParent";
+		parent.fields = [];
+		parent.abstract = true;
+		const child = chain.types.find(
+			(type): type is TestRecord => type.kind === "record",
+		);
+		if (!child) throw new Error("record fixture");
+		(child as TestRecord & { supertypes: string[] }).supertypes = [
+			parent.identity,
+		];
+		chain.types.push(parent);
+		const abstractResult = sysmlBackend.generate({ ir: chain });
+		expect(abstractResult.state).toBe("unsupported");
+		expect(abstractResult.files).toEqual([]);
+		expect(abstractResult.diagnostics).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					code: "agent-ix.sysml-target.UNSUPPORTED_CONSTRUCT",
+					blocking: true,
+					locus: expect.any(Object),
+				}),
+			]),
+		);
+	});
+
+	/** Trace: FR-138-AC-2, FR-138-AC-5. */
+	it("refuses identity tails that collide after SysML name normalization", () => {
+		const ir = numericDocument() as TestIr;
+		const record = ir.types.find(
+			(type): type is TestRecord => type.kind === "record",
+		);
+		if (!record) throw new Error("record fixture");
+		const first = structuredClone(record);
+		first.identity = "agent-ix/example/Foo-Bar";
+		first.displayName = "First";
+		first.fields = [];
+		const second = structuredClone(record);
+		second.identity = "agent-ix/example/Foo_Bar";
+		second.displayName = "Second";
+		second.fields = [];
+		ir.types = ir.types.filter((type) => type !== record);
+		ir.types.push(first, second);
+		const result = sysmlBackend.generate({ ir });
+		expect(result.state).toBe("unsupported");
+		expect(result.files).toEqual([]);
+		const collisions = result.diagnostics.filter((diagnostic) =>
+			diagnostic.message.includes("collide"),
+		);
+		expect(collisions).toHaveLength(2);
+		expect(collisions.every((diagnostic) => diagnostic.locus)).toBe(true);
 	});
 });

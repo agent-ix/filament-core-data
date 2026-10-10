@@ -17,48 +17,6 @@ const KIND_CONSTRUCTS = Object.freeze({
 	scalar: "ScalarValues",
 });
 
-const IDENTIFIER = /^[A-Za-z_][A-Za-z_0-9]*$/;
-
-// KerML/SysML keywords cannot be used as unquoted declaration or feature
-// names. Quoting would change the short-name contract, so refuse them with the
-// IR source locus instead of emitting text the pilot cannot parse.
-const RESERVED_IDENTIFIERS = new Set([
-	"abstract",
-	"action",
-	"alias",
-	"attribute",
-	"binding",
-	"calc",
-	"case",
-	"comment",
-	"connection",
-	"constraint",
-	"def",
-	"enum",
-	"feature",
-	"filter",
-	"flow",
-	"import",
-	"in",
-	"item",
-	"metadata",
-	"occurrence",
-	"package",
-	"part",
-	"port",
-	"private",
-	"protected",
-	"public",
-	"ref",
-	"redefines",
-	"specializes",
-	"state",
-	"subject",
-	"subsets",
-	"transition",
-	"view",
-]);
-
 function sourceLocus(node) {
 	return node?.origin?.source;
 }
@@ -73,11 +31,17 @@ function unsupported(node, reason, diagnostics) {
 }
 
 function identifier(name, node, diagnostics) {
-	if (IDENTIFIER.test(name ?? "") && !RESERVED_IDENTIFIERS.has(name))
-		return name;
+	if (
+		typeof name === "string" &&
+		name.length > 0 &&
+		!name.includes("\n") &&
+		!name.includes("\r") &&
+		!name.includes("'")
+	)
+		return `'${name}'`;
 	unsupported(
 		node,
-		`name ${fragment(name)} is not a SysML identifier`,
+		`name ${fragment(name)} cannot be represented as a SysML unrestricted name`,
 		diagnostics,
 	);
 	return null;
@@ -101,9 +65,49 @@ function semanticShortName(node, fallback) {
 }
 
 function semanticIdentifier(node, fallback, diagnostics) {
-	if (fallback !== undefined && !identifier(fallback, node, diagnostics))
+	if (
+		fallback !== undefined &&
+		(typeof fallback !== "string" ||
+			fallback.length === 0 ||
+			fallback.includes("\n") ||
+			fallback.includes("\r") ||
+			fallback.includes("'"))
+	) {
+		unsupported(
+			node,
+			`name ${fragment(fallback)} cannot be represented as a SysML unrestricted name`,
+			diagnostics,
+		);
 		return null;
+	}
 	return identifier(semanticShortName(node, fallback), node, diagnostics);
+}
+
+function checkIdentityTailCollisions(types, diagnostics) {
+	const scopes = [
+		["top-level type", types.filter((type) => type.kind !== "scalar")],
+		...types
+			.filter((type) => type.kind === "record")
+			.map((type) => [`fields of ${type.identity}`, type.fields ?? []]),
+		...types
+			.filter((type) => type.kind === "enum")
+			.map((type) => [`variants of ${type.identity}`, type.variants ?? []]),
+	];
+	for (const [scope, nodes] of scopes) {
+		const seen = new Map();
+		for (const node of nodes) {
+			const name = semanticShortName(node, node.displayName ?? node.name);
+			if (!name) continue;
+			const prior = seen.get(name);
+			if (prior && prior.identity !== node.identity) {
+				const reason = `semantic identity tails ${fragment(name)} collide in ${scope}`;
+				unsupported(prior, reason, diagnostics);
+				unsupported(node, reason, diagnostics);
+			} else {
+				seen.set(name, node);
+			}
+		}
+	}
 }
 
 function scalarName(type) {
@@ -252,8 +256,8 @@ function renderType(type, types, diagnostics) {
 		);
 		return null;
 	}
-	if ((type.abstractSupertypes ?? []).length > 0) {
-		unsupported(type, "abstract supertypes have no SysML mapping", diagnostics);
+	if ((type.supertypes ?? []).length > 0) {
+		unsupported(type, "supertypes have no SysML mapping", diagnostics);
 		return null;
 	}
 	if ((type.identityFields ?? []).length > 0) {
@@ -300,6 +304,7 @@ export const sysmlBackend = Object.freeze({
 		);
 		const definitions = [];
 		refuseUnmappedMembers(ir, ["extensions", "constructs"], diagnostics);
+		checkIdentityTailCollisions(ir.types ?? [], diagnostics);
 		for (const type of ir.types ?? []) {
 			const definition = renderType(type, types, diagnostics);
 			if (definition) definitions.push(definition);
