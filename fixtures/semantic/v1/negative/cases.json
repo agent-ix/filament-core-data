@@ -16,7 +16,7 @@
 	{
 		"id": "ir-canonicalization-unknown-algorithm",
 		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir-canonicalization.json",
+		"base": "positive/semantic-ir-v1-1.json",
 		"set": {
 			"path": "canonicalization.algorithm",
 			"value": "codepoint-v0"
@@ -26,7 +26,7 @@
 	{
 		"id": "ir-canonicalization-extra-member",
 		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir-canonicalization.json",
+		"base": "positive/semantic-ir-v1-1.json",
 		"set": {
 			"path": "canonicalization.extra",
 			"value": true
@@ -36,7 +36,7 @@
 	{
 		"id": "ir-canonicalization-missing-digest",
 		"schema": "semantic-ir.schema.json",
-		"base": "positive/semantic-ir-canonicalization.json",
+		"base": "positive/semantic-ir-v1-1.json",
 		"remove": "canonicalization.digest",
 		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
 	},
