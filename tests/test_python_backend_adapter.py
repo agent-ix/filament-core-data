@@ -6,6 +6,7 @@ Trace ids live in each test's own docstring; see the note in
 
 from __future__ import annotations
 
+import copy
 import json
 import pathlib
 import re
@@ -207,6 +208,25 @@ def test_conditional_numeric_rewrite_preserves_domain_and_existing_bounds() -> N
     unchanged = prepare.prepare_for_python(partial)
     assert unchanged.preparation == []
     assert "allOf" in unchanged.documents["input.schema.json"]
+
+    # The finite-union rewrite is deliberately conservative: an extra
+    # predicate, a fractional bound, or a boolean masquerading as an integer
+    # must remain in the source form so no condition is silently dropped.
+    for mutate in (
+        lambda value: value["allOf"][0]["if"].update(required=["precision"]),
+        lambda value: value["allOf"][0]["then"]["properties"]["scale"].update(
+            maximum=1.5
+        ),
+        lambda value: value["allOf"][0]["if"]["properties"]["precision"].update(
+            const=True
+        ),
+        lambda value: value["properties"]["precision"].update(maximum=True),
+    ):
+        candidate = copy.deepcopy(policy)
+        mutate(candidate)
+        result = prepare.prepare_for_python(candidate)
+        assert result.preparation == []
+        assert "allOf" in result.documents["input.schema.json"]
 
 
 def test_conflicting_closure_raises_and_agreeing_closure_does_not() -> None:

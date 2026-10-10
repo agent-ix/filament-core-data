@@ -117,7 +117,7 @@ def _expand_conditional_numeric(
         return schema
     minimum = precision_schema.get("minimum")
     maximum = precision_schema.get("maximum")
-    if not isinstance(minimum, int) or not isinstance(maximum, int):
+    if type(minimum) is not int or type(maximum) is not int:
         return schema
 
     rules: list[tuple[int, int]] = []
@@ -128,7 +128,9 @@ def _expand_conditional_numeric(
             return schema
         if not isinstance(clause["then"], dict) or set(clause["then"]) != {"properties"}:
             return schema
-        condition = clause.get("if", {}).get("properties", {})
+        if not isinstance(clause["if"], dict) or set(clause["if"]) != {"properties"}:
+            return schema
+        condition = clause["if"]["properties"]
         consequent = clause.get("then", {}).get("properties", {})
         if len(condition) != 1 or len(consequent) != 1:
             return schema
@@ -141,8 +143,8 @@ def _expand_conditional_numeric(
             or not isinstance(bounded, dict)
             or set(guarded) != {"const"}
             or not set(bounded) <= {"type", "maximum"}
-            or not isinstance(guarded.get("const"), int)
-            or not isinstance(bounded.get("maximum"), int)
+            or type(guarded.get("const")) is not int
+            or type(bounded.get("maximum")) is not int
             or ("type" in bounded and bounded["type"] != scale_schema.get("type"))
         ):
             return schema
