@@ -169,7 +169,7 @@ def main() -> None:
                 if errors:
                     fail(f"pilot reported errors for {path}: {errors}")
                 if not any(
-                    result.startswith("Package Model (") for result in package_results
+                    result.strip().startswith("Package ") for result in package_results
                 ):
                     fail(
                         f"pilot returned no accepted package for {path}: {package_results}"

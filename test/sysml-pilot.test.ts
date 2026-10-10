@@ -35,3 +35,33 @@ it("rejects pilot parser errors reported on the stderr stream", () => {
 		rmSync(scratch, { recursive: true, force: true });
 	}
 }, 120_000);
+
+/** Trace: FR-138-AC-3. A syntactically valid but semantically invalid usage is rejected. */
+it("rejects pilot semantic errors instead of trusting shell success", () => {
+	const root = resolve(import.meta.dirname, "..");
+	const scratch = mkdtempSync(resolve(tmpdir(), "sysml-pilot-negative-"));
+	try {
+		const invalid = resolve(scratch, "invalid-usage.sysml");
+		writeFileSync(
+			invalid,
+			[
+				"package Broken {",
+				"  item def Child {}",
+				"  item def Parent {",
+				"    attribute child : Child;",
+				"  }",
+				"}",
+				"",
+			].join("\n"),
+		);
+		const run = spawnSync(
+			"poetry",
+			["run", "python", resolve(root, "scripts/check-sysml-pilot.py"), invalid],
+			{ cwd: root, encoding: "utf8", timeout: 120_000 },
+		);
+		expect(run.status).not.toBe(0);
+		expect(run.stderr).toContain("pilot reported errors");
+	} finally {
+		rmSync(scratch, { recursive: true, force: true });
+	}
+}, 120_000);
