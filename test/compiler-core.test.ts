@@ -18,12 +18,13 @@ import Ajv2020 from "ajv/dist/2020.js";
 import { beforeAll, describe, expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
+import type { BackendGeneration } from "../src/compiler/backends/seam.mjs";
 import {
 	assertBackendContract,
 	generateTarget,
 	registryWith,
 } from "../src/compiler/backends/seam.mjs";
-import type { BackendGeneration } from "../src/compiler/backends/seam.mjs";
+import { sysmlBackend } from "../src/compiler/backends/sysml-v2/index.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import {
 	ContractRefusalError,
@@ -54,7 +55,6 @@ import {
 	selectFrontend,
 } from "../src/compiler/frontend/seam.mjs";
 import { DECORATOR_LIBRARY } from "../src/compiler/frontend/typespec/frontend.mjs";
-import { EDGE_VOCABULARY, PART_OF } from "../src/compiler/ir/applicability.mjs";
 import {
 	constraintDiagnosticCode,
 	mintIdentity,
@@ -63,6 +63,7 @@ import {
 import { VOCABULARY } from "../src/compiler/frontend/typespec/lib/lib.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 import { formatInspection, inspectIr } from "../src/compiler/inspect.mjs";
+import { EDGE_VOCABULARY, PART_OF } from "../src/compiler/ir/applicability.mjs";
 import { fingerprintIr, normalizeIr } from "../src/compiler/ir/normalize.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
 import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
@@ -6846,6 +6847,60 @@ describe("diagnostic coverage (FR-049 closing gate)", () => {
 				],
 			} as never) as never,
 		);
+	});
+
+	/** Trace: FR-138-AC-5, FR-144-AC-21. */
+	it("observes SysML loss and unsupported construct diagnostics", () => {
+		const origin = {
+			source: {
+				sourceIdentity: "ix://agent-ix/probe/spec",
+				path: "spec/probe.md",
+				startLine: 1,
+				startColumn: 1,
+			},
+		};
+		const real = {
+			identity: "ix://agent-ix/probe/Real",
+			kind: "scalar",
+			scalar: "float32",
+			origin,
+		};
+		const record = {
+			identity: "ix://agent-ix/probe/Record",
+			kind: "record",
+			displayName: "Record",
+			fields: [
+				{
+					identity: "ix://agent-ix/probe/Record/real",
+					name: "real",
+					typeRef: real.identity,
+					origin,
+				},
+			],
+			origin,
+		};
+		const base = {
+			contractVersion: "2.0.0",
+			package: { identity: "agent-ix/probe" },
+			types: [real, record],
+		};
+		const generated = sysmlBackend.generate({ ir: base });
+		note(generated.diagnostics);
+		expect(
+			generated.diagnostics.some(
+				(d: Diagnostic) => d.code === DIAGNOSTIC_CODES.SYSML_DECLARED_LOSS.code,
+			),
+		).toBe(true);
+		const unsupported = sysmlBackend.generate({
+			ir: { ...base, types: [{ ...real, kind: "sequence" }] },
+		});
+		note(unsupported.diagnostics);
+		expect(
+			unsupported.diagnostics.some(
+				(d: Diagnostic) =>
+					d.code === DIAGNOSTIC_CODES.SYSML_UNSUPPORTED_CONSTRUCT.code,
+			),
+		).toBe(true);
 	});
 
 	/** Traces: TC-494, TC-609; FR-049-AC-3. */

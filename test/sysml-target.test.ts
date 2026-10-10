@@ -1,4 +1,12 @@
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import {
+	mkdtempSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	writeFileSync,
+} from "node:fs";
+import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -48,6 +56,36 @@ function numericDocument() {
 }
 
 describe("SysML v2 textual target", () => {
+	/** Trace: FR-138-AC-1, FR-138-AC-7, FR-144-AC-21. */
+	it("writes the SysML file through the generate command", () => {
+		const scratch = mkdtempSync(resolve(tmpdir(), "age-2232-sysml-"));
+		try {
+			const input = resolve(scratch, "numeric-ir.json");
+			const output = resolve(scratch, "out");
+			writeFileSync(input, JSON.stringify(numericDocument()));
+			execFileSync(
+				process.execPath,
+				[
+					resolve(root, "src/compiler/cli.mjs"),
+					"generate",
+					"--ir",
+					input,
+					"--target",
+					"sysml-v2-textual",
+					"--out-root",
+					output,
+				],
+				{ cwd: root },
+			);
+			expect(readdirSync(output)).toContain("model.sysml");
+			expect(readFileSync(resolve(output, "model.sysml"), "utf8")).toContain(
+				"attribute decimal : ScalarValues::Real;",
+			);
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
+	});
+
 	/** Trace: FR-138-AC-1, FR-144-AC-21. */
 	it("writes the numeric document and declares each Real policy or width loss", () => {
 		const backend = selectBackend("sysml-v2-textual").backend;
