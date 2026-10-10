@@ -207,13 +207,14 @@ function integerRange(constraints) {
 			lowerExplicit = true;
 		}
 		if (one.keyword === "max") {
-			if (!upperExplicit && parsed > upper) lower = wideMin;
+			if (!upperExplicit && !lowerExplicit && parsed > upper) lower = wideMin;
 			upper = upperExplicit && upper < parsed ? upper : parsed;
 			upperExplicit = true;
 		}
 		if (one.keyword === "exclusiveMax") {
 			const effective = parsed - 1n;
-			if (!upperExplicit && effective > upper) lower = wideMin;
+			if (!upperExplicit && !lowerExplicit && effective > upper)
+				lower = wideMin;
 			upper = upperExplicit && upper < effective ? upper : effective;
 			upperExplicit = true;
 		}

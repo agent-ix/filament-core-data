@@ -500,8 +500,12 @@ function checkCall(element, valueExpression, pointerExpression) {
 				element.wideInteger === true
 					? `BigInt(String(${valueExpression}))`
 					: `Number(${valueExpression})`;
+			const condition =
+				element.wideInteger === true
+					? `(typeof ${valueExpression} === "string" && /^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression})) && !(${lhs} ${operator} ${rhs}))`
+					: `!(${lhs} ${operator} ${rhs})`;
 			checks.push(
-				`if (!(${lhs} ${operator} ${rhs})) fail(errors, ${pointerExpression}, ${literal(constraint.diagnosticCode)}, ${literal(`the ${constraint.keyword} constraint is not satisfied`)})`,
+				`if (${condition}) fail(errors, ${pointerExpression}, ${literal(constraint.diagnosticCode)}, ${literal(`the ${constraint.keyword} constraint is not satisfied`)})`,
 			);
 		}
 		return checks.join("; ");

@@ -1672,7 +1672,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"union ChoiceValue { small: int16, text: string, }",
 				"model Choice { value: string; }",
 				'@operations("Choice")',
-				"interface ChoiceOperations { read(): int16; }",
+				"interface ChoiceOperations { read(input: int16): int16; }",
 			].join("\n"),
 		);
 		expect(
@@ -1711,9 +1711,14 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			(type) => type.displayName === "Choice",
 		) as Json;
 		const returns = operation.operations[0].returns as Json;
+		const params = operation.operations[0].params as Json[];
 		const returnAlias = types.find(
 			(type) => type.identity === returns.typeRef,
 		) as Json;
+		const parameterAlias = types.find(
+			(type) => type.identity === params[0].typeRef,
+		) as Json;
+		expect(parameterAlias.target).toBe("ix://agent-ix/probe/Integer");
 		expect(returns.typeRef).toBe(returnAlias.identity);
 		expect(returnAlias.target).toBe("ix://agent-ix/probe/Integer");
 	}, 120000);
@@ -1930,7 +1935,10 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 	it("names a built-in used directly by its native kernel scalar reference", async () => {
 		// Native integer widths use the package-local unbounded Integer target and
 		// a field-specific alias carrying the effective width.
-		expect(typeOf("Integer")).toMatchObject({ kind: "scalar", scalar: "integer" });
+		expect(typeOf("Integer")).toMatchObject({
+			kind: "scalar",
+			scalar: "integer",
+		});
 		expect(fieldOf("Artifact", "revision").typeRef).toBe(
 			"ix://agent-ix/assurance/ArtifactRevision",
 		);
