@@ -11,6 +11,7 @@ import json
 import pathlib
 import subprocess
 import sys
+import tomllib
 from typing import Any
 
 import pytest
@@ -281,9 +282,11 @@ def test_no_backend_path_reaches_a_published_manifest() -> None:
     package = json.loads((REPO / "package.json").read_text())
     joined = json.dumps(package)
     assert "python_backend" not in joined
-    pyproject = (REPO / "pyproject.toml").read_text()
-    include = pyproject.split("include = [")[1].split("]")[0]
-    assert "python_backend" not in include
+    pyproject = tomllib.loads((REPO / "pyproject.toml").read_text())
+    poetry = pyproject.get("tool", {}).get("poetry", {})
+    assert poetry.get("package-mode") is False
+    for key in ("packages", "include"):
+        assert "python_backend" not in json.dumps(poetry.get(key, []))
 
 
 def test_strict_type_checking_reports_no_error() -> None:

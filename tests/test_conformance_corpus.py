@@ -296,6 +296,9 @@ def test_tc325_thresholds_and_registry_agree() -> None:
 def test_tc341_the_corpus_publishes_nothing() -> None:
     """TC-643: package.json names no conformance surface and no dependency."""
     package = _read(REPO / "package.json")
-    assert not any("conformance" in key for key in package["exports"])
-    assert not any("conformance" in entry for entry in package["files"])
+    # The root manifest is private and currently has no `exports` or `files`
+    # declaration.  If either publication surface is added later, keep the
+    # corpus out of it; absence is itself the strongest form of exclusion.
+    assert not any("conformance" in key for key in package.get("exports", {}))
+    assert not any("conformance" in entry for entry in package.get("files", []))
     assert "dependencies" not in package

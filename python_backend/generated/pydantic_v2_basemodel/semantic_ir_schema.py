@@ -182,6 +182,14 @@ class ContractItem1(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
+class DecimalPolicy(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[int, Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=38)]
+
+
 class DefaultKind(Enum):
     none = 'none'
     semantic = 'semantic'
@@ -222,6 +230,7 @@ class Returns(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
+    decimal: DecimalPolicy | None = None
     multiplicity: Multiplicity
     nullable: bool
     typeRef: common_schema.SemanticIdentity
@@ -308,6 +317,7 @@ class Scalar(Enum):
     boolean = 'boolean'
     integer = 'integer'
     number = 'number'
+    decimal = 'decimal'
     string = 'string'
     bytes = 'bytes'
     date = 'date'
@@ -442,6 +452,7 @@ class FieldModel(BaseModel):
         extra='forbid',
     )
     constraints: list[Constraint] | None = None
+    decimal: DecimalPolicy | None = None
     defaultKind: DefaultKind
     defaultValue: Any | None = None
     extensions: list[common_schema.Extension] | None = None
@@ -586,6 +597,7 @@ class TypeDefinition(BaseModel):
     abstract: bool | None = None
     clauses: list[Clause] | None = None
     constraints: list[Constraint]
+    decimal: DecimalPolicy | None = None
     declaredType: common_schema.SemanticIdentity | None = None
     direction: Direction1 | None = None
     displayName: Annotated[str, Field(min_length=1)]

@@ -150,6 +150,11 @@ class ConstructKind(Struct):
 type ContractItem1 = Annotated[str, Meta(min_length=1)]
 
 
+class DecimalPolicy(Struct):
+    precision: Annotated[int, Meta(ge=1, le=38)]
+    scale: Annotated[int, Meta(ge=0, le=38)]
+
+
 class DefaultKind(Enum):
     none = 'none'
     semantic = 'semantic'
@@ -183,6 +188,7 @@ class Returns(Struct):
     multiplicity: Multiplicity
     nullable: bool
     typeRef: common_schema.SemanticIdentity
+    decimal: DecimalPolicy | UnsetType = UNSET
 
 
 class Extent(Enum):
@@ -259,6 +265,7 @@ class Scalar(Enum):
     boolean = 'boolean'
     integer = 'integer'
     number = 'number'
+    decimal = 'decimal'
     string = 'string'
     bytes = 'bytes'
     date = 'date'
@@ -361,6 +368,7 @@ class Field(Struct):
     presence: Presence
     typeRef: common_schema.SemanticIdentity
     constraints: list[Constraint] | UnsetType = UNSET
+    decimal: DecimalPolicy | UnsetType = UNSET
     defaultValue: Any | UnsetType = UNSET
     extensions: list[common_schema.Extension] | UnsetType = UNSET
     redefines: common_schema.SemanticIdentity | UnsetType = UNSET
@@ -470,6 +478,7 @@ class TypeDefinition(Struct):
     unknownPolicy: common_schema.UnknownPolicy
     abstract: bool | UnsetType = UNSET
     clauses: list[Clause] | UnsetType = UNSET
+    decimal: DecimalPolicy | UnsetType = UNSET
     declaredType: common_schema.SemanticIdentity | UnsetType = UNSET
     direction: Direction1 | UnsetType = UNSET
     featureOrder: (

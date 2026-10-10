@@ -17,7 +17,7 @@ from .package_lock_schema import Canonicalization, ExcludedEnum, FilamentSemanti
 from .package_manifest_schema import Capability, Export3, FilamentSemanticPackageManifestV1, Import, Profile, SourceRoot, Visibility
 from .profile_schema import EditDirection, FilamentRepresentationProfileV1, MaterializationLifetime
 from .representation_schema import Avro, BestFitItem, Columnar, Delimited, EnumNumbersAdditionalProperty, FieldNumbersAdditionalProperty, FilamentRepresentationContractV1, Json, Kind3, Locus, Markdown, NonUs, Postgresql, Protobuf, ReservedName, ReservedNumber
-from .semantic_ir_schema import Clause, ConnectionEnd, Constraint, Constraint1, Constraint2, Constraint3, Constraint4, Constraint5, Constraint6, Construct, ConstructKind, ContractItem, ContractItem1, ContractVersion, DefaultKind, Direction, Direction1, Extent, Field, FilamentSemanticIrV1ContractVersion200, FlowDirection, Frame, IdentityList, InlineClause, Keyword, Keyword1, Keyword2, Keyword3, Keyword4, Keyword5, Multiplicity, Occurrence, Operands, Operands1, Operands2, Operands3, Operands4, Operation, Population, Presence, ReferencesAdditionalProperty, ReferencesAdditionalPropertyItem, Relationship, RelationshipSourceEnd, RelationshipTargetEnd, Returns, Scalar, Source, State, Step, StepKind, Term, Transition, TypeDefinition, Value, Variant
+from .semantic_ir_schema import Clause, ConnectionEnd, Constraint, Constraint1, Constraint2, Constraint3, Constraint4, Constraint5, Constraint6, Construct, ConstructKind, ContractItem, ContractItem1, ContractVersion, DecimalPolicy, DefaultKind, Direction, Direction1, Extent, Field, FilamentSemanticIrV1ContractVersion200, FlowDirection, Frame, IdentityList, InlineClause, Keyword, Keyword1, Keyword2, Keyword3, Keyword4, Keyword5, Multiplicity, Occurrence, Operands, Operands1, Operands2, Operands3, Operands4, Operation, Population, Presence, ReferencesAdditionalProperty, ReferencesAdditionalPropertyItem, Relationship, RelationshipSourceEnd, RelationshipTargetEnd, Returns, Scalar, Source, State, Step, StepKind, Term, Transition, TypeDefinition, Value, Variant
 from .target_contract_schema import BackendQualification, ExecutableGeneratorDependency, FilamentGeneratedTargetContractV1, NativeApiItem, ProhibitedDependency, PythonAuthoring, SecurityFinding, UnsupportedFeaturePolicy
 
 __all__ = [
@@ -55,6 +55,7 @@ __all__ = [
     "ContractVersion",
     "Correspondence",
     "DataSchema",
+    "DecimalPolicy",
     "DecodePolicy",
     "DefaultKind",
     "Defaults",

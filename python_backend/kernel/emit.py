@@ -25,8 +25,8 @@ input, so what the guard inspects is what the generator receives.
 Where a layout rule of `python_backend/runner/emit.py` is reachable only as a
 module-private function, it is re-derived here from the same public helpers —
 `collisions` — and `tests/test_semantic_kernel.py` asserts the two
-produce identical `__init__.py` text for one file map. A duplicated rule with
-no equality gate is how two emitters start disagreeing.
+produce identical `__init__.py` text for one file map. A duplicated rule with no
+equality gate is how two emitters start disagreeing.
 
 Nothing here publishes. Publication passes `agent-ix/quoin#290`, a human
 sign-off that has not moved, and the issue #23 safety gate.
