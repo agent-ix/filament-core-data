@@ -72,7 +72,7 @@ const OUTSIDE_I128 = [
 ];
 
 describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
-	/** Trace: FR-144-AC-2. */
+	/** Traces: FR-144-AC-2, FR-144-AC-8, FR-144-AC-9. */
 	it("the reader accepts canonical strings and refuses the rest (TC-1825)", () => {
 		for (const value of ACCEPTED) {
 			expect(readerCodes(withBound(value)), String(value)).toEqual([]);
@@ -85,6 +85,7 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		}
 	});
 
+	/** Traces: FR-144-AC-2, FR-144-AC-8. */
 	it("the oracle accepts canonical strings and refuses the rest (TC-1825)", () => {
 		for (const value of ACCEPTED) {
 			expect(oracleCodes(withBound(value)), String(value)).toEqual([]);
@@ -94,6 +95,7 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		}
 	});
 
+	/** Traces: FR-144-AC-2, FR-144-AC-8, FR-144-CON-1. */
 	it("keeps the reader and oracle diagnoses aligned at integer boundaries", () => {
 		for (const value of [
 			"01",
@@ -106,6 +108,7 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		}
 	});
 
+	/** Trace: FR-144-AC-14. */
 	it("the TypeScript backend preserves a wide bound as a string subject (TC-1825)", () => {
 		const safe = generated(typescriptBackend, withBound("9007199254740991"));
 		expect(safe.diagnostics.filter((one) => one.blocking)).toEqual([]);
@@ -116,6 +119,7 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		expect(JSON.stringify(wide.files)).toContain("9007199254740993");
 	});
 
+	/** Trace: FR-144-AC-15. */
 	it("the JSON Schema backend preserves a wide bound as a string schema (TC-1825)", () => {
 		const safe = generated(
 			jsonSchemaBackend as never,

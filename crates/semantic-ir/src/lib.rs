@@ -146,6 +146,31 @@ mod tests {
     use super::*;
     use crate::json::parse;
 
+    /// The Rust reader sees the same exact-numeric overflow case exercised by
+    /// the Node, Python, and oracle differential test. Keeping the
+    /// case here prevents that parity claim from depending on a generated
+    /// backend consumer alone.
+    ///
+    /// Tracing: FR-144-CON-1
+    #[test]
+    fn fr_144_numeric_reader_reports_the_shared_i128_pointer() {
+        let scalar = format!(
+            r#"{{"identity":"ix://probe/Integer","displayName":"Integer","kind":"scalar","scalar":"integer","roles":[],"origin":{GENERATED},"constraints":[{{"identity":"ix://probe/IntegerMax","keyword":"max","operands":{{"value":"170141183460469231731687303715884105728"}},"appliesTo":"ix://probe/Integer","diagnosticCode":"ix://probe/INTEGER_MAX","origin":{GENERATED}}}],"extensions":[],"unknownPolicy":"reject"}}"#
+        );
+        let bundle = parse(&format!(r#"{{"ir":{{{HEADER},"types":[{scalar}]}}}}"#))
+            .expect("a schema-valid numeric reader case");
+        let diagnostics = decide(&bundle).diagnostics;
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(
+            diagnostics[0].code,
+            "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
+        );
+        assert_eq!(
+            diagnostics[0].pointer,
+            "/ir/types/0/constraints/0/operands/value"
+        );
+    }
+
     /// A bundle carrying a value nested a million levels deep at a member the
     /// schema does not admit is decided, not overflowed: the schema layer
     /// reports the member, and the diagnostics, the verdict's normalized form

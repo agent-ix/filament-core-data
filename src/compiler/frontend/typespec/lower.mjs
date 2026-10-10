@@ -866,6 +866,30 @@ export function lowerProgram(options) {
 		// Keep the alias name flat (the same owner/member spelling used by the
 		// semantic-core lowerer) so it cannot collide with the field identity.
 		const width = BUILTIN_INTEGER_BOUNDS[builtinBase(memberType)];
+		const integerTarget =
+			width !== undefined && typeRef.startsWith(NATIVE_PREFIX)
+				? typeIdentity("Integer")
+				: typeRef;
+		// Width aliases are package declarations, so their target must be the
+		// package's unbounded Integer definition.  A native reference is useful
+		// for a direct field, but it cannot be the target of an authored alias:
+		// consumers need one local node from which to resolve the effective range.
+		if (width !== undefined && typeRef.startsWith(NATIVE_PREFIX)) {
+			const integerIdentity = typeIdentity("Integer");
+			if (!definitions.has(integerIdentity)) {
+				emit({
+					identity: integerIdentity,
+					displayName: "Integer",
+					kind: "scalar",
+					scalar: "integer",
+					constraints: [],
+					extensions: [],
+					roles: [],
+					unknownPolicy: "reject",
+					origin: context.originOf(property),
+				});
+			}
+		}
 		if (
 			(width !== undefined || decimalBoundAlias) &&
 			typeRef.startsWith(NATIVE_PREFIX)
@@ -902,7 +926,7 @@ export function lowerProgram(options) {
 					identity: aliasIdentity,
 					displayName: aliasName,
 					kind: "alias",
-					target: typeRef,
+					target: integerTarget,
 					constraints: [
 						...widthConstraints,
 						...constraints.map((item) => ({

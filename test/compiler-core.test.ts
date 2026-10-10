@@ -1496,7 +1496,13 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			(type) => type.displayName === "WidthCorpusNarrowed",
 		) as Json;
 		expect(narrowed?.kind).toBe("alias");
-		expect(narrowed?.target).toMatch(/\/Integer$/);
+		expect(narrowed?.target).toBe("ix://agent-ix/probe/Integer");
+		const integer = types.find(
+			(type) => type.displayName === "Integer",
+		) as Json;
+		expect(integer?.kind).toBe("scalar");
+		expect(integer?.scalar).toBe("integer");
+		expect(integer?.constraints).toEqual([]);
 		expect(
 			(narrowed?.constraints as Json[]).map((constraint) => constraint.keyword),
 		).toEqual(["min", "max", "exclusiveMax"]);
