@@ -614,8 +614,8 @@ fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
         by_keyword["format"]["operands"],
         json!({"name": "iana:email"})
     );
-    assert_eq!(by_keyword["min"]["operands"], json!({"value": 1}));
-    assert_eq!(by_keyword["max"]["operands"], json!({"value": 10}));
+    assert_eq!(by_keyword["min"]["operands"], json!({"value": "1"}));
+    assert_eq!(by_keyword["max"]["operands"], json!({"value": "10"}));
     assert_eq!(by_keyword["nonEmpty"]["operands"], json!({}));
     assert_eq!(by_keyword["minLength"]["operands"], json!({"value": 1}));
     assert_eq!(by_keyword["maxLength"]["operands"], json!({"value": 64}));
@@ -680,7 +680,7 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
     }
     let operands = match keyword {
         "min" | "max" | "exclusiveMin" | "exclusiveMax" => {
-            if scalar == "decimal" {
+            if matches!(scalar, "integer" | "decimal") {
                 json!({"value": "1"})
             } else {
                 json!({"value": 1})
