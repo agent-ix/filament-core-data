@@ -210,6 +210,18 @@ impl PackageIdentity {
         Ok(format!("{}/{}", self.type_identity(record)?, slug(field)?))
     }
 
+    /// The identity of the alias minted for a constrained field. It shares
+    /// the package root and uses the established `type/<DisplayName>.<field>`
+    /// definition shape, keeping it distinct from the field member identity.
+    pub fn alias_identity(&self, record: &str, field: &str) -> Result<String, Unsluggable> {
+        slug(field)?;
+        Ok(format!(
+            "ix://{}/type/{}",
+            self.package(),
+            alias_display_name(record, field)
+        ))
+    }
+
     /// `ix://<org>/<name>/constraint/<record id>-<field-slug>-<keyword>`.
     pub fn constraint_identity(
         &self,
@@ -310,6 +322,11 @@ impl From<&Package> for PackageIdentity {
     fn from(package: &Package) -> Self {
         Self::new(&package.org, &package.name)
     }
+}
+
+/// The display name of the alias minted for a constrained field.
+pub fn alias_display_name(record: &str, field: &str) -> String {
+    format!("{record}.{field}")
 }
 
 /// The identity segment of `id`, then the slugs of `names`, joined by `-`.

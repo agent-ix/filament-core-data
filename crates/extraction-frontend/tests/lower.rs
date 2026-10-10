@@ -493,11 +493,9 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the
 
 /// FR-144-AC-12: The spec-bundle frontend lifts
 /// `versionNumber | Integer | 1 | min: 1` with operand `"1"`, a constrained
-/// `Decimal` row with policy `(10, 2)` and `min: 1.50` to a field carrying
+/// `Decimal` row with policy `(10, 2)` and `min: 1.50` to an alias carrying
 /// decimal `{precision: 10, scale: 2}` and operand `"1.5"`, and a `Decimal`
 /// row with no policy to a blocking `DECIMAL_POLICY_MISSING` at the row.
-/// The extraction architecture intentionally keeps this policy on the
-/// constrained field; it does not mint a synthetic alias (FCD #199/#200).
 #[trace("TC-1826", "FR-144-AC-12")]
 #[test]
 fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
@@ -521,8 +519,19 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
     assert_eq!(version_constraint["operands"], json!({"value": "1"}));
 
     let price = field_named(record, "price");
-    assert_eq!(price["decimal"], json!({"precision": 10, "scale": 2}));
-    assert_eq!(price["constraints"][0]["operands"], json!({"value": "1.5"}));
+    let price_alias = type_named(&types, "NumericRows.price");
+    assert_eq!(price["typeRef"], price_alias["identity"]);
+    assert_eq!(price_alias["kind"], "alias");
+    assert_eq!(price_alias["target"], "ix://quire/native/Decimal");
+    assert_eq!(price_alias["decimal"], json!({"precision": 10, "scale": 2}));
+    assert_eq!(
+        price_alias["constraints"][0]["operands"],
+        json!({"value": "1.5"})
+    );
+    assert_eq!(
+        price_alias["constraints"][0]["appliesTo"],
+        price_alias["identity"]
+    );
 
     let document = ir_document(&lift);
     let missing = reader_codes(&document);
