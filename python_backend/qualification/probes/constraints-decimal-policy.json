@@ -3,7 +3,10 @@
 	"id": "constraints-decimal-policy",
 	"construct": "decimal precision and scale condition",
 	"note": "Scale must not exceed precision when both properties are present.",
-	"detector": { "kind": "regex", "pattern": "_validate_decimalPolicy|__post_init__" },
+	"detector": {
+		"kind": "regex",
+		"pattern": "RootModel|pydantic\\.dataclasses|from msgspec import"
+	},
 	"schema": {
 		"$defs": {
 			"decimalPolicy": {

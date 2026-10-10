@@ -370,10 +370,28 @@ def test_decimal_policy_rejects_scale_above_precision(profile_id: str) -> None:
     module = importlib.import_module(
         f"python_backend.generated.{profile_id}.semantic_ir_schema"
     )
-    policy = module.DecimalPolicy(precision=3, scale=2)
-    assert policy.precision == 3
-    with pytest.raises(ValueError, match="scale must be <= precision"):
-        module.DecimalPolicy(precision=3, scale=4)
+    value = {"precision": 3, "scale": 2}
+    invalid = {"precision": 3, "scale": 4}
+    if profile_id == "pydantic_v2_basemodel":
+        from pydantic import ValidationError  # noqa: PLC0415
+
+        validator = module.DecimalPolicy.model_validate
+        failure = ValidationError
+    elif profile_id == "pydantic_v2_dataclass":
+        from pydantic import TypeAdapter, ValidationError  # noqa: PLC0415
+
+        validator = TypeAdapter(module.DecimalPolicy).validate_python
+        failure = ValidationError
+    else:
+        import msgspec  # noqa: PLC0415
+
+        def validator(item: dict[str, int]) -> object:
+            return msgspec.convert(item, type=module.DecimalPolicy)
+
+        failure = msgspec.ValidationError
+    assert validator(value)
+    with pytest.raises(failure):
+        validator(invalid)
 
 
 def test_a_recorded_loss_is_real(tmp_path: pathlib.Path) -> None:

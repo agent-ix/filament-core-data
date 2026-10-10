@@ -226,6 +226,11 @@ def test_the_preparation_record_is_complete_and_empty_when_nothing_applies() -> 
             "document": "module-manifest.schema.json",
             "pointer": "/properties/semantic/properties/legacy_forms",
         },
+        {
+            "rule": "conditional-numeric-to-one-of",
+            "document": "semantic-ir.schema.json",
+            "pointer": "/$defs/decimalPolicy",
+        },
     ]
 
 
@@ -284,10 +289,31 @@ def test_no_constraint_keyword_and_no_reference_is_lost() -> None:
     """
     prepared = prepare.prepare_input_set(PUBLISHED)
     for path in PUBLISHED:
+        raw_document = json.loads(path.read_text())
+        prepared_document = prepared.documents[path.name]
+        if path.name == "semantic-ir.schema.json":
+            raw_policy = raw_document["$defs"]["decimalPolicy"]
+            prepared_policy = prepared_document["$defs"]["decimalPolicy"]
+            assert len(prepared_policy["oneOf"]) == len(raw_policy["allOf"])
+            assert "allOf" in raw_policy
+            assert "oneOf" in prepared_policy
+            for branch, clause in zip(prepared_policy["oneOf"], raw_policy["allOf"]):
+                assert (
+                    branch["properties"]["precision"]["const"]
+                    == clause["if"]["properties"]["precision"]["const"]
+                )
+                assert (
+                    branch["properties"]["scale"]["maximum"]
+                    == clause["then"]["properties"]["scale"]["maximum"]
+                )
+            # The conditional relation is intentionally represented by the
+            # finite union; compare all other keywords unchanged below.
+            raw_document["$defs"]["decimalPolicy"] = {"__rewritten__": True}
+            prepared_document["$defs"]["decimalPolicy"] = {"__rewritten__": True}
         before: list[str] = []
         after: list[str] = []
-        _keywords(json.loads(path.read_text()), before)
-        _keywords(prepared.documents[path.name], after)
+        _keywords(raw_document, before)
+        _keywords(prepared_document, after)
         changed = {"unevaluatedProperties", "additionalProperties", "default"}
         assert sorted(k for k in before if k not in changed) == sorted(
             k for k in after if k not in changed

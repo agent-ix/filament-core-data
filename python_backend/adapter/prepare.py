@@ -85,6 +85,69 @@ def _closure_value(value: Any) -> Any:
     return False if _is_always_false(value) else value
 
 
+def _expand_conditional_numeric(
+    schema: dict[str, Any], name: str, pointer: str, out: list[Rewrite]
+) -> dict[str, Any]:
+    """Express precision-dependent bounds as a generator-native tagged union.
+
+    The pinned generator carries scalar bounds but drops an object property's
+    ``if``/``then`` relation.  A finite ``oneOf`` over the same object shape is
+    equivalent here and is emitted natively as constrained variants by all
+    validating Python families.  This keeps the source schema authoritative;
+    no generated Python text is amended after the subprocess returns.
+    """
+
+    clauses = schema.get("allOf")
+    properties = schema.get("properties")
+    if schema.get("type") != "object" or not isinstance(clauses, list) or not clauses:
+        return schema
+    if (
+        not isinstance(properties, dict)
+        or "precision" not in properties
+        or "scale" not in properties
+    ):
+        return schema
+
+    rules: list[tuple[int, int]] = []
+    for clause in clauses:
+        if not isinstance(clause, dict):
+            return schema
+        condition = clause.get("if", {}).get("properties", {})
+        consequent = clause.get("then", {}).get("properties", {})
+        if len(condition) != 1 or len(consequent) != 1:
+            return schema
+        guarded_name, guarded = next(iter(condition.items()))
+        bounded_name, bounded = next(iter(consequent.items()))
+        if (
+            guarded_name != "precision"
+            or bounded_name != "scale"
+            or not isinstance(guarded, dict)
+            or not isinstance(bounded, dict)
+            or not isinstance(guarded.get("const"), int)
+            or not isinstance(bounded.get("maximum"), int)
+        ):
+            return schema
+        rules.append((guarded["const"], bounded["maximum"]))
+
+    branches: list[dict[str, Any]] = []
+    for precision, maximum in rules:
+        branch = copy.deepcopy(schema)
+        branch.pop("allOf")
+        branch["properties"]["precision"]["const"] = precision
+        branch["properties"]["scale"]["maximum"] = maximum
+        branches.append(branch)
+
+    wrapper = {
+        key: copy.deepcopy(value)
+        for key, value in schema.items()
+        if key
+        not in {"type", "required", "properties", "additionalProperties", "allOf"}
+    }
+    wrapper["oneOf"] = branches
+    out.append(Rewrite("conditional-numeric-to-one-of", name, pointer))
+    return wrapper
+
+
 def _walk(node: Any, name: str, pointer: str, out: list[Rewrite]) -> Any:
     if isinstance(node, list):
         return [_walk(item, name, f"{pointer}/{i}", out) for i, item in enumerate(node)]
@@ -137,7 +200,7 @@ def _walk(node: Any, name: str, pointer: str, out: list[Rewrite]) -> Any:
         else:
             result["additionalProperties"] = rewritten
             out.append(Rewrite("unevaluated-properties-to-additional", name, pointer))
-    return result
+    return _expand_conditional_numeric(result, name, pointer, out)
 
 
 def prepare_for_python(

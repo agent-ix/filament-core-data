@@ -150,87 +150,160 @@ class ConstructKind(Struct):
 type ContractItem1 = Annotated[str, Meta(min_length=1)]
 
 
-class DecimalPolicy(Struct):
-    precision: Annotated[int, Meta(ge=1, le=38)]
+class DecimalPolicy1(Struct, tag_field='precision', tag=1):
+    scale: Annotated[int, Meta(ge=0, le=1)]
+
+
+class DecimalPolicy2(Struct, tag_field='precision', tag=2):
+    scale: Annotated[int, Meta(ge=0, le=2)]
+
+
+class DecimalPolicy3(Struct, tag_field='precision', tag=3):
+    scale: Annotated[int, Meta(ge=0, le=3)]
+
+
+class DecimalPolicy4(Struct, tag_field='precision', tag=4):
+    scale: Annotated[int, Meta(ge=0, le=4)]
+
+
+class DecimalPolicy5(Struct, tag_field='precision', tag=5):
+    scale: Annotated[int, Meta(ge=0, le=5)]
+
+
+class DecimalPolicy6(Struct, tag_field='precision', tag=6):
+    scale: Annotated[int, Meta(ge=0, le=6)]
+
+
+class DecimalPolicy7(Struct, tag_field='precision', tag=7):
+    scale: Annotated[int, Meta(ge=0, le=7)]
+
+
+class DecimalPolicy8(Struct, tag_field='precision', tag=8):
+    scale: Annotated[int, Meta(ge=0, le=8)]
+
+
+class DecimalPolicy9(Struct, tag_field='precision', tag=9):
+    scale: Annotated[int, Meta(ge=0, le=9)]
+
+
+class DecimalPolicy10(Struct, tag_field='precision', tag=10):
+    scale: Annotated[int, Meta(ge=0, le=10)]
+
+
+class DecimalPolicy11(Struct, tag_field='precision', tag=11):
+    scale: Annotated[int, Meta(ge=0, le=11)]
+
+
+class DecimalPolicy12(Struct, tag_field='precision', tag=12):
+    scale: Annotated[int, Meta(ge=0, le=12)]
+
+
+class DecimalPolicy13(Struct, tag_field='precision', tag=13):
+    scale: Annotated[int, Meta(ge=0, le=13)]
+
+
+class DecimalPolicy14(Struct, tag_field='precision', tag=14):
+    scale: Annotated[int, Meta(ge=0, le=14)]
+
+
+class DecimalPolicy15(Struct, tag_field='precision', tag=15):
+    scale: Annotated[int, Meta(ge=0, le=15)]
+
+
+class DecimalPolicy16(Struct, tag_field='precision', tag=16):
+    scale: Annotated[int, Meta(ge=0, le=16)]
+
+
+class DecimalPolicy17(Struct, tag_field='precision', tag=17):
+    scale: Annotated[int, Meta(ge=0, le=17)]
+
+
+class DecimalPolicy18(Struct, tag_field='precision', tag=18):
+    scale: Annotated[int, Meta(ge=0, le=18)]
+
+
+class DecimalPolicy19(Struct, tag_field='precision', tag=19):
+    scale: Annotated[int, Meta(ge=0, le=19)]
+
+
+class DecimalPolicy20(Struct, tag_field='precision', tag=20):
+    scale: Annotated[int, Meta(ge=0, le=20)]
+
+
+class DecimalPolicy21(Struct, tag_field='precision', tag=21):
+    scale: Annotated[int, Meta(ge=0, le=21)]
+
+
+class DecimalPolicy22(Struct, tag_field='precision', tag=22):
+    scale: Annotated[int, Meta(ge=0, le=22)]
+
+
+class DecimalPolicy23(Struct, tag_field='precision', tag=23):
+    scale: Annotated[int, Meta(ge=0, le=23)]
+
+
+class DecimalPolicy24(Struct, tag_field='precision', tag=24):
+    scale: Annotated[int, Meta(ge=0, le=24)]
+
+
+class DecimalPolicy25(Struct, tag_field='precision', tag=25):
+    scale: Annotated[int, Meta(ge=0, le=25)]
+
+
+class DecimalPolicy26(Struct, tag_field='precision', tag=26):
+    scale: Annotated[int, Meta(ge=0, le=26)]
+
+
+class DecimalPolicy27(Struct, tag_field='precision', tag=27):
+    scale: Annotated[int, Meta(ge=0, le=27)]
+
+
+class DecimalPolicy28(Struct, tag_field='precision', tag=28):
+    scale: Annotated[int, Meta(ge=0, le=28)]
+
+
+class DecimalPolicy29(Struct, tag_field='precision', tag=29):
+    scale: Annotated[int, Meta(ge=0, le=29)]
+
+
+class DecimalPolicy30(Struct, tag_field='precision', tag=30):
+    scale: Annotated[int, Meta(ge=0, le=30)]
+
+
+class DecimalPolicy31(Struct, tag_field='precision', tag=31):
+    scale: Annotated[int, Meta(ge=0, le=31)]
+
+
+class DecimalPolicy32(Struct, tag_field='precision', tag=32):
+    scale: Annotated[int, Meta(ge=0, le=32)]
+
+
+class DecimalPolicy33(Struct, tag_field='precision', tag=33):
+    scale: Annotated[int, Meta(ge=0, le=33)]
+
+
+class DecimalPolicy34(Struct, tag_field='precision', tag=34):
+    scale: Annotated[int, Meta(ge=0, le=34)]
+
+
+class DecimalPolicy35(Struct, tag_field='precision', tag=35):
+    scale: Annotated[int, Meta(ge=0, le=35)]
+
+
+class DecimalPolicy36(Struct, tag_field='precision', tag=36):
+    scale: Annotated[int, Meta(ge=0, le=36)]
+
+
+class DecimalPolicy37(Struct, tag_field='precision', tag=37):
+    scale: Annotated[int, Meta(ge=0, le=37)]
+
+
+class DecimalPolicy38(Struct, tag_field='precision', tag=38):
     scale: Annotated[int, Meta(ge=0, le=38)]
 
-    def __post_init__(self) -> None:
-        if self.precision == 1 and self.scale > 1:
-            raise ValueError("scale must be <= precision (1)")
-        if self.precision == 2 and self.scale > 2:
-            raise ValueError("scale must be <= precision (2)")
-        if self.precision == 3 and self.scale > 3:
-            raise ValueError("scale must be <= precision (3)")
-        if self.precision == 4 and self.scale > 4:
-            raise ValueError("scale must be <= precision (4)")
-        if self.precision == 5 and self.scale > 5:
-            raise ValueError("scale must be <= precision (5)")
-        if self.precision == 6 and self.scale > 6:
-            raise ValueError("scale must be <= precision (6)")
-        if self.precision == 7 and self.scale > 7:
-            raise ValueError("scale must be <= precision (7)")
-        if self.precision == 8 and self.scale > 8:
-            raise ValueError("scale must be <= precision (8)")
-        if self.precision == 9 and self.scale > 9:
-            raise ValueError("scale must be <= precision (9)")
-        if self.precision == 10 and self.scale > 10:
-            raise ValueError("scale must be <= precision (10)")
-        if self.precision == 11 and self.scale > 11:
-            raise ValueError("scale must be <= precision (11)")
-        if self.precision == 12 and self.scale > 12:
-            raise ValueError("scale must be <= precision (12)")
-        if self.precision == 13 and self.scale > 13:
-            raise ValueError("scale must be <= precision (13)")
-        if self.precision == 14 and self.scale > 14:
-            raise ValueError("scale must be <= precision (14)")
-        if self.precision == 15 and self.scale > 15:
-            raise ValueError("scale must be <= precision (15)")
-        if self.precision == 16 and self.scale > 16:
-            raise ValueError("scale must be <= precision (16)")
-        if self.precision == 17 and self.scale > 17:
-            raise ValueError("scale must be <= precision (17)")
-        if self.precision == 18 and self.scale > 18:
-            raise ValueError("scale must be <= precision (18)")
-        if self.precision == 19 and self.scale > 19:
-            raise ValueError("scale must be <= precision (19)")
-        if self.precision == 20 and self.scale > 20:
-            raise ValueError("scale must be <= precision (20)")
-        if self.precision == 21 and self.scale > 21:
-            raise ValueError("scale must be <= precision (21)")
-        if self.precision == 22 and self.scale > 22:
-            raise ValueError("scale must be <= precision (22)")
-        if self.precision == 23 and self.scale > 23:
-            raise ValueError("scale must be <= precision (23)")
-        if self.precision == 24 and self.scale > 24:
-            raise ValueError("scale must be <= precision (24)")
-        if self.precision == 25 and self.scale > 25:
-            raise ValueError("scale must be <= precision (25)")
-        if self.precision == 26 and self.scale > 26:
-            raise ValueError("scale must be <= precision (26)")
-        if self.precision == 27 and self.scale > 27:
-            raise ValueError("scale must be <= precision (27)")
-        if self.precision == 28 and self.scale > 28:
-            raise ValueError("scale must be <= precision (28)")
-        if self.precision == 29 and self.scale > 29:
-            raise ValueError("scale must be <= precision (29)")
-        if self.precision == 30 and self.scale > 30:
-            raise ValueError("scale must be <= precision (30)")
-        if self.precision == 31 and self.scale > 31:
-            raise ValueError("scale must be <= precision (31)")
-        if self.precision == 32 and self.scale > 32:
-            raise ValueError("scale must be <= precision (32)")
-        if self.precision == 33 and self.scale > 33:
-            raise ValueError("scale must be <= precision (33)")
-        if self.precision == 34 and self.scale > 34:
-            raise ValueError("scale must be <= precision (34)")
-        if self.precision == 35 and self.scale > 35:
-            raise ValueError("scale must be <= precision (35)")
-        if self.precision == 36 and self.scale > 36:
-            raise ValueError("scale must be <= precision (36)")
-        if self.precision == 37 and self.scale > 37:
-            raise ValueError("scale must be <= precision (37)")
-        if self.precision == 38 and self.scale > 38:
-            raise ValueError("scale must be <= precision (38)")
+
+type DecimalPolicy = DecimalPolicy1 | DecimalPolicy2 | DecimalPolicy3 | DecimalPolicy4 | DecimalPolicy5 | DecimalPolicy6 | DecimalPolicy7 | DecimalPolicy8 | DecimalPolicy9 | DecimalPolicy10 | DecimalPolicy11 | DecimalPolicy12 | DecimalPolicy13 | DecimalPolicy14 | DecimalPolicy15 | DecimalPolicy16 | DecimalPolicy17 | DecimalPolicy18 | DecimalPolicy19 | DecimalPolicy20 | DecimalPolicy21 | DecimalPolicy22 | DecimalPolicy23 | DecimalPolicy24 | DecimalPolicy25 | DecimalPolicy26 | DecimalPolicy27 | DecimalPolicy28 | DecimalPolicy29 | DecimalPolicy30 | DecimalPolicy31 | DecimalPolicy32 | DecimalPolicy33 | DecimalPolicy34 | DecimalPolicy35 | DecimalPolicy36 | DecimalPolicy37 | DecimalPolicy38
+
 
 class DefaultKind(Enum):
     none = 'none'
