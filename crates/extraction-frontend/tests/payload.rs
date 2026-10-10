@@ -52,6 +52,14 @@ fn native_ir_scalar(name: &str) -> &'static str {
     }
 }
 
+/// Numeric bounds in the IR may be JSON numbers or canonical decimal strings.
+fn numeric_bound(operands: &Value) -> f64 {
+    operands["value"]
+        .as_f64()
+        .or_else(|| operands["value"].as_str().and_then(|s| s.parse().ok()))
+        .expect("numeric constraint bound")
+}
+
 /// The payload schema of `record` derived from `document`.
 fn payload_schema(document: &Value, record: &str) -> Vec<FieldRule> {
     let types: BTreeMap<&str, &Value> = document["types"]
@@ -142,8 +150,8 @@ fn validate_payload(schema: &[FieldRule], payload: &Value) -> Vec<String> {
         }
         for (keyword, operands) in &rule.constraints {
             let ok = match keyword.as_str() {
-                "min" => value.as_f64() >= operands["value"].as_f64(),
-                "max" => value.as_f64() <= operands["value"].as_f64(),
+                "min" => value.as_f64().is_some_and(|n| n >= numeric_bound(operands)),
+                "max" => value.as_f64().is_some_and(|n| n <= numeric_bound(operands)),
                 "minLength" => {
                     value.as_str().map(str::len) >= operands["value"].as_u64().map(|n| n as usize)
                 }
@@ -191,13 +199,24 @@ fn tc_1293_a_snapshot_payload_validates_and_version_number_zero_fails_at_version
         validate_payload(&schema, &representative),
         Vec::<String>::new()
     );
-    let violations = validate_payload(&schema, &serde_json::json!({"versionNumber": 0}));
+    let mut below_minimum = representative.clone();
+    below_minimum["versionNumber"] = serde_json::json!(0);
+    let violations = validate_payload(&schema, &below_minimum);
     assert!(
         violations
             .iter()
             .any(|v| v.starts_with("versionNumber: min")),
         "{violations:?}"
     );
+    assert_eq!(violations.len(), 1, "{violations:?}");
+
+    let violations = validate_payload(&schema, &serde_json::json!({"versionNumber": 0}));
+    for field in ["createdAt", "createdBy", "data", "hash", "id"] {
+        assert!(
+            violations.contains(&format!("{field}: required")),
+            "{violations:?}"
+        );
+    }
     // `parent` is optional: its absence is not a violation.
     assert!(
         !violations.iter().any(|v| v.starts_with("parent")),
