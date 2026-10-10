@@ -483,7 +483,8 @@ export function diffSemanticContract(request) {
 			if (
 				(previous.kind === "alias" || previous.kind === "reference") &&
 				previous.target !== next.target &&
-				oldSubject.scalar === newSubject.scalar
+				oldSubject.scalar === newSubject.scalar &&
+				(oldSubject.scalar === "integer" || oldSubject.scalar === "decimal")
 			) {
 				record(
 					identity,
