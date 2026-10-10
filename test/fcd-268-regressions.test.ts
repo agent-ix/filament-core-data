@@ -868,6 +868,10 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 				["1.1", true],
 				["1.10", true],
 				["1.2", false],
+				["1.001", false],
+				["-0", false],
+				["-0.00", false],
+				["abc", false],
 				[1.1, false],
 				["NaN", false],
 				[Symbol("1.1"), false],
@@ -930,7 +934,7 @@ it("rejects hostile native bound inputs without coercion or a thrown exception",
 		["BoundFloat32", "ix://quire/native/Float32", 0],
 		["BoundFloat64", "ix://quire/native/Float64", 0],
 	] as const;
-	const hostile = [
+	const hostile: unknown[] = [
 		Symbol("zero"),
 		{
 			valueOf: () => {
@@ -984,10 +988,15 @@ it("checks Decimal bounds in the exact instance oracle", async () => {
 			ok: boolean;
 			errors: { code: string; pointer: string }[];
 		};
-		for (const [value, expected] of [
-			["10.50", true],
-			["1.10", true],
-			["10.51", false],
+		for (const [value, expected, code] of [
+			["10.50", true, "OK"],
+			["1.10", true, "OK"],
+			["10.51", false, "ix://agent-ix/age-2229-regressions/NATIVE_BOUND"],
+			["1.001", false, "agent-ix.typescript-backend.SHAPE_MISMATCH"],
+			["1000", false, "agent-ix.typescript-backend.SHAPE_MISMATCH"],
+			["-0", false, "agent-ix.typescript-backend.SHAPE_MISMATCH"],
+			["-0.00", false, "agent-ix.typescript-backend.SHAPE_MISMATCH"],
+			["abc", false, "agent-ix.typescript-backend.SHAPE_MISMATCH"],
 		] as const) {
 			const input = { value };
 			const result = validate(input);
@@ -1003,10 +1012,37 @@ it("checks Decimal bounds in the exact instance oracle", async () => {
 			if (!expected)
 				expect(result.errors).toContainEqual(
 					expect.objectContaining({
-						code: "ix://agent-ix/age-2229-regressions/NATIVE_BOUND",
+						code,
 						pointer: "/value",
 					}),
 				);
+		}
+		for (const value of [
+			Symbol("decimal"),
+			{
+				valueOf: () => {
+					throw new Error("coercion must not run");
+				},
+			},
+		]) {
+			let result: ReturnType<typeof validate> | undefined;
+			expect(() => {
+				result = validate({ value });
+			}).not.toThrow();
+			expect(result?.ok).toBe(false);
+			expect(result?.errors).toContainEqual(
+				expect.objectContaining({
+					code: "agent-ix.typescript-backend.SHAPE_MISMATCH",
+					pointer: "/value",
+				}),
+			);
+			expect(
+				admitInstance(
+					{ ir },
+					"ix://agent-ix/age-2229-regressions/type/BoundDecimal",
+					{ value },
+				).ok,
+			).toBe(false);
 		}
 	} finally {
 		rmSync(directory, { recursive: true, force: true });

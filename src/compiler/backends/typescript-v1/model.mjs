@@ -322,13 +322,17 @@ function axesOf(field) {
 function fieldEntry(types, identifiers, field) {
 	const axes = axesOf(field);
 	const summary = summaryOf(types, identifiers, field.typeRef);
+	const scalarSummary =
+		summary?.scalar === "decimal" && field.decimal !== undefined
+			? Object.freeze({ ...summary, decimal: field.decimal })
+			: summary;
 	const constraints = Object.freeze([...(field.constraints ?? [])]);
 	const element =
-		summary !== undefined && constraints.length > 0
+		scalarSummary !== undefined && constraints.length > 0
 			? Object.freeze({
-					...summary,
+					...scalarSummary,
 					constraints,
-					...(summary.scalar === "integer"
+					...(scalarSummary.scalar === "integer"
 						? {
 								effectiveIntegerBounds: stringIntegerBounds(constraints),
 								impossibleIntegerBounds:
@@ -342,13 +346,13 @@ function fieldEntry(types, identifiers, field) {
 							}
 						: {}),
 				})
-			: summary?.scalar === "integer"
+			: scalarSummary?.scalar === "integer"
 				? Object.freeze({
-						...summary,
+						...scalarSummary,
 						constraints,
 						effectiveIntegerBounds: stringIntegerBounds(constraints),
 					})
-				: summary;
+				: scalarSummary;
 	const entry = {
 		identity: field.identity,
 		name: field.name,

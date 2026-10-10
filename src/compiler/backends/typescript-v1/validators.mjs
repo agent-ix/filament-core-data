@@ -543,7 +543,9 @@ function checkCall(element, valueExpression, pointerExpression) {
 					? `typeof ${valueExpression} !== "boolean"`
 					: ["integer", "float32", "float64"].includes(scalar)
 						? `typeof ${valueExpression} !== "number" || !Number.isFinite(${valueExpression})${scalar === "float32" ? ` || !Number.isFinite(Math.fround(${valueExpression}))` : ""}${scalar === "integer" ? ` || !Number.isSafeInteger(${valueExpression})` : ""}`
-						: `typeof ${valueExpression} !== "string"`;
+						: scalar === "decimal" && element.decimal !== undefined
+							? `typeof ${valueExpression} !== "string" || !isCanonicalDecimal(${valueExpression}) || !decimalWithinPolicy(${valueExpression}, ${element.decimal.precision}, ${element.decimal.scale})`
+							: `typeof ${valueExpression} !== "string"`;
 			checks.push(
 				`if (${guard}) fail(errors, ${pointerExpression}, CODES.SHAPE_MISMATCH, "the native scalar wire value has the wrong type")`,
 			);
