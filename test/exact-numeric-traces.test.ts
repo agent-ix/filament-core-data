@@ -699,14 +699,14 @@ async function generatedNumericValidators(
 it("renders decimal equality and uniqueness checks in the generated validator", () => {
 	const model = buildModel(numericIr() as never);
 	const source = `${renderErrors()}\n${renderValidators(model)}`;
-	expect(source).toContain("compareDecimal(member, candidate) === 0");
+	expect(source).toContain("compareDecimal(enumMember, candidate) === 0");
 	expect(source).toContain("isUniqueDecimalCollection(candidate)");
 	expect(source).toContain("const scale = Math.max(a.scale, b.scale);");
 	expect(source).toContain(
 		'const normalizedFraction = fraction.replace(/0+$/, "")',
 	);
 	expect(source).toContain(
-		'["1.1"].some((member) => compareDecimal(member, candidate) === 0)',
+		'["1.1"].some((enumMember) => compareDecimal(enumMember, candidate) === 0)',
 	);
 });
 
@@ -953,6 +953,15 @@ it("typechecks the float, bounded-integer, enum, and default TypeScript matrix",
 		};
 		expect(float32(0.1).ok).toBe(true);
 		expect(float32(3.5e38).ok).toBe(false);
+	} finally {
+		rmSync(scratch, { recursive: true, force: true });
+	}
+});
+
+/** Trace: FR-144-AC-14. */
+it("typechecks the wide-integer TypeScript wire validator", async () => {
+	const scratch = mkdtempSync(join(tmpdir(), "fcd-wide-integer-ts-"));
+	try {
 		const wideIr = structuredClone(numericIr());
 		wideIr.types.push({
 			identity: type("WideInteger"),
@@ -978,6 +987,20 @@ it("typechecks the float, bounded-integer, enum, and default TypeScript matrix",
 		expect(
 			(wideGenerated.VALIDATION_CODES as Record<string, string>).NOT_AN_INTEGER,
 		).toBe("agent-ix.typescript-backend.NOT_AN_INTEGER");
+		const validateWide = wideGenerated.validateWideInteger as (
+			value: unknown,
+		) => { ok: boolean; errors: { code: string }[] };
+		expect(validateWide("9007199254740993").ok).toBe(true);
+		expect(validateWide("9007199254740994").errors).toContainEqual(
+			expect.objectContaining({
+				code: "agent-ix.exact-numeric.WIDE_INTEGER_MAX",
+			}),
+		);
+		expect(validateWide(5).errors).toContainEqual(
+			expect.objectContaining({
+				code: "agent-ix.typescript-backend.NOT_AN_INTEGER",
+			}),
+		);
 	} finally {
 		rmSync(scratch, { recursive: true, force: true });
 	}

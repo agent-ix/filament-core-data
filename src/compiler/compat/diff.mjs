@@ -92,7 +92,7 @@ function same(left, right) {
 }
 
 /** Widening a scalar's domain is conditional; every other change to it breaks. */
-const WIDENINGS = new Set(["integer>number", "date>datetime"]);
+const WIDENINGS = new Set(["date>datetime"]);
 
 function scalarChange(before, after) {
 	if (before === after) return undefined;

@@ -652,6 +652,7 @@ it("rounds native Float32 bounds and rejects rounded duplicate members", async (
 	}
 });
 
+/** Trace exclusion: AGE-2234 settles binary32 uniqueness, which no current AC states. */
 it("enforces Float32 rounded uniqueness and maps JSON uniqueness", async () => {
 	const ir = uniqueIr();
 	const directory = mkdtempSync(join(tmpdir(), "fcd-268-unique-"));
@@ -684,6 +685,7 @@ it("enforces Float32 rounded uniqueness and maps JSON uniqueness", async () => {
 	}
 });
 
+/** Trace exclusion: generated helper linkage is a regression guard, not FR-066-AC-19's package export contract. */
 it("keeps the Float32 uniqueness helper on the generated export surface", () => {
 	const errors = renderErrors();
 	expect(errors).toContain("export function isUniqueFloat32Collection");
@@ -694,6 +696,8 @@ it("keeps the Float32 uniqueness helper on the generated export surface", () => 
 	expect(broken).not.toContain("export function isUniqueFloat32Collection");
 });
 
+/** Trace: FR-054-AC-3. */
+// The nullable collection cell's serde attribute must name its adapter.
 it("renders native nullable wide collections with the dedicated serde adapter", () => {
 	const ir = nativeNullableCollectionIr();
 	const generated = emitCrate(
@@ -1086,6 +1090,8 @@ it("typechecks the generated TypeScript export surface and proves an export muta
 	}
 });
 
+/** Trace: FR-054-AC-3. */
+// Compile the nullable collection cell with its emitted serde adapter.
 it("compiles the generated Rust nullable collection with warnings denied and proves an adapter mutation is red", () => {
 	const generated = emitCrate(
 		{
@@ -1130,6 +1136,8 @@ it("compiles the generated Rust nullable collection with warnings denied and pro
 	}
 });
 
+/** Trace: FR-054-AC-3. */
+// Compile the required collection cell even when its element domain is empty.
 it("compiles a required collection whose integer element domain is empty", () => {
 	const generated = emitCrate(
 		{
