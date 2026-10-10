@@ -517,20 +517,33 @@ describe("TC-1588..1592 cross-language agreement through the corpus (FR-090)", (
 		const registry = JSON.parse(
 			readFileSync(resolve(root, "conformance/adapters/registry.json"), "utf8"),
 		) as { adapters: { id: string; status: string; command?: string[] }[] };
+		// The live-adapter run above verifies agreement. This case measures one
+		// unavailable slot and has no reason to execute the other adapters again.
+		registry.adapters = registry.adapters.filter(
+			(entry) => entry.id === "compiler-frontend",
+		);
+		expect(registry.adapters).toHaveLength(1);
+		const thresholds = JSON.parse(
+			readFileSync(resolve(root, "conformance/thresholds.json"), "utf8"),
+		) as { thresholds: { adapter: string }[] };
+		thresholds.thresholds = thresholds.thresholds.filter(
+			(entry) => entry.adapter === "compiler-frontend",
+		);
 		for (const entry of registry.adapters) {
-			if (entry.id !== "compiler-frontend") continue;
 			entry.status = "unavailable";
 			// A slot with no command is what an unavailable slot is; leaving the
 			// command in place would let the adapter answer and the row would
 			// record agreement under an unavailable status.
 			entry.command = undefined;
 		}
-		const withSlotDark = runHarness({ registry }) as typeof report;
+		const withSlotDark = runHarness({ registry, thresholds }) as typeof report;
 		const row = withSlotDark.coverage.adapters.find(
 			(a) => a.adapter === "compiler-frontend",
 		);
+		expect(withSlotDark.coverage.totalCases).toBeGreaterThan(0);
 		expect(row?.status).toBe("unavailable");
 		expect(row?.matched).toBe(0);
+		expect(row?.failed).toBe(0);
 		expect(row?.unmet).toBe(withSlotDark.coverage.totalCases);
 	});
 

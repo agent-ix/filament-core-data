@@ -1463,7 +1463,9 @@ function renderCheck(
 			? `*${subject}`
 			: expression === "value" || expression.startsWith("*")
 				? expression
-				: `*${expression}`;
+				: expression.startsWith("&")
+					? expression.slice(1)
+					: `*${expression}`;
 	const COMPARISONS = {
 		min: "<",
 		max: ">",
