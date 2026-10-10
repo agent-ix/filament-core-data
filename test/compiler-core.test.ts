@@ -434,6 +434,85 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 		]);
 	});
 
+	/** Trace: FR-144-AC-12. */
+	it("preserves spec-bundle numeric aliases and decimal policy in the frontend handoff", async () => {
+		const document = {
+			contractVersion: "2.0.0",
+			package: { identity: "agent-ix/probe", version: "0.0.0" },
+			types: [
+				{
+					identity: "ix://agent-ix/probe/VersionNumber",
+					displayName: "VersionNumber",
+					kind: "alias",
+					target: "ix://quire/native/Integer",
+					constraints: [
+						{
+							keyword: "min",
+							operands: { value: "1" },
+						},
+					],
+				},
+				{
+					identity: "ix://agent-ix/probe/Price",
+					displayName: "Price",
+					kind: "alias",
+					target: "ix://quire/native/Decimal",
+					decimal: { precision: 10, scale: 2 },
+					constraints: [
+						{
+							keyword: "min",
+							operands: { value: "1.50" },
+						},
+					],
+				},
+				{
+					identity: "ix://agent-ix/probe/Unpriced",
+					displayName: "Unpriced",
+					kind: "alias",
+					target: "ix://quire/native/Decimal",
+					constraints: [],
+				},
+				{
+					identity: "ix://agent-ix/probe/Invoice",
+					displayName: "Invoice",
+					kind: "record",
+					fields: [
+						{
+							identity: "ix://agent-ix/probe/Invoice/amount",
+							name: "amount",
+							typeRef: "ix://agent-ix/probe/Unpriced",
+							presence: "required",
+							nullable: false,
+							multiplicity: {
+								lower: 1,
+								upper: 1,
+								ordered: false,
+								unique: false,
+							},
+						},
+					],
+				},
+			],
+		};
+		const result = await runFrontend({
+			dialect: "spec-bundle",
+			bundleRoot: "/probe/bundle",
+			lift: () => ({
+				status: 0,
+				stderr: "",
+				document: JSON.stringify(document),
+				diagnostics: "[]",
+			}),
+		});
+		note(result.diagnostics as never);
+		expect(result.diagnostics).toEqual([]);
+		expect((result.ir as Json).types).toEqual(document.types);
+		const readerDiagnostics = readContractIr(result.ir as never);
+		expect(readerDiagnostics.map((diagnostic) => diagnostic.code)).toContain(
+			"agent-ix.semantic-ir.DECIMAL_POLICY_MISSING",
+		);
+	});
+
 	/** Traces: TC-1406; FR-131-AC-3. */
 	it("refuses a request naming no bundle root without calling the producer", async () => {
 		let called = 0;

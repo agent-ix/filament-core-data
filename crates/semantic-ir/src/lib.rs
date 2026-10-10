@@ -171,6 +171,60 @@ mod tests {
         );
     }
 
+    /// The Rust byte entry point walks numeric lexemes nested inside an `any`
+    /// default without first converting them to a binary float.
+    ///
+    /// Trace: FR-144-AC-8
+    #[test]
+    fn fr_144_raw_bytes_find_inexact_integer_inside_any_default() {
+        let record = format!(
+            r#"{{"identity":"ix://probe/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{{"identity":"ix://probe/Holder/payload","name":"payload","typeRef":"ix://quire/native/JsonObject","presence":"required","nullable":false,"defaultKind":"semantic","defaultValue":{{"nested":9007199254740993}},"origin":{GENERATED},"multiplicity":{{"lower":1,"upper":1,"ordered":false,"unique":false}},"extensions":[]}}]}}"#
+        );
+        let bundle = parse(&format!(r#"{{"ir":{{{HEADER},"types":[{record}]}}}}"#))
+            .expect("a schema-valid raw numeric case");
+        let diagnostics = decide(&bundle).diagnostics;
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.code == "agent-ix.semantic-ir.INEXACT_INTEGER"
+                && diagnostic.pointer == "/ir/types/0/fields/0/defaultValue/nested"
+        }));
+    }
+
+    /// Metadata integers use the same exact-number scanner as values: the
+    /// largest safe integer is accepted, while a value above it is refused at
+    /// each metadata location rather than silently rounded.
+    ///
+    /// Trace: FR-144-AC-9
+    #[test]
+    fn fr_144_raw_bytes_check_safe_metadata_integer_boundaries() {
+        fn bundle(value: &str) -> String {
+            format!(
+                r#"{{"ir":{{{HEADER},"types":[{{"identity":"ix://probe/Text","displayName":"Text","kind":"scalar","scalar":"string","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"}},{{"identity":"ix://probe/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{{"identity":"ix://probe/Holder/value","name":"value","typeRef":"ix://quire/native/String","presence":"required","nullable":false,"defaultKind":"none","origin":{{"source":{{"sourceIdentity":"ix://probe/Source","path":"probe.tsp","startLine":{value},"startColumn":1}}}},"multiplicity":{{"lower":1,"upper":{value},"ordered":false,"unique":false}},"constraints":[{{"identity":"ix://probe/Holder/value/maxLength","keyword":"maxLength","operands":{{"value":{value}}},"appliesTo":"ix://probe/Holder/value","diagnosticCode":"ix://probe/MAX_LENGTH","origin":{GENERATED}}}],"extensions":[]}}]}}]}}}}"#
+            )
+        }
+
+        let safe = parse(&bundle("9007199254740992")).expect("safe metadata integers parse");
+        assert!(!decide(&safe)
+            .iter()
+            .any(|diagnostic| diagnostic.code == "agent-ix.semantic-ir.INEXACT_INTEGER"));
+
+        let unsafe_bundle =
+            parse(&bundle("9007199254740993")).expect("unsafe metadata integers parse");
+        let diagnostics = decide(&unsafe_bundle);
+        for pointer in [
+            "/ir/types/1/fields/0/origin/source/startLine",
+            "/ir/types/1/fields/0/multiplicity/upper",
+            "/ir/types/1/fields/0/constraints/0/operands/value",
+        ] {
+            assert!(
+                diagnostics.iter().any(|diagnostic| {
+                    diagnostic.code == "agent-ix.semantic-ir.INEXACT_INTEGER"
+                        && diagnostic.pointer == pointer
+                }),
+                "missing exact-number diagnostic at {pointer}"
+            );
+        }
+    }
+
     /// A bundle carrying a value nested a million levels deep at a member the
     /// schema does not admit is decided, not overflowed: the schema layer
     /// reports the member, and the diagnostics, the verdict's normalized form

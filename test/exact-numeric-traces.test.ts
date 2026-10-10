@@ -1230,3 +1230,51 @@ it("compares the Node, Python, and oracle numeric reader verdicts and pointers",
 		rmSync(directory, { recursive: true, force: true });
 	}
 });
+
+/** Trace: FR-144-AC-22. */
+it("keeps parsed numeric values aligned with the byte reader", () => {
+	const floatDocument = {
+		contractVersion: "2.0.0",
+		types: [
+			{
+				identity: "ix://probe/Float64",
+				kind: "scalar",
+				scalar: "float64",
+				constraints: [
+					{
+						identity: "ix://probe/Float64Min",
+						keyword: "min",
+						operands: { value: 0.1000000000000000000001 },
+						appliesTo: "ix://probe/Float64",
+						diagnosticCode: "ix://probe/FLOAT64_MIN",
+					},
+				],
+			},
+		],
+	};
+	const integerDocument = {
+		contractVersion: "2.0.0",
+		types: [
+			{
+				identity: "ix://probe/Integer",
+				kind: "scalar",
+				scalar: "integer",
+				constraints: [
+					{
+						identity: "ix://probe/IntegerMin",
+						keyword: "min",
+						operands: { value: "01" },
+						appliesTo: "ix://probe/Integer",
+						diagnosticCode: "ix://probe/INTEGER_MIN",
+					},
+				],
+			},
+		],
+	};
+	const parsedFloat = [...readContractIr(floatDocument as never)];
+	const parsedInteger = [...readContractIr(integerDocument as never)];
+	expect(parsedFloat).toEqual([]);
+	expect(parsedInteger.map((diagnostic) => diagnostic.code)).toContain(
+		"agent-ix.semantic-ir.INVALID_OPERAND",
+	);
+});
