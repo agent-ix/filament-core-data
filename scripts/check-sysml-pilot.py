@@ -99,11 +99,23 @@ def main() -> None:
             if content.get("status") != "ok":
                 fail(f"pilot rejected {path}: {content}")
             errors = []
+            package_results = []
             while True:
                 message = client.get_iopub_msg(timeout=120)
                 if message.get("parent_header", {}).get("msg_id") == message_id:
                     if message.get("msg_type") == "error":
                         errors.append(message.get("content", {}))
+                    if (
+                        message.get("msg_type") == "stream"
+                        and message.get("content", {}).get("name") == "stderr"
+                    ):
+                        errors.append(message.get("content", {}).get("text", ""))
+                    if message.get("msg_type") == "execute_result":
+                        package_results.append(
+                            message.get("content", {})
+                            .get("data", {})
+                            .get("text/plain", "")
+                        )
                     if (
                         message.get("msg_type") == "status"
                         and message.get("content", {}).get("execution_state") == "idle"
@@ -111,6 +123,12 @@ def main() -> None:
                         break
             if errors:
                 fail(f"pilot reported errors for {path}: {errors}")
+            if not any(
+                result.startswith("Package Model (") for result in package_results
+            ):
+                fail(
+                    f"pilot returned no accepted package for {path}: {package_results}"
+                )
             print(f"FR-138-AC-3 pilot accepted {path.name}")
         finally:
             client.stop_channels()
