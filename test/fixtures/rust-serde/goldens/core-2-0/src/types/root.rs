@@ -105,6 +105,15 @@ impl Root {
         name: crate::Text,
         node: crate::NodeRef,
     ) -> Result<Self, crate::support::ValidationError> {
+        if (name).get().chars().count() < 1usize {
+            return Err(crate::support::ValidationError::with_input(
+                "ix://agent-ix/conformance/constraint/text-min-length",
+                "minLength",
+                "",
+                "1",
+                (name).get().as_str(),
+            ));
+        }
         Ok(Self { name, node })
     }
 

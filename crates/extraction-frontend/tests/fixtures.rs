@@ -73,13 +73,14 @@ const MODULES: [&str; 7] = [
 /// The codes FR-096 declares whose emission a committed file cannot
 /// express; their directory holds a `constructed.json` naming the
 /// constructing test (FR-098 "Fixture inventory").
-const CONSTRUCTED: [Code; 7] = [
+const CONSTRUCTED: [Code; 8] = [
     Code::OutputUnwritable,
     Code::LimitMaxDocuments,
     Code::LimitMaxDocumentBytes,
     Code::LimitMaxFieldsPerRecord,
     Code::LimitMaxClauseBytes,
     Code::LimitMaxDepth,
+    Code::DecimalPolicyMissing,
     Code::InvalidIr,
 ];
 
@@ -190,7 +191,7 @@ fn tc_1272_the_negatives_directory_set_equals_the_code_enum() {
     let actual: BTreeSet<String> = dirs(&negatives_dir()).into_iter().collect();
     let actual: BTreeSet<&str> = actual.iter().map(String::as_str).collect();
     assert_eq!(actual, expected);
-    assert_eq!(expected.len(), 27);
+    assert_eq!(expected.len(), Code::ALL.len());
     for code in Code::ALL {
         let dir = negatives_dir().join(code.name());
         let bundle = dir.join("spec/spec.md").is_file();

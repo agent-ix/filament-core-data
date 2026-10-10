@@ -20,6 +20,14 @@ impl Count {
     /// on it. Deserialization routes through this constructor, so a value
     /// that violates a constraint cannot arrive from the wire either.
     pub fn try_new(value: i64) -> Result<Self, crate::support::ValidationError> {
+        if value > 9007199254740991i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/conformance/constraint/count-min",
+                "max",
+                "",
+                "9007199254740991",
+            ));
+        }
         {
             if value < 0i64 {
                 return Err(crate::support::ValidationError::new(

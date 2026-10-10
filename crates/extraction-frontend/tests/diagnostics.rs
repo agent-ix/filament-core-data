@@ -96,8 +96,8 @@ fn tc_1259_every_variant_serialises_to_the_published_pattern_and_validates_with_
     }
     assert_eq!(
         seen.len(),
-        27,
-        "the registry is exactly the 27 codes of FR-096"
+        28,
+        "the registry is exactly the 28 codes of FR-096"
     );
 }
 

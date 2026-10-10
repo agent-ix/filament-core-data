@@ -13,23 +13,41 @@ use serde::{Deserialize, Serialize};
 /// Semantic identity: ix://agent-ix/conformance/type/Millis.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(transparent)]
-pub struct Millis(crate::Count);
+pub struct Millis(i64);
 
 impl Millis {
     /// Builds the value, enforcing every constraint the contract declares
     /// on it. Deserialization routes through this constructor, so a value
     /// that violates a constraint cannot arrive from the wire either.
-    pub fn try_new(value: crate::Count) -> Result<Self, crate::support::ValidationError> {
+    pub fn try_new(value: i64) -> Result<Self, crate::support::ValidationError> {
+        if value > 9007199254740991i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/conformance/constraint/count-min",
+                "max",
+                "",
+                "9007199254740991",
+            ));
+        }
+        {
+            if value < 0i64 {
+                return Err(crate::support::ValidationError::new(
+                    "ix://agent-ix/conformance/constraint/count-min",
+                    "min",
+                    "",
+                    "0",
+                ));
+            }
+        }
         Ok(Self(value))
     }
 
     /// The wrapped value.
-    pub fn get(&self) -> &crate::Count {
+    pub fn get(&self) -> &i64 {
         &self.0
     }
 
     /// The wrapped value, consuming the newtype.
-    pub fn into_inner(self) -> crate::Count {
+    pub fn into_inner(self) -> i64 {
         self.0
     }
 
@@ -44,7 +62,7 @@ impl<'de> Deserialize<'de> for Millis {
     where
         D: serde::Deserializer<'de>,
     {
-        let inner = <crate::Count as Deserialize>::deserialize(deserializer)?;
+        let inner = <i64 as Deserialize>::deserialize(deserializer)?;
         Self::try_new(inner).map_err(serde::de::Error::custom)
     }
 }

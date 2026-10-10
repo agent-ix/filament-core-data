@@ -339,6 +339,36 @@ impl Node {
         attrs: Option<crate::TextMap>,
         payload: Option<crate::Payload>,
     ) -> Result<Self, crate::support::ValidationError> {
+        if (id).get().chars().count() < 1usize {
+            return Err(crate::support::ValidationError::with_input(
+                "ix://agent-ix/conformance/constraint/text-min-length",
+                "minLength",
+                "",
+                "1",
+                (id).get().as_str(),
+            ));
+        }
+        if let Some(value) = &label {
+            if let crate::support::Nullable::Value(value) = value {
+                if (*value).get().chars().count() < 1usize {
+                    return Err(crate::support::ValidationError::with_input(
+                        "ix://agent-ix/conformance/constraint/text-min-length",
+                        "minLength",
+                        "",
+                        "1",
+                        (*value).get().as_str(),
+                    ));
+                }
+            }
+        }
+        if *(elapsed).get() < 0i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/conformance/constraint/count-min",
+                "min",
+                "",
+                "0",
+            ));
+        }
         if let Some(items) = &children {
             for left in 0..items.len() {
                 for right in (left + 1)..items.len() {
