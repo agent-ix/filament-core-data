@@ -134,10 +134,9 @@ def _expand_conditional_numeric(
             return schema
         if set(clause) != {"if", "then"}:
             return schema
-        if (
-            not isinstance(clause["then"], dict)
-            or set(clause["then"]) != {"properties"}
-        ):
+        if not isinstance(clause["then"], dict) or set(clause["then"]) != {
+            "properties"
+        }:
             return schema
         if not isinstance(clause["if"], dict) or set(clause["if"]) != {"properties"}:
             return schema
