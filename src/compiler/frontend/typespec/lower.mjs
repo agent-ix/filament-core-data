@@ -875,24 +875,27 @@ export function lowerProgram(options) {
 			const aliasIdentity = typeIdentity(aliasName);
 			const widthConstraints = width
 				? [
-						...(min === undefined ? ["min"] : []),
-						...(max === undefined ? ["max"] : []),
-						].map((keyword) => ({
-							identity: mintIdentity(packageIdentity, "constraint", [
-								aliasName,
-								keyword,
-							]),
+						...(constraints.some((item) => item.keyword === "min")
+							? []
+							: ["min"]),
+						...(constraints.some((item) => item.keyword === "max")
+							? []
+							: ["max"]),
+					].map((keyword) => ({
+						identity: mintIdentity(packageIdentity, "constraint", [
+							aliasName,
 							keyword,
-							operands: { value: width[keyword] },
-							appliesTo: aliasIdentity,
-							diagnosticCode: constraintDiagnosticCode(
-								packageIdentity,
-								[aliasName],
-								keyword,
-							),
-							origin: context.originOf(property),
-						})),
-					]
+						]),
+						keyword,
+						operands: { value: width[keyword] },
+						appliesTo: aliasIdentity,
+						diagnosticCode: constraintDiagnosticCode(
+							packageIdentity,
+							[aliasName],
+							keyword,
+						),
+						origin: context.originOf(property),
+					}))
 				: [];
 			if (!definitions.has(aliasIdentity)) {
 				emit({
