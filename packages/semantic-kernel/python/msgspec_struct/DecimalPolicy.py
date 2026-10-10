@@ -9,5 +9,5 @@ from msgspec import Meta, Struct
 
 
 class DecimalPolicy(Struct):
-    precision: Annotated[int, Meta(ge=1, le=2147483647)]
-    scale: Annotated[int, Meta(ge=0, le=2147483647)]
+    precision: Annotated[int, Meta(ge=1, le=38)]
+    scale: Annotated[int, Meta(ge=0, le=38)]

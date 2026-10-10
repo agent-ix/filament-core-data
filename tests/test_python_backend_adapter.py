@@ -330,23 +330,35 @@ def test_no_constraint_keyword_and_no_reference_is_lost() -> None:
             assert "allOf" in raw_policy
             assert "oneOf" in prepared_policy
             for branch, clause in zip(prepared_policy["oneOf"], raw_policy["allOf"]):
+                assert branch["type"] == raw_policy["type"]
+                assert branch["required"] == raw_policy["required"]
+                assert branch["additionalProperties"] == raw_policy["additionalProperties"]
                 assert (
                     branch["properties"]["precision"]["const"]
                     == clause["if"]["properties"]["precision"]["const"]
+                )
+                assert (
+                    branch["properties"]["precision"]["type"]
+                    == raw_policy["properties"]["precision"]["type"]
                 )
                 assert (
                     branch["properties"]["scale"]["maximum"]
                     == clause["then"]["properties"]["scale"]["maximum"]
                 )
             # The conditional relation is intentionally represented by the
-            # finite union; compare all other keywords unchanged below.
-            raw_document["$defs"]["decimalPolicy"] = {"__rewritten__": True}
-            prepared_document["$defs"]["decimalPolicy"] = {"__rewritten__": True}
+            # finite union; all branch shape and constraint keywords remain
+            # visible to the comparison below.
         before: list[str] = []
         after: list[str] = []
         _keywords(raw_document, before)
         _keywords(prepared_document, after)
-        changed = {"unevaluatedProperties", "additionalProperties", "default"}
+        changed = {
+            "unevaluatedProperties",
+            "additionalProperties",
+            "default",
+            "allOf",
+            "oneOf",
+        }
         assert sorted(k for k in before if k not in changed) == sorted(
             k for k in after if k not in changed
         )

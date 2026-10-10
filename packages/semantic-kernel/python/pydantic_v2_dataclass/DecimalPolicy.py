@@ -11,5 +11,5 @@ from pydantic.dataclasses import dataclass
 
 @dataclass(config=ConfigDict(extra='forbid'))
 class DecimalPolicy:
-    precision: Annotated[int, Field(ge=1, le=2147483647)]
-    scale: Annotated[int, Field(ge=0, le=2147483647)]
+    precision: Annotated[int, Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=38)]

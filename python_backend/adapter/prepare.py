@@ -105,12 +105,15 @@ def _expand_conditional_numeric(
         not isinstance(properties, dict)
         or "precision" not in properties
         or "scale" not in properties
+        or "precision" not in schema.get("required", [])
     ):
         return schema
 
     precision_schema = properties["precision"]
     scale_schema = properties["scale"]
     if not isinstance(precision_schema, dict) or not isinstance(scale_schema, dict):
+        return schema
+    if precision_schema.get("type") != "integer" or scale_schema.get("type") != "integer":
         return schema
     minimum = precision_schema.get("minimum")
     maximum = precision_schema.get("maximum")
@@ -122,6 +125,8 @@ def _expand_conditional_numeric(
         if not isinstance(clause, dict):
             return schema
         if set(clause) != {"if", "then"}:
+            return schema
+        if not isinstance(clause["then"], dict) or set(clause["then"]) != {"properties"}:
             return schema
         condition = clause.get("if", {}).get("properties", {})
         consequent = clause.get("then", {}).get("properties", {})
@@ -141,7 +146,11 @@ def _expand_conditional_numeric(
             or ("type" in bounded and bounded["type"] != scale_schema.get("type"))
         ):
             return schema
-        rules.append((guarded["const"], bounded["maximum"]))
+        rule = (guarded["const"], bounded["maximum"])
+        if rule not in rules:
+            if any(existing_precision == rule[0] for existing_precision, _ in rules):
+                return schema
+            rules.append(rule)
 
     expected = set(range(minimum, maximum + 1))
     if {precision for precision, _ in rules} != expected:

@@ -11,6 +11,8 @@ class KernelScalar(StrEnum):
     Boolean = 'Boolean'
     Integer = 'Integer'
     Decimal = 'Decimal'
+    Float32 = 'Float32'
+    Float64 = 'Float64'
     String = 'String'
     Timestamp = 'Timestamp'
     Duration = 'Duration'

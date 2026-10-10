@@ -5,6 +5,11 @@
 # workflows drive `make install`, `make lint`, `make test`, `make build`.
 # =============================================================================
 
+# Keep every Poetry-backed lane on the same repository-local environment. This
+# prevents the Python adapter launched by the Node matrix from resolving a
+# different interpreter than the explicit Python targets.
+export POETRY_VIRTUALENVS_IN_PROJECT := true
+
 .PHONY: install
 install:
 	pnpm install

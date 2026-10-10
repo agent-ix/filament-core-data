@@ -657,8 +657,9 @@ class Role(RootModel[str]):
 class Scalar(Enum):
     boolean = 'boolean'
     integer = 'integer'
-    number = 'number'
     decimal = 'decimal'
+    float32 = 'float32'
+    float64 = 'float64'
     string = 'string'
     bytes = 'bytes'
     date = 'date'
