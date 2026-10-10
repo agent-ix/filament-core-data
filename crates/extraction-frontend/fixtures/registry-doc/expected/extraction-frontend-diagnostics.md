@@ -7,7 +7,7 @@ status: normative
 # Extraction frontend diagnostic registry
 
 The closed `agent-ix.extraction-frontend.*` set, rendered from
-`crates/extraction-frontend/src/diagnostics.rs`. 27 codes.
+`crates/extraction-frontend/src/diagnostics.rs`. 28 codes.
 
 Every code the frontend emits is one variant of this enum, and the wire
 spelling exists only in the enum's `Display`; no module under
@@ -41,6 +41,7 @@ never placed in `causes`: `ENGINE_DIAGNOSTIC` opens its message with
 | `agent-ix.extraction-frontend.DUPLICATE_IDENTITY` | error | yes | two admitted nodes mint the same semantic identity |
 | `agent-ix.extraction-frontend.DUPLICATE_CONSTRAINT` | error | yes | one row carries one constraint keyword twice |
 | `agent-ix.extraction-frontend.CONSTRAINT_NOT_APPLICABLE` | error | yes | a constraint keyword does not apply to the resolved type of its row |
+| `agent-ix.extraction-frontend.DECIMAL_POLICY_MISSING` | error | yes | a Decimal field row has no precision and scale policy |
 | `agent-ix.extraction-frontend.DECLARED_LOSS` | info | no | the frontend dropped a construct the extraction contract declares lossy |
 | `agent-ix.extraction-frontend.UNRESOLVED_RELATIONSHIP_TARGET` | error | yes | a frontmatter relationship names a target the bundle index does not resolve |
 | `agent-ix.extraction-frontend.UNKNOWN_EDGE_VERB` | error | yes | a frontmatter relationship uses a verb the loaded registry does not define |
