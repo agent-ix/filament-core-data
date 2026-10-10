@@ -499,6 +499,7 @@ const IR_MEMBERS: &[&str] = &[
 ];
 const IR_OPTIONAL_MEMBERS: &[&str] = &[
     "contractVersion",
+    "canonicalization",
     "source",
     "package",
     "types",

@@ -274,7 +274,7 @@ mod tests {
             .spawn(|| {
                 let deep = format!("{}0{}", "[".repeat(DEPTH), "]".repeat(DEPTH));
                 let text = format!(
-                    r#"{{"ir":{{"contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"types":[{{"identity":"ix://acme/pkg/T","kind":"record","deep":{deep}}}]}}}}"#
+                    r#"{{"ir":{{"contractVersion":"2.0.0","canonicalization":{{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}},"types":[{{"identity":"ix://acme/pkg/T","kind":"record","deep":{deep}}}]}}}}"#
                 );
                 let bundle = parse(&text).expect("a million levels read");
                 let verdict = decide(&bundle);

@@ -193,13 +193,13 @@ mod tests {
                 None => String::new(),
             };
             let bundle_text = format!(
-                r#"{{"ir":{{"canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"contractVersion":"2.0.0","types":[{{"kind":"record","fields":[{{"name":"a","presence":"required","multiplicity":{{"lower":1,"upper":1}}{nullable_member}}}]}}]}}}}"#
+                r#"{{"ir":{{"canonicalization":{{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}},"contractVersion":"2.0.0","types":[{{"kind":"record","fields":[{{"name":"a","presence":"required","multiplicity":{{"lower":1,"upper":1}}{nullable_member}}}]}}]}}}}"#
             );
             let bundle = parse(&bundle_text).expect("a well-formed document");
             assert_eq!(
                 normalized(&bundle),
                 format!(
-                    r#"{{"canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"contractVersion":"2.0.0","types":[{{"fields":[{{"multiplicity":{{"lower":1,"upper":1}},"name":"a","nullable":{expected},"presence":"required"}}],"kind":"record"}}]}}"#
+                    r#"{{"canonicalization":{{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}},"contractVersion":"2.0.0","types":[{{"fields":[{{"multiplicity":{{"lower":1,"upper":1}},"name":"a","nullable":{expected},"presence":"required"}}],"kind":"record"}}]}}"#
                 ),
                 "case {id}"
             );
@@ -237,7 +237,7 @@ mod tests {
     /// A `2.0.0` document of one field whose members are spliced in.
     fn one_field(presence: &str, nullable: &str, default_kind: &str) -> String {
         let bundle = parse(&format!(
-            r#"{{"ir":{{"canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"contractVersion":"2.0.0","types":[{{"kind":"record","fields":[{{"name":"a","multiplicity":{{"lower":0,"upper":1}},"presence":"{presence}","nullable":{nullable},"defaultKind":"{default_kind}"}}]}}]}}}}"#
+            r#"{{"ir":{{"canonicalization":{{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}},"contractVersion":"2.0.0","types":[{{"kind":"record","fields":[{{"name":"a","multiplicity":{{"lower":0,"upper":1}},"presence":"{presence}","nullable":{nullable},"defaultKind":"{default_kind}"}}]}}]}}}}"#
         ))
         .expect("a well-formed document");
         normalized(&bundle)

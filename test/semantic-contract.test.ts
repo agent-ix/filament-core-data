@@ -63,6 +63,7 @@ function clone<T>(value: T): T {
  */
 const VOCABULARY_IR: JsonObject = {
 	contractVersion: "2.0.0",
+	canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" },
 	constructs: [],
 	source: {
 		identity: "ix://agent-ix/filament-core-data/source/core",

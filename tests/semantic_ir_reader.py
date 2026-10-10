@@ -780,10 +780,7 @@ def _order_keys(value: Any) -> Any:
     if isinstance(value, list):
         return [_order_keys(item) for item in value]
     if isinstance(value, dict):
-        return {
-            key: _order_keys(value[key])
-            for key in sorted(value, key=_utf16_key)
-        }
+        return {key: _order_keys(value[key]) for key in sorted(value, key=_utf16_key)}
     return value
 
 

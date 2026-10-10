@@ -2229,7 +2229,7 @@ mod tests {
         };
         let wrap = |field: String| {
             parse(&format!(
-                r#"{{"ir": {{"contractVersion": "2.0.0", "canonicalization": {"algorithm": "rfc8785-v1", "digest": "sha256-jcs"}, "types": [{{"identity": "ix://acme/pkg/T", "kind": "record", "fields": [{field}]}}]}}}}"#
+                r#"{{"ir": {{"contractVersion": "2.0.0", "canonicalization": {{"algorithm": "rfc8785-v1", "digest": "sha256-jcs"}}, "types": [{{"identity": "ix://acme/pkg/T", "kind": "record", "fields": [{field}]}}]}}}}"#
             ))
             .expect("a document")
         };
