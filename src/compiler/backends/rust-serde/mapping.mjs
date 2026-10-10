@@ -1180,7 +1180,7 @@ function mapField(field, owner, context, _version) {
 		element.startsWith("crate::") &&
 		!element.startsWith("crate::support::")
 	)
-		wrapperDepth += 1;
+		wrapperDepth = resolvedField?.scalar === "integer" ? 1 : wrapperDepth + 1;
 
 	let rustType = element;
 	if (nullable) rustType = `crate::support::Nullable<${rustType}>`;
@@ -1208,18 +1208,22 @@ function mapField(field, owner, context, _version) {
 		typeRef: field.typeRef,
 		element,
 		elementType: element,
-		 elementScalar:
+		elementScalar:
 			resolveKind(context.byIdentity, field.typeRef)?.scalar ??
 			nativeScalar(field.typeRef),
 		wrapperDepth,
 		elementInner:
 			resolvedField?.scalar === "integer"
 				? integerRustType({
-						constraints: [...inheritedFieldConstraints, ...(field.constraints ?? [])],
+						constraints: [
+							...inheritedFieldConstraints,
+							...(field.constraints ?? []),
+						],
 					})
 				: resolvedField?.scalar === "float32"
 					? "f32"
-					: resolvedField?.scalar === "float64" || resolvedField?.scalar === "number"
+					: resolvedField?.scalar === "float64" ||
+							resolvedField?.scalar === "number"
 						? "f64"
 						: undefined,
 		decimal:

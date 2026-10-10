@@ -271,6 +271,8 @@ function subjectAccess(definition, byIdentity) {
 	let current = definition;
 	let expression = "value";
 	const seen = new Set();
+	const flattenedInteger =
+		resolveKind(byIdentity, definition?.identity)?.scalar === "integer";
 	while (current !== undefined && current.kind === "alias") {
 		if (seen.has(current.identity)) return undefined;
 		seen.add(current.identity);
@@ -283,7 +285,7 @@ function subjectAccess(definition, byIdentity) {
 				: undefined;
 		// A scalar declaration maps directly to its primitive inner type. Only
 		// another alias contributes a newtype wrapper and therefore a get().
-		if (targetSupport === undefined)
+		if (targetSupport === undefined && !flattenedInteger)
 			expression = `${expression}.get()`;
 		current = target;
 	}
@@ -1446,11 +1448,12 @@ function renderCheck(
 	// already the `i64` or `f64` a numeric comparison needs. An alias reaches its
 	// base through one `get()` per hop, which yields a reference, so the copy is
 	// taken here rather than left for the comparison to fail on.
-	const owned = wrapperDepth > 0
-		? `*${subject}`
-		: expression === "value" || expression.startsWith("*")
-			? expression
-			: `(*${expression})`;
+	const owned =
+		wrapperDepth > 0
+			? `*${subject}`
+			: expression === "value" || expression.startsWith("*")
+				? expression
+				: `(*${expression})`;
 	const COMPARISONS = {
 		min: "<",
 		max: ">",
