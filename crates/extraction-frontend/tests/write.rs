@@ -39,9 +39,9 @@ fn read_all(request: &LiftRequest) -> Vec<(&'static str, Vec<u8>)> {
         .collect()
 }
 
-#[trace("TC-PLAT-990-1", "FR-145-AC-3")]
+#[trace("TC-1827", "FR-145-AC-3")]
 #[test]
-fn tc_plat_990_shared_supplementary_plane_golden_is_consumed_and_digest_sidecar_is_exact() {
+fn tc_1827_shared_supplementary_plane_golden_is_consumed_and_digest_sidecar_is_exact() {
     let golden: Value = serde_json::from_str(include_str!(
         "../../../test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json"
     ))
@@ -79,9 +79,9 @@ fn tc_plat_990_shared_supplementary_plane_golden_is_consumed_and_digest_sidecar_
     );
 }
 
-#[trace("TC-PLAT-990-2", "FR-145-CON-2")]
+#[trace("TC-1828", "FR-145-CON-2")]
 #[test]
-fn tc_plat_990_digest_is_published_before_document_and_cleans_up_on_document_failure() {
+fn tc_1828_digest_is_published_before_document_and_cleans_up_on_document_failure() {
     let (_source, _request, outcome) = lift_fixture("snapshot-table");
     let LiftOutcome::Written { document, .. } = outcome else {
         panic!("fixture did not write: {outcome:?}");
