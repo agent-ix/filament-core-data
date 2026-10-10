@@ -58,7 +58,7 @@ def extract_pinned_archives(cache: Path) -> tuple[Path, Path, Path, Path]:
             (
                 path
                 for path in (scratch / "pilot").rglob("sysml.library")
-                if path.is_file()
+                if path.is_dir()
             ),
             None,
         )
