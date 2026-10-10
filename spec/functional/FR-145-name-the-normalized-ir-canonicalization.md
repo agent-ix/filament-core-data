@@ -33,7 +33,7 @@ and the GAP-004 question carried by [FR-069](./FR-069-canonicalize-and-classify-
 The normalized document's `canonicalization` descriptor SHALL be:
 
 ```json
-{"algorithm":"rfc8785-v1"}
+{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}
 ```
 
 `rfc8785-v1` names RFC 8785 JSON Canonicalization Scheme. Its object member
@@ -42,6 +42,11 @@ is RFC 8785 spelling, and its arrays retain the order supplied by the semantic
 document. The extraction frontend may order declared semantic sets before
 serialization as required by [FR-097](./FR-097-normalize-validate-and-write-the-lifted-document.md);
 that input ordering is separate from the JSON serializer's array rule.
+
+The `digest` member names the digest domain. It is not the digest value itself:
+the actual value is carried in the producer's digest field or sidecar as
+`sha256:<64 lowercase hexadecimal digits>`, and QSL represents the same bytes
+in its existing `sha256-jcs:<64 lowercase hexadecimal digits>` envelope.
 
 The normalized document and its `sha256-jcs` digest therefore use one named
 byte domain. The identity-sorted-set extension remains a separate named domain:
@@ -60,18 +65,22 @@ the normalized document form.
 
 ## Outputs
 
-- A normalized Semantic IR document carrying `canonicalization.algorithm`
+- A normalized Semantic IR document carrying the exact
+  `canonicalization: {"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`
+  descriptor
 - Canonical bytes in the `rfc8785-v1` domain
 - A `sha256-jcs` digest over those bytes when a digest is requested
 - A QSL intake result that recomputes the same bytes and digest
 
 ## Behavior
 
-- The normalizer SHALL materialize `canonicalization.algorithm` as
-  `rfc8785-v1` in every normalized document.
+- The input schema MAY omit `canonicalization` before normalization. The
+  normalizer SHALL materialize the exact two-member descriptor
+  `{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}` in every normalized
+  document, and the published schema SHALL admit and validate that descriptor.
 - A reader SHALL accept a normalized document only when its canonicalization
-  descriptor is present, has exactly the `algorithm` member, and names
-  `rfc8785-v1`.
+  descriptor is present, has exactly the `algorithm` and `digest` members, and
+  names `rfc8785-v1` and `sha256-jcs`, respectively.
 - A reader SHALL produce a located refusal for an unknown, missing, or extra
   canonicalization descriptor member.
 - The normalizer SHALL encode object member names using RFC 8785 UTF-16
@@ -83,9 +92,10 @@ the normalized document form.
 - The normalizer SHALL encode numbers, strings, and escapes according to RFC
   8785 and SHALL reject a value that RFC 8785 cannot encode without changing
   its meaning.
-- The FCD digest writer SHALL compute a `sha256-jcs` digest for a normalized
+- The FCD digest writer SHALL compute the SHA-256 value for a normalized
   document over the exact `rfc8785-v1` bytes, including the document's
-  canonicalization descriptor.
+  canonicalization descriptor, and SHALL label that value with the
+  `sha256-jcs` domain.
 - The package-lock fingerprint SHALL continue to name and use
   `RFC8785-JCS-with-identity-sorted-sets-v1` with the included and excluded
   byte sets declared by FR-048. The lock fingerprint and normalized-document
@@ -97,9 +107,20 @@ the normalized document form.
   the RFC 8785 UTF-16 ordering. For example, U+10000 sorts before U+E000 in
   the canonical object bytes even though its Unicode code point is greater;
   the implementation SHALL not substitute Unicode scalar-value ordering.
-- The conformance and implementation vectors SHALL include a supplementary-
-  plane member name and shall record the expected bytes, algorithm label, and
-  digest domain together.
+- The shared golden at
+  `test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json` SHALL
+  include a supplementary-plane member name and record `algorithm`, `digest`,
+  `expectedBytes`, and the expected SHA-256 value together. The FCD semantic
+  positive fixture is
+  `fixtures/semantic/v1/positive/semantic-ir-canonicalization.json`; its
+  refusal mutations are the three `ir-canonicalization-*` cases in
+  `fixtures/semantic/v1/negative/cases.json`.
+- QSL SHALL mirror the same vector at
+  `quire-spec-language/qsl-semantics/tests/fixtures/fcd/normalized-supplementary-plane.json`.
+  QSL's `qsl-semantics/tests/it/model_intake.rs` test
+  `tc_plat_990_normalized_ir_digest_parity` SHALL assert the
+  `sha256-jcs:<64 lowercase hexadecimal digits>` envelope and the same
+  canonical bytes. The contract evidence is QSL FR-056 and IT-012.
 
 ## Constraints
 
@@ -114,12 +135,12 @@ the normalized document form.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-145-AC-1 | One FCD contract document names `rfc8785-v1` as the canonicalization carried by a normalized Semantic IR document and distinguishes it from `RFC8785-JCS-with-identity-sorted-sets-v1`. | Inspection |
-| FR-145-AC-2 | A normalized document contains exactly `{"algorithm":"rfc8785-v1"}` in its canonicalization descriptor; a missing, unknown, or extra descriptor member is refused with a located diagnostic. | Test |
-| FR-145-AC-3 | A golden object containing both U+10000 and U+E000 member names is byte-identical to RFC 8785 JCS UTF-16 ordering, and a fingerprint labelled `rfc8785-v1` hashes those exact bytes with the `sha256-jcs` domain. | Test |
+| FR-145-AC-2 | A normalized document contains exactly `{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}` in its canonicalization descriptor; a missing, unknown, or extra descriptor member is refused with a located diagnostic. The published schema and reader contract accept the exact descriptor and reject each mutation. | Test |
+| FR-145-AC-3 | `test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json` contains both U+10000 and U+E000 member names, records `algorithm`, `digest`, `expectedBytes`, and `sha256`, and is byte-identical to RFC 8785 JCS UTF-16 ordering. The `rfc8785-v1` domain hashes those exact bytes. | Test |
 | FR-145-AC-4 | Reordering object members does not change normalized bytes, while changing a semantic value does; array order remains authored and no identity-sorted-set extension is applied to normalized bytes. | Property |
 | FR-145-AC-5 | The package-lock fingerprint continues to use its separately named identity-sorted-set algorithm and its existing golden vectors; changing that algorithm does not silently change the normalized-document algorithm. | Test |
-| FR-145-AC-6 | QSL intake recomputes the same `sha256-jcs` digest as FCD for the supplementary-plane golden and refuses a document whose declared digest was computed from code-point ordering or another serializer. | Integration Test |
-| FR-145-AC-7 | The FCD normalizer, the extraction frontend, and QSL intake produce byte-identical canonical output for the shared golden under different locales and working directories. | Integration Test |
+| FR-145-AC-6 | QSL fixture `quire-spec-language/qsl-semantics/tests/fixtures/fcd/normalized-supplementary-plane.json` and `qsl-semantics/tests/it/model_intake.rs::tc_plat_990_normalized_ir_digest_parity` recompute the FCD `sha256` value and publish it as `sha256-jcs:<64 lowercase hexadecimal digits>`; intake refuses a document whose declared digest used code-point ordering or another serializer. | Integration Test |
+| FR-145-AC-7 | The FCD normalizer, extraction frontend, and QSL intake consume the shared golden and produce byte-identical canonical output under different locales and working directories, with FR-056 and IT-012 providing the QSL contract evidence. | Integration Test |
 
 ## Dependencies
 

@@ -64,8 +64,8 @@ the contract clause it was derived from.
 - The corpus SHALL keep every case at or below a declared minimization budget of 64 JSON nodes in `ops`, counting each scalar, array, and object once.
 - The corpus SHALL NOT delete a case that reproduces a discovered defect after that defect is fixed.
 - If a case that a `defect` register row names is absent, then the corpus gate SHALL fail and name that row.
-- `conformance/README.md` SHALL name the corpus canonical form `agent-ix-conformance-jcs-v1`: object keys ordered by code point, no insignificant whitespace, array order preserved.
-- `conformance/README.md` SHALL record that `agent-ix-conformance-jcs-v1` is a corpus comparison form and not the contract's `RFC8785-JCS-with-identity-sorted-sets-v1` fingerprint form.
+- `conformance/README.md` SHALL name the corpus normalized form `rfc8785-v1`: RFC 8785 object keys ordered by UTF-16 code unit, no insignificant whitespace, and array order preserved.
+- `conformance/README.md` SHALL record that `rfc8785-v1` is the normalized-document and `sha256-jcs` digest domain, separate from the contract's `RFC8785-JCS-with-identity-sorted-sets-v1` package-lock fingerprint form.
 
 ## Constraints
 

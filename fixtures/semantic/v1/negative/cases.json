@@ -14,6 +14,33 @@
 		"code": "agent-ix.semantic-ir.INVALID_TYPE_SHAPE"
 	},
 	{
+		"id": "ir-canonicalization-unknown-algorithm",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-canonicalization.json",
+		"set": {
+			"path": "canonicalization.algorithm",
+			"value": "codepoint-v0"
+		},
+		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
+	},
+	{
+		"id": "ir-canonicalization-extra-member",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-canonicalization.json",
+		"set": {
+			"path": "canonicalization.extra",
+			"value": true
+		},
+		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
+	},
+	{
+		"id": "ir-canonicalization-missing-digest",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-canonicalization.json",
+		"remove": "canonicalization.digest",
+		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
+	},
+	{
 		"id": "ir-unnamespaced-role",
 		"schema": "semantic-ir.schema.json",
 		"base": "positive/semantic-ir-v1-1.json",

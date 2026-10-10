@@ -16,6 +16,9 @@
 		"contractVersion": {
 			"enum": ["2.0.0"]
 		},
+		"canonicalization": {
+			"$ref": "common.schema.json#/$defs/normalizedCanonicalization"
+		},
 		"source": {
 			"type": "object",
 			"required": ["identity", "version", "dialect", "digest"],
