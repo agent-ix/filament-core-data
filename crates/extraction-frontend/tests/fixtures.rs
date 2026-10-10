@@ -73,13 +73,14 @@ const MODULES: [&str; 7] = [
 /// The codes FR-096 declares whose emission a committed file cannot
 /// express; their directory holds a `constructed.json` naming the
 /// constructing test (FR-098 "Fixture inventory").
-const CONSTRUCTED: [Code; 7] = [
+const CONSTRUCTED: [Code; 8] = [
     Code::OutputUnwritable,
     Code::LimitMaxDocuments,
     Code::LimitMaxDocumentBytes,
     Code::LimitMaxFieldsPerRecord,
     Code::LimitMaxClauseBytes,
     Code::LimitMaxDepth,
+    Code::DecimalPolicyMissing,
     Code::InvalidIr,
 ];
 

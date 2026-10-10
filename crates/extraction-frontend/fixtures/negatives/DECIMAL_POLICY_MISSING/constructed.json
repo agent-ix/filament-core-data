@@ -1,0 +1,6 @@
+{
+	"source": "constructed",
+	"code": "DECIMAL_POLICY_MISSING",
+	"constructed_by": "crates/extraction-frontend/tests/lower.rs::tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir",
+	"note": "The negative Decimal row is constructed in memory by TC-1826 because the test also lifts the valid policy-bearing rows beside it. No committed bundle expresses the missing policy without duplicating that focused numeric coverage."
+}
