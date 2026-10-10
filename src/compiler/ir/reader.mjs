@@ -102,7 +102,7 @@ function checkConstructs(document, definitions, raise, locusOf) {
 			invalid(`${entryAt}/kind`, `constructs declares the kind ${label} once`);
 			return;
 		}
-		entries.push({ label, declaration, used: false, at: `${entryAt}/kind` });
+		entries.push({ label, declaration });
 	});
 
 	const construct = constructOnlyMembers();
@@ -128,7 +128,6 @@ function checkConstructs(document, definitions, raise, locusOf) {
 			);
 			return;
 		}
-		entry.used = true;
 		const declaration = entry.declaration;
 		if (declaration === undefined) return;
 		const name = definition.kind.name;
@@ -159,11 +158,7 @@ function checkConstructs(document, definitions, raise, locusOf) {
 		}
 	});
 
-	// A population's kind resolves against the same constructs table exactly
-	// like a type definition's kind (QSpec FR-154 row 2/AC-7, FR-208): a
-	// dangling kind is INVALID_IR, and a resolved kind counts as used so the
-	// "no type definition or population is of that kind" check below does not
-	// misfire on a constructs entry a population alone uses.
+	// Every population kind resolves against the document's constructs table.
 	asArray(document.populations).forEach((population, position) => {
 		const at = `/ir/populations/${position}/kind`;
 		const kind = population.kind;
@@ -175,21 +170,9 @@ function checkConstructs(document, definitions, raise, locusOf) {
 			return;
 		const label = kindLabel(kind);
 		const entry = entries.find((one) => one.label === label);
-		if (entry === undefined) {
+		if (entry === undefined)
 			invalid(at, `the kind ${label} names no constructs entry`, population);
-			return;
-		}
-		entry.used = true;
 	});
-
-	// `readContractIr` refuses any other contractVersion before this function
-	// runs, so every document reaching here already declares 2.0.0 (fcd#179).
-	for (const entry of entries)
-		if (!entry.used)
-			invalid(
-				entry.at,
-				`constructs declares ${entry.label}, and no type definition or population is of that kind`,
-			);
 }
 
 /**

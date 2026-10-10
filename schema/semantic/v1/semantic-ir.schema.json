@@ -24,7 +24,7 @@
 					"$ref": "common.schema.json#/$defs/semanticIdentity"
 				},
 				"version": {
-					"$ref": "common.schema.json#/$defs/semver"
+					"$ref": "#/$defs/packageRevision"
 				},
 				"dialect": {
 					"$ref": "common.schema.json#/$defs/frontendDialect"
@@ -50,7 +50,7 @@
 					"$ref": "common.schema.json#/$defs/packageIdentity"
 				},
 				"version": {
-					"$ref": "common.schema.json#/$defs/semver"
+					"$ref": "#/$defs/packageRevision"
 				},
 				"manifestDigest": {
 					"$ref": "common.schema.json#/$defs/sha256"
@@ -1651,6 +1651,13 @@
 				}
 			},
 			"additionalProperties": false
+		},
+		"packageRevision": {
+			"description": "A package or source revision: SemVer or a canonical non-negative integer string, preserved as authored.",
+			"anyOf": [
+				{ "$ref": "common.schema.json#/$defs/semver" },
+				{ "type": "string", "pattern": "^(0|[1-9][0-9]*)(?![\\s\\S])" }
+			]
 		}
 	}
 }

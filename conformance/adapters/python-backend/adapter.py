@@ -284,6 +284,14 @@ def schema_diagnostics(bundle: Any) -> list[dict[str, str]]:
                 f"/{member}",
             )
         )
+    ir = bundle.get("ir")
+    if isinstance(ir, dict) and not any(
+        row["pointer"].startswith("/ir") for row in rows
+    ):
+        rows.extend(
+            {"pointer": pointer("/ir", row["path"]), "message": row["message"]}
+            for row in reader.construct_diagnostics(ir)
+        )
     if isinstance(bundle.get("mappings"), list):
         for index, mapping in enumerate(bundle["mappings"]):
             rows.extend(
@@ -353,7 +361,9 @@ def _identity_nodes(node: Any, at: str, out: list[tuple[str, str]]) -> None:
         if isinstance(identity, str):
             out.append((identity, f"{at}/identity"))
         for key in sorted(node):
-            if key != "identity":
+            # Construct declarations carry the identity axis (for example
+            # `none`), rather than declaring a semantic node identity.
+            if key != "identity" and not (at == "/ir" and key == "constructs"):
                 _identity_nodes(node[key], f"{at}/{key}", out)
     elif isinstance(node, list):
         for index, item in enumerate(node):
@@ -375,6 +385,8 @@ def _alias_chain(
     current = start
     hops = 0
     while True:
+        if reader._native_scalar(current) is not None:
+            return ("deep" if hops > DEPTH_LIMIT else "resolved", hops, current)
         definition = types.get(current)
         if definition is None:
             return ("unresolved", hops, None)
@@ -474,7 +486,12 @@ def supplementary(bundle: Any, ir: Any) -> list[dict[str, str]]:
                         f" of {DEPTH_LIMIT}",
                     )
                 )
-        elif kind == "reference" and isinstance(target, str) and target not in types:
+        elif (
+            kind == "reference"
+            and isinstance(target, str)
+            and target not in types
+            and reader._native_scalar(target) is None
+        ):
             out.append(
                 _row(
                     "UNRESOLVED_TYPE_REF",
@@ -484,7 +501,11 @@ def supplementary(bundle: Any, ir: Any) -> list[dict[str, str]]:
             )
         for member in ("items", "values"):
             element = definition.get(member)
-            if isinstance(element, str) and element not in types:
+            if (
+                isinstance(element, str)
+                and element not in types
+                and reader._native_scalar(element) is None
+            ):
                 out.append(
                     _row(
                         "UNRESOLVED_ELEMENT_TYPE",
@@ -494,7 +515,11 @@ def supplementary(bundle: Any, ir: Any) -> list[dict[str, str]]:
                 )
         for position, variant in enumerate(reader._objects(definition.get("variants"))):
             payload = variant.get("payloadType")
-            if isinstance(payload, str) and payload not in types:
+            if (
+                isinstance(payload, str)
+                and payload not in types
+                and reader._native_scalar(payload) is None
+            ):
                 out.append(
                     _row(
                         "UNRESOLVED_VARIANT_PAYLOAD",

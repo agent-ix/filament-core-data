@@ -351,10 +351,15 @@ presence of the declaration. `meaning` is an opaque id owned by QSpec.
 | `members_not_namespace` | `members` required | A member whose construct's shape is `namespace` |
 
 A document using a module construct kind carries a `constructs` table with
-exactly one entry per used kind: `kind`, `moduleVersion`, `manifestDigest` and
-the `construct` declaration. A kind with no entry, an entry no type uses, a
-kind declared twice and a declaration outside the vocabulary are refused with
-`SCHEMA_VIOLATION`. A member whose presence is `forbidden` is refused, and a
+one entry per kind used by a type or population: `kind`, `moduleVersion`,
+`manifestDigest` and the `construct` declaration. Valid unused declarations
+are also admitted and preserved; every declaration is checked against the
+same core vocabulary regardless of use, kind name or meaning. A kind with no
+entry, a kind declared twice and a declaration outside the vocabulary or its
+declaration requirements are refused with `SCHEMA_VIOLATION` by the Rust, Node
+and Python readers. The Python conformance adapter applies these checks before
+cross-field semantic rules; construct identity axes do not declare semantic
+identities. A member whose presence is `forbidden` is refused, and a
 `required` member must be present.
 
 The business module declares ten construct kinds; `population` declares none.
@@ -537,3 +542,15 @@ The structural-source decision is recorded: the owner selected TypeSpec on
 [issue #4](https://github.com/agent-ix/filament-core-data/issues/4)
 (2026-09-03, ADR-0005). This document remains provisional on issue #9 only for
 its IR field set and must not trigger downstream adoption on its own.
+
+### Semantic IR package revisions
+
+The IR's `source.version` and `package.version` admit SemVer or a canonical
+non-negative integer string (`0` or `[1-9][0-9]*`). Readers and normalization
+retain the authored string, including `1`; a revision is not a numeric scalar
+value and is not converted. JSON numbers, signs, leading zeros on integers,
+fractional revision strings and whitespace are refused at the version member.
+Other version fields retain their existing contracts. See FR-050-AC-16 and
+FR-142-AC-15 for the K2 reader boundary: its unused population declaration is
+retained, and `Instant` continues to resolve to native `Timestamp`, whose
+semantic scalar is `datetime`.

@@ -50,6 +50,26 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 - `validateIrDocument` SHALL validate against the published schema with a JSON Schema 2020-12 implementation.
 - If validation fails, then `validateIrDocument` SHALL emit one `agent-ix.compiler.INVALID_IR` diagnostic per schema error, naming the failing instance pointer.
 
+### Package and source revisions
+
+- The semantic IR `source.version` and `package.version` SHALL admit either
+  the existing SemVer spelling or a canonical non-negative integer string
+  (`0` or `[1-9][0-9]*`), including `1`, and SHALL preserve the authored string
+  through normalization. These are revision identifiers, so no numeric
+  conversion or safe-integer bound applies to their string contents.
+- The schema SHALL refuse JSON numbers, leading-zero integer strings, signed
+  integer strings, fractional revision strings and strings with whitespace at
+  the offending `version` member. `contractVersion`, `moduleVersion`, mapping,
+  profile and extension versions retain their existing closed or SemVer rules.
+- This reader contract aligns the boundary required by
+  [QSL FR-056 AC19](https://github.com/agent-ix/quire-spec-language/blob/main/spec/functional/FR-056-admit-domain-package-model-declarations.md)
+  and [QSpec TC-235 K2](https://github.com/agent-ix/quire-specification/blob/main/spec/test-cases/TC-235-business-construct-meaning-binding.md).
+  K2's authored version `1`, unused population declaration (FR-142), and
+  `Instant` binding to native `Timestamp` SHALL be retained. Native `Timestamp`
+  continues to resolve to semantic scalar `datetime`. This boundary admission
+  does not establish QSL's downstream declaration counts, normalization charges,
+  native payload checks or runtime results.
+
 ### Cross-field rules
 
 - `readContractIr` SHALL enforce the FR-027..FR-029 cross-field rules, each with the code named here:
@@ -172,6 +192,8 @@ valid instance data.
 | FR-050-AC-13 | Over 512 mutated documents the reader returns diagnostics and never throws. | Fuzz |
 | FR-050-AC-14 | Every code the table adds for [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) (`INVALID_DEFAULT_VALUE`, `INTEGER_OUTSIDE_I128`, `DECIMAL_POLICY_MISSING`, `DECIMAL_POLICY_CONFLICT`, `INEXACT_INTEGER`, `INEXACT_NUMBER`) and the FR-144 `INVALID_OPERAND` spellings fire from the compiler's reader on a constructed document, and the compiler's reader, the TypeScript reader and the Python reader produce the same codes at the same pointers for each; an `integer` bound written as the JSON number `1` raises `INVALID_OPERAND` and `"1"` raises nothing. | Test |
 | FR-050-AC-15 | Each row of the numeric instance diagnostic table is exercised at a scalar root, `/value`, and `/value/0`, with the exact full code and pointer asserted. Safe integer bytes `5.0` and `5e0` raise `NOT_AN_INTEGER`; their parsed values are accepted where `5` is accepted. A property named `a/b~c` reports `/a~1b~0c`. IR operands are tested separately and retain `INVALID_OPERAND` at their IR pointers. | Test |
+
+| FR-050-AC-16 | A contract `2.0.0` reader-boundary fixture with source and package revisions `"1"` is admitted by Rust, Node and Python and preserves those strings through normalization. `"0"`, `"9007199254740993"` and existing SemVer spellings also remain unchanged; `""`, `"01"`, `"-1"`, `"1.0"`, `"1 "`, `"1e0"`, `"v1"` and JSON number `1` are refused at each offending revision member. Module versions remain SemVer. | Test |
 
 ## Dependencies
 

@@ -147,6 +147,14 @@ fn is_semver(text: &str) -> bool {
     numeric_ok && tail_ok(pre) && tail_ok(build)
 }
 
+/// Source and package revisions retain either SemVer or a canonical integer string.
+fn is_package_revision(text: &str) -> bool {
+    is_semver(text)
+        || (!text.is_empty()
+            && text.chars().all(|c| c.is_ascii_digit())
+            && (text.len() == 1 || !text.starts_with('0')))
+}
+
 fn is_sha256(text: &str) -> bool {
     match text.strip_prefix("sha256:") {
         Some(rest) => {
@@ -515,8 +523,6 @@ struct ConstructEntry<'a> {
     name: &'a str,
     /// The declaration, when the entry's `construct` reads as one.
     declaration: Option<Declaration>,
-    /// Whether a type definition's kind names the entry.
-    used: bool,
 }
 
 /// The document's `constructs` table, keyed by kind.
@@ -637,7 +643,6 @@ fn constructs_schema<'a>(constructs: &'a Json, at: &str, f: &mut Findings) -> Co
             module,
             name,
             declaration,
-            used: false,
         });
     }
     table
@@ -691,7 +696,7 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
         f.push(at, "a required member constructs is absent");
     }
     let constructs_at = child(at, "constructs");
-    let mut table = match ir.get("constructs") {
+    let table = match ir.get("constructs") {
         Some(constructs) => constructs_schema(constructs, &constructs_at, f),
         None => ConstructTable {
             entries: Vec::new(),
@@ -705,7 +710,7 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
                 f.push(&types_at, "a document declares at least one type");
             }
             for (position, definition) in items.iter().enumerate() {
-                type_definition(definition, &index(&types_at, position), &mut table, f);
+                type_definition(definition, &index(&types_at, position), &table, f);
             }
         }
     }
@@ -713,29 +718,7 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
         let populations_at = child(at, "populations");
         if expect_array(populations, &populations_at, "populations", f) {
             for (position, population) in populations.as_array().unwrap_or(&[]).iter().enumerate() {
-                population_schema(population, &index(&populations_at, position), &mut table, f);
-            }
-        }
-    }
-    {
-        let entries = ir.get("constructs").and_then(Json::as_array).unwrap_or(&[]);
-        for (position, entry) in entries.iter().enumerate() {
-            let Some((module, name)) = entry.get("kind").and_then(|kind| {
-                Some((
-                    kind.get("module").and_then(Json::as_str)?,
-                    kind.get("name").and_then(Json::as_str)?,
-                ))
-            }) else {
-                continue;
-            };
-            if table
-                .position(module, name)
-                .is_some_and(|found| !table.entries[found].used)
-            {
-                f.push(
-                    &child(&index(&constructs_at, position), "kind"),
-                    format!("constructs declares {module}/{name}, and no type definition or population is of that kind"),
-                );
+                population_schema(population, &index(&populations_at, position), &table, f);
             }
         }
     }
@@ -764,12 +747,7 @@ const POPULATION_MEMBERS: &[&str] = &[
 /// FR-153/AD-006), never a per-member multiplicity.
 const POPULATION_EXTENTS: &[&str] = &["closed", "open"];
 
-fn population_schema(
-    population: &Json,
-    at: &str,
-    table: &mut ConstructTable<'_>,
-    f: &mut Findings,
-) {
+fn population_schema(population: &Json, at: &str, table: &ConstructTable<'_>, f: &mut Findings) {
     if !expect_object(population, at, "a population", f) {
         return;
     }
@@ -790,21 +768,16 @@ fn population_schema(
         f,
     );
     let kind_at = child(at, "kind");
-    // A population's kind resolves against the document's own constructs
-    // table exactly like a type definition's kind (QSpec FR-154 row 2/AC-7,
-    // FR-208): a dangling kind refuses, and a resolved kind counts as used so
-    // the "no type definition or population is of that kind" check below
-    // does not misfire on a constructs entry a population alone uses.
+    // Every population kind resolves against the document's constructs table.
     if let Some((module, name)) = population
         .get("kind")
         .and_then(|kind| construct_kind(kind, &kind_at, f))
     {
-        match table.position(module, name) {
-            Some(found) => table.entries[found].used = true,
-            None => f.push(
+        if table.position(module, name).is_none() {
+            f.push(
                 &kind_at,
                 format!("the kind {module}/{name} names no constructs entry"),
-            ),
+            );
         }
     }
     identity_list(
@@ -843,8 +816,8 @@ fn ir_source(source: &Json, at: &str, f: &mut Findings) {
     expect_shape(
         source.get("version"),
         &child(at, "version"),
-        is_semver,
-        "a version is SemVer",
+        is_package_revision,
+        "a revision is SemVer or a canonical non-negative integer string",
         f,
     );
     expect_shape(
@@ -891,8 +864,8 @@ fn ir_package(package: &Json, at: &str, f: &mut Findings) {
     expect_shape(
         package.get("version"),
         &child(at, "version"),
-        is_semver,
-        "a version is SemVer",
+        is_package_revision,
+        "a revision is SemVer or a canonical non-negative integer string",
         f,
     );
     for name in ["manifestDigest", "lockDigest"] {
@@ -975,7 +948,7 @@ const TYPE_REQUIRED: &[&str] = &[
     "unknownPolicy",
 ];
 
-fn type_definition(definition: &Json, at: &str, table: &mut ConstructTable<'_>, f: &mut Findings) {
+fn type_definition(definition: &Json, at: &str, table: &ConstructTable<'_>, f: &mut Findings) {
     if !expect_object(definition, at, "a type definition", f) {
         return;
     }
@@ -1071,8 +1044,7 @@ fn type_definition(definition: &Json, at: &str, table: &mut ConstructTable<'_>, 
     match construct {
         Some((module, name)) => match table.position(module, name) {
             Some(found) => {
-                let entry = &mut table.entries[found];
-                entry.used = true;
+                let entry = &table.entries[found];
                 if let Some(declaration) = &entry.declaration {
                     construct_schema(definition, at, name, declaration, f);
                 }
