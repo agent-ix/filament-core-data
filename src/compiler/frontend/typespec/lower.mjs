@@ -544,25 +544,6 @@ export function lowerProgram(options) {
 		return value;
 	};
 	const constraintsOf = (target) => {
-		if (target.name === "bounded")
-			console.error(
-				"DEBUG_DECORATORS",
-				JSON.stringify(
-					target.decorators?.map((item) => ({
-						decorator: item.decorator?.name,
-						definition: item.definition?.name,
-					args: item.args?.map((arg) => ({
-						jsValueType: typeof arg.jsValue,
-						jsValueKeys: Object.keys(arg.jsValue ?? {}),
-						jsValueString: String(arg.jsValue),
-						jsValueAsNumber:
-							typeof arg.jsValue?.asNumber === "function"
-								? arg.jsValue.asNumber()
-								: undefined,
-					})),
-					})),
-				),
-			);
 		const found = [];
 		const push = (keyword, operands, decorator) =>
 			found.push({ keyword, operands, decorator });
@@ -894,7 +875,9 @@ export function lowerProgram(options) {
 			const aliasIdentity = typeIdentity(aliasName);
 			const widthConstraints = width
 				? [
-						...["min", "max"].map((keyword) => ({
+						...(min === undefined ? ["min"] : []),
+						...(max === undefined ? ["max"] : []),
+						].map((keyword) => ({
 							identity: mintIdentity(packageIdentity, "constraint", [
 								aliasName,
 								keyword,
