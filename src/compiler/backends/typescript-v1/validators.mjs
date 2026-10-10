@@ -460,6 +460,13 @@ function checkCall(element, valueExpression, pointerExpression) {
 		const scalar = element.scalar;
 		if (scalar === "any") return "void 0";
 		const checks = [];
+		if (scalar === "integer" && element.impossibleIntegerBounds === true) {
+			const impossible = element.constraints?.[0];
+			if (impossible !== undefined)
+				checks.push(
+					`fail(errors, ${pointerExpression}, ${literal(impossible.diagnosticCode)}, ${literal("the integer constraints admit no value")})`,
+				);
+		}
 		if (scalar === "integer" && element.wideInteger === true) {
 			checks.push(
 				`if (typeof ${valueExpression} !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression}))) fail(errors, ${pointerExpression}, CODES.NOT_AN_INTEGER, "the native integer wire value has the wrong type")`,

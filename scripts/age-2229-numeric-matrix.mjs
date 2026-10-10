@@ -590,6 +590,26 @@ export function inlineWideInteger(cell) {
 	);
 }
 
+export function cellHasValidProbe(cell) {
+	if (cell.range !== "inline-bounds") return true;
+	let lower = -(2n ** 53n - 1n);
+	let upper = 2n ** 53n - 1n;
+	for (const entry of boundProbeConstraints(cell)) {
+		const value = BigInt(entry.operands.value);
+		if (entry.keyword === "min") lower = lower > value ? lower : value;
+		if (entry.keyword === "exclusiveMin") {
+			const effective = value + 1n;
+			lower = lower > effective ? lower : effective;
+		}
+		if (entry.keyword === "max") upper = upper < value ? upper : value;
+		if (entry.keyword === "exclusiveMax") {
+			const effective = value - 1n;
+			upper = upper < effective ? upper : effective;
+		}
+	}
+	return lower <= upper;
+}
+
 function scalar(name, kind, constraints) {
 	return {
 		identity: identity(name),

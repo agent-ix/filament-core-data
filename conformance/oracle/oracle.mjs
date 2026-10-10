@@ -1208,6 +1208,7 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 			numeric = scalar === "float32" ? Math.fround(value) : value;
 		}
 		for (const definition of definitions) {
+			let firstFailure;
 			for (const constraint of Array.isArray(definition.constraints)
 				? definition.constraints
 				: []) {
@@ -1222,8 +1223,17 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 							: constraint.keyword === "exclusiveMin"
 								? numeric <= operand
 								: numeric >= operand;
-				if (violated) return { ok: false, code: constraint.diagnosticCode };
+				if (violated) {
+					const failure = { ok: false, code: constraint.diagnosticCode };
+					if (
+						(constraint.keyword === "exclusiveMin" || constraint.keyword === "exclusiveMax") &&
+						numeric === operand
+					)
+						return failure;
+					firstFailure ??= failure;
+				}
 			}
+			if (firstFailure) return firstFailure;
 		}
 	}
 	return { ok: true, code: "OK" };

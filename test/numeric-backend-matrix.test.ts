@@ -23,6 +23,7 @@ import {
 	buildDifferentialFuzzIr,
 	cellRecordName,
 	cellValue,
+	cellHasValidProbe,
 	inlineWideInteger,
 	MATRIX_COLUMNS,
 	MATRIX_CELLS,
@@ -144,8 +145,10 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 				"function",
 			);
 			const valid = cellValue(cell);
+			const validExpected = cellHasValidProbe(cell);
 			const validResult = validate(valid);
-			expect(validResult.ok, `${cell.name} TypeScript valid`).toBe(true);
+			expect(validResult.ok, `${cell.name} TypeScript valid`).toBe(validExpected);
+		if (validExpected)
 			expect(validResult.value, `${cell.name} TypeScript wire`).toEqual(valid);
 			expect(
 				validate(cellValue(cell, false)).ok,
@@ -174,7 +177,7 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			expect(schema, `${cell.name} JSON Schema`).toBeDefined();
 			const validateJson = ajv.getSchema(schema.$id);
 			expect(validateJson, `${cell.name} compiled JSON Schema`).toBeDefined();
-			expect(validateJson?.(valid), `${cell.name} JSON valid`).toBe(true);
+			expect(validateJson?.(valid), `${cell.name} JSON valid`).toBe(validExpected);
 			expect(
 				validateJson?.(cellValue(cell, false)),
 				`${cell.name} JSON invalid`,
@@ -218,6 +221,9 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			const rustJson = JSON.stringify(cellValue(cell));
 			const invalidJson = JSON.stringify(cellValue(cell, false));
 			const name = rustTypeName(cell);
+			const validProbe = cellHasValidProbe(cell)
+				? `let value: ${name} = serde_json::from_str(${JSON.stringify(rustJson)}).unwrap_or_else(|error| panic!("${cell.name} valid: {error}")); let encoded = serde_json::to_string(&value).unwrap(); assert_eq!(serde_json::from_str::<serde_json::Value>(&encoded).unwrap(), serde_json::from_str::<serde_json::Value>(${JSON.stringify(rustJson)}).unwrap()); let _: ${name} = serde_json::from_str(&encoded).unwrap_or_else(|error| panic!("${cell.name} wire: {error}"));`
+				: `assert!(serde_json::from_str::<${name}>(${JSON.stringify(rustJson)}).is_err(), "${cell.name} impossible valid accepted");`;
 			const nullProbe = cell.nullable
 				? `let _: ${name} = serde_json::from_str(${JSON.stringify(JSON.stringify(rustNullableValue(cell)))}).unwrap_or_else(|error| panic!("${cell.name} nullable: {error}"));`
 				: "";
@@ -228,7 +234,7 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			const escapedDecimalProbe = cell.decimalRegex
 				? `assert!(serde_json::from_str::<${name}>("{\\"value\\":\\"1\\\\.5\\"}").is_err());`
 				: "";
-			return `let value: ${name} = serde_json::from_str(${JSON.stringify(rustJson)}).unwrap_or_else(|error| panic!("${cell.name} valid: {error}")); let encoded = serde_json::to_string(&value).unwrap(); assert_eq!(serde_json::from_str::<serde_json::Value>(&encoded).unwrap(), serde_json::from_str::<serde_json::Value>(${JSON.stringify(rustJson)}).unwrap()); let _: ${name} = serde_json::from_str(&encoded).unwrap_or_else(|error| panic!("${cell.name} wire: {error}")); assert!(serde_json::from_str::<${name}>(${JSON.stringify(invalidJson)}).is_err()); ${nativeNumericProbe} ${escapedDecimalProbe} ${nullProbe}`;
+			return `${validProbe} assert!(serde_json::from_str::<${name}>(${JSON.stringify(invalidJson)}).is_err()); ${nativeNumericProbe} ${escapedDecimalProbe} ${nullProbe}`;
 		}).join("\n    ");
 		writeFileSync(
 			join(scratch, "tests", "numeric_matrix.rs"),

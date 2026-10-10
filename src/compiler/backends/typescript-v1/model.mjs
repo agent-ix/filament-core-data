@@ -317,6 +317,8 @@ function fieldEntry(types, identifiers, field) {
 			? Object.freeze({
 					...summary,
 					constraints: Object.freeze([...(field.constraints ?? [])]),
+					impossibleIntegerBounds:
+						integerBounds(field.constraints).lower > integerBounds(field.constraints).upper,
 					wideInteger: wideIntegerWithConstraints(
 						types,
 						field.typeRef,
