@@ -676,10 +676,13 @@ export function lowerProgram(options) {
 				index === 0 ? part : `${part.charAt(0).toUpperCase()}${part.slice(1)}`,
 			)
 			.join("");
-		const aliasConstraintParts = [aliasName];
-		// Sequence and union aliases retain their historical flat identities
-		// (BytesItems, ChoiceValueSmall). Operation parameters use the nested
-		// value-site path in lowerField below because their owner is an operation.
+		// Keep the type alias itself flat (BytesItems, ChoiceSmall), while its
+		// constraints retain the authored value-site segments (Bytes-items and
+		// Choice-small).  These identities are the stable FR-053 diagnostic
+		// namespace and must not be derived from the display name.
+		const aliasConstraintParts = nameParts.map((part, index) =>
+			index === 0 ? String(part) : String(part).toLowerCase(),
+		);
 		const aliasIdentity = typeIdentity(aliasName);
 		if (!definitions.has(aliasIdentity)) {
 			const constraints = ["min", "max"].map((keyword) => ({
@@ -979,7 +982,11 @@ export function lowerProgram(options) {
 			const aliasParts = width
 				? [...ownerParts, memberName, "width"]
 				: [...ownerParts, `${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`];
-			const aliasName = `${ownerParts.join("")}${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`;
+			const capitalize = (value) =>
+				`${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+			const aliasName = operationSite
+				? `${ownerParts.map(capitalize).join("")}${capitalize(memberName)}Param`
+				: `${ownerParts.join("")}${capitalize(memberName)}`;
 			const aliasConstraintParts = widthAlias
 				? [...ownerParts, memberName]
 				: [aliasName];
@@ -993,6 +1000,12 @@ export function lowerProgram(options) {
 				const memberToken = memberName.replace(/[^A-Za-z0-9]+/g, "_").toUpperCase();
 				return code.replace(`_${memberToken}_`, `__${memberToken}_`);
 			};
+			const constraintIdentity = (parts, keyword, suffix = []) =>
+				mintIdentity(
+					packageIdentity,
+					operationSite ? "typeConstraint" : "constraint",
+					[...parts, ...suffix, keyword],
+				);
 			const widthConstraints = width
 				? [
 						...(constraints.some((item) => item.keyword === "min")
@@ -1002,10 +1015,7 @@ export function lowerProgram(options) {
 							? []
 							: ["max"]),
 					].map((keyword) => ({
-						identity: mintIdentity(packageIdentity, "constraint", [
-							...aliasConstraintParts,
-							keyword,
-						]),
+						identity: constraintIdentity(aliasConstraintParts, keyword),
 						keyword,
 						operands: { value: width[keyword] },
 						appliesTo: aliasIdentity,
@@ -1022,11 +1032,11 @@ export function lowerProgram(options) {
 					constraints: [
 						...widthConstraints,
 						...constraints.map((item) => ({
-							identity: mintIdentity(packageIdentity, "constraint", [
-								...aliasConstraintParts,
+							identity: constraintIdentity(
+								aliasConstraintParts,
 								item.keyword,
-								"narrowed",
-							]),
+								["narrowed"],
+							),
 							keyword: item.keyword,
 							operands: item.operands,
 							appliesTo: aliasIdentity,

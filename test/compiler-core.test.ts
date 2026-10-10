@@ -1670,7 +1670,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"namespace AgentIx.Semantic;",
 				"scalar ScalarWidth extends uint8;",
 				"model Bytes is Array<uint8>;",
-				"union ChoiceValue { small: int16, text: string, }",
+				"union Choice { small: int16, text: string, }",
 				"model Order { value: string; cancelReason: uint8; cancel_reason: uint8; cancel_param_reason: uint8; }",
 				'@operations("Order")',
 				"interface OrderOperations { cancel(reason: uint8): uint8; wide(value: uint64): uint64; }",
@@ -1702,8 +1702,23 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			["min", "0"],
 			["max", "255"],
 		]);
+		expect(
+			(bytesItems.constraints as Json[]).map((one) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toEqual([
+			[
+				"ix://agent-ix/probe/constraint/Bytes-items-min",
+				"agent-ix.probe.BYTES_ITEMS_MIN",
+			],
+			[
+				"ix://agent-ix/probe/constraint/Bytes-items-max",
+				"agent-ix.probe.BYTES_ITEMS_MAX",
+			],
+		]);
 		const choice = types.find(
-			(type) => type.displayName === "ChoiceValue",
+			(type) => type.displayName === "Choice",
 		) as Json;
 		const small = (choice.variants as Json[]).find(
 			(variant) => variant.name === "small",
@@ -1712,8 +1727,23 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			(type) => type.identity === small.payloadType,
 		) as Json;
 		expect(small.payloadType).toBe(smallAlias.identity);
-		expect(smallAlias.identity).toBe("ix://agent-ix/probe/ChoiceValueSmall");
+		expect(smallAlias.identity).toBe("ix://agent-ix/probe/ChoiceSmall");
 		expect(smallAlias.target).toBe("ix://agent-ix/probe/Integer");
+		expect(
+			(smallAlias.constraints as Json[]).map((one) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toEqual([
+			[
+				"ix://agent-ix/probe/constraint/Choice-small-min",
+				"agent-ix.probe.CHOICE_SMALL_MIN",
+			],
+			[
+				"ix://agent-ix/probe/constraint/Choice-small-max",
+				"agent-ix.probe.CHOICE_SMALL_MAX",
+			],
+		]);
 		const operation = types.find(
 			(type) => type.displayName === "Order",
 		) as Json;
@@ -1731,6 +1761,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(parameterAlias.identity).toBe(
 			"ix://agent-ix/probe/Order/cancel/reason/width",
 		);
+		expect(parameterAlias.displayName).toBe("OrderCancelReasonParam");
 		expect(parameterAlias.target).toBe("ix://agent-ix/probe/Integer");
 		expect(returns.typeRef).toBe(returnAlias.identity);
 		expect(returnAlias.identity).toBe("ix://agent-ix/probe/OrderCancelReturn");
@@ -1774,7 +1805,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			"agent-ix.probe.ORDER_CANCEL_PARAM_REASON_MIN",
 		);
 		expect(parameterAlias.constraints.find((one: Json) => one.keyword === "min").identity).toBe(
-			"ix://agent-ix/probe/constraint/Order-cancel-reason-min",
+			"ix://agent-ix/probe/constraint/Order/cancel/reason/min",
 		);
 		expect(parameterAlias.constraints.find((one: Json) => one.keyword === "min").diagnosticCode).toBe(
 			"agent-ix.probe.ORDER_CANCEL__REASON_MIN",

@@ -592,8 +592,11 @@ export function inlineWideInteger(cell) {
 
 export function cellHasValidProbe(cell) {
 	if (cell.range !== "inline-bounds") return true;
-	let lower = -(2n ** 53n - 1n);
-	let upper = 2n ** 53n - 1n;
+	// Use the safe integer interval only for an absent side.  An explicit
+	// [u64MAX,u64MAX] interval is a valid one-value probe and must not be
+	// clamped into the JavaScript-safe range.
+	let lower;
+	let upper;
 	for (const entry of boundProbeConstraints(cell)) {
 		const value = BigInt(entry.operands.value);
 		if (entry.keyword === "min") lower = lower > value ? lower : value;
@@ -607,6 +610,8 @@ export function cellHasValidProbe(cell) {
 			upper = upper < effective ? upper : effective;
 		}
 	}
+	if (lower === undefined) lower = -(2n ** 53n - 1n);
+	if (upper === undefined) upper = 2n ** 53n - 1n;
 	return lower <= upper;
 }
 
