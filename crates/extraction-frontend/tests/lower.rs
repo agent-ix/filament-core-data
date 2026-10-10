@@ -689,8 +689,10 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
         "minLength" | "maxLength" => json!({"value": 1}),
         "pattern" => json!({"regex": "^a$", "dialect": "ecma-262"}),
         "enumValues" => {
-            if scalar == "decimal" {
+            if matches!(scalar, "integer" | "decimal") {
                 json!({"values": ["1"]})
+            } else if matches!(scalar, "float32" | "float64") {
+                json!({"values": [1]})
             } else {
                 json!({"values": ["a"]})
             }
@@ -780,7 +782,8 @@ fn tc_1225_min_on_string_is_blocking_constraint_not_applicable_and_the_reader_ag
         ("scalar", "boolean"),
         ("scalar", "integer"),
         ("scalar", "decimal"),
-        ("scalar", "number"),
+        ("scalar", "float32"),
+        ("scalar", "float64"),
         ("scalar", "string"),
         ("scalar", "bytes"),
         ("scalar", "date"),
