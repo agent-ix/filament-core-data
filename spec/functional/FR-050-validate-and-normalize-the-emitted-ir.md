@@ -115,8 +115,8 @@ valid instance data.
 | A canonical wide integer string exceeds a missing side's effective default bound | `agent-ix.typescript-backend.INTEGER_OUT_OF_SAFE_RANGE` | The supplied value |
 | A float32 or float64 is supplied as a string, boolean, object or array | `agent-ix.typescript-backend.NOT_A_NUMBER` | The supplied value |
 | A finite JSON number rounds to an infinite binary32 value on a float32 subject (`3.5e38`, `-3.5e38`) | `agent-ix.typescript-backend.NOT_A_NUMBER_VALUE` | The supplied value |
-| A parsed numeric input is NaN | `agent-ix.typescript-backend.NOT_A_NUMBER_VALUE` | The supplied value |
-| A parsed numeric input is positive or negative infinity | `agent-ix.typescript-backend.NOT_FINITE` | The supplied value |
+| A parsed input on a safe integer, float32 or float64 subject is NaN | `agent-ix.typescript-backend.NOT_A_NUMBER_VALUE` | The supplied value |
+| A parsed input on a safe integer, float32 or float64 subject is positive or negative infinity | `agent-ix.typescript-backend.NOT_FINITE` | The supplied value |
 
 - A validator SHALL apply presence and nullability rules before numeric rules,
   so an absent required field or disallowed `null` retains its existing
@@ -124,7 +124,8 @@ valid instance data.
 - A validator SHALL reject a wrong wire type or noncanonical spelling before
   converting it or evaluating authored numeric constraints. In particular, an
   unsafe JSON number on a wide subject raises `NOT_AN_INTEGER`, not
-  `INTEGER_OUT_OF_SAFE_RANGE`.
+  `INTEGER_OUT_OF_SAFE_RANGE`; a parsed NaN or infinity on a wide integer
+  subject likewise raises `NOT_AN_INTEGER` because its wire type is wrong.
 - A validator SHALL reject a non-integral number before checking safe integer
   magnitude, and a non-finite value or binary32 overflow before checking float
   bounds. If a value has valid structural form and violates an authored bound,
