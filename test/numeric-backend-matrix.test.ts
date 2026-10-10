@@ -80,6 +80,68 @@ function fuzzOracleOutcome(
 	);
 }
 
+/** FR-144: an omitted upper bound defaults to MAX_SAFE_INTEGER. */
+it("rejects an integer-only-min probe outside the effective safe range", () => {
+	const fuzzCases = buildDifferentialFuzzCases();
+	expect(fuzzCases[0]).toMatchObject({
+		baseType: "integer",
+		center: 2n ** 53n,
+		shape: "min",
+		wire: "string",
+	});
+	const fuzzOutcome = fuzzOracleOutcome(
+		buildDifferentialFuzzIr(),
+		fuzzCases[0],
+		fuzzCases[0].probes.valid,
+	);
+	expect(fuzzOutcome.ok).toBe(false);
+
+	const baseIdentity = "ix://agent-ix/age-2229-numeric-matrix/type/EffectiveRangeBase";
+	const recordIdentity = "ix://agent-ix/age-2229-numeric-matrix/type/EffectiveRange";
+	const ir = {
+		contractVersion: "2.0.0",
+		types: [
+			{
+				identity: baseIdentity,
+				displayName: "EffectiveRangeBase",
+				kind: "scalar",
+				scalar: "integer",
+				constraints: [
+					{
+						identity: `${recordIdentity}/constraint/min`,
+						keyword: "min",
+						operands: { value: "9007199254740992" },
+						appliesTo: baseIdentity,
+						diagnosticCode: "agent-ix.probe.EFFECTIVE_RANGE_MIN",
+					},
+				],
+			},
+			{
+				identity: recordIdentity,
+				displayName: "EffectiveRange",
+				kind: "record",
+				fields: [
+					{
+						identity: `${recordIdentity}#value`,
+						name: "value",
+						typeRef: baseIdentity,
+					},
+				],
+			},
+		],
+	};
+	const outcome = conformanceOracle.admitInstance(
+		{ ir },
+		recordIdentity,
+		{ value: "9007199254740992" },
+		{ wire: "string" },
+	);
+	expect(outcome).toEqual({
+		ok: false,
+		code: "agent-ix.probe.EFFECTIVE_RANGE_MIN",
+	});
+});
+
 async function generatedValidators(directory: string, ir: any) {
 	writeFileSync(join(directory, "package.json"), '{"type":"module"}\n');
 	writeFileSync(

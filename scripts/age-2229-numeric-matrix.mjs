@@ -293,15 +293,15 @@ export function buildDifferentialFuzzCases() {
 	};
 	for (let index = 0; index < DIFFERENTIAL_FUZZ_COUNT; index += 1) {
 		state = fuzzRandom(state);
-		const baseType = baseTypes[state % baseTypes.length];
+		const baseType = index === 0 ? "integer" : baseTypes[state % baseTypes.length];
 		state = fuzzRandom(state);
-		const shape = FUZZ_SHAPES[state % FUZZ_SHAPES.length];
-		let center = centers[baseType][state % centers[baseType].length];
+		const shape = index === 0 ? "min" : FUZZ_SHAPES[state % FUZZ_SHAPES.length];
+		let center = index === 0 ? 2n ** 53n : centers[baseType][state % centers[baseType].length];
 		// FR-144 gives an unconstrained side the safe-integer default.  A lone
 		// lower bound above MAX_SAFE_INTEGER (or lone upper bound below its
 		// negative) therefore has no valid center; keep the generated valid probe
 		// inside the normative default interval instead of masking that mismatch.
-		if (baseType === "integer") {
+		if (baseType === "integer" && index !== 0) {
 			const safe = 2n ** 53n - 1n;
 			const normalizedShape = shape.toLowerCase();
 			const hasLower = normalizedShape.includes("min");

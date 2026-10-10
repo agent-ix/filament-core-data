@@ -1208,10 +1208,48 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 			numeric = scalar === "float32" ? Math.fround(value) : value;
 		}
 		for (const definition of definitions) {
-			let firstFailure;
-			for (const constraint of Array.isArray(definition.constraints)
+			const constraints = Array.isArray(definition.constraints)
 				? definition.constraints
-				: []) {
+				: [];
+			let firstFailure;
+			if (scalar === "integer") {
+				const safe = 2n ** 53n - 1n;
+				let lower = -safe;
+				let upper = safe;
+				let lowerConstraint;
+				let upperConstraint;
+				for (const constraint of constraints) {
+					if (
+						!isObject(constraint) ||
+						!["min", "max", "exclusiveMin", "exclusiveMax"].includes(
+							String(constraint.keyword),
+						)
+					)
+						continue;
+					const operand = BigInt(constraint.operands?.value);
+					if (constraint.keyword === "min" && operand > lower) {
+						lower = operand;
+						lowerConstraint = constraint;
+					}
+					if (constraint.keyword === "exclusiveMin" && operand + 1n > lower) {
+						lower = operand + 1n;
+						lowerConstraint = constraint;
+					}
+					if (constraint.keyword === "max" && operand < upper) {
+						upper = operand;
+						upperConstraint = constraint;
+					}
+					if (constraint.keyword === "exclusiveMax" && operand - 1n < upper) {
+						upper = operand - 1n;
+						upperConstraint = constraint;
+					}
+				}
+				if (lower > upper) {
+					const constraint = lowerConstraint ?? upperConstraint;
+					return { ok: false, code: constraint?.diagnosticCode };
+				}
+			}
+			for (const constraint of constraints) {
 				if (!isObject(constraint) || !["min", "max", "exclusiveMin", "exclusiveMax"].includes(String(constraint.keyword)))
 					continue;
 				const operand = scalar === "integer" ? BigInt(constraint.operands?.value) : Number(constraint.operands?.value);
