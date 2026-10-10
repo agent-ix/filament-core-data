@@ -90,6 +90,16 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
         "a member's identity is its owner's identity, `/`, and its own name"
     );
     assert_eq!(
+        package.alias_identity("FR-001", "created_at").as_deref(),
+        Ok("ix://agent-ix/docs-service/FR-001Created-at"),
+        "an alias identity uses the artifact id and capitalized field slug"
+    );
+    assert_eq!(
+        agent_ix_extraction_frontend::identity::alias_display_name("Note", "created_at"),
+        "NoteCreated_at",
+        "an alias display name preserves the raw field spelling"
+    );
+    assert_eq!(
         package
             .constraint_identity("Snapshot", "createdBy", "maxLength")
             .as_deref(),

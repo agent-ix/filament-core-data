@@ -546,8 +546,12 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
     assert_eq!(version_constraint["operands"], json!({"value": "1"}));
 
     let price = field_named(record, "price");
-    let price_alias = type_named(&types, "NumericRows.price");
+    let price_alias = type_named(&types, "NumericRowsPrice");
     assert_eq!(price["typeRef"], price_alias["identity"]);
+    assert_eq!(
+        price_alias["identity"],
+        "ix://agent-ix/identity-collision/FR-001Price"
+    );
     assert_eq!(price_alias["kind"], "alias");
     assert_eq!(price_alias["target"], "ix://quire/native/Decimal");
     assert_eq!(price_alias["decimal"], json!({"precision": 10, "scale": 2}));

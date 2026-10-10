@@ -788,7 +788,7 @@ pub fn lower_record(
             let decimal_alias = decl.type_ref.decimal.is_some();
             let applies_to = if decimal_alias {
                 ctx.package
-                    .alias_identity(ctx.display_name, &decl.name)
+                    .alias_identity(ctx.id, &decl.name)
                     .map_err(|unsluggable| {
                         LowerError::Blocked(vec![unsluggable.diagnostic(locus.clone())])
                     })?
