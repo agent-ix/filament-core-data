@@ -519,7 +519,7 @@ pub fn applies_to(keyword: &str, kind: &str, scalar: &str) -> bool {
     };
     let ordered = matches!(
         scalar,
-        "integer" | "decimal" | "number" | "date" | "datetime" | "duration"
+        "integer" | "decimal" | "float32" | "float64" | "date" | "datetime" | "duration"
     );
     let sized = matches!(scalar, "string" | "bytes");
     match (keyword, kind) {
