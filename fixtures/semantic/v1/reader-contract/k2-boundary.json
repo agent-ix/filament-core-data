@@ -1,0 +1,116 @@
+{
+	"contractVersion": "2.0.0",
+	"source": {
+		"identity": "ix://test/orders/source",
+		"version": "1",
+		"dialect": "spec-bundle",
+		"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	},
+	"package": {
+		"identity": "test/orders",
+		"version": "1",
+		"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mappingVersions": ["1.0.0"],
+		"profileVersions": []
+	},
+	"constructs": [
+		{
+			"kind": {
+				"module": "test/business",
+				"name": "happened"
+			},
+			"moduleVersion": "1.0.0",
+			"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			"construct": {
+				"identity": "none",
+				"shape": "record",
+				"meaning": "quire.meaning.model.event-type/v1",
+				"members": {
+					"fields": "required",
+					"occurrenceField": "required"
+				}
+			}
+		},
+		{
+			"kind": {
+				"module": "test/business",
+				"name": "population"
+			},
+			"moduleVersion": "1.0.0",
+			"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+			"construct": {
+				"identity": "none",
+				"shape": "namespace",
+				"meaning": "quire.meaning.model.population/v1",
+				"members": {}
+			}
+		}
+	],
+	"types": [
+		{
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://test/orders/reader-fixture",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://test/orders/source"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"identity": "ix://test/orders/Instant",
+			"displayName": "Instant",
+			"kind": "alias",
+			"target": "ix://quire/native/Timestamp"
+		},
+		{
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://test/orders/reader-fixture",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://test/orders/source"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"identity": "ix://test/orders/OrderPlaced",
+			"displayName": "OrderPlaced",
+			"kind": {
+				"module": "test/business",
+				"name": "happened"
+			},
+			"fields": [
+				{
+					"identity": "ix://test/orders/OrderPlaced/occurred_at",
+					"name": "occurred_at",
+					"typeRef": "ix://test/orders/Instant",
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1,
+						"ordered": false,
+						"unique": false
+					},
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://test/orders/reader-fixture",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://test/orders/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": []
+				}
+			],
+			"occurrenceField": "ix://test/orders/OrderPlaced/occurred_at"
+		}
+	],
+	"occurrences": [],
+	"extensions": []
+}
