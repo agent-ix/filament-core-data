@@ -473,12 +473,9 @@ function checkConstraint(constraint, at, types, out, field = undefined) {
 		resolved.kind === "scalar"
 	) {
 		const operands = isObject(constraint.operands) ? constraint.operands : {};
-		const numeric = [
-			"integer",
-			"decimal",
-			"float32",
-			"float64",
-		].includes(resolved.scalar);
+		const numeric = ["integer", "decimal", "float32", "float64"].includes(
+			resolved.scalar,
+		);
 		const value = operands.value;
 		if (
 			!operandAdmitted(
@@ -1170,9 +1167,11 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 	const field = Array.isArray(root?.fields)
 		? root.fields.find((one) => one?.name === "value")
 		: undefined;
-	if (!isObject(field)) return { ok: false, code: structural("UNRESOLVED_FIELD") };
+	if (!isObject(field))
+		return { ok: false, code: structural("UNRESOLVED_FIELD") };
 	const raw = isObject(record) ? record.value : undefined;
-	if (raw === undefined) return { ok: false, code: structural("MISSING_VALUE") };
+	if (raw === undefined)
+		return { ok: false, code: structural("MISSING_VALUE") };
 	const values = options.nesting === "collection" ? raw : [raw];
 	if (options.nesting === "collection" && !Array.isArray(values))
 		return { ok: false, code: structural("INVALID_COLLECTION") };
@@ -1238,7 +1237,7 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 	const hasExplicitUpper = upperConstraint !== undefined;
 	const effectiveRangeFailure =
 		effectiveLower > effectiveUpper
-			? lowerConstraint ?? upperConstraint
+			? (lowerConstraint ?? upperConstraint)
 			: undefined;
 	const integerWireIsString =
 		scalar === "integer" &&
@@ -1283,9 +1282,17 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 				: [];
 			let firstFailure;
 			for (const constraint of constraints) {
-				if (!isObject(constraint) || !["min", "max", "exclusiveMin", "exclusiveMax"].includes(String(constraint.keyword)))
+				if (
+					!isObject(constraint) ||
+					!["min", "max", "exclusiveMin", "exclusiveMax"].includes(
+						String(constraint.keyword),
+					)
+				)
 					continue;
-				const operand = scalar === "integer" ? BigInt(constraint.operands?.value) : Number(constraint.operands?.value);
+				const operand =
+					scalar === "integer"
+						? BigInt(constraint.operands?.value)
+						: Number(constraint.operands?.value);
 				const violated =
 					constraint.keyword === "min"
 						? numeric < operand
@@ -1297,7 +1304,8 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 				if (violated) {
 					const failure = { ok: false, code: constraint.diagnosticCode };
 					if (
-						(constraint.keyword === "exclusiveMin" || constraint.keyword === "exclusiveMax") &&
+						(constraint.keyword === "exclusiveMin" ||
+							constraint.keyword === "exclusiveMax") &&
 						numeric === operand
 					)
 						return failure;

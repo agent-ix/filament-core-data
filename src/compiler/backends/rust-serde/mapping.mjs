@@ -1210,10 +1210,7 @@ function mapField(field, owner, context, _version) {
 	const nativeIntegerType =
 		nativeInteger &&
 		integerRustType({
-			constraints: [
-				...inheritedFieldConstraints,
-				...(field.constraints ?? []),
-			],
+			constraints: [...inheritedFieldConstraints, ...(field.constraints ?? [])],
 		});
 	if (optional && nullable && !wideNativeInteger) {
 		serdeAttributes.push(
@@ -1230,13 +1227,13 @@ function mapField(field, owner, context, _version) {
 					? collection
 						? "wide_option_vec"
 						: "wide_option"
-				: nullable
-					? collection
-						? "wide_vec_nullable"
-						: "wide_nullable"
-					: collection
-						? `wide_vec_${nativeIntegerType}`
-						: `wide_${nativeIntegerType}`;
+					: nullable
+						? collection
+							? "wide_vec_nullable"
+							: "wide_nullable"
+						: collection
+							? `wide_vec_${nativeIntegerType}`
+							: `wide_${nativeIntegerType}`;
 		serdeAttributes.push(`with = "crate::support::${moduleName}"`);
 	}
 

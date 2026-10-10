@@ -229,11 +229,26 @@ function fuzzEntries(shape, center, baseType) {
 		max: [["max", center]],
 		exclusiveMin: [["exclusiveMin", center - delta]],
 		exclusiveMax: [["exclusiveMax", center + delta]],
-		"min+max": [["min", center], ["max", center]],
-		"min+exclusiveMin": [["min", center], ["exclusiveMin", center - delta]],
-		"min+exclusiveMax": [["min", center], ["exclusiveMax", center + delta]],
-		"max+exclusiveMin": [["max", center], ["exclusiveMin", center - delta]],
-		"max+exclusiveMax": [["max", center], ["exclusiveMax", center + delta]],
+		"min+max": [
+			["min", center],
+			["max", center],
+		],
+		"min+exclusiveMin": [
+			["min", center],
+			["exclusiveMin", center - delta],
+		],
+		"min+exclusiveMax": [
+			["min", center],
+			["exclusiveMax", center + delta],
+		],
+		"max+exclusiveMin": [
+			["max", center],
+			["exclusiveMin", center - delta],
+		],
+		"max+exclusiveMax": [
+			["max", center],
+			["exclusiveMax", center + delta],
+		],
 		"exclusiveMin+exclusiveMax": [
 			["exclusiveMin", center - delta],
 			["exclusiveMax", center + delta],
@@ -250,11 +265,12 @@ function fuzzEntries(shape, center, baseType) {
 function fuzzProbes(shape, center, baseType, wire) {
 	const delta = baseType === "integer" ? 1n : 0.1;
 	const normalizedShape = shape.toLowerCase();
-	const invalid = normalizedShape.includes("min") && !normalizedShape.includes("max")
-		? center - delta
-		: shape.includes("exclusiveMin") && shape.includes("exclusiveMax")
+	const invalid =
+		normalizedShape.includes("min") && !normalizedShape.includes("max")
 			? center - delta
-			: center + delta;
+			: shape.includes("exclusiveMin") && shape.includes("exclusiveMax")
+				? center - delta
+				: center + delta;
 	const encode = (value) =>
 		baseType === "integer" && wire === "string"
 			? String(value)
@@ -266,9 +282,13 @@ function fuzzProbes(shape, center, baseType, wire) {
 
 /** Return the explicit bound that rejects an invalid fuzz probe. */
 export function fuzzFailureKeyword(testCase, probe) {
-	const numeric = testCase.baseType === "integer" ? BigInt(probe) : Number(probe);
+	const numeric =
+		testCase.baseType === "integer" ? BigInt(probe) : Number(probe);
 	for (const entry of testCase.constraints) {
-		const operand = testCase.baseType === "integer" ? BigInt(entry.operand) : Number(entry.operand);
+		const operand =
+			testCase.baseType === "integer"
+				? BigInt(entry.operand)
+				: Number(entry.operand);
 		const violated =
 			entry.keyword === "min"
 				? numeric < operand
@@ -293,10 +313,14 @@ export function buildDifferentialFuzzCases() {
 	};
 	for (let index = 0; index < DIFFERENTIAL_FUZZ_COUNT; index += 1) {
 		state = fuzzRandom(state);
-		const baseType = index === 0 ? "integer" : baseTypes[state % baseTypes.length];
+		const baseType =
+			index === 0 ? "integer" : baseTypes[state % baseTypes.length];
 		state = fuzzRandom(state);
 		const shape = index === 0 ? "min" : FUZZ_SHAPES[state % FUZZ_SHAPES.length];
-		let center = index === 0 ? 2n ** 53n : centers[baseType][state % centers[baseType].length];
+		let center =
+			index === 0
+				? 2n ** 53n
+				: centers[baseType][state % centers[baseType].length];
 		// FR-144 gives an unconstrained side the safe-integer default.  A lone
 		// lower bound above MAX_SAFE_INTEGER (or lone upper bound below its
 		// negative) therefore has no valid center; keep the generated valid probe
@@ -344,7 +368,16 @@ export function buildDifferentialFuzzCases() {
 export function buildDifferentialFuzzIr() {
 	const types = [];
 	for (const testCase of buildDifferentialFuzzCases()) {
-		const { index, name, baseType, constraints, aliasDepth, nesting, optional, nullable } = testCase;
+		const {
+			index,
+			name,
+			baseType,
+			constraints,
+			aliasDepth,
+			nesting,
+			optional,
+			nullable,
+		} = testCase;
 		const baseName = `${name}Base`;
 		const baseIdentity = identity(baseName);
 		types.push({
@@ -374,16 +407,17 @@ export function buildDifferentialFuzzIr() {
 				displayName: aliasName,
 				kind: "alias",
 				target: valueRef,
-				constraints: depth === aliasDepth
-					? constraints.map((entry, constraintIndex) => ({
-						identity: `${ROOT}/fuzz-constraint/${index}-alias${depth}-${constraintIndex}`,
-						keyword: entry.keyword,
-						operands: { value: entry.operand },
-						appliesTo: aliasIdentity,
-						diagnosticCode: `${ROOT}/FUZZ_${index}_${entry.keyword.toUpperCase()}`,
-						origin,
-					}))
-					: [],
+				constraints:
+					depth === aliasDepth
+						? constraints.map((entry, constraintIndex) => ({
+								identity: `${ROOT}/fuzz-constraint/${index}-alias${depth}-${constraintIndex}`,
+								keyword: entry.keyword,
+								operands: { value: entry.operand },
+								appliesTo: aliasIdentity,
+								diagnosticCode: `${ROOT}/FUZZ_${index}_${entry.keyword.toUpperCase()}`,
+								origin,
+							}))
+						: [],
 				extensions: [],
 				roles: [],
 				unknownPolicy: "reject",
@@ -402,20 +436,28 @@ export function buildDifferentialFuzzIr() {
 			identity: typeIdentity,
 			displayName: name,
 			kind: "record",
-			fields: [{
-				identity: fieldIdentity,
-				name: "value",
-				typeRef: valueRef,
-				constraints: fieldConstraints,
-				presence: optional ? "optional" : "required",
-				nullable,
-				multiplicity: nesting === "collection"
-					? { lower: 1, upper: 2, ordered: true, unique: false }
-					: { lower: optional ? 0 : 1, upper: 1, ordered: false, unique: false },
-				defaultKind: "none",
-				extensions: [],
-				origin,
-			}],
+			fields: [
+				{
+					identity: fieldIdentity,
+					name: "value",
+					typeRef: valueRef,
+					constraints: fieldConstraints,
+					presence: optional ? "optional" : "required",
+					nullable,
+					multiplicity:
+						nesting === "collection"
+							? { lower: 1, upper: 2, ordered: true, unique: false }
+							: {
+									lower: optional ? 0 : 1,
+									upper: 1,
+									ordered: false,
+									unique: false,
+								},
+					defaultKind: "none",
+					extensions: [],
+					origin,
+				},
+			],
 			constraints: [],
 			extensions: [],
 			roles: [],
@@ -423,7 +465,15 @@ export function buildDifferentialFuzzIr() {
 			origin,
 		});
 	}
-	return { contractVersion: "2.0.0", source: SOURCE, package: PACKAGE, types, occurrences: [], extensions: [], constructs: [] };
+	return {
+		contractVersion: "2.0.0",
+		source: SOURCE,
+		package: PACKAGE,
+		types,
+		occurrences: [],
+		extensions: [],
+		constructs: [],
+	};
 }
 
 const origin = {

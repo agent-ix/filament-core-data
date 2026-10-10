@@ -988,7 +988,10 @@ export function lowerProgram(options) {
 			const operationSite = ownerParts.length > 1;
 			const aliasParts = width
 				? [...ownerParts, memberName, "width"]
-				: [...ownerParts, `${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`];
+				: [
+						...ownerParts,
+						`${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`,
+					];
 			const capitalize = (value) =>
 				`${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 			const aliasName = operationSite
@@ -998,13 +1001,22 @@ export function lowerProgram(options) {
 				? [...ownerParts, memberName]
 				: [aliasName];
 			const diagnosticParts = aliasConstraintParts;
-			const aliasIdentity = widthAlias && operationSite
-				? mintIdentity(packageIdentity, "type", aliasParts)
-				: typeIdentity(aliasName);
+			const aliasIdentity =
+				widthAlias && operationSite
+					? mintIdentity(packageIdentity, "type", aliasParts)
+					: typeIdentity(aliasName);
 			const diagnosticCode = (keyword) => {
 				if (!operationSite)
-					return constraintDiagnosticCode(packageIdentity, diagnosticParts, keyword);
-				const ownerCode = constraintDiagnosticCode(packageIdentity, ownerParts, keyword);
+					return constraintDiagnosticCode(
+						packageIdentity,
+						diagnosticParts,
+						keyword,
+					);
+				const ownerCode = constraintDiagnosticCode(
+					packageIdentity,
+					ownerParts,
+					keyword,
+				);
 				const keywordToken = keyword.toUpperCase();
 				const ownerPrefix = ownerCode.slice(
 					0,
@@ -1032,7 +1044,7 @@ export function lowerProgram(options) {
 						keyword,
 						operands: { value: width[keyword] },
 						appliesTo: aliasIdentity,
-							diagnosticCode: diagnosticCode(keyword),
+						diagnosticCode: diagnosticCode(keyword),
 						origin: context.originOf(property),
 					}))
 				: [];
@@ -1045,11 +1057,9 @@ export function lowerProgram(options) {
 					constraints: [
 						...widthConstraints,
 						...constraints.map((item) => ({
-							identity: constraintIdentity(
-								aliasConstraintParts,
-								item.keyword,
-								["narrowed"],
-							),
+							identity: constraintIdentity(aliasConstraintParts, item.keyword, [
+								"narrowed",
+							]),
 							keyword: item.keyword,
 							operands: item.operands,
 							appliesTo: aliasIdentity,
