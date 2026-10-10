@@ -456,7 +456,8 @@ def _check_constraint(
                     else "agent-ix.semantic-ir.INVALID_OPERAND",
                     f"{path}.operands.value",
                     (
-                        f"{keyword} operand /operands/value {value} is outside the exact i128 domain "
+                        f"{keyword} operand /operands/value {value} is outside "
+                        "the exact i128 domain "
                         "[-170141183460469231731687303715884105728, "
                         "170141183460469231731687303715884105727]"
                         if scalar == "integer" and _integer_outside_i128(value)
@@ -484,7 +485,8 @@ def _check_constraint(
                         else "agent-ix.semantic-ir.INVALID_OPERAND",
                         f"{path}.operands.values.{index}",
                         (
-                            f"enum value /operands/values/{index} {value} is outside the exact i128 domain "
+                            f"enum value /operands/values/{index} {value} is outside "
+                            "the exact i128 domain "
                             "[-170141183460469231731687303715884105728, "
                             "170141183460469231731687303715884105727]"
                             if scalar == "integer" and _integer_outside_i128(value)
