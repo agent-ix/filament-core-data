@@ -1493,7 +1493,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(narrowed?.target).toMatch(/\/Integer$/);
 		expect(
 			(narrowed?.constraints as Json[]).map((constraint) => constraint.keyword),
-		).toEqual(["min", "max"]);
+		).toEqual(["min", "max", "exclusiveMax"]);
 		const corpus = types.find(
 			(type) => type.displayName === "WidthCorpus",
 		) as Json;

@@ -410,13 +410,13 @@ function checkField(field, at, types, out) {
 		: []
 	).entries()) {
 		if (isObject(constraint))
-			checkConstraint(constraint, `${at}/constraints/${i}`, types, out);
+			checkConstraint(constraint, `${at}/constraints/${i}`, types, out, field);
 	}
 }
 
 /* ------------------------------------------------------------ document ---- */
 
-function checkConstraint(constraint, at, types, out) {
+function checkConstraint(constraint, at, types, out, field = undefined) {
 	const keyword = String(constraint.keyword);
 	// The schema closes the keyword vocabulary, so an unlisted keyword never
 	// reaches this layer; the applicability table is the only rule left.
@@ -488,11 +488,7 @@ function checkConstraint(constraint, at, types, out) {
 				numeric,
 				resolved.scalar,
 				value,
-				decimalPolicyFor(
-					types,
-					fields.get(String(constraint.appliesTo)),
-					resolved,
-				),
+				decimalPolicyFor(types, field, resolved),
 			)
 		) {
 			const outsideI128 = integerOutsideI128(resolved.scalar, value);

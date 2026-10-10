@@ -839,6 +839,7 @@ export function lowerProgram(options) {
 			);
 			return undefined;
 		}
+		const constraints = constraintsOf(property);
 		// Native integer widths are value-site declarations too. Preserve their
 		// closed interval on a package-local alias so fields, collection items and
 		// operation parameters do not silently collapse to unbounded Integer.
@@ -855,7 +856,8 @@ export function lowerProgram(options) {
 					displayName: aliasName,
 					kind: "alias",
 					target: typeRef,
-					constraints: ["min", "max"].map((keyword) => ({
+					constraints: [
+						...["min", "max"].map((keyword) => ({
 						identity: mintIdentity(packageIdentity, "constraint", [
 							aliasName,
 							keyword,
@@ -869,7 +871,23 @@ export function lowerProgram(options) {
 							keyword,
 						),
 						origin: context.originOf(property),
-					})),
+						})),
+						...constraints.map((item) => ({
+							identity: mintIdentity(packageIdentity, "constraint", [
+								aliasName,
+								item.keyword,
+								"narrowed",
+							]),
+							keyword: item.keyword,
+							operands: item.operands,
+							appliesTo: aliasIdentity,
+							diagnosticCode: constraintDiagnosticCode(
+								packageIdentity,
+								[aliasName, item.keyword, "narrowed"],
+							),
+							origin: context.originOf(property),
+						})),
+					],
 					extensions: [],
 					roles: [],
 					unknownPolicy: "reject",
@@ -926,7 +944,6 @@ export function lowerProgram(options) {
 			multiplicity.unique = false;
 		}
 
-		const constraints = constraintsOf(property);
 		let fieldConstraints;
 		if (constraints.length > 0) {
 			// Gap 1 of FCD #199/#200: a constrained property keeps its constraints

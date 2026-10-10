@@ -1818,7 +1818,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 		if (type.scalar === "float32" && inner === "f32") {
 			lines.push(
 				"        let wire = <f64 as serde::Deserialize>::deserialize(deserializer)?;",
-				"        if !wire.is_finite() || wire.abs() > f32::MAX as f64 {",
+				"        if !wire.is_finite() || !(wire as f32).is_finite() {",
 				'            return Err(serde::de::Error::custom("float32 is outside its finite range"));',
 				"        }",
 				"        let inner = wire as f32;",
@@ -2145,7 +2145,10 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	lines.push(...recordItems(type));
 	for (const field of type.fields) {
 		if (!field.checks?.length) continue;
-		const subject = { ...type, inner: field.elementType };
+		const subject = {
+			...type,
+			inner: field.elementInner ?? field.elementType,
+		};
 		lines.push(
 			...checkConstants(
 				type,
