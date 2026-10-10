@@ -316,7 +316,11 @@ function constraint(schema, one, subject, decimalPolicy) {
 		)
 	) {
 		schema[table[key]] =
-			key === "minLength" || key === "maxLength" ? value : Number(value);
+			key === "minLength" || key === "maxLength"
+				? value
+				: subject?.scalar === "float32"
+					? Math.fround(Number(value))
+					: Number(value);
 	}
 	if (
 		subject?.scalar === "integer" &&
@@ -524,7 +528,7 @@ function fieldSchema(field, types) {
 										: bounded,
 							),
 						}
-				: bounded;
+					: bounded;
 	}
 	return annotated(schema, field);
 }

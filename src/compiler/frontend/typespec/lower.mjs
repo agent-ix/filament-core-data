@@ -83,6 +83,17 @@ const BUILTIN_SCALARS = new Map([
 	["duration", "duration"],
 ]);
 
+const BUILTIN_INTEGER_BOUNDS = Object.freeze({
+	int8: { min: "-128", max: "127" },
+	int16: { min: "-32768", max: "32767" },
+	int32: { min: "-2147483648", max: "2147483647" },
+	int64: { min: "-9223372036854775808", max: "9223372036854775807" },
+	uint8: { min: "0", max: "255" },
+	uint16: { min: "0", max: "65535" },
+	uint32: { min: "0", max: "4294967295" },
+	uint64: { min: "0", max: "18446744073709551615" },
+});
+
 /**
  * IR scalar to the FR-032 kernel scalar a package-local definition is named for.
  *
@@ -524,7 +535,11 @@ export function lowerProgram(options) {
 			typeof value?.asNumber === "function"
 		) {
 			const number = value.asNumber();
-			return number === null ? value.toString() : number;
+			return number === null
+				? value.toString()
+				: scalar === "float32"
+					? Math.fround(number)
+					: number;
 		}
 		return value;
 	};
@@ -532,20 +547,33 @@ export function lowerProgram(options) {
 		const found = [];
 		const push = (keyword, operands, decorator) =>
 			found.push({ keyword, operands, decorator });
-		const min = getMinValueAsNumeric(program, target) ?? getMinValue(program, target);
+		const min =
+			getMinValueAsNumeric(program, target) ?? getMinValue(program, target);
 		if (min !== undefined)
 			push("min", { value: literalFor(target, min) }, "@minValue");
-		const max = getMaxValueAsNumeric(program, target) ?? getMaxValue(program, target);
+		const max =
+			getMaxValueAsNumeric(program, target) ?? getMaxValue(program, target);
 		if (max !== undefined)
 			push("max", { value: literalFor(target, max) }, "@maxValue");
-		const exclusiveMin = getMinValueExclusiveAsNumeric(program, target) ?? getMinValueExclusive(program, target);
+		const width = BUILTIN_INTEGER_BOUNDS[builtinBase(target)];
+		if (width !== undefined) {
+			if (min === undefined)
+				push("min", { value: width.min }, "built-in width");
+			if (max === undefined)
+				push("max", { value: width.max }, "built-in width");
+		}
+		const exclusiveMin =
+			getMinValueExclusiveAsNumeric(program, target) ??
+			getMinValueExclusive(program, target);
 		if (exclusiveMin !== undefined)
 			push(
 				"exclusiveMin",
 				{ value: literalFor(target, exclusiveMin) },
 				"@minValueExclusive",
 			);
-		const exclusiveMax = getMaxValueExclusiveAsNumeric(program, target) ?? getMaxValueExclusive(program, target);
+		const exclusiveMax =
+			getMaxValueExclusiveAsNumeric(program, target) ??
+			getMaxValueExclusive(program, target);
 		if (exclusiveMax !== undefined)
 			push(
 				"exclusiveMax",

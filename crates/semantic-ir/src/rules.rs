@@ -949,10 +949,16 @@ fn expansion_would_exceed_budget(lexeme: &str) -> Option<bool> {
 fn huge_exponent_is_integer(lexeme: &str) -> bool {
 	let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
 	let Some(at) = unsigned.find(['e', 'E']) else { return false; };
-	let Ok(exponent) = unsigned[at + 1..].parse::<i128>() else { return false; };
 	let mantissa = &unsigned[..at];
 	let fraction_len = mantissa.split_once('.').map_or(0, |(_, fraction)| fraction.len());
-	exponent >= fraction_len as i128
+	let exponent_text = &unsigned[at + 1..];
+	if let Ok(exponent) = exponent_text.parse::<i128>() {
+		return exponent >= fraction_len as i128;
+	}
+	// A positive exponent that does not fit i128 is necessarily larger than
+	// the finite fractional part, so the value is still an integer. A negative
+	// overflow moves the decimal point farther into the fraction.
+	!exponent_text.starts_with('-')
 }
 
 fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {

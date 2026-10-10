@@ -630,21 +630,26 @@ export function readContractIr(document, options = {}) {
 						? DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128
 						: DIAGNOSTIC_CODES.INVALID_OPERAND,
 					outsideI128
-						? `${fragment(keyword)} on integer is outside the exact i128 domain`
-						: `${fragment(keyword)} on ${fragment(String(resolved.scalar))} takes an exact numeric operand`,
+						? `${fragment(keyword)} operand /operands/value ${fragment(String(value))} is outside the exact i128 domain [-170141183460469231731687303715884105728, 170141183460469231731687303715884105727]`
+						: `${fragment(keyword)} operand /operands/value on ${fragment(String(resolved.scalar))} takes an exact numeric operand`,
 					locusOf(constraint) ?? locusOf(owner),
 				);
 			}
 		}
 		if (keyword === "enumValues" && resolved.kind === "scalar") {
 			const values = Array.isArray(operands.values) ? operands.values : [];
-			for (const value of values) {
+			for (const [index, value] of values.entries()) {
 				if (
 					!valueAdmitted(resolved.scalar, value, walked?.policies[0]?.decimal)
 				) {
 					raise(
-						DIAGNOSTIC_CODES.INVALID_OPERAND,
-						"an enum value is outside the exact scalar wire domain",
+						typeof value === "string" &&
+							resolved.scalar === "integer" &&
+							/^(0|-?[1-9][0-9]*)$/.test(value) &&
+							!withinI128(value)
+							? DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128
+							: DIAGNOSTIC_CODES.INVALID_OPERAND,
+						`enum operand /operands/values/${index} is outside the exact scalar wire domain`,
 						locusOf(constraint) ?? locusOf(owner),
 					);
 				}
@@ -970,6 +975,7 @@ export function readContractIr(document, options = {}) {
  * past 2^53 is exact; every other scalar's bound is a string.
  */
 function valueAdmitted(scalar, value, policy) {
+	if (scalar === "boolean") return typeof value === "boolean";
 	if (scalar === "integer") {
 		return (
 			typeof value === "string" &&
@@ -1020,7 +1026,11 @@ function operandAdmitted(numeric, scalar, value, policy) {
 	}
 	if (scalar === "decimal") return decimalAdmitted(value, policy);
 	if (scalar === "float32")
-		return typeof value === "number" && Number.isFinite(value) && Math.fround(value) === value;
+		return (
+			typeof value === "number" &&
+			Number.isFinite(value) &&
+			Math.fround(value) === value
+		);
 	return typeof value === "number" && Number.isFinite(value);
 }
 

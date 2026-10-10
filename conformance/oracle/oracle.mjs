@@ -31,10 +31,42 @@ export const CLASSIFICATION_ORDER = [
 
 /** Keyword → the resolved scalar names or structural kinds it may apply to. */
 const KEYWORD_APPLICABILITY = {
-	min: ["date", "datetime", "duration", "integer", "number"],
-	max: ["date", "datetime", "duration", "integer", "number"],
-	exclusiveMin: ["date", "datetime", "duration", "integer", "number"],
-	exclusiveMax: ["date", "datetime", "duration", "integer", "number"],
+	min: [
+		"date",
+		"datetime",
+		"duration",
+		"integer",
+		"number",
+		"float32",
+		"float64",
+	],
+	max: [
+		"date",
+		"datetime",
+		"duration",
+		"integer",
+		"number",
+		"float32",
+		"float64",
+	],
+	exclusiveMin: [
+		"date",
+		"datetime",
+		"duration",
+		"integer",
+		"number",
+		"float32",
+		"float64",
+	],
+	exclusiveMax: [
+		"date",
+		"datetime",
+		"duration",
+		"integer",
+		"number",
+		"float32",
+		"float64",
+	],
 	minLength: ["bytes", "string"],
 	maxLength: ["bytes", "string"],
 	pattern: ["string"],
@@ -46,6 +78,8 @@ const KEYWORD_APPLICABILITY = {
 		"duration",
 		"integer",
 		"number",
+		"float32",
+		"float64",
 		"string",
 		"uuid",
 	],
@@ -435,8 +469,9 @@ function checkConstraint(constraint, at, types, out) {
 		resolved.kind === "scalar"
 	) {
 		const operands = isObject(constraint.operands) ? constraint.operands : {};
-		const numeric =
-			resolved.scalar === "integer" || resolved.scalar === "number";
+		const numeric = ["integer", "number", "float32", "float64"].includes(
+			resolved.scalar,
+		);
 		const value = operands.value;
 		if (!operandAdmitted(numeric, resolved.scalar, value)) {
 			out.push(
@@ -1541,7 +1576,14 @@ export function classify(beforeBundle, afterBundle) {
  */
 function operandAdmitted(numeric, scalar, value) {
 	if (!numeric) return typeof value === "string";
-	if (scalar !== "integer") return typeof value === "number" && Number.isFinite(value);
+	if (scalar === "float32")
+		return (
+			typeof value === "number" &&
+			Number.isFinite(value) &&
+			Math.fround(value) === value
+		);
+	if (scalar !== "integer")
+		return typeof value === "number" && Number.isFinite(value);
 	return (
 		typeof value === "string" &&
 		/^(0|-?[1-9][0-9]*)$/.test(value) &&
@@ -1557,7 +1599,12 @@ function operandAdmitted(numeric, scalar, value) {
 }
 
 function integerOutsideI128(scalar, value) {
-	if (scalar !== "integer" || typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value)) return false;
+	if (
+		scalar !== "integer" ||
+		typeof value !== "string" ||
+		!/^(0|-?[1-9][0-9]*)$/.test(value)
+	)
+		return false;
 	try {
 		const parsed = BigInt(value);
 		return parsed < -(2n ** 127n) || parsed > 2n ** 127n - 1n;
@@ -1567,21 +1614,39 @@ function integerOutsideI128(scalar, value) {
 }
 
 function defaultOutsideI128(scalar, value) {
-	if (Array.isArray(value)) return value.some((item) => integerOutsideI128(scalar, item));
+	if (Array.isArray(value))
+		return value.some((item) => integerOutsideI128(scalar, item));
 	return integerOutsideI128(scalar, value);
 }
 
 function defaultAdmitted(scalar, value) {
-	if (scalar === "integer") {
-		if (Array.isArray(value)) return value.every((item) => operandAdmitted(true, scalar, item));
-		if (value === null) return true;
-		return operandAdmitted(true, scalar, value);
-	}
-	return true;
+	if (value === null) return true;
+	const values = Array.isArray(value) ? value : [value];
+	return values.every((item) => {
+		if (scalar === "integer") return operandAdmitted(true, scalar, item);
+		if (scalar === "number" || scalar === "float32" || scalar === "float64")
+			return operandAdmitted(true, scalar, item);
+		if (scalar === "boolean") return typeof item === "boolean";
+		if (
+			[
+				"decimal",
+				"string",
+				"bytes",
+				"date",
+				"datetime",
+				"duration",
+				"uuid",
+			].includes(scalar)
+		)
+			return typeof item === "string";
+		return true;
+	});
 }
 
 function valueAdmitted(scalar, value) {
-	return scalar === "integer"
-		? operandAdmitted(true, scalar, value)
-		: true;
+	if (scalar === "integer") return operandAdmitted(true, scalar, value);
+	if (scalar === "number" || scalar === "float32" || scalar === "float64")
+		return operandAdmitted(true, scalar, value);
+	if (scalar === "boolean") return typeof value === "boolean";
+	return true;
 }

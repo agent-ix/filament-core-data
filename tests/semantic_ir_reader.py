@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 import re
 import struct
 import sys
@@ -239,12 +240,14 @@ def _exact_numeric_admitted(
             return False
         try:
             binary64 = float(value)
-            if binary64 != binary64 or binary64 in {float("inf"), float("-inf")}:
+            if not math.isfinite(binary64):
                 return False
             binary32 = struct.unpack(">f", struct.pack(">f", binary64))[0]
-        except (OverflowError, ValueError):
+        except (OverflowError, ValueError, struct.error):
             return False
-        return binary32 == binary64
+        return math.isfinite(binary32) and binary32 == binary64
+    if scalar == "boolean":
+        return isinstance(value, bool)
     return isinstance(value, str)
 
 
@@ -355,8 +358,13 @@ def _check_field(
         value = field.get("defaultValue")
         scalar = resolved[1] if resolved[0] == "scalar" else None
         values = value if isinstance(value, list) else [value]
-        if scalar == "integer" and value is not None and not all(
-            _exact_numeric_admitted(scalar, item, None) for item in values
+        if value is not None and not all(
+            _exact_numeric_admitted(
+                scalar,
+                item,
+                _decimal_policy(types, fields, field.get("typeRef")),
+            )
+            for item in values
         ):
             out.append(
                 _diag(

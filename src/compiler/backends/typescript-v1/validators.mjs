@@ -204,6 +204,8 @@ function orderedCondition(subject, operator, value) {
 	// the BigInt branch below and retain their decimal string exactly.
 	if (subject.wideInteger && typeof value === "string")
 		return `BigInt(candidate) ${operator} BigInt(${literal(value)})`;
+	if (scalar === "float32" && typeof value === "number")
+		return `candidate ${operator} Math.fround(${literal(value)})`;
 	if (typeof value === "string")
 		return `candidate ${operator} ${Number(value)}`;
 	return `candidate ${operator} ${literal(value)}`;

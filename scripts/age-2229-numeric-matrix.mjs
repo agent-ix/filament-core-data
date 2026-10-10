@@ -1,5 +1,32 @@
 import { fileURLToPath } from "node:url";
-import { writeFileSync } from "node:fs";
+import { readdirSync, writeFileSync } from "node:fs";
+import { dirname, relative, resolve } from "node:path";
+
+const SCRIPT_ROOT = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(SCRIPT_ROOT, "..");
+
+function directoriesUnder(root) {
+	const found = [];
+	const visit = (directory) => {
+		for (const entry of readdirSync(directory, { withFileTypes: true })) {
+			if (!entry.isDirectory()) continue;
+			const child = resolve(directory, entry.name);
+			found.push(relative(REPO_ROOT, child).replaceAll("\\", "/"));
+			visit(child);
+		}
+	};
+	visit(root);
+	return found.sort();
+}
+
+export const MATRIX_COLUMNS = Object.freeze([
+	...directoriesUnder(resolve(REPO_ROOT, "src/compiler/backends")),
+	...readdirSync(resolve(REPO_ROOT, "conformance/oracle"))
+		.filter((name) => name.endsWith(".mjs"))
+		.sort()
+		.map((name) => `conformance/oracle/${name}`),
+	"src/compiler/ir/reader.mjs",
+]);
 
 const ROOT = "ix://agent-ix/age-2229-numeric-matrix";
 const SOURCE = {
@@ -29,6 +56,8 @@ const matrixFamilies = [
 	["integer-wide-i64", "integer", ["wide-i64"], ["string-safe"]],
 	["integer-wide-u64", "integer", ["wide-u64"], ["string-safe"]],
 	["integer-wide-i128", "integer", ["wide-i128"], ["string-safe"]],
+	["integer-width", "integer", ["int8", "uint64"], ["number"]],
+	["boolean-enum", "boolean", ["enum"], ["boolean"]],
 	["float32", "float32", ["none", "positive"], ["number"]],
 	["float64", "float64", ["none", "positive"], ["number"]],
 	["decimal", "decimal", ["none"], ["string-safe"]],
@@ -47,29 +76,36 @@ export const MATRIX_CELLS = Object.freeze(
 							kind,
 							range,
 							depth,
-								nesting,
-								wire,
-								aliasMode:
-									depth === 0
-										? "none"
-										: ["safe", "positive", "negative", "narrowed"].includes(range)
-											? "child-narrowed"
-											: "inherited",
-								nullable: (depth + (nesting === "nested" ? 1 : 0)) % 2 === 1,
-								lexeme:
-									kind === "integer" && depth === 2
-										? range === "safe"
-											? "zero-huge-exponent"
-											: "huge-exponent"
-										: "ordinary",
-								oracleWidth:
-									kind === "integer"
-										? range === "wide-i128"
-											? "i128"
-											: range === "wide-i64" || range === "wide-u64"
-												? "numeric7"
-												: "safe"
-										: "safe",
+							nesting,
+							wire,
+							aliasMode:
+								depth === 0
+									? "none"
+									: ["safe", "positive", "negative", "narrowed"].includes(range)
+										? "child-narrowed"
+										: "inherited",
+							nullable: (depth + (nesting === "nested" ? 1 : 0)) % 2 === 1,
+							lexeme:
+								kind === "integer" && depth === 2
+									? range === "safe"
+										? "zero-huge-exponent"
+										: "huge-exponent"
+									: "ordinary",
+							rawLexeme:
+								kind === "integer" && depth === 2
+									? range === "safe"
+										? "0e9223372036854775807"
+										: "1e9223372036854775807"
+									: "ordinary",
+							oracleWidth:
+								kind === "integer"
+									? range === "wide-i128"
+										? "i128"
+										: range === "wide-i64" || range === "wide-u64"
+											? "numeric7"
+											: "safe"
+									: "safe",
+							columns: MATRIX_COLUMNS,
 						}),
 					),
 				),
@@ -103,12 +139,48 @@ function constraint(owner, keyword, value, scalar) {
 }
 
 function rangeConstraints(name, range, kind) {
+	if (kind === "boolean")
+		return range === "enum"
+			? [
+					{
+						identity: `${ROOT}/constraint/${name}-enumValues`,
+						keyword: "enumValues",
+						operands: { values: [true, false] },
+						appliesTo: identity(name),
+						diagnosticCode: `${ROOT}/${name.toUpperCase()}_ENUM_VALUES`,
+						origin,
+					},
+				]
+			: [];
 	if (kind === "string")
 		return range === "none" ? [] : [constraint(name, "minLength", 1, kind)];
 	if (kind === "decimal") return [];
 	if (kind === "float32" || kind === "float64")
-		return range === "positive" ? [constraint(name, "min", 1.5, kind)] : [];
+		return range === "positive"
+			? [
+					constraint(
+						name,
+						"min",
+						kind === "float32" ? Math.fround(0.1) : 0.1,
+						kind,
+					),
+					constraint(
+						name,
+						"max",
+						kind === "float32" ? Math.fround(0.9) : 0.9,
+						kind,
+					),
+				]
+			: [];
 	const ranges = {
+		int8: [
+			["min", "-128"],
+			["max", "127"],
+		],
+		uint64: [
+			["min", "0"],
+			["max", "18446744073709551615"],
+		],
 		safe: [
 			["min", "-10"],
 			["max", "100"],
@@ -217,7 +289,7 @@ export function buildMatrixIr() {
 								cell.kind,
 							)
 						: [],
-					),
+				),
 			);
 		}
 		const recordName = `NumericMatrix_${cell.name.replaceAll("-", "_")}`;
@@ -282,6 +354,9 @@ export function cellValue(cell, valid = true) {
 		value = valid ? (cell.range === "positive" ? 2.5 : 0.5) : 3.5e38;
 	else if (cell.kind === "float64")
 		value = valid ? (cell.range === "positive" ? 2.5 : 0.1) : "not-a-number";
+	else if (cell.kind === "boolean") value = valid ? true : "true";
+	else if (cell.range === "int8") value = valid ? 1 : 128;
+	else if (cell.range === "uint64") value = valid ? 1 : -1;
 	else if (cell.range === "wide-i64")
 		value = valid ? "9007199254740993" : "9007199254740994";
 	else if (cell.range === "wide-u64")
@@ -326,13 +401,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 					aliasMode: [...new Set(MATRIX_CELLS.map((cell) => cell.aliasMode))],
 					nullable: [...new Set(MATRIX_CELLS.map((cell) => cell.nullable))],
 					lexeme: [...new Set(MATRIX_CELLS.map((cell) => cell.lexeme))],
-					oracleWidth: [...new Set(MATRIX_CELLS.map((cell) => cell.oracleWidth))],
-					backends: [
-						"typescript",
-						"json-schema",
-						"rust-serde",
-						"semantic-reader",
+					rawLexeme: [...new Set(MATRIX_CELLS.map((cell) => cell.rawLexeme))],
+					oracleWidth: [
+						...new Set(MATRIX_CELLS.map((cell) => cell.oracleWidth)),
 					],
+					columns: MATRIX_COLUMNS,
 				},
 				cells: MATRIX_CELLS,
 			},

@@ -18,6 +18,7 @@ import {
 	buildMatrixIr,
 	cellRecordName,
 	cellValue,
+	MATRIX_COLUMNS,
 	MATRIX_CELLS,
 } from "../scripts/age-2229-numeric-matrix.mjs";
 
@@ -88,17 +89,17 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			);
 			const valid = cellValue(cell);
 			const validResult = validate(valid);
-			expect(
-				validResult.ok,
-				`${cell.name} TypeScript valid`,
-			).toBe(true);
+			expect(validResult.ok, `${cell.name} TypeScript valid`).toBe(true);
 			expect(validResult.value, `${cell.name} TypeScript wire`).toEqual(valid);
 			expect(
 				validate(cellValue(cell, false)).ok,
 				`${cell.name} TypeScript invalid`,
 			).toBe(false);
 			if (cell.nullable)
-				expect(validate(nullableValue(cell)).ok, `${cell.name} TypeScript null`).toBe(true);
+				expect(
+					validate(nullableValue(cell)).ok,
+					`${cell.name} TypeScript null`,
+				).toBe(true);
 
 			const schema = schemas.find(
 				(one: any) => one.title === cellRecordName(cell),
@@ -106,15 +107,16 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			expect(schema, `${cell.name} JSON Schema`).toBeDefined();
 			const validateJson = ajv.getSchema(schema.$id);
 			expect(validateJson, `${cell.name} compiled JSON Schema`).toBeDefined();
-			expect(validateJson?.(valid), `${cell.name} JSON valid`).toBe(
-				true,
-			);
+			expect(validateJson?.(valid), `${cell.name} JSON valid`).toBe(true);
 			expect(
 				validateJson?.(cellValue(cell, false)),
 				`${cell.name} JSON invalid`,
 			).toBe(false);
 			if (cell.nullable)
-				expect(validateJson?.(nullableValue(cell)), `${cell.name} JSON null`).toBe(true);
+				expect(
+					validateJson?.(nullableValue(cell)),
+					`${cell.name} JSON null`,
+				).toBe(true);
 		}
 
 		const rust = emitCrate(
@@ -165,7 +167,7 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			},
 		);
 		process.stdout.write(
-			`AGE-2229 numeric matrix cells: ${MATRIX_CELLS.length}\n`,
+			`AGE-2229 numeric matrix columns: ${MATRIX_COLUMNS.join(", ")}\nAGE-2229 numeric matrix cells: ${MATRIX_CELLS.length}\n`,
 		);
 	} finally {
 		rmSync(scratch, { recursive: true, force: true });
