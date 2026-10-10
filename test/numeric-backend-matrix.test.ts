@@ -121,7 +121,7 @@ function probeSysmlNumericSubject(cell: (typeof MATRIX_CELLS)[number]) {
 					: "ScalarValues::String";
 	expect(generated.state, `${cell.name} SysML state`).toBe("success");
 	expect(generated.files[0].text, `${cell.name} SysML mapping`).toContain(
-		`attribute value : ${mapped};`,
+		`attribute 'value' : ${mapped};`,
 	);
 	const losses = generated.diagnostics.filter(
 		(d: { code: string }) => d.code === "agent-ix.sysml-target.DECLARED_LOSS",
@@ -261,7 +261,7 @@ async function generatedValidators(directory: string, ir: any) {
 	);
 }
 
-/** Generated TypeScript, JSON Schema and Rust consumer smoke corpus. */
+/** Generated consumer smoke corpus. Trace: FR-138-AC-2. */
 it("runs every generated numeric matrix cell through all consumer probes", async () => {
 	const ir = buildMatrixIr();
 	const requiredColumns = [
