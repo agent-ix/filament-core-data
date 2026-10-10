@@ -67,6 +67,23 @@ describe("SysML v2 textual target", () => {
 		expect(source).not.toMatch(/readFileSync|readText/);
 	});
 
+	/** Trace: FR-138-AC-7. Analyze the shipped source tree for SysML input paths. */
+	it("has no module that reads a SysML artifact", () => {
+		const visit = (directory: string): string[] =>
+			readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+				const path = resolve(directory, entry.name);
+				return entry.isDirectory() ? visit(path) : [path];
+			});
+		const mentions = visit(resolve(root, "src"))
+			.filter((path) => /\.(mjs|mts|js|ts|py|rs)$/.test(path))
+			.filter((path) => readFileSync(path, "utf8").includes(".sysml"))
+			.map((path) => path.slice(root.length + 1));
+		expect(mentions).toEqual([
+			"src/compiler/backends/sysml-v2/index.mjs",
+			"src/compiler/diagnostics.mjs",
+		]);
+	});
+
 	/** Trace: FR-138-AC-1, FR-138-AC-7, FR-144-AC-21. */
 	it("writes the SysML file through the generate command", () => {
 		const scratch = mkdtempSync(resolve(tmpdir(), "age-2232-sysml-"));
