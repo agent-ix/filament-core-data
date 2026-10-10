@@ -115,7 +115,10 @@ def _expand_conditional_numeric(
         return schema
     if "const" in precision_schema:
         return schema
-    if precision_schema.get("type") != "integer" or scale_schema.get("type") != "integer":
+    if (
+        precision_schema.get("type") != "integer"
+        or scale_schema.get("type") != "integer"
+    ):
         return schema
     minimum = precision_schema.get("minimum")
     maximum = precision_schema.get("maximum")
@@ -131,7 +134,10 @@ def _expand_conditional_numeric(
             return schema
         if set(clause) != {"if", "then"}:
             return schema
-        if not isinstance(clause["then"], dict) or set(clause["then"]) != {"properties"}:
+        if (
+            not isinstance(clause["then"], dict)
+            or set(clause["then"]) != {"properties"}
+        ):
             return schema
         if not isinstance(clause["if"], dict) or set(clause["if"]) != {"properties"}:
             return schema

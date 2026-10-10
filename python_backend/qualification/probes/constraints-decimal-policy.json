@@ -12,10 +12,7 @@
 			"decimalPolicy": {
 				"type": "object",
 				"title": "DecimalPolicy",
-				"required": [
-					"precision",
-					"scale"
-				],
+				"required": ["precision", "scale"],
 				"properties": {
 					"precision": {
 						"type": "integer",

@@ -370,7 +370,10 @@ def test_no_constraint_keyword_and_no_reference_is_lost() -> None:
                 }
                 assert branch["type"] == raw_policy["type"]
                 assert branch["required"] == raw_policy["required"]
-                assert branch["additionalProperties"] == raw_policy["additionalProperties"]
+                assert (
+                    branch["additionalProperties"]
+                    == raw_policy["additionalProperties"]
+                )
                 assert set(branch["properties"]) == {"precision", "scale"}
                 assert set(branch["properties"]["precision"]) == {
                     "type",
