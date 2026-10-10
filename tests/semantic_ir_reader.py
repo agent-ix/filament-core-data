@@ -367,7 +367,9 @@ def _check_field(
             _exact_numeric_admitted(
                 scalar,
                 item,
-                _decimal_policy(types, fields, field.get("typeRef")),
+                field.get("decimal")
+                if isinstance(field.get("decimal"), dict)
+                else _decimal_policy(types, fields, field.get("typeRef")),
             )
             for item in values
         ):

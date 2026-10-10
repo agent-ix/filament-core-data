@@ -456,7 +456,23 @@ function checkCall(element, valueExpression, pointerExpression) {
 	if (element === undefined || element.declared !== true) {
 		return `fail(errors, ${pointerExpression}, CODES.SHAPE_MISMATCH, "the element type is not declared")`;
 	}
+	if (element.native === true) {
+		const scalar = element.scalar;
+		if (scalar === "any") return "void 0";
+		const guard =
+			scalar === "boolean"
+				? `typeof ${valueExpression} !== "boolean"`
+				: ["integer", "float32", "float64"].includes(scalar)
+					? `typeof ${valueExpression} !== "number" || !Number.isFinite(${valueExpression})${scalar === "integer" ? ` || !Number.isSafeInteger(${valueExpression})` : ""}`
+					: `typeof ${valueExpression} !== "string"`;
+		return `if (${guard}) fail(errors, ${pointerExpression}, CODES.SHAPE_MISMATCH, "the native scalar wire value has the wrong type")`;
+	}
 	return `check${element.identifier}(${valueExpression}, ${pointerExpression}, errors, surfaced, depth + 1)`;
+}
+
+function prepareCall(element, valueExpression) {
+	if (element?.declared !== true || element.native === true) return valueExpression;
+	return `prepare${element.identifier}(${valueExpression}, depth + 1)`;
 }
 
 /** The body of a `sequence` type's `check` predicate. */
@@ -735,7 +751,7 @@ function prepareBody(model, entry) {
 	if (entry.kind === "sequence") {
 		return [
 			"\tif (!Array.isArray(value)) return value;",
-			`\treturn value.map((member) => prepare${entry.itemsEntry?.identifier ?? ""}(member, depth + 1));`,
+			`\treturn value.map((member) => ${prepareCall(entry.itemsEntry, "member")});`,
 		];
 	}
 	if (entry.kind === "map") {
@@ -751,14 +767,14 @@ function prepareBody(model, entry) {
 			"\t\t\tcontinue;",
 			"\t\t}",
 			'\t\tif (member.state !== "value") continue;',
-			`\t\tout[key] = prepare${entry.valuesEntry?.identifier ?? ""}(member.value, depth + 1);`,
+			`\t\tout[key] = ${prepareCall(entry.valuesEntry, "member.value")};`,
 			"\t}",
 			"\treturn accessor ? out : { ...out };",
 		];
 	}
 	if (entry.kind === "alias") {
 		return [
-			`\treturn prepare${entry.targetEntry?.identifier ?? ""}(value, depth + 1);`,
+			`\treturn ${prepareCall(entry.targetEntry, "value")};`,
 		];
 	}
 	if (entry.kind === "union") return unionPrepareBody(entry);
@@ -771,7 +787,7 @@ function unionPrepareBody(entry) {
 		for (const variant of entry.variants ?? []) {
 			if (variant.payload?.declared !== true) continue;
 			lines.push(
-				`\tif (check${variant.payload.identifier}(value, "", [], [], depth + 1)) return prepare${variant.payload.identifier}(value, depth + 1);`,
+				`\tif (check${variant.payload.identifier}(value, "", [], [], depth + 1)) return ${prepareCall(variant.payload, "value")};`,
 			);
 		}
 		lines.push("\treturn value;");
@@ -791,7 +807,7 @@ function unionPrepareBody(entry) {
 	for (const variant of withPayload) {
 		lines.push(
 			`\t\tcase ${literal(variant.name)}:`,
-			`\t\t\treturn { ...value, value: prepare${variant.payload.identifier}(payload.value, depth + 1) };`,
+			`\t\t\treturn { ...value, value: ${prepareCall(variant.payload, "payload.value")} };`,
 		);
 	}
 	lines.push("\t\tdefault:", "\t\t\treturn value;", "\t}");
@@ -812,7 +828,7 @@ function recordPrepareBody(entry) {
 	for (const field of entry.fields ?? []) {
 		const name = literal(field.name);
 		const prepareCall =
-			field.element?.declared === true
+			field.element?.declared === true && field.element.native !== true
 				? `prepare${field.element.identifier}`
 				: undefined;
 		lines.push(

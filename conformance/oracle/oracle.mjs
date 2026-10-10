@@ -473,11 +473,28 @@ function checkConstraint(constraint, at, types, out) {
 		resolved.kind === "scalar"
 	) {
 		const operands = isObject(constraint.operands) ? constraint.operands : {};
-		const numeric = ["integer", "number", "float32", "float64"].includes(
+		const numeric = [
+			"integer",
+			"number",
+			"decimal",
+			"float32",
+			"float64",
+		].includes(
 			resolved.scalar,
 		);
 		const value = operands.value;
-		if (!operandAdmitted(numeric, resolved.scalar, value)) {
+		if (
+			!operandAdmitted(
+				numeric,
+				resolved.scalar,
+				value,
+				decimalPolicyFor(
+					types,
+					fields.get(String(constraint.appliesTo)),
+					resolved,
+				),
+			)
+		) {
 			const outsideI128 = integerOutsideI128(resolved.scalar, value);
 			out.push(
 				diagnostic(
@@ -1579,7 +1596,7 @@ export function classify(beforeBundle, afterBundle) {
  * string (`0`, or an optional `-` and digits with no leading zero), so a value
  * past 2^53 is exact; every other scalar's bound is a string.
  */
-function operandAdmitted(numeric, scalar, value) {
+function operandAdmitted(numeric, scalar, value, policy) {
 	if (!numeric) return typeof value === "string";
 	if (scalar === "float32")
 		return (
@@ -1587,6 +1604,7 @@ function operandAdmitted(numeric, scalar, value) {
 			Number.isFinite(value) &&
 			Math.fround(value) === value
 		);
+	if (scalar === "decimal") return decimalAdmitted(value, policy);
 	if (scalar !== "integer")
 		return typeof value === "number" && Number.isFinite(value);
 	return (

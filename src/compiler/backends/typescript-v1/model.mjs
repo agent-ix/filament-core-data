@@ -215,6 +215,27 @@ function effectiveWideInteger(types, identity) {
 	return bounds.lower < -safe || bounds.upper > safe;
 }
 
+function wideIntegerWithConstraints(types, identity, constraints) {
+	if (resolveScalar(types, identity) !== "integer") return false;
+	const base = effectiveIntegerBounds(types, identity) ?? {
+		lower: -(2n ** 53n - 1n),
+		upper: 2n ** 53n - 1n,
+	};
+	const own = integerBounds(constraints);
+	const lower = own.lowerExplicit
+		? base.lower > own.lower
+			? base.lower
+			: own.lower
+		: base.lower;
+	const upper = own.upperExplicit
+		? base.upper < own.upper
+			? base.upper
+			: own.upper
+		: base.upper;
+	const safe = 2n ** 53n - 1n;
+	return lower < -safe || upper > safe;
+}
+
 function inheritedConstraintEntries(types, applied, identity) {
 	const chain = [];
 	const seen = new Set();
@@ -283,11 +304,23 @@ function axesOf(field) {
 /** One field or one operation parameter, resolved. */
 function fieldEntry(types, identifiers, field) {
 	const axes = axesOf(field);
+	const summary = summaryOf(types, identifiers, field.typeRef);
+	const element =
+		summary?.scalar === "integer" && (field.constraints ?? []).length > 0
+			? Object.freeze({
+					...summary,
+					wideInteger: wideIntegerWithConstraints(
+						types,
+						field.typeRef,
+						field.constraints,
+					),
+				})
+			: summary;
 	const entry = {
 		identity: field.identity,
 		name: field.name,
 		typeRef: field.typeRef,
-		element: summaryOf(types, identifiers, field.typeRef),
+		element,
 		optional: axes.optional,
 		nullable: axes.nullable,
 		collection: axes.collection,

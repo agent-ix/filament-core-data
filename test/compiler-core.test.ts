@@ -1515,7 +1515,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		)?.text;
 		expect(typesText).toBeDefined();
 		expect(typesText).not.toContain("export type WidthCorpusNarrowed = never;");
-		expect(typesText).toMatch(/export type WidthCorpusNarrowed/);
+		expect(typesText).toContain("export type WidthCorpusNarrowed = number;");
 	}, 120000);
 
 	/** Traces: TC-435; FR-046-AC-4. */
