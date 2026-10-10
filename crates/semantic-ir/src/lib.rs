@@ -231,8 +231,7 @@ mod tests {
                 r#"{{"ir":{{{HEADER},"types":[{{"identity":"ix://probe/Price","displayName":"Price","kind":"scalar","scalar":"decimal","decimal":{{"precision":{value},"scale":{value}}},"roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"}}]}}}}"#
             )
         }
-        let safe_decimal =
-            parse(&decimal_bundle("9007199254740991")).expect("safe decimal policy parses");
+        let safe_decimal = parse(&decimal_bundle("10")).expect("safe decimal policy parses");
         assert!(decide(&safe_decimal).diagnostics.is_empty());
         let unsafe_decimal =
             parse(&decimal_bundle("9007199254740992")).expect("unsafe decimal policy parses");
@@ -246,6 +245,18 @@ mod tests {
                 "missing exact-number diagnostic at {pointer}"
             );
         }
+
+        // Precision is a schema bound as well as an exact-number bound: a
+        // mathematically exact integer outside the Decimal policy domain must
+        // still be rejected by the policy validator.
+        let over_precision = parse(&decimal_bundle("39")).expect("out-of-range policy parses");
+        assert!(decide(&over_precision)
+            .diagnostics
+            .iter()
+            .any(|diagnostic| {
+                diagnostic.code == "agent-ix.semantic-ir.SCHEMA_VIOLATION"
+                    && diagnostic.pointer == "/ir/types/0/decimal"
+            }));
     }
 
     /// A bundle carrying a value nested a million levels deep at a member the

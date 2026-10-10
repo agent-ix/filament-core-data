@@ -496,6 +496,8 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the
 /// `Decimal` row with policy `(10, 2)` and `min: 1.50` to a field carrying
 /// decimal `{precision: 10, scale: 2}` and operand `"1.5"`, and a `Decimal`
 /// row with no policy to a blocking `DECIMAL_POLICY_MISSING` at the row.
+/// The extraction architecture intentionally keeps this policy on the
+/// constrained field; it does not mint a synthetic alias (FCD #199/#200).
 #[trace("TC-1826", "FR-144-AC-12")]
 #[test]
 fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
