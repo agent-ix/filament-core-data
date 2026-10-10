@@ -180,6 +180,28 @@ describe("SysML v2 textual target", () => {
 		expect(first.files[0].text.match(/^package /gm)).toHaveLength(1);
 	});
 
+	/** Trace: FR-138-CON-1. */
+	it("is independent of locale, time zone, and working directory", () => {
+		const first = sysmlBackend.generate({ ir: numericDocument() });
+		const saved = {
+			LC_ALL: process.env.LC_ALL,
+			LANG: process.env.LANG,
+			TZ: process.env.TZ,
+		};
+		try {
+			process.env.LC_ALL = "C.UTF-8";
+			process.env.LANG = "tr_TR.UTF-8";
+			process.env.TZ = "Pacific/Kiritimati";
+			const second = sysmlBackend.generate({ ir: numericDocument() });
+			expect(second).toEqual(first);
+		} finally {
+			for (const [key, value] of Object.entries(saved)) {
+				if (value === undefined) delete process.env[key];
+				else process.env[key] = value;
+			}
+		}
+	});
+
 	/** Trace: FR-138-AC-5, FR-138-AC-6. */
 	it("refuses an unmapped source-located construct without a truncated file", () => {
 		const ir = numericDocument();
@@ -196,5 +218,66 @@ describe("SysML v2 textual target", () => {
 				}),
 			]),
 		);
+	});
+
+	/** Trace: FR-138-AC-5, FR-138-AC-6. */
+	it("refuses every unsupported SysML shape with its source locus", () => {
+		const base = numericDocument();
+		const record = base.types.find(
+			(type: { kind: string }) => type.kind === "record",
+		) as any;
+		const child = structuredClone(record);
+		child.identity = `${record.identity}/Child`;
+		child.displayName = "Child";
+		child.fields = [];
+		const cases = [
+			["sequence", (ir: any) => (ir.types[0].kind = "sequence")],
+			["union", (ir: any) => (ir.types[0].kind = "union")],
+			[
+				"record field",
+				(ir: any) => {
+					const target = ir.types.find((type: any) => type.kind === "record");
+					ir.types.push(child);
+					target.fields[0].typeRef = child.identity;
+				},
+			],
+			[
+				"reserved field",
+				(ir: any) => {
+					const target = ir.types.find((type: any) => type.kind === "record");
+					target.fields[0].name = "package";
+				},
+			],
+			[
+				"abstract",
+				(ir: any) => {
+					const target = ir.types.find((type: any) => type.kind === "record");
+					target.abstract = true;
+				},
+			],
+			[
+				"identity",
+				(ir: any) => {
+					const target = ir.types.find((type: any) => type.kind === "record");
+					target.identityFields = [target.fields[0].name];
+				},
+			],
+		] as const;
+		for (const [name, mutate] of cases) {
+			const ir = structuredClone(base);
+			mutate(ir);
+			const result = sysmlBackend.generate({ ir });
+			expect(result.state, name).toBe("unsupported");
+			expect(result.files, name).toEqual([]);
+			expect(result.diagnostics, name).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						code: "agent-ix.sysml-target.UNSUPPORTED_CONSTRUCT",
+						blocking: true,
+						locus: expect.any(Object),
+					}),
+				]),
+			);
+		}
 	});
 });
