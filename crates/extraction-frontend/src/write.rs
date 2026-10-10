@@ -14,7 +14,7 @@
 //!
 //! Every file is first written whole to `.<name>.tmp` beside its final
 //! path, and the temporary files are then renamed into place in the order
-//! diagnostics, document, digest, so that a reader that
+//! diagnostics, digest, document, so that a reader that
 //! observes `<out>` observes its sidecar. A failure while writing any
 //! temporary file removes every temporary file and refuses with
 //! `OUTPUT_UNWRITABLE`; a blocking lift writes only the diagnostics
@@ -264,7 +264,7 @@ impl Drop for Temp {
 /// [`Emission::Document`] both, and an optional digest sidecar. On
 /// [`Emission::Blocked`] the diagnostics sidecar alone is written. Every file is written to a temporary file in
 /// its own directory and renamed over its final path, in the order
-/// diagnostics, document, digest. A failure refuses with
+/// diagnostics, digest, document. A failure refuses with
 /// `OUTPUT_UNWRITABLE` naming the path and leaves no temporary file.
 pub fn write_lift(
     paths: &OutputPaths,
@@ -274,10 +274,10 @@ pub fn write_lift(
     let mut planned: Vec<(&Path, Vec<u8>)> =
         vec![(&paths.diagnostics, sidecar_bytes(&diagnostics))];
     if let Emission::Document { document } = emission {
-        planned.push((&paths.document, document.bytes().to_vec()));
         if let Some(digest) = &paths.digest {
             planned.push((digest, digest_sidecar_bytes(document.bytes())));
         }
+        planned.push((&paths.document, document.bytes().to_vec()));
     }
     let mut temps: Vec<(&Path, Temp)> = Vec::with_capacity(planned.len());
     for (path, bytes) in &planned {

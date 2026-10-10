@@ -416,11 +416,10 @@ A normalized Semantic IR document carries
 `rfc8785-v1` is RFC 8785 JSON Canonicalization Scheme: object member names use
 RFC 8785 UTF-16 code-unit ordering, numbers and strings use RFC 8785 spelling,
 and arrays retain their supplied order. The `digest` member names the domain;
-the actual producer value is SHA-256 over those exact bytes, represented as
-`sha256:<64 lowercase hexadecimal digits>` (and as
-`sha256-jcs:<64 lowercase hexadecimal digits>` by QSL). This is a separate
-byte domain from the identity-sorted-set fingerprint above; a reader does not
-infer either algorithm from observed ordering.
+the FCD producer value is SHA-256 over those exact bytes, represented in its
+digest sidecar as `sha256-jcs:<64 lowercase hexadecimal digits>`. This is a
+separate byte domain from the identity-sorted-set fingerprint above; a reader
+does not infer either algorithm from observed ordering.
 
 ## Mappings and profiles
 

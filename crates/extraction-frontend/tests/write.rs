@@ -79,6 +79,33 @@ fn tc_plat_990_shared_supplementary_plane_golden_is_consumed_and_digest_sidecar_
     );
 }
 
+#[trace("TC-PLAT-990-2", "FR-145-CON-2")]
+#[test]
+fn tc_plat_990_digest_is_published_before_document_and_cleans_up_on_document_failure() {
+    let (_source, request, outcome) = lift_fixture("snapshot-table");
+    let LiftOutcome::Written { document, .. } = outcome else {
+        panic!("fixture did not write: {outcome:?}");
+    };
+    let valid = validate(serde_json::from_slice(&document).expect("written document JSON"))
+        .expect("written document validates");
+    let output = tempfile::tempdir().expect("output directory");
+    let document_path = output.path().join("semantic-ir.json");
+    fs::create_dir(&document_path).expect("document failure target");
+    let digest_path = output.path().join("semantic-ir.json.digest");
+    let paths = OutputPaths::new(&document_path, None).with_digest(&digest_path);
+
+    let refusal = write_lift(&paths, Emission::Document { document: &valid }, &[])
+        .expect_err("document rename must fail");
+    assert_eq!(refusal.code(), Code::OutputUnwritable);
+    assert_eq!(
+        fs::read_to_string(&digest_path).expect("digest published before document"),
+        format!("{}\n", normalized_digest(&document))
+    );
+    assert!(document_path.is_dir(), "document failure target remains");
+    assert!(!digest_path.with_extension("digest.tmp").exists());
+    assert!(!output.path().join("semantic-ir.json.tmp").exists());
+}
+
 fn refused_code(outcome: &LiftOutcome) -> (Code, String) {
     match outcome {
         LiftOutcome::Refused(refusal) => (refusal.code(), refusal.diagnostic.message.clone()),
