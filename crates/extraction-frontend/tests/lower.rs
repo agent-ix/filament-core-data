@@ -545,7 +545,7 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
         &parse_json(&serde_json::to_string(&document).expect("serialize"))
             .expect("parse canonical input"),
     );
-    let round_trip: Value = serde_json::from_str(&canonical).expect("canonical JSON");
+    let round_trip = parse_json(&canonical).expect("canonical JSON");
     assert_eq!(canonical, normalized(&round_trip));
 }
 
