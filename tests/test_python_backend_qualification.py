@@ -364,7 +364,8 @@ def test_a_retained_constraint_is_enforced_at_run_time() -> None:
     "profile_id", ["pydantic_v2_basemodel", "pydantic_v2_dataclass", "msgspec_struct"]
 )
 def test_decimal_policy_rejects_scale_above_precision(profile_id: str) -> None:
-    """TC-936: FR-136-AC-12, FR-077-AC-3."""
+    """TC-936: FR-080-AC-4, FR-077-AC-3."""
+    # Trace: FR-080-AC-4, FR-077-AC-3.
     import importlib  # noqa: PLC0415
 
     module = importlib.import_module(
