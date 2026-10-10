@@ -22,6 +22,7 @@ import {
 	buildDifferentialFuzzIr,
 	cellRecordName,
 	cellValue,
+	fuzzFailureKeyword,
 	inlineWideInteger,
 	MATRIX_COLUMNS,
 	MATRIX_CELLS,
@@ -277,9 +278,10 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 				const record = fuzzRecordValue(testCase, probe);
 				const tsResult = validate(record);
 				const ajvResult = Boolean(validateJson?.(record));
+				const failureKeyword = fuzzFailureKeyword(testCase, testCase.probes.invalid);
 				const referenceCode = expected
 					? "OK"
-					: `ix://agent-ix/age-2229-numeric-matrix/FUZZ_${testCase.index}_${testCase.constraints[0].keyword.toUpperCase()}`;
+					: `ix://agent-ix/age-2229-numeric-matrix/FUZZ_${testCase.index}_${(failureKeyword ?? "INVALID").toUpperCase()}`;
 				if (!expected)
 					expect(tsResult.errors?.[0]?.code, `${testCase.name} reference diagnostic`).toBe(referenceCode);
 				if (tsResult.ok !== expected || ajvResult !== expected || tsResult.ok !== ajvResult) {
@@ -356,8 +358,7 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 		// rows are the comparable wire lane; keep that lane deterministic and
 		// report its size separately from the full corpus.
 		const pythonCases = cases
-			.filter((testCase) => testCase.nesting !== "collection" && testCase.aliasDepth === 0)
-			.slice(0, 512);
+			.filter((testCase) => testCase.nesting !== "collection" && testCase.aliasDepth === 0);
 		const pythonNames = new Set(
 			pythonCases.flatMap((testCase) => [
 				testCase.name,

@@ -264,6 +264,24 @@ function fuzzProbes(shape, center, baseType, wire) {
 	return { valid: encode(center), invalid: encode(invalid) };
 }
 
+/** Return the explicit bound that rejects an invalid fuzz probe. */
+export function fuzzFailureKeyword(testCase, probe) {
+	const numeric = testCase.baseType === "integer" ? BigInt(probe) : Number(probe);
+	for (const entry of testCase.constraints) {
+		const operand = testCase.baseType === "integer" ? BigInt(entry.operand) : Number(entry.operand);
+		const violated =
+			entry.keyword === "min"
+				? numeric < operand
+				: entry.keyword === "max"
+					? numeric > operand
+					: entry.keyword === "exclusiveMin"
+						? numeric <= operand
+						: numeric >= operand;
+		if (violated) return entry.keyword;
+	}
+	return undefined;
+}
+
 export function buildDifferentialFuzzCases() {
 	let state = DIFFERENTIAL_FUZZ_SEED;
 	const cases = [];
@@ -276,9 +294,20 @@ export function buildDifferentialFuzzCases() {
 	for (let index = 0; index < DIFFERENTIAL_FUZZ_COUNT; index += 1) {
 		state = fuzzRandom(state);
 		const baseType = baseTypes[state % baseTypes.length];
-		const center = centers[baseType][state % centers[baseType].length];
 		state = fuzzRandom(state);
 		const shape = FUZZ_SHAPES[state % FUZZ_SHAPES.length];
+		let center = centers[baseType][state % centers[baseType].length];
+		// FR-144 gives an unconstrained side the safe-integer default.  A lone
+		// lower bound above MAX_SAFE_INTEGER (or lone upper bound below its
+		// negative) therefore has no valid center; keep the generated valid probe
+		// inside the normative default interval instead of masking that mismatch.
+		if (baseType === "integer") {
+			const safe = 2n ** 53n - 1n;
+			const hasLower = shape.includes("min");
+			const hasUpper = shape.includes("max");
+			if (center > safe && hasLower && !hasUpper) center = safe;
+			if (center < -safe && hasUpper && !hasLower) center = -safe;
+		}
 		state = fuzzRandom(state);
 		const aliasDepth = state % 3;
 		state = fuzzRandom(state);

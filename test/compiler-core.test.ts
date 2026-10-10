@@ -1671,9 +1671,9 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"scalar ScalarWidth extends uint8;",
 				"model Bytes is Array<uint8>;",
 				"union ChoiceValue { small: int16, text: string, }",
-				"model Choice { value: string; }",
-				'@operations("Choice")',
-				"interface ChoiceOperations { read(input: int16): int16; }",
+				"model Order { value: string; }",
+				'@operations("Order")',
+				"interface OrderOperations { cancel(reason: int16): int16; }",
 			].join("\n"),
 		);
 		expect(
@@ -1712,9 +1712,12 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			(type) => type.identity === small.payloadType,
 		) as Json;
 		expect(small.payloadType).toBe(smallAlias.identity);
+		expect(smallAlias.identity).toBe(
+			"ix://agent-ix/probe/ChoiceValue/small/width",
+		);
 		expect(smallAlias.target).toBe("ix://agent-ix/probe/Integer");
 		const operation = types.find(
-			(type) => type.displayName === "Choice",
+			(type) => type.displayName === "Order",
 		) as Json;
 		const returns = operation.operations[0].returns as Json;
 		const params = operation.operations[0].params as Json[];
@@ -1724,9 +1727,21 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		const parameterAlias = types.find(
 			(type) => type.identity === params[0].typeRef,
 		) as Json;
+		expect(parameterAlias.identity).toBe(
+			"ix://agent-ix/probe/Order/cancel/reason/width",
+		);
 		expect(parameterAlias.target).toBe("ix://agent-ix/probe/Integer");
 		expect(returns.typeRef).toBe(returnAlias.identity);
+		expect(returnAlias.identity).toBe(
+			"ix://agent-ix/probe/Order/cancel/Return/width",
+		);
 		expect(returnAlias.target).toBe("ix://agent-ix/probe/Integer");
+		const widthAliases = types.filter(
+			(type) => type.kind === "alias" && String(type.identity).endsWith("/width"),
+		);
+		expect(new Set(widthAliases.map((type) => type.identity)).size).toBe(
+			widthAliases.length,
+		);
 	}, 120000);
 
 	/** Traces: TC-435; FR-046-AC-4. */

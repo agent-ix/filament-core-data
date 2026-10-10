@@ -671,8 +671,12 @@ export function lowerProgram(options) {
 				unknownPolicy: "reject",
 				origin,
 			});
+		const aliasParts = [...nameParts, "width"];
 		const aliasName = nameParts.join("");
-		const aliasIdentity = typeIdentity(aliasName);
+		// Width aliases are value-site declarations. Keep each owner/member
+		// segment in the identity so `Order.cancel(reason)` cannot collide with
+		// another `reason` site or collapse into `OrdercancelReason`.
+		const aliasIdentity = mintIdentity(packageIdentity, "type", aliasParts);
 		if (!definitions.has(aliasIdentity)) {
 			const constraints = ["min", "max"].map((keyword) => ({
 				identity: mintIdentity(packageIdentity, "constraint", [
@@ -966,8 +970,14 @@ export function lowerProgram(options) {
 			typeRef.startsWith(NATIVE_PREFIX)
 		) {
 			const memberName = String(property.name);
+			const widthAlias = width !== undefined;
+			const aliasParts = width
+				? [...ownerParts, memberName, "width"]
+				: [...ownerParts, `${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`];
 			const aliasName = `${ownerParts.join("")}${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`;
-			const aliasIdentity = typeIdentity(aliasName);
+			const aliasIdentity = widthAlias
+				? mintIdentity(packageIdentity, "type", aliasParts)
+				: typeIdentity(aliasName);
 			const widthConstraints = width
 				? [
 						...(constraints.some((item) => item.keyword === "min")

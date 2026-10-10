@@ -1429,6 +1429,9 @@ function renderCheck(
 				: [identity, keyword, at, operand, input],
 			");",
 		);
+	if (isImpossibleIntegerBound(type, check)) {
+		return fail(rustString(String(check.value)));
+	}
 	const lines = [];
 	// A field whose type names a scalar declaration carries that declaration's
 	// newtype, rather than the primitive the constraint operates on.  Field
@@ -1454,7 +1457,7 @@ function renderCheck(
 			? `*${subject}`
 			: expression === "value" || expression.startsWith("*")
 				? expression
-				: `(*${expression})`;
+				: `*${expression}`;
 	const COMPARISONS = {
 		min: "<",
 		max: ">",
@@ -1650,9 +1653,34 @@ function isRedundantIntegerBound(type, check) {
 	const boundary = endpoints[rustType];
 	if (boundary === undefined) return false;
 	const value = BigInt(check.value);
+	// A bound outside the primitive's domain cannot reject a value on that
+	// side.  Treat it like the corresponding endpoint check so generated
+	// probes never contain overflowing literals or useless comparisons.
 	return (
-		(check.keyword === "min" && value === boundary[0]) ||
-		(check.keyword === "max" && value === boundary[1])
+		(check.keyword === "min" && value <= boundary[0]) ||
+		(check.keyword === "exclusiveMin" && value < boundary[0]) ||
+		(check.keyword === "max" && value >= boundary[1]) ||
+		(check.keyword === "exclusiveMax" && value > boundary[1])
+	);
+}
+
+/** A bound beyond the primitive domain admits no value at all. */
+function isImpossibleIntegerBound(type, check) {
+	if (check.form !== "numeric" || check.scalar !== "integer") return false;
+	const rustType = rustIntegerTypeFor(type);
+	const endpoints = {
+		i64: [-(2n ** 63n), 2n ** 63n - 1n],
+		u64: [0n, 2n ** 64n - 1n],
+		i128: [-(2n ** 127n), 2n ** 127n - 1n],
+	};
+	const boundary = endpoints[rustType];
+	if (boundary === undefined) return false;
+	const value = BigInt(check.value);
+	return (
+		(check.keyword === "min" && value > boundary[1]) ||
+		(check.keyword === "exclusiveMin" && value >= boundary[1]) ||
+		(check.keyword === "max" && value < boundary[0]) ||
+		(check.keyword === "exclusiveMax" && value <= boundary[0])
 	);
 }
 
