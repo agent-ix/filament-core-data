@@ -326,13 +326,39 @@ def test_no_constraint_keyword_and_no_reference_is_lost() -> None:
         if path.name == "semantic-ir.schema.json":
             raw_policy = raw_document["$defs"]["decimalPolicy"]
             prepared_policy = prepared_document["$defs"]["decimalPolicy"]
+            assert set(raw_policy) == {
+                "type",
+                "required",
+                "properties",
+                "allOf",
+                "additionalProperties",
+            }
+            assert set(prepared_policy) == {"oneOf"}
             assert len(prepared_policy["oneOf"]) == len(raw_policy["allOf"])
             assert "allOf" in raw_policy
             assert "oneOf" in prepared_policy
             for branch, clause in zip(prepared_policy["oneOf"], raw_policy["allOf"]):
+                assert set(branch) == {
+                    "type",
+                    "required",
+                    "properties",
+                    "additionalProperties",
+                }
                 assert branch["type"] == raw_policy["type"]
                 assert branch["required"] == raw_policy["required"]
                 assert branch["additionalProperties"] == raw_policy["additionalProperties"]
+                assert set(branch["properties"]) == {"precision", "scale"}
+                assert set(branch["properties"]["precision"]) == {
+                    "type",
+                    "minimum",
+                    "maximum",
+                    "const",
+                }
+                assert set(branch["properties"]["scale"]) == {
+                    "type",
+                    "minimum",
+                    "maximum",
+                }
                 assert (
                     branch["properties"]["precision"]["const"]
                     == clause["if"]["properties"]["precision"]["const"]
@@ -345,9 +371,23 @@ def test_no_constraint_keyword_and_no_reference_is_lost() -> None:
                     branch["properties"]["scale"]["maximum"]
                     == clause["then"]["properties"]["scale"]["maximum"]
                 )
+                assert (
+                    branch["properties"]["scale"]["minimum"]
+                    == raw_policy["properties"]["scale"]["minimum"]
+                )
             # The conditional relation is intentionally represented by the
             # finite union; all branch shape and constraint keywords remain
             # visible to the comparison below.
+            raw_document["$defs"] = {
+                key: value
+                for key, value in raw_document["$defs"].items()
+                if key != "decimalPolicy"
+            }
+            prepared_document["$defs"] = {
+                key: value
+                for key, value in prepared_document["$defs"].items()
+                if key != "decimalPolicy"
+            }
         before: list[str] = []
         after: list[str] = []
         _keywords(raw_document, before)
