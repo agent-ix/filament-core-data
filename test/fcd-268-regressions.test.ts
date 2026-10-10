@@ -21,6 +21,8 @@ import {
 	renderValidators,
 } from "../src/compiler/backends/typescript-v1/validators.mjs";
 import { renderTypes } from "../src/compiler/backends/typescript-v1/types.mjs";
+import { readContractIr } from "../src/compiler/ir/reader.mjs";
+import { admitInstance } from "../conformance/oracle/oracle.mjs";
 import {
 	buildMatrixIr,
 	cellRecordName,
@@ -123,7 +125,7 @@ function enumIr() {
 			{
 				identity: `${scalarIdentity}/constraint/enumValues`,
 				keyword: "enumValues",
-				operands: { values: [0, -0] },
+				operands: { values: [0] },
 				appliesTo: scalarIdentity,
 				diagnosticCode: "ix://agent-ix/age-2229-regressions/SIGNED_ZERO_ENUM",
 			},
@@ -236,6 +238,49 @@ function nativeIntegerEnumIr() {
 						operands: { values: ["1", "2"] },
 						appliesTo: fieldIdentity,
 						diagnosticCode: "ix://agent-ix/age-2229-regressions/NATIVE_ENUM",
+					},
+				],
+			}),
+		),
+	]);
+}
+
+function scalarEnumIr(name: string, typeRef: string, values: unknown[]) {
+	const recordIdentity = `ix://agent-ix/age-2229-regressions/type/${name}`;
+	const fieldIdentity = `${recordIdentity}#value`;
+	const wide = name === "EnumWideInteger";
+	return document([
+		record(
+			recordIdentity,
+			field(recordIdentity, typeRef, {
+				...(typeRef === "ix://quire/native/Decimal"
+					? { decimal: { precision: 5, scale: 2 } }
+					: {}),
+				constraints: [
+					...(wide
+						? [
+								{
+									identity: `${fieldIdentity}/constraint/min`,
+									keyword: "min",
+									operands: { value: "9007199254740992" },
+									appliesTo: fieldIdentity,
+									diagnosticCode: "ix://agent-ix/age-2229-regressions/WIDE_MIN",
+								},
+								{
+									identity: `${fieldIdentity}/constraint/max`,
+									keyword: "max",
+									operands: { value: "9007199254740994" },
+									appliesTo: fieldIdentity,
+									diagnosticCode: "ix://agent-ix/age-2229-regressions/WIDE_MAX",
+								},
+							]
+						: []),
+					{
+						identity: `${fieldIdentity}/constraint/enumValues`,
+						keyword: "enumValues",
+						operands: { values },
+						appliesTo: fieldIdentity,
+						diagnosticCode: "ix://agent-ix/age-2229-regressions/SCALAR_ENUM",
 					},
 				],
 			}),
@@ -412,10 +457,20 @@ it("keeps signed-zero enum equality and proves the broken comparison is red", as
 		const generated = await writeValidators(directory, ir);
 		const real = generated.validateSignedZeroRecord as (value: unknown) => {
 			ok: boolean;
+			errors: { code: string; pointer: string }[];
 		};
 		expect(real({ value: -0 }).ok).toBe(true);
+		expect(real({ value: 1 }).errors).toContainEqual(
+			expect.objectContaining({
+				code: "ix://agent-ix/age-2229-regressions/SIGNED_ZERO_ENUM",
+				pointer: "/value",
+			}),
+		);
 		const mutant = await writeValidators(directory, ir, (source) =>
-			source.replace("|| (left === 0 && right === 0)", "|| false"),
+			source.replace(
+				"Math.fround(enumMember) === Math.fround(candidate)",
+				"Object.is(Math.fround(enumMember), Math.fround(candidate))",
+			),
 		);
 		expect(mutant.validateSignedZeroRecord({ value: -0 }).ok).toBe(false);
 	} finally {
@@ -461,13 +516,19 @@ it("rounds native Float32 bounds and rejects rounded duplicate members", async (
 			1.0000001192092896,
 		);
 		const oddMinGenerated = await writeValidators(directory, oddMin);
-		expect(
-			(
-				oddMinGenerated.validateNativeFloat32Boundary as (value: unknown) => {
-					ok: boolean;
-				}
-			)({ value: 1.0000000596046448 }).ok,
-		).toBe(false);
+		const rejectedMin = (
+			oddMinGenerated.validateNativeFloat32Boundary as (value: unknown) => {
+				ok: boolean;
+				errors: { code: string; pointer: string }[];
+			}
+		)({ value: 1.0000000596046448 });
+		expect(rejectedMin.ok).toBe(false);
+		expect(rejectedMin.errors).toContainEqual(
+			expect.objectContaining({
+				code: "ix://agent-ix/age-2229-regressions/F32_MIN",
+				pointer: "/value",
+			}),
+		);
 		const oddMinSchemas = jsonSchemas(oddMin);
 		const oddMinSchema = oddMinSchemas.schemas.find(
 			(one) => one.title === "NativeFloat32Boundary",
@@ -562,7 +623,6 @@ it("rounds native Float32 bounds and rejects rounded duplicate members", async (
 	}
 });
 
-/** Trace: FR-066-AC-5. */
 it("enforces Float32 rounded uniqueness and maps JSON uniqueness", async () => {
 	const ir = uniqueIr();
 	const directory = mkdtempSync(join(tmpdir(), "fcd-268-unique-"));
@@ -605,7 +665,6 @@ it("keeps the Float32 uniqueness helper on the generated export surface", () => 
 	expect(broken).not.toContain("export function isUniqueFloat32Collection");
 });
 
-/** Trace: FR-144-AC-13. */
 it("renders native nullable wide collections with the dedicated serde adapter", () => {
 	const ir = nativeNullableCollectionIr();
 	const generated = emitCrate(
@@ -656,9 +715,17 @@ it("enforces native Integer enumValues and proves the missing check is red", asy
 		const generated = await writeValidators(directory, ir);
 		const real = generated.validateNativeIntegerEnum as (value: unknown) => {
 			ok: boolean;
+			errors: { code: string; pointer: string }[];
 		};
 		expect(real({ value: 1 }).ok).toBe(true);
-		expect(real({ value: 3 }).ok).toBe(false);
+		const rejected = real({ value: 3 });
+		expect(rejected.ok).toBe(false);
+		expect(rejected.errors).toContainEqual(
+			expect.objectContaining({
+				code: "ix://agent-ix/age-2229-regressions/NATIVE_ENUM",
+				pointer: "/value",
+			}),
+		);
 		writeFileSync(join(directory, "errors.ts"), renderErrors());
 		writeFileSync(
 			join(directory, "validators.ts"),
@@ -670,6 +737,158 @@ it("enforces native Integer enumValues and proves the missing check is red", asy
 			source.replace("[1, 2].some", "[1, 2, 3].some"),
 		);
 		expect(mutant.validateNativeIntegerEnum({ value: 3 }).ok).toBe(true);
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
+});
+
+/** Trace: FR-066-AC-5. */
+it("compares native scalar enum members without coercion or signed-zero drift", async () => {
+	const grid = [
+		{
+			name: "EnumString",
+			typeRef: "ix://quire/native/String",
+			members: ["red"],
+			probes: [
+				["red", true],
+				["blue", false],
+				[42, false],
+				[Symbol("red"), false],
+				[{ valueOf: () => "red" }, false],
+			],
+		},
+		{
+			name: "EnumBoolean",
+			typeRef: "ix://quire/native/Boolean",
+			members: [true],
+			probes: [
+				[true, true],
+				[false, false],
+				[1, false],
+				["true", false],
+				[Symbol("true"), false],
+			],
+		},
+		{
+			name: "EnumIntegerZero",
+			typeRef: "ix://quire/native/Integer",
+			members: ["0"],
+			probes: [
+				[0, true],
+				[-0, true],
+				[1, false],
+				["0", false],
+				["NaN", false],
+				[Symbol("0"), false],
+				[{ valueOf: () => 0 }, false],
+			],
+		},
+		{
+			name: "EnumWideInteger",
+			typeRef: "ix://quire/native/Integer",
+			members: ["9007199254740992"],
+			probes: [
+				["9007199254740992", true],
+				["9007199254740993", false],
+				[9007199254740992, false],
+				[Symbol("wide"), false],
+				[{ valueOf: () => "9007199254740992" }, false],
+			],
+		},
+		{
+			name: "EnumFloat32",
+			typeRef: "ix://quire/native/Float32",
+			members: [0.1],
+			probes: [
+				[0.1, true],
+				[Math.fround(0.1), true],
+				[0.2, false],
+				["NaN", false],
+				[Symbol("0.1"), false],
+			],
+		},
+		{
+			name: "EnumFloat32Zero",
+			typeRef: "ix://quire/native/Float32",
+			members: [0],
+			probes: [
+				[0, true],
+				[-0, true],
+				[1, false],
+			],
+		},
+		{
+			name: "EnumFloat64Zero",
+			typeRef: "ix://quire/native/Float64",
+			members: [0],
+			probes: [
+				[0, true],
+				[-0, true],
+				[1, false],
+				["0", false],
+				["NaN", false],
+				[Symbol("0"), false],
+				[{ valueOf: () => 0 }, false],
+			],
+		},
+		{
+			name: "EnumDecimal",
+			typeRef: "ix://quire/native/Decimal",
+			members: ["1.1"],
+			probes: [
+				["1.1", true],
+				["1.10", true],
+				["1.2", false],
+				[1.1, false],
+				["NaN", false],
+				[Symbol("1.1"), false],
+				[{ valueOf: () => "1.1" }, false],
+			],
+		},
+	] as const;
+	const directory = mkdtempSync(join(tmpdir(), "fcd-268-enum-grid-"));
+	try {
+		for (const one of grid) {
+			const ir = scalarEnumIr(one.name, one.typeRef, [...one.members]);
+			expect([...readContractIr(ir)], `${one.name} reader`).toEqual([]);
+			const generated = await writeValidators(directory, ir);
+			const validate = generated[`validate${one.name}`] as (input: unknown) => {
+				ok: boolean;
+				errors: { code: string; pointer: string }[];
+			};
+			const { ajv, schemas } = jsonSchemas(ir);
+			const schema = schemas.find(
+				(entry) => entry.title === one.name,
+			) as Record<string, unknown>;
+			const validateJson = ajv.getSchema(schema.$id as string)!;
+			for (const [value, expected] of one.probes) {
+				const input = { value };
+				const result = validate(input);
+				expect(
+					result.ok,
+					`${one.name} TS ${String(value)} ${JSON.stringify(result.errors)}`,
+				).toBe(expected);
+				if (!expected) {
+					expect(result.errors).toContainEqual(
+						expect.objectContaining({
+							code: "ix://agent-ix/age-2229-regressions/SCALAR_ENUM",
+							pointer: "/value",
+						}),
+					);
+				}
+				expect(validateJson(input), `${one.name} Ajv ${String(value)}`).toBe(
+					expected,
+				);
+				expect(
+					admitInstance(
+						{ ir },
+						`ix://agent-ix/age-2229-regressions/type/${one.name}`,
+						input,
+					).ok,
+					`${one.name} oracle ${String(value)}`,
+				).toBe(expected);
+			}
+		}
 	} finally {
 		rmSync(directory, { recursive: true, force: true });
 	}
@@ -712,7 +931,6 @@ it("typechecks the generated TypeScript export surface and proves an export muta
 	}
 });
 
-/** Trace: FR-144-AC-13. */
 it("compiles the generated Rust nullable collection with warnings denied and proves an adapter mutation is red", () => {
 	const generated = emitCrate(
 		{
@@ -757,7 +975,6 @@ it("compiles the generated Rust nullable collection with warnings denied and pro
 	}
 });
 
-/** Trace: FR-144-AC-13. */
 it("compiles a required collection whose integer element domain is empty", () => {
 	const generated = emitCrate(
 		{

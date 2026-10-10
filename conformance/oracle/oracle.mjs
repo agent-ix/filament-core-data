@@ -1158,6 +1158,48 @@ export function verdict(bundle, schemaRows = []) {
  * while this small instance seam applies the declared scalar constraints to a
  * record value so backend probes can be compared with an independent oracle.
  */
+function enumMemberEquals(scalar, member, value) {
+	if (scalar === "integer") {
+		if (typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value))
+			return BigInt(member) === BigInt(value);
+		return (
+			typeof value === "number" &&
+			Number.isSafeInteger(value) &&
+			BigInt(member) === BigInt(value)
+		);
+	}
+	if (scalar === "float32")
+		return (
+			typeof value === "number" &&
+			Number.isFinite(Math.fround(value)) &&
+			Math.fround(member) === Math.fround(value)
+		);
+	if (scalar === "float64")
+		return (
+			typeof value === "number" && Number.isFinite(value) && member === value
+		);
+	if (scalar === "decimal") {
+		if (typeof value !== "string") return false;
+		const parts = (wire) => {
+			const negative = wire.startsWith("-");
+			const [whole, fraction = ""] = (negative ? wire.slice(1) : wire).split(
+				".",
+			);
+			return {
+				coefficient: BigInt(`${negative ? "-" : ""}${whole}${fraction}`),
+				scale: fraction.length,
+			};
+		};
+		const left = parts(member);
+		const right = parts(value);
+		return (
+			left.coefficient * 10n ** BigInt(right.scale) ===
+			right.coefficient * 10n ** BigInt(left.scale)
+		);
+	}
+	return typeof member === typeof value && member === value;
+}
+
 export function admitInstance(bundle, typeIdentity, record, options = {}) {
 	const structural = (code) => `agent-ix.typescript-backend.${code}`;
 	if (!isObject(bundle) || !isObject(bundle.ir))
@@ -1188,7 +1230,7 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 	let lowerConstraint;
 	let upperConstraint;
 	if (scalar === "integer") {
-		for (const definition of definitions) {
+		for (const definition of [field, ...definitions]) {
 			for (const constraint of Array.isArray(definition.constraints)
 				? definition.constraints
 				: []) {
@@ -1275,8 +1317,26 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 			numeric = scalar === "float32" ? Math.fround(value) : value;
 			if (!Number.isFinite(numeric))
 				return { ok: false, code: structural("NOT_A_NUMBER_VALUE") };
+		} else if (scalar === "decimal") {
+			const policy = decimalPolicyFor(byIdentity, field, resolved);
+			const canonical =
+				typeof value === "string" &&
+				/^-?(0|[1-9][0-9]*)(\.[0-9]+)?$/.test(value) &&
+				!/^-0(?:\.0+)?$/.test(value);
+			const unsigned = canonical ? value.replace(/^-/, "") : "";
+			const [whole, fraction = ""] = unsigned.split(".");
+			if (
+				!canonical ||
+				!policy ||
+				(whole === "0" ? 0 : whole.length) > policy.precision - policy.scale ||
+				fraction.length > policy.scale
+			)
+				return { ok: false, code: structural("SHAPE_MISMATCH") };
+		} else if (scalar === "boolean" || scalar === "string") {
+			if (typeof value !== scalar)
+				return { ok: false, code: structural("SHAPE_MISMATCH") };
 		}
-		for (const definition of definitions) {
+		for (const definition of [field, ...definitions]) {
 			const constraints = Array.isArray(definition.constraints)
 				? definition.constraints
 				: [];
@@ -1327,6 +1387,19 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 					ok: false,
 					code: "agent-ix.typescript-backend.INTEGER_OUT_OF_SAFE_RANGE",
 				};
+		}
+		for (const constraint of [
+			...(Array.isArray(field.constraints) ? field.constraints : []),
+			...definitions.flatMap((definition) =>
+				Array.isArray(definition.constraints) ? definition.constraints : [],
+			),
+		]) {
+			if (constraint?.keyword !== "enumValues") continue;
+			const members = Array.isArray(constraint.operands?.values)
+				? constraint.operands.values
+				: [];
+			if (!members.some((member) => enumMemberEquals(scalar, member, value)))
+				return { ok: false, code: constraint.diagnosticCode };
 		}
 	}
 	return { ok: true, code: "OK" };

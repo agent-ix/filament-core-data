@@ -134,6 +134,30 @@ function pointerToken(name) {
  * the alias's own check has not narrowed.
  */
 
+/** Compare enum members in the scalar's wire domain without coercing an input. */
+function enumCondition(scalar, values, candidate, wideInteger = false) {
+	const members = values
+		.map((entry) =>
+			scalar === "integer" && !wideInteger
+				? literal(Number(entry))
+				: literal(entry),
+		)
+		.join(", ");
+	if (scalar === "integer" && wideInteger)
+		return `(typeof ${candidate} === "string" && /^(0|-?[1-9][0-9]*)$/.test(${candidate}) && [${members}].some((enumMember) => BigInt(enumMember) === BigInt(${candidate})))`;
+	if (scalar === "integer")
+		return `(typeof ${candidate} === "number" && Number.isSafeInteger(${candidate}) && [${members}].some((enumMember) => enumMember === ${candidate}))`;
+	if (scalar === "float32")
+		return `(typeof ${candidate} === "number" && Number.isFinite(Math.fround(${candidate})) && [${members}].some((enumMember) => Math.fround(enumMember) === Math.fround(${candidate})))`;
+	if (scalar === "float64")
+		return `(typeof ${candidate} === "number" && Number.isFinite(${candidate}) && [${members}].some((enumMember) => enumMember === ${candidate}))`;
+	if (scalar === "decimal")
+		return `(typeof ${candidate} === "string" && isCanonicalDecimal(${candidate}) && [${members}].some((enumMember) => compareDecimal(enumMember, ${candidate}) === 0))`;
+	if (scalar === "boolean" || scalar === "string")
+		return `(typeof ${candidate} === "${scalar}" && [${members}].some((enumMember) => enumMember === ${candidate}))`;
+	return `[${members}].some((enumMember) => Object.is(enumMember, ${candidate}))`;
+}
+
 /** The generated expression checking one constraint against `candidate`. */
 function constraintCondition(constraint, subject) {
 	const operands = constraint.operands ?? {};
@@ -154,24 +178,13 @@ function constraintCondition(constraint, subject) {
 			return length && `${length} <= ${literal(operands.value)}`;
 		case "pattern":
 			return `new RegExp(${literal(operands.regex)}).test(candidate)`;
-		case "enumValues": {
-			if (scalar === "decimal")
-				return `[${(operands.values ?? []).map((entry) => literal(entry)).join(", ")}].some((member) => compareDecimal(member, candidate) === 0)`;
-			if (scalar === "integer") {
-				const values = (operands.values ?? [])
-					.map((entry) =>
-						subject.wideInteger ? literal(entry) : literal(Number(entry)),
-					)
-					.join(", ");
-				return `[${values}].some((member) => Object.is(member, candidate))`;
-			}
-			if (scalar === "float32")
-				return `[${(operands.values ?? []).map((entry) => literal(entry)).join(", ")}].some((member) => { const left = Math.fround(member); const right = Math.fround(candidate); return Object.is(left, right) || (left === 0 && right === 0); })`;
-			const values = (operands.values ?? [])
-				.map((entry) => literal(entry))
-				.join(", ");
-			return `[${values}].some((member) => Object.is(member, candidate))`;
-		}
+		case "enumValues":
+			return enumCondition(
+				scalar,
+				operands.values ?? [],
+				"candidate",
+				subject.wideInteger,
+			);
 		case "nonEmpty":
 			return length && `${length} > 0`;
 		case "unique":
@@ -538,28 +551,14 @@ function checkCall(element, valueExpression, pointerExpression) {
 		for (const constraint of element.constraints ?? []) {
 			const value = constraint.operands?.value;
 			if (constraint.keyword === "enumValues") {
-				const values = constraint.operands?.values ?? [];
-				const members = values
-					.map((entry) =>
-						element.wideInteger === true
-							? `BigInt(${literal(entry)})`
-							: literal(Number(entry)),
-					)
-					.join(", ");
-				const lhs =
-					element.wideInteger === true
-						? `BigInt(String(${valueExpression}))`
-						: `Number(${valueExpression})`;
-				const equality =
-					element.scalar === "float32"
-						? `[${members}].some((allowed) => Object.is(Math.fround(allowed), Math.fround(${valueExpression})) || (Math.fround(allowed) === 0 && Math.fround(${valueExpression}) === 0))`
-						: `[${members}].some((allowed) => Object.is(allowed, ${lhs}))`;
-				const guardedEquality =
-					element.wideInteger === true
-						? `(${canonicalWideInteger} && !(${equality}))`
-						: `!(${equality})`;
+				const equality = enumCondition(
+					scalar,
+					constraint.operands?.values ?? [],
+					valueExpression,
+					element.wideInteger === true,
+				);
 				checks.push(
-					`if (${guardedEquality}) fail(errors, ${pointerExpression}, ${literal(constraint.diagnosticCode)}, ${literal("the enumValues constraint is not satisfied")})`,
+					`if (!(${equality})) fail(errors, ${pointerExpression}, ${literal(constraint.diagnosticCode)}, ${literal("the enumValues constraint is not satisfied")})`,
 				);
 				continue;
 			}
