@@ -507,7 +507,7 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
         &entity(
             "FR-001",
             "NumericRows",
-            "| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n| unpriced | Decimal | 1 | |\n",
+            "| id | UUID | 1 | identity |\n| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n| unpriced | Decimal | 1 | |\n",
         ),
     );
 
@@ -516,7 +516,7 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
         blocked.extractions.diagnostics.iter().any(|diagnostic| {
             diagnostic.registry_code() == Some(Code::DecimalPolicyMissing)
                 && diagnostic.locus.as_ref().is_some_and(|locus| {
-                    locus.path.ends_with("FR-001.md") && locus.start_line == 16
+                    locus.path.ends_with("FR-001.md") && locus.start_line == 17
                 })
         }),
         "missing frontend Decimal policy diagnostic: {:?}",
@@ -535,7 +535,7 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
         &entity(
             "FR-001",
             "NumericRows",
-            "| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n",
+            "| id | UUID | 1 | identity |\n| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n",
         ),
     );
     let lift = lift_at(valid_root.path(), &[&business_module(), &edge_vocabulary()]);
