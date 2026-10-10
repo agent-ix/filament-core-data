@@ -963,6 +963,7 @@ def construct_diagnostics(document: Any) -> list[dict[str, str]]:
         if (
             isinstance(declared, dict)
             and position not in used
+            and isinstance(declaration, dict)
             and declaration.get("meaning") != "quire.meaning.model.population/v1"
         ):
             emit(

@@ -5,6 +5,8 @@
 
 import importlib.util
 import json
+import subprocess
+import sys
 
 import pytest
 
@@ -124,6 +126,41 @@ def test_unused_population_meaning_admits_independently_of_revision_or_kind_name
     document["constructs"][1]["kind"]["name"] = "unused_kind"
     assert schema_valid(_schema_validator(), document)
     assert construct_findings(document) == []
+
+
+@pytest.mark.parametrize("declaration", ["malformed", ["malformed"], True])
+def test_malformed_unused_declaration_refuses_without_a_cli_traceback(
+    declaration, tmp_path, conformance_adapter
+):
+    """Trace: FR-142-AC-15"""
+    document = fixture()
+    document["constructs"][1]["construct"] = declaration
+    path = tmp_path / "malformed.json"
+    path.write_text(json.dumps(document))
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "tests/semantic_ir_reader.py"),
+            "--read",
+            str(path),
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert result.stderr == ""
+    assert json.loads(result.stdout)["schemaValid"] is False
+    refusal = conformance_adapter.answer(
+        {
+            "caseId": "malformed-unused",
+            "kind": "admissibility",
+            "input": {"ir": document},
+        }
+    )
+    assert refusal["resultState"] == "invalid"
+    assert [
+        (row["diagnostic"]["code"], row["pointer"]) for row in refusal["diagnostics"]
+    ] == [("agent-ix.semantic-ir.SCHEMA_VIOLATION", "/ir/constructs/1/construct")]
 
 
 def test_authored_revision_one_and_unused_population_preserve_timestamp_binding(
