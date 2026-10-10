@@ -1740,7 +1740,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
-				value: 2147483647,
+				value: "38",
 			},
 		},
 		{
@@ -1750,7 +1750,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
-				value: 1,
+				value: "1",
 			},
 		},
 	],
@@ -1761,7 +1761,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/DecimalPolicyScale",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
-				value: 2147483647,
+				value: "38",
 			},
 		},
 		{
@@ -1770,7 +1770,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/DecimalPolicyScale",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
-				value: 0,
+				value: "0",
 			},
 		},
 	],
@@ -1820,7 +1820,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
-				value: 2147483647,
+				value: "2147483647",
 			},
 		},
 		{
@@ -1830,7 +1830,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/MaxLengthConstraintValue",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
-				value: 0,
+				value: "0",
 			},
 		},
 	],
@@ -1849,7 +1849,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/MinLengthConstraintValue",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
-				value: 2147483647,
+				value: "2147483647",
 			},
 		},
 		{
@@ -1859,7 +1859,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/MinLengthConstraintValue",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
-				value: 0,
+				value: "0",
 			},
 		},
 	],
@@ -1871,7 +1871,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/MultiplicityLower",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
-				value: 2147483647,
+				value: "2147483647",
 			},
 		},
 		{
@@ -1880,7 +1880,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/MultiplicityLower",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
-				value: 0,
+				value: "0",
 			},
 		},
 	],
@@ -1893,7 +1893,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/MultiplicityUpper",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
-				value: 2147483647,
+				value: "2147483647",
 			},
 		},
 		{
@@ -1902,7 +1902,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/MultiplicityUpper",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
-				value: 0,
+				value: "0",
 			},
 		},
 	],
@@ -1925,7 +1925,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/SourceLocusEndColumn",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
-				value: 2147483647,
+				value: "2147483647",
 			},
 		},
 		{
@@ -1935,7 +1935,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/SourceLocusEndColumn",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
-				value: 1,
+				value: "1",
 			},
 		},
 	],
@@ -1946,7 +1946,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/SourceLocusEndLine",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
-				value: 2147483647,
+				value: "2147483647",
 			},
 		},
 		{
@@ -1955,7 +1955,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/SourceLocusEndLine",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
-				value: 1,
+				value: "1",
 			},
 		},
 	],
@@ -1968,7 +1968,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/SourceLocusStartColumn",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
-				value: 2147483647,
+				value: "2147483647",
 			},
 		},
 		{
@@ -1978,7 +1978,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/SourceLocusStartColumn",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
-				value: 1,
+				value: "1",
 			},
 		},
 	],
@@ -1990,7 +1990,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/SourceLocusStartLine",
 			diagnosticCode: "agent-ix.semantic-core.MAX",
 			operands: {
-				value: 2147483647,
+				value: "2147483647",
 			},
 		},
 		{
@@ -2000,7 +2000,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/semantic-core/SourceLocusStartLine",
 			diagnosticCode: "agent-ix.semantic-core.MIN",
 			operands: {
-				value: 1,
+				value: "1",
 			},
 		},
 	],

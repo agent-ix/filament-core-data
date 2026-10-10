@@ -764,7 +764,7 @@ function checkDecimalPolicyPrecision(
 		);
 		return false;
 	}
-	if (!(candidate <= 2147483647)) {
+	if (!(candidate <= 38)) {
 		fail(
 			errors,
 			pointer,
@@ -843,7 +843,7 @@ function checkDecimalPolicyScale(
 		);
 		return false;
 	}
-	if (!(candidate <= 2147483647)) {
+	if (!(candidate <= 38)) {
 		fail(
 			errors,
 			pointer,

@@ -103,6 +103,22 @@ impl MinLengthConstraint {
         keyword: crate::MinLengthConstraintKeyword,
         value: crate::MinLengthConstraintValue,
     ) -> Result<Self, crate::support::ValidationError> {
+        if *(&value).get() < 0i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/MinLengthConstraintValue/constraint/min",
+                "min",
+                "",
+                "0",
+            ));
+        }
+        if *(&value).get() > 2147483647i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/MinLengthConstraintValue/constraint/max",
+                "max",
+                "",
+                "2147483647",
+            ));
+        }
         Ok(Self { keyword, value })
     }
 

@@ -542,7 +542,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/DecimalPolicyPrecision",
 					"keyword": "max",
 					"operands": {
-						"value": "2147483647"
+						"value": "38"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {
@@ -595,7 +595,7 @@
 					"appliesTo": "ix://agent-ix/semantic-core/DecimalPolicyScale",
 					"keyword": "max",
 					"operands": {
-						"value": "2147483647"
+						"value": "38"
 					},
 					"diagnosticCode": "agent-ix.semantic-core.MAX",
 					"origin": {

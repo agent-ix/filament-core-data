@@ -103,6 +103,38 @@ impl DecimalPolicy {
         precision: crate::DecimalPolicyPrecision,
         scale: crate::DecimalPolicyScale,
     ) -> Result<Self, crate::support::ValidationError> {
+        if *(&precision).get() < 1i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/DecimalPolicyPrecision/constraint/min",
+                "min",
+                "",
+                "1",
+            ));
+        }
+        if *(&precision).get() > 38i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/DecimalPolicyPrecision/constraint/max",
+                "max",
+                "",
+                "38",
+            ));
+        }
+        if *(&scale).get() < 0i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/DecimalPolicyScale/constraint/min",
+                "min",
+                "",
+                "0",
+            ));
+        }
+        if *(&scale).get() > 38i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/DecimalPolicyScale/constraint/max",
+                "max",
+                "",
+                "38",
+            ));
+        }
         Ok(Self { precision, scale })
     }
 

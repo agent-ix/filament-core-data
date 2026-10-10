@@ -177,6 +177,40 @@ impl Multiplicity {
         ordered: crate::MultiplicityOrdered,
         unique: crate::MultiplicityUnique,
     ) -> Result<Self, crate::support::ValidationError> {
+        if *(&lower).get() < 0i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/MultiplicityLower/constraint/min",
+                "min",
+                "",
+                "0",
+            ));
+        }
+        if *(&lower).get() > 2147483647i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/MultiplicityLower/constraint/max",
+                "max",
+                "",
+                "2147483647",
+            ));
+        }
+        if let Some(value) = &upper {
+            if *(*value).get() < 0i64 {
+                return Err(crate::support::ValidationError::new(
+                    "ix://agent-ix/semantic-core/MultiplicityUpper/constraint/min",
+                    "min",
+                    "",
+                    "0",
+                ));
+            }
+            if *(*value).get() > 2147483647i64 {
+                return Err(crate::support::ValidationError::new(
+                    "ix://agent-ix/semantic-core/MultiplicityUpper/constraint/max",
+                    "max",
+                    "",
+                    "2147483647",
+                ));
+            }
+        }
         Ok(Self {
             lower,
             upper,

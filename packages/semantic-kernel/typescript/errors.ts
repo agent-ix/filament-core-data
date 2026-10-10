@@ -250,6 +250,19 @@ export function isUniqueCollection(value: unknown): boolean {
 	return true;
 }
 
+/** Float32 uniqueness compares the rounded binary32 values. */
+export function isUniqueFloat32Collection(value: unknown): boolean {
+	if (!Array.isArray(value)) return true;
+	const seen = new Set<number>();
+	for (const member of value) {
+		if (typeof member !== "number") continue;
+		const rounded = Math.fround(member);
+		if (seen.has(rounded)) return false;
+		seen.add(rounded);
+	}
+	return true;
+}
+
 /** Order by pointer then code, by code unit, so the list is host-stable. */
 export function sortErrors(
 	errors: readonly ValidationError[],
