@@ -325,8 +325,8 @@ describe("TypeScript Decimal applicability (FR-144)", () => {
 		expect(result.diagnostics).toEqual([]);
 	});
 
-	it("admits float32 and float64 scalars while retaining legacy number", () => {
-		for (const scalar of ["float32", "float64", "number"] as const) {
+	it("admits the exact float32 and float64 scalar kinds", () => {
+		for (const scalar of ["float32", "float64"] as const) {
 			const ir = JSON.parse(readFileSync(fixtureIr, "utf8"));
 			const count = ir.types.find(
 				(type: { displayName: string }) => type.displayName === "Count",

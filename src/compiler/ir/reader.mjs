@@ -662,7 +662,7 @@ export function readContractIr(document, options = {}) {
 		);
 		if (resolvedSelf?.kind === "scalar" && resolvedSelf.scalar === "number") {
 			raise(
-				DIAGNOSTIC_CODES.UNSUPPORTED_SCALAR_BASE,
+				DIAGNOSTIC_CODES.SCHEMA_VIOLATION,
 				"the legacy number scalar is not admitted; use float32 or float64",
 				locusOf(definition),
 			);

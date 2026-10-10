@@ -20,11 +20,15 @@ import {
 	getFormat,
 	getMaxLength,
 	getMaxValue,
+	getMaxValueAsNumeric,
 	getMaxValueExclusive,
+	getMaxValueExclusiveAsNumeric,
 	getMinItems,
 	getMinLength,
 	getMinValue,
+	getMinValueAsNumeric,
 	getMinValueExclusive,
+	getMinValueExclusiveAsNumeric,
 	getNamespaceFullName,
 	getPattern,
 	getSourceLocation,
@@ -63,9 +67,9 @@ const BUILTIN_SCALARS = new Map([
 	["uint16", "integer"],
 	["uint32", "integer"],
 	["uint64", "integer"],
-	["float", "number"],
-	["float32", "number"],
-	["float64", "number"],
+	["float", "float64"],
+	["float32", "float32"],
+	["float64", "float64"],
 	["decimal", "decimal"],
 	["decimal128", "decimal"],
 	["numeric", "number"],
@@ -94,6 +98,8 @@ const KERNEL_NAMES = new Map([
 	["boolean", "Boolean"],
 	["integer", "Integer"],
 	["number", "Decimal"],
+	["float32", "Float32"],
+	["float64", "Float64"],
 	["decimal", "Decimal"],
 	["string", "String"],
 	["bytes", "Bytes"],
@@ -502,36 +508,44 @@ export function lowerProgram(options) {
 		const scalar = base ? BUILTIN_SCALARS.get(base) : undefined;
 		if (
 			scalar === "integer" &&
-			typeof value === "number" &&
-			Number.isInteger(value)
+			value !== undefined &&
+			typeof value?.toString === "function"
 		)
-			return String(value);
+			return value.toString();
 		if (
 			scalar === "decimal" &&
-			typeof value === "number" &&
-			Number.isFinite(value)
+			value !== undefined &&
+			typeof value?.toString === "function"
 		)
-			return String(value);
+			return value.toString();
+		if (
+			(scalar === "float32" || scalar === "float64") &&
+			value !== undefined &&
+			typeof value?.asNumber === "function"
+		) {
+			const number = value.asNumber();
+			return number === null ? value.toString() : number;
+		}
 		return value;
 	};
 	const constraintsOf = (target) => {
 		const found = [];
 		const push = (keyword, operands, decorator) =>
 			found.push({ keyword, operands, decorator });
-		const min = getMinValue(program, target);
+		const min = getMinValueAsNumeric(program, target) ?? getMinValue(program, target);
 		if (min !== undefined)
 			push("min", { value: literalFor(target, min) }, "@minValue");
-		const max = getMaxValue(program, target);
+		const max = getMaxValueAsNumeric(program, target) ?? getMaxValue(program, target);
 		if (max !== undefined)
 			push("max", { value: literalFor(target, max) }, "@maxValue");
-		const exclusiveMin = getMinValueExclusive(program, target);
+		const exclusiveMin = getMinValueExclusiveAsNumeric(program, target) ?? getMinValueExclusive(program, target);
 		if (exclusiveMin !== undefined)
 			push(
 				"exclusiveMin",
 				{ value: literalFor(target, exclusiveMin) },
 				"@minValueExclusive",
 			);
-		const exclusiveMax = getMaxValueExclusive(program, target);
+		const exclusiveMax = getMaxValueExclusiveAsNumeric(program, target) ?? getMaxValueExclusive(program, target);
 		if (exclusiveMax !== undefined)
 			push(
 				"exclusiveMax",

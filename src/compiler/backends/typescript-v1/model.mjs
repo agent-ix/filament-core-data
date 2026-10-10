@@ -144,7 +144,7 @@ function integerBounds(constraints) {
 			upperExplicit = true;
 		}
 	}
-	return { lower, upper };
+	return { lower, upper, lowerExplicit, upperExplicit };
 }
 
 function effectiveIntegerBounds(types, identity, seen = new Set()) {
@@ -161,9 +161,23 @@ function effectiveIntegerBounds(types, identity, seen = new Set()) {
 	const scalar = resolveScalar(types, identity);
 	if (scalar !== "integer") return parent;
 	const own = integerBounds(type.constraints);
+	const lower =
+		own.lowerExplicit || !parent?.lowerExplicit ? own.lower : parent.lower;
+	const upper =
+		own.upperExplicit || !parent?.upperExplicit ? own.upper : parent.upper;
 	return {
-		lower: parent ? (own.lower > parent.lower ? own.lower : parent.lower) : own.lower,
-		upper: parent ? (own.upper < parent.upper ? own.upper : parent.upper) : own.upper,
+		lower: parent && own.lowerExplicit && parent.lowerExplicit
+			? own.lower > parent.lower
+				? own.lower
+				: parent.lower
+			: lower,
+		upper: parent && own.upperExplicit && parent.upperExplicit
+			? own.upper < parent.upper
+				? own.upper
+				: parent.upper
+			: upper,
+		lowerExplicit: Boolean(own.lowerExplicit || parent?.lowerExplicit),
+		upperExplicit: Boolean(own.upperExplicit || parent?.upperExplicit),
 	};
 }
 

@@ -31,9 +31,6 @@ const RUST_LIMITS = {
 	maxDiagnostics: 1_000,
 };
 
-const lockedBuild =
-	process.env.LOCKED_BUILD ?? resolve(import.meta.dirname, "../../locked-build.sh");
-
 function nullableValue(cell: (typeof MATRIX_CELLS)[number]) {
 	if (cell.nesting === "nested") return { nested: null };
 	return { value: null };
@@ -152,10 +149,8 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			`use agent_ix_age_2229_numeric_matrix::{${imports}};\n\n#[test]\nfn every_generated_cell_round_trips() {\n    ${probes}\n}\n`,
 		);
 		execFileSync(
-			lockedBuild,
+			"cargo",
 			[
-				join(scratch, "target"),
-				"cargo",
 				"test",
 				"--offline",
 				"--manifest-path",
@@ -163,7 +158,11 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 				"--test",
 				"numeric_matrix",
 			],
-			{ cwd: scratch, stdio: "pipe", env: process.env },
+			{
+				cwd: scratch,
+				stdio: "pipe",
+				env: { ...process.env, CARGO_TARGET_DIR: join(scratch, "target") },
+			},
 		);
 		process.stdout.write(
 			`AGE-2229 numeric matrix cells: ${MATRIX_CELLS.length}\n`,

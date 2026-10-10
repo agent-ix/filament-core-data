@@ -281,9 +281,11 @@ function subjectAccess(definition, byIdentity) {
 			target.displayName === "Decimal"
 				? "crate::support::Decimal"
 				: undefined;
+		const flattenedInteger =
+			resolveKind(byIdentity, definition?.identity)?.scalar === "integer";
 		// A scalar declaration maps directly to its primitive inner type. Only
 		// another alias contributes a newtype wrapper and therefore a get().
-		if (targetSupport === undefined)
+		if (targetSupport === undefined && !flattenedInteger)
 			expression = `${expression}.get()`;
 		current = target;
 	}
@@ -1412,6 +1414,7 @@ function renderCheck(
 	prefix = type.constantName,
 	unwrapNamedWrapper = false,
 ) {
+	if (isRedundantIntegerBound(type, check)) return [];
 	const identity = rustString(check.identity);
 	const keyword = rustString(check.keyword);
 	const at = rustString("");
@@ -1631,6 +1634,28 @@ function renderCheck(
 }
 
 /**
+ * Primitive Rust integers already enforce their representable endpoints.
+ * Emitting a comparison against those endpoints is rejected by the compiler's
+ * `comparison_is_useless` lint, and cannot add validation beyond the type.
+ */
+function isRedundantIntegerBound(type, check) {
+	if (check.form !== "numeric" || check.scalar !== "integer") return false;
+	const rustType = rustIntegerTypeFor(type);
+	const endpoints = {
+		i64: [-(2n ** 63n), 2n ** 63n - 1n],
+		u64: [0n, 2n ** 64n - 1n],
+		i128: [-(2n ** 127n), 2n ** 127n - 1n],
+	};
+	const boundary = endpoints[rustType];
+	if (boundary === undefined) return false;
+	const value = BigInt(check.value);
+	return (
+		(check.keyword === "min" && value === boundary[0]) ||
+		(check.keyword === "max" && value === boundary[1])
+	);
+}
+
+/**
  * `let inner = <T as Deserialize>::deserialize(deserializer)?;`, wrapped the
  * way `rustfmt` wraps it when the mapped inner type is wide.
  */
@@ -1660,7 +1685,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 
 	lines.push(
 		type.wideInteger
-			? "use serde::Deserialize;"
+			? ""
 			: "use serde::{Deserialize, Serialize};",
 		"",
 	);
@@ -1754,7 +1779,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			"    where",
 			"        D: serde::Deserializer<'de>,",
 			"    {",
-			"        let wire = String::deserialize(deserializer)?;",
+			"        let wire = <String as serde::Deserialize>::deserialize(deserializer)?;",
 			`        let inner = wire.parse::<${inner}>().map_err(serde::de::Error::custom)?;`,
 			"        if inner.to_string() != wire {",
 			'            return Err(serde::de::Error::custom("integer is not canonical"));',
@@ -2095,7 +2120,7 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 				type,
 				field.checks,
 				byIdentity,
-				`${type.constantName}_${field.ident}`,
+				`${type.constantName}_${field.ident.toUpperCase()}`,
 				subject,
 			),
 		);

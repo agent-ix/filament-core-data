@@ -351,6 +351,22 @@ def _check_field(
     # the `fields` branch above, the same as a type-level constraint.
     for index, constraint in enumerate(_objects(field.get("constraints"))):
         _check_constraint(constraint, f"{path}.constraints.{index}", types, fields, out)
+    if "defaultValue" in field and resolved is not None:
+        value = field.get("defaultValue")
+        scalar = resolved[1] if resolved[0] == "scalar" else None
+        values = value if isinstance(value, list) else [value]
+        if scalar == "integer" and value is not None and not all(
+            _exact_numeric_admitted(scalar, item, None) for item in values
+        ):
+            out.append(
+                _diag(
+                    "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
+                    if any(_integer_outside_i128(item) for item in values)
+                    else "agent-ix.semantic-ir.INVALID_DEFAULT_VALUE",
+                    f"{path}.defaultValue",
+                    "the default value is outside the exact scalar wire domain",
+                )
+            )
 
 
 def _check_constraint(
@@ -420,11 +436,37 @@ def _check_constraint(
         if not ok:
             out.append(
                 _diag(
-                    "agent-ix.semantic-ir.INVALID_OPERAND",
+                    "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
+                    if scalar == "integer" and _integer_outside_i128(value)
+                    else "agent-ix.semantic-ir.INVALID_OPERAND",
                     f"{path}.operands.value",
                     "operand type does not match the scalar",
                 )
             )
+    if keyword == "enumValues" and kind == "scalar":
+        enum_values = operands.get("values", [])
+        if not isinstance(enum_values, list):
+            enum_values = []
+        for index, value in enumerate(enum_values):
+            if not _exact_numeric_admitted(scalar, value, _decimal_policy(types, fields, constraint.get("appliesTo"))):
+                out.append(
+                    _diag(
+                        "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
+                        if scalar == "integer" and _integer_outside_i128(value)
+                        else "agent-ix.semantic-ir.INVALID_OPERAND",
+                        f"{path}.operands.values.{index}",
+                        "an enum value is outside the exact scalar wire domain",
+                    )
+                )
+
+
+def _integer_outside_i128(value: Any) -> bool:
+    if not isinstance(value, str) or not _INTEGER_LITERAL.fullmatch(value):
+        return False
+    try:
+        return not (-(2**127) <= int(value) <= 2**127 - 1)
+    except ValueError:
+        return False
 
 
 def _check_type(

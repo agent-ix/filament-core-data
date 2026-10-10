@@ -1180,7 +1180,7 @@ function mapField(field, owner, context, _version) {
 		element.startsWith("crate::") &&
 		!element.startsWith("crate::support::")
 	)
-		wrapperDepth += 1;
+		wrapperDepth = resolvedField?.scalar === "integer" ? 1 : wrapperDepth + 1;
 
 	let rustType = element;
 	if (nullable) rustType = `crate::support::Nullable<${rustType}>`;
@@ -1208,7 +1208,7 @@ function mapField(field, owner, context, _version) {
 		typeRef: field.typeRef,
 		element,
 		elementType: element,
-		 elementScalar:
+		elementScalar:
 			resolveKind(context.byIdentity, field.typeRef)?.scalar ??
 			nativeScalar(field.typeRef),
 		wrapperDepth,

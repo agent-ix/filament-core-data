@@ -926,7 +926,7 @@ const MAX_EXACT_EXPANSION: i64 = 4096;
 fn expansion_would_exceed_budget(lexeme: &str) -> Option<bool> {
 	let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
 	let (mantissa, exponent) = match unsigned.find(['e', 'E']) {
-		Some(at) => (&unsigned[..at], unsigned[at + 1..].parse::<i64>().ok()?),
+		Some(at) => (&unsigned[..at], unsigned[at + 1..].parse::<i128>().ok()?),
 		None => return Some(false),
 	};
 	if mantissa
@@ -936,7 +936,7 @@ fn expansion_would_exceed_budget(lexeme: &str) -> Option<bool> {
 	{
 		return Some(false);
 	}
-	let whole_len = mantissa.split_once('.').map_or(mantissa.len(), |(whole, _)| whole.len()) as i64;
+	let whole_len = mantissa.split_once('.').map_or(mantissa.len(), |(whole, _)| whole.len()) as i128;
 	let decimal_at = match whole_len.checked_add(exponent) {
 		Some(value) => value,
 		// The non-zero mantissa cannot be represented within the bounded
@@ -949,10 +949,10 @@ fn expansion_would_exceed_budget(lexeme: &str) -> Option<bool> {
 fn huge_exponent_is_integer(lexeme: &str) -> bool {
 	let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
 	let Some(at) = unsigned.find(['e', 'E']) else { return false; };
-	let Ok(exponent) = unsigned[at + 1..].parse::<i64>() else { return false; };
+	let Ok(exponent) = unsigned[at + 1..].parse::<i128>() else { return false; };
 	let mantissa = &unsigned[..at];
 	let fraction_len = mantissa.split_once('.').map_or(0, |(_, fraction)| fraction.len());
-	exponent >= fraction_len as i64
+	exponent >= fraction_len as i128
 }
 
 fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {

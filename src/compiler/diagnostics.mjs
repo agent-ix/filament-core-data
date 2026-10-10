@@ -129,6 +129,7 @@ const COMPILER_CODES = [
  * readers emit, in both directions.
  */
 const READER_CODES = [
+	"SCHEMA_VIOLATION",
 	"INVALID_DOCUMENT",
 	"INVALID_MULTIPLICITY",
 	"MISSING_MULTIPLICITY",

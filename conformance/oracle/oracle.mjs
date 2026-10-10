@@ -329,6 +329,22 @@ function checkField(field, at, types, out) {
 	// document this oracle ever sees can trigger it, so the check is removed
 	// rather than left calling out a condition no corpus case can reach.
 	checkMultiplicity(field.multiplicity, `${at}/multiplicity`, out);
+	if (
+		resolved.status === "resolved" &&
+		resolved.kind === "scalar" &&
+		Object.hasOwn(field, "defaultValue") &&
+		!defaultAdmitted(resolved.scalar, field.defaultValue)
+	) {
+		out.push(
+			diagnostic(
+				defaultOutsideI128(resolved.scalar, field.defaultValue)
+					? "INTEGER_OUTSIDE_I128"
+					: "INVALID_DEFAULT_VALUE",
+				`${at}/defaultValue`,
+				"the default value is outside the exact scalar wire domain",
+			),
+		);
+	}
 
 	if (
 		field.unit !== undefined &&
@@ -425,11 +441,30 @@ function checkConstraint(constraint, at, types, out) {
 		if (!operandAdmitted(numeric, resolved.scalar, value)) {
 			out.push(
 				diagnostic(
-					"INVALID_OPERAND",
+					integerOutsideI128(resolved.scalar, value)
+						? "INTEGER_OUTSIDE_I128"
+						: "INVALID_OPERAND",
 					`${at}/operands/value`,
 					`${keyword} on ${String(resolved.scalar)} takes a ${numeric ? "number" : "string"} operand`,
 				),
 			);
+		}
+	}
+	if (keyword === "enumValues" && resolved.kind === "scalar") {
+		const operands = isObject(constraint.operands) ? constraint.operands : {};
+		const values = Array.isArray(operands.values) ? operands.values : [];
+		for (const [index, value] of values.entries()) {
+			if (!valueAdmitted(resolved.scalar, value)) {
+				out.push(
+					diagnostic(
+						integerOutsideI128(resolved.scalar, value)
+							? "INTEGER_OUTSIDE_I128"
+							: "INVALID_OPERAND",
+						`${at}/operands/values/${index}`,
+						"an enum value is outside the exact scalar wire domain",
+					),
+				);
+			}
 		}
 	}
 }
@@ -1519,4 +1554,34 @@ function operandAdmitted(numeric, scalar, value) {
 			}
 		})()
 	);
+}
+
+function integerOutsideI128(scalar, value) {
+	if (scalar !== "integer" || typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value)) return false;
+	try {
+		const parsed = BigInt(value);
+		return parsed < -(2n ** 127n) || parsed > 2n ** 127n - 1n;
+	} catch {
+		return false;
+	}
+}
+
+function defaultOutsideI128(scalar, value) {
+	if (Array.isArray(value)) return value.some((item) => integerOutsideI128(scalar, item));
+	return integerOutsideI128(scalar, value);
+}
+
+function defaultAdmitted(scalar, value) {
+	if (scalar === "integer") {
+		if (Array.isArray(value)) return value.every((item) => operandAdmitted(true, scalar, item));
+		if (value === null) return true;
+		return operandAdmitted(true, scalar, value);
+	}
+	return true;
+}
+
+function valueAdmitted(scalar, value) {
+	return scalar === "integer"
+		? operandAdmitted(true, scalar, value)
+		: true;
 }
