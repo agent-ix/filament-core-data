@@ -436,6 +436,8 @@ export function buildModel(ir, options = {}) {
 			entry.effectiveIntegerBounds = Object.freeze({
 				lower: bounds.lower.toString(),
 				upper: bounds.upper.toString(),
+				lowerExplicit: bounds.lowerExplicit,
+				upperExplicit: bounds.upperExplicit,
 			});
 		}
 		entry.wideInteger = effectiveWideInteger(types, type.identity);

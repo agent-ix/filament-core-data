@@ -27,6 +27,32 @@ const REPO_ROOT = resolve(
 );
 const FLOAT32_MAX = 3.4028234663852886e38;
 
+// JSON Schema compares binary64 values directly, while FR-144 compares a
+// float32 subject after rounding the instance to binary32. Use the midpoint
+// between adjacent binary32 values as the schema boundary.
+function nextFloat32(value, direction) {
+	const view = new DataView(new ArrayBuffer(4));
+	view.setFloat32(0, value);
+	let bits = view.getUint32(0);
+	if ((direction < 0) === (value > 0)) bits -= 1;
+	else bits += 1;
+	view.setUint32(0, bits);
+	return view.getFloat32(0);
+}
+
+function float32Boundary(value, side) {
+	const rounded = Math.fround(value);
+	const previous = nextFloat32(rounded, -1);
+	const next = nextFloat32(rounded, 1);
+	if (side === "min") return (previous + rounded) / 2;
+	if (Number.isFinite(next)) return (rounded + next) / 2;
+	// The next value after binary32 MAX is infinity; use the overflow midpoint.
+	return rounded + (rounded - previous) / 2;
+}
+
+const FLOAT32_MINIMUM = float32Boundary(-FLOAT32_MAX, "min");
+const FLOAT32_MAXIMUM = float32Boundary(FLOAT32_MAX, "max");
+
 const scalarSchema = Object.freeze({
 	boolean: { type: "boolean" },
 	integer: {
@@ -35,7 +61,7 @@ const scalarSchema = Object.freeze({
 		maximum: 2 ** 53 - 1,
 	},
 	number: { type: "number" },
-	float32: { type: "number", minimum: -FLOAT32_MAX, maximum: FLOAT32_MAX },
+	float32: { type: "number", minimum: FLOAT32_MINIMUM, maximum: FLOAT32_MAXIMUM },
 	float64: { type: "number" },
 	decimal: { type: "string", pattern: "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$" },
 	string: { type: "string" },
@@ -319,7 +345,10 @@ function constraint(schema, one, subject, decimalPolicy) {
 			key === "minLength" || key === "maxLength"
 				? value
 				: subject?.scalar === "float32"
-					? Math.fround(Number(value))
+					? float32Boundary(
+							Number(value),
+							key === "min" || key === "exclusiveMax" ? "min" : "max",
+						)
 					: Number(value);
 	}
 	return schema;

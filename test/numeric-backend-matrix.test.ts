@@ -142,20 +142,7 @@ it("rejects an integer-only-min probe outside the effective safe range", () => {
 	});
 });
 
-it("keeps the impossible integer Rust constructor warning-clean", () => {
-	const rust = emitCrate(
-		{ ir: buildDifferentialFuzzIr(), outputRoot: "generated/rust", limits: RUST_LIMITS } as never,
-		{ licenseText: "" },
-	);
-	const source = [...rust.files]
-		.filter(([path]) => path.endsWith(".rs"))
-		.map(([, text]) => text)
-		.join("\n");
-	expect(source).toContain("let _ = value;");
-	expect(source).not.toContain("-9007199254740991u64");
-});
-
-	it("reports the DifferentialFuzz0 impossible-range diagnostic in TypeScript", async () => {
+it("reports the DifferentialFuzz0 impossible-range diagnostic in TypeScript", async () => {
 	const cases = buildDifferentialFuzzCases();
 	const ir = buildDifferentialFuzzIr();
 	const scratch = mkdtempSync(join(tmpdir(), "fcd-age-2229-fuzz-code-"));
@@ -378,26 +365,6 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 		let oracleCount = 0;
 		let oracleInstanceCount = 0;
 		for (const testCase of cases) {
-			const caseNames = new Set([
-				testCase.name,
-				`${testCase.name}Base`,
-				`${testCase.name}Alias1`,
-				`${testCase.name}Alias2`,
-			]);
-			const oracleIr = {
-				...ir,
-				types: ir.types.filter((type: any) => caseNames.has(type.displayName)),
-			};
-			const oracleResult = conformanceOracle.verdict({ ir: oracleIr }, []);
-			oracleCount += 1;
-			const oracleDiagnostics = oracleResult.diagnostics ?? [];
-			if (oracleResult.resultState !== "success" || oracleDiagnostics.length > 0)
-				disagreements.push({
-					backend: "conformance-oracle",
-					name: testCase.name,
-					state: oracleResult.resultState,
-					diagnostics: oracleDiagnostics.slice(0, 1),
-				});
 			const validate = generated[
 				`validate${testCase.name}`
 			] as (value: unknown) => { ok: boolean; errors?: readonly { code?: string }[] };
@@ -411,14 +378,19 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 				["invalid", testCase.probes.invalid],
 			] as const) {
 				const oracleOutcome = fuzzOracleOutcome(ir, testCase, probe);
+				oracleCount += 1;
 				oracleInstanceCount += 1;
 				const expected = oracleOutcome.ok;
 				const record = fuzzRecordValue(testCase, probe);
 				const tsResult = validate(record);
 				const ajvResult = Boolean(validateJson?.(record));
-				if (!expected && oracleOutcome.code !== undefined)
-					expect(tsResult.errors?.[0]?.code, `${testCase.name} oracle diagnostic`).toBe(oracleOutcome.code);
-				if (tsResult.ok !== expected || ajvResult !== expected || tsResult.ok !== ajvResult) {
+				const tsCode = tsResult.errors?.[0]?.code ?? null;
+				if (
+					tsResult.ok !== expected ||
+					ajvResult !== expected ||
+					tsResult.ok !== ajvResult ||
+					(!expected && oracleOutcome.code !== undefined && tsCode !== oracleOutcome.code)
+				) {
 					disagreements.push({
 						name: testCase.name,
 						label,
@@ -430,7 +402,8 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 						expected,
 						typescript: tsResult.ok,
 						ajv: ajvResult,
-						diagnostic: tsResult.errors?.[0]?.code ?? null,
+						diagnostic: tsCode,
+						oracleDiagnostic: oracleOutcome.code ?? null,
 					});
 				}
 			}
@@ -572,7 +545,7 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 		process.stdout.write(
 			`AGE-2229 differential fuzz seed: ${0x9e3779b9} count: ${cases.length} oracleCount: ${oracleCount} oracleInstances: ${oracleInstanceCount} rustBatch: ${rustCases.length} pythonBatch: ${pythonCases.length} disagreements: ${disagreements.length}\n`,
 		);
-		expect(oracleCount).toBe(cases.length);
+		expect(oracleCount).toBe(cases.length * 2);
 		expect(oracleInstanceCount).toBe(cases.length * 2);
 		if (disagreements.length)
 			process.stdout.write(

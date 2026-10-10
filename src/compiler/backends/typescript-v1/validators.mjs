@@ -205,7 +205,7 @@ function orderedCondition(subject, operator, value) {
 	if (subject.wideInteger && typeof value === "string")
 		return `BigInt(candidate) ${operator} BigInt(${literal(value)})`;
 	if (scalar === "float32" && typeof value === "number")
-		return `candidate ${operator} Math.fround(${literal(value)})`;
+		return `Math.fround(candidate) ${operator} Math.fround(${literal(value)})`;
 	if (typeof value === "string")
 		return `candidate ${operator} ${Number(value)}`;
 	return `candidate ${operator} ${literal(value)}`;
@@ -359,9 +359,17 @@ function scalarCheckBody(model, entry) {
 			'\t\tfail(errors, pointer, CODES.NOT_AN_INTEGER, "the value is not a canonical integer string");',
 			"\t\treturn false;",
 			"\t}",
-			...(entry.effectiveIntegerBounds
+			...(entry.effectiveIntegerBounds &&
+				(!entry.effectiveIntegerBounds.lowerExplicit || !entry.effectiveIntegerBounds.upperExplicit)
 				? [
-						`\tif (BigInt(candidate) < BigInt(${literal(entry.effectiveIntegerBounds.lower)}) || BigInt(candidate) > BigInt(${literal(entry.effectiveIntegerBounds.upper)})) {`,
+						`\tif (${[
+							!entry.effectiveIntegerBounds.lowerExplicit
+								? `BigInt(candidate) < BigInt(${literal(entry.effectiveIntegerBounds.lower)})`
+								: undefined,
+							!entry.effectiveIntegerBounds.upperExplicit
+								? `BigInt(candidate) > BigInt(${literal(entry.effectiveIntegerBounds.upper)})`
+								: undefined,
+						].filter(Boolean).join(" || ")}) {`,
 						'\t\tfail(errors, pointer, CODES.INTEGER_OUT_OF_SAFE_RANGE, "the integer is outside its effective range");',
 						"\t\treturn false;",
 						"\t}",

@@ -1905,7 +1905,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 				emitImplicit(
 					"min",
 					effectiveRange.lowerCheck,
-					safe,
+					-safe,
 					"<",
 				);
 			if (!effectiveRange.upperExplicit)
@@ -1924,8 +1924,8 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 		lines.push("        }");
 	}
 	}
+	if (impossibleRange === undefined) lines.push("        Ok(Self(value))");
 	lines.push(
-		"        Ok(Self(value))",
 		"    }",
 		"",
 		"    /// The wrapped value.",

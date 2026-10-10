@@ -672,9 +672,12 @@ export function lowerProgram(options) {
 				origin,
 			});
 		const aliasName = nameParts
-			.map((part, index) =>
-				index === 0 ? part : `${part.charAt(0).toUpperCase()}${part.slice(1)}`,
-			)
+			.map((part, index) => {
+				const normalized = slug(part);
+				return index === 0
+					? normalized
+					: `${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`;
+			})
 			.join("");
 		// Keep the type alias itself flat (BytesItems, ChoiceSmall), while its
 		// constraints retain the authored value-site segments (Bytes-items and
@@ -1007,7 +1010,7 @@ export function lowerProgram(options) {
 					0,
 					ownerCode.lastIndexOf(`_${keywordToken}`),
 				);
-				const memberToken = memberName.replace(/[^A-Za-z0-9]+/g, "_").toUpperCase();
+				const memberToken = slug(memberName).replace(/-+/g, "_").toUpperCase();
 				return `${ownerPrefix}__${memberToken}_${keywordToken}`;
 			};
 			const constraintIdentity = (parts, keyword, suffix = []) =>

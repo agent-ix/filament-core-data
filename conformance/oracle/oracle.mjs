@@ -1162,22 +1162,23 @@ export function verdict(bundle, schemaRows = []) {
  * record value so backend probes can be compared with an independent oracle.
  */
 export function admitInstance(bundle, typeIdentity, record, options = {}) {
+	const structural = (code) => `agent-ix.typescript-backend.${code}`;
 	if (!isObject(bundle) || !isObject(bundle.ir))
-		return { ok: false, code: "INVALID_DOCUMENT" };
+		return { ok: false, code: structural("INVALID_DOCUMENT") };
 	const { byIdentity } = indexTypes(bundle.ir);
 	const root = byIdentity.get(typeIdentity);
 	const field = Array.isArray(root?.fields)
 		? root.fields.find((one) => one?.name === "value")
 		: undefined;
-	if (!isObject(field)) return { ok: false, code: "UNRESOLVED_FIELD" };
+	if (!isObject(field)) return { ok: false, code: structural("UNRESOLVED_FIELD") };
 	const raw = isObject(record) ? record.value : undefined;
-	if (raw === undefined) return { ok: false, code: "MISSING_VALUE" };
+	if (raw === undefined) return { ok: false, code: structural("MISSING_VALUE") };
 	const values = options.nesting === "collection" ? raw : [raw];
 	if (options.nesting === "collection" && !Array.isArray(values))
-		return { ok: false, code: "INVALID_COLLECTION" };
+		return { ok: false, code: structural("INVALID_COLLECTION") };
 	const resolved = resolve(byIdentity, field.typeRef);
 	if (resolved.status !== "resolved")
-		return { ok: false, code: "UNRESOLVED_TYPE_REF" };
+		return { ok: false, code: structural("UNRESOLVED_TYPE_REF") };
 	const scalar = resolved.scalar;
 	const definitions = resolved.chain
 		.map((identity) => byIdentity.get(identity))
@@ -1233,55 +1234,48 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 	}
 	if (effectiveLower === undefined) effectiveLower = -safeInteger;
 	if (effectiveUpper === undefined) effectiveUpper = safeInteger;
+	const hasExplicitLower = lowerConstraint !== undefined;
+	const hasExplicitUpper = upperConstraint !== undefined;
 	const effectiveRangeFailure =
 		effectiveLower > effectiveUpper
 			? lowerConstraint ?? upperConstraint
 			: undefined;
 	const integerWireIsString =
 		scalar === "integer" &&
-		(effectiveLower < -safeInteger || effectiveUpper > safeInteger);
+		(effectiveLower < -safeInteger ||
+			effectiveLower > safeInteger ||
+			effectiveUpper < -safeInteger ||
+			effectiveUpper > safeInteger);
 	for (const value of values) {
 		if (value === null) {
 			if (options.nullable === true) continue;
-			return { ok: false, code: "NULL_NOT_ALLOWED" };
+			return { ok: false, code: structural("NULL_NOT_PERMITTED") };
 		}
 		let numeric = value;
 		if (scalar === "integer") {
 			if (integerWireIsString) {
 				if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
-					return { ok: false, code: "NOT_AN_INTEGER" };
+					return { ok: false, code: structural("NOT_AN_INTEGER") };
 				try {
 					numeric = BigInt(value);
 				} catch {
-					return { ok: false, code: "NOT_AN_INTEGER" };
+					return { ok: false, code: structural("NOT_AN_INTEGER") };
 				}
 			} else if (typeof value !== "number") {
-				return { ok: false, code: "NOT_A_NUMBER" };
+				return { ok: false, code: structural("NOT_A_NUMBER") };
 			} else if (!Number.isSafeInteger(value)) {
-				return { ok: false, code: "INTEGER_OUT_OF_SAFE_RANGE" };
+				return { ok: false, code: structural("INTEGER_OUT_OF_SAFE_RANGE") };
 			} else {
 				numeric = BigInt(value);
 			}
 		} else if (scalar === "float32" || scalar === "float64") {
-			if (typeof value !== "number" || !Number.isFinite(value))
-				return { ok: false, code: "INVALID_NUMBER_WIRE" };
+			if (typeof value !== "number" || Number.isNaN(value))
+				return { ok: false, code: structural("NOT_A_NUMBER_VALUE") };
+			if (!Number.isFinite(value))
+				return { ok: false, code: structural("NOT_FINITE") };
 			numeric = scalar === "float32" ? Math.fround(value) : value;
 			if (!Number.isFinite(numeric))
-				return { ok: false, code: "INVALID_NUMBER_WIRE" };
-		}
-		if (effectiveRangeFailure)
-			return { ok: false, code: effectiveRangeFailure.diagnosticCode };
-		if (scalar === "integer") {
-			if (numeric < effectiveLower)
-				return {
-					ok: false,
-					code: lowerConstraint?.diagnosticCode ?? "INTEGER_OUT_OF_SAFE_RANGE",
-				};
-			if (numeric > effectiveUpper)
-				return {
-					ok: false,
-					code: upperConstraint?.diagnosticCode ?? "INTEGER_OUT_OF_SAFE_RANGE",
-				};
+				return { ok: false, code: structural("NOT_A_NUMBER_VALUE") };
 		}
 		for (const definition of definitions) {
 			const constraints = Array.isArray(definition.constraints)
@@ -1311,6 +1305,20 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 				}
 			}
 			if (firstFailure) return firstFailure;
+		}
+		if (effectiveRangeFailure)
+			return { ok: false, code: effectiveRangeFailure.diagnosticCode };
+		if (scalar === "integer") {
+			if (!hasExplicitLower && numeric < effectiveLower)
+				return {
+					ok: false,
+					code: "agent-ix.typescript-backend.INTEGER_OUT_OF_SAFE_RANGE",
+				};
+			if (!hasExplicitUpper && numeric > effectiveUpper)
+				return {
+					ok: false,
+					code: "agent-ix.typescript-backend.INTEGER_OUT_OF_SAFE_RANGE",
+				};
 		}
 	}
 	return { ok: true, code: "OK" };
