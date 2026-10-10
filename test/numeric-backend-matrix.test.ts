@@ -10,6 +10,7 @@ import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index
 import { pythonPydanticBackend } from "../src/compiler/backends/python-v1/index.mjs";
 import { poetryProducer } from "../src/compiler/backends/python-v1/produce.mjs";
 import { emitCrate } from "../src/compiler/backends/rust-serde/crate.mjs";
+import { sysmlBackend } from "../src/compiler/backends/sysml-v2/index.mjs";
 import { buildModel } from "../src/compiler/backends/typescript-v1/model.mjs";
 import {
 	renderErrors,
@@ -60,6 +61,75 @@ function rustTypeName(cell: (typeof MATRIX_CELLS)[number]) {
 
 function numericIntegerProbe(_cell: (typeof MATRIX_CELLS)[number]) {
 	return { value: 5 };
+}
+
+function probeSysmlNumericSubject(cell: (typeof MATRIX_CELLS)[number]) {
+	const scalarIdentity = "ix://agent-ix/age-2229-numeric-matrix/type/Subject";
+	const recordIdentity =
+		"ix://agent-ix/age-2229-numeric-matrix/type/Projection";
+	const origin = {
+		source: {
+			sourceIdentity: "ix://agent-ix/age-2229-numeric-matrix/source",
+			path: "spec/numeric-matrix.md",
+			startLine: 1,
+			startColumn: 1,
+		},
+	};
+	const ir = {
+		contractVersion: "2.0.0",
+		package: { identity: "agent-ix/age-2229-numeric-matrix" },
+		source: {
+			identity: origin.source.sourceIdentity,
+			digest: `sha256:${"1".repeat(64)}`,
+		},
+		types: [
+			{
+				identity: scalarIdentity,
+				kind: "scalar",
+				scalar: cell.kind,
+				...(cell.kind === "decimal"
+					? { decimal: { precision: 5, scale: 2 } }
+					: {}),
+				origin,
+			},
+			{
+				identity: recordIdentity,
+				kind: "record",
+				displayName: "Projection",
+				fields: [
+					{
+						identity: `${recordIdentity}/value`,
+						name: "value",
+						typeRef: scalarIdentity,
+						multiplicity: { lower: 1, upper: 1 },
+						defaultKind: "none",
+						origin,
+					},
+				],
+				origin,
+			},
+		],
+	};
+	const generated = sysmlBackend.generate({ ir });
+	const mapped =
+		cell.kind === "integer"
+			? "ScalarValues::Integer"
+			: ["decimal", "float32", "float64"].includes(cell.kind)
+				? "ScalarValues::Real"
+				: cell.kind === "boolean"
+					? "ScalarValues::Boolean"
+					: "ScalarValues::String";
+	expect(generated.state, `${cell.name} SysML state`).toBe("success");
+	expect(generated.files[0].text, `${cell.name} SysML mapping`).toContain(
+		`attribute 'value' : ${mapped};`,
+	);
+	const losses = generated.diagnostics.filter(
+		(d: { code: string }) => d.code === "agent-ix.sysml-target.DECLARED_LOSS",
+	);
+	expect(losses, `${cell.name} SysML Real losses`).toHaveLength(
+		mapped === "ScalarValues::Real" ? 1 : 0,
+	);
+	expect(losses.every((d: { blocking: boolean }) => !d.blocking)).toBe(true);
 }
 
 function fuzzRecordValue(
@@ -191,7 +261,7 @@ async function generatedValidators(directory: string, ir: any) {
 	);
 }
 
-/** Generated TypeScript, JSON Schema and Rust consumer smoke corpus. */
+/** Generated consumer smoke corpus. Trace: FR-138-AC-2. */
 it("runs every generated numeric matrix cell through all consumer probes", async () => {
 	const ir = buildMatrixIr();
 	const requiredColumns = [
@@ -199,6 +269,7 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 		"src/compiler/backends/python-v1",
 		"src/compiler/backends/rust-serde",
 		"src/compiler/backends/rust-serde/harness",
+		"src/compiler/backends/sysml-v2",
 		"src/compiler/backends/typescript-v1",
 		"conformance/oracle/index.mjs",
 		"conformance/oracle/json.mjs",
@@ -222,6 +293,7 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 		for (const schema of schemas) ajv.addSchema(schema);
 
 		for (const cell of MATRIX_CELLS) {
+			probeSysmlNumericSubject(cell);
 			const functionName = `validate${cellRecordName(cell)}`;
 			const validate = generated[functionName] as (value: unknown) => {
 				ok: boolean;

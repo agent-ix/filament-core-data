@@ -112,6 +112,13 @@ const DEFAULT_GENERATION_PROFILE = Object.freeze({
 	materializationLifetime: "durable",
 });
 
+const SYSML_GENERATION_PROFILE = Object.freeze({
+	...DEFAULT_GENERATION_PROFILE,
+	identity: "ix://agent-ix/filament-core-data/profile/sysml-v2-textual-2.0",
+	version: "2.0.0",
+	roundTrip: "one-way",
+});
+
 class UsageError extends Error {}
 
 function parse(command, argv) {
@@ -338,7 +345,9 @@ async function generate(options) {
 	const ir = readJsonFile(options.ir, "ir");
 	const profile = options.profile
 		? readJsonFile(options.profile, "profile")
-		: DEFAULT_GENERATION_PROFILE;
+		: target === "sysml-v2-textual"
+			? SYSML_GENERATION_PROFILE
+			: DEFAULT_GENERATION_PROFILE;
 	const limits = options.limits
 		? { ...DEFAULT_LIMITS, ...readJsonFile(options.limits, "limits") }
 		: DEFAULT_LIMITS;

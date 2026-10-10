@@ -191,6 +191,18 @@ function buildRegistry() {
 		blocking: false,
 		owner: COMPILER,
 	};
+	registry.SYSML_DECLARED_LOSS = {
+		code: "agent-ix.sysml-target.DECLARED_LOSS",
+		severity: "warning",
+		blocking: false,
+		owner: "ix://agent-ix/filament-core-data/sysml-target",
+	};
+	registry.SYSML_UNSUPPORTED_CONSTRUCT = {
+		code: "agent-ix.sysml-target.UNSUPPORTED_CONSTRUCT",
+		severity: "error",
+		blocking: true,
+		owner: "ix://agent-ix/filament-core-data/sysml-target",
+	};
 	registry.DIAGNOSTIC_LIMIT_REACHED = {
 		code: "agent-ix.compiler.DIAGNOSTIC_LIMIT_REACHED",
 		...advisory(COMPILER),

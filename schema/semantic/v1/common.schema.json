@@ -184,7 +184,8 @@
 				"rust",
 				"typescript",
 				"python-pydantic-v2",
-				"python-dataclass"
+				"python-dataclass",
+				"sysml-v2-textual"
 			]
 		},
 		"frontendDialect": {

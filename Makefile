@@ -31,10 +31,17 @@ build:
 # through a target named for another language. `make test-all` is the local
 # everything; each named half is what a CI lane with that toolchain can run.
 .PHONY: test
-test: test-node test-python
+test: test-node test-python sysml-pilot-check
 
 .PHONY: test-all
-test-all: test-node test-rust test-python
+test-all: test-node test-rust test-python sysml-pilot-check
+
+# FR-138-AC-3. The official pilot and JRE are gate-only capabilities stored in
+# SYSML_PILOT_CACHE outside this repository. The check fails with provisioning
+# details if either pinned artifact or the gate's jupyter-client is absent.
+.PHONY: sysml-pilot-check
+sysml-pilot-check:
+	node scripts/check-sysml-pilot.mjs
 
 .PHONY: test-node
 test-node:
