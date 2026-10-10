@@ -1,8 +1,8 @@
 import { execFileSync } from "node:child_process";
 import {
 	mkdtempSync,
-	readFileSync,
 	readdirSync,
+	readFileSync,
 	rmSync,
 	writeFileSync,
 } from "node:fs";
@@ -24,6 +24,25 @@ const fixture = JSON.parse(
 		"utf8",
 	),
 );
+
+type TestField = {
+	identity: string;
+	name: string;
+	typeRef: string;
+};
+type TestType = {
+	kind: string;
+	identity: string;
+	displayName: string;
+	fields?: TestField[];
+	abstract?: boolean;
+	identityFields?: string[];
+};
+type TestRecord = TestType & { kind: "record"; fields: TestField[] };
+type TestIr = {
+	package: { identity: string };
+	types: TestType[];
+};
 
 function numericDocument() {
 	const scalar = structuredClone(
@@ -172,12 +191,27 @@ describe("SysML v2 textual target", () => {
 
 	/** Trace: FR-138-AC-2, FR-138-AC-4. */
 	it("emits one top-level package with deterministic bytes", () => {
-		const ir = numericDocument();
+		const ir = numericDocument() as TestIr;
+		const record = ir.types.find(
+			(type): type is TestRecord =>
+				type.kind === "record" && (type.fields?.length ?? 0) > 0,
+		);
+		if (!record) throw new Error("record fixture");
+		record.displayName = "DisplayNameOnly";
 		const first = sysmlBackend.generate({ ir });
 		const second = sysmlBackend.generate({ ir });
 		expect(first).toEqual(second);
 		expect(first.files).toHaveLength(1);
 		expect(first.files[0].text.match(/^package /gm)).toHaveLength(1);
+		expect(first.files[0].text).toContain(
+			`item def ${record.identity.split("/").at(-1)}`,
+		);
+		expect(first.files[0].text).toContain(
+			`doc /* semantic identity: ${record.identity} */`,
+		);
+		expect(first.files[0].text).toContain(
+			`doc /* semantic identity: ${record.fields[0].identity} */`,
+		);
 	});
 
 	/** Trace: FR-138-CON-1. */
@@ -222,10 +256,12 @@ describe("SysML v2 textual target", () => {
 
 	/** Trace: FR-138-AC-5, FR-138-AC-6. */
 	it("refuses every unsupported SysML shape with its source locus", () => {
-		const base = numericDocument();
+		const base = numericDocument() as TestIr;
 		const record = base.types.find(
-			(type: { kind: string }) => type.kind === "record",
-		) as any;
+			(type): type is TestRecord =>
+				type.kind === "record" && (type.fields?.length ?? 0) > 0,
+		);
+		if (!record) throw new Error("record fixture");
 		const child = structuredClone(record);
 		child.identity = `${record.identity}/Child`;
 		child.displayName = "Child";
@@ -233,36 +269,48 @@ describe("SysML v2 textual target", () => {
 		const cases = [
 			[
 				"reserved package",
-				(ir: any) => (ir.package.identity = "agent-ix/package"),
+				(ir: TestIr) => (ir.package.identity = "agent-ix/package"),
 			],
-			["sequence", (ir: any) => (ir.types[0].kind = "sequence")],
-			["union", (ir: any) => (ir.types[0].kind = "union")],
+			["sequence", (ir: TestIr) => (ir.types[0].kind = "sequence")],
+			["union", (ir: TestIr) => (ir.types[0].kind = "union")],
 			[
 				"record field",
-				(ir: any) => {
-					const target = ir.types.find((type: any) => type.kind === "record");
+				(ir: TestIr) => {
+					const target = ir.types.find(
+						(type): type is TestRecord => type.kind === "record",
+					);
+					if (!target) throw new Error("record fixture");
 					ir.types.push(child);
 					target.fields[0].typeRef = child.identity;
 				},
 			],
 			[
 				"reserved field",
-				(ir: any) => {
-					const target = ir.types.find((type: any) => type.kind === "record");
+				(ir: TestIr) => {
+					const target = ir.types.find(
+						(type): type is TestRecord => type.kind === "record",
+					);
+					if (!target) throw new Error("record fixture");
 					target.fields[0].name = "package";
 				},
 			],
 			[
 				"abstract",
-				(ir: any) => {
-					const target = ir.types.find((type: any) => type.kind === "record");
+				(ir: TestIr) => {
+					const target = ir.types.find(
+						(type): type is TestRecord => type.kind === "record",
+					);
+					if (!target) throw new Error("record fixture");
 					target.abstract = true;
 				},
 			],
 			[
 				"identity",
-				(ir: any) => {
-					const target = ir.types.find((type: any) => type.kind === "record");
+				(ir: TestIr) => {
+					const target = ir.types.find(
+						(type): type is TestRecord => type.kind === "record",
+					);
+					if (!target) throw new Error("record fixture");
 					target.identityFields = [target.fields[0].name];
 				},
 			],

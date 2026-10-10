@@ -91,6 +91,21 @@ function packageShortName(identity) {
 	return tail.replace(/[^A-Za-z0-9_]/g, "_");
 }
 
+function semanticShortName(node, fallback) {
+	const identity = node?.identity;
+	if (typeof identity === "string") {
+		const shortName = packageShortName(identity);
+		if (shortName) return shortName;
+	}
+	return fallback;
+}
+
+function semanticIdentifier(node, fallback, diagnostics) {
+	if (fallback !== undefined && !identifier(fallback, node, diagnostics))
+		return null;
+	return identifier(semanticShortName(node, fallback), node, diagnostics);
+}
+
 function scalarName(type) {
 	return type?.kind === "scalar" ? SCALARS[type.scalar] : undefined;
 }
@@ -149,7 +164,7 @@ function fieldType(field, types, diagnostics) {
 		return null;
 	}
 	if (type.kind === "enum")
-		return identifier(type.displayName, type, diagnostics);
+		return semanticIdentifier(type, type.displayName, diagnostics);
 	unsupported(
 		field,
 		`type ${fragment(field.typeRef)} has no SysML field mapping`,
@@ -159,7 +174,7 @@ function fieldType(field, types, diagnostics) {
 }
 
 function renderRecord(type, types, diagnostics) {
-	const name = identifier(type.displayName, type, diagnostics);
+	const name = semanticIdentifier(type, type.displayName, diagnostics);
 	if (!name) return null;
 	const fields = [];
 	for (const field of type.fields ?? []) {
@@ -171,7 +186,7 @@ function renderRecord(type, types, diagnostics) {
 				diagnostics,
 			);
 		}
-		const fieldName = identifier(field.name, field, diagnostics);
+		const fieldName = semanticIdentifier(field, field.name, diagnostics);
 		const target = fieldType(field, types, diagnostics);
 		if (!fieldName || !target) continue;
 		const multiplicity = field.multiplicity;
@@ -193,11 +208,11 @@ function renderRecord(type, types, diagnostics) {
 }
 
 function renderEnum(type, diagnostics) {
-	const name = identifier(type.displayName, type, diagnostics);
+	const name = semanticIdentifier(type, type.displayName, diagnostics);
 	if (!name) return null;
 	const variants = [];
 	for (const variant of type.variants ?? []) {
-		const variantName = identifier(variant.name, type, diagnostics);
+		const variantName = semanticIdentifier(variant, variant.name, diagnostics);
 		if (variantName) variants.push(`    ${variantName};`);
 	}
 	return [
@@ -256,11 +271,11 @@ function renderType(type, types, diagnostics) {
 	}
 	if (type.kind === "record") return renderRecord(type, types, diagnostics);
 	if (type.kind === "enum") return renderEnum(type, diagnostics);
-	const name = identifier(type.displayName, type, diagnostics);
+	const name = semanticIdentifier(type, type.displayName, diagnostics);
 	const target = types.get(type.target);
 	const targetName =
 		scalarName(target) ??
-		identifier(target?.displayName, target ?? type, diagnostics);
+		semanticIdentifier(target ?? type, target?.displayName, diagnostics);
 	if (!name || !targetName) return null;
 	return [
 		`  doc /* semantic identity: ${type.identity} */`,
@@ -296,9 +311,12 @@ export const sysmlBackend = Object.freeze({
 			return { state: "unsupported", files: [], diagnostics };
 		}
 		const packageIdentity = ir.package?.identity ?? ir.source?.identity;
+		const packageSource =
+			ir.types?.find((type) => type.origin?.source)?.origin?.source ??
+			ir.source?.origin?.source;
 		const packageNode = {
 			identity: packageIdentity,
-			origin: { source: ir.source?.origin ?? ir.source },
+			...(packageSource ? { origin: { source: packageSource } } : {}),
 		};
 		const packageName = identifier(
 			packageShortName(packageIdentity),
