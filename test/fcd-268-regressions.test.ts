@@ -819,7 +819,7 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 		{
 			name: "EnumFloat32",
 			typeRef: "ix://quire/native/Float32",
-			members: [0.1],
+			members: [Math.fround(0.1)],
 			probes: [
 				[0.1, true],
 				[Math.fround(0.1), true],
