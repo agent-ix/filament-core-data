@@ -74,7 +74,7 @@ macro_rules! wide_integer_vec {
             use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
             /// Serialize all members as canonical decimal strings.
-            pub fn serialize<S>(values: &Vec<$ty>, serializer: S) -> Result<S::Ok, S::Error>
+            pub fn serialize<S>(values: &[$ty], serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: Serializer,
             {
@@ -264,7 +264,7 @@ pub mod wide_vec_nullable {
     use std::str::FromStr;
 
     /// Serialize canonical integer wire values.
-    pub fn serialize<S, T>(value: &Vec<Nullable<T>>, serializer: S) -> Result<S::Ok, S::Error>
+    pub fn serialize<S, T>(value: &[Nullable<T>], serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
         T: ToString,

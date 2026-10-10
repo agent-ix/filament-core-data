@@ -1445,7 +1445,13 @@ function renderCheck(
 			: unwrapNamedWrapper
 				? 1
 				: 0;
-	let subject = expression;
+	// Method calls borrow the named value as needed.  A field expression is
+	// explicitly borrowed for the primitive path, but carrying that borrow
+	// through a newtype accessor emits the redundant `*(&field).get()`.
+	let subject =
+		wrapperDepth > 0 && expression.startsWith("&")
+			? expression.slice(1)
+			: expression;
 	for (let depth = 0; depth < wrapperDepth; depth += 1)
 		subject = `(${subject}).get()`;
 	// A scalar newtype hands its constructor the base by value, so `value` is

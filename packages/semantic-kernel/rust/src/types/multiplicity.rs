@@ -177,7 +177,7 @@ impl Multiplicity {
         ordered: crate::MultiplicityOrdered,
         unique: crate::MultiplicityUnique,
     ) -> Result<Self, crate::support::ValidationError> {
-        if *(&lower).get() < 0i64 {
+        if *(lower).get() < 0i64 {
             return Err(crate::support::ValidationError::new(
                 "ix://agent-ix/semantic-core/MultiplicityLower/constraint/min",
                 "min",
@@ -185,7 +185,7 @@ impl Multiplicity {
                 "0",
             ));
         }
-        if *(&lower).get() > 2147483647i64 {
+        if *(lower).get() > 2147483647i64 {
             return Err(crate::support::ValidationError::new(
                 "ix://agent-ix/semantic-core/MultiplicityLower/constraint/max",
                 "max",

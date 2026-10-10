@@ -257,7 +257,7 @@ impl SourceLocus {
         end_line: Option<crate::SourceLocusEndLine>,
         end_column: Option<crate::SourceLocusEndColumn>,
     ) -> Result<Self, crate::support::ValidationError> {
-        if *(&start_line).get() < 1i64 {
+        if *(start_line).get() < 1i64 {
             return Err(crate::support::ValidationError::new(
                 "ix://agent-ix/semantic-core/SourceLocusStartLine/constraint/min",
                 "min",
@@ -265,7 +265,7 @@ impl SourceLocus {
                 "1",
             ));
         }
-        if *(&start_line).get() > 2147483647i64 {
+        if *(start_line).get() > 2147483647i64 {
             return Err(crate::support::ValidationError::new(
                 "ix://agent-ix/semantic-core/SourceLocusStartLine/constraint/max",
                 "max",
@@ -273,7 +273,7 @@ impl SourceLocus {
                 "2147483647",
             ));
         }
-        if *(&start_column).get() < 1i64 {
+        if *(start_column).get() < 1i64 {
             return Err(crate::support::ValidationError::new(
                 "ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/min",
                 "min",
@@ -281,7 +281,7 @@ impl SourceLocus {
                 "1",
             ));
         }
-        if *(&start_column).get() > 2147483647i64 {
+        if *(start_column).get() > 2147483647i64 {
             return Err(crate::support::ValidationError::new(
                 "ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/max",
                 "max",
