@@ -87,6 +87,55 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 - Where `importedExports` is the marker `unknown`, `readContractIr` SHALL suppress `UNRESOLVED_RELATIONSHIP_TARGET` for a target absent from the document and SHALL report the suppression to its caller, rather than reporting a defect it cannot see or passing a target it cannot check.
 - `readContractIr` SHALL terminate on a cyclic alias chain, a cyclic composite relationship graph, and a document whose node count exceeds `maxNodes`, whose nesting exceeds `maxDepth`, or any of whose arrays exceeds `maxCollectionItems`, raising the corresponding limit diagnostic rather than recursing without bound.
 
+### Numeric instance diagnostic codes
+
+The cross-field table above validates an IR document. This table validates a
+value against a numeric subject declared by that document, under
+[FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md).
+The two inputs and their pointers are distinct: a wrong IR operand remains
+`agent-ix.semantic-ir.INVALID_OPERAND`, even when the same JSON value would be
+valid instance data.
+
+- A generated instance validator and the independent instance oracle SHALL
+  report the following full codes for these cases, including through an alias
+  or native type reference. The existing `typescript-backend` namespace is the
+  public instance-code namespace for these cases; a conformance adapter for
+  another target SHALL report the same code, without renaming its namespace.
+- An instance diagnostic SHALL carry an RFC 6901 pointer rooted at the
+  validated instance: `""` for a scalar root, `/value` for that field, and
+  `/value/0` for its first collection element. Member names SHALL escape `~`
+  and `/` as `~0` and `~1`; the pointer SHALL NOT name the IR declaration.
+
+| Instance rule violated | Full code | Pointer |
+|---|---|---|
+| A safe integer requires a JSON number: a string (including `"5"`), boolean, object or array is supplied | `agent-ix.typescript-backend.NOT_AN_INTEGER` | The supplied value |
+| A safe integer number has a fractional value; at an instance bytes entry point, its token has a fraction or exponent even when its value is whole (`5.0`, `5e0`) | `agent-ix.typescript-backend.NOT_AN_INTEGER` | The supplied value |
+| A safe integer is a finite whole number outside `-9007199254740991..=9007199254740991` | `agent-ix.typescript-backend.INTEGER_OUT_OF_SAFE_RANGE` | The supplied value |
+| A wide integer is not a canonical integer string: any JSON number (including `5` and `9007199254740992`), another JSON type, or a string such as `"01"`, `"-0"`, `"1.0"` or `"1e0"` | `agent-ix.typescript-backend.NOT_AN_INTEGER` | The supplied value |
+| A canonical wide integer string exceeds a missing side's effective default bound | `agent-ix.typescript-backend.INTEGER_OUT_OF_SAFE_RANGE` | The supplied value |
+| A float32 or float64 is supplied as a string, boolean, object or array | `agent-ix.typescript-backend.NOT_A_NUMBER` | The supplied value |
+| A finite JSON number rounds to an infinite binary32 value on a float32 subject (`3.5e38`, `-3.5e38`) | `agent-ix.typescript-backend.NOT_A_NUMBER_VALUE` | The supplied value |
+| A parsed input on a safe integer, float32 or float64 subject is NaN | `agent-ix.typescript-backend.NOT_A_NUMBER_VALUE` | The supplied value |
+| A parsed input on a safe integer, float32 or float64 subject is positive or negative infinity | `agent-ix.typescript-backend.NOT_FINITE` | The supplied value |
+
+- A validator SHALL apply presence and nullability rules before numeric rules,
+  so an absent required field or disallowed `null` retains its existing
+  `MISSING_REQUIRED` or `NULL_NOT_PERMITTED` code.
+- A validator SHALL reject a wrong wire type or noncanonical spelling before
+  converting it or evaluating authored numeric constraints. In particular, an
+  unsafe JSON number on a wide subject raises `NOT_AN_INTEGER`, not
+  `INTEGER_OUT_OF_SAFE_RANGE`; a parsed NaN or infinity on a wide integer
+  subject likewise raises `NOT_AN_INTEGER` because its wire type is wrong.
+- A validator SHALL reject a non-integral number before checking safe integer
+  magnitude, and a non-finite value or binary32 overflow before checking float
+  bounds. If a value has valid structural form and violates an authored bound,
+  then the validator SHALL report that bound's `diagnosticCode` at the value,
+  rather than replacing it with an effective-range fallback code.
+- An instance bytes entry point SHALL examine the safe integer's number token
+  before parsing loses its fraction or exponent. An already-parsed value entry
+  point SHALL validate the value and SHALL NOT infer a lost token spelling;
+  parsed `5.0` and `5e0` are indistinguishable from parsed `5`.
+
 ### Normalization
 
 - `canonicalIr` SHALL be the FR-048 canonical byte form of the document, with `types`, `fields`, `variants`, `constraints`, `relationships`, `operations`, `clauses`, and `extensions` declared as identity-keyed sets.
@@ -118,10 +167,11 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | FR-050-AC-8 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer. | Test |
 | FR-050-AC-9 | A document whose alias chain is cyclic, one whose composite relationships are cyclic, one exceeding `maxNodes`, and one exceeding `maxDepth` each produce a diagnostic and terminate. | Test |
 | FR-050-AC-10 | `INVALID_IR` diagnostics name the failing instance pointer, verified against a hand-computed pointer for a malformed fixture. | Test |
-| FR-050-AC-11 | Every rule of the code table fires on a constructed document and produces exactly its named code. | Test |
+| FR-050-AC-11 | Every rule of the cross-field code table fires on a constructed document and produces exactly its named code. | Test |
 | FR-050-AC-12 | With `importedExports` set to `unknown`, a relationship target absent from the document produces no diagnostic and one recorded suppression; with the resolution supplied, the same document produces `UNRESOLVED_RELATIONSHIP_TARGET`. | Test |
 | FR-050-AC-13 | Over 512 mutated documents the reader returns diagnostics and never throws. | Fuzz |
 | FR-050-AC-14 | Every code the table adds for [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) (`INVALID_DEFAULT_VALUE`, `INTEGER_OUTSIDE_I128`, `DECIMAL_POLICY_MISSING`, `DECIMAL_POLICY_CONFLICT`, `INEXACT_INTEGER`, `INEXACT_NUMBER`) and the FR-144 `INVALID_OPERAND` spellings fire from the compiler's reader on a constructed document, and the compiler's reader, the TypeScript reader and the Python reader produce the same codes at the same pointers for each; an `integer` bound written as the JSON number `1` raises `INVALID_OPERAND` and `"1"` raises nothing. | Test |
+| FR-050-AC-15 | Each row of the numeric instance diagnostic table is exercised at a scalar root, `/value`, and `/value/0`, with the exact full code and pointer asserted. Safe integer bytes `5.0` and `5e0` raise `NOT_AN_INTEGER`; their parsed values are accepted where `5` is accepted. A property named `a/b~c` reports `/a~1b~0c`. IR operands are tested separately and retain `INVALID_OPERAND` at their IR pointers. | Test |
 
 ## Dependencies
 
