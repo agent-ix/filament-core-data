@@ -8,8 +8,6 @@ relationships:
     type: references
   - target: "ix://agent-ix/filament-core-data/US-009"
     type: references
-  - target: "ix://agent-ix/filament-core-data/FR-040"
-    type: references
   - target: "ix://agent-ix/filament-core-data/FR-041"
     type: references
   - target: "ix://agent-ix/filament-core-data/FR-042"
@@ -29,6 +27,10 @@ Issue: `agent-ix/filament-core-data#27`. Reviews: SR-055..062 under
 `spec/reviews/27-promote-prototype-emitters/`. Predecessor bundles: Plan-005
 (IR v1.1), Plan-006 (semantic-core grammar). Sequence of record:
 #27 -> #19 -> {#21, #22, #23} -> #11, with #20 built independently in parallel.
+
+The completed inventory work below is historical. Its
+[FR-040 requirement](https://github.com/agent-ix/filament-core-data/blob/c620d6be99654a7a77f0ecc2f97d3c7136402651/spec/functional/FR-040-disposition-the-prototype-inventory.md)
+and file ledger were retired by AGE-2235.
 
 ## Requirements Summary
 

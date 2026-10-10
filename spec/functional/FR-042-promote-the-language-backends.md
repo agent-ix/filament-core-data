@@ -28,7 +28,7 @@ issue #4 representative slice only.
 
 - `src/compiler/backends/typescript.mjs` exporting `emitTypeScript(ir)`
 - `src/compiler/backends/rust.mjs` exporting `emitRust(ir)`
-- The qualification limitation recorded against both backends in `src/compiler/inventory.json`
+- The qualification limitation recorded against both backends in the Prototype qualification section of `docs/semantic-data-system/typespec-feasibility.md`
 
 ## Behavior
 
@@ -49,9 +49,9 @@ issue #4 representative slice only.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-042-CON-1 | The inventory SHALL NOT describe either backend as production-qualified. | Integrity | Inventory test |
+| FR-042-CON-1 | The Prototype qualification section of `docs/semantic-data-system/typespec-feasibility.md` SHALL describe both frozen prototype backends as qualified against the issue #4 representative slice only, not as production-qualified. | Integrity | Qualification documentation inspection |
 | FR-042-CON-2 | The backends SHALL NOT write files; file placement belongs to the caller, so a package ticket controls layout without editing a backend. | Maintainability | Purity test |
-| FR-042-CON-3 | The inventory limitation naming the absent conformance corpus, property/fuzz suite, compatibility matrix, and downstream adoption SHALL remain until issues #21 and #22 discharge it against the issue #20 corpus. | Integrity | Inventory test |
+| FR-042-CON-3 | The Prototype qualification section of `docs/semantic-data-system/typespec-feasibility.md` SHALL retain the frozen prototype backends' limitations naming the absent conformance corpus, property/fuzz suite, release compatibility matrix, and independent downstream adoption, including when the separate contract-IR backends qualify under issues #21 and #22 against the issue #20 corpus. | Integrity | Qualification documentation inspection |
 | FR-042-CON-4 | The maintainer SHALL NOT regenerate the issue #4 goldens to make a backend pass; the goldens are the committed spike output and are the differential oracle precisely because the promoted code did not produce them. | Integrity | Branch diff against `origin/main` |
 | FR-042-CON-5 | Because both backends rewrite the strings `getTypeName` renders, a `@typespec/compiler` upgrade can change generated output while the IR test still passes; the maintainer SHALL re-run both golden comparisons as part of any compiler-version bump. | Maintainability | Upgrade procedure inspection |
 
@@ -68,7 +68,7 @@ issue #4 representative slice only.
 | FR-042-AC-7 | A model field whose IR name is not snake_case receives a `#[serde(rename)]` attribute in the Rust output. | Test |
 | FR-042-AC-8 | An enum renders in TypeScript as a union of its member values as string literals. | Test |
 | FR-042-AC-9 | An optional field renders as `Option<…>` in Rust and with a `?` marker in TypeScript. | Test |
-| FR-042-AC-10 | `src/compiler/inventory.json` records both backends as representative-slice-only, naming the four absent gates. | Test |
+| FR-042-AC-10 | The Prototype qualification section of `docs/semantic-data-system/typespec-feasibility.md` records both backends as representative-slice-only, naming the four absent gates. | Test |
 | FR-042-AC-11 | The branch changes no byte of `spikes/typespec-feasibility/generated/custom/typescript/index.ts`, `.../rust/src/lib.rs`, or `.../semantic-ir.json`. | Analysis |
 
 ## Dependencies

@@ -53,8 +53,8 @@ consumer.
 ### [US-009-EX-2] A prototype component is not promoted just because it worked
 
 - **Given** the spike's Arrow projection and Markdown mapping outputs, which are declared metadata rather than generators
-- **When** the promotion inventory is written
-- **Then** each component carries an explicit disposition — retain, rewrite, replace with official codegen, or discard — and the disposition cites the evidence rather than the fact that the representative golden passed
+- **When** a consumer evaluates the promoted compiler
+- **Then** the feasibility document states the limits of the prototype evidence, and qualification of a separate contract-IR backend does not qualify its prototype counterpart
 
 ### [US-009-EX-3] The frozen experiment still replays
 
@@ -104,7 +104,7 @@ would destroy the historical record the promotion is supposed to preserve.
 One host-reproducibility defect in the retained issue #4 evidence is recorded
 separately as issue #42 and is deliberately not repaired here.
 
-This story drives [FR-040](../functional/FR-040-disposition-the-prototype-inventory.md)
+This story drives [FR-041](../functional/FR-041-promote-the-semantic-ir-emitter.md)
 through [FR-044](../functional/FR-044-replay-the-frozen-spike-through-the-promoted-compiler.md)
 and is constrained by [NFR-017](../non-functional/NFR-017-deterministic-promoted-compilation.md)
 and [NFR-018](../non-functional/NFR-018-non-disruptive-promotion-and-rollback.md).

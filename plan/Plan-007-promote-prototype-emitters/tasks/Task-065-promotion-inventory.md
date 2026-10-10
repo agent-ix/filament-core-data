@@ -8,32 +8,12 @@ priority: P0
 relationships:
   - target: "ix://agent-ix/filament-core-data/Task-064"
     type: depends_on
-  - target: "ix://agent-ix/filament-core-data/FR-040"
-    type: references
-  - target: "ix://agent-ix/filament-core-data/TC-320"
-    type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-321"
-    type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-322"
-    type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-323"
-    type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-324"
-    type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-325"
-    type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-326"
-    type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-327"
-    type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-328"
-    type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-329"
-    type: verifies
-  - target: "ix://agent-ix/filament-core-data/TC-330"
-    type: verifies
 ---
 # Task-065: Promotion inventory and the feasibility-doc record
+
+The completed inventory work below is historical. Its
+[FR-040 requirement](https://github.com/agent-ix/filament-core-data/blob/c620d6be99654a7a77f0ecc2f97d3c7136402651/spec/functional/FR-040-disposition-the-prototype-inventory.md)
+and file ledger were retired by AGE-2235.
 
 ## Scope
 

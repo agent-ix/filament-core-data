@@ -29,8 +29,7 @@ import {
 /**
  * Issue #27 (promote the issue #4 prototype emitters into src/) matrix trace
  * inventory:
- * TC-320, TC-321, TC-322, TC-323, TC-324, TC-325, TC-326, TC-327, TC-328,
- * TC-329, TC-330, TC-331, TC-332, TC-333, TC-334, TC-335, TC-336, TC-337,
+ * TC-331, TC-332, TC-333, TC-334, TC-335, TC-336, TC-337,
  * TC-338, TC-339, TC-340, TC-341, TC-342, TC-343, TC-344, TC-345, TC-346,
  * TC-347, TC-348, TC-349, TC-350, TC-351, TC-352, TC-353, TC-354, TC-355,
  * TC-356, TC-357, TC-358, TC-359, TC-360, TC-361, TC-362, TC-363, TC-364,
@@ -40,9 +39,9 @@ import {
  * TC-394, TC-395, TC-396, TC-397.
  * TC-370 and TC-382 are blocked on issue #42 (the retained evidence records the
  * minting host's tool versions and the generated Python models need >= 3.11).
- * Acceptance criteria: FR-040-AC-1..7, FR-041-AC-1..13, FR-042-AC-1..11,
+ * Acceptance criteria: FR-041-AC-1..13, FR-042-AC-1..11,
  * FR-043-AC-1..8, FR-044-AC-2..12, NFR-017-AC-1..7, NFR-018-AC-1..7.
- * Constraints: FR-040-CON-1..4, FR-041-CON-1..5, FR-042-CON-1..5,
+ * Constraints: FR-041-CON-1..5, FR-042-CON-1..5,
  * FR-043-CON-1..3, FR-044-CON-1..3.
  */
 
@@ -108,295 +107,12 @@ function temp(label: string): string {
 const goldenIr = readJson(
 	resolve(spike, "generated/custom/semantic-ir.json"),
 ) as unknown as SemanticIrDocument;
-const inventory = readJson(resolve(compilerRoot, "inventory.json")) as {
-	dispositions: string[];
-	shipping: string;
-	components: {
-		component: string;
-		source: string;
-		capability: string | null;
-		disposition: string;
-		targets: string[];
-		evidence: string;
-		limitation: string;
-	}[];
-	authored: { path: string; reason: string }[];
-};
-const capabilities = (
-	readJson(resolve(spike, "evidence/capabilities.json")) as {
-		capabilities: { id: string; disposition: string; limitation: string }[];
-	}
-).capabilities;
-
-const ENUMERATED_COMPONENTS = [
-	"semantic-ir-emitter",
-	"typescript-backend",
-	"rust-serde-backend",
-	"python-json-schema-adapter",
-	"determinism-helpers",
-	"python-virtualenv-bootstrap",
-	"golden-consumer-programs",
-	"codegen-confidence-fixtures",
-	"arrow-projection-writer",
-	"markdown-mapping-writer",
-	"protobuf-mapping-writer",
-	"compatibility-classifier",
-	"official-emitter-invocations",
-];
-
 const ABSENT_GATES = [
 	"conformance corpus",
 	"property/fuzz suite",
 	"compatibility matrix",
 	"downstream adoption",
 ];
-
-/** The rejection rules the inventory test enforces, applied to one record. */
-function inventoryViolations(
-	record: (typeof inventory.components)[number],
-): string[] {
-	const problems: string[] = [];
-	if (!record.source || record.source.trim().length === 0) {
-		problems.push(`${record.component}: empty source`);
-	}
-	if (!inventory.dispositions.includes(record.disposition)) {
-		problems.push(`${record.component}: disposition ${record.disposition}`);
-	}
-	if (!record.limitation || record.limitation.trim().length === 0) {
-		problems.push(`${record.component}: empty limitation`);
-	}
-	if (/^\s*representative golden passed\.?\s*$/i.test(record.evidence)) {
-		problems.push(`${record.component}: evidence is only the golden`);
-	}
-	const promoted =
-		record.disposition === "retain" || record.disposition === "rewrite";
-	if (promoted && record.targets.length === 0) {
-		problems.push(`${record.component}: promoted with no target`);
-	}
-	if (!promoted && record.targets.length > 0) {
-		problems.push(`${record.component}: not promoted but names a target`);
-	}
-	for (const target of record.targets) {
-		if (!existsSync(resolve(root, target))) {
-			problems.push(`${record.component}: missing target ${target}`);
-		}
-	}
-	const capability = capabilities.find((item) => item.id === record.capability);
-	if (capability?.disposition === "partial") {
-		if (!record.limitation.includes(capability.limitation)) {
-			problems.push(
-				`${record.component}: partial capability ${capability.id} limitation not restated`,
-			);
-		}
-	}
-	return problems;
-}
-
-describe("issue #27 promotion inventory (FR-040)", () => {
-	/** Traces: TC-320; FR-040-AC-1. */
-	it("holds one record per enumerated prototype component", () => {
-		expect(inventory.components.map((record) => record.component)).toEqual(
-			ENUMERATED_COMPONENTS,
-		);
-		for (const record of inventory.components) {
-			expect(record.source.length, record.component).toBeGreaterThan(0);
-		}
-	});
-
-	/** Traces: TC-321; FR-040-AC-1. */
-	it("fails when a component name is missing or extra", () => {
-		const names = inventory.components.map((record) => record.component);
-		expect([...names.slice(1)]).not.toEqual(ENUMERATED_COMPONENTS);
-		expect([...names, "invented-component"]).not.toEqual(ENUMERATED_COMPONENTS);
-	});
-
-	/** Traces: TC-322; FR-040-AC-2. */
-	it("keeps every disposition inside the closed four-value set", () => {
-		expect(inventory.dispositions).toEqual([
-			"retain",
-			"rewrite",
-			"replace-with-official",
-			"discard",
-		]);
-		for (const record of inventory.components) {
-			expect(inventory.dispositions, record.component).toContain(
-				record.disposition,
-			);
-		}
-	});
-
-	/** Traces: TC-323; FR-040-AC-2, FR-040-CON-2. */
-	it("rejects a mutated fifth disposition value", () => {
-		const mutated = { ...inventory.components[0], disposition: "defer" };
-		expect(inventoryViolations(mutated)).toContain(
-			`${mutated.component}: disposition defer`,
-		);
-	});
-
-	/** Traces: TC-324; FR-040-AC-3. */
-	it("gives promoted records an existing target and others none", () => {
-		for (const record of inventory.components) {
-			expect(inventoryViolations(record), record.component).toEqual([]);
-		}
-	});
-
-	/** Traces: TC-325; FR-040-AC-4. */
-	it("carries a non-empty limitation on every record", () => {
-		for (const record of inventory.components) {
-			expect(record.limitation.length, record.component).toBeGreaterThan(0);
-		}
-	});
-
-	/** Traces: TC-326; FR-040-AC-4. */
-	it("rejects a record justified only by the representative golden", () => {
-		const mutated = {
-			...inventory.components[1],
-			evidence: "representative golden passed",
-		};
-		expect(inventoryViolations(mutated)).toContain(
-			`${mutated.component}: evidence is only the golden`,
-		);
-	});
-
-	/** Traces: TC-327; FR-040-AC-5, FR-040-CON-3. */
-	it("accounts for every file under src/compiler/ exactly once", () => {
-		// Rewritten by issue #19 to resolve ownership from the *tree*, with no
-		// reference to a diff or to `origin/main`.
-		//
-		// The previous form filtered the walked files against
-		// `git ls-tree origin/main -- src/compiler/`, so it asked "was this file
-		// here when issue #27 landed?". That reference moves. The moment this
-		// branch squash-merges, `origin/main` contains issue #19's modules too,
-		// they enter the filtered set, issue #27's ledger does not own them, and
-		// the gate fails on `main` — the same class of defect this branch
-		// diagnosed in #48 and #47 fixed for TC-395, in its third disguise. #47
-		// left the trap latent: it passes on `main` today and breaks for whoever
-		// next adds a file under `src/compiler/`. Issue #19 was that branch.
-		//
-		// So ownership is now a union of ledgers, each of which is a fact about
-		// the checked-out tree:
-		//
-		//   1. `src/compiler/inventory.json` — issue #27's promotion ledger.
-		//   2. The `## Outputs` section of every functional requirement, which is
-		//      where a requirement declares the files it creates. A later branch
-		//      adding a module under `src/compiler/` must name it in the FR that
-		//      called for it, or this gate fails.
-		//   3. A `X.d.mts` is owned by whoever owns `X.mjs`. The sidecar is the
-		//      type declaration *of* that module, not an independent artifact,
-		//      and listing 23 of them in prose would be a ledger nobody reads. A
-		//      sidecar with no module still fails, as does a module with no owner.
-		//
-		// The invariant is unchanged and unweakened: a file under `src/compiler/`
-		// that no ledger accounts for fails this gate, and a file two *inventory*
-		// entries claim fails it too. What is dropped is the cross-ledger
-		// exactly-once count, which was never meaningful — FR-052 legitimately
-		// names `cli.mjs`, which issue #27's inventory also owns, because FR-052
-		// extends it.
-		const files = walk(compilerRoot).map((path) => `src/compiler/${path}`);
-		const present = new Set(files);
-
-		// Ledger 1: the promotion inventory, where exactly-once still holds.
-		const inventoryOwners = new Map<string, number>();
-		const targets = inventory.components.flatMap((record) => record.targets);
-		const authored = inventory.authored.map((entry) => entry.path);
-		for (const path of [...targets, ...authored]) {
-			inventoryOwners.set(path, (inventoryOwners.get(path) ?? 0) + 1);
-		}
-		for (const [path, count] of inventoryOwners) {
-			expect(count, `double-owned by the inventory: ${path}`).toBe(1);
-			expect(present.has(path), `owned but absent: ${path}`).toBe(true);
-		}
-
-		// Ledger 2: every functional requirement's declared outputs.
-		const declared = new Set<string>();
-		const functional = resolve(root, "spec/functional");
-		for (const name of readdirSync(functional)) {
-			if (!name.endsWith(".md")) continue;
-			const section = /\n## Outputs\n([\s\S]*?)\n## /.exec(
-				read(resolve(functional, name)),
-			);
-			if (!section) continue;
-			for (const hit of section[1].matchAll(
-				/`(src\/compiler\/[A-Za-z0-9._/-]+)`/g,
-			)) {
-				declared.add(hit[1]);
-			}
-		}
-		// A requirement may not declare an output that does not exist.
-		for (const path of declared) {
-			expect(present.has(path), `declared but absent: ${path}`).toBe(true);
-		}
-
-		// Ledger 3, and the coverage assertion itself.
-		const owns = (path: string): boolean =>
-			inventoryOwners.has(path) || declared.has(path);
-		for (const file of files) {
-			if (file.endsWith(".d.mts")) {
-				const module = `${file.slice(0, -".d.mts".length)}.mjs`;
-				expect(
-					present.has(module),
-					`type declaration with no module: ${file}`,
-				).toBe(true);
-				expect(owns(module), `unowned: ${file} (via ${module})`).toBe(true);
-				continue;
-			}
-			expect(owns(file), `unowned: ${file}`).toBe(true);
-		}
-
-		for (const entry of inventory.authored) {
-			expect(entry.reason.length, entry.path).toBeGreaterThan(0);
-		}
-	});
-
-	/** Traces: TC-328; FR-040-AC-6. */
-	it("matches the feasibility document's per-disposition counts", () => {
-		const counts = new Map<string, number>();
-		for (const record of inventory.components) {
-			counts.set(record.disposition, (counts.get(record.disposition) ?? 0) + 1);
-		}
-		const doc = read(
-			resolve(root, "docs/semantic-data-system/typespec-feasibility.md"),
-		);
-		expect(doc).toContain("## Promotion inventory");
-		for (const [disposition, count] of counts) {
-			expect(doc, disposition).toContain(`**${count} ${disposition}**`);
-		}
-		expect(doc).toContain(`${inventory.authored.length} files under`);
-	});
-
-	/** Traces: TC-329; FR-040-AC-7, FR-040-CON-1. */
-	it("restates the recorded limitation of every partial capability", () => {
-		const partial = inventory.components.filter((record) => {
-			const capability = capabilities.find(
-				(item) => item.id === record.capability,
-			);
-			return capability?.disposition === "partial";
-		});
-		expect(partial.length).toBeGreaterThan(0);
-		for (const record of partial) {
-			expect(inventoryViolations(record), record.component).toEqual([]);
-		}
-		const mutated = { ...partial[0], limitation: "none" };
-		expect(inventoryViolations(mutated).join(" ")).toContain(
-			"limitation not restated",
-		);
-	});
-
-	/** Traces: TC-330; FR-040-CON-4. */
-	it("refuses to let the authored ledger launder a promoted component", () => {
-		const promoted = inventory.components.filter(
-			(record) => record.targets.length > 0,
-		);
-		const authored = new Set(inventory.authored.map((entry) => entry.path));
-		for (const record of promoted) {
-			for (const target of record.targets) {
-				expect(authored, `${record.component} -> ${target}`).not.toContain(
-					target,
-				);
-			}
-		}
-	});
-});
 
 describe("promoted semantic-IR emitter (FR-041)", () => {
 	/** Traces: TC-331; FR-041-AC-1. */
@@ -1068,24 +784,20 @@ describe("promoted language backends (FR-042)", () => {
 
 	/** Traces: TC-358, TC-360; FR-042-AC-10, FR-042-CON-1, FR-042-CON-3, FR-042-CON-5. */
 	it("records both backends as representative-slice-only", () => {
-		for (const name of ["typescript-backend", "rust-serde-backend"]) {
-			const record = inventory.components.find(
-				(item) => item.component === name,
-			);
-			expect(record, name).toBeDefined();
-			if (!record) continue;
-			expect(record.limitation).toContain("representative slice only");
-			for (const gate of ABSENT_GATES) {
-				expect(record.limitation, `${name} / ${gate}`).toContain(gate);
-			}
-			expect(record.limitation.toLowerCase()).not.toContain(
-				"production-qualified",
-			);
-		}
-		const typescript = inventory.components.find(
-			(item) => item.component === "typescript-backend",
+		const doc = read(
+			resolve(root, "docs/semantic-data-system/typespec-feasibility.md"),
 		);
-		expect(typescript?.limitation).toContain("textual substitution");
+		const qualification = doc
+			.split("## Prototype qualification\n")[1]
+			?.split("\n## ")[0];
+		expect(qualification).toBeDefined();
+		expect(qualification).toContain("Rust and TypeScript");
+		expect(qualification).toContain("representative slice only");
+		for (const gate of ABSENT_GATES) {
+			expect(qualification, gate).toContain(gate);
+		}
+		expect(qualification?.toLowerCase()).not.toContain("production-qualified");
+		expect(qualification).toContain("textual substitution");
 	});
 });
 

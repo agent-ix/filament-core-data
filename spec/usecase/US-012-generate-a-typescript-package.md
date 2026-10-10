@@ -40,7 +40,8 @@ What exists in the way of TypeScript generation is `emitTypeScript` under
 `src/compiler/backends/typescript.mjs`, promoted by issue #27. It consumes the
 *prototype* IR (`{schemaVersion, generator, types}` with `kind: model|enum|scalar`
 and rendered TypeSpec type-name strings), not the contract IR, and
-`src/compiler/inventory.json` records it as qualified against the issue #4
+The Prototype qualification section of
+`docs/semantic-data-system/typespec-feasibility.md` records it as qualified against the issue #4
 representative slice only — a limitation FR-042-CON-3 says stays until this
 issue discharges it against the issue #20 corpus. Every scalar in that emitter
 becomes `string`; a `union`, an `alias`, a `sequence`, a `map`, and a

@@ -336,17 +336,6 @@ computed by `quire matrix` from those trace tags.
 | TC-317 | Direct and mutual recursion are accepted; alias and composite cycles are rejected; a package cycle carries a different code from a recursive type graph | Unit | P0 | FR-038-AC-4 |
 | TC-318 | Every `documentExpressible` defect row has a reproducing case that fails, and every other row names the static check that detects it | Unit | P0 | FR-038-AC-5, US-008-EX-5 |
 | TC-319 | Every register row declares its deciding layer and the layer that produced its cases' diagnostics is the declared one | Unit | P1 | FR-038-AC-6 |
-| TC-320 | Inventory holds exactly the thirteen enumerated components with sources | Static | P0 | FR-040-AC-1 |
-| TC-321 | A missing or extra component name fails the inventory test | Unit | P0 | FR-040-AC-1 |
-| TC-322 | Every disposition is inside the closed four-value set | Static | P0 | FR-040-AC-2 |
-| TC-323 | A mutated fifth disposition value is rejected | Unit | P0 | FR-040-AC-2, FR-040-CON-2 |
-| TC-324 | Retain and rewrite targets exist; replace and discard targets are empty | Static | P0 | FR-040-AC-3 |
-| TC-325 | Every inventory record carries a non-empty limitation | Static | P0 | FR-040-AC-4 |
-| TC-326 | A record justified only by the representative golden is rejected | Unit | P0 | FR-040-AC-4 |
-| TC-327 | Every `src/compiler/` file is a target or a reasoned authored entry | Static | P0 | FR-040-AC-5, FR-040-CON-3 |
-| TC-328 | Feasibility-doc promotion-inventory counts equal the inventory | Static | P1 | FR-040-AC-6 |
-| TC-329 | A partial capability's limitation is restated; dropping it fails | Unit | P0 | FR-040-AC-7, FR-040-CON-1 |
-| TC-330 | A promoted component moved into `authored` is rejected | Unit | P1 | FR-040-CON-4 |
 | TC-331 | The narrow build interface exports exactly six symbols | Static | P0 | FR-041-AC-1 |
 | TC-332 | A seventh export fails the export-set assertion | Unit | P0 | FR-041-AC-1 |
 | TC-333 | `buildSemanticIr` reproduces the committed semantic IR byte-for-byte | Snapshot | P0 | FR-041-AC-2 |
@@ -929,7 +918,6 @@ computed by `quire matrix` from those trace tags.
 | TC-1016 | Every emitted list | Property | P0 | FR-082-AC-15, FR-082-AC-16, FR-082-AC-17 |
 | TC-1017 | Every read performed during a full kernel lowering is observed by the injected host | Property | P0 | FR-082-AC-18, FR-082-AC-19, FR-082-AC-20 |
 | TC-1018 | RunFrontend called with no sourceForm selects the dialect's default form | Property | P0 | FR-082-AC-21, FR-082-AC-22, FR-082-AC-23 |
-| TC-1019 | Every module this requirement adds has a record in src/compiler/inventory.json | Property | P0 | FR-082-AC-24, FR-082-AC-25 |
 | TC-1020 | Mint.mjs does not read a file, a clock, an environment variable, or a network socket | Snapshot | P0 | FR-083-CON-1, FR-083-CON-2, FR-083-CON-3 |
 | TC-1021 | Minting introduce no diagnostic code of its own | Static | P0 | FR-083-CON-4, FR-083-CON-5, FR-083-CON-6 |
 | TC-1022 | A collision does not be resolved by dropping either construct or by merging two distinct canonical forms into one type | Unit | P0 | FR-083-CON-7, FR-083-AC-1, FR-083-AC-2 |
@@ -1397,8 +1385,6 @@ computed by `quire matrix` from those trace tags.
 | TC-305, TC-309 | adapter answer | `supported` / `unsupported` / `unavailable` | declared in the case or the registry, or undeclared | Declared `unsupported` and registry-declared `unavailable` are recorded; every undeclared answer fails |
 | TC-296 | compatibility change | optional addition / required addition / removal | consumer policy preserving, rejecting, or absent | Most restrictive classification wins, an optional addition is additive only under a preserving policy, and every contributing change is named |
 | TC-312 | adapter pointer scheme | `pointerCompatible: true` / `false` | matching or mismatched locus | The pointer is compared only for a compatible adapter; a wrong locus always fails |
-| TC-322, TC-324 | prototype component | `retain` / `rewrite` / `replace-with-official` / `discard` | targets present or empty | Promoted dispositions name a file; non-promoted dispositions name none |
-| TC-327, TC-330 | `src/compiler/` file | promoted component target / promotion-authored | inventory `components` or `authored` | Every file is owned exactly once, and `authored` cannot launder a component |
 | TC-333, TC-336 | IR production route | programmatic / CLI / `tsp --emit` | same entrypoint and generator | All three routes produce the same IR document |
 | TC-338, TC-339 | generator identity | caller-supplied / defaulted | spike replay or production build | The stamped identity follows the caller, never the call site |
 | TC-341, TC-386 | `baseDir` | repository root / another directory | same entrypoint | Loci are relative to the declared base, never to an ambient cwd |
@@ -1520,11 +1506,6 @@ computed by `quire matrix` from those trace tags.
 | FR-037 divergence `reviewBy` | Allowed / Reported | a future date / a past date | TC-306 | Audit target silent / audit target reports the entry |
 | FR-038-AC-1 class coverage | Min / Below min | four classes, or three plus a justified `notApplicable` / three unjustified | TC-314 | Pass / fail naming the row and the missing class |
 | FR-039-AC-3 mutation score | Min / Below min | every catalogued mutation detected / one undetected | TC-628 | Pass / fail naming the mutation |
-| FR-040-CON-2 | Allowed | `retain`, `rewrite`, `replace-with-official`, `discard` | TC-322 | Inventory test passes |
-| FR-040-CON-2 | Prohibited | A fifth disposition value such as `defer` | TC-323 | Inventory test fails |
-| FR-040-CON-1 | Allowed | A `partial` capability whose limitation is restated | TC-329 | Inventory test passes |
-| FR-040-CON-1 | Prohibited | A `partial` capability whose limitation is dropped | TC-329 | Inventory test fails |
-| FR-040-CON-4 | Prohibited | A promoted component listed only under `authored` | TC-330 | Inventory test fails |
 | FR-041 export set | Min / Above max | Exactly six exports / a seventh export | TC-331, TC-332 | Pass / fail the export-set assertion |
 | FR-041-CON-4 | Prohibited | Any added `dependencies` entry | TC-347, TC-394 | Dependency inspection fails |
 | FR-042-CON-1 | Allowed | Backends recorded as representative-slice-only | TC-358 | Inventory test passes |
@@ -1680,7 +1661,6 @@ computed by `quire matrix` from those trace tags.
 | divergence entry open | the owning issue fixes the defect | the entry no longer reproduces and the run fails until it is removed | TC-306 |
 | corpus `1.x.y` | a case is added | minor bump, regenerated `coverage.json` | TC-626 |
 | package version `v1` | an export is added and another removed | additive plus breaking; the pair classifies `breaking` | TC-321 |
-| prototype component in `spikes/` | promotion inventory records a disposition | owned `src/compiler/` module or an explicit non-promotion | TC-320, TC-324, TC-327 |
 | spike emitter package present | promotion removes the `file:` dependency | spike replays through `src/compiler/` and stays byte-identical | TC-371, TC-375, TC-377 |
 | promoted compiler in the tree | every path differing from the pre-promotion commit is restored from it | the spike emitter returns as the only generator | TC-395 |
 | committed Rust lockfile | crates.io index publishes a newer transitive crate | seeded lockfile keeps the retained bytes and the check unaffected | TC-372, TC-373, TC-387 |
@@ -1779,8 +1759,6 @@ computed by `quire matrix` from those trace tags.
 | ERR-048 | Lowering row records `loss` | Fixture gate fails | TC-272 |
 | ERR-049 | `UnitSymbol` outside the UCUM charset, or `unit` on a non-unit scalar or on `returns` | Pattern validation or reader rejects | TC-270, TC-277 |
 | ERR-050 | Duplicate field/operation/param name, relation (verb, target), enum value, or clauseId | Reader rejects at the second declaration | TC-277 |
-| ERR-051 | An inventory record names a disposition outside the closed set, a missing target, or an empty limitation | Inventory test fails naming the record | TC-323, TC-324, TC-325, TC-326 |
-| ERR-052 | A file under `src/compiler/` is owned by no inventory record | Inventory test fails naming the file | TC-327 |
 | ERR-053 | The compiler entrypoint fails to compile | `compileSemanticIr` rejects with the diagnostics and writes no output | TC-334 |
 | ERR-054 | The IR names a base model absent from the same document, or a base cycle | The backend throws naming the base or the cycle | TC-353, TC-354 |
 | ERR-055 | The JSON Schema carries an executable extension key at any depth | The adapter throws naming the key and produces no output | TC-362, TC-363 |
@@ -1972,7 +1950,7 @@ computed by `quire matrix` from those trace tags.
 Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping gap remains for issues #8, #10, #4, #9, #34, or #35. Issue #35's
 | EC-038 | The promoted emitter changes the generator identity stamped into the frozen spike IR | FR-044 | TC-338, TC-339, TC-371 | The frozen issue #4 record is silently rebaselined and stops being historical evidence |
 | EC-039 | An unpinned transitive Rust crate publishes a new version | NFR-017, FR-044 | TC-372, TC-373, TC-387 | The retained-evidence gate goes red for reasons unrelated to any change, inviting a rebaseline |
-| EC-040 | A prototype component is promoted because its one representative golden passed | FR-040, FR-042 | TC-326, TC-358 | Unmeasured recursion, generics, or version transitions misgenerate consumer contracts |
+| EC-040 | A prototype component is promoted because its one representative golden passed | FR-042 | TC-358 | Unmeasured recursion, generics, or version transitions misgenerate consumer contracts |
 | EC-041 | The promotion is landed alongside a package publication or consumer move | NFR-018 | TC-390, TC-396 | A later compiler defect cannot be backed out without a consumer migration |
 | EC-042 | A backend writes files, so a package ticket must edit the backend to change layout | FR-042 | TC-352 | Layout policy leaks into the generator and each target ticket forks it |
 | EC-068 | The Python adapter's forbidden-key list is narrowed to make a schema pass | FR-043 | TC-362, TC-363 | Caller-controlled Python reaches the generated models |
