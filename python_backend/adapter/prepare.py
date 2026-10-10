@@ -138,10 +138,7 @@ def _expand_conditional_numeric(
             or not set(bounded) <= {"type", "maximum"}
             or not isinstance(guarded.get("const"), int)
             or not isinstance(bounded.get("maximum"), int)
-            or (
-                "type" in bounded
-                and bounded["type"] != scale_schema.get("type")
-            )
+            or ("type" in bounded and bounded["type"] != scale_schema.get("type"))
         ):
             return schema
         rules.append((guarded["const"], bounded["maximum"]))
