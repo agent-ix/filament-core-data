@@ -44,16 +44,16 @@ cycle, a duplicate identity, or a dangling clause reference was written and
 written as good. It also removes three re-implementations: a JSON Schema
 validator (the `jsonschema` crate), an RFC 8785 writer, and an ECMAScript number
 formatter, each of which the reader already owns. The document form is
-`agent-ix-conformance-jcs-v1` exactly as `crates/semantic-ir` writes it — the
-form issue #22 declared for its `normalized` answer; issue #67 records that the
-published contract names two algorithms and rules on neither, and this
-requirement takes the #22 reading rather than a third. That form orders object
-members by code point, which coincides with RFC 8785's UTF-16 order on every
-name the schema admits. The identity-sorted-set extension of FR-048 belongs to
-the fingerprint of a lock and is not applied to the written bytes. FR-046
-imposes the same node-list order on the TypeSpec frontend, so FR-050
-`normalizeIr` of the emitted document is the identity on its bytes. FR-050's node reader is the second, cross-language reader in the
-test suite.
+`rfc8785-v1`, as [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md)
+settles for every normalized document. It is RFC 8785 JCS, including UTF-16
+code-unit object-key ordering; it is not the identity-sorted-set extension of
+FR-048, which belongs to the package-lock fingerprint. The normalized document
+also carries
+`{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`, so neither FCD nor QSL intake infers
+the algorithm from observed bytes. FR-046 imposes the semantic node-list order
+before serialization, so FR-050 `normalizeIr` of the emitted document is the
+identity on its bytes. FR-050's node reader is the second, cross-language reader
+in the test suite.
 
 ## Inputs
 
@@ -77,10 +77,14 @@ test suite.
 - If `decide` returns a `result_state` other than success or a non-empty diagnostic list, then the frontend SHALL raise one blocking `INVALID_IR` per reader diagnostic, shaped per FR-096.
 - The frontend SHALL treat every reader diagnostic — schema and cross-field alike, including `COMPOSITE_CYCLE`, `DUPLICATE_IDENTITY`, `DANGLING_CLAUSE_REF`, and `UNRESOLVED_TYPE_REF` — as a lift-time refusal of the document.
 
-### Canonical form (declared reading of issue #67)
+### Canonical form (FR-145)
 
 - The frontend SHALL sort every node list — `types`, and within each type `fields`, `variants`, `constraints`, `relationships`, `operations`, `clauses`, and `extensions`, within each field and each operation parameter `extensions`, within each operation `params`, and the top-level `occurrences` and `extensions` — by `identity` under a locale-independent code-point comparison before calling `decide`; these are exactly the sets FR-050's `normalizeIr` declares (`IDENTITY_SETS`).
 - The frontend SHALL obtain the written bytes as `agent_ix_semantic_ir::normalize::normalized(&{"ir": <document>})` over the sorted document and from no other serializer.
+- The frontend SHALL carry the exact
+  `canonicalization: {"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`
+  descriptor in the normalized document and SHALL include that descriptor in
+  the bytes whose SHA-256 value is recorded under the `sha256-jcs` domain.
 - The frontend SHALL materialize `multiplicity`, `presence`, and `nullable` on every field and operation parameter before serialization, so that `normalized` adds no member and the written bytes re-parse to the assembled value.
 - The frontend SHALL NOT link the `jsonschema` crate.
 - The frontend SHALL NOT implement a JSON canonicalizer, an object-member ordering, or a number formatter of its own.

@@ -1,7 +1,7 @@
 {
 	"corpusVersion": "4.0.1",
 	"contractVersions": ["2.0.0"],
-	"canonicalForm": "agent-ix-conformance-jcs-v1",
+	"canonicalForm": "rfc8785-v1",
 	"caseIdPattern": "^[A-Z][A-Z0-9]*(-[A-Z0-9]+)*-[0-9]{3}$",
 	"minimizationBudget": 64,
 	"depthLimit": 256,

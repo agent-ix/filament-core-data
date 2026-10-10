@@ -12,9 +12,9 @@
 //!   than something the reader silently resolved. Lookups resolve a duplicate
 //!   the way `JSON.parse` does — the last occurrence wins.
 //!
-//! The writer emits the corpus comparison form `agent-ix-conformance-jcs-v1`,
-//! which `conformance/README.md` defines as "object keys ordered by code point,
-//! no insignificant whitespace, array order preserved".
+//! The writer emits the normalized `rfc8785-v1` form, which
+//! `conformance/README.md` defines as object keys ordered by RFC 8785 UTF-16
+//! code unit, with no insignificant whitespace and array order preserved.
 
 use crate::number::ecma_number_to_string;
 use core::fmt::Write as _;
@@ -782,10 +782,10 @@ pub fn write_string(out: &mut String, text: &str) {
     out.push('"');
 }
 
-/// Writes `value` in the corpus comparison form `agent-ix-conformance-jcs-v1`.
+/// Writes `value` in the normalized `rfc8785-v1` form.
 ///
-/// Object members are ordered by the code points of their names, array order is
-/// preserved, no insignificant whitespace is written, a duplicate member is
+/// Object members are ordered by the UTF-16 code units of their names, array
+/// order is preserved, no insignificant whitespace is written, a duplicate member is
 /// resolved the way `JSON.parse` resolves it, and every number is rendered by
 /// the ECMAScript `Number::toString` algorithm from its parsed `f64` — which is
 /// what a `JSON.parse` followed by a `JSON.stringify` does to it.
@@ -836,6 +836,10 @@ fn write_canonical(out: &mut String, value: &Json) {
     write_iteratively(out, value, true);
 }
 
+fn compare_utf16(left: &str, right: &str) -> core::cmp::Ordering {
+    left.encode_utf16().cmp(right.encode_utf16())
+}
+
 /// Writes `value` over an explicit stack, sorting object members by name when
 /// `sorted`, so a document of any depth is written on any thread.
 fn write_iteratively(out: &mut String, value: &Json, sorted: bool) {
@@ -872,7 +876,7 @@ fn write_iteratively(out: &mut String, value: &Json, sorted: bool) {
                 Json::Object(members) => {
                     let mut resolved = resolved_members(members);
                     if sorted {
-                        resolved.sort_by(|left, right| left.0.as_bytes().cmp(right.0.as_bytes()));
+                        resolved.sort_by(|left, right| compare_utf16(left.0, right.0));
                     }
                     out.push('{');
                     stack.push(Emit::Text("}"));

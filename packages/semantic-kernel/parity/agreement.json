@@ -1,7 +1,7 @@
 {
 	"$comment": [
 		"FR-090. Written by packages/semantic-kernel/parity/run.mjs.",
-		"Comparison form: agent-ix-conformance-jcs-v1, through substantive()",
+		"Comparison form: rfc8785-v1, through substantive()",
 		"imported from conformance/oracle/index.mjs. Not RFC8785-JCS-with-",
 		"identity-sorted-sets-v1, which conformance/contract-gaps.json GAP-004",
 		"records as named but undefined.",

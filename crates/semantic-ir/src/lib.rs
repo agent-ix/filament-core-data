@@ -274,7 +274,7 @@ mod tests {
             .spawn(|| {
                 let deep = format!("{}0{}", "[".repeat(DEPTH), "]".repeat(DEPTH));
                 let text = format!(
-                    r#"{{"ir":{{"contractVersion":"2.0.0","types":[{{"identity":"ix://acme/pkg/T","kind":"record","deep":{deep}}}]}}}}"#
+                    r#"{{"ir":{{"contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"types":[{{"identity":"ix://acme/pkg/T","kind":"record","deep":{deep}}}]}}}}"#
                 );
                 let bundle = parse(&text).expect("a million levels read");
                 let verdict = decide(&bundle);
@@ -315,7 +315,7 @@ mod tests {
     }
 
     /// The members of a `2.0.0` IR document besides its types.
-    const HEADER: &str = r#""contractVersion":"2.0.0","source":{"dialect":"spec-bundle","digest":"sha256:ea98d2dccb8b5d16936209f232e1d8115d404f519f0d110a8f9207190d83bbcf","identity":"ix://acme/pkg/spec","version":"0.0.0"},"package":{"identity":"acme/pkg","lockDigest":"sha256:8b58fb1a6b5d597159c1f0b28c6a2088e5d5eb15665d3add2414c72025e0adc5","manifestDigest":"sha256:c13bc6a59950fbb3338deaec4a8b6975b4815aef8e1756c8262e8b43452de5a6","mappingVersions":["1.0.0"],"profileVersions":[],"version":"0.0.0"},"occurrences":[],"extensions":[],"constructs":[]"#;
+    const HEADER: &str = r#""contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"source":{"dialect":"spec-bundle","digest":"sha256:ea98d2dccb8b5d16936209f232e1d8115d404f519f0d110a8f9207190d83bbcf","identity":"ix://acme/pkg/spec","version":"0.0.0"},"package":{"identity":"acme/pkg","lockDigest":"sha256:8b58fb1a6b5d597159c1f0b28c6a2088e5d5eb15665d3add2414c72025e0adc5","manifestDigest":"sha256:c13bc6a59950fbb3338deaec4a8b6975b4815aef8e1756c8262e8b43452de5a6","mappingVersions":["1.0.0"],"profileVersions":[],"version":"0.0.0"},"occurrences":[],"extensions":[],"constructs":[]"#;
 
     /// A `Base` and a `Sub` specializing it, each with a `size` operation;
     /// `sub_operation` is `Sub`'s.

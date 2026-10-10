@@ -11,8 +11,9 @@ use std::process::Command;
 mod common;
 
 use agent_ix_extraction_frontend::diagnostics::{Code, WireCode};
-use agent_ix_extraction_frontend::write::OutputPaths;
-use agent_ix_extraction_frontend::{lift, LiftOutcome, LiftRequest};
+use agent_ix_extraction_frontend::write::{write_lift, Emission, OutputPaths};
+use agent_ix_extraction_frontend::{lift, normalized_digest, validate, LiftOutcome, LiftRequest};
+use agent_ix_semantic_ir::json::{parse as parse_reader_json, to_canonical_string};
 use common::{business_module, entries, fixture, inspect, lift_fixture, positive_lifts, request};
 use ix_trace_rs::trace;
 use serde_json::Value;
@@ -36,6 +37,73 @@ fn read_all(request: &LiftRequest) -> Vec<(&'static str, Vec<u8>)> {
             )
         })
         .collect()
+}
+
+#[trace("TC-PLAT-990-1", "FR-145-AC-3")]
+#[test]
+fn tc_plat_990_shared_supplementary_plane_golden_is_consumed_and_digest_sidecar_is_exact() {
+    let golden: Value = serde_json::from_str(include_str!(
+        "../../../test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json"
+    ))
+    .expect("shared golden JSON");
+    let input = serde_json::to_string(&golden["input"]).expect("input JSON");
+    let parsed = parse_reader_json(&input).expect("shared golden input parses");
+    let expected = golden["expectedBytes"].as_str().expect("expected bytes");
+    let canonical = to_canonical_string(&parsed);
+    assert_eq!(canonical, expected, "RFC 8785 UTF-16 member ordering");
+    assert_eq!(
+        normalized_digest(canonical.as_bytes()),
+        golden["sha256"].as_str().expect("expected digest")
+    );
+
+    let (_dir, request, outcome) = lift_fixture("snapshot-table");
+    let LiftOutcome::Written { document, .. } = outcome else {
+        panic!("fixture did not write: {outcome:?}");
+    };
+    let valid = validate(serde_json::from_slice(&document).expect("written document JSON"))
+        .expect("written document validates");
+    let digest_path = request.out.with_extension("json.digest");
+    let paths = OutputPaths::new(&request.out, None).with_digest(&digest_path);
+    write_lift(&paths, Emission::Document { document: &valid }, &[]).expect("digest sidecar write");
+    assert_eq!(
+        fs::read_to_string(&digest_path).expect("digest sidecar"),
+        format!("{}\n", normalized_digest(&document))
+    );
+
+    let mut mutated = document.clone();
+    mutated[0] ^= b' ';
+    assert_ne!(
+        normalized_digest(&document),
+        normalized_digest(&mutated),
+        "a byte mutation changes the normalized digest"
+    );
+}
+
+#[trace("TC-PLAT-990-2", "FR-145-CON-2")]
+#[test]
+fn tc_plat_990_digest_is_published_before_document_and_cleans_up_on_document_failure() {
+    let (_source, request, outcome) = lift_fixture("snapshot-table");
+    let LiftOutcome::Written { document, .. } = outcome else {
+        panic!("fixture did not write: {outcome:?}");
+    };
+    let valid = validate(serde_json::from_slice(&document).expect("written document JSON"))
+        .expect("written document validates");
+    let output = tempfile::tempdir().expect("output directory");
+    let document_path = output.path().join("semantic-ir.json");
+    fs::create_dir(&document_path).expect("document failure target");
+    let digest_path = output.path().join("semantic-ir.json.digest");
+    let paths = OutputPaths::new(&document_path, None).with_digest(&digest_path);
+
+    let refusal = write_lift(&paths, Emission::Document { document: &valid }, &[])
+        .expect_err("document rename must fail");
+    assert_eq!(refusal.code(), Code::OutputUnwritable);
+    assert_eq!(
+        fs::read_to_string(&digest_path).expect("digest published before document"),
+        format!("{}\n", normalized_digest(&document))
+    );
+    assert!(document_path.is_dir(), "document failure target remains");
+    assert!(!digest_path.with_extension("digest.tmp").exists());
+    assert!(!output.path().join("semantic-ir.json.tmp").exists());
 }
 
 fn refused_code(outcome: &LiftOutcome) -> (Code, String) {

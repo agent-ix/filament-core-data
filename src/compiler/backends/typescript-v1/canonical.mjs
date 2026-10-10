@@ -14,8 +14,8 @@
  * names two and they are different algorithms:
  *
  * - the **unextended** RFC 8785 form, every array left in document order. This
- *   is the corpus's `agent-ix-conformance-jcs-v1`, and it is what an adapter
- *   answer's `normalized` member carries.
+ *   is the normalized document's `rfc8785-v1` form and it is what an adapter
+ *   answer's `normalized` member carries, including its descriptor.
  * - the **extended** form, which sorts the members of the thirteen container
  *   paths below by their `identity`. This is the
  *   `RFC8785-JCS-with-identity-sorted-sets-v1` that
@@ -23,18 +23,9 @@
  *   and it is what makes two documents differing only in set order carry one
  *   fingerprint.
  *
- * The first run of this module against the corpus matched 1 case of 111,
- * because the requirement described the extended form and the corpus compares
- * the unextended one. Separating them takes the same run to 111 of 111. Which
- * form a normalized document carries is stated in no contract document, filed
- * as `agent-ix/filament-core-data#67` beside GAP-004.
- *
- * GAP-004 itself — the named algorithm is defined nowhere — is recorded in
- * `conformance/contract-gaps.json`. Its declared owning issue
- * `agent-ix/filament-core-data#9` is closed, and
- * `agent-ix/filament-core-data#59` carries the ownership question. This is the
- * highest-volatility reading the backend makes: `normalized` is compared byte
- * for byte on every corpus case, and the IR fingerprint derives from it.
+ * The normalized form and the extended package-lock fingerprint are separate
+ * domains. The normalized form is named by FR-145 and carries
+ * `canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" }`.
  */
 
 import { createHash } from "node:crypto";
@@ -234,6 +225,12 @@ function materializeField(field) {
  */
 export function normalizeIr(document) {
 	const copy = structuredClone(document);
+	if (copy !== null && typeof copy === "object" && !Array.isArray(copy)) {
+		copy.canonicalization = {
+			algorithm: "rfc8785-v1",
+			digest: "sha256-jcs",
+		};
+	}
 	if (
 		copy === null ||
 		typeof copy !== "object" ||

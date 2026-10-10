@@ -726,6 +726,7 @@ fn applicability_doc(kind: &str, scalar: &str, keyword: &str) -> Value {
     });
     json!({"ir": {
         "contractVersion": "2.0.0",
+                "canonicalization": {"algorithm": "rfc8785-v1", "digest": "sha256-jcs"},
         "constructs": [],
         "source": {"identity": "ix://agent-ix/test/spec", "version": "0.0.0",
                    "dialect": "spec-bundle", "digest": format!("sha256:{}", "0".repeat(64))},

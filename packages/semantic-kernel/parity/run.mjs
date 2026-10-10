@@ -12,7 +12,7 @@
  * corpus verdict shape by `project.mjs` and normalized by `substantive`
  * imported from the oracle surface, and two answers agree when their
  * `substantive` projections are the same text. The comparison form is
- * `agent-ix-conformance-jcs-v1`, the corpus's own; it is not, and does not
+ * `rfc8785-v1`, the corpus's own; it is not, and does not
  * claim to be, `RFC8785-JCS-with-identity-sorted-sets-v1`, which
  * `conformance/contract-gaps.json` GAP-004 records as named but undefined.
  *
@@ -275,7 +275,7 @@ export function run(check = false) {
 		{
 			$comment: [
 				"FR-090. Written by packages/semantic-kernel/parity/run.mjs.",
-				"Comparison form: agent-ix-conformance-jcs-v1, through substantive()",
+				"Comparison form: rfc8785-v1, through substantive()",
 				"imported from conformance/oracle/index.mjs. Not RFC8785-JCS-with-",
 				"identity-sorted-sets-v1, which conformance/contract-gaps.json GAP-004",
 				"records as named but undefined.",

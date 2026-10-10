@@ -490,6 +490,7 @@ fn bundle_schema(bundle: &Json, f: &mut Findings) {
 
 const IR_MEMBERS: &[&str] = &[
     "contractVersion",
+    "canonicalization",
     "source",
     "package",
     "types",
@@ -506,6 +507,7 @@ const IR_OPTIONAL_MEMBERS: &[&str] = &[
     "constructs",
     "populations",
 ];
+const NORMALIZED_CANONICALIZATION_MEMBERS: &[&str] = &["algorithm", "digest"];
 /// The members of one `constructs` entry.
 const CONSTRUCT_ENTRY_MEMBERS: &[&str] = &["kind", "moduleVersion", "manifestDigest", "construct"];
 /// The `direction` vocabulary of a port.
@@ -687,6 +689,43 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
         "contractVersion",
         f,
     );
+
+    if let Some(canonicalization) = ir.get("canonicalization") {
+        let canonicalization_at = child(at, "canonicalization");
+        if expect_object(
+            canonicalization,
+            &canonicalization_at,
+            "a normalized canonicalization descriptor",
+            f,
+        ) {
+            require_members(
+                canonicalization,
+                &canonicalization_at,
+                NORMALIZED_CANONICALIZATION_MEMBERS,
+                f,
+            );
+            forbid_extra(
+                canonicalization,
+                &canonicalization_at,
+                NORMALIZED_CANONICALIZATION_MEMBERS,
+                f,
+            );
+            expect_enum(
+                canonicalization.get("algorithm"),
+                &child(&canonicalization_at, "algorithm"),
+                &["rfc8785-v1"],
+                "the normalized canonicalization algorithm",
+                f,
+            );
+            expect_enum(
+                canonicalization.get("digest"),
+                &child(&canonicalization_at, "digest"),
+                &["sha256-jcs"],
+                "the normalized canonicalization digest domain",
+                f,
+            );
+        }
+    }
 
     if let Some(source) = ir.get("source") {
         ir_source(source, &child(at, "source"), f);

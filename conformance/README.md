@@ -73,10 +73,15 @@ change prevents a compatible promotion.
 
 ## Canonical form
 
-The corpus comparison form is `agent-ix-conformance-jcs-v1`: object keys ordered
-by code point, no insignificant whitespace, array order preserved. **It is not**
-the contract's `RFC8785-JCS-with-identity-sorted-sets-v1` fingerprint form,
-which `contract-gaps.json` GAP-004 records as named but undefined.
+The normalized form is `rfc8785-v1`: RFC 8785 object keys ordered by
+UTF-16 code unit, no insignificant whitespace, and array order preserved.
+Normalized documents carry `{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`.
+The `digest` member names the domain; the computed value is recorded as
+`sha256-jcs:<64 lowercase hexadecimal digits>`. The supplementary-plane
+golden and its expected metadata live at
+`test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json`. The form
+is separate from the contract's
+`RFC8785-JCS-with-identity-sorted-sets-v1` package-lock fingerprint form.
 
 ## Versioning
 

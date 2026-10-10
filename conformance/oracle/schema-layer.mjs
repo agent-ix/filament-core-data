@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 import Ajv from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 
-import { compareCodePoint, isObject } from "./json.mjs";
+import { compareCodeUnits, isObject } from "./json.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PUBLISHED = join(HERE, "..", "..", "schema", "semantic", "v1");
@@ -42,12 +42,12 @@ export function validators() {
 	if (cached) return cached;
 	const ajv = new Ajv({ strict: false, allErrors: true });
 	addFormats(ajv);
-	for (const file of readdirSync(PUBLISHED).sort(compareCodePoint)) {
+	for (const file of readdirSync(PUBLISHED).sort(compareCodeUnits)) {
 		if (file.endsWith(".schema.json")) {
 			ajv.addSchema(JSON.parse(readFileSync(join(PUBLISHED, file), "utf8")));
 		}
 	}
-	for (const file of readdirSync(CONFORMANCE).sort(compareCodePoint)) {
+	for (const file of readdirSync(CONFORMANCE).sort(compareCodeUnits)) {
 		if (file.endsWith(".schema.json")) {
 			ajv.addSchema(JSON.parse(readFileSync(join(CONFORMANCE, file), "utf8")));
 		}
@@ -78,7 +78,7 @@ export function validateConformance(file, value) {
 
 function message(error) {
 	const params = Object.entries(error.params ?? {})
-		.sort(([left], [right]) => compareCodePoint(left, right))
+		.sort(([left], [right]) => compareCodeUnits(left, right))
 		.map(([key, value]) => `${key}=${JSON.stringify(value)}`)
 		.join(" ");
 	return params
@@ -98,11 +98,11 @@ export function collapse(errors, prefix) {
 		const path = `${prefix}${error.instancePath}`;
 		const existing = byPath.get(path);
 		const text = message(error);
-		if (existing === undefined || compareCodePoint(text, existing) < 0) {
+		if (existing === undefined || compareCodeUnits(text, existing) < 0) {
 			byPath.set(path, text);
 		}
 	}
-	const paths = [...byPath.keys()].sort(compareCodePoint);
+	const paths = [...byPath.keys()].sort(compareCodeUnits);
 	let deepest = paths.filter(
 		(path) =>
 			!paths.some((other) => other !== path && other.startsWith(`${path}/`)),
@@ -118,7 +118,7 @@ export function collapse(errors, prefix) {
 			deepest.push(ancestor);
 		}
 	}
-	return [...new Set(deepest)].sort(compareCodePoint).map((path) => ({
+	return [...new Set(deepest)].sort(compareCodeUnits).map((path) => ({
 		pointer: path,
 		message: byPath.get(path) ?? "schema violation",
 	}));
@@ -172,5 +172,5 @@ export function schemaDiagnostics(bundle) {
 						other !== row.pointer && other.startsWith(`${row.pointer}/`),
 				),
 		)
-		.sort((left, right) => compareCodePoint(left.pointer, right.pointer));
+		.sort((left, right) => compareCodeUnits(left.pointer, right.pointer));
 }
