@@ -956,6 +956,21 @@ fn lower_constraints(
                 operands.insert("value".to_string(), Value::String(value));
             }
         }
+        // FR-144: integer bounds are exact decimal strings on the IR wire,
+        // including values that happen to fit in a JSON number. Keeping the
+        // spelling as a string prevents a later reader from treating the
+        // authored bound as an already-rounded JavaScript number.
+        if matches!(kind, Some(ResolvedKind::Scalar("integer")))
+            && matches!(
+                keyword.as_str(),
+                "min" | "max" | "exclusiveMin" | "exclusiveMax"
+            )
+        {
+            if let Some(value) = operands.get("value").and_then(Value::as_number) {
+                let value = value.to_string();
+                operands.insert("value".to_string(), Value::String(value));
+            }
+        }
         let identity = match ctx
             .package
             .constraint_identity(ctx.id, &decl.name, &keyword)

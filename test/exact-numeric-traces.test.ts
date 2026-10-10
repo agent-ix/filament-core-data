@@ -1231,7 +1231,15 @@ it("compares the Node, Python, and oracle numeric reader verdicts and pointers",
 	}
 });
 
-/** Trace: FR-144-AC-22. */
+/**
+ * FR-144-AC-22: Given the parsed value of a document whose `float64` bound is
+ * `0.1000000000000000000001`, a reader's parsed-value entry point raises no
+ * `INEXACT_NUMBER`, while given the parsed value of a document whose integer
+ * bound is `"01"` it raises `INVALID_OPERAND` at the operand, as the bytes
+ * entry point does.
+ *
+ * Trace: FR-144-AC-22
+ */
 it("keeps parsed numeric values aligned with the byte reader", () => {
 	const floatDocument = {
 		contractVersion: "2.0.0",

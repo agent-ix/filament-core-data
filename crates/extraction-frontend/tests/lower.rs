@@ -441,7 +441,7 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the
     assert_eq!(constraints.len(), 1, "{constraints:?}");
     let min = &constraints[0];
     assert_eq!(min["keyword"], "min");
-    assert_eq!(min["operands"], json!({"value": 1}));
+    assert_eq!(min["operands"], json!({"value": "1"}));
     assert_eq!(min["appliesTo"], field["identity"]);
     assert_eq!(
         min["diagnosticCode"],
@@ -489,6 +489,53 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the
         diagnostic_code(&package, "Snapshot", "createdBy", "maxLength"),
         "agent-ix.docs-service.SNAPSHOT_CREATEDBY_MAXLENGTH"
     );
+}
+
+/// FR-144-AC-12: The spec-bundle frontend lifts
+/// `versionNumber | Integer | 1 | min: 1` with operand `"1"`, a constrained
+/// `Decimal` row with policy `(10, 2)` and `min: 1.50` to a field carrying
+/// decimal `{precision: 10, scale: 2}` and operand `"1.5"`, and a `Decimal`
+/// row with no policy to a blocking `DECIMAL_POLICY_MISSING` at the row.
+#[trace("TC-1826", "FR-144-AC-12")]
+#[test]
+fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
+    let root = tempfile::tempdir().expect("numeric spec bundle");
+    scratch_spec(root.path());
+    write_fixture(
+        root.path(),
+        "spec/functional/FR-001.md",
+        &entity(
+            "FR-001",
+            "NumericRows",
+            "| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n| unpriced | Decimal | 1 | |\n",
+        ),
+    );
+
+    let lift = lift_at(root.path(), &[&business_module(), &edge_vocabulary()]);
+    let types = types_json(&lift);
+    let record = type_named(&types, "NumericRows");
+    let version = field_named(record, "versionNumber");
+    let version_constraint = &version["constraints"][0];
+    assert_eq!(version_constraint["operands"], json!({"value": "1"}));
+
+    let price = field_named(record, "price");
+    assert_eq!(price["decimal"], json!({"precision": 10, "scale": 2}));
+    assert_eq!(price["constraints"][0]["operands"], json!({"value": "1.5"}));
+
+    let document = ir_document(&lift);
+    let missing = reader_codes(&document);
+    assert!(
+        missing
+            .iter()
+            .any(|entry| entry.starts_with("agent-ix.semantic-ir.DECIMAL_POLICY_MISSING")),
+        "{missing:?}"
+    );
+    let canonical = normalized(
+        &parse_json(&serde_json::to_string(&document).expect("serialize"))
+            .expect("parse canonical input"),
+    );
+    let round_trip: Value = serde_json::from_str(&canonical).expect("canonical JSON");
+    assert_eq!(canonical, normalized(&round_trip));
 }
 
 #[trace("TC-1224", "FR-093-AC-5")]

@@ -200,9 +200,10 @@ fn is_unit(text: &str) -> bool {
 }
 
 const SCALARS: &[&str] = &[
-    "boolean", "integer", "decimal", "float32", "float64", "string", "bytes", "date", "datetime", "duration",
-    "uuid", "any",
+    "boolean", "integer", "decimal", "float32", "float64", "string", "bytes", "date", "datetime",
+    "duration", "uuid", "any",
 ];
+const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
 /// The core kinds: every `typeDefinition.kind` that is a string. Every other
 /// kind is a construct kind, `{module, name}`, that the document's
 /// `constructs` table declares.
@@ -388,7 +389,7 @@ fn expect_integer(value: Option<&Json>, pointer: &str, min: i64, what: &str, f: 
         None => return,
     };
     match value.as_i64() {
-        Some(number) if number >= min => {}
+        Some(number) if number >= min && number <= MAX_SAFE_INTEGER => {}
         _ => f.push(pointer, what.to_string()),
     }
 }

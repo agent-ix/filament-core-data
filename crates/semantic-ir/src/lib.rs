@@ -171,8 +171,10 @@ mod tests {
         );
     }
 
-    /// The Rust byte entry point walks numeric lexemes nested inside an `any`
-    /// default without first converting them to a binary float.
+    /// FR-144-AC-8: Read from bytes, a document holding
+    /// `9007199254740993` at any depth, the inside of an `any` default
+    /// included, raises `INEXACT_INTEGER` at that number's pointer and no
+    /// parse failure.
     ///
     /// Trace: FR-144-AC-8
     #[test]
@@ -189,35 +191,56 @@ mod tests {
         }));
     }
 
-    /// Metadata integers use the same exact-number scanner as values: the
-    /// largest safe integer is accepted, while a value above it is refused at
-    /// each metadata location rather than silently rounded.
+    /// FR-144-AC-9: A `multiplicity.upper`, a `maxLength` operand, or a source
+    /// span's `startLine` of `9007199254740991` is accepted, and `9007199254740992`
+    /// raises `SCHEMA_VIOLATION` at it; a decimal policy's `precision` or
+    /// `scale` of `9007199254740992` raises the same code at that member.
     ///
     /// Trace: FR-144-AC-9
     #[test]
     fn fr_144_raw_bytes_check_safe_metadata_integer_boundaries() {
         fn bundle(value: &str) -> String {
             format!(
-                r#"{{"ir":{{{HEADER},"types":[{{"identity":"ix://probe/Text","displayName":"Text","kind":"scalar","scalar":"string","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"}},{{"identity":"ix://probe/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{{"identity":"ix://probe/Holder/value","name":"value","typeRef":"ix://quire/native/String","presence":"required","nullable":false,"defaultKind":"none","origin":{{"source":{{"sourceIdentity":"ix://probe/Source","path":"probe.tsp","startLine":{value},"startColumn":1}}}},"multiplicity":{{"lower":1,"upper":{value},"ordered":false,"unique":false}},"constraints":[{{"identity":"ix://probe/Holder/value/maxLength","keyword":"maxLength","operands":{{"value":{value}}},"appliesTo":"ix://probe/Holder/value","diagnosticCode":"ix://probe/MAX_LENGTH","origin":{GENERATED}}}],"extensions":[]}}]}}]}}}}"#
+                r#"{{"ir":{{{HEADER},"types":[{{"identity":"ix://probe/Text","displayName":"Text","kind":"scalar","scalar":"string","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"}},{{"identity":"ix://probe/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{{"identity":"ix://probe/Holder/value","name":"value","typeRef":"ix://quire/native/String","presence":"required","nullable":false,"defaultKind":"none","origin":{{"source":{{"sourceIdentity":"ix://probe/Source","path":"probe.tsp","startLine":{value},"startColumn":{value}}}}},"multiplicity":{{"lower":1,"upper":{value},"ordered":false,"unique":false}},"constraints":[{{"identity":"ix://probe/Holder/value/maxLength","keyword":"maxLength","operands":{{"value":{value}}},"appliesTo":"ix://probe/Holder/value","diagnosticCode":"ix://probe/MAX_LENGTH","origin":{GENERATED}}}],"extensions":[]}}]}}]}}}}"#
             )
         }
 
-        let safe = parse(&bundle("9007199254740992")).expect("safe metadata integers parse");
-        assert!(!decide(&safe)
-            .iter()
-            .any(|diagnostic| diagnostic.code == "agent-ix.semantic-ir.INEXACT_INTEGER"));
+        let safe = parse(&bundle("9007199254740991")).expect("safe metadata integers parse");
+        assert!(decide(&safe).diagnostics.is_empty());
 
         let unsafe_bundle =
-            parse(&bundle("9007199254740993")).expect("unsafe metadata integers parse");
-        let diagnostics = decide(&unsafe_bundle);
+            parse(&bundle("9007199254740992")).expect("unsafe metadata integers parse");
+        let diagnostics = decide(&unsafe_bundle).diagnostics;
         for pointer in [
             "/ir/types/1/fields/0/origin/source/startLine",
+            "/ir/types/1/fields/0/origin/source/startColumn",
             "/ir/types/1/fields/0/multiplicity/upper",
             "/ir/types/1/fields/0/constraints/0/operands/value",
         ] {
             assert!(
                 diagnostics.iter().any(|diagnostic| {
-                    diagnostic.code == "agent-ix.semantic-ir.INEXACT_INTEGER"
+                    diagnostic.code == "agent-ix.semantic-ir.SCHEMA_VIOLATION"
+                        && diagnostic.pointer == pointer
+                }),
+                "missing exact-number diagnostic at {pointer}"
+            );
+        }
+
+        fn decimal_bundle(value: &str) -> String {
+            format!(
+                r#"{{"ir":{{{HEADER},"types":[{{"identity":"ix://probe/Price","displayName":"Price","kind":"scalar","scalar":"decimal","decimal":{{"precision":{value},"scale":{value}}},"roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"}}]}}}}"#
+            )
+        }
+        let safe_decimal =
+            parse(&decimal_bundle("9007199254740991")).expect("safe decimal policy parses");
+        assert!(decide(&safe_decimal).diagnostics.is_empty());
+        let unsafe_decimal =
+            parse(&decimal_bundle("9007199254740992")).expect("unsafe decimal policy parses");
+        let decimal_diagnostics = decide(&unsafe_decimal).diagnostics;
+        for pointer in ["/ir/types/0/decimal/precision", "/ir/types/0/decimal/scale"] {
+            assert!(
+                decimal_diagnostics.iter().any(|diagnostic| {
+                    diagnostic.code == "agent-ix.semantic-ir.SCHEMA_VIOLATION"
                         && diagnostic.pointer == pointer
                 }),
                 "missing exact-number diagnostic at {pointer}"
