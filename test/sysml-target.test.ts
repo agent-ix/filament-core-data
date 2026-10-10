@@ -35,9 +35,8 @@ type TestType = {
 	identity: string;
 	displayName: string;
 	fields?: TestField[];
-	abstract?: boolean;
 	identityFields?: string[];
-};
+} & Partial<Record<"abstract", boolean>>;
 type TestRecord = TestType & { kind: "record"; fields: TestField[] };
 type TestIr = {
 	package: { identity: string };
