@@ -273,6 +273,7 @@ pub fn lower_enum(
             extensions: Vec::new(),
             unknown_policy: UnknownPolicy::Reject,
             scalar: None,
+            decimal: None,
             target: None,
             fields: None,
             variants: Some(variants),
@@ -281,6 +282,7 @@ pub fn lower_enum(
             clauses: None,
             construct,
         },
+        aliases: Vec::new(),
         diagnostics,
     })
 }

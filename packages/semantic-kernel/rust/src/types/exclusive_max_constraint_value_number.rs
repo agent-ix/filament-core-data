@@ -20,6 +20,14 @@ impl ExclusiveMaxConstraintValueNumber {
     /// on it. Deserialization routes through this constructor, so a value
     /// that violates a constraint cannot arrive from the wire either.
     pub fn try_new(value: f64) -> Result<Self, crate::support::ValidationError> {
+        if !value.is_finite() {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber",
+                "finite",
+                "",
+                "a finite number",
+            ));
+        }
         Ok(Self(value))
     }
 

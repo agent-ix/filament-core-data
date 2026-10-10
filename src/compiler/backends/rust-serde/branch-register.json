@@ -11,11 +11,11 @@
 	],
 	"contributions": {
 		"diagnostics.mjs": 21,
-		"mapping-table.json": 70,
+		"mapping-table.json": 72,
 		"names.mjs": 10,
-		"src/compiler/ir/applicability.mjs": 45
+		"src/compiler/ir/applicability.mjs": 55
 	},
-	"rowCount": 146,
+	"rowCount": 158,
 	"unmetCount": 0,
 	"unreachableCount": 1,
 	"rows": [
@@ -69,6 +69,24 @@
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
 			"construct": "the keyword `enumValues` lowered onto a duration subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:enumValues/float32",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `enumValues` lowered onto a float32 subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:enumValues/float64",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `enumValues` lowered onto a float64 subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -146,6 +164,24 @@
 			]
 		},
 		{
+			"branchId": "constraint:exclusiveMax/float32",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `exclusiveMax` lowered onto a float32 subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:exclusiveMax/float64",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `exclusiveMax` lowered onto a float64 subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
 			"branchId": "constraint:exclusiveMax/integer",
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
@@ -195,6 +231,24 @@
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
 			"construct": "the keyword `exclusiveMin` lowered onto a duration subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:exclusiveMin/float32",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `exclusiveMin` lowered onto a float32 subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:exclusiveMin/float64",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `exclusiveMin` lowered onto a float64 subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -258,6 +312,24 @@
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
 			"construct": "the keyword `max` lowered onto a duration subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:max/float32",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `max` lowered onto a float32 subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:max/float64",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `max` lowered onto a float64 subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -330,6 +402,24 @@
 			"axis": "constraint",
 			"vocabulary": "src/compiler/ir/applicability.mjs",
 			"construct": "the keyword `min` lowered onto a duration subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:min/float32",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `min` lowered onto a float32 subject",
+			"cases": [
+				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"branchId": "constraint:min/float64",
+			"axis": "constraint",
+			"vocabulary": "src/compiler/ir/applicability.mjs",
+			"construct": "the keyword `min` lowered onto a float64 subject",
 			"cases": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
 			]
@@ -1108,6 +1198,24 @@
 			"axis": "scalar",
 			"vocabulary": "mapping-table.json",
 			"construct": "Duration",
+			"cases": [
+				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
+			]
+		},
+		{
+			"branchId": "scalar:float32",
+			"axis": "scalar",
+			"vocabulary": "mapping-table.json",
+			"construct": "f32",
+			"cases": [
+				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
+			]
+		},
+		{
+			"branchId": "scalar:float64",
+			"axis": "scalar",
+			"vocabulary": "mapping-table.json",
+			"construct": "f64",
 			"cases": [
 				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
 			]

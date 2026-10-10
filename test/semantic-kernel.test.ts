@@ -323,6 +323,21 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 		expect(result.files.map((f) => f.path).sort()).toContain("types.ts");
 	});
 
+	// The numeric migration moved decimal comparison into the shared generated
+	// error runtime. Keeping one declaration in the committed package catches a
+	// stale rebase artifact before an independent TypeScript consumer reports a
+	// less local duplicate implementation error.
+	it("keeps one shared decimal comparator in the generated error runtime", () => {
+		const errors = readFileSync(
+			resolve(root, "packages/semantic-kernel/typescript/errors.ts"),
+			"utf8",
+		);
+		expect([
+			...errors.matchAll(/^export function compareDecimal\(/gm),
+		]).toHaveLength(1);
+		expect(errors).not.toMatch(/^function compareDecimal\(/m);
+	});
+
 	// TC-1047 — the Rust target generates, and the resolved name is the finding.
 	it("resolves the Rust name collision without moving the reserved identifier", () => {
 		const written = new Map<string, string>();

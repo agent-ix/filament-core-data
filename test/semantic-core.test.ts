@@ -4,21 +4,21 @@ import {
 	existsSync,
 	mkdirSync,
 	mkdtempSync,
-	readFileSync,
 	readdirSync,
+	readFileSync,
 	rmSync,
 	writeFileSync,
 } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
-import { NodeHost, compile, navigateProgram } from "@typespec/compiler";
+import type { Program } from "@typespec/compiler";
+import { compile, NodeHost, navigateProgram } from "@typespec/compiler";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
-import { readDeclarations } from "./semantic-core-reader";
+import { describe, expect, it } from "vitest";
 import { type Instance, lower } from "./semantic-core-lowerer";
+import { readDeclarations } from "./semantic-core-reader";
 import { normalize, readSemanticIr } from "./semantic-ir-v1-1-reader";
-import type { Program } from "@typespec/compiler";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const packageRoot = resolve(root, "packages/semantic-core");
@@ -736,6 +736,8 @@ describe("FR-032 kernel scalar table and FR-031 grammar reader (Task-044)", () =
 			"Bytes",
 			"Decimal",
 			"Duration",
+			"Float32",
+			"Float64",
 			"Integer",
 			"JsonObject",
 			"String",
@@ -746,6 +748,8 @@ describe("FR-032 kernel scalar table and FR-031 grammar reader (Task-044)", () =
 			"boolean",
 			"integer",
 			"decimal",
+			"float32",
+			"float64",
 			"number",
 			"string",
 			"bytes",
@@ -937,7 +941,7 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 		);
 		expect(constraint).toMatchObject({
 			keyword: "min",
-			operands: { value: 1 },
+			operands: { value: "1" },
 			appliesTo: alias.identity,
 			diagnosticCode: "agent-ix.config-service.CONFIGVERSION_VERSIONNUMBER_MIN",
 		});

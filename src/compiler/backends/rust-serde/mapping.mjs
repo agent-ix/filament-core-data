@@ -24,8 +24,8 @@
 
 import {
 	abstractAncestors,
-	adoptDeclaration,
 	admits,
+	adoptDeclaration,
 	bindConstructs,
 	constructOf,
 	declarationOf,
@@ -72,6 +72,8 @@ export const KERNEL_SCALARS = Object.freeze({
 	integer: "i64",
 	number: "f64",
 	decimal: "crate::support::Decimal",
+	float32: "f32",
+	float64: "f64",
 	string: "String",
 	bytes: null,
 	date: "crate::support::Date",
@@ -98,12 +100,71 @@ const NATIVE_SCALARS = new Map([
 	["Boolean", "boolean"],
 	["Integer", "integer"],
 	["Decimal", "decimal"],
+	["Float32", "float32"],
+	["Float64", "float64"],
 	["String", "string"],
 	["Timestamp", "datetime"],
 	["Duration", "duration"],
 	["Bytes", "bytes"],
 	["JsonObject", "any"],
 ]);
+
+const I64_MAX = 2n ** 63n - 1n;
+const I64_MIN = -(2n ** 63n);
+const U64_MAX = 2n ** 64n - 1n;
+const SAFE_INTEGER = 2n ** 53n - 1n;
+
+function integerRustType(definition) {
+	const bounds = integerBounds(definition?.constraints);
+	if (bounds.lower >= I64_MIN && bounds.upper <= I64_MAX) return "i64";
+	if (bounds.lower >= 0n && bounds.upper <= U64_MAX) return "u64";
+	return "i128";
+}
+
+function integerBounds(constraints) {
+	const bounds = { lower: -SAFE_INTEGER, upper: SAFE_INTEGER };
+	let lowerExplicit = false;
+	let upperExplicit = false;
+	for (const constraint of constraints ?? []) {
+		const value = constraint?.operands?.value;
+		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
+			continue;
+		const parsed = BigInt(value);
+		if (constraint.keyword === "min") {
+			bounds.lower =
+				lowerExplicit && bounds.lower > parsed ? bounds.lower : parsed;
+			lowerExplicit = true;
+		}
+		if (constraint.keyword === "exclusiveMin") {
+			const effective = parsed + 1n;
+			bounds.lower =
+				lowerExplicit && bounds.lower > effective ? bounds.lower : effective;
+			lowerExplicit = true;
+		}
+		if (constraint.keyword === "max") {
+			bounds.upper =
+				upperExplicit && bounds.upper < parsed ? bounds.upper : parsed;
+			upperExplicit = true;
+		}
+		if (constraint.keyword === "exclusiveMax") {
+			const effective = parsed - 1n;
+			bounds.upper =
+				upperExplicit && bounds.upper < effective ? bounds.upper : effective;
+			upperExplicit = true;
+		}
+	}
+	return bounds;
+}
+
+function integerIsWide(constraints) {
+	const bounds = integerBounds(constraints);
+	return (
+		bounds.lower < -SAFE_INTEGER ||
+		bounds.lower > SAFE_INTEGER ||
+		bounds.upper < -SAFE_INTEGER ||
+		bounds.upper > SAFE_INTEGER
+	);
+}
 
 function nativeScalar(ref) {
 	if (typeof ref !== "string" || !ref.startsWith(NATIVE_PREFIX))
@@ -460,6 +521,8 @@ function bindAbstractSupertypes(models, raise) {
 /** Resolves a `typeRef` through alias definitions to a kind and a scalar. */
 export function resolveKind(byIdentity, typeRef, seen = new Set()) {
 	if (typeof typeRef !== "string" || seen.has(typeRef)) return undefined;
+	const scalar = nativeScalar(typeRef);
+	if (scalar !== undefined) return { kind: "scalar", scalar };
 	const definition = byIdentity.get(typeRef);
 	if (definition === undefined) return undefined;
 	seen.add(typeRef);
@@ -470,6 +533,22 @@ export function resolveKind(byIdentity, typeRef, seen = new Set()) {
 		scalar:
 			typeof definition.scalar === "string" ? definition.scalar : undefined,
 	};
+}
+
+/** Returns constraints inherited through an alias chain, base first. */
+function constraintsThroughAliases(byIdentity, typeRef) {
+	const chain = [];
+	const seen = new Set();
+	let current = typeRef;
+	while (typeof current === "string" && !seen.has(current)) {
+		seen.add(current);
+		const definition = byIdentity.get(current);
+		if (definition === undefined) break;
+		chain.unshift(...(definition.constraints ?? []));
+		if (definition.kind !== "alias") break;
+		current = definition.target;
+	}
+	return chain;
 }
 
 /** Resolves a decimal policy carried by a scalar or inherited through aliases. */
@@ -539,7 +618,15 @@ function mapType(definition, context) {
 	typeScope.push({ identifier: resolvedName.value, identity });
 
 	const resolved = resolveKind(byIdentity, identity);
-	const lowered = lowerConstraints(definition, resolved, {});
+	const inheritedConstraints =
+		definition.kind === "alias"
+			? constraintsThroughAliases(byIdentity, identity)
+			: (definition.constraints ?? []);
+	const lowered = lowerConstraints(
+		{ ...definition, constraints: inheritedConstraints },
+		resolved,
+		{},
+	);
 	for (const entry of lowered.diagnostics) {
 		if (entry.locus === undefined && locus !== undefined) entry.locus = locus;
 	}
@@ -610,7 +697,12 @@ function mapType(definition, context) {
 			}
 			model.scalar = scalar;
 			if (scalar === "decimal") model.decimal = definition.decimal;
-			model.inner = KERNEL_SCALARS[scalar];
+			model.inner =
+				scalar === "integer"
+					? integerRustType({ constraints: inheritedConstraints })
+					: KERNEL_SCALARS[scalar];
+			model.wideInteger =
+				scalar === "integer" && integerIsWide(inheritedConstraints);
 			model.row = `scalar:${scalar}`;
 			break;
 		}
@@ -630,7 +722,11 @@ function mapType(definition, context) {
 			model.fields = [];
 			for (const field of definition.fields ?? []) {
 				const mapped = mapField(field, definition, context, version);
-				if (mapped !== undefined) model.fields.push(mapped);
+				if (mapped !== undefined) {
+					model.fields.push(mapped);
+					model.diagnostics.push(...(mapped.diagnostics ?? []));
+					delete mapped.diagnostics;
+				}
 			}
 			const memberScope = model.fields.map((field) => ({
 				identifier: field.ident,
@@ -779,11 +875,18 @@ function mapType(definition, context) {
 			const resolvedAlias = resolveKind(context.byIdentity, identity);
 			model.scalar = resolvedAlias?.scalar;
 			model.decimal = decimalPolicyOf(context.byIdentity, identity);
-			model.inner = target(
-				definition.target,
-				`${identity}#target`,
-				"alias target",
-			);
+			if (resolvedAlias?.scalar === "integer") {
+				model.inner = integerRustType({
+					constraints: inheritedConstraints,
+				});
+				model.wideInteger = integerIsWide(inheritedConstraints);
+			} else {
+				model.inner = target(
+					definition.target,
+					`${identity}#target`,
+					"alias target",
+				);
+			}
 			if (model.inner === undefined) return undefined;
 			break;
 		}
@@ -1003,7 +1106,7 @@ function mapMethod(operation, owner, context, version) {
 	};
 }
 
-function mapField(field, owner, context, version) {
+function mapField(field, owner, context, _version) {
 	const { raise, graph } = context;
 	const locus = field.origin?.source ?? owner.origin?.source;
 	// fcd#179: 2.0.0 is the only contract, and its schema requires
@@ -1035,14 +1138,56 @@ function mapField(field, owner, context, version) {
 	const nullable = field.nullable === true;
 	const optional = multiplicity.lower === 0;
 
-	const element = referenceTo(
+	const resolvedField = resolveKind(context.byIdentity, field.typeRef) ?? {
+		kind: "scalar",
+		scalar: nativeScalar(field.typeRef),
+	};
+	let wrapperDepth = 0;
+	let wrapperRef = field.typeRef;
+	const wrapperSeen = new Set();
+	while (typeof wrapperRef === "string" && !wrapperSeen.has(wrapperRef)) {
+		wrapperSeen.add(wrapperRef);
+		const wrapper = context.byIdentity.get(wrapperRef);
+		if (wrapper?.kind !== "alias") break;
+		wrapperDepth += 1;
+		wrapperRef = wrapper.target;
+	}
+	const inheritedFieldConstraints = constraintsThroughAliases(
+		context.byIdentity,
 		field.typeRef,
-		`${field.identity}#typeRef`,
-		"field typeRef",
-		owner,
-		context,
 	);
+	const loweredField = lowerConstraints(
+		{
+			identity: field.identity,
+			constraints: [...inheritedFieldConstraints, ...(field.constraints ?? [])],
+		},
+		resolvedField,
+		{},
+	);
+	const integerFieldType =
+		resolvedField?.scalar === "integer" &&
+		Array.isArray(field.constraints) &&
+		field.constraints.length > 0
+			? integerRustType({
+					constraints: [...inheritedFieldConstraints, ...field.constraints],
+				})
+			: undefined;
+	const element =
+		integerFieldType ??
+		referenceTo(
+			field.typeRef,
+			`${field.identity}#typeRef`,
+			"field typeRef",
+			owner,
+			context,
+		);
 	if (element === undefined) return undefined;
+	if (
+		context.byIdentity.get(wrapperRef)?.kind === "scalar" &&
+		element.startsWith("crate::") &&
+		!element.startsWith("crate::support::")
+	)
+		wrapperDepth = resolvedField?.scalar === "integer" ? 1 : wrapperDepth + 1;
 
 	let rustType = element;
 	if (nullable) rustType = `crate::support::Nullable<${rustType}>`;
@@ -1053,11 +1198,43 @@ function mapField(field, owner, context, version) {
 	if (optional) {
 		serdeAttributes.push("default");
 		serdeAttributes.push('skip_serializing_if = "Option::is_none"');
-		if (nullable) {
-			serdeAttributes.push(
-				'deserialize_with = "crate::support::present_or_absent"',
-			);
-		}
+	}
+	// A native integer with an effective range outside JSON's exact number
+	// interval has no generated newtype to carry its wire adapter.  Attach the
+	// fixed support adapter at the record field so scalar and collection forms
+	// reject numeric JSON and preserve the canonical decimal string.
+	const nativeInteger = nativeScalar(field.typeRef) === "integer";
+	const wideNativeInteger =
+		nativeInteger &&
+		integerIsWide([...inheritedFieldConstraints, ...(field.constraints ?? [])]);
+	const nativeIntegerType =
+		nativeInteger &&
+		integerRustType({
+			constraints: [...inheritedFieldConstraints, ...(field.constraints ?? [])],
+		});
+	if (optional && nullable && !wideNativeInteger) {
+		serdeAttributes.push(
+			'deserialize_with = "crate::support::present_or_absent"',
+		);
+	}
+	if (wideNativeInteger) {
+		const moduleName =
+			optional && nullable
+				? collection
+					? "wide_option_vec_nullable"
+					: "wide_option_nullable"
+				: optional
+					? collection
+						? "wide_option_vec"
+						: "wide_option"
+					: nullable
+						? collection
+							? "wide_vec_nullable"
+							: "wide_nullable"
+						: collection
+							? `wide_vec_${nativeIntegerType}`
+							: `wide_${nativeIntegerType}`;
+		serdeAttributes.push(`with = "crate::support::${moduleName}"`);
 	}
 
 	const row = `field:${collection ? "collection" : "single"}/${nullable ? "nullable" : "non-null"}/${optional ? "optional" : "required"}`;
@@ -1073,6 +1250,21 @@ function mapField(field, owner, context, version) {
 		elementScalar:
 			resolveKind(context.byIdentity, field.typeRef)?.scalar ??
 			nativeScalar(field.typeRef),
+		wrapperDepth,
+		elementInner:
+			resolvedField?.scalar === "integer"
+				? integerRustType({
+						constraints: [
+							...inheritedFieldConstraints,
+							...(field.constraints ?? []),
+						],
+					})
+				: resolvedField?.scalar === "float32"
+					? "f32"
+					: resolvedField?.scalar === "float64" ||
+							resolvedField?.scalar === "number"
+						? "f64"
+						: undefined,
 		decimal:
 			decimalPolicyOf(context.byIdentity, field.typeRef) ?? field.decimal,
 		rustType,
@@ -1085,6 +1277,8 @@ function mapField(field, owner, context, version) {
 		defaultKind: field.defaultKind,
 		defaultValue: field.defaultValue,
 		boxed: graph.boxed.has(`${field.identity}#typeRef`),
+		checks: loweredField.checks,
+		diagnostics: loweredField.diagnostics,
 		row,
 		doc: docParts(field, {
 			fallbackIdentity: field.identity,

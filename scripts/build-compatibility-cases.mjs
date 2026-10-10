@@ -391,7 +391,7 @@ const BUILDERS = {
 	},
 	"type-domain-widening": () => {
 		const next = clone(base());
-		typeOf(next, "Seconds").scalar = "number";
+		typeOf(next, "Seconds").scalar = "float64";
 		return { old: base(), new: next };
 	},
 	"union-variant-removal": () => {

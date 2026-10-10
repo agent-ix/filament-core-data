@@ -11,6 +11,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import Ajv2020 from "ajv/dist/2020.js";
 import { expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
 import { emitCrate } from "../src/compiler/backends/rust-serde/crate.mjs";
@@ -19,6 +20,16 @@ import {
 	renderErrors,
 	renderValidators,
 } from "../src/compiler/backends/typescript-v1/validators.mjs";
+import { readContractIr } from "../src/compiler/ir/reader.mjs";
+
+const oracle = (await import(
+	/* @vite-ignore */ resolve(
+		import.meta.dirname,
+		"../conformance/oracle/oracle.mjs",
+	)
+)) as unknown as {
+	verdict: (ir: unknown, options: unknown[]) => unknown;
+};
 
 const PACKAGE = "ix://agent-ix/exact-numeric";
 const type = (name: string) => `${PACKAGE}/type/${name}`;
@@ -287,6 +298,311 @@ function numericIr(): any {
 	};
 }
 
+/**
+ * Rust serde's field-check matrix.  The generated crate below is compiled by
+ * the Rust boundary test, so every shape in this record is checked by rustc:
+ * native and named scalar values, collections, nullable values, optional
+ * values, and a semantic default.
+ */
+function wrapperFieldMatrixIr(): any {
+	const ir = structuredClone(numericIr());
+	const namedText = {
+		identity: type("NamedText"),
+		displayName: "NamedText",
+		kind: "scalar",
+		scalar: "string",
+		constraints: [],
+		extensions: [],
+	};
+	const namedDecimal = {
+		identity: type("NamedDecimal"),
+		displayName: "NamedDecimal",
+		kind: "scalar",
+		scalar: "decimal",
+		decimal: { precision: 5, scale: 2 },
+		constraints: [],
+		extensions: [],
+	};
+	const fieldIdentity = (name: string) =>
+		type(`WrapperFieldMatrix-field-${name}`);
+	const minLength = (identity: string) => ({
+		identity: `${identity}-minLength`,
+		keyword: "minLength",
+		operands: { value: 1 },
+		appliesTo: identity,
+		diagnosticCode: "agent-ix.exact-numeric.WRAPPER_MIN_LENGTH",
+	});
+	const minDecimal = (identity: string) => ({
+		identity: `${identity}-min`,
+		keyword: "min",
+		operands: { value: "0.1" },
+		appliesTo: identity,
+		diagnosticCode: "agent-ix.exact-numeric.WRAPPER_MIN_DECIMAL",
+	});
+	const field = (
+		name: string,
+		typeRef: string,
+		multiplicity: {
+			lower: number;
+			upper?: number;
+			ordered: boolean;
+			unique: boolean;
+		},
+		nullable: boolean,
+		constraints: unknown[] = [],
+		defaultValue?: unknown,
+	) => ({
+		identity: fieldIdentity(name),
+		name,
+		typeRef,
+		constraints,
+		presence: multiplicity.lower === 0 ? "optional" : "required",
+		nullable,
+		multiplicity,
+		...(defaultValue === undefined
+			? { defaultKind: "none" }
+			: { defaultKind: "semantic", defaultValue }),
+		extensions: [],
+	});
+	const matrix = {
+		identity: type("WrapperFieldMatrix"),
+		displayName: "WrapperFieldMatrix",
+		kind: "record",
+		unknownPolicy: "reject",
+		fields: [
+			field(
+				"native_scalar",
+				"ix://quire/native/String",
+				{ lower: 1, upper: 1, ordered: false, unique: false },
+				false,
+				[],
+			),
+			field(
+				"native_collection",
+				"ix://quire/native/String",
+				{ lower: 1, upper: 3, ordered: true, unique: false },
+				false,
+				[],
+			),
+			field(
+				"required_text",
+				namedText.identity,
+				{ lower: 1, upper: 1, ordered: false, unique: false },
+				false,
+				[minLength(fieldIdentity("required_text"))],
+			),
+			field(
+				"optional_text",
+				namedText.identity,
+				{ lower: 0, upper: 1, ordered: false, unique: false },
+				false,
+				[minLength(fieldIdentity("optional_text"))],
+			),
+			field(
+				"nullable_text",
+				namedText.identity,
+				{ lower: 1, upper: 1, ordered: false, unique: false },
+				true,
+				[minLength(fieldIdentity("nullable_text"))],
+			),
+			field(
+				"text_items",
+				namedText.identity,
+				{ lower: 1, upper: 3, ordered: true, unique: false },
+				false,
+				[minLength(fieldIdentity("text_items"))],
+			),
+			field(
+				"nullable_decimal",
+				namedDecimal.identity,
+				{ lower: 0, upper: 1, ordered: false, unique: false },
+				true,
+				[minDecimal(fieldIdentity("nullable_decimal"))],
+			),
+			field(
+				"optional_decimal_items",
+				namedDecimal.identity,
+				{ lower: 0, upper: 3, ordered: true, unique: false },
+				true,
+				[minDecimal(fieldIdentity("optional_decimal_items"))],
+			),
+			field(
+				"required_default",
+				namedText.identity,
+				{ lower: 1, upper: 1, ordered: false, unique: false },
+				false,
+				[],
+				"hello",
+			),
+		],
+		extensions: [],
+	};
+	ir.types.push(namedText, namedDecimal, matrix);
+	const origin = ir.source;
+	for (const definition of [namedText, namedDecimal, matrix] as any[]) {
+		definition.roles = [];
+		definition.constraints ??= [];
+		definition.unknownPolicy ??= "reject";
+		definition.origin = {
+			source: {
+				sourceIdentity: origin.identity,
+				path: "numeric.json",
+				startLine: 1,
+				startColumn: 1,
+			},
+		};
+		for (const one of definition.fields ?? []) {
+			one.origin = definition.origin;
+			for (const constraint of one.constraints ?? [])
+				constraint.origin = definition.origin;
+		}
+	}
+	return ir;
+}
+
+/**
+ * The admitted scalar feature matrix used by all three code generators.  The
+ * Rust test compiles this document, the TypeScript test runs tsc over it, and
+ * the JSON Schema test asks Ajv to compile and validate every emitted schema.
+ */
+function featureFieldMatrixIr(): any {
+	const ir = structuredClone(numericIr());
+	const scalar = (
+		name: string,
+		kind: string,
+		extra: Record<string, unknown> = {},
+	) => ({
+		identity: type(name),
+		displayName: name,
+		kind: "scalar",
+		scalar: kind,
+		constraints: [],
+		extensions: [],
+		...extra,
+	});
+	const float32 = scalar("Float32Value", "float32");
+	const float64 = scalar("Float64Value", "float64");
+	const boundedInteger = scalar("BoundedInteger", "integer", {
+		constraints: [
+			{
+				identity: type("BoundedInteger-min"),
+				keyword: "min",
+				operands: { value: "-10" },
+				appliesTo: type("BoundedInteger"),
+				diagnosticCode: "agent-ix.exact-numeric.BOUNDED_INTEGER_MIN",
+			},
+			{
+				identity: type("BoundedInteger-max"),
+				keyword: "max",
+				operands: { value: "100" },
+				appliesTo: type("BoundedInteger"),
+				diagnosticCode: "agent-ix.exact-numeric.BOUNDED_INTEGER_MAX",
+			},
+		],
+	});
+	const integerEnum = {
+		identity: type("IntegerEnum"),
+		displayName: "IntegerEnum",
+		kind: "scalar",
+		scalar: "integer",
+		constraints: [
+			{
+				identity: type("IntegerEnum-values"),
+				keyword: "enumValues",
+				operands: { values: ["1", "2", "100"] },
+				appliesTo: type("IntegerEnum"),
+				diagnosticCode: "agent-ix.exact-numeric.INTEGER_ENUM",
+			},
+		],
+		extensions: [],
+	};
+	const field = (
+		name: string,
+		typeRef: string,
+		lower: number,
+		upper: number | undefined,
+		nullable = false,
+		defaultValue?: unknown,
+	) => ({
+		identity: type(`FeatureFieldMatrix-field-${name}`),
+		name,
+		typeRef,
+		constraints: [],
+		presence: lower === 0 ? "optional" : "required",
+		nullable,
+		multiplicity: {
+			lower,
+			...(upper === undefined ? {} : { upper }),
+			ordered: upper !== 1,
+			unique: false,
+		},
+		...(defaultValue === undefined
+			? { defaultKind: "none" }
+			: { defaultKind: "semantic", defaultValue }),
+		extensions: [],
+	});
+	const matrix = {
+		identity: type("FeatureFieldMatrix"),
+		displayName: "FeatureFieldMatrix",
+		kind: "record",
+		unknownPolicy: "reject",
+		fields: [
+			field("float32_scalar", "ix://quire/native/Float32", 1, 1),
+			field("float64_collection", "ix://quire/native/Float64", 1, 2),
+			field("float32_named_nullable", float32.identity, 0, 1, true),
+			field("float64_named_collection", float64.identity, 1, 2),
+			field("bounded_integer", boundedInteger.identity, 1, 1),
+			field("integer_enum", integerEnum.identity, 1, 2),
+			field("integer_default", boundedInteger.identity, 1, 1, false, "1"),
+		],
+		extensions: [],
+	};
+	ir.types.push(float32, float64, boundedInteger, integerEnum, matrix);
+	const origin = ir.source;
+	for (const definition of [
+		float32,
+		float64,
+		boundedInteger,
+		integerEnum,
+		matrix,
+	] as any[]) {
+		definition.roles = [];
+		definition.constraints ??= [];
+		definition.unknownPolicy ??= "reject";
+		definition.origin = {
+			source: {
+				sourceIdentity: origin.identity,
+				path: "numeric.json",
+				startLine: 1,
+				startColumn: 1,
+			},
+		};
+		for (const constraint of definition.constraints ?? [])
+			constraint.origin = definition.origin;
+		for (const one of definition.fields ?? []) {
+			one.origin = definition.origin;
+			for (const constraint of one.constraints ?? [])
+				constraint.origin = definition.origin;
+		}
+	}
+	return ir;
+}
+
+function featureOnlyIr(): any {
+	const ir = featureFieldMatrixIr();
+	const names = new Set([
+		"Float32Value",
+		"Float64Value",
+		"BoundedInteger",
+		"IntegerEnum",
+		"FeatureFieldMatrix",
+	]);
+	ir.types = ir.types.filter((definition: { displayName?: string }) =>
+		names.has(definition.displayName ?? ""),
+	);
+	return ir;
+}
+
 function jsonSafeIr() {
 	const ir = structuredClone(numericIr());
 	ir.types = ir.types.filter(
@@ -334,11 +650,14 @@ function filesUnder(directory: string): string[] {
 	});
 }
 
-async function generatedNumericValidators(directory: string) {
+async function generatedNumericValidators(
+	directory: string,
+	ir = typescriptSafeIr(),
+) {
 	const generated = resolve(directory, "generated");
 	const compiled = resolve(directory, "compiled");
 	const irPath = resolve(directory, "numeric.json");
-	writeFileSync(irPath, `${JSON.stringify(typescriptSafeIr())}\n`, "utf8");
+	writeFileSync(irPath, `${JSON.stringify(ir)}\n`, "utf8");
 	const generator = resolve("src/compiler/cli.mjs");
 	const tsc = resolve("node_modules/.bin/tsc");
 	execFileSync(
@@ -380,22 +699,22 @@ async function generatedNumericValidators(directory: string) {
 it("renders decimal equality and uniqueness checks in the generated validator", () => {
 	const model = buildModel(numericIr() as never);
 	const source = `${renderErrors()}\n${renderValidators(model)}`;
-	expect(source).toContain("compareDecimal(member, candidate) === 0");
+	expect(source).toContain("compareDecimal(enumMember, candidate) === 0");
 	expect(source).toContain("isUniqueDecimalCollection(candidate)");
 	expect(source).toContain("const scale = Math.max(a.scale, b.scale);");
 	expect(source).toContain(
 		'const normalizedFraction = fraction.replace(/0+$/, "")',
 	);
 	expect(source).toContain(
-		'["1.1"].some((member) => compareDecimal(member, candidate) === 0)',
+		'["1.1"].some((enumMember) => compareDecimal(enumMember, candidate) === 0)',
 	);
 });
 
-/** Traces: FR-144-AC-13, FR-144-AC-17, FR-144-AC-19. */
+/** Trace: FR-144-AC-4, FR-144-AC-13, FR-144-AC-17, FR-144-AC-18, FR-144-AC-19. */
 it("executes Rust decimal read/write boundaries", () => {
 	const result = emitCrate(
 		{
-			ir: numericIr(),
+			ir: wrapperFieldMatrixIr(),
 			outputRoot: "generated/rust",
 			limits: RUST_LIMITS,
 		} as never,
@@ -435,7 +754,7 @@ it("executes Rust decimal read/write boundaries", () => {
 use agent_ix_exact_numeric::{
     DecimalAlias, DecimalBounded, DecimalEnum, DecimalList, DeepDecimalAlias,
     DirectDecimalCollection, NestedDecimalRoutes, NullableDecimalCollection,
-    RuntimeNumeric,
+    RuntimeNumeric, WrapperFieldMatrix,
 };
 
 #[test]
@@ -492,6 +811,21 @@ fn decimal_boundaries_round_trip() {
         r#"{"items":["1234.1"]}"#,
     ).is_err());
 }
+
+#[test]
+fn field_check_matrix_compiles_and_validates() {
+    let valid: WrapperFieldMatrix = serde_json::from_str(
+        r#"{"native_scalar":"ok","native_collection":["ok"],"required_text":"ok","nullable_text":null,"text_items":["ok"],"nullable_decimal":"0.10","optional_decimal_items":[null,"0.10"],"required_default":"hello"}"#,
+    ).unwrap();
+    let wire = serde_json::to_string(&valid).unwrap();
+    assert!(wire.contains(r#""required_text":"ok""#));
+    assert!(serde_json::from_str::<WrapperFieldMatrix>(
+        r#"{"native_scalar":"ok","native_collection":["ok"],"required_text":"","nullable_text":null,"text_items":["ok"],"required_default":"hello"}"#,
+    ).is_err());
+    assert!(serde_json::from_str::<WrapperFieldMatrix>(
+        r#"{"native_scalar":"ok","native_collection":["ok"],"required_text":"ok","nullable_text":null,"text_items":[""],"required_default":"hello"}"#,
+    ).is_err());
+}
 `,
 			"utf8",
 		);
@@ -512,7 +846,63 @@ fn decimal_boundaries_round_trip() {
 	}
 });
 
-/** Traces: FR-144-AC-15, FR-144-AC-19. */
+/** Traces: TC-1826; FR-144-AC-3, FR-144-AC-7, FR-144-AC-13, FR-144-AC-18. */
+it("compiles the float, bounded-integer, enum, and default Rust field matrix", () => {
+	const result = emitCrate(
+		{
+			ir: featureFieldMatrixIr(),
+			outputRoot: "generated/rust",
+			limits: RUST_LIMITS,
+		} as never,
+		{ licenseText: "" },
+	);
+	expect(result.diagnostics.filter((one) => one.blocking)).toEqual([]);
+	const scratch = mkdtempSync(join(tmpdir(), "fcd-feature-matrix-rust-"));
+	try {
+		for (const [path, text] of result.files) {
+			const destination = join(scratch, path);
+			mkdirSync(resolve(destination, ".."), { recursive: true });
+			writeFileSync(destination, text, "utf8");
+		}
+		appendFileSync(
+			join(scratch, "Cargo.toml"),
+			'\n[dev-dependencies]\nserde_json = "1.0.145"\n',
+		);
+		mkdirSync(join(scratch, "tests"), { recursive: true });
+		writeFileSync(
+			join(scratch, "tests", "feature_matrix.rs"),
+			`#![allow(missing_docs)]
+
+use agent_ix_exact_numeric::FeatureFieldMatrix;
+
+#[test]
+fn every_feature_shape_deserializes_and_defaults() {
+    let value: FeatureFieldMatrix = serde_json::from_str(
+        r#"{"float32_scalar":1.5,"float64_collection":[2.0],"float32_named_nullable":null,"float64_named_collection":[3.5],"bounded_integer":1,"integer_enum":[1,2]}"#,
+    ).unwrap();
+    assert!(serde_json::to_string(&value).unwrap().contains("float32_scalar"));
+}
+`,
+			"utf8",
+		);
+		execFileSync(
+			"cargo",
+			[
+				"test",
+				"--offline",
+				"--manifest-path",
+				join(scratch, "Cargo.toml"),
+				"--test",
+				"feature_matrix",
+			],
+			{ cwd: scratch, stdio: "pipe", env: process.env },
+		);
+	} finally {
+		rmSync(scratch, { recursive: true, force: true });
+	}
+});
+
+/** Trace: FR-144-AC-3, FR-144-AC-15, FR-144-AC-18, FR-144-AC-19. */
 it("executes decimal enum equality and unique collection rejection", async () => {
 	const scratch = mkdtempSync(join(tmpdir(), "fcd-exact-numeric-ts-"));
 	try {
@@ -532,8 +922,141 @@ it("executes decimal enum equality and unique collection rejection", async () =>
 	}
 });
 
-/** Traces: FR-144-AC-15, FR-144-AC-19. */
+/** Trace: FR-144-AC-1, FR-144-AC-7, FR-144-AC-14, FR-144-AC-15, FR-144-AC-17, FR-144-AC-18. */
+it("typechecks the float, bounded-integer, enum, and default TypeScript matrix", async () => {
+	const scratch = mkdtempSync(join(tmpdir(), "fcd-feature-matrix-ts-"));
+	try {
+		const generated = await generatedNumericValidators(
+			scratch,
+			featureOnlyIr(),
+		);
+		const validate = generated.validateFeatureFieldMatrix as (
+			value: unknown,
+		) => {
+			ok: boolean;
+			value?: unknown;
+		};
+		expect(validate).toBeTypeOf("function");
+		const bounded = generated.validateBoundedInteger as (value: unknown) => {
+			ok: boolean;
+		};
+		const enumValue = generated.validateIntegerEnum as (value: unknown) => {
+			ok: boolean;
+		};
+		expect(bounded(1).ok).toBe(true);
+		expect(bounded(-11).ok).toBe(false);
+		expect(enumValue(1).ok).toBe(true);
+		expect(enumValue(3).ok).toBe(false);
+		expect(validate({}).ok).toBe(false);
+		const float32 = generated.validateFloat32Value as (value: unknown) => {
+			ok: boolean;
+		};
+		expect(float32(0.1).ok).toBe(true);
+		expect(float32(3.5e38).ok).toBe(false);
+	} finally {
+		rmSync(scratch, { recursive: true, force: true });
+	}
+});
+
+/** Trace: FR-144-AC-14. */
+it("typechecks the wide-integer TypeScript wire validator", async () => {
+	const scratch = mkdtempSync(join(tmpdir(), "fcd-wide-integer-ts-"));
+	try {
+		const wideIr = structuredClone(numericIr());
+		wideIr.types.push({
+			identity: type("WideInteger"),
+			displayName: "WideInteger",
+			kind: "scalar",
+			scalar: "integer",
+			constraints: [
+				{
+					identity: type("WideInteger-max"),
+					keyword: "max",
+					operands: { value: "9007199254740993" },
+					appliesTo: type("WideInteger"),
+					diagnosticCode: "agent-ix.exact-numeric.WIDE_INTEGER_MAX",
+					origin: wideIr.types[0].origin,
+				},
+			],
+			origin: wideIr.types[0].origin,
+			roles: [],
+			unknownPolicy: "reject",
+			extensions: [],
+		});
+		const wideGenerated = await generatedNumericValidators(scratch, wideIr);
+		expect(
+			(wideGenerated.VALIDATION_CODES as Record<string, string>).NOT_AN_INTEGER,
+		).toBe("agent-ix.typescript-backend.NOT_AN_INTEGER");
+		const validateWide = wideGenerated.validateWideInteger as (
+			value: unknown,
+		) => { ok: boolean; errors: { code: string }[] };
+		expect(validateWide("9007199254740993").ok).toBe(true);
+		expect(validateWide("9007199254740994").errors).toContainEqual(
+			expect.objectContaining({
+				code: "agent-ix.exact-numeric.WIDE_INTEGER_MAX",
+			}),
+		);
+		expect(validateWide(5).errors).toContainEqual(
+			expect.objectContaining({
+				code: "agent-ix.typescript-backend.NOT_AN_INTEGER",
+			}),
+		);
+	} finally {
+		rmSync(scratch, { recursive: true, force: true });
+	}
+});
+
+/** Trace: FR-144-AC-1, FR-144-AC-10, FR-144-AC-15, FR-144-AC-17. */
+it("AJV-compiles the JSON Schema feature matrix and preserves named wrappers", () => {
+	const result = jsonSchemaBackend.generate({
+		ir: featureOnlyIr(),
+	} as never);
+	expect(result.diagnostics.filter((one) => one.blocking)).toEqual([]);
+	const schemas = result.files
+		.filter((file) => file.path !== "index.json")
+		.map((file) => JSON.parse(file.text));
+	const ajv = new Ajv2020({ strict: false });
+	for (const schema of schemas) ajv.addSchema(schema);
+	const matrix = schemas.find(
+		(schema) => schema.title === "FeatureFieldMatrix",
+	);
+	expect(matrix).toBeDefined();
+	if (!matrix) throw new Error("FeatureFieldMatrix schema was not emitted");
+	const validate = ajv.getSchema(matrix.$id);
+	expect(validate).toBeDefined();
+	if (!validate) throw new Error("FeatureFieldMatrix schema did not compile");
+	expect(
+		validate({
+			float32_scalar: 1.5,
+			float64_collection: [2],
+			float32_named_nullable: null,
+			float64_named_collection: [3.5],
+			bounded_integer: 1,
+			integer_enum: [1, 2],
+			integer_default: 1,
+		}),
+	).toBe(true);
+	expect(validate({ float32_scalar: 1.5 })).toBe(false);
+});
+
+/** Trace: FR-144-AC-2, FR-144-AC-13, FR-144-AC-15. */
+it("admits the feature matrix through the semantic reader before generation", () => {
+	expect([...readContractIr(featureFieldMatrixIr())]).toEqual([]);
+});
+
+/** Trace: FR-144-AC-5, FR-144-AC-6, FR-144-AC-15, FR-144-AC-19. */
 it("renders normalized Decimal forms and refuses alias, bound, and native losses", () => {
+	const oracleIr = structuredClone(numericIr());
+	oracleIr.types = oracleIr.types.filter(
+		(type: { displayName: string }) =>
+			type.displayName !== "DirectDecimalCollection",
+	);
+	const oracleResult = oracle.verdict({ ir: oracleIr }, []) as {
+		diagnostics: { diagnostic: { code: string } }[];
+	};
+	expect(
+		oracleResult.diagnostics.map((one) => one.diagnostic.code),
+	).not.toContain("agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE");
 	const scalarIr = structuredClone(numericIr());
 	scalarIr.types = scalarIr.types.filter(
 		(type: { displayName: string }) => type.displayName === "Decimal",
@@ -648,7 +1171,7 @@ it("renders normalized Decimal forms and refuses alias, bound, and native losses
 	expect(sequenceUnique.diagnostics[0].message).toContain("decimal uniqueness");
 });
 
-/** Traces: FR-144-AC-15, FR-144-AC-19. */
+/** Trace: FR-144-AC-15, FR-144-AC-19. */
 it("refuses JSON Schema decimal bounds and decimal unique collections as declared loss", () => {
 	const bounded = structuredClone(jsonSafeIr());
 	const decimal = bounded.types.find(
@@ -675,4 +1198,114 @@ it("refuses JSON Schema decimal bounds and decimal unique collections as declare
 	expect(uniqueResult.state).toBe("unsupported");
 	expect(uniqueResult.files).toEqual([]);
 	expect(uniqueResult.diagnostics[0].message).toContain("decimal uniqueness");
+});
+
+/** Trace: FR-144-AC-1, FR-144-AC-2, FR-144-CON-1. */
+it("compares the Node, Python, and oracle numeric reader verdicts and pointers", async () => {
+	const document = {
+		contractVersion: "2.0.0",
+		types: [
+			{
+				identity: "ix://probe/Integer",
+				kind: "scalar",
+				scalar: "integer",
+				constraints: [
+					{
+						identity: "ix://probe/IntegerMax",
+						keyword: "max",
+						operands: {
+							value: "170141183460469231731687303715884105728",
+						},
+						appliesTo: "ix://probe/Integer",
+						diagnosticCode: "ix://probe/INTEGER_MAX",
+					},
+				],
+			},
+		],
+	};
+	const directory = mkdtempSync(join(tmpdir(), "fcd-reader-differential-"));
+	const path = join(directory, "probe.json");
+	try {
+		writeFileSync(path, `${JSON.stringify(document)}\n`);
+		const node = [...readContractIr(document as never)];
+		const python = JSON.parse(
+			execFileSync("python3", ["tests/semantic_ir_reader.py", "--read", path], {
+				cwd: resolve("."),
+				encoding: "utf8",
+			}),
+		) as { diagnostics: { code: string; message: string; path: string }[] };
+		const oracleResult = oracle.verdict({ ir: document }, []) as {
+			diagnostics: { pointer: string; diagnostic: { code: string } }[];
+		};
+		expect(node).toHaveLength(1);
+		expect(python.diagnostics).toHaveLength(1);
+		expect(oracleResult.diagnostics).toHaveLength(1);
+		expect(node[0].code).toBe(python.diagnostics[0].code);
+		expect(node[0].code).toBe(oracleResult.diagnostics[0].diagnostic.code);
+		expect(node[0].message).toContain("/types/0/constraints/0/operands/value");
+		expect(python.diagnostics[0].path).toBe(
+			"types.0.constraints.0.operands.value",
+		);
+		expect(oracleResult.diagnostics[0].pointer).toBe(
+			"/ir/types/0/constraints/0/operands/value",
+		);
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
+});
+
+/**
+ * FR-144-AC-22: Given the parsed value of a document whose `float64` bound is
+ * `0.1000000000000000000001`, a reader's parsed-value entry point raises no
+ * `INEXACT_NUMBER`, while given the parsed value of a document whose integer
+ * bound is `"01"` it raises `INVALID_OPERAND` at the operand, as the bytes
+ * entry point does.
+ *
+ * Trace: FR-144-AC-22
+ */
+it("keeps parsed numeric values aligned with the byte reader", () => {
+	const floatDocument = {
+		contractVersion: "2.0.0",
+		types: [
+			{
+				identity: "ix://probe/Float64",
+				kind: "scalar",
+				scalar: "float64",
+				constraints: [
+					{
+						identity: "ix://probe/Float64Min",
+						keyword: "min",
+						operands: { value: 0.1000000000000000000001 },
+						appliesTo: "ix://probe/Float64",
+						diagnosticCode: "ix://probe/FLOAT64_MIN",
+					},
+				],
+			},
+		],
+	};
+	const integerDocument = {
+		contractVersion: "2.0.0",
+		types: [
+			{
+				identity: "ix://probe/Integer",
+				kind: "scalar",
+				scalar: "integer",
+				constraints: [
+					{
+						identity: "ix://probe/IntegerMin",
+						keyword: "min",
+						operands: { value: "01" },
+						appliesTo: "ix://probe/Integer",
+						diagnosticCode: "ix://probe/INTEGER_MIN",
+					},
+				],
+			},
+		],
+	};
+	const parsedFloat = [...readContractIr(floatDocument as never)];
+	const parsedInteger = [...readContractIr(integerDocument as never)];
+	expect(parsedFloat).toEqual([]);
+	expect(parsedInteger.map((diagnostic) => diagnostic.code)).toContain(
+		"agent-ix.semantic-ir.INVALID_OPERAND",
+	);
 });

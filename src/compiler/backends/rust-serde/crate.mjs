@@ -33,7 +33,12 @@ import {
 	hasBlocking,
 	RUST_BACKEND_CODES,
 } from "./diagnostics.mjs";
-import { byCodePoint, enforceLimits, mapDocument } from "./mapping.mjs";
+import {
+	byCodePoint,
+	enforceLimits,
+	mapDocument,
+	resolveKind,
+} from "./mapping.mjs";
 import { lowerPattern, PUBLISHED_PATTERNS } from "./patterns.mjs";
 import {
 	atom,
@@ -276,7 +281,12 @@ function subjectAccess(definition, byIdentity) {
 			target.displayName === "Decimal"
 				? "crate::support::Decimal"
 				: undefined;
-		if (targetSupport === undefined) expression = `${expression}.get()`;
+		const flattenedInteger =
+			resolveKind(byIdentity, definition?.identity)?.scalar === "integer";
+		// A scalar declaration maps directly to its primitive inner type. Only
+		// another alias contributes a newtype wrapper and therefore a get().
+		if (targetSupport === undefined && !flattenedInteger)
+			expression = `${expression}.get()`;
 		current = target;
 	}
 	if (current === undefined) return undefined;
@@ -350,7 +360,7 @@ export function emitCrate(request, options = {}) {
 /** The intended-language predicate of FR-057, applied to the output root. */
 export function isTraversalFree(value) {
 	if (value.length === 0) return false;
-	if (/[\u0000\n\r\u2028\u2029]/.test(value)) return false;
+	if (value.includes("\0") || /[\n\r\u2028\u2029]/.test(value)) return false;
 	if (value.includes("\\")) return false;
 	if (value.startsWith("/")) return false;
 	if (/^[A-Za-z]:/.test(value)) return false;
@@ -1298,13 +1308,19 @@ function moduleHeader(type) {
 	return lines;
 }
 
-function checkConstants(type, checks, byIdentity) {
+function checkConstants(
+	type,
+	checks,
+	byIdentity,
+	prefix = type.constantName,
+	subjectType = type,
+) {
 	const lines = [];
 	checks.forEach((check, index) => {
 		if (check.form === "matcher") {
 			lines.push(
 				...renderProgram(
-					`${type.constantName}_PATTERN_${index}`,
+					`${prefix}_PATTERN_${index}`,
 					`The pattern of ${check.identity}, lowered to a matcher program.`,
 					check.program,
 					{ visibility: "", instPath: "crate::support::MatcherInst" },
@@ -1313,28 +1329,32 @@ function checkConstants(type, checks, byIdentity) {
 			);
 		}
 		if (check.form === "enumValues") {
+			const integerType = rustIntegerTypeFor(subjectType);
+			const floatType = String(subjectType.inner ?? "").endsWith("f32")
+				? "f32"
+				: "f64";
 			const rustType =
 				check.scalar === "boolean"
 					? "bool"
 					: check.scalar === "integer"
-						? "i64"
-						: check.scalar === "number"
-							? "f64"
+						? integerType
+						: ["number", "float32", "float64"].includes(check.scalar)
+							? floatType
 							: "&str";
 			const values = check.values.map((value) =>
 				check.scalar === "integer"
-					? `${value}i64`
+					? `${value}${integerType}`
 					: typeof value === "string"
 						? rustString(value)
 						: typeof value === "boolean"
 							? String(value)
-							: renderF64(value),
+							: renderFloat(value, floatType),
 			);
 			lines.push(
 				`/// The values ${check.identity} admits.`,
 				...constItem(
 					"",
-					`${type.constantName}_ENUM_${index}`,
+					`${prefix}_ENUM_${index}`,
 					`&[${rustType}]`,
 					slice(values.map(atom)),
 				),
@@ -1345,8 +1365,21 @@ function checkConstants(type, checks, byIdentity) {
 	return lines;
 }
 
+function rustIntegerTypeFor(type) {
+	const inner = String(type.inner ?? "");
+	if (inner.endsWith("i128")) return "i128";
+	if (inner.endsWith("u64")) return "u64";
+	return "i64";
+}
+
 function renderF64(value) {
 	return Number.isInteger(value) ? `${value}.0f64` : `${value}f64`;
+}
+
+function renderFloat(value, rustType) {
+	return Number.isInteger(value)
+		? `${value}.0${rustType}`
+		: `${value}${rustType}`;
 }
 
 function decimalStringExpression(expression, rustType) {
@@ -1372,7 +1405,16 @@ function decimalCollectionEquality(field) {
  * arguments go through `callLines` so the emitted form is already the one
  * `rustfmt` would choose.
  */
-function renderCheck(type, check, index, expression, subjectScalar) {
+function renderCheck(
+	type,
+	check,
+	index,
+	expression,
+	subjectScalar,
+	prefix = type.constantName,
+	unwrapNamedWrapper = false,
+) {
+	if (isRedundantIntegerBound(type, check)) return [];
 	const identity = rustString(check.identity);
 	const keyword = rustString(check.keyword);
 	const at = rustString("");
@@ -1387,12 +1429,35 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 				: [identity, keyword, at, operand, input],
 			");",
 		);
+	if (isImpossibleIntegerBound(type, check)) {
+		return fail(rustString(String(check.value)));
+	}
 	const lines = [];
+	// A field whose type names a scalar declaration carries that declaration's
+	// newtype, rather than the primitive the constraint operates on.  Field
+	// expressions arrive here after the optional/nullable/collection matches,
+	// so one `get()` reaches the primitive while preserving the expression's
+	// existing borrowing shape.  Native support types expose their string
+	// methods directly and must keep the primitive path below.
+	const wrapperDepth =
+		typeof unwrapNamedWrapper === "number"
+			? unwrapNamedWrapper
+			: unwrapNamedWrapper
+				? 1
+				: 0;
+	let subject = expression;
+	for (let depth = 0; depth < wrapperDepth; depth += 1)
+		subject = `(${subject}).get()`;
 	// A scalar newtype hands its constructor the base by value, so `value` is
 	// already the `i64` or `f64` a numeric comparison needs. An alias reaches its
 	// base through one `get()` per hop, which yields a reference, so the copy is
 	// taken here rather than left for the comparison to fail on.
-	const owned = expression === "value" ? "value" : `(*${expression})`;
+	const owned =
+		wrapperDepth > 0
+			? `*${subject}`
+			: expression === "value" || expression.startsWith("*")
+				? expression
+				: `*${expression}`;
 	const COMPARISONS = {
 		min: "<",
 		max: ">",
@@ -1404,26 +1469,38 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 		case "length": {
 			const comparison = check.keyword === "minLength" ? "<" : ">";
 			lines.push(
-				`            if ${expression}.chars().count() ${comparison} ${check.value}usize {`,
-				...fail(rustString(String(check.value)), `${expression}.as_str()`),
+				`            if ${subject}.chars().count() ${comparison} ${check.value}usize {`,
+				...fail(rustString(String(check.value)), `${subject}.as_str()`),
 				"            }",
 			);
 			break;
 		}
 		case "numeric": {
+			const integerType = rustIntegerTypeFor(type);
+			const integerValue =
+				check.scalar === "integer" ? BigInt(check.value) : undefined;
+			const compareExpression =
+				check.scalar === "integer" &&
+				integerType === "i64" &&
+				(integerValue < -(2n ** 63n) || integerValue > 2n ** 63n - 1n)
+					? `i128::from(${owned})`
+					: owned;
 			const literal =
 				check.scalar === "integer"
-					? `${check.value}i64`
-					: renderF64(check.value);
+					? `${check.value}${(integerType === "i64" && integerValue < -(2n ** 63n)) || (integerType === "i64" && integerValue > 2n ** 63n - 1n) ? "i128" : integerType}`
+					: renderFloat(
+							check.value,
+							subjectScalar === "float32" ? "f32" : "f64",
+						);
 			lines.push(
-				`            if ${owned} ${COMPARISONS[check.keyword]} ${literal} {`,
+				`            if ${compareExpression} ${COMPARISONS[check.keyword]} ${literal} {`,
 				...fail(rustString(String(check.value))),
 				"            }",
 			);
 			break;
 		}
 		case "decimal": {
-			const comparison = `crate::support::decimal_cmp(${expression}.as_str(), ${rustString(check.value)})`;
+			const comparison = `crate::support::decimal_cmp(${subject}.as_str(), ${rustString(check.value)})`;
 			const failure = {
 				min: "Some(std::cmp::Ordering::Less)",
 				max: "Some(std::cmp::Ordering::Greater)",
@@ -1434,7 +1511,7 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 			}[check.keyword];
 			lines.push(
 				`            if matches!(${comparison}, ${failure}) {`,
-				...fail(rustString(check.value), `${expression}.as_str()`),
+				...fail(rustString(check.value), `${subject}.as_str()`),
 				"            }",
 			);
 			break;
@@ -1444,7 +1521,7 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 				check.scalar === "date"
 					? "crate::support::date_instant"
 					: "crate::support::date_time_instant";
-			const head = `            let instant_${index} = ${reader}(${expression}.as_str())`;
+			const head = `            let instant_${index} = ${reader}(${subject}.as_str())`;
 			const opener = `${head}.ok_or_else(|| {`;
 			lines.push(
 				...(opener.length <= MAX_WIDTH
@@ -1460,7 +1537,7 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 						keyword,
 						at,
 						rustString(check.value),
-						`${expression}.as_str()`,
+						`${subject}.as_str()`,
 					],
 					"",
 				),
@@ -1468,47 +1545,47 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 					? "            })?;"
 					: "                })?;",
 				`            if instant_${index} ${COMPARISONS[check.keyword]} ${check.instant.toString()}i128 {`,
-				...fail(rustString(check.value), `${expression}.as_str()`),
+				...fail(rustString(check.value), `${subject}.as_str()`),
 				"            }",
 			);
 			break;
 		}
 		case "matcher": {
-			const program = `${type.constantName}_PATTERN_${index}`;
+			const program = `${prefix}_PATTERN_${index}`;
 			lines.push(
-				`            if crate::support::matches_pattern(${program}, ${expression}.as_str())`,
+				`            if crate::support::matches_pattern(${program}, ${subject}.as_str())`,
 				"                != crate::support::MatchOutcome::Matched",
 				"            {",
-				...fail(rustString(check.regex), `${expression}.as_str()`),
+				...fail(rustString(check.regex), `${subject}.as_str()`),
 				"            }",
 			);
 			break;
 		}
 		case "proved": {
 			lines.push(
-				`            if crate::support::${check.validator}::try_new(${expression}.to_string())`,
+				`            if crate::support::${check.validator}::try_new(${subject}.to_string())`,
 				"                .is_err()",
 				"            {",
-				...fail(rustString(check.regex), `${expression}.as_str()`),
+				...fail(rustString(check.regex), `${subject}.as_str()`),
 				"            }",
 			);
 			break;
 		}
 		case "enumValues": {
-			const constant = `${type.constantName}_ENUM_${index}`;
+			const constant = `${prefix}_ENUM_${index}`;
 			const numeric =
-				["integer", "number"].includes(check.scalar) ||
+				["integer", "number", "float32", "float64"].includes(check.scalar) ||
 				check.scalar === "boolean";
 			if (check.scalar === "decimal") {
 				lines.push(
-					`            if !${constant}.iter().any(|member| matches!(crate::support::decimal_cmp(${expression}.as_str(), member), Some(std::cmp::Ordering::Equal))) {`,
+					`            if !${constant}.iter().any(|member| matches!(crate::support::decimal_cmp(${subject}.as_str(), member), Some(std::cmp::Ordering::Equal))) {`,
 					...fail(rustString(canonicalJson(check.values))),
 					"            }",
 				);
 			} else {
-				const subject = numeric ? owned : `${expression}.as_str()`;
+				const value = numeric ? owned : `${subject}.as_str()`;
 				lines.push(
-					`            if !${constant}.contains(&${subject}) {`,
+					`            if !${constant}.contains(&${value}) {`,
 					...fail(rustString(canonicalJson(check.values))),
 					"            }",
 				);
@@ -1518,8 +1595,8 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 		case "nonEmpty": {
 			const test =
 				check.subject === "string"
-					? `${expression}.chars().count() == 0`
-					: `${expression}.is_empty()`;
+					? `${subject}.chars().count() == 0`
+					: `${subject}.is_empty()`;
 			lines.push(
 				`            if ${test} {`,
 				...fail(rustString("a non-empty value")),
@@ -1561,6 +1638,137 @@ function renderCheck(type, check, index, expression, subjectScalar) {
 }
 
 /**
+ * Primitive Rust integers already enforce their representable endpoints.
+ * Emitting a comparison against those endpoints is rejected by the compiler's
+ * `comparison_is_useless` lint, and cannot add validation beyond the type.
+ */
+function isRedundantIntegerBound(type, check) {
+	if (check.form !== "numeric" || check.scalar !== "integer") return false;
+	const rustType = rustIntegerTypeFor(type);
+	const endpoints = {
+		i64: [-(2n ** 63n), 2n ** 63n - 1n],
+		u64: [0n, 2n ** 64n - 1n],
+		i128: [-(2n ** 127n), 2n ** 127n - 1n],
+	};
+	const boundary = endpoints[rustType];
+	if (boundary === undefined) return false;
+	const value = BigInt(check.value);
+	// A bound outside the primitive's domain cannot reject a value on that
+	// side.  Treat it like the corresponding endpoint check so generated
+	// probes never contain overflowing literals or useless comparisons.
+	return (
+		(check.keyword === "min" && value <= boundary[0]) ||
+		(check.keyword === "exclusiveMin" && value < boundary[0]) ||
+		(check.keyword === "max" && value >= boundary[1]) ||
+		(check.keyword === "exclusiveMax" && value > boundary[1])
+	);
+}
+
+/** A bound beyond the primitive domain admits no value at all. */
+function isImpossibleIntegerBound(type, check) {
+	if (check.form !== "numeric" || check.scalar !== "integer") return false;
+	const rustType = rustIntegerTypeFor(type);
+	const endpoints = {
+		i64: [-(2n ** 63n), 2n ** 63n - 1n],
+		u64: [0n, 2n ** 64n - 1n],
+		i128: [-(2n ** 127n), 2n ** 127n - 1n],
+	};
+	const boundary = endpoints[rustType];
+	if (boundary === undefined) return false;
+	const value = BigInt(check.value);
+	return (
+		(check.keyword === "min" && value > boundary[1]) ||
+		(check.keyword === "exclusiveMin" && value >= boundary[1]) ||
+		(check.keyword === "max" && value < boundary[0]) ||
+		(check.keyword === "exclusiveMax" && value <= boundary[0])
+	);
+}
+
+/** The effective FR-144 safe interval can itself be empty. */
+function impossibleIntegerRangeCheck(checks, type) {
+	if (type !== undefined) {
+		const impossibleBound = (checks ?? []).find((check) =>
+			isImpossibleIntegerBound(type, check),
+		);
+		if (impossibleBound !== undefined) return impossibleBound;
+	}
+	let lower;
+	let upper;
+	let lowerCheck;
+	let upperCheck;
+	for (const check of checks ?? []) {
+		if (check.form !== "numeric" || check.scalar !== "integer") continue;
+		const value = BigInt(check.value);
+		if (check.keyword === "min" && (lower === undefined || value > lower)) {
+			lower = value;
+			lowerCheck = check;
+		}
+		if (
+			check.keyword === "exclusiveMin" &&
+			(lower === undefined || value + 1n > lower)
+		) {
+			lower = value + 1n;
+			lowerCheck = check;
+		}
+		if (check.keyword === "max" && (upper === undefined || value < upper)) {
+			upper = value;
+			upperCheck = check;
+		}
+		if (
+			check.keyword === "exclusiveMax" &&
+			(upper === undefined || value - 1n < upper)
+		) {
+			upper = value - 1n;
+			upperCheck = check;
+		}
+	}
+	// The constructor's impossible-range check is about the native Rust
+	// primitive and explicit authored bounds. FR-144's effective safe-number
+	// defaults are emitted as guards separately; treating an absent side as a
+	// safe-number endpoint here would remove the successful return from valid
+	// wide-integer records such as [min, u64::MAX].
+	return lower !== undefined && upper !== undefined && lower > upper
+		? (lowerCheck ?? upperCheck)
+		: undefined;
+}
+
+function effectiveIntegerRange(checks) {
+	let lower;
+	let upper;
+	let lowerCheck;
+	let upperCheck;
+	for (const check of checks ?? []) {
+		if (check.form !== "numeric" || check.scalar !== "integer") continue;
+		const value = BigInt(check.value);
+		if (
+			(check.keyword === "min" || check.keyword === "exclusiveMin") &&
+			(lower === undefined ||
+				(check.keyword === "min" ? value : value + 1n) > lower)
+		) {
+			lower = check.keyword === "min" ? value : value + 1n;
+			lowerCheck = check;
+		}
+		if (
+			(check.keyword === "max" || check.keyword === "exclusiveMax") &&
+			(upper === undefined ||
+				(check.keyword === "max" ? value : value - 1n) < upper)
+		) {
+			upper = check.keyword === "max" ? value : value - 1n;
+			upperCheck = check;
+		}
+	}
+	if (lower === undefined && upper === undefined) return undefined;
+	return {
+		lower: lower ?? -(2n ** 53n - 1n),
+		upper: upper ?? 2n ** 53n - 1n,
+		lowerExplicit: lower !== undefined,
+		upperExplicit: upper !== undefined,
+		lowerCheck: lowerCheck ?? upperCheck,
+		upperCheck: upperCheck ?? lowerCheck,
+	};
+}
+
+/**
  * `let inner = <T as Deserialize>::deserialize(deserializer)?;`, wrapped the
  * way `rustfmt` wraps it when the mapped inner type is wide.
  */
@@ -1588,15 +1796,22 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 	const expression = access?.expression ?? "value";
 	const checks = type.checks ?? [];
 
-	lines.push("use serde::{Deserialize, Serialize};", "");
+	lines.push(
+		type.wideInteger ? "" : "use serde::{Deserialize, Serialize};",
+		"",
+	);
 	lines.push(...checkConstants(type, checks, byIdentity));
 	lines.push(...docLines(type.doc));
 	lines.push(
 		// A newtype an identity field reaches has `Eq` and `Hash` (FR-054).
 		type.derivesHash === true
-			? "#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize)]"
-			: "#[derive(Clone, Debug, PartialEq, Serialize)]",
-		"#[serde(transparent)]",
+			? type.wideInteger
+				? "#[derive(Clone, Debug, PartialEq, Eq, Hash)]"
+				: "#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize)]"
+			: type.wideInteger
+				? "#[derive(Clone, Debug, PartialEq)]"
+				: "#[derive(Clone, Debug, PartialEq, Serialize)]",
+		...(type.wideInteger ? [] : ["#[serde(transparent)]"]),
 		`pub struct ${type.typeName}(${inner});`,
 		"",
 		`impl ${type.typeName} {`,
@@ -1631,15 +1846,101 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			"        })?;",
 		);
 	}
-	if (checks.length > 0) {
-		lines.push("        {");
-		checks.forEach((check, index) => {
-			lines.push(...renderCheck(type, check, index, expression, subjectScalar));
-		});
-		lines.push("        }");
+	if (
+		["number", "float32", "float64"].includes(type.scalar) &&
+		["f32", "f64"].includes(type.inner)
+	) {
+		lines.push(
+			`        if !value.is_finite() {`,
+			...callLines(
+				"            ",
+				"return Err(crate::support::ValidationError::new",
+				[
+					rustString(type.identity),
+					rustString("finite"),
+					rustString(""),
+					rustString("a finite number"),
+				],
+				");",
+			),
+			"        }",
+		);
 	}
+	const impossibleRange = impossibleIntegerRangeCheck(checks, type);
+	if (impossibleRange !== undefined) {
+		// The constructor parameter is otherwise unused when the effective
+		// interval is empty; keep the generated crate warning-clean.
+		lines.push("        let _ = value;");
+		lines.push(
+			...callLines(
+				"        ",
+				"return Err(crate::support::ValidationError::new",
+				[
+					rustString(impossibleRange.identity),
+					rustString(impossibleRange.keyword),
+					rustString(""),
+					rustString(String(impossibleRange.value)),
+				],
+				");",
+			),
+		);
+	} else {
+		const effectiveRange =
+			type.scalar === "integer"
+				? (effectiveIntegerRange(checks) ?? {
+						lower: -(2n ** 53n - 1n),
+						upper: 2n ** 53n - 1n,
+						lowerExplicit: false,
+						upperExplicit: false,
+						lowerCheck: {
+							identity: type.identity,
+							keyword: "min",
+							value: String(-(2n ** 53n - 1n)),
+						},
+						upperCheck: {
+							identity: type.identity,
+							keyword: "max",
+							value: String(2n ** 53n - 1n),
+						},
+					})
+				: effectiveIntegerRange(checks);
+		if (effectiveRange !== undefined) {
+			const rustInteger = rustIntegerTypeFor(type);
+			const safe = 2n ** 53n - 1n;
+			const emitImplicit = (keyword, check, value, operator) => {
+				lines.push(
+					`        if value ${operator} ${value}${rustInteger} {`,
+					...callLines(
+						"            ",
+						"return Err(crate::support::ValidationError::new",
+						[
+							rustString(check.identity),
+							rustString(keyword),
+							rustString(""),
+							rustString(String(value)),
+						],
+						");",
+					),
+					"        }",
+				);
+			};
+			if (!effectiveRange.lowerExplicit && rustInteger !== "u64")
+				emitImplicit("min", effectiveRange.lowerCheck, -safe, "<");
+			if (!effectiveRange.upperExplicit)
+				emitImplicit("max", effectiveRange.upperCheck, safe, ">");
+		}
+		if (checks.length > 0) {
+			lines.push("        {");
+			checks.forEach((check, index) => {
+				lines.push(
+					...renderCheck(type, check, index, expression, subjectScalar),
+				);
+			});
+			lines.push("        }");
+		}
+	}
+	if (impossibleRange === undefined) lines.push("        Ok(Self(value))");
 	lines.push(
-		"        Ok(Self(value))",
 		"    }",
 		"",
 		"    /// The wrapped value.",
@@ -1658,16 +1959,55 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 		"    }",
 		"}",
 		"",
-		`impl<'de> Deserialize<'de> for ${type.typeName} {`,
-		"    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>",
-		"    where",
-		"        D: serde::Deserializer<'de>,",
-		"    {",
-		...innerDeserialize("        ", inner),
-		"        Self::try_new(inner).map_err(serde::de::Error::custom)",
-		"    }",
-		"}",
 	);
+	if (type.wideInteger) {
+		lines.push(
+			`impl serde::Serialize for ${type.typeName} {`,
+			"    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>",
+			"    where",
+			"        S: serde::Serializer,",
+			"    {",
+			"        serializer.serialize_str(&self.0.to_string())",
+			"    }",
+			"}",
+			"",
+			`impl<'de> serde::Deserialize<'de> for ${type.typeName} {`,
+			"    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>",
+			"    where",
+			"        D: serde::Deserializer<'de>,",
+			"    {",
+			"        let wire = <String as serde::Deserialize>::deserialize(deserializer)?;",
+			`        let inner = crate::support::parse_canonical_integer::<${inner}>(&wire)`,
+			"            .map_err(serde::de::Error::custom)?;",
+			"        Self::try_new(inner).map_err(serde::de::Error::custom)",
+			"    }",
+			"}",
+		);
+	} else {
+		lines.push(
+			`impl<'de> Deserialize<'de> for ${type.typeName} {`,
+			"    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>",
+			"    where",
+			"        D: serde::Deserializer<'de>,",
+			"    {",
+		);
+		if (type.scalar === "float32" && inner === "f32") {
+			lines.push(
+				"        let wire = <f64 as serde::Deserialize>::deserialize(deserializer)?;",
+				"        if !wire.is_finite() || !(wire as f32).is_finite() {",
+				'            return Err(serde::de::Error::custom("float32 is outside its finite range"));',
+				"        }",
+				"        let inner = wire as f32;",
+			);
+		} else {
+			lines.push(...innerDeserialize("        ", inner));
+		}
+		lines.push(
+			"        Self::try_new(inner).map_err(serde::de::Error::custom)",
+			"    }",
+			"}",
+		);
+	}
 	return `${lines.join("\n")}\n`;
 }
 
@@ -1979,6 +2319,22 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	lines.push("use serde::{Deserialize, Serialize};", "");
 
 	lines.push(...recordItems(type));
+	for (const field of type.fields) {
+		if (!field.checks?.length) continue;
+		const subject = {
+			...type,
+			inner: field.elementInner ?? field.elementType,
+		};
+		lines.push(
+			...checkConstants(
+				type,
+				field.checks,
+				byIdentity,
+				`${type.constantName}_${field.ident.toUpperCase()}`,
+				subject,
+			),
+		);
+	}
 
 	for (const field of type.fields) {
 		if (field.defaultKind !== "semantic") continue;
@@ -2022,6 +2378,11 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		if (field.presence === "optional") {
 			attributes.push('skip_serializing_if = "Option::is_none"');
 		}
+		attributes.push(
+			...(field.serdeAttributes ?? []).filter((one) =>
+				one.startsWith("with ="),
+			),
+		);
 		if (attributes.length > 0) {
 			lines.push(`    #[serde(${attributes.join(", ")})]`);
 		}
@@ -2063,9 +2424,18 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		} else if (field.presence === "optional") {
 			attributes.push("default");
 		}
-		if (field.presence === "optional" && field.nullable) {
+		if (
+			field.presence === "optional" &&
+			field.nullable &&
+			!(field.serdeAttributes ?? []).some((one) => one.startsWith("with ="))
+		) {
 			attributes.push('deserialize_with = "crate::support::present_or_absent"');
 		}
+		attributes.push(
+			...(field.serdeAttributes ?? []).filter((one) =>
+				one.startsWith("with ="),
+			),
+		);
 		if (attributes.length > 0) {
 			lines.push(`    #[serde(${attributes.join(", ")})]`);
 		}
@@ -2105,11 +2475,21 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	);
 	for (const [index, field] of type.fields.entries()) {
 		lines.push(...renderFieldDecimalNormalization(field, index));
-		lines.push(...renderFieldChecks(field));
+		lines.push(...renderFieldChecks(type, field));
 	}
 	const initialisers = type.fields.map((field) => field.ident);
 	if (retains) initialisers.push("unknown_members");
-	lines.push(...okSelf("        ", initialisers), "    }", "");
+	const impossibleField = type.fields.some(
+		(field) =>
+			field.presence === "required" &&
+			!field.nullable &&
+			!field.collection &&
+			impossibleIntegerRangeCheck(field.checks ?? [], {
+				inner: field.elementInner ?? field.elementType,
+			}) !== undefined,
+	);
+	if (!impossibleField) lines.push(...okSelf("        ", initialisers));
+	lines.push("    }", "");
 
 	lines.push("    /// The non-blocking diagnostics this value carries.");
 	lines.push("    pub fn validate(&self) -> Vec<crate::support::Diagnostic> {");
@@ -2341,8 +2721,12 @@ function renderFieldDecimalNormalization(field, index) {
  * enforced here: `Vec` is ordered, and there is no unordered Rust collection
  * the mapping table declares to switch to.
  */
-function renderFieldChecks(field) {
-	if (!field.collection) return [];
+function renderFieldChecks(type, field) {
+	// Multiplicity is meaningful only for collection-shaped members.  A scalar
+	// field has the same metadata axes, but applying collection bounds to its
+	// value emits `.is_empty()`/`.len()` against a scalar and produces invalid
+	// Rust (or, for string scalars, enforces the wrong contract).
+	if (!field.collection) return renderInlineFieldChecks(type, field);
 	const lines = [];
 	const multiplicity = field.multiplicity;
 	const identity = rustString(field.identity);
@@ -2398,16 +2782,205 @@ function renderFieldChecks(field) {
 			"            }",
 		);
 	}
-	if (body.length === 0) return [];
-	if (field.presence === "optional") {
+	if (body.length > 0 && field.presence === "optional") {
 		lines.push(`        if let Some(items) = &${field.ident} {`);
 		lines.push(...body);
 		lines.push("        }");
-	} else {
+	} else if (body.length > 0) {
 		lines.push("        {");
 		lines.push(`            let items = &${field.ident};`);
 		lines.push(...body);
 		lines.push("        }");
+	}
+	lines.push(...renderInlineFieldChecks(type, field));
+	return lines;
+}
+
+function renderInlineFieldChecks(type, field) {
+	const prefix = `${type.constantName}_${field.ident.toUpperCase()}`;
+	const subject = {
+		...type,
+		constantName: prefix,
+		inner: field.elementInner ?? field.elementType,
+		itemScalar: field.elementScalar,
+		itemType: field.elementType,
+	};
+	// A wide integer's representable bound may be redundant for the mapped
+	// primitive. Filter those checks before opening collection/nullable loops;
+	// emitting an empty loop still binds unused `item`/`value` variables and
+	// fails consumers that compile generated code with warnings denied.
+	const checks = (field.checks ?? [])
+		.map((check, index) => ({ check, index }))
+		.filter(({ check }) => !isRedundantIntegerBound(subject, check));
+	const implicitIntegerRange =
+		field.elementScalar === "integer" &&
+		["i64", "u64", "i128"].includes(field.elementType)
+			? (effectiveIntegerRange(field.checks ?? []) ?? {
+					lower: -(2n ** 53n - 1n),
+					upper: 2n ** 53n - 1n,
+					lowerExplicit: false,
+					upperExplicit: false,
+					lowerCheck: undefined,
+					upperCheck: undefined,
+				})
+			: undefined;
+	const finiteFloat =
+		["float32", "float64", "number"].includes(field.elementScalar) &&
+		["f32", "f64"].includes(field.elementType);
+	if (checks.length === 0 && !finiteFloat && implicitIntegerRange === undefined)
+		return [];
+	const renderFinite = (expression, extraIndent = 0) => {
+		if (!finiteFloat) return [];
+		const indent = " ".repeat(extraIndent);
+		return [
+			`${indent}if !(${expression}).is_finite() {`,
+			...callLines(
+				`${indent}    `,
+				"return Err(crate::support::ValidationError::new",
+				[
+					rustString(field.identity),
+					rustString("finite"),
+					rustString(field.name),
+					rustString("a finite number"),
+				],
+				");",
+			),
+			`${indent}}`,
+		];
+	};
+	const impossibleRange =
+		field.elementScalar === "integer"
+			? impossibleIntegerRangeCheck(field.checks ?? [], subject)
+			: undefined;
+	const render = (expression, extraIndent = 0) => {
+		const impossible =
+			impossibleRange === undefined
+				? []
+				: callLines(
+						" ".repeat(extraIndent),
+						"return Err(crate::support::ValidationError::new",
+						[
+							rustString(impossibleRange.identity),
+							rustString(impossibleRange.keyword),
+							rustString(field.name),
+							rustString(String(impossibleRange.value)),
+						],
+						");",
+					);
+		const renderedChecks =
+			impossibleRange === undefined
+				? checks.flatMap(({ check, index }) =>
+						renderCheck(
+							subject,
+							check,
+							index,
+							expression,
+							field.elementScalar,
+							prefix,
+							field.wrapperDepth,
+						).map((line) =>
+							line.length === 0 ? line : `${" ".repeat(extraIndent)}${line}`,
+						),
+					)
+				: [];
+		return [
+			...renderFinite(expression, extraIndent),
+			...impossible,
+			...renderedChecks,
+		];
+	};
+	const lines = [];
+	const renderValue = (expression, extraIndent = 0) => [
+		...renderIntegerImplicit(expression, extraIndent),
+		...render(expression, extraIndent),
+	];
+	const renderIntegerImplicit = (expression, extraIndent = 0) => {
+		if (implicitIntegerRange === undefined) return [];
+		const indent = " ".repeat(extraIndent);
+		const rustInteger = rustIntegerTypeFor({ inner: field.elementType });
+		const owned = expression.startsWith("*") ? expression : `*${expression}`;
+		const emit = (keyword, value, operator) => [
+			`${indent}if ${owned} ${operator} ${value}${rustInteger} {`,
+			...callLines(
+				`${indent}    `,
+				"return Err(crate::support::ValidationError::new",
+				[
+					rustString(field.identity),
+					rustString(keyword),
+					rustString(field.name),
+					rustString(String(value)),
+				],
+				");",
+			),
+			`${indent}}`,
+		];
+		const out = [];
+		if (!implicitIntegerRange.lowerExplicit && rustInteger !== "u64")
+			out.push(emit("min", implicitIntegerRange.lower, "<"));
+		if (!implicitIntegerRange.upperExplicit)
+			out.push(emit("max", implicitIntegerRange.upper, ">"));
+		return out.flat();
+	};
+	if (field.collection) {
+		const source = field.presence === "optional" ? "items" : field.ident;
+		const itemBinding =
+			impossibleRange !== undefined && !field.nullable ? "_item" : "item";
+		const renderedValue = field.nullable
+			? renderValue("*value", 4)
+			: renderValue(`*${itemBinding}`);
+		const valueLines =
+			field.nullable && renderedValue.length > 0
+				? [
+						"                if let crate::support::Nullable::Value(value) = item {",
+						...renderedValue,
+						"                }",
+					]
+				: renderedValue;
+		if (valueLines.length === 0) return lines;
+		if (field.presence === "optional")
+			lines.push(`        if let Some(items) = &${field.ident} {`);
+		lines.push(
+			`            for ${itemBinding} in ${field.presence === "optional" ? source : `&${source}`} {`,
+		);
+		lines.push(...valueLines);
+		lines.push("            }");
+		if (field.presence === "optional") lines.push("        }");
+		return lines;
+	}
+	if (field.presence === "optional") {
+		const renderedValue = field.nullable
+			? renderValue("*value", 4)
+			: renderValue("*value");
+		const valueLines =
+			field.nullable && renderedValue.length > 0
+				? [
+						"            if let crate::support::Nullable::Value(value) = value {",
+						...renderedValue,
+						"            }",
+					]
+				: renderedValue;
+		if (valueLines.length === 0) return lines;
+		lines.push(`        if let Some(value) = &${field.ident} {`);
+		lines.push(...valueLines);
+		lines.push("        }");
+	} else if (field.nullable) {
+		const valueLines = renderValue("*value");
+		if (valueLines.length === 0) return lines;
+		lines.push(
+			`        if let crate::support::Nullable::Value(value) = &${field.ident} {`,
+		);
+		lines.push(...valueLines);
+		lines.push("        }");
+	} else {
+		lines.push(
+			...renderValue(`&${field.ident}`).map((line) =>
+				line.length === 0
+					? line
+					: line.startsWith("            ")
+						? line.slice(4)
+						: `        ${line}`,
+			),
+		);
 	}
 	return lines;
 }
@@ -2470,16 +3043,22 @@ function scalarLiteral(scalar, value, rustType = "i64") {
 		case "boolean":
 			return typeof value === "boolean" ? String(value) : undefined;
 		case "integer":
+			if (typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value)) {
+				try {
+					BigInt(value);
+					return `${value}${rustType}`;
+				} catch {
+					return undefined;
+				}
+			}
 			return typeof value === "number" && Number.isSafeInteger(value)
 				? `${value}${rustType}`
 				: undefined;
-		case "decimal":
-			return typeof value === "string"
-				? `String::from(${rustString(value)})`
-				: undefined;
 		case "number":
+		case "float32":
+		case "float64":
 			return typeof value === "number" && Number.isFinite(value)
-				? renderF64(value)
+				? renderFloat(value, scalar === "float32" ? "f32" : "f64")
 				: undefined;
 		default:
 			return typeof value === "string"

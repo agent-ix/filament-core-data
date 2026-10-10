@@ -192,6 +192,8 @@ export const CROSS_MODULE_INTERNALS = Object.freeze({
 		"rejects an array, a null and a non-object before member reads",
 	isUniqueCollection:
 		"decides `unique` by canonical form rather than reference",
+	isUniqueFloat32Collection:
+		"decides Float32 collection uniqueness after binary32 rounding",
 	copyAccessor: "carries an accessor-valued member without invoking it",
 	codePointLength: "counts a string in code points for minLength and maxLength",
 	isBase64: "decides the base64 form of a `bytes` scalar",

@@ -46,6 +46,8 @@ enum KernelScalar {
   Boolean,
   Integer,
   Decimal,
+  Float32,
+  Float64,
   String,
   Timestamp,
   Duration,
@@ -100,8 +102,8 @@ model Multiplicity {
 
 /** Precision and scale for a `Decimal` target (FR-032). */
 model DecimalPolicy {
-  @minValue(1) precision: int32;
-  @minValue(0) scale: int32;
+	@minValue(1) @maxValue(38) precision: int32;
+	@minValue(0) @maxValue(38) scale: int32;
 }
 
 /** A reference to a kernel scalar or a semantic type. Reader: `decimal` iff target is Decimal; `unit` only on unit-allowed scalars. */
@@ -128,7 +130,7 @@ model SourceLocus {
   @minValue(1) endColumn?: int32;
 }
 
-/** `min`: number for numeric scalars, ISO 8601 string for temporal scalars. */
+/** `min`: an exact numeric literal or ISO 8601 string for temporal scalars. */
 model MinConstraint {
   keyword: ConstraintKeyword.min;
   value: float64 | string;

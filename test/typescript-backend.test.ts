@@ -3,8 +3,8 @@ import {
 	cpSync,
 	mkdirSync,
 	mkdtempSync,
-	readFileSync,
 	readdirSync,
+	readFileSync,
 	rmSync,
 	statSync,
 	writeFileSync,
@@ -16,21 +16,21 @@ import { gunzipSync } from "node:zlib";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
-import { reachableSymbols } from "../src/compiler/backends/typescript-v1/package-layout.mjs";
-import { auditRenderedNodes } from "../src/compiler/backends/typescript-v1/metadata.mjs";
-import { buildModel } from "../src/compiler/backends/typescript-v1/model.mjs";
-import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
-import { createHost } from "../src/compiler/host.mjs";
 import {
-	SCHEMA_FILES,
 	admitIr,
+	SCHEMA_FILES,
 } from "../src/compiler/backends/typescript-v1/admit.mjs";
 import { normalizeIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 import {
+	classifySurface,
 	VARIANT_ADDITION_POLICIES,
 	VARIANT_ADDITION_POLICY,
-	classifySurface,
 } from "../src/compiler/backends/typescript-v1/classify.mjs";
+import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
+import { auditRenderedNodes } from "../src/compiler/backends/typescript-v1/metadata.mjs";
+import { buildModel } from "../src/compiler/backends/typescript-v1/model.mjs";
+import { reachableSymbols } from "../src/compiler/backends/typescript-v1/package-layout.mjs";
+import { createHost } from "../src/compiler/host.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fixture = resolve(root, "test/fixtures/backends/typescript");
@@ -46,7 +46,7 @@ const SLASH = "/";
 // Built rather than written as a literal: a regex literal carrying a double
 // quote defeats the trace binder's TypeScript brace scanner, and an unreadable
 // file binds no row at all.
-const RELATIVE_IMPORT = new RegExp('from "([^"]+)"', "g");
+const RELATIVE_IMPORT = /from "([^"]+)"/g;
 const IDENTITY_PREFIX = ["ix:", SLASH, SLASH].join("");
 function exportedCompilerSymbols(source: string): string[] {
 	const names: string[] = [];
@@ -290,7 +290,8 @@ describe("TC-1355 extension identity admission (FR-068)", () => {
 			.flatMap((type: { fields?: unknown[] }) => type.fields ?? [])
 			.at(0) as { extensions?: unknown[] } | undefined;
 		expect(field).toBeDefined();
-		field!.extensions = [
+		if (!field) throw new Error("fixture has no field to extend");
+		field.extensions = [
 			{ ...kernelScalar, identity: "ix://agent-ix/semantic-core/ext/doc" },
 			{ ...kernelScalar, identity: "ix://agent-ix/semantic-core/ext/doc" },
 		];
@@ -322,6 +323,19 @@ describe("TypeScript Decimal applicability (FR-144)", () => {
 		});
 		const result = admitIr({ ir }, { schemas: admissionSchemas });
 		expect(result.diagnostics).toEqual([]);
+	});
+
+	it("admits the exact float32 and float64 scalar kinds", () => {
+		for (const scalar of ["float32", "float64"] as const) {
+			const ir = JSON.parse(readFileSync(fixtureIr, "utf8"));
+			const count = ir.types.find(
+				(type: { displayName: string }) => type.displayName === "Count",
+			);
+			count.scalar = scalar;
+			count.constraints[0].operands.value = 1.5;
+			const result = admitIr({ ir }, { schemas: admissionSchemas });
+			expect(result.diagnostics, scalar).toEqual([]);
+		}
 	});
 
 	it("admits a Decimal bound on a native Decimal field reference", () => {

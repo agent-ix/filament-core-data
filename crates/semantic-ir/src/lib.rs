@@ -146,6 +146,119 @@ mod tests {
     use super::*;
     use crate::json::parse;
 
+    /// The Rust reader sees the same exact-numeric overflow case exercised by
+    /// the Node, Python, and oracle differential test. Keeping the
+    /// case here prevents that parity claim from depending on a generated
+    /// backend consumer alone.
+    ///
+    /// Tracing: FR-144-CON-1
+    #[test]
+    fn fr_144_numeric_reader_reports_the_shared_i128_pointer() {
+        let scalar = format!(
+            r#"{{"identity":"ix://probe/Integer","displayName":"Integer","kind":"scalar","scalar":"integer","roles":[],"origin":{GENERATED},"constraints":[{{"identity":"ix://probe/IntegerMax","keyword":"max","operands":{{"value":"170141183460469231731687303715884105728"}},"appliesTo":"ix://probe/Integer","diagnosticCode":"ix://probe/INTEGER_MAX","origin":{GENERATED}}}],"extensions":[],"unknownPolicy":"reject"}}"#
+        );
+        let bundle = parse(&format!(r#"{{"ir":{{{HEADER},"types":[{scalar}]}}}}"#))
+            .expect("a schema-valid numeric reader case");
+        let diagnostics = decide(&bundle).diagnostics;
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(
+            diagnostics[0].code,
+            "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
+        );
+        assert_eq!(
+            diagnostics[0].pointer,
+            "/ir/types/0/constraints/0/operands/value"
+        );
+    }
+
+    /// FR-144-AC-8: Read from bytes, a document holding
+    /// `9007199254740993` at any depth, the inside of an `any` default
+    /// included, raises `INEXACT_INTEGER` at that number's pointer and no
+    /// parse failure.
+    ///
+    /// Trace: FR-144-AC-8
+    #[test]
+    fn fr_144_raw_bytes_find_inexact_integer_inside_any_default() {
+        let record = format!(
+            r#"{{"identity":"ix://probe/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{{"identity":"ix://probe/Holder/payload","name":"payload","typeRef":"ix://quire/native/JsonObject","presence":"required","nullable":false,"defaultKind":"semantic","defaultValue":{{"nested":9007199254740993}},"origin":{GENERATED},"multiplicity":{{"lower":1,"upper":1,"ordered":false,"unique":false}},"extensions":[]}}]}}"#
+        );
+        let bundle = parse(&format!(r#"{{"ir":{{{HEADER},"types":[{record}]}}}}"#))
+            .expect("a schema-valid raw numeric case");
+        let diagnostics = decide(&bundle).diagnostics;
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.code == "agent-ix.semantic-ir.INEXACT_INTEGER"
+                && diagnostic.pointer == "/ir/types/0/fields/0/defaultValue/nested"
+        }));
+    }
+
+    /// FR-144-AC-9: A `multiplicity.upper`, a `maxLength` operand, or a source
+    /// span's `startLine` of `9007199254740991` is accepted, and `9007199254740992`
+    /// raises `SCHEMA_VIOLATION` at it; a decimal policy's `precision` or
+    /// `scale` of `9007199254740992` raises the same code at that member.
+    ///
+    /// Trace: FR-144-AC-9
+    #[test]
+    fn fr_144_raw_bytes_check_safe_metadata_integer_boundaries() {
+        fn bundle(value: &str) -> String {
+            format!(
+                r#"{{"ir":{{{HEADER},"types":[{{"identity":"ix://probe/Text","displayName":"Text","kind":"scalar","scalar":"string","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"}},{{"identity":"ix://probe/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{{"identity":"ix://probe/Holder/value","name":"value","typeRef":"ix://quire/native/String","presence":"required","nullable":false,"defaultKind":"none","origin":{{"source":{{"sourceIdentity":"ix://probe/Source","path":"probe.tsp","startLine":{value},"startColumn":{value}}}}},"multiplicity":{{"lower":1,"upper":{value},"ordered":false,"unique":false}},"constraints":[{{"identity":"ix://probe/Holder/value/maxLength","keyword":"maxLength","operands":{{"value":{value}}},"appliesTo":"ix://probe/Holder/value","diagnosticCode":"ix://probe/MAX_LENGTH","origin":{GENERATED}}}],"extensions":[]}}]}}]}}}}"#
+            )
+        }
+
+        let safe = parse(&bundle("9007199254740991")).expect("safe metadata integers parse");
+        assert!(decide(&safe).diagnostics.is_empty());
+
+        let unsafe_bundle =
+            parse(&bundle("9007199254740992")).expect("unsafe metadata integers parse");
+        let diagnostics = decide(&unsafe_bundle).diagnostics;
+        for pointer in [
+            "/ir/types/1/fields/0/origin/source/startLine",
+            "/ir/types/1/fields/0/origin/source/startColumn",
+            "/ir/types/1/fields/0/multiplicity/upper",
+            "/ir/types/1/fields/0/constraints/0/operands/value",
+        ] {
+            assert!(
+                diagnostics.iter().any(|diagnostic| {
+                    diagnostic.code == "agent-ix.semantic-ir.SCHEMA_VIOLATION"
+                        && diagnostic.pointer == pointer
+                }),
+                "missing exact-number diagnostic at {pointer}"
+            );
+        }
+
+        fn decimal_bundle(value: &str) -> String {
+            format!(
+                r#"{{"ir":{{{HEADER},"types":[{{"identity":"ix://probe/Price","displayName":"Price","kind":"scalar","scalar":"decimal","decimal":{{"precision":{value},"scale":{value}}},"roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"}}]}}}}"#
+            )
+        }
+        let safe_decimal = parse(&decimal_bundle("10")).expect("safe decimal policy parses");
+        assert!(decide(&safe_decimal).diagnostics.is_empty());
+        let unsafe_decimal =
+            parse(&decimal_bundle("9007199254740992")).expect("unsafe decimal policy parses");
+        let decimal_diagnostics = decide(&unsafe_decimal).diagnostics;
+        for pointer in ["/ir/types/0/decimal/precision", "/ir/types/0/decimal/scale"] {
+            assert!(
+                decimal_diagnostics.iter().any(|diagnostic| {
+                    diagnostic.code == "agent-ix.semantic-ir.SCHEMA_VIOLATION"
+                        && diagnostic.pointer == pointer
+                }),
+                "missing exact-number diagnostic at {pointer}"
+            );
+        }
+
+        // Precision is a schema bound as well as an exact-number bound: a
+        // mathematically exact integer outside the Decimal policy domain must
+        // still be rejected by the policy validator.
+        let over_precision = parse(&decimal_bundle("39")).expect("out-of-range policy parses");
+        assert!(decide(&over_precision)
+            .diagnostics
+            .iter()
+            .any(|diagnostic| {
+                diagnostic.code == "agent-ix.semantic-ir.SCHEMA_VIOLATION"
+                    && diagnostic.pointer == "/ir/types/0/decimal"
+            }));
+    }
+
     /// A bundle carrying a value nested a million levels deep at a member the
     /// schema does not admit is decided, not overflowed: the schema layer
     /// reports the member, and the diagnostics, the verdict's normalized form

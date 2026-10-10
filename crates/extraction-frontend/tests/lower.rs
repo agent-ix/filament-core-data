@@ -441,7 +441,7 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the
     assert_eq!(constraints.len(), 1, "{constraints:?}");
     let min = &constraints[0];
     assert_eq!(min["keyword"], "min");
-    assert_eq!(min["operands"], json!({"value": 1}));
+    assert_eq!(min["operands"], json!({"value": "1"}));
     assert_eq!(min["appliesTo"], field["identity"]);
     assert_eq!(
         min["diagnosticCode"],
@@ -489,6 +489,89 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the
         diagnostic_code(&package, "Snapshot", "createdBy", "maxLength"),
         "agent-ix.docs-service.SNAPSHOT_CREATEDBY_MAXLENGTH"
     );
+}
+
+/// FR-144-AC-12: The spec-bundle frontend lifts
+/// `versionNumber | Integer | 1 | min: 1` with operand `"1"`, a constrained
+/// `Decimal` row with policy `(10, 2)` and `min: 1.50` to an alias carrying
+/// decimal `{precision: 10, scale: 2}` and operand `"1.5"`, and a `Decimal`
+/// row with no policy to a blocking `DECIMAL_POLICY_MISSING` at the row.
+#[trace("TC-1826", "FR-144-AC-12")]
+#[test]
+fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
+    let root = tempfile::tempdir().expect("numeric spec bundle");
+    scratch_spec(root.path());
+    write_fixture(
+        root.path(),
+        "spec/functional/FR-001.md",
+        &entity(
+            "FR-001",
+            "NumericRows",
+            "| id | UUID | 1 | identity |\n| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n| unpriced | Decimal | 1 | |\n",
+        ),
+    );
+
+    let blocked = lift_at(root.path(), &[&business_module(), &edge_vocabulary()]);
+    assert!(
+        blocked.extractions.diagnostics.iter().any(|diagnostic| {
+            diagnostic.registry_code() == Some(Code::DecimalPolicyMissing)
+                && diagnostic.locus.as_ref().is_some_and(|locus| {
+                    locus.path.ends_with("FR-001.md") && locus.start_line == 17
+                })
+        }),
+        "missing frontend Decimal policy diagnostic: {:?}",
+        blocked.extractions.diagnostics
+    );
+    let blocked_types = types_json(&blocked);
+    assert!(!blocked_types
+        .iter()
+        .any(|definition| definition["displayName"] == "NumericRows"));
+
+    let valid_root = tempfile::tempdir().expect("valid numeric spec bundle");
+    scratch_spec(valid_root.path());
+    write_fixture(
+        valid_root.path(),
+        "spec/functional/FR-001.md",
+        &entity(
+            "FR-001",
+            "NumericRows",
+            "| id | UUID | 1 | identity |\n| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n",
+        ),
+    );
+    let lift = lift_at(valid_root.path(), &[&business_module(), &edge_vocabulary()]);
+    let types = types_json(&lift);
+    let record = type_named(&types, "NumericRows");
+    let version = field_named(record, "versionNumber");
+    let version_constraint = &version["constraints"][0];
+    assert_eq!(version_constraint["operands"], json!({"value": "1"}));
+
+    let price = field_named(record, "price");
+    let price_alias = type_named(&types, "NumericRowsPrice");
+    assert_eq!(price["typeRef"], price_alias["identity"]);
+    assert_eq!(
+        price_alias["identity"],
+        "ix://agent-ix/identity-collision/FR-001Price"
+    );
+    assert_eq!(price_alias["kind"], "alias");
+    assert_eq!(price_alias["target"], "ix://quire/native/Decimal");
+    assert_eq!(price_alias["decimal"], json!({"precision": 10, "scale": 2}));
+    assert_eq!(
+        price_alias["constraints"][0]["operands"],
+        json!({"value": "1.5"})
+    );
+    assert_eq!(
+        price_alias["constraints"][0]["appliesTo"],
+        price_alias["identity"]
+    );
+
+    let document = ir_document(&lift);
+    let canonical = normalized(
+        &parse_json(&serde_json::to_string(&document).expect("serialize"))
+            .expect("parse canonical input"),
+    );
+    let round_trip =
+        parse_json(&format!(r#"{{"ir":{canonical}}}"#)).expect("parse canonical envelope");
+    assert_eq!(canonical, normalized(&round_trip));
 }
 
 #[trace("TC-1224", "FR-093-AC-5")]

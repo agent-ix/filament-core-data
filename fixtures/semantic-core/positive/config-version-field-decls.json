@@ -40,7 +40,7 @@
 			"constraints": [
 				{
 					"keyword": "min",
-					"value": 1
+					"value": "1"
 				}
 			]
 		},

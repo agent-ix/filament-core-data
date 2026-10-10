@@ -25,11 +25,143 @@ const REPO_ROOT = resolve(
 	"..",
 	"..",
 );
+const FLOAT32_MAX = 3.4028234663852886e38;
+const FLOAT32_MIN_SUBNORMAL = 2 ** -149;
+
+// JSON Schema compares binary64 values directly, while FR-144 compares a
+// float32 subject after rounding the instance to binary32. Use the midpoint
+// between adjacent binary32 values as the schema boundary.
+function nextFloat32(value, direction) {
+	if (value === 0)
+		return direction < 0 ? -FLOAT32_MIN_SUBNORMAL : FLOAT32_MIN_SUBNORMAL;
+	const view = new DataView(new ArrayBuffer(4));
+	view.setFloat32(0, value);
+	let bits = view.getUint32(0);
+	if (direction < 0 === value > 0) bits -= 1;
+	else bits += 1;
+	view.setUint32(0, bits);
+	return view.getFloat32(0);
+}
+
+function float32Boundary(value, side) {
+	const rounded = Math.fround(value);
+	const previous = nextFloat32(rounded, -1);
+	const next = nextFloat32(rounded, 1);
+	if (side === "min") {
+		if (Number.isFinite(previous)) return (previous + rounded) / 2;
+		const towardFinite = next;
+		return rounded - (towardFinite - rounded) / 2;
+	}
+	if (Number.isFinite(next)) return (rounded + next) / 2;
+	// The next value after binary32 MAX is infinity; use the overflow midpoint.
+	return rounded + (rounded - previous) / 2;
+}
+
+function sameFloat32(left, right) {
+	return left === right || (Object.is(left, -0) && Object.is(right, 0));
+}
+
+/** The exact binary64 preimage boundary for one Float32 comparison. */
+function float32Preimage(value, keyword) {
+	const rounded = Math.fround(Number(value));
+	const lower = keyword === "min" || keyword === "exclusiveMin";
+	const accepted = lower
+		? keyword === "min"
+			? rounded
+			: nextFloat32(rounded, 1)
+		: keyword === "max"
+			? rounded
+			: nextFloat32(rounded, -1);
+	if (!Number.isFinite(accepted)) return undefined;
+	const boundary = float32Boundary(
+		lower
+			? keyword === "min"
+				? rounded
+				: accepted
+			: keyword === "max"
+				? rounded
+				: accepted,
+		lower ? "min" : "max",
+	);
+	return {
+		keyword: lower
+			? sameFloat32(Math.fround(boundary), accepted)
+				? "minimum"
+				: "exclusiveMinimum"
+			: sameFloat32(Math.fround(boundary), accepted)
+				? "maximum"
+				: "exclusiveMaximum",
+		value: boundary,
+	};
+}
+
+function applyFloat32Constraint(schema, keyword, value) {
+	const boundary = float32Preimage(value, keyword);
+	if (boundary === undefined) {
+		schema.not = {};
+		return;
+	}
+	const lower =
+		boundary.keyword === "minimum" || boundary.keyword === "exclusiveMinimum";
+	const inclusiveKey = lower ? "minimum" : "maximum";
+	const exclusiveKey = lower ? "exclusiveMinimum" : "exclusiveMaximum";
+	const currentInclusive = schema[inclusiveKey];
+	const currentExclusive = schema[exclusiveKey];
+	const current =
+		currentInclusive !== undefined
+			? { value: currentInclusive, exclusive: false }
+			: currentExclusive !== undefined
+				? { value: currentExclusive, exclusive: true }
+				: undefined;
+	const stronger =
+		current === undefined ||
+		(lower
+			? boundary.value > current.value ||
+				(boundary.value === current.value &&
+					boundary.keyword === exclusiveKey &&
+					!current.exclusive)
+			: boundary.value < current.value ||
+				(boundary.value === current.value &&
+					boundary.keyword === exclusiveKey &&
+					!current.exclusive));
+	if (!stronger) return;
+	delete schema[inclusiveKey];
+	delete schema[exclusiveKey];
+	schema[boundary.keyword] = boundary.value;
+}
+
+function float32EnumSchema(values) {
+	const anyOf = [];
+	for (const value of values ?? []) {
+		if (typeof value !== "number" || !Number.isFinite(value)) continue;
+		const branch = { type: "number" };
+		applyFloat32Constraint(branch, "min", value);
+		applyFloat32Constraint(branch, "max", value);
+		anyOf.push(branch);
+	}
+	return anyOf;
+}
+
+// A binary32 scalar accepts exactly the finite binary64 values whose rounded
+// value is finite.  The two overflow midpoints are therefore strict bounds;
+// inclusive minimum/maximum would admit the midpoint that rounds to infinity.
+const FLOAT32_MINIMUM = float32Boundary(-FLOAT32_MAX, "min");
+const FLOAT32_MAXIMUM = float32Boundary(FLOAT32_MAX, "max");
 
 const scalarSchema = Object.freeze({
 	boolean: { type: "boolean" },
-	integer: { type: "integer" },
+	integer: {
+		type: "integer",
+		minimum: -(2 ** 53 - 1),
+		maximum: 2 ** 53 - 1,
+	},
 	number: { type: "number" },
+	float32: {
+		type: "number",
+		exclusiveMinimum: FLOAT32_MINIMUM,
+		exclusiveMaximum: FLOAT32_MAXIMUM,
+	},
+	float64: { type: "number" },
 	decimal: { type: "string", pattern: "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$" },
 	string: { type: "string" },
 	bytes: { type: "string", contentEncoding: "base64" },
@@ -127,12 +259,93 @@ const NATIVE_SCALARS = Object.freeze({
 	Boolean: "boolean",
 	Integer: "integer",
 	Decimal: "decimal",
+	Float32: "float32",
+	Float64: "float64",
 	String: "string",
 	Timestamp: "datetime",
 	Duration: "duration",
 	Bytes: "bytes",
 	JsonObject: "any",
 });
+
+const SAFE_INTEGER = 2n ** 53n - 1n;
+
+function unsignedAtMost(max) {
+	if (max < 0n) return "(?!)";
+	const text = max.toString();
+	const parts = ["0"];
+	for (let length = 1; length < text.length; length += 1)
+		parts.push(`[1-9][0-9]{${length - 1}}`);
+	for (let position = 0; position < text.length; position += 1) {
+		const digit = Number(text[position]);
+		if (digit === 0) continue;
+		const range = position === 0 ? `[1-${digit - 1}]` : `[0-${digit - 1}]`;
+		if (digit > 1 || position > 0)
+			parts.push(
+				`${text.slice(0, position)}${range}[0-9]{${text.length - position - 1}}`,
+			);
+	}
+	parts.push(text);
+	return `(?:${parts.join("|")})`;
+}
+
+function integerPattern(lower, upper) {
+	const alternatives = [];
+	if (lower < 0n) {
+		const maxAbs = -lower;
+		const minAbs = upper < 0n ? -upper : 1n;
+		const bounded = unsignedAtMost(maxAbs);
+		const excluded = unsignedAtMost(minAbs - 1n);
+		alternatives.push(`-(?!${excluded}$)${bounded}`);
+	}
+	if (upper >= 0n) {
+		const positive = unsignedAtMost(upper);
+		const excluded = lower > 0n ? unsignedAtMost(lower - 1n) : undefined;
+		alternatives.push(
+			excluded === undefined ? positive : `(?!(?:${excluded})$)${positive}`,
+		);
+	}
+	return `^(?:${alternatives.join("|")})$`;
+}
+
+function integerRange(constraints) {
+	let lower = -SAFE_INTEGER;
+	let upper = SAFE_INTEGER;
+	let lowerExplicit = false;
+	let upperExplicit = false;
+	for (const one of constraints ?? []) {
+		const value = one?.operands?.value;
+		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
+			continue;
+		const parsed = BigInt(value);
+		if (one.keyword === "min") {
+			lower = lowerExplicit && lower > parsed ? lower : parsed;
+			lowerExplicit = true;
+		}
+		if (one.keyword === "exclusiveMin") {
+			const effective = parsed + 1n;
+			lower = lowerExplicit && lower > effective ? lower : effective;
+			lowerExplicit = true;
+		}
+		if (one.keyword === "max") {
+			upper = upperExplicit && upper < parsed ? upper : parsed;
+			upperExplicit = true;
+		}
+		if (one.keyword === "exclusiveMax") {
+			const effective = parsed - 1n;
+			upper = upperExplicit && upper < effective ? upper : effective;
+			upperExplicit = true;
+		}
+	}
+	return { lower, upper };
+}
+
+function integerSchema(constraints) {
+	const { lower, upper } = integerRange(constraints);
+	if (lower >= -SAFE_INTEGER && upper <= SAFE_INTEGER)
+		return { type: "integer", minimum: Number(lower), maximum: Number(upper) };
+	return { type: "string", pattern: integerPattern(lower, upper) };
+}
 function decimalSchema(policy) {
 	const precision = Number(policy?.precision);
 	const scale = Number(policy?.scale);
@@ -206,16 +419,48 @@ function constraint(schema, one, subject, decimalPolicy) {
 		else schema.minLength ??= 1;
 	} else if (key === "unique") schema.uniqueItems = true;
 	else if (key === "enumValues") {
+		if (subject?.scalar === "float32") {
+			const branches = float32EnumSchema(one.operands.values);
+			if (branches.length > 0) {
+				schema.anyOf = branches;
+				delete schema.enum;
+			}
+		}
 		const pattern =
 			subject?.scalar === "decimal"
 				? decimalEnumPattern(one.operands.values, decimalPolicy)
 				: undefined;
+		if (subject?.scalar === "float32") return schema;
 		if (pattern !== undefined) schema.pattern = pattern;
+		else if (subject?.scalar === "integer")
+			schema.enum =
+				schema.type === "integer"
+					? one.operands.values.map((entry) => Number(entry))
+					: one.operands.values;
 		else schema.enum = one.operands.values;
 	} else if (key === "pattern") schema.pattern = one.operands.regex;
 	else if (key === "format") schema.format = FORMAT_MAP[one.operands.name];
-	else if (table[key] && value !== undefined) {
-		schema[table[key]] = value;
+	else if (
+		table[key] &&
+		value !== undefined &&
+		!(
+			subject?.scalar === "integer" &&
+			["min", "max", "exclusiveMin", "exclusiveMax"].includes(key)
+		)
+	) {
+		if (subject?.scalar === "float32") {
+			applyFloat32Constraint(schema, key, value);
+			return schema;
+		}
+		schema[table[key]] =
+			key === "minLength" || key === "maxLength"
+				? value
+				: subject?.scalar === "float32"
+					? float32Boundary(
+							Number(value),
+							key === "min" || key === "exclusiveMax" ? "min" : "max",
+						)
+					: Number(value);
 	}
 	return schema;
 }
@@ -229,6 +474,29 @@ function decimalScalar(types, identity, seen = new Set()) {
 	if (type?.kind === "alias" || type?.kind === "reference")
 		return decimalScalar(types, type.target, seen);
 	return undefined;
+}
+
+function integerScalar(types, identity, seen = new Set()) {
+	if (identity === "ix://quire/native/Integer") return "integer";
+	if (typeof identity !== "string" || seen.has(identity)) return undefined;
+	seen.add(identity);
+	const type = types.get(identity);
+	if (type?.kind === "scalar")
+		return type.scalar === "integer" ? "integer" : undefined;
+	if (type?.kind === "alias" || type?.kind === "reference")
+		return integerScalar(types, type.target, seen);
+	return undefined;
+}
+
+function integerConstraints(types, identity, seen = new Set()) {
+	if (typeof identity !== "string" || seen.has(identity)) return [];
+	seen.add(identity);
+	const type = types.get(identity);
+	if (!type) return [];
+	const own = [...(type.constraints ?? [])];
+	return type.kind === "alias" || type.kind === "reference"
+		? [...integerConstraints(types, type.target, seen), ...own]
+		: own;
 }
 function decimalPolicy(types, identity, seen = new Set()) {
 	if (typeof identity !== "string" || seen.has(identity)) return undefined;
@@ -315,6 +583,10 @@ function annotated(schema, node) {
 function fieldSchema(field, types) {
 	let schema = ref(types, field.typeRef);
 	if (field.decimal) schema = decimalSchema(field.decimal);
+	const inheritedIntegerConstraints =
+		integerScalar(types, field.typeRef) === "integer"
+			? integerConstraints(types, field.typeRef)
+			: [];
 	// An authored alias a field references may itself declare constraints
 	// (gap 1 of FCD #199/#200: a field's own constraints are now inline on the
 	// field, below, with no synthetic alias minted for them, but an authored
@@ -322,6 +594,8 @@ function fieldSchema(field, types) {
 	// those beside the reference: a bare sibling reference would erase the
 	// constraint at the API boundary this backend exists to enforce.
 	let target = types.get(field.typeRef);
+	if (target?.kind === "alias" && (target.constraints ?? []).length > 0)
+		schema = { allOf: [schema] };
 	const effectiveDecimalPolicy =
 		field.decimal ?? decimalPolicy(types, field.typeRef);
 	const seen = new Set();
@@ -331,13 +605,44 @@ function fieldSchema(field, types) {
 			constraint(
 				schema,
 				one,
-				decimalScalar(types, field.typeRef) === "decimal"
-					? { ...target, scalar: "decimal" }
+				decimalScalar(types, field.typeRef)
+					? { ...target, scalar: decimalScalar(types, field.typeRef) }
 					: target,
 				effectiveDecimalPolicy,
 			);
 		target = types.get(target.target);
 	}
+	const fieldSubject =
+		integerScalar(types, field.typeRef) === "integer"
+			? { ...(target ?? {}), scalar: "integer" }
+			: decimalScalar(types, field.typeRef) === "decimal"
+				? { ...(target ?? {}), scalar: "decimal" }
+				: nativeScalar(field.typeRef) !== undefined
+					? { ...(target ?? {}), scalar: nativeScalar(field.typeRef) }
+					: target;
+	if (
+		integerScalar(types, field.typeRef) === "integer" &&
+		(inheritedIntegerConstraints.length > 0 ||
+			(field.constraints ?? []).some((one) =>
+				["min", "max", "exclusiveMin", "exclusiveMax"].includes(one.keyword),
+			))
+	) {
+		const integer = integerSchema([
+			...inheritedIntegerConstraints,
+			...(field.constraints ?? []),
+		]);
+		schema = schema.enum
+			? {
+					...integer,
+					enum:
+						integer.type === "integer"
+							? schema.enum.map((entry) => Number(entry))
+							: schema.enum,
+				}
+			: integer;
+	}
+	for (const one of field.constraints ?? [])
+		constraint(schema, one, fieldSubject, effectiveDecimalPolicy);
 	if (
 		field.multiplicity &&
 		(field.multiplicity.upper === undefined || field.multiplicity.upper > 1)
@@ -350,15 +655,6 @@ function fieldSchema(field, types) {
 		if (field.multiplicity.unique) schema.uniqueItems = true;
 	}
 	if (field.nullable) schema = { anyOf: [schema, { type: "null" }] };
-	for (const one of field.constraints ?? [])
-		constraint(
-			schema,
-			one,
-			decimalScalar(types, field.typeRef) === "decimal"
-				? { ...(target ?? {}), scalar: "decimal" }
-				: target,
-			effectiveDecimalPolicy,
-		);
 	return annotated(schema, field);
 }
 /**
@@ -412,9 +708,11 @@ function renderType(ir, type, types, authored) {
 	switch (true) {
 		case type.kind === "scalar":
 			schema =
-				type.scalar === "decimal" && type.decimal
-					? decimalSchema(type.decimal)
-					: { ...(scalarSchema[type.scalar] ?? {}) };
+				type.scalar === "integer"
+					? integerSchema(type.constraints)
+					: type.scalar === "decimal" && type.decimal
+						? decimalSchema(type.decimal)
+						: { ...(scalarSchema[type.scalar] ?? {}) };
 			break;
 		case isRecordShaped(type): {
 			// A record-shaped construct is the record schema over its effective
@@ -468,9 +766,12 @@ function renderType(ir, type, types, authored) {
 			};
 			break;
 		case type.kind === "alias":
-			schema = type.decimal
-				? decimalSchema(type.decimal)
-				: { allOf: [ref(types, type.target)] };
+			schema =
+				integerScalar(types, type.identity) === "integer"
+					? integerSchema(integerConstraints(types, type.identity))
+					: type.decimal
+						? decimalSchema(type.decimal)
+						: { allOf: [ref(types, type.target)] };
 			break;
 		case type.kind === "sequence":
 			schema = { type: "array", items: ref(types, type.items) };
@@ -487,13 +788,12 @@ function renderType(ir, type, types, authored) {
 		default:
 			schema = {};
 	}
+	const scalar = decimalScalar(types, type.identity);
 	for (const one of type.constraints ?? [])
 		constraint(
 			schema,
 			one,
-			decimalScalar(types, type.identity) === "decimal"
-				? { ...type, scalar: "decimal" }
-				: type,
+			scalar ? { ...type, scalar } : type,
 			decimalPolicy(types, type.identity),
 		);
 	return {
@@ -538,29 +838,6 @@ function unsupportedFormat(ir) {
 		}
 	}
 	return undefined;
-}
-/** Refuse integer bounds that JSON Schema would round through binary64. */
-function inexactIntegerBound(ir) {
-	for (const type of ir.types ?? []) {
-		for (const node of [type, ...(type.fields ?? [])]) {
-			const constraint = (node.constraints ?? []).find((one) =>
-				inexactBound(one),
-			);
-			if (constraint) return constraint;
-		}
-	}
-	return undefined;
-}
-function inexactBound(constraint) {
-	const value = constraint?.operands?.value;
-	return (
-		["min", "max", "exclusiveMin", "exclusiveMax"].includes(
-			constraint?.keyword,
-		) &&
-		typeof value === "string" &&
-		/^(0|-?[1-9][0-9]*)$/.test(value) &&
-		!Number.isSafeInteger(Number(value))
-	);
 }
 function admit(request, host) {
 	if (typeof host?.readText !== "function") return undefined;
@@ -663,17 +940,6 @@ export const jsonSchemaBackend = Object.freeze({
 				diagnostics: [
 					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
 						message: `JSON Schema backend has no enforcing mapping for format ${format.operands?.name}`,
-					}),
-				],
-			};
-		const inexact = inexactIntegerBound(ir);
-		if (inexact)
-			return {
-				state: "unsupported",
-				files: [],
-				diagnostics: [
-					diagnostic(DIAGNOSTIC_CODES.UNDECLARED_LOSS, {
-						message: `JSON Schema backend cannot write the integer bound ${inexact.operands.value} of ${inexact.identity} exactly: a JSON Schema bound is a double`,
 					}),
 				],
 			};

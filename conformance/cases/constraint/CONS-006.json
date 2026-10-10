@@ -10,7 +10,7 @@
 		{
 			"op": "test",
 			"path": "/ir/types/1/constraints/0/operands/value",
-			"value": 0
+			"value": "0"
 		},
 		{
 			"op": "replace",
@@ -39,7 +39,7 @@
 				"diagnostic": {
 					"code": "agent-ix.semantic-ir.INVALID_OPERAND",
 					"severity": "error",
-					"message": "a numeric keyword on an integer scalar takes a number operand",
+					"message": "a numeric keyword on an integer scalar takes an exact numeric operand",
 					"owner": "ix://agent-ix/conformance/constraint/count-min",
 					"blocking": true,
 					"causes": [],

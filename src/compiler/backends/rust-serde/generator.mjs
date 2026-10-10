@@ -33,7 +33,9 @@ export const GENERATED_KERNEL_SCALARS = Object.freeze([
 	"any",
 	"boolean",
 	"integer",
-	"number",
+	"decimal",
+	"float32",
+	"float64",
 	"string",
 	"date",
 	"datetime",
@@ -495,10 +497,10 @@ function constraintsFor(scalar, identity, next) {
 		add("pattern", { regex: "^[a-z][a-z0-9-]*$" });
 	}
 	if (scalar === "integer") {
-		add("min", { value: Math.floor(next() * 4) });
-		add("max", { value: 1000 + Math.floor(next() * 1000) });
+		add("min", { value: String(Math.floor(next() * 4)) });
+		add("max", { value: String(1000 + Math.floor(next() * 1000)) });
 	}
-	if (scalar === "number") {
+	if (scalar === "float64" || scalar === "float32") {
 		add("exclusiveMin", { value: -1 });
 		add("exclusiveMax", { value: 1e6 });
 	}

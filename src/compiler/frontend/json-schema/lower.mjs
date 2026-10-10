@@ -48,7 +48,7 @@ export function nameFromUrl(url) {
  */
 const SCALAR_OF = Object.freeze({
 	string: "string",
-	number: "number",
+	number: "float64",
 	integer: "integer",
 	boolean: "boolean",
 });
@@ -275,9 +275,9 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 		const name = mintName(owner, property);
 		const constraints = [];
 		if (typeof schema.minimum === "number")
-			constraints.push(constraintOf(name, "min", schema.minimum, file));
+			constraints.push(constraintOf(name, "min", String(schema.minimum), file));
 		if (typeof schema.maximum === "number")
-			constraints.push(constraintOf(name, "max", schema.maximum, file));
+			constraints.push(constraintOf(name, "max", String(schema.maximum), file));
 		typeRef = mint({ kind: "scalar", scalar: "integer", constraints });
 	} else if (schema && schema.type === "array") {
 		const items = schema.items;

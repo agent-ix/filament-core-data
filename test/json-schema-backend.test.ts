@@ -7,8 +7,8 @@ import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index
 import type { BackendGeneration } from "../src/compiler/backends/seam.mjs";
 import { generateTarget } from "../src/compiler/backends/seam.mjs";
 import { DEFAULT_LIMITS } from "../src/compiler/diagnostics.mjs";
-import { createHost } from "../src/compiler/host.mjs";
 import type { CompilerFileHost } from "../src/compiler/host.mjs";
+import { createHost } from "../src/compiler/host.mjs";
 
 /**
  * `jsonSchemaBackend.generate`'s own declaration (`json-schema-v1/index.d.mts`)
@@ -75,13 +75,15 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		).toBe(true);
 	});
 
-	/** Traces: TC-1361; FR-100-AC-1. */
+	/** Trace: FR-100-AC-1. */
 	it("maps every IR structural kind and kernel scalar to a compilable schema", () => {
 		const prefix = "ix://agent-ix/all-kinds/type";
 		const scalarNames = [
 			"boolean",
 			"integer",
-			"number",
+			"decimal",
+			"float32",
+			"float64",
 			"string",
 			"bytes",
 			"date",
@@ -97,8 +99,39 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 					identity: ref(scalar),
 					kind: "scalar",
 					scalar,
+					displayName: scalar === "decimal" ? "DecimalBuiltin" : undefined,
 					extensions: [],
 				})),
+				{
+					identity: ref("WideInteger"),
+					displayName: "WideInteger",
+					kind: "scalar",
+					scalar: "integer",
+					constraints: [
+						{ keyword: "min", operands: { value: "1" } },
+						{
+							keyword: "max",
+							operands: { value: "18446744073709551615" },
+						},
+					],
+					extensions: [],
+				},
+				{
+					identity: ref("Decimal"),
+					displayName: "Decimal",
+					kind: "scalar",
+					scalar: "decimal",
+					decimal: { precision: 5, scale: 2 },
+					extensions: [],
+				},
+				{
+					identity: ref("DecimalAlias"),
+					displayName: "DecimalAlias",
+					kind: "alias",
+					target: ref("Decimal"),
+					decimal: { precision: 5, scale: 2 },
+					extensions: [],
+				},
 				{
 					identity: ref("Record"),
 					kind: "record",
@@ -159,11 +192,31 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		const schemas = generate({ ir })
 			.files.filter((file) => file.path !== "index.json")
 			.map((file) => JSON.parse(file.text));
-		expect(schemas).toHaveLength(16);
+		expect(schemas).toHaveLength(21);
 		const ajv = new Ajv2020({ strict: false });
 		addFormats(ajv);
 		for (const schema of schemas) ajv.addSchema(schema);
 		expect(schemas.every((schema) => ajv.getSchema(schema.$id))).toBe(true);
+
+		const schema = (name: string) =>
+			schemas.find((entry) => entry.title === name) as Record<string, unknown>;
+		const wideInteger = schema("WideInteger");
+		expect(wideInteger.type).toBe("string");
+		expect(String(wideInteger.pattern)).toMatch(/^\^\(\?:/);
+		expect(
+			new RegExp(String(wideInteger.pattern)).test("18446744073709551615"),
+		).toBe(true);
+		expect(
+			new RegExp(String(wideInteger.pattern)).test("18446744073709551616"),
+		).toBe(false);
+		expect(new RegExp(String(wideInteger.pattern)).test("0")).toBe(false);
+		expect(new RegExp(String(wideInteger.pattern)).test("-1")).toBe(false);
+		const decimal = schema("Decimal");
+		expect(decimal.type).toBe("string");
+		expect(new RegExp(String(decimal.pattern)).test("-0.5")).toBe(true);
+		expect(new RegExp(String(decimal.pattern)).test("-0")).toBe(false);
+		expect(new RegExp(String(decimal.pattern)).test("1.10")).toBe(true);
+		expect(schema("DecimalAlias").pattern).toBe(decimal.pattern);
 	});
 
 	/** Traces: TC-1749; FR-142-AC-5, FR-142-CON-2. */
@@ -353,7 +406,10 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 			"id",
 			"versionNumber",
 		]);
-		expect(schema.properties.versionNumber.minimum).toBe(1);
+		expect(schema.properties.versionNumber).toMatchObject({
+			type: "integer",
+			minimum: 1,
+		});
 		expect(result.files.some((one) => one.path === "index.json")).toBe(true);
 	});
 

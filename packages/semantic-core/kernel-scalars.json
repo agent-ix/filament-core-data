@@ -15,15 +15,27 @@
 		},
 		"Integer": {
 			"irScalar": "integer",
-			"bounds": "signed 64-bit: -2^63 .. 2^63-1",
-			"serialization": "JSON number without fraction",
+			"bounds": "default instance domain -9007199254740991 .. 9007199254740991; declared bounds i128::MIN .. i128::MAX",
+			"serialization": "canonical integer string for values and bounds",
 			"unitAllowed": true
 		},
 		"Decimal": {
 			"irScalar": "decimal",
-			"bounds": "Canonical decimal string within the declared TypeRef.decimal { precision, scale } policy",
-			"serialization": "Canonical decimal string with no exponent or trailing fractional zero",
+			"bounds": "TypeRef.decimal { precision, scale } required by the grammar rule",
+			"serialization": "canonical decimal string",
 			"unitAllowed": true
+		},
+		"Float32": {
+			"irScalar": "float32",
+			"bounds": "IEEE 754 binary32 finite values",
+			"serialization": "JSON number",
+			"unitAllowed": false
+		},
+		"Float64": {
+			"irScalar": "float64",
+			"bounds": "IEEE 754 binary64 finite values",
+			"serialization": "JSON number",
+			"unitAllowed": false
 		},
 		"String": {
 			"irScalar": "string",

@@ -210,6 +210,14 @@ impl PackageIdentity {
         Ok(format!("{}/{}", self.type_identity(record)?, slug(field)?))
     }
 
+    /// The identity of the alias minted for a constrained field: the
+    /// artifact id followed by the capitalized slug of its field.
+    pub fn alias_identity(&self, artifact_id: &str, field: &str) -> Result<String, Unsluggable> {
+        let artifact_id = id_segment(artifact_id)?;
+        let field = capitalized_slug(field)?;
+        Ok(format!("ix://{}/{}{}", self.package(), artifact_id, field,))
+    }
+
     /// `ix://<org>/<name>/constraint/<record id>-<field-slug>-<keyword>`.
     pub fn constraint_identity(
         &self,
@@ -309,6 +317,23 @@ impl PackageIdentity {
 impl From<&Package> for PackageIdentity {
     fn from(package: &Package) -> Self {
         Self::new(&package.org, &package.name)
+    }
+}
+
+/// The display name of the alias minted for a constrained field.
+pub fn alias_display_name(record: &str, field: &str) -> String {
+    format!("{record}{}", capitalized(field))
+}
+
+fn capitalized_slug(field: &str) -> Result<String, Unsluggable> {
+    Ok(capitalized(&slug(field)?))
+}
+
+fn capitalized(field: &str) -> String {
+    let mut chars = field.chars();
+    match chars.next() {
+        Some(first) => first.to_uppercase().chain(chars).collect(),
+        None => String::new(),
     }
 }
 

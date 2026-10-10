@@ -98,6 +98,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.semantic-ir.DUPLICATE_CLAUSE_ID` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_PARAM` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.INTEGER_OUTSIDE_I128` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_DEFAULT_VALUE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_DOCUMENT` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_MULTIPLICITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
@@ -108,6 +109,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.semantic-ir.MISSING_MULTIPLICITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.MISSING_SOURCE_SPAN` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.NODES_ON_NON_RECORD` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.SCHEMA_VIOLATION` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNIT_ON_NON_SCALAR` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNKNOWN_CLAUSE_LANGUAGE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNKNOWN_CONSTRAINT_KEYWORD` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |

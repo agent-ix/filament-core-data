@@ -434,6 +434,85 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 		]);
 	});
 
+	/** Trace: FR-144-AC-12. */
+	it("preserves spec-bundle numeric aliases and decimal policy in the frontend handoff", async () => {
+		const document = {
+			contractVersion: "2.0.0",
+			package: { identity: "agent-ix/probe", version: "0.0.0" },
+			types: [
+				{
+					identity: "ix://agent-ix/probe/VersionNumber",
+					displayName: "VersionNumber",
+					kind: "alias",
+					target: "ix://quire/native/Integer",
+					constraints: [
+						{
+							keyword: "min",
+							operands: { value: "1" },
+						},
+					],
+				},
+				{
+					identity: "ix://agent-ix/probe/Price",
+					displayName: "Price",
+					kind: "alias",
+					target: "ix://quire/native/Decimal",
+					decimal: { precision: 10, scale: 2 },
+					constraints: [
+						{
+							keyword: "min",
+							operands: { value: "1.50" },
+						},
+					],
+				},
+				{
+					identity: "ix://agent-ix/probe/Unpriced",
+					displayName: "Unpriced",
+					kind: "alias",
+					target: "ix://quire/native/Decimal",
+					constraints: [],
+				},
+				{
+					identity: "ix://agent-ix/probe/Invoice",
+					displayName: "Invoice",
+					kind: "record",
+					fields: [
+						{
+							identity: "ix://agent-ix/probe/Invoice/amount",
+							name: "amount",
+							typeRef: "ix://agent-ix/probe/Unpriced",
+							presence: "required",
+							nullable: false,
+							multiplicity: {
+								lower: 1,
+								upper: 1,
+								ordered: false,
+								unique: false,
+							},
+						},
+					],
+				},
+			],
+		};
+		const result = await runFrontend({
+			dialect: "spec-bundle",
+			bundleRoot: "/probe/bundle",
+			lift: () => ({
+				status: 0,
+				stderr: "",
+				document: JSON.stringify(document),
+				diagnostics: "[]",
+			}),
+		});
+		note(result.diagnostics as never);
+		expect(result.diagnostics).toEqual([]);
+		expect((result.ir as Json).types).toEqual(document.types);
+		const readerDiagnostics = readContractIr(result.ir as never);
+		expect(readerDiagnostics.map((diagnostic) => diagnostic.code)).toContain(
+			"agent-ix.semantic-ir.DECIMAL_POLICY_MISSING",
+		);
+	});
+
 	/** Traces: TC-1406; FR-131-AC-3. */
 	it("refuses a request naming no bundle root without calling the producer", async () => {
 		let called = 0;
@@ -1037,7 +1116,12 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			expect(pattern.test(code), code).toBe(true);
 		}
 		for (const type of (compiled.ir as never as { types: Json[] }).types) {
-			for (const constraint of (type.constraints as Json[]) ?? []) {
+			for (const constraint of [
+				...((type.constraints as Json[]) ?? []),
+				...((type.fields as Json[]) ?? []).flatMap(
+					(field) => (field.constraints as Json[]) ?? [],
+				),
+			]) {
 				expect(
 					pattern.test(String(constraint.diagnosticCode)),
 					String(constraint.diagnosticCode),
@@ -1286,18 +1370,17 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			"ix://agent-ix/semantic-core/ext/decimal",
 		);
 		expect(extensionsOf("id")).toContain("ix://agent-ix/semantic-core/ext/doc");
-		// A field typed by a built-in directly names its native kernel scalar
-		// (gap 1 of FCD #199/#200): no package-local `Integer` node is minted,
-		// so no `ext/kernel-scalar` extension exists to carry its name.
+		// A native integer width is represented by a package-local unbounded
+		// Integer target plus a field-specific alias carrying its effective range.
 		expect(
 			(compiled.ir as never as { types: Json[] }).types.find(
 				(type) => type.identity === "ix://agent-ix/assurance/Integer",
 			),
-		).toBeUndefined();
+		).toMatchObject({ kind: "scalar", scalar: "integer" });
 		expect(
 			(artifact?.fields as Json[]).find((field) => field.name === "revision")
 				?.typeRef,
-		).toBe("ix://quire/native/Integer");
+		).toBe("ix://agent-ix/assurance/ArtifactRevision");
 
 		const arbitrary = await compileSource(
 			[
@@ -1431,7 +1514,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		]);
 	});
 
-	/** Traces: TC-434; FR-046-AC-3. */
+	/** Trace: TC-434; FR-046-AC-3; FR-144-AC-10, FR-144-AC-11, FR-144-AC-20, FR-144-AC-23. */
 	it("maps every built-in scalar row and refuses an unmapped base", async () => {
 		const rows: [string, string][] = [
 			["boolean", "boolean"],
@@ -1439,9 +1522,8 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			["int64", "integer"],
 			["safeint", "integer"],
 			["uint8", "integer"],
-			["float64", "number"],
+			["float64", "float64"],
 			["decimal128", "decimal"],
-			["numeric", "number"],
 			["string", "string"],
 			["url", "string"],
 			["bytes", "bytes"],
@@ -1470,6 +1552,347 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		);
 		expect(codesOf(unmapped.diagnostics as never)).toContain(
 			DIAGNOSTIC_CODES.UNSUPPORTED_SCALAR_BASE.code,
+		);
+	}, 120000);
+
+	/** Trace: FR-144-AC-5, FR-144-AC-11, FR-144-AC-20, FR-144-AC-23. */
+	it("lowers a real TypeSpec width and narrowing corpus into usable backend aliases", async () => {
+		const result = await compileSource(
+			[
+				"namespace AgentIx.Semantic;",
+				"model WidthCorpus {",
+				"  signed: int8;",
+				"  wide: uint64;",
+				"  @minValue(0) bounded: int8;",
+				"  @maxValueExclusive(100) narrowed: uint64;",
+				"}",
+			].join("\n"),
+		);
+		expect(codesOf(result.diagnostics as never)).toEqual([]);
+		const types = (result.ir as never as { types: Json[] }).types;
+		const narrowed = types.find(
+			(type) => type.displayName === "WidthCorpusNarrowed",
+		) as Json;
+		expect(narrowed?.kind).toBe("alias");
+		expect(narrowed?.target).toBe("ix://agent-ix/probe/Integer");
+		const integer = types.find(
+			(type) => type.displayName === "Integer",
+		) as Json;
+		expect(integer?.kind).toBe("scalar");
+		expect(integer?.scalar).toBe("integer");
+		expect(integer?.constraints).toEqual([]);
+		expect(
+			(narrowed?.constraints as Json[]).map((constraint) => constraint.keyword),
+		).toEqual(["max", "min", "exclusiveMax"]);
+		const corpus = types.find(
+			(type) => type.displayName === "WidthCorpus",
+		) as Json;
+		const narrowedField = (corpus.fields as Json[]).find(
+			(field) => field.name === "narrowed",
+		) as Json;
+		expect(
+			(narrowedField.constraints as Json[]).map(
+				(constraint) => constraint.keyword,
+			),
+		).toContain("exclusiveMax");
+		const bounded = types.find(
+			(type) => type.displayName === "WidthCorpusBounded",
+		) as Json;
+		expect(
+			(bounded?.constraints as Json[]).map((constraint) => [
+				constraint.keyword,
+				(constraint.operands as Json | undefined)?.value,
+			]),
+		).toEqual([
+			["max", "127"],
+			["min", "0"],
+		]);
+		const generated = typescriptBackend.generate(
+			{ ir: result.ir } as never,
+			{ host: result.host } as never,
+		);
+		expect(generated.diagnostics.filter((one) => one.blocking)).toEqual([]);
+		const typesText = generated.files.find(
+			(file) => file.path === "types.ts",
+		)?.text;
+		expect(typesText).toBeDefined();
+		expect(typesText).not.toContain("export type WidthCorpusNarrowed = never;");
+		expect(typesText).toContain("export type WidthCorpusNarrowed = number;");
+		const rust = rustBackend.generate(
+			{ ir: result.ir, outputRoot: "generated/rust" } as never,
+			{ host: result.host } as never,
+		);
+		expect(
+			rust.diagnostics.filter((one) => one.blocking),
+			JSON.stringify(rust.diagnostics),
+		).toEqual([]);
+		const invalidDecimal = await compileSource(
+			[
+				"using AgentIx.Semantic.Decorators;",
+				"namespace AgentIx.Semantic;",
+				"model Bad { @decimal(35, 2) value: decimal128; }",
+			].join("\n"),
+		);
+		expect(codesOf(invalidDecimal.diagnostics as never)).toContain(
+			DIAGNOSTIC_CODES.DECIMAL_PRECISION_EXCEEDS_BASE.code,
+		);
+		const boundedDecimal = await compileSource(
+			[
+				"using AgentIx.Semantic.Decorators;",
+				"namespace AgentIx.Semantic;",
+				"model DecimalBound { @decimal(5, 2) @minValue(0) value: decimal; }",
+			].join("\n"),
+		);
+		expect(
+			codesOf(boundedDecimal.diagnostics as never),
+			JSON.stringify(boundedDecimal.diagnostics),
+		).toEqual([]);
+		const decimalTypes = (boundedDecimal.ir as never as { types: Json[] })
+			.types;
+		const decimalAlias = decimalTypes.find(
+			(type) => type.displayName === "DecimalBoundValue",
+		) as Json;
+		expect(decimalAlias?.decimal).toEqual({ precision: 5, scale: 2 });
+		expect(decimalAlias?.constraints).toHaveLength(1);
+		expect(
+			(
+				decimalTypes.find((type) => type.displayName === "DecimalBound")
+					?.fields as Json[]
+			)[0].constraints,
+		).toBeUndefined();
+	}, 120000);
+
+	/** Traces: FR-144-AC-23; indexers, union payloads and operation returns retain native integer widths. */
+	it("mints width aliases at every non-field TypeSpec member site", async () => {
+		const result = await compileSource(
+			[
+				"using AgentIx.Semantic.Decorators;",
+				"namespace AgentIx.Semantic;",
+				"scalar ScalarWidth extends uint8;",
+				"model Bytes is Array<uint8>;",
+				"model Values is Record<uint64>;",
+				"union Choice { small: int16, smallValue: int16, Items: int16, text: string, }",
+				"model Order { value: string; cancelReason: uint8; cancel_reason: uint8; cancel_param_reason: uint8; }",
+				'@operations("Order")',
+				"interface OrderOperations { cancel(reason: uint8): uint8; reason(reason: uint64): uint64; wide(value: uint64): uint64; }",
+			].join("\n"),
+		);
+		expect(
+			codesOf(result.diagnostics as never),
+			JSON.stringify(result.diagnostics),
+		).toEqual([]);
+		const types = (result.ir as never as { types: Json[] }).types;
+		const scalarWidth = types.find(
+			(type) => type.displayName === "ScalarWidth",
+		) as Json;
+		expect(scalarWidth.kind).toBe("scalar");
+		expect(scalarWidth.scalar).toBe("integer");
+		const bytes = types.find((type) => type.displayName === "Bytes") as Json;
+		const bytesItems = types.find(
+			(type) => type.displayName === "BytesItems",
+		) as Json;
+		expect(bytes.kind).toBe("sequence");
+		expect(bytes.items).toBe(bytesItems.identity);
+		expect(bytesItems.target).toBe("ix://agent-ix/probe/Integer");
+		expect(
+			(bytesItems.constraints as Json[]).map((one) => [
+				one.keyword,
+				(one.operands as Json | undefined)?.value,
+			]),
+		).toEqual([
+			["min", "0"],
+			["max", "255"],
+		]);
+		expect(
+			(bytesItems.constraints as Json[]).map((one) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toEqual([
+			[
+				"ix://agent-ix/probe/constraint/Bytes-items-min",
+				"agent-ix.probe.BYTES_ITEMS_MIN",
+			],
+			[
+				"ix://agent-ix/probe/constraint/Bytes-items-max",
+				"agent-ix.probe.BYTES_ITEMS_MAX",
+			],
+		]);
+		const values = types.find((type) => type.displayName === "Values") as Json;
+		const valuesAlias = types.find(
+			(type) => type.displayName === "ValuesValues",
+		) as Json;
+		expect(values.values).toBe(valuesAlias.identity);
+		expect(valuesAlias.target).toBe("ix://agent-ix/probe/Integer");
+		expect(
+			(valuesAlias.constraints as Json[]).map((one) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toContainEqual([
+			"ix://agent-ix/probe/constraint/Values-values-min",
+			"agent-ix.probe.VALUES_VALUES_MIN",
+		]);
+		const choice = types.find((type) => type.displayName === "Choice") as Json;
+		const small = (choice.variants as Json[]).find(
+			(variant) => variant.name === "small",
+		) as Json;
+		const smallAlias = types.find(
+			(type) => type.identity === small.payloadType,
+		) as Json;
+		expect(small.payloadType).toBe(smallAlias.identity);
+		expect(smallAlias.identity).toBe("ix://agent-ix/probe/ChoiceSmall");
+		expect(smallAlias.target).toBe("ix://agent-ix/probe/Integer");
+		expect(
+			(smallAlias.constraints as Json[]).map((one) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toEqual([
+			[
+				"ix://agent-ix/probe/constraint/Choice-small-min",
+				"agent-ix.probe.CHOICE_SMALL_MIN",
+			],
+			[
+				"ix://agent-ix/probe/constraint/Choice-small-max",
+				"agent-ix.probe.CHOICE_SMALL_MAX",
+			],
+		]);
+		const smallValue = (choice.variants as Json[]).find(
+			(variant) => variant.name === "smallValue",
+		) as Json;
+		const smallValueAlias = types.find(
+			(type) => type.identity === smallValue.payloadType,
+		) as Json;
+		expect(smallValueAlias.identity).toBe(
+			"ix://agent-ix/probe/ChoiceSmallValue",
+		);
+		expect(
+			(smallValueAlias.constraints as Json[]).map((one) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toContainEqual([
+			"ix://agent-ix/probe/constraint/Choice-smallValue-min",
+			"agent-ix.probe.CHOICE_SMALLVALUE_MIN",
+		]);
+		const itemsVariant = (choice.variants as Json[]).find(
+			(variant) => variant.name === "Items",
+		) as Json;
+		const itemsAlias = types.find(
+			(type) => type.identity === itemsVariant.payloadType,
+		) as Json;
+		expect(itemsAlias.identity).toBe("ix://agent-ix/probe/ChoiceItems");
+		expect(
+			(itemsAlias.constraints as Json[]).map((one) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toContainEqual([
+			"ix://agent-ix/probe/constraint/Choice-Items-min",
+			"agent-ix.probe.CHOICE_ITEMS_MIN",
+		]);
+		const operation = types.find(
+			(type) => type.displayName === "Order",
+		) as Json;
+		const operations = operation.operations as Json[];
+		const cancelOperation = operations.find(
+			(one: Json) => one.name === "cancel",
+		) as Json;
+		const returns = cancelOperation.returns as Json;
+		const params = cancelOperation.params as Json[];
+		const returnAlias = types.find(
+			(type) => type.identity === returns.typeRef,
+		) as Json;
+		const parameterAlias = types.find(
+			(type) => type.identity === params[0].typeRef,
+		) as Json;
+		expect(parameterAlias.identity).toBe(
+			"ix://agent-ix/probe/Order/cancel/reason/width",
+		);
+		expect(parameterAlias.displayName).toBe("OrderCancelReasonParam");
+		expect(parameterAlias.target).toBe("ix://agent-ix/probe/Integer");
+		expect(returns.typeRef).toBe(returnAlias.identity);
+		expect(returnAlias.identity).toBe("ix://agent-ix/probe/OrderCancelReturn");
+		expect(returnAlias.target).toBe("ix://agent-ix/probe/Integer");
+		const wideOperation = operations.find(
+			(one: Json) => one.name === "wide",
+		) as Json;
+		const wideParams = wideOperation.params as Json[];
+		const wideParameter = types.find(
+			(type) => type.identity === wideParams[0].typeRef,
+		) as Json;
+		expect(wideParameter.identity).toBe(
+			"ix://agent-ix/probe/Order/wide/value/width",
+		);
+		expect(
+			(
+				(wideParameter.constraints as Json[]).find(
+					(one: Json) => one.keyword === "max",
+				)?.operands as Json | undefined
+			)?.value,
+		).toBe("18446744073709551615");
+		const fieldAlias = types.find(
+			(type) => type.displayName === "OrderCancelReason",
+		) as Json;
+		expect(fieldAlias.identity).toBe("ix://agent-ix/probe/OrderCancelReason");
+		expect(
+			(fieldAlias.constraints as Json[]).map((one: Json) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toEqual([
+			[
+				"ix://agent-ix/probe/constraint/Order-cancelReason-max",
+				"agent-ix.probe.ORDER_CANCELREASON_MAX",
+			],
+			[
+				"ix://agent-ix/probe/constraint/Order-cancelReason-min",
+				"agent-ix.probe.ORDER_CANCELREASON_MIN",
+			],
+		]);
+		const cancelUnderscore = types.find(
+			(type) => type.identity === "ix://agent-ix/probe/OrderCancel-reason",
+		) as Json;
+		expect(
+			(cancelUnderscore.constraints as Json[]).find(
+				(one: Json) => one.keyword === "min",
+			)?.diagnosticCode,
+		).toBe("agent-ix.probe.ORDER_CANCEL_REASON_MIN");
+		const cancelParam = types.find(
+			(type) =>
+				type.identity === "ix://agent-ix/probe/OrderCancel-param-reason",
+		) as Json;
+		expect(
+			(cancelParam.constraints as Json[]).find(
+				(one: Json) => one.keyword === "min",
+			)?.diagnosticCode,
+		).toBe("agent-ix.probe.ORDER_CANCEL_PARAM_REASON_MIN");
+		expect(
+			(parameterAlias.constraints as Json[]).find(
+				(one: Json) => one.keyword === "min",
+			)?.identity,
+		).toBe("ix://agent-ix/probe/constraint/Order/cancel/reason/min");
+		expect(
+			(parameterAlias.constraints as Json[]).find(
+				(one: Json) => one.keyword === "min",
+			)?.diagnosticCode,
+		).toBe("agent-ix.probe.ORDER_CANCEL__REASON_MIN");
+		const reasonOperation = operations.find(
+			(one: Json) => one.name === "reason",
+		) as Json;
+		const reasonParams = reasonOperation.params as Json[];
+		const reasonParameter = types.find(
+			(type) => type.identity === reasonParams[0].typeRef,
+		) as Json;
+		expect(
+			(reasonParameter.constraints as Json[]).find(
+				(one: Json) => one.keyword === "min",
+			)?.diagnosticCode,
+		).toBe("agent-ix.probe.ORDER_REASON__REASON_MIN");
+		const aliases = types.filter((type) => type.kind === "alias");
+		expect(new Set(aliases.map((type) => type.identity)).size).toBe(
+			aliases.length,
 		);
 	}, 120000);
 
@@ -1683,12 +2106,14 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 
 	/** Traces: TC-441; FR-046-AC-10. */
 	it("names a built-in used directly by its native kernel scalar reference", async () => {
-		// Gap 1 of FCD #199/#200: a field typed by a built-in scalar
-		// directly mints no package-local definition; its `typeRef` names
-		// the kernel scalar's native reference over the closed FR-032 set.
-		expect(typeOf("Integer")).toBeUndefined();
+		// Native integer widths use the package-local unbounded Integer target and
+		// a field-specific alias carrying the effective width.
+		expect(typeOf("Integer")).toMatchObject({
+			kind: "scalar",
+			scalar: "integer",
+		});
 		expect(fieldOf("Artifact", "revision").typeRef).toBe(
-			"ix://quire/native/Integer",
+			"ix://agent-ix/assurance/ArtifactRevision",
 		);
 		expect(typeOf("Timestamp")).toBeUndefined();
 		expect(fieldOf("AuditEvent", "at").typeRef).toBe(
@@ -3068,7 +3493,7 @@ describe("the diagnostic registry (FR-049)", () => {
 			expect(document, name).toContain(`| \`${name}\` | ${value} |`);
 		}
 		const documented = [
-			...document.matchAll(/\| `(agent-ix\.[a-z-]+\.[A-Z_]+)` \|/g),
+			...document.matchAll(/\| `(agent-ix\.[a-z-]+\.[A-Z0-9_]+)` \|/g),
 		].map((match) => match[1]);
 		expect([...new Set(documented)].sort()).toEqual(
 			entries.map((entry) => entry.code).sort(),
@@ -3081,13 +3506,13 @@ describe("the diagnostic registry (FR-049)", () => {
 			[
 				...read(
 					resolve(root, "fixtures/semantic/v1/negative/reader-cases.json"),
-				).matchAll(/agent-ix\.semantic-ir\.[A-Z_]+/g),
+				).matchAll(/agent-ix\.semantic-ir\.[A-Z0-9_]+/g),
 			].map((match) => match[0]),
 		);
 		const readerCodes = new Set(
 			[
 				...read(resolve(root, "test/semantic-ir-v1-1-reader.ts")).matchAll(
-					/agent-ix\.semantic-ir\.[A-Z_]+/g,
+					/agent-ix\.semantic-ir\.[A-Z0-9_]+/g,
 				),
 			].map((match) => match[0]),
 		);
@@ -4074,6 +4499,395 @@ describe("compatibility (FR-051)", () => {
 			family: change.family,
 			disposition: change.disposition,
 		}));
+	const numericPair = () => {
+		const old = structuredClone(constructed("type-domain-widening").old);
+		return { old, next: structuredClone(old) };
+	};
+	const seconds = (document: Json) =>
+		(document as unknown as { types: Record<string, unknown>[] }).types.find(
+			(type) => type.displayName === "Seconds",
+		) as Record<string, unknown>;
+	const bound = (
+		document: Json,
+		keyword: string,
+		value: string,
+		subject = seconds(document),
+	) => {
+		const types = (document as unknown as { types: Record<string, unknown>[] })
+			.types;
+		const seed = (
+			types.find((type) => type.displayName === "Text")?.constraints as Record<
+				string,
+				unknown
+			>[]
+		)[0];
+		subject.constraints = [
+			...((subject.constraints as Record<string, unknown>[]) ?? []),
+			{
+				...seed,
+				identity: `ix://agent-ix/assurance/constraint/${subject.displayName}-${keyword}`,
+				keyword,
+				operands: { value },
+				appliesTo: subject.identity,
+			},
+		];
+	};
+	const duration = (document: Json) =>
+		(
+			(document as unknown as { types: Record<string, unknown>[] }).types.find(
+				(type) => type.displayName === "Artifact",
+			)?.fields as Record<string, unknown>[]
+		).find((field) => field.name === "duration") as Record<string, unknown>;
+	const fieldBound = (document: Json, keyword: string, value: string) => {
+		const field = duration(document);
+		field.constraints = [
+			...((field.constraints as Record<string, unknown>[]) ?? []),
+			{
+				identity: `ix://agent-ix/assurance/constraint/Artifact-duration-${keyword}`,
+				keyword,
+				operands: { value },
+				appliesTo: field.identity,
+				diagnosticCode: "agent-ix.assurance.DURATION_BOUND",
+				origin: field.origin,
+			},
+		];
+	};
+	const numericDisposition = (old: Json, next: Json, family: string) => {
+		expect(validateIrDocument(old as never)).toEqual([]);
+		expect(validateIrDocument(next as never)).toEqual([]);
+		expect([...readContractIr(old as never)]).toEqual([]);
+		expect([...readContractIr(next as never)]).toEqual([]);
+		return reportOfPair(old, next).changes.find(
+			(change) =>
+				change.identity === "ix://agent-ix/assurance/type/Seconds" &&
+				change.family === family,
+		)?.disposition;
+	};
+
+	/** Trace: FR-051-AC-18. */
+	it("classifies numeric scalar and decimal policy changes by their domain", () => {
+		for (const [before, after, expected] of [
+			["float32", "float64", "conditional"],
+			["float64", "float32", "breaking"],
+			["integer", "decimal", "breaking"],
+		] as const) {
+			const { old, next } = numericPair();
+			seconds(old).scalar = before;
+			seconds(next).scalar = after;
+			if (after === "decimal")
+				seconds(next).decimal = { precision: 5, scale: 2 };
+			expect(numericDisposition(old, next, "type"), `${before}>${after}`).toBe(
+				expected,
+			);
+		}
+		for (const [precision, scale, expected] of [
+			[7, 3, "conditional"],
+			[5, 3, "breaking"],
+		] as const) {
+			const { old, next } = numericPair();
+			seconds(old).scalar = "decimal";
+			seconds(next).scalar = "decimal";
+			seconds(old).decimal = { precision: 5, scale: 2 };
+			seconds(next).decimal = { precision, scale };
+			expect(
+				numericDisposition(old, next, "type"),
+				`${precision},${scale}`,
+			).toBe(expected);
+		}
+	});
+
+	/** Trace: FR-051-AC-18, FR-051-AC-19. */
+	it("compares exact numeric bounds and preserves integer wire transitions", () => {
+		for (const [before, after, expectedType, expectedConstraint] of [
+			["100", "200", undefined, "conditional"],
+			["100", "18446744073709551615", "breaking", "conditional"],
+			["18446744073709551615", "100", "breaking", "breaking"],
+			["18446744073709551615", "18446744073709551614", undefined, "breaking"],
+		] as const) {
+			const { old, next } = numericPair();
+			bound(old, "min", "0");
+			bound(next, "min", "0");
+			bound(old, "max", before);
+			bound(next, "max", after);
+			expect(numericDisposition(old, next, "type"), `${before}>${after}`).toBe(
+				expectedType,
+			);
+			expect(
+				reportOfPair(old, next).changes.find(
+					(change) => change.family === "constraint",
+				)?.disposition,
+			).toBe(expectedConstraint);
+		}
+		const { old, next } = numericPair();
+		bound(old, "min", "0");
+		bound(next, "min", "0");
+		bound(old, "max", "18446744073709551615");
+		expect(numericDisposition(old, next, "type")).toBe("breaking");
+		for (const [before, after, expected] of [
+			["10.5", "10.51", "conditional"],
+			["10.51", "10.5", "breaking"],
+		] as const) {
+			const pair = numericPair();
+			seconds(pair.old).scalar = "decimal";
+			seconds(pair.next).scalar = "decimal";
+			seconds(pair.old).decimal = { precision: 5, scale: 2 };
+			seconds(pair.next).decimal = { precision: 5, scale: 2 };
+			bound(pair.old, "max", before);
+			bound(pair.next, "max", after);
+			expect(
+				reportOfPair(pair.old, pair.next).changes.find(
+					(change) => change.family === "constraint",
+				)?.disposition,
+			).toBe(expected);
+		}
+	});
+
+	/** Trace: FR-051-AC-18, FR-051-AC-19. */
+	it("classifies alias-chain and native-field numeric bounds", () => {
+		const alias = numericPair();
+		for (const document of [alias.old, alias.next]) {
+			seconds(document).kind = "alias";
+			delete seconds(document).scalar;
+			seconds(document).target = "ix://quire/native/Integer";
+			bound(document, "min", "0");
+		}
+		bound(alias.old, "max", "100");
+		bound(alias.next, "max", "18446744073709551615");
+		expect(numericDisposition(alias.old, alias.next, "type")).toBe("breaking");
+		expect(
+			reportOfPair(alias.old, alias.next).changes.find(
+				(change) => change.family === "constraint",
+			)?.disposition,
+		).toBe("conditional");
+
+		const integerField = numericPair();
+		for (const document of [integerField.old, integerField.next]) {
+			duration(document).typeRef = "ix://quire/native/Integer";
+			fieldBound(document, "min", "0");
+		}
+		fieldBound(integerField.old, "max", "100");
+		fieldBound(integerField.next, "max", "18446744073709551615");
+		for (const document of [integerField.old, integerField.next]) {
+			expect(validateIrDocument(document as never)).toEqual([]);
+			expect([...readContractIr(document as never)]).toEqual([]);
+		}
+		const fieldChanges = reportOfPair(
+			integerField.old,
+			integerField.next,
+		).changes;
+		expect(
+			fieldChanges.find(
+				(change) =>
+					change.identity === duration(integerField.old).identity &&
+					change.family === "type",
+			)?.disposition,
+		).toBe("breaking");
+		expect(
+			fieldChanges.find((change) => change.family === "constraint")
+				?.disposition,
+		).toBe("conditional");
+
+		const decimalField = numericPair();
+		for (const document of [decimalField.old, decimalField.next]) {
+			duration(document).typeRef = "ix://quire/native/Decimal";
+			duration(document).decimal = { precision: 5, scale: 2 };
+		}
+		fieldBound(decimalField.old, "max", "10.51");
+		fieldBound(decimalField.next, "max", "10.5");
+		for (const document of [decimalField.old, decimalField.next]) {
+			expect(validateIrDocument(document as never)).toEqual([]);
+			expect([...readContractIr(document as never)]).toEqual([]);
+		}
+		expect(
+			reportOfPair(decimalField.old, decimalField.next).changes.find(
+				(change) => change.family === "constraint",
+			)?.disposition,
+		).toBe("breaking");
+	});
+
+	const numericStates: {
+		key: string;
+		scalar: "integer" | "float32" | "float64" | "decimal";
+		max?: string;
+		decimal?: { precision: number; scale: number };
+	}[] = [
+		{ key: "IntegerSafe", scalar: "integer", max: "100" },
+		{ key: "IntegerSafe200", scalar: "integer", max: "200" },
+		{ key: "IntegerWide", scalar: "integer", max: "18446744073709551615" },
+		{ key: "Float32", scalar: "float32" },
+		{ key: "Float64", scalar: "float64" },
+		{
+			key: "Decimal52",
+			scalar: "decimal",
+			decimal: { precision: 5, scale: 2 },
+		},
+		{
+			key: "Decimal73",
+			scalar: "decimal",
+			decimal: { precision: 7, scale: 3 },
+		},
+		{
+			key: "Decimal52Max105",
+			scalar: "decimal",
+			decimal: { precision: 5, scale: 2 },
+			max: "10.5",
+		},
+		{
+			key: "Decimal52Max1051",
+			scalar: "decimal",
+			decimal: { precision: 5, scale: 2 },
+			max: "10.51",
+		},
+	];
+	type NumericState = (typeof numericStates)[number];
+	const nativeRef = (state: NumericState) =>
+		`ix://quire/native/${state.scalar[0].toUpperCase()}${state.scalar.slice(1)}`;
+	const configureType = (
+		document: Json,
+		subject: Record<string, unknown>,
+		state: NumericState,
+		alias: boolean,
+	) => {
+		subject.constraints = [];
+		delete subject.scalar;
+		delete subject.target;
+		delete subject.decimal;
+		subject.kind = alias ? "alias" : "scalar";
+		if (alias) subject.target = nativeRef(state);
+		else subject.scalar = state.scalar;
+		if (state.decimal) subject.decimal = state.decimal;
+		if (state.max) {
+			bound(document, "min", "0", subject);
+			bound(document, "max", state.max, subject);
+		}
+	};
+	const configureField = (
+		document: Json,
+		state: NumericState,
+		alias: boolean,
+	) => {
+		const field = duration(document);
+		field.constraints = [];
+		delete field.decimal;
+		if (alias) {
+			const definition = structuredClone(seconds(document));
+			definition.identity = `ix://agent-ix/assurance/type/Numeric${state.key}`;
+			definition.displayName = `Numeric${state.key}`;
+			configureType(document, definition, state, true);
+			const types = (
+				document as unknown as { types: Record<string, unknown>[] }
+			).types;
+			if (!types.some((type) => type.identity === definition.identity))
+				types.push(definition);
+			field.typeRef = definition.identity;
+		} else {
+			field.typeRef = nativeRef(state);
+			if (state.decimal) field.decimal = state.decimal;
+			if (state.max) {
+				fieldBound(document, "min", "0");
+				fieldBound(document, "max", state.max);
+			}
+		}
+	};
+	const numericTransition = (before: NumericState, after: NumericState) => {
+		if (before.key === after.key) return "patch";
+		if (before.scalar === "float32" && after.scalar === "float64")
+			return "conditional";
+		if (before.scalar === "integer" && after.scalar === "integer") {
+			if (before.key === "IntegerWide" || after.key === "IntegerWide")
+				return "breaking";
+			return before.max === "100" && after.max === "200"
+				? "conditional"
+				: "breaking";
+		}
+		if (before.scalar === "decimal" && after.scalar === "decimal") {
+			const oldMax =
+				before.max === "10.5"
+					? 1050
+					: before.max === "10.51"
+						? 1051
+						: Number.POSITIVE_INFINITY;
+			const newMax =
+				after.max === "10.5"
+					? 1050
+					: after.max === "10.51"
+						? 1051
+						: Number.POSITIVE_INFINITY;
+			return after.decimal!.scale >= before.decimal!.scale &&
+				after.decimal!.precision - after.decimal!.scale >=
+					before.decimal!.precision - before.decimal!.scale &&
+				newMax >= oldMax
+				? "conditional"
+				: "breaking";
+		}
+		return "breaking";
+	};
+	for (const surface of [
+		"scalar",
+		"alias-target",
+		"native-field",
+		"alias-field",
+		"alias-retarget",
+	] as const) {
+		for (const before of numericStates) {
+			/** Trace: FR-051-AC-18, FR-051-AC-19. */
+			it(`classifies numeric transition matrix ${surface} from ${before.key}`, () => {
+				for (const after of numericStates) {
+					const pair = numericPair();
+					if (surface === "scalar" || surface === "alias-target") {
+						configureType(
+							pair.old,
+							seconds(pair.old),
+							before,
+							surface === "alias-target",
+						);
+						configureType(
+							pair.next,
+							seconds(pair.next),
+							after,
+							surface === "alias-target",
+						);
+					} else if (surface === "native-field") {
+						configureField(pair.old, before, false);
+						configureField(pair.next, after, false);
+					} else {
+						for (const document of [pair.old, pair.next]) {
+							configureField(document, before, true);
+							configureField(document, after, true);
+						}
+						if (surface === "alias-field") {
+							duration(pair.old).typeRef =
+								`ix://agent-ix/assurance/type/Numeric${before.key}`;
+							duration(pair.next).typeRef =
+								`ix://agent-ix/assurance/type/Numeric${after.key}`;
+						} else {
+							for (const [document, state] of [
+								[pair.old, before],
+								[pair.next, after],
+							] as const) {
+								const alias = seconds(document);
+								alias.kind = "alias";
+								delete alias.scalar;
+								delete alias.decimal;
+								alias.constraints = [];
+								alias.target = `ix://agent-ix/assurance/type/Numeric${state.key}`;
+								duration(document).typeRef = alias.identity;
+							}
+						}
+					}
+					const label = `${surface}: ${before.key}>${after.key}`;
+					expect(validateIrDocument(pair.old as never), label).toEqual([]);
+					expect(validateIrDocument(pair.next as never), label).toEqual([]);
+					expect([...readContractIr(pair.old as never)], label).toEqual([]);
+					expect([...readContractIr(pair.next as never)], label).toEqual([]);
+					expect(
+						reportOfPair(pair.old, pair.next).aggregateDisposition,
+						label,
+					).toBe(numericTransition(before, after));
+				}
+			});
+		}
+	}
 
 	/** Traces: TC-527, TC-602; FR-051-AC-1. */
 	it("reproduces every published compatibility case", () => {
@@ -5992,6 +6806,45 @@ describe("diagnostic coverage (FR-049 closing gate)", () => {
 					].join("\n"),
 				)
 			).diagnostics ?? []) as never,
+		);
+
+		// The exact numeric reader additions are exercised with their smallest
+		// valid IR witnesses here rather than being named as strings in the
+		// coverage set.  A legacy `number` scalar is a schema violation, while
+		// an integer bound beyond i128 is a numeric-domain violation.
+		note(
+			readContractIr({
+				contractVersion: "2.0.0",
+				types: [
+					{
+						identity: "ix://probe/LegacyNumber",
+						kind: "scalar",
+						scalar: "number",
+					},
+				],
+			} as never) as never,
+		);
+		note(
+			readContractIr({
+				contractVersion: "2.0.0",
+				types: [
+					{
+						identity: "ix://probe/Integer",
+						kind: "scalar",
+						scalar: "integer",
+						constraints: [
+							{
+								identity: "ix://probe/Integer-max",
+								keyword: "max",
+								operands: {
+									value: "170141183460469231731687303715884105728",
+								},
+								appliesTo: "ix://probe/Integer",
+							},
+						],
+					},
+				],
+			} as never) as never,
 		);
 	});
 

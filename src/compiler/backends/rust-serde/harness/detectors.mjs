@@ -20,7 +20,7 @@
  * it is named as such and no branch-register row rests on it alone.
  */
 
-import { readFileSync, readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { CONSTRUCT_VOCABULARY } from "../../../constructs.mjs";
@@ -32,7 +32,7 @@ const CONSTRUCTS_FIXTURE = new URL(
 	import.meta.url,
 );
 
-/** The eleven kernel scalar names, read from the table rather than restated. */
+/** The nine kernel scalar names, read from the table rather than restated. */
 function kernelScalars(table) {
 	return table.rows
 		.filter((row) => row.axis === "scalar")
@@ -214,6 +214,42 @@ function documentOf(types) {
 
 const NS = "ix://agent-ix/detector";
 
+function serdeProbeDocument(includeStatus) {
+	const types = [scalarType("Text", "string")];
+	if (includeStatus)
+		types.push({
+			identity: `${NS}/type/Status`,
+			displayName: "Status",
+			kind: "enum",
+			roles: [],
+			constraints: [],
+			extensions: [],
+			unknownPolicy: "reject",
+			variants: [{ identity: `${NS}/variant/in-progress`, name: "inProgress" }],
+		});
+	types.push({
+		identity: `${NS}/type/SerdeProbe`,
+		displayName: "SerdeProbe",
+		kind: "record",
+		roles: [],
+		constraints: [],
+		extensions: [],
+		unknownPolicy: "reject",
+		fields: [
+			{
+				identity: `${NS}/field/serde-probe-created-at`,
+				name: "createdAt",
+				typeRef: `${NS}/type/Text`,
+				presence: "optional",
+				nullable: true,
+				defaultKind: "none",
+				multiplicity: { lower: 0, upper: 1 },
+			},
+		],
+	});
+	return documentOf(types);
+}
+
 function scalarType(name, scalar, constraints = []) {
 	return {
 		identity: `${NS}/type/${name}`,
@@ -233,8 +269,9 @@ function operandsFor(keyword, subject) {
 		if (subject === "date") return { value: "2020-01-01" };
 		if (subject === "datetime") return { value: "2020-01-01T00:00:00Z" };
 		if (subject === "duration") return { value: "P1D" };
-		if (subject === "number") return { value: 1.5 };
-		if (subject === "decimal") return { value: "1.1" };
+		if (subject === "decimal") return { value: "1.5" };
+		if (subject === "float32" || subject === "float64") return { value: 1.5 };
+		if (subject === "integer") return { value: "1" };
 		return { value: 1 };
 	}
 	if (keyword === "minLength" || keyword === "maxLength") return { value: 2 };
@@ -242,9 +279,11 @@ function operandsFor(keyword, subject) {
 	if (keyword === "format") return { name: "agent-ix:plain-text" };
 	if (keyword === "enumValues") {
 		if (subject === "boolean") return { values: [true] };
-		if (subject === "integer") return { values: [1] };
-		if (subject === "number") return { values: [1.5] };
-		if (subject === "decimal") return { values: ["1.1"] };
+		if (subject === "integer") return { values: ["1"] };
+		if (subject === "number") return { values: [1] };
+		if (subject === "decimal") return { values: ["1.5"] };
+		if (subject === "float32" || subject === "float64")
+			return { values: [1.5] };
 		return { values: ["a"] };
 	}
 	return {};
@@ -281,6 +320,29 @@ export const DETECTORS = Object.freeze([
 				assert(
 					observed === expected,
 					`${base.name} no longer emits the bytes the pristine emitter produced`,
+				);
+			}
+			const serdeProbe = serdeProbeDocument(true);
+			const serdeResult = backend.crate.emitCrate(
+				backend.properties.requestForIr(serdeProbe, "serde-probe"),
+				{ licenseText: backend.licenseText },
+			);
+			const serdeText = [...serdeResult.files.values()]
+				.filter(
+					(text) =>
+						text.includes("pub struct SerdeProbe") ||
+						text.includes("pub enum Status"),
+				)
+				.join("\n");
+			for (const attribute of [
+				'skip_serializing_if = "Option::is_none"',
+				'deserialize_with = "crate::support::present_or_absent"',
+				'rename = "createdAt"',
+				'rename = "inProgress"',
+			]) {
+				assert(
+					serdeText.includes(attribute),
+					`the emitted serde probe carries no ${attribute} attribute`,
 				);
 			}
 		},
@@ -545,8 +607,8 @@ export const DETECTORS = Object.freeze([
 		run(backend) {
 			const rows = backend.table.rows.filter((row) => row.axis === "scalar");
 			assert(
-				rows.length === 11,
-				`the table declares ${rows.length} kernel scalars, not eleven`,
+				rows.length === 13,
+				`the table declares ${rows.length} kernel scalars, not thirteen`,
 			);
 			for (const row of rows) {
 				const result = backend.mapping.mapDocument(
@@ -577,7 +639,7 @@ export const DETECTORS = Object.freeze([
 			}
 			// A scalar outside the kernel is refused rather than admitted.
 			const outside = backend.mapping.mapDocument(
-				documentOf([scalarType("Odd", "not-a-scalar")]),
+				documentOf([scalarType("Odd", "unsupported")]),
 				{},
 			);
 			assert(
@@ -644,6 +706,22 @@ export const DETECTORS = Object.freeze([
 				new Set(record.fields.map((one) => one.rustType)).size === 8,
 				"the eight axis rows did not produce eight distinct member types",
 			);
+
+			// Exercise the emitted serde surface as well as the mapping metadata.
+			// These attributes are required to preserve absent versus null and the
+			// semantic wire name, so dropping any one is a detectable regression.
+			const serdeProbe = serdeProbeDocument(false);
+			const serdeText = bytesOf(backend, serdeProbe, "serde-probe");
+			for (const attribute of [
+				'skip_serializing_if = "Option::is_none"',
+				'deserialize_with = "crate::support::present_or_absent"',
+				'rename = "createdAt"',
+			]) {
+				assert(
+					serdeText.includes(attribute),
+					`the emitted serde probe carries no ${attribute} attribute`,
+				);
+			}
 
 			// The ninth field row: an upper bound of zero is refused.
 			const zero = backend.mapping.mapDocument(
@@ -838,8 +916,7 @@ export const DETECTORS = Object.freeze([
 					bad.diagnostics.some((one) =>
 						one.code.endsWith(".UNREPRESENTABLE_DEFAULT_VALUE"),
 					),
-				"a semantic default outside the member's Rust type raised no " +
-					"UNREPRESENTABLE_DEFAULT_VALUE",
+				"a semantic default outside the member's Rust type raised no UNREPRESENTABLE_DEFAULT_VALUE",
 			);
 		},
 	},
@@ -1142,13 +1219,13 @@ export const DETECTORS = Object.freeze([
 					{
 						identity: `${NS}/constraint/min`,
 						keyword: "min",
-						operands: { value: 3 },
+						operands: { value: "3" },
 						appliesTo: `${NS}/type/Bounded`,
 					},
 					{
 						identity: `${NS}/constraint/max`,
 						keyword: "max",
-						operands: { value: 9 },
+						operands: { value: "9" },
 						appliesTo: `${NS}/type/Bounded`,
 					},
 				]),

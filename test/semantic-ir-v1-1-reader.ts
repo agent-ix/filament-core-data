@@ -50,12 +50,69 @@ const NATIVE_SCALARS: Record<string, string> = {
 	Boolean: "boolean",
 	Integer: "integer",
 	Decimal: "decimal",
+	Float32: "float32",
+	Float64: "float64",
 	String: "string",
 	Timestamp: "datetime",
 	Duration: "duration",
 	Bytes: "bytes",
 	JsonObject: "any",
 };
+
+const I128_MIN = -170141183460469231731687303715884105728n;
+const I128_MAX = 170141183460469231731687303715884105727n;
+
+function canonicalInteger(value: unknown): value is string {
+	return typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value);
+}
+
+function withinI128(value: string): boolean {
+	try {
+		const parsed = BigInt(value);
+		return parsed >= I128_MIN && parsed <= I128_MAX;
+	} catch {
+		return false;
+	}
+}
+
+function decimalPolicies(
+	types: Map<string, JsonObject>,
+	ref: unknown,
+	fields: Map<string, JsonObject>,
+	seen = new Set<string>(),
+): JsonObject[] {
+	if (typeof ref !== "string" || seen.has(ref)) return [];
+	seen.add(ref);
+	const native = nativeScalar(ref);
+	if (native !== undefined) return [];
+	const field = fields.get(ref);
+	if (field) {
+		return [
+			...(isObject(field.decimal) ? [field] : []),
+			...decimalPolicies(types, field.typeRef, fields, seen),
+		];
+	}
+	const definition = types.get(ref);
+	if (!definition) return [];
+	return [
+		...(isObject(definition.decimal) ? [definition] : []),
+		...(definition.kind === "alias"
+			? decimalPolicies(types, definition.target, fields, seen)
+			: []),
+	];
+}
+
+function valueAdmitted(scalar: string | undefined, value: unknown): boolean {
+	if (scalar === "integer") return canonicalInteger(value) && withinI128(value);
+	if (scalar === "decimal")
+		return (
+			typeof value === "string" && /^(0|-?[1-9][0-9]*)(\.[0-9]+)?$/.test(value)
+		);
+	if (scalar === "float32" || scalar === "float64")
+		return typeof value === "number" && Number.isFinite(value);
+	if (scalar === "boolean") return typeof value === "boolean";
+	return true;
+}
 
 function nativeScalar(identity: unknown): string | undefined {
 	if (typeof identity !== "string" || !identity.startsWith(NATIVE_PREFIX))
@@ -67,32 +124,40 @@ function nativeScalar(identity: unknown): string | undefined {
 const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	min: new Set([
 		"integer",
-		"decimal",
 		"number",
+		"decimal",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
 	]),
 	max: new Set([
 		"integer",
-		"decimal",
 		"number",
+		"decimal",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
 	]),
 	exclusiveMin: new Set([
 		"integer",
-		"decimal",
 		"number",
+		"decimal",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
 	]),
 	exclusiveMax: new Set([
 		"integer",
-		"decimal",
 		"number",
+		"decimal",
+		"float32",
+		"float64",
 		"date",
 		"datetime",
 		"duration",
@@ -103,8 +168,10 @@ const KEYWORD_APPLICABILITY: Record<string, Set<string>> = {
 	enumValues: new Set([
 		"boolean",
 		"integer",
-		"decimal",
 		"number",
+		"decimal",
+		"float32",
+		"float64",
 		"string",
 		"bytes",
 		"date",
@@ -217,11 +284,6 @@ function checkField(
 	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
 ): void {
-	// FR-144 value-site rules use the published spellings
-	// `agent-ix.semantic-ir.INVALID_DEFAULT_VALUE`,
-	// `agent-ix.semantic-ir.DECIMAL_POLICY_MISSING`, and
-	// `agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT` when a decimal policy is
-	// absent, duplicated, or attached to a non-decimal field.
 	const resolved = resolveKind(types, field.typeRef);
 	if (!resolved) {
 		diagnostics.push({
@@ -257,6 +319,17 @@ function checkField(
 				message: `unit is only allowed on scalar fields (resolved ${resolved.kind})`,
 			});
 		}
+	}
+	if (
+		Object.hasOwn(field, "defaultValue") &&
+		resolved?.kind === "scalar" &&
+		!valueAdmitted(resolved.scalar, field.defaultValue)
+	) {
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.INVALID_DEFAULT_VALUE",
+			path: `${path}.defaultValue`,
+			message: "the default value is outside the exact scalar wire domain",
+		});
 	}
 	// A constrained field keeps its constraints inline, with no alias node
 	// between them (gap 1 of FCD #199/#200); each one's `appliesTo` already
@@ -298,6 +371,20 @@ function checkConstraint(
 		});
 		return;
 	}
+	const policies = decimalPolicies(types, constraint.appliesTo, fields);
+	if (resolved.scalar === "decimal" && policies.length === 0) {
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.DECIMAL_POLICY_MISSING",
+			path,
+			message: "a decimal constraint carries a decimal policy",
+		});
+	} else if (resolved.scalar === "decimal" && policies.length > 1) {
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT",
+			path,
+			message: "a decimal resolution walk carries more than one policy",
+		});
+	}
 	const subject =
 		resolved.kind === "scalar" ? String(resolved.scalar) : resolved.kind;
 	if (!allowed.has(subject)) {
@@ -323,20 +410,29 @@ function checkConstraint(
 		["min", "max", "exclusiveMin", "exclusiveMax"].includes(keyword) &&
 		resolved.kind === "scalar"
 	) {
-		const numeric =
-			resolved.scalar === "integer" ||
-			resolved.scalar === "decimal" ||
-			resolved.scalar === "number";
+		const numeric = [
+			"integer",
+			"number",
+			"decimal",
+			"float32",
+			"float64",
+		].includes(String(resolved.scalar));
 		const value = operands.value;
+		const integerValue = canonicalInteger(value) ? value : undefined;
 		const valid =
-			resolved.scalar === "decimal"
-				? typeof value === "string"
+			numeric && resolved.scalar === "integer"
+				? integerValue !== undefined && withinI128(integerValue)
 				: numeric
-					? typeof value === "number"
+					? typeof value === "number" && Number.isFinite(value)
 					: typeof value === "string";
 		if (!valid) {
 			diagnostics.push({
-				code: "agent-ix.semantic-ir.INVALID_OPERAND",
+				code:
+					resolved.scalar === "integer" &&
+					integerValue !== undefined &&
+					!withinI128(integerValue)
+						? "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
+						: "agent-ix.semantic-ir.INVALID_OPERAND",
 				path: `${path}.operands.value`,
 				message: `${keyword} on ${String(resolved.scalar)} takes a ${numeric ? "number" : "ISO 8601 string"}`,
 			});
@@ -353,6 +449,14 @@ function checkTypeDefinition(
 	diagnostics: Diagnostic[],
 ): void {
 	const isRecord = isEdgeKind(definition.kind);
+	if (definition.kind === "scalar" && definition.scalar === "number") {
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+			path: `${path}.scalar`,
+			message:
+				"the legacy number scalar is not admitted; use float32 or float64",
+		});
+	}
 	for (const [index, field] of asArray(definition.fields).entries())
 		checkField(field, `${path}.fields.${index}`, types, fields, diagnostics);
 	for (const [index, constraint] of asArray(definition.constraints).entries())

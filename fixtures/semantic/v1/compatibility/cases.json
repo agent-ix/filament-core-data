@@ -33,7 +33,7 @@
 	{
 		"id": "type-domain-widening",
 		"family": "type",
-		"expected": "conditional"
+		"expected": "breaking"
 	},
 	{
 		"id": "union-variant-removal",

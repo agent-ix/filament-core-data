@@ -86,7 +86,7 @@ use crate::diagnostics::{Code, Diagnostic, Disposition, Locus, NotLoweredReason}
 use crate::edges::{lower_relationships, Relationship};
 use crate::enumeration::{lower_enum, values_rows};
 use crate::extract::Extractions;
-use crate::identity::{id_segment, slug, PackageIdentity};
+use crate::identity::{alias_display_name, id_segment, slug, PackageIdentity};
 use crate::limits::{check_bundle, check_extraction, Limits};
 use crate::resolve::{ArtifactRef, Outcome, Resolution, Resolutions, Resolved, Site};
 use crate::rows::{field_rows, locate, operation_rows, RowLocus};
@@ -105,14 +105,13 @@ pub const FIELD_EXTENSION_VERSION: &str = "1.0.0";
 // IR node shapes (`schema/semantic/v1/semantic-ir.schema.json`)
 // ---------------------------------------------------------------------------
 
-/// `typeDefinition.kind` as this frontend emits it: never `scalar`, `alias`,
-/// `enum`, `union`, `sequence`, `map` or `reference` — a kernel scalar mints
-/// no node (gap 1 of FCD #199/#200) and this frontend authors no standalone
-/// alias — a module-declared construct kind for an artifact whose object
-/// type declares one (FR-143).
+/// `typeDefinition.kind` as this frontend emits it: `alias` is minted for a
+/// constrained field; a module-declared construct kind is emitted for an
+/// artifact whose object type declares one (FR-143).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Kind {
     Record,
+    Alias,
     /// `{module, name}`: the construct kind the artifact's object type
     /// declares.
     Construct(ConstructKind),
@@ -122,6 +121,7 @@ impl Serialize for Kind {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self {
             Kind::Record => serializer.serialize_str("record"),
+            Kind::Alias => serializer.serialize_str("alias"),
             Kind::Construct(kind) => kind.serialize(serializer),
         }
     }
@@ -242,6 +242,8 @@ pub struct TypeDefinition {
     pub unknown_policy: UnknownPolicy,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scalar: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decimal: Option<DecimalPolicy>,
     /// Unused by this frontend, which mints no `alias`, `sequence` or
     /// `map` kind.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -626,11 +628,12 @@ impl<'a> ArtifactContext<'a> {
     }
 }
 
-/// One lowered definition and the non-blocking diagnostics it raised
-/// (`DECLARED_LOSS`).
+/// One lowered definition, its constrained-field aliases, and the
+/// non-blocking diagnostics it raised (`DECLARED_LOSS`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lowering {
     pub definition: TypeDefinition,
+    pub aliases: Vec<TypeDefinition>,
     pub diagnostics: Vec<Diagnostic>,
 }
 
@@ -675,12 +678,17 @@ impl Sink {
         self.diagnostics.push(diagnostic);
     }
 
-    fn finish(self, definition: TypeDefinition) -> Result<Lowering, LowerError> {
+    fn finish(
+        self,
+        definition: TypeDefinition,
+        aliases: Vec<TypeDefinition>,
+    ) -> Result<Lowering, LowerError> {
         if self.blocked {
             Err(LowerError::Blocked(self.diagnostics))
         } else {
             Ok(Lowering {
                 definition,
+                aliases,
                 diagnostics: self.diagnostics,
             })
         }
@@ -730,6 +738,7 @@ pub fn lower_record(
     }
     let decls = extraction.fields.as_deref().unwrap_or(&[]);
     let mut fields = Vec::with_capacity(decls.len());
+    let mut aliases = Vec::new();
     let mut codes: BTreeMap<String, Locus> = BTreeMap::new();
     let mut field_slugs: BTreeMap<String, (String, Locus)> = BTreeMap::new();
     for (index, decl) in decls.iter().enumerate() {
@@ -772,14 +781,23 @@ pub fn lower_record(
                 continue;
             }
         };
-        let identity_for_constraints = identity.clone();
         let mut field = lower_field(decl, resolved, identity, locus.clone(), ctx, &mut sink)?;
         if decl.constraints.as_deref().is_some_and(|c| !c.is_empty()) {
             let kind = resolved.and_then(ResolvedKind::of);
             let mut constraints = Vec::new();
+            let decimal_alias = decl.type_ref.decimal.is_some();
+            let applies_to = if decimal_alias {
+                ctx.package
+                    .alias_identity(ctx.id, &decl.name)
+                    .map_err(|unsluggable| {
+                        LowerError::Blocked(vec![unsluggable.diagnostic(locus.clone())])
+                    })?
+            } else {
+                field.identity.clone()
+            };
             lower_constraints(
                 decl,
-                &identity_for_constraints,
+                &applies_to,
                 kind,
                 &locus,
                 ctx,
@@ -787,32 +805,62 @@ pub fn lower_record(
                 &mut constraints,
                 &mut sink,
             );
-            field.constraints = constraints;
+            if decimal_alias {
+                let alias_identity = applies_to;
+                let target = field.type_ref.clone();
+                let decimal = field.decimal.take();
+                field.type_ref = alias_identity.clone();
+                aliases.push(TypeDefinition {
+                    identity: alias_identity,
+                    display_name: alias_display_name(ctx.display_name, &decl.name),
+                    kind: Kind::Alias,
+                    roles: Vec::new(),
+                    origin: Origin::Source(locus.clone()),
+                    constraints,
+                    extensions: Vec::new(),
+                    unknown_policy: UnknownPolicy::Reject,
+                    scalar: None,
+                    decimal,
+                    target: Some(target),
+                    fields: None,
+                    variants: None,
+                    relationships: None,
+                    operations: None,
+                    clauses: None,
+                    construct: ConstructMembers::default(),
+                });
+            } else {
+                field.constraints = constraints;
+            }
         }
         fields.push(field);
     }
-    sink.finish(TypeDefinition {
-        identity: type_identity,
-        display_name: ctx.display_name.to_string(),
-        kind: Kind::Record,
-        roles: ctx.roles.clone(),
-        origin: head_origin(ctx),
-        // Every constraint lives on its field.
-        constraints: Vec::new(),
-        extensions: Vec::new(),
-        unknown_policy: UnknownPolicy::Reject,
-        scalar: None,
-        target: None,
-        fields: Some(fields),
-        variants: None,
-        // Filled by `lower_bundle`, which holds the document, the registry
-        // and the index the three need; a record always carries the three
-        // lists, an enumeration or scalar never does.
-        relationships: Some(Vec::new()),
-        operations: Some(Vec::new()),
-        clauses: Some(Vec::new()),
-        construct: ConstructMembers::default(),
-    })
+    sink.finish(
+        TypeDefinition {
+            identity: type_identity,
+            display_name: ctx.display_name.to_string(),
+            kind: Kind::Record,
+            roles: ctx.roles.clone(),
+            origin: head_origin(ctx),
+            // Every field constraint lives on its alias.
+            constraints: Vec::new(),
+            extensions: Vec::new(),
+            unknown_policy: UnknownPolicy::Reject,
+            scalar: None,
+            decimal: None,
+            target: None,
+            fields: Some(fields),
+            variants: None,
+            // Filled by `lower_bundle`, which holds the document, the registry
+            // and the index the three need; a record always carries the three
+            // lists, an enumeration or scalar never does.
+            relationships: Some(Vec::new()),
+            operations: Some(Vec::new()),
+            clauses: Some(Vec::new()),
+            construct: ConstructMembers::default(),
+        },
+        aliases,
+    )
 }
 
 /// Lower one `FieldDecl` at `locus` to an IR `field` (FR-093 "The fields",
@@ -946,6 +994,21 @@ fn lower_constraints(
         // number, so normalize numeric bound operands before the IR reader
         // checks the exact wire spelling.
         if matches!(kind, Some(ResolvedKind::Scalar("decimal")))
+            && matches!(
+                keyword.as_str(),
+                "min" | "max" | "exclusiveMin" | "exclusiveMax"
+            )
+        {
+            if let Some(value) = operands.get("value").and_then(Value::as_number) {
+                let value = value.to_string();
+                operands.insert("value".to_string(), Value::String(value));
+            }
+        }
+        // FR-144: integer bounds are exact decimal strings on the IR wire,
+        // including values that happen to fit in a JSON number. Keeping the
+        // spelling as a string prevents a later reader from treating the
+        // authored bound as an already-rounded JavaScript number.
+        if matches!(kind, Some(ResolvedKind::Scalar("integer")))
             && matches!(
                 keyword.as_str(),
                 "min" | "max" | "exclusiveMin" | "exclusiveMax"
@@ -1245,6 +1308,7 @@ pub fn lower_bundle(
     for item in pending {
         own.extend(item.lowering.diagnostics);
         types.push(item.lowering.definition);
+        types.extend(item.lowering.aliases);
     }
     own.extend(refusals);
 

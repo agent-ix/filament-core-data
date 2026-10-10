@@ -554,18 +554,6 @@
 			"reviewBy": "2026-12-31"
 		},
 		{
-			"id": "DIV-050",
-			"case": "SCAL-004",
-			"adapter": "compiler-frontend",
-			"code": "classification",
-			"owner": "the issue #19 compiler frontend",
-			"owningIssue": "agent-ix/filament-core-data#19",
-			"severity": "high",
-			"verdict": "implementation-defect",
-			"rationale": "The corpus expects `breaking`; `diffSemanticContract` returns `conditional` for a scalar domain moving from `integer` to `number`. The compiler carries a `WIDENINGS` allowance (`src/compiler/compat/diff.mjs:74`, `integer>number` and `date>datetime`) that relaxes those two changes from breaking to conditional. The contract states that \"incompatible meaning/type changes ... are breaking\" and states no widening allowance anywhere. This is the one classification divergence where the compiler is *laxer* than the corpus, so it is the one that can let a breaking release through a green gate.",
-			"reviewBy": "2026-12-31"
-		},
-		{
 			"id": "DIV-051",
 			"case": "SEQMAP-002",
 			"adapter": "compiler-frontend",

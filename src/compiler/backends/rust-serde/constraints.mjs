@@ -32,7 +32,7 @@
  */
 
 import { applies, isKeyword } from "../../ir/applicability.mjs";
-import { RUST_BACKEND_CODES, diagnostic, fragment } from "./diagnostics.mjs";
+import { diagnostic, fragment, RUST_BACKEND_CODES } from "./diagnostics.mjs";
 import {
 	classifyPattern,
 	lowerPattern,
@@ -178,33 +178,26 @@ function lowerBound(constraint, keyword, identity, resolved, raise) {
 		// Preserve exact integer bounds beyond the JSON safe-integer range.
 		const fits =
 			/^(0|-?[1-9][0-9]*)$/.test(value) &&
-			BigInt(value) >= -(2n ** 63n) &&
-			BigInt(value) < 2n ** 63n;
+			BigInt(value) >= -(2n ** 127n) &&
+			BigInt(value) <= 2n ** 127n - 1n;
 		if (!fits) {
 			raise(
 				RUST_BACKEND_CODES.INVALID_OPERAND,
-				`the constraint ${fragment(identity)} bounds an integer subject with ${fragment(JSON.stringify(value))}, which is not a canonical decimal integer within i64`,
+				`the constraint ${fragment(identity)} bounds an integer subject with ${fragment(JSON.stringify(value))}, which is not a canonical decimal integer within i128`,
 			);
 			return undefined;
 		}
 		return { identity, keyword, form: "numeric", scalar, value };
 	}
-	if (scalar === "integer" || scalar === "number") {
+	if (scalar === "number" || scalar === "float32" || scalar === "float64") {
 		if (
 			typeof value !== "number" ||
 			!Number.isFinite(value) ||
-			(scalar === "integer" && !Number.isInteger(value))
+			(scalar === "float32" && Math.fround(value) !== value)
 		) {
 			raise(
 				RUST_BACKEND_CODES.INVALID_OPERAND,
 				`the constraint ${fragment(identity)} bounds a ${scalar} subject with ${fragment(JSON.stringify(value))}, which is not a finite JSON number`,
-			);
-			return undefined;
-		}
-		if (scalar === "integer" && !Number.isInteger(value)) {
-			raise(
-				RUST_BACKEND_CODES.INVALID_OPERAND,
-				`the constraint ${fragment(identity)} bounds an integer subject with the non-integer ${fragment(String(value))}`,
 			);
 			return undefined;
 		}
@@ -278,9 +271,22 @@ function lowerEnumValues(constraint, identity, resolved, raise) {
 			case "boolean":
 				return typeof value === "boolean";
 			case "integer":
-				return typeof value === "number" && Number.isInteger(value);
+				return (
+					typeof value === "string" &&
+					/^(0|-?[1-9][0-9]*)$/.test(value) &&
+					BigInt(value) >= -(2n ** 127n) &&
+					BigInt(value) <= 2n ** 127n - 1n
+				);
 			case "number":
-				return typeof value === "number" && Number.isFinite(value);
+			case "float32":
+			case "float64":
+				return (
+					typeof value === "number" &&
+					Number.isFinite(value) &&
+					(scalar === "number" ||
+						scalar === "float64" ||
+						Math.fround(value) === value)
+				);
 			case "decimal":
 				return (
 					typeof value === "string" &&

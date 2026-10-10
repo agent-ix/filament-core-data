@@ -34,6 +34,11 @@ pub struct RuleLimits {
 /// naming one resolves against this closed set instead of `document.types`.
 pub const NATIVE_PREFIX: &str = "ix://quire/native/";
 
+const INEXACT_INTEGER: &str = "agent-ix.semantic-ir.INEXACT_INTEGER";
+const INEXACT_NUMBER: &str = "agent-ix.semantic-ir.INEXACT_NUMBER";
+const INTEGER_OUTSIDE_I128: &str = "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128";
+const INVALID_DEFAULT_VALUE: &str = "agent-ix.semantic-ir.INVALID_DEFAULT_VALUE";
+
 /// The FR-032 kernel scalar library's names, each with the `irScalar` value
 /// `KernelScalar::ir_scalar` (`crates/extraction-frontend/src/scalars.rs`)
 /// gives it; this reader carries the same closed set independently, since it
@@ -43,6 +48,8 @@ const NATIVE_SCALARS: &[(&str, &str)] = &[
     ("Boolean", "boolean"),
     ("Integer", "integer"),
     ("Decimal", "decimal"),
+    ("Float32", "float32"),
+    ("Float64", "float64"),
     ("String", "string"),
     ("Timestamp", "datetime"),
     ("Duration", "duration"),
@@ -467,13 +474,14 @@ impl<'a> Document<'a> {
             .map(PolicyOrigin::Type)
     }
 
-    /// The policy nodes crossed while resolving an identity that owns its
-    /// policy, such as a field, alias, or scalar definition.
-    fn decimal_policies(&self, identity: &str) -> Vec<&'a Json> {
-        self.decimal_policies_from(identity, None)
-            .first
-            .into_iter()
-            .collect()
+    fn decimal_policy(&self, identity: &str) -> Option<(u32, u32)> {
+        let policy = self.decimal_policies_from(identity, None).first?;
+        let precision = policy.get("precision").and_then(Json::as_i64)?;
+        let scale = policy.get("scale").and_then(Json::as_i64)?;
+        if precision < 0 || scale < 0 {
+            return None;
+        }
+        Some((precision as u32, scale as u32))
     }
 
     /// Apply the Decimal policy rule to any type reference position. Keeping
@@ -890,6 +898,7 @@ pub fn decide_with(bundle: &Json, limits: RuleLimits) -> Vec<Located> {
         Some(document) => document,
         None => return sink.out,
     };
+    exact_numbers(bundle, &mut sink);
     duplicate_identities(&document, &mut sink);
     per_type(&document, &mut sink);
     occurrences(&document, &mut sink);
@@ -897,6 +906,181 @@ pub fn decide_with(bundle: &Json, limits: RuleLimits) -> Vec<Located> {
     crate::constructs::decide(&document, &mut sink);
     package_context(&document, &mut sink);
     sink.out
+}
+
+const MAX_EXACT_EXPANSION: i128 = 4096;
+
+/// Refuse to expand an exponent whose canonical spelling would exceed the
+/// bounded scanner budget. A non-zero value outside that budget cannot be
+/// represented exactly by the JSON number comparison below; zero remains
+/// exactly zero regardless of its exponent.
+fn expansion_would_exceed_budget(lexeme: &str) -> Option<bool> {
+    let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
+    let Some(at) = unsigned.find(['e', 'E']) else {
+        return Some(false);
+    };
+    let mantissa = &unsigned[..at];
+    if mantissa.chars().filter(|ch| *ch != '.').all(|ch| ch == '0') {
+        return Some(false);
+    }
+    // A non-zero mantissa with an exponent outside i128 cannot fit the
+    // bounded exact-number scanner. Keep this branch ahead of normalized_number
+    // so the lexeme receives the appropriate INEXACT diagnostic rather than
+    // silently escaping classification when exponent parsing overflows.
+    let exponent = match unsigned[at + 1..].parse::<i128>() {
+        Ok(value) => value,
+        Err(_) => return Some(true),
+    };
+    let whole_len = mantissa
+        .split_once('.')
+        .map_or(mantissa.len(), |(whole, _)| whole.len()) as i128;
+    let decimal_at = match whole_len.checked_add(exponent) {
+        Some(value) => value,
+        // The non-zero mantissa cannot be represented within the bounded
+        // scanner once the decimal position itself overflows i64.
+        None => return Some(true),
+    };
+    Some(!(-MAX_EXACT_EXPANSION..=MAX_EXACT_EXPANSION).contains(&decimal_at))
+}
+
+fn huge_exponent_is_integer(lexeme: &str) -> bool {
+    let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
+    let Some(at) = unsigned.find(['e', 'E']) else {
+        return false;
+    };
+    let mantissa = &unsigned[..at];
+    let fraction_len = mantissa
+        .split_once('.')
+        .map_or(0, |(_, fraction)| fraction.len());
+    let exponent_text = &unsigned[at + 1..];
+    if let Ok(exponent) = exponent_text.parse::<i128>() {
+        return exponent >= fraction_len as i128;
+    }
+    // A positive exponent that does not fit i128 is necessarily larger than
+    // the finite fractional part, so the value is still an integer. A negative
+    // overflow moves the decimal point farther into the fraction.
+    !exponent_text.starts_with('-')
+}
+
+fn normalized_number(lexeme: &str) -> Option<(bool, String, bool)> {
+    let negative = lexeme.starts_with('-');
+    let unsigned = lexeme.strip_prefix(['-', '+']).unwrap_or(lexeme);
+    let (mantissa, exponent) = match unsigned.find(['e', 'E']) {
+        Some(at) => (&unsigned[..at], unsigned[at + 1..].parse::<i64>().ok()?),
+        None => (unsigned, 0),
+    };
+    let (whole, fraction) = mantissa.split_once('.').unwrap_or((mantissa, ""));
+    if whole.is_empty()
+        || fraction.chars().any(|ch| !ch.is_ascii_digit())
+        || whole.chars().any(|ch| !ch.is_ascii_digit())
+    {
+        return None;
+    }
+    let digits = format!("{whole}{fraction}");
+    let decimal_at = (whole.len() as i64).checked_add(exponent)?;
+    let zero = digits.chars().all(|ch| ch == '0');
+    if zero {
+        return Some((false, "0".to_string(), true));
+    }
+    let (mut integer, mut fraction_out) = if decimal_at <= 0 {
+        (
+            "0".to_string(),
+            format!("{}{}", "0".repeat((-decimal_at) as usize), digits),
+        )
+    } else if decimal_at as usize >= digits.len() {
+        (
+            format!(
+                "{}{}",
+                digits,
+                "0".repeat(decimal_at as usize - digits.len())
+            ),
+            String::new(),
+        )
+    } else {
+        let at = decimal_at as usize;
+        (digits[..at].to_string(), digits[at..].to_string())
+    };
+    while integer.len() > 1 && integer.starts_with('0') {
+        integer.remove(0);
+    }
+    while fraction_out.ends_with('0') {
+        fraction_out.pop();
+    }
+    let canonical = if fraction_out.is_empty() {
+        integer
+    } else {
+        format!("{integer}.{fraction_out}")
+    };
+    Some((negative && !zero, canonical, fraction_out.is_empty()))
+}
+
+fn exact_number_kind(lexeme: &str) -> Option<&'static str> {
+    if expansion_would_exceed_budget(lexeme) == Some(true) {
+        return Some(if huge_exponent_is_integer(lexeme) {
+            INEXACT_INTEGER
+        } else {
+            INEXACT_NUMBER
+        });
+    }
+    let (negative, normalized, whole) = normalized_number(lexeme)?;
+    let digits = normalized
+        .split_once('.')
+        .map_or_else(|| normalized.clone(), |(head, _)| head.to_string());
+    let magnitude = digits.trim_start_matches('0');
+    if whole && magnitude.len() > 16
+        || (whole && magnitude.len() == 16 && magnitude > "9007199254740992")
+    {
+        return Some(INEXACT_INTEGER);
+    }
+    let parsed = lexeme.parse::<f64>().ok()?;
+    if !parsed.is_finite() {
+        return Some(INEXACT_NUMBER);
+    }
+    let rendered = crate::number::ecma_number_to_string(parsed);
+    let rendered =
+        normalized_number(&rendered).map(
+            |(negative, value, _)| {
+                if negative {
+                    format!("-{value}")
+                } else {
+                    value
+                }
+            },
+        )?;
+    let source = if negative {
+        format!("-{normalized}")
+    } else {
+        normalized
+    };
+    (source != rendered).then_some(INEXACT_NUMBER)
+}
+
+fn exact_numbers(bundle: &Json, sink: &mut Sink<'_>) {
+    let mut stack = vec![(bundle, String::new())];
+    while let Some((value, pointer)) = stack.pop() {
+        match value {
+            Json::Number(lexeme) => {
+                if let Some(code) = exact_number_kind(lexeme) {
+                    sink.emit(
+                        pointer,
+                        code,
+                        "the JSON number is not an exact contract number",
+                    );
+                }
+            }
+            Json::Array(items) => {
+                for (position, item) in items.iter().enumerate().rev() {
+                    stack.push((item, index(&pointer, position)));
+                }
+            }
+            Json::Object(members) => {
+                for (name, item) in members.iter().rev() {
+                    stack.push((item, child(&pointer, name)));
+                }
+            }
+            Json::Null | Json::Bool(_) | Json::Str(_) => {}
+        }
+    }
 }
 
 fn duplicate_identities(document: &Document<'_>, sink: &mut Sink<'_>) {
@@ -1339,6 +1523,21 @@ fn field_rules(
                 constraint_rules(document, constraint, &index(&constraints_at, member), sink);
             }
         }
+        if let (Some(default), Some(type_ref)) = (field.get("defaultValue"), type_ref) {
+            if let Some(resolved) = document.resolve(type_ref) {
+                validate_default_value(
+                    default,
+                    resolved.scalar(),
+                    field
+                        .get("identity")
+                        .and_then(Json::as_str)
+                        .and_then(|identity| document.decimal_policy(identity)),
+                    child(&field_at, "defaultValue"),
+                    field,
+                    sink,
+                );
+            }
+        }
     }
 }
 
@@ -1352,7 +1551,13 @@ fn applies_to(keyword: &str, kind: &str, scalar: &str) -> bool {
             kind == "scalar"
                 && matches!(
                     scalar,
-                    "integer" | "decimal" | "number" | "date" | "datetime" | "duration"
+                    "integer"
+                        | "decimal"
+                        | "float32"
+                        | "float64"
+                        | "date"
+                        | "datetime"
+                        | "duration"
                 )
         }
         "minLength" | "maxLength" => kind == "scalar" && matches!(scalar, "string" | "bytes"),
@@ -1378,6 +1583,13 @@ fn is_canonical_integer(text: &str) -> bool {
     }
 }
 
+fn parse_i128(text: &str) -> Option<i128> {
+    if !is_canonical_integer(text) {
+        return None;
+    }
+    text.parse::<i128>().ok()
+}
+
 /// A canonical decimal value: no exponent, no trailing fractional zero and no
 /// negative zero. Precision and scale limits belong to the Decimal policy
 /// reader; this helper checks only the wire spelling.
@@ -1399,22 +1611,86 @@ fn is_canonical_decimal(text: &str) -> bool {
     fraction.chars().all(|ch| ch.is_ascii_digit()) && !fraction.ends_with('0')
 }
 
-/// Whether a canonical decimal fits the subject's declared policy.
-fn decimal_admitted(text: &str, policy: &Json) -> bool {
-    let Some(precision) = policy.get("precision").and_then(Json::as_i64) else {
-        return false;
+fn validate_value_site(
+    value: &Json,
+    scalar: &str,
+    policy: Option<(u32, u32)>,
+    pointer: String,
+    default: bool,
+    sink: &mut Sink<'_>,
+) {
+    let code = if default {
+        INVALID_DEFAULT_VALUE
+    } else {
+        INVALID_OPERAND
     };
-    let Some(scale) = policy.get("scale").and_then(Json::as_i64) else {
-        return false;
+    let valid = match scalar {
+        "integer" => matches!(value, Json::Str(text) if parse_i128(text).is_some()),
+        "decimal" => {
+            matches!(value, Json::Str(text) if policy.is_some_and(|policy| decimal_within_policy(text, policy)))
+        }
+        "float32" => {
+            matches!(value, Json::Number(number) if number.parse::<f64>().ok().is_some_and(float32_exact))
+        }
+        "float64" => {
+            matches!(value, Json::Number(number) if number.parse::<f64>().ok().is_some_and(f64::is_finite))
+        }
+        _ => true,
     };
-    if precision < 1 || scale < 0 || scale > precision {
+    if !valid {
+        sink.emit(
+            pointer,
+            code,
+            "the numeric value is not spelled for its subject scalar",
+        );
+    }
+}
+
+fn validate_default_value(
+    value: &Json,
+    scalar: &str,
+    policy: Option<(u32, u32)>,
+    pointer: String,
+    field: &Json,
+    sink: &mut Sink<'_>,
+) {
+    if field.get("nullable").and_then(Json::as_bool) == Some(true) && matches!(value, Json::Null) {
+        return;
+    }
+    let collection = field
+        .get("multiplicity")
+        .and_then(|multiplicity| multiplicity.get("upper"))
+        .is_none_or(|upper| upper.as_i64().is_none_or(|value| value > 1));
+    if collection {
+        if let Json::Array(items) = value {
+            for (position, item) in items.iter().enumerate() {
+                validate_value_site(item, scalar, policy, index(&pointer, position), true, sink);
+            }
+        } else {
+            sink.emit(
+                pointer,
+                INVALID_DEFAULT_VALUE,
+                "a collection default is an array of values for its element scalar",
+            );
+        }
+        return;
+    }
+    validate_value_site(value, scalar, policy, pointer, true, sink);
+}
+
+fn float32_exact(value: f64) -> bool {
+    let narrowed = value as f32;
+    narrowed.is_finite() && narrowed as f64 == value
+}
+
+fn decimal_within_policy(text: &str, (precision, scale): (u32, u32)) -> bool {
+    if !is_canonical_decimal(text) {
         return false;
     }
     let unsigned = text.strip_prefix('-').unwrap_or(text);
     let (whole, fraction) = unsigned.split_once('.').unwrap_or((unsigned, ""));
-    i64::try_from(whole.len()).is_ok_and(|integer_digits| {
-        integer_digits <= precision - scale && fraction.len() as i64 <= scale
-    })
+    let integer_digits = if whole == "0" { 0 } else { whole.len() as u32 };
+    integer_digits <= precision.saturating_sub(scale) && fraction.len() as u32 <= scale
 }
 
 fn constraint_rules(
@@ -1455,35 +1731,54 @@ fn constraint_rules(
             return;
         }
         if matches!(keyword, "min" | "max" | "exclusiveMin" | "exclusiveMax")
-            && matches!(scalar, "integer" | "decimal" | "number")
+            && matches!(scalar, "integer" | "decimal" | "float32" | "float64")
         {
-            let policies = if scalar == "decimal" {
-                document.decimal_policies(applies.unwrap_or_default())
-            } else {
-                Vec::new()
-            };
-            // An integer bound may be a canonical decimal string, so a value
-            // past 2^53 is exact; a `number` bound is a JSON number.
-            let admitted = match constraint.get("operands").and_then(|o| o.get("value")) {
-                Some(Json::Number(_)) | None => scalar != "decimal",
-                Some(Json::Str(text)) => {
-                    (scalar == "integer" && is_canonical_integer(text))
-                        || (scalar == "decimal"
-                            && policies
-                                .first()
-                                .and_then(|subject| subject.get("decimal"))
-                                .is_some_and(|policy| {
-                                    is_canonical_decimal(text) && decimal_admitted(text, policy)
-                                }))
+            let value_at = child(&child(constraint_at, "operands"), "value");
+            match constraint.get("operands").and_then(|o| o.get("value")) {
+                Some(Json::Number(number))
+                    if scalar == "float64"
+                        && number.parse::<f64>().ok().is_some_and(f64::is_finite) => {}
+                Some(Json::Number(number))
+                    if scalar == "float32"
+                        && number.parse::<f64>().ok().is_some_and(float32_exact) => {}
+                Some(Json::Str(text)) if scalar == "integer" && is_canonical_integer(text) => {
+                    if parse_i128(text).is_none() {
+                        sink.emit(
+                            value_at,
+                            INTEGER_OUTSIDE_I128,
+                            "the integer value lies outside i128",
+                        );
+                    }
                 }
-                Some(_) => false,
-            };
-            if !admitted {
-                sink.emit(
-                    child(&child(constraint_at, "operands"), "value"),
+                Some(Json::Str(text))
+                    if scalar == "decimal"
+                        && document
+                            .decimal_policy(applies.unwrap_or_default())
+                            .is_some_and(|policy| decimal_within_policy(text, policy)) => {}
+                _ => sink.emit(
+                    value_at,
                     INVALID_OPERAND,
-                    "a numeric keyword on a numeric scalar takes an exact numeric operand",
-                );
+                    "a numeric keyword takes an exact string for integer and decimal, or a JSON number for float32 and float64",
+                ),
+            }
+        }
+        if keyword == "enumValues" {
+            if let Some(values) = constraint
+                .get("operands")
+                .and_then(|operands| operands.get("values"))
+                .and_then(Json::as_array)
+            {
+                let values_at = child(&child(constraint_at, "operands"), "values");
+                for (position, value) in values.iter().enumerate() {
+                    validate_value_site(
+                        value,
+                        scalar,
+                        applies.and_then(|identity| document.decimal_policy(identity)),
+                        index(&values_at, position),
+                        false,
+                        sink,
+                    );
+                }
             }
         }
     }
@@ -1836,13 +2131,27 @@ fn package_walk(
 #[cfg(test)]
 mod tests {
     use super::{
-        composite_graph, decide, decide_with, native_scalar, package_cycle, walk_alias, AliasMemo,
-        Document, Resolved, RuleLimits, Sink, TypePositionKind, Walk, COMPOSITE_CYCLE,
-        CONSTRAINT_NOT_APPLICABLE, DECIMAL_POLICY_CONFLICT, DEPTH_LIMIT_EXCEEDED, NATIVE_PREFIX,
-        NATIVE_SCALARS, UNIT_ON_NON_SCALAR, UNRESOLVED_TYPE_REF,
+        composite_graph, decide, decide_with, exact_number_kind, native_scalar, package_cycle,
+        walk_alias, AliasMemo, Document, Resolved, RuleLimits, Sink, TypePositionKind, Walk,
+        COMPOSITE_CYCLE, CONSTRAINT_NOT_APPLICABLE, DECIMAL_POLICY_CONFLICT, DEPTH_LIMIT_EXCEEDED,
+        INEXACT_INTEGER, INEXACT_NUMBER, NATIVE_PREFIX, NATIVE_SCALARS, UNIT_ON_NON_SCALAR,
+        UNRESOLVED_TYPE_REF,
     };
     use crate::json::parse;
     use crate::json::Json;
+
+    #[test]
+    fn huge_exponents_are_classified_even_when_the_exponent_exceeds_i128() {
+        assert_eq!(
+            exact_number_kind("1e170141183460469231731687303715884105728"),
+            Some(INEXACT_INTEGER)
+        );
+        assert_eq!(
+            exact_number_kind("1e-170141183460469231731687303715884105728"),
+            Some(INEXACT_NUMBER)
+        );
+        assert_eq!(exact_number_kind("0e9223372036854775807"), None);
+    }
 
     fn type_position_fixture(kind: TypePositionKind) -> Json {
         let definition = match kind {

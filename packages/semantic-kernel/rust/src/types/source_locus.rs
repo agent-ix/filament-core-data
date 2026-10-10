@@ -257,6 +257,74 @@ impl SourceLocus {
         end_line: Option<crate::SourceLocusEndLine>,
         end_column: Option<crate::SourceLocusEndColumn>,
     ) -> Result<Self, crate::support::ValidationError> {
+        if *(&start_line).get() < 1i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/SourceLocusStartLine/constraint/min",
+                "min",
+                "",
+                "1",
+            ));
+        }
+        if *(&start_line).get() > 2147483647i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/SourceLocusStartLine/constraint/max",
+                "max",
+                "",
+                "2147483647",
+            ));
+        }
+        if *(&start_column).get() < 1i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/min",
+                "min",
+                "",
+                "1",
+            ));
+        }
+        if *(&start_column).get() > 2147483647i64 {
+            return Err(crate::support::ValidationError::new(
+                "ix://agent-ix/semantic-core/SourceLocusStartColumn/constraint/max",
+                "max",
+                "",
+                "2147483647",
+            ));
+        }
+        if let Some(value) = &end_line {
+            if *(*value).get() < 1i64 {
+                return Err(crate::support::ValidationError::new(
+                    "ix://agent-ix/semantic-core/SourceLocusEndLine/constraint/min",
+                    "min",
+                    "",
+                    "1",
+                ));
+            }
+            if *(*value).get() > 2147483647i64 {
+                return Err(crate::support::ValidationError::new(
+                    "ix://agent-ix/semantic-core/SourceLocusEndLine/constraint/max",
+                    "max",
+                    "",
+                    "2147483647",
+                ));
+            }
+        }
+        if let Some(value) = &end_column {
+            if *(*value).get() < 1i64 {
+                return Err(crate::support::ValidationError::new(
+                    "ix://agent-ix/semantic-core/SourceLocusEndColumn/constraint/min",
+                    "min",
+                    "",
+                    "1",
+                ));
+            }
+            if *(*value).get() > 2147483647i64 {
+                return Err(crate::support::ValidationError::new(
+                    "ix://agent-ix/semantic-core/SourceLocusEndColumn/constraint/max",
+                    "max",
+                    "",
+                    "2147483647",
+                ));
+            }
+        }
         Ok(Self {
             source_identity,
             path,

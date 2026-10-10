@@ -26,6 +26,14 @@ pub enum KernelScalar {
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/Decimal.
     Decimal,
+    /// Float32
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/Float32.
+    Float32,
+    /// Float64
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/Float64.
+    Float64,
     /// String
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/KernelScalar/variant/String.

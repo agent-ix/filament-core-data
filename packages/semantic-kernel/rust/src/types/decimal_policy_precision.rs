@@ -29,12 +29,12 @@ impl DecimalPolicyPrecision {
                     "1",
                 ));
             }
-            if value > 2147483647i64 {
+            if value > 38i64 {
                 return Err(crate::support::ValidationError::new(
                     "ix://agent-ix/semantic-core/DecimalPolicyPrecision/constraint/max",
                     "max",
                     "",
-                    "2147483647",
+                    "38",
                 ));
             }
         }

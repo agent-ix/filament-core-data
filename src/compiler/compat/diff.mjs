@@ -92,7 +92,208 @@ function same(left, right) {
 }
 
 /** Widening a scalar's domain is conditional; every other change to it breaks. */
-const WIDENINGS = new Set(["integer>number", "date>datetime"]);
+const WIDENINGS = new Set(["date>datetime", "float32>float64"]);
+
+const SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
+const INTEGER_LITERAL = /^(0|-?[1-9][0-9]*)$/;
+
+function integerRange(constraints) {
+	let lower = -SAFE_INTEGER;
+	let upper = SAFE_INTEGER;
+	let lowerExplicit = false;
+	let upperExplicit = false;
+	for (const constraint of constraints ?? []) {
+		const value = constraint?.operands?.value;
+		if (typeof value !== "string" || !INTEGER_LITERAL.test(value)) continue;
+		let bound = BigInt(value);
+		if (constraint.keyword === "exclusiveMin") bound += 1n;
+		if (constraint.keyword === "exclusiveMax") bound -= 1n;
+		if (constraint.keyword === "min" || constraint.keyword === "exclusiveMin") {
+			lower = lowerExplicit && lower > bound ? lower : bound;
+			lowerExplicit = true;
+		}
+		if (constraint.keyword === "max" || constraint.keyword === "exclusiveMax") {
+			upper = upperExplicit && upper < bound ? upper : bound;
+			upperExplicit = true;
+		}
+	}
+	return { lower, upper };
+}
+
+function wideInteger(constraints) {
+	const { lower, upper } = integerRange(constraints);
+	return (
+		lower < -SAFE_INTEGER ||
+		lower > SAFE_INTEGER ||
+		upper < -SAFE_INTEGER ||
+		upper > SAFE_INTEGER
+	);
+}
+
+function integerDomainWidened(before, after) {
+	const oldRange = integerRange(before);
+	const newRange = integerRange(after);
+	return (
+		newRange.lower <= oldRange.lower &&
+		newRange.upper >= oldRange.upper &&
+		(newRange.lower < oldRange.lower || newRange.upper > oldRange.upper)
+	);
+}
+
+function compareLimit(left, right, scalar, side) {
+	if (!left && !right) return 0;
+	if (!left) return side === "lower" ? -1 : 1;
+	if (!right) return side === "lower" ? 1 : -1;
+	const value = compareExactBounds(left.value, right.value, scalar);
+	if (value === undefined || value !== 0) return value;
+	if (left.exclusive === right.exclusive) return 0;
+	return side === "lower" ? (left.exclusive ? 1 : -1) : left.exclusive ? -1 : 1;
+}
+
+function decimalLimits(constraints) {
+	let lower;
+	let upper;
+	for (const constraint of constraints) {
+		if (
+			!["min", "exclusiveMin", "max", "exclusiveMax"].includes(
+				constraint.keyword,
+			)
+		)
+			continue;
+		const value = constraint?.operands?.value;
+		if (!exactBound(value, "decimal")) continue;
+		const entry = {
+			value,
+			exclusive: constraint.keyword.startsWith("exclusive"),
+		};
+		if (constraint.keyword.endsWith("Min") || constraint.keyword === "min") {
+			if (!lower || compareLimit(entry, lower, "decimal", "lower") > 0)
+				lower = entry;
+		} else if (!upper || compareLimit(entry, upper, "decimal", "upper") < 0) {
+			upper = entry;
+		}
+	}
+	return { lower, upper };
+}
+
+function numericBoundChange(before, after, scalar) {
+	if (scalar === "integer") {
+		const oldRange = integerRange(before);
+		const newRange = integerRange(after);
+		if (oldRange.lower === newRange.lower && oldRange.upper === newRange.upper)
+			return undefined;
+		return integerDomainWidened(before, after) ? "conditional" : "breaking";
+	}
+	if (scalar !== "decimal") return undefined;
+	const oldRange = decimalLimits(before);
+	const newRange = decimalLimits(after);
+	const lower = compareLimit(
+		newRange.lower,
+		oldRange.lower,
+		"decimal",
+		"lower",
+	);
+	const upper = compareLimit(
+		newRange.upper,
+		oldRange.upper,
+		"decimal",
+		"upper",
+	);
+	if (lower === 0 && upper === 0) return undefined;
+	return lower <= 0 && upper >= 0 ? "conditional" : "breaking";
+}
+
+function decimalPolicyChange(before, after) {
+	if (same(before ?? null, after ?? null)) return undefined;
+	if (!before || !after) return "breaking";
+	return after.scale >= before.scale &&
+		after.precision - after.scale >= before.precision - before.scale
+		? "conditional"
+		: "breaking";
+}
+
+function exactBound(value, scalar) {
+	if (typeof value !== "string") return undefined;
+	if (scalar === "integer")
+		return INTEGER_LITERAL.test(value)
+			? { coefficient: BigInt(value), scale: 0 }
+			: undefined;
+	if (scalar !== "decimal") return undefined;
+	if (!/^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$/.test(value))
+		return undefined;
+	const negative = value.startsWith("-");
+	const unsigned = negative ? value.slice(1) : value;
+	const [whole, fraction = ""] = unsigned.split(".");
+	return {
+		coefficient: BigInt(`${negative ? "-" : ""}${whole}${fraction}`),
+		scale: fraction.length,
+	};
+}
+
+function compareExactBounds(before, after, scalar) {
+	const left = exactBound(before, scalar);
+	const right = exactBound(after, scalar);
+	if (!left || !right) return undefined;
+	const scale = Math.max(left.scale, right.scale);
+	const l = left.coefficient * 10n ** BigInt(scale - left.scale);
+	const r = right.coefficient * 10n ** BigInt(scale - right.scale);
+	return l < r ? -1 : l > r ? 1 : 0;
+}
+
+const NATIVE_NUMERIC = new Map([
+	["Integer", "integer"],
+	["Decimal", "decimal"],
+	["Float32", "float32"],
+	["Float64", "float64"],
+]);
+
+/** Resolve the effective scalar and inherited constraints of a subject. */
+function numericSubject(types, identity) {
+	const seen = new Set();
+	const constraints = [];
+	let decimal;
+	let current = identity;
+	while (typeof current === "string" && !seen.has(current)) {
+		seen.add(current);
+		const type = types.get(current);
+		if (!type) {
+			const native = current.startsWith("ix://quire/native/")
+				? current.slice("ix://quire/native/".length)
+				: undefined;
+			return { scalar: NATIVE_NUMERIC.get(native), constraints, decimal };
+		}
+		constraints.push(...(type.constraints ?? []));
+		decimal ??= type.decimal;
+		if (type.kind === "scalar")
+			return { scalar: type.scalar, constraints, decimal };
+		if (type.kind !== "alias" && type.kind !== "reference") break;
+		current = type.target;
+	}
+	return { scalar: undefined, constraints, decimal };
+}
+
+function numericRefDisposition(original, field, oldSubject, newSubject) {
+	if (oldSubject.scalar !== newSubject.scalar) {
+		return scalarChange(oldSubject.scalar, newSubject.scalar) ?? "breaking";
+	}
+	const before = [...oldSubject.constraints, ...(original.constraints ?? [])];
+	const after = [...newSubject.constraints, ...(field.constraints ?? [])];
+	if (oldSubject.scalar === "integer") {
+		if (wideInteger(before) !== wideInteger(after)) return "breaking";
+		return numericBoundChange(before, after, "integer") ?? "breaking";
+	}
+	if (oldSubject.scalar === "decimal") {
+		const policy = decimalPolicyChange(
+			original.decimal ?? oldSubject.decimal,
+			field.decimal ?? newSubject.decimal,
+		);
+		const bounds = numericBoundChange(before, after, "decimal");
+		if (policy === "breaking" || bounds === "breaking") return "breaking";
+		if (policy === "conditional" || bounds === "conditional")
+			return "conditional";
+	}
+	return "breaking";
+}
 
 function scalarChange(before, after) {
 	if (before === after) return undefined;
@@ -252,6 +453,8 @@ export function diffSemanticContract(request) {
 	for (const [identity, next] of newTypes) {
 		const previous = oldTypes.get(identity);
 		if (!previous) continue;
+		const oldSubject = numericSubject(oldTypes, identity);
+		const newSubject = numericSubject(newTypes, identity);
 
 		if (kindLabel(previous.kind) !== kindLabel(next.kind)) {
 			record(
@@ -261,13 +464,46 @@ export function diffSemanticContract(request) {
 				`the structural kind changed from ${kindLabel(previous.kind)} to ${kindLabel(next.kind)}`,
 			);
 		} else {
-			const scalar = scalarChange(previous.scalar, next.scalar);
+			const scalar = scalarChange(oldSubject.scalar, newSubject.scalar);
 			if (scalar) {
 				record(
 					identity,
 					"type",
 					scalar,
 					`the scalar domain changed from ${previous.scalar} to ${next.scalar}`,
+				);
+			}
+			const policy = decimalPolicyChange(
+				oldSubject.decimal,
+				newSubject.decimal,
+			);
+			if (policy) {
+				record(identity, "type", policy, "the decimal policy changed");
+			}
+			if (
+				(previous.kind === "alias" || previous.kind === "reference") &&
+				previous.target !== next.target &&
+				oldSubject.scalar === newSubject.scalar &&
+				(oldSubject.scalar === "integer" || oldSubject.scalar === "decimal")
+			) {
+				record(
+					identity,
+					"type",
+					numericRefDisposition({}, {}, oldSubject, newSubject),
+					"the alias target changed its effective numeric domain",
+				);
+			}
+			if (
+				oldSubject.scalar === "integer" &&
+				newSubject.scalar === "integer" &&
+				wideInteger(oldSubject.constraints) !==
+					wideInteger(newSubject.constraints)
+			) {
+				record(
+					identity,
+					"type",
+					"breaking",
+					"the integer wire form changed between safe and wide",
 				);
 			}
 		}
@@ -298,9 +534,23 @@ export function diffSemanticContract(request) {
 			);
 		}
 
-		diffFields(previous, next, record, consumerPolicies, evidence);
+		diffFields(
+			previous,
+			next,
+			record,
+			consumerPolicies,
+			evidence,
+			oldTypes,
+			newTypes,
+		);
 		diffVariants(previous, next, record, consumerPolicies, evidence);
-		diffConstraints(previous, next, record);
+		diffConstraints(
+			previous,
+			next,
+			record,
+			oldSubject.scalar,
+			newSubject.scalar,
+		);
 		diffNodes(previous, next, record);
 
 		if (!same(previous.roles ?? [], next.roles ?? [])) {
@@ -506,7 +756,15 @@ function stripDocumentation(type) {
 	return copy;
 }
 
-function diffFields(previous, next, record, consumerPolicies, evidence) {
+function diffFields(
+	previous,
+	next,
+	record,
+	consumerPolicies,
+	evidence,
+	oldTypes,
+	newTypes,
+) {
 	const before = byIdentity(previous.fields);
 	const after = byIdentity(next.fields);
 	for (const [identity, field] of before) {
@@ -533,6 +791,31 @@ function diffFields(previous, next, record, consumerPolicies, evidence) {
 	for (const [identity, field] of after) {
 		const original = before.get(identity);
 		if (!original) continue;
+		const oldSubject = numericSubject(oldTypes, original.typeRef);
+		const newSubject = numericSubject(newTypes, field.typeRef);
+		if (
+			oldSubject.scalar === "integer" &&
+			newSubject.scalar === "integer" &&
+			wideInteger([
+				...oldSubject.constraints,
+				...(original.constraints ?? []),
+			]) !==
+				wideInteger([...newSubject.constraints, ...(field.constraints ?? [])])
+		) {
+			record(
+				identity,
+				"type",
+				"breaking",
+				"the field's integer wire form changed between safe and wide",
+			);
+		}
+		diffConstraints(
+			original,
+			field,
+			record,
+			oldSubject.scalar,
+			newSubject.scalar,
+		);
 		const multiplicity = multiplicityChange(
 			original.multiplicity,
 			field.multiplicity,
@@ -557,9 +840,13 @@ function diffFields(previous, next, record, consumerPolicies, evidence) {
 			record(
 				identity,
 				"type",
-				"breaking",
+				numericRefDisposition(original, field, oldSubject, newSubject),
 				`the field's type reference changed from ${original.typeRef} to ${field.typeRef}`,
 			);
+		}
+		const policy = decimalPolicyChange(original.decimal, field.decimal);
+		if (policy) {
+			record(identity, "type", policy, "the field's decimal policy changed");
 		}
 		// Nullability and defaults are semantic values, and a change to either is
 		// a change a consumer has to handle. Leaving them out let a field become
@@ -655,15 +942,21 @@ function diffVariants(previous, next, record, consumerPolicies, evidence) {
 	}
 }
 
-function diffConstraints(previous, next, record) {
+function diffConstraints(previous, next, record, beforeScalar, afterScalar) {
 	const before = byIdentity(previous.constraints);
 	const after = byIdentity(next.constraints);
 	for (const [identity, constraint] of before) {
 		if (after.has(identity)) continue;
+		const removedNumericBound =
+			beforeScalar === afterScalar &&
+			["integer", "decimal"].includes(afterScalar) &&
+			["min", "max", "exclusiveMin", "exclusiveMax"].includes(
+				constraint.keyword,
+			);
 		record(
 			identity,
 			"constraint",
-			"breaking",
+			removedNumericBound ? "conditional" : "breaking",
 			`the ${constraint.keyword} constraint was removed`,
 		);
 	}
@@ -689,10 +982,34 @@ function diffConstraints(previous, next, record) {
 			}
 			continue;
 		}
+		let disposition = "breaking";
+		if (
+			beforeScalar === afterScalar &&
+			["integer", "decimal"].includes(afterScalar) &&
+			original.keyword === constraint.keyword &&
+			["min", "max", "exclusiveMin", "exclusiveMax"].includes(
+				constraint.keyword,
+			) &&
+			Object.keys(original.operands ?? {}).length === 1 &&
+			Object.keys(constraint.operands ?? {}).length === 1
+		) {
+			const direction = compareExactBounds(
+				original.operands?.value,
+				constraint.operands?.value,
+				afterScalar,
+			);
+			if (direction === 0) disposition = "patch";
+			else if (
+				constraint.keyword === "min" || constraint.keyword === "exclusiveMin"
+					? direction > 0
+					: direction < 0
+			)
+				disposition = "conditional";
+		}
 		record(
 			identity,
 			"constraint",
-			"breaking",
+			disposition,
 			`the ${constraint.keyword} operands changed`,
 		);
 	}

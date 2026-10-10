@@ -40,8 +40,9 @@ const SCALAR_PRIMITIVES = Object.freeze({
 	any: "unknown",
 	boolean: "boolean",
 	integer: "number",
-	number: "number",
 	decimal: "string",
+	float32: "number",
+	float64: "number",
 	string: "string",
 	bytes: "string",
 	date: "string",
@@ -49,10 +50,6 @@ const SCALAR_PRIMITIVES = Object.freeze({
 	duration: "string",
 	uuid: "string",
 });
-
-function primitiveFor(entry) {
-	return SCALAR_PRIMITIVES[entry.scalar];
-}
 
 /** The extra JSDoc line a scalar earns where its string form needs stating. */
 const SCALAR_NOTES = Object.freeze({
@@ -63,6 +60,11 @@ const SCALAR_NOTES = Object.freeze({
 	duration: "An ISO 8601 duration.",
 	uuid: "A UUID in its canonical hyphenated form.",
 });
+
+function primitiveFor(entry) {
+	if (entry.wideInteger === true) return "string";
+	return SCALAR_PRIMITIVES[entry.scalar];
+}
 
 /** A JSON string literal, which is also a valid TypeScript string literal. */
 function literal(value) {
@@ -114,6 +116,7 @@ function jsdoc(lines, indent) {
  */
 function elementType(element) {
 	if (element === undefined || element.declared !== true) return "never";
+	if (element.native === true) return primitiveFor(element) ?? "never";
 	return element.identifier ?? "never";
 }
 

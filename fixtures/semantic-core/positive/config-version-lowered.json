@@ -5,7 +5,7 @@
 		"identity": "ix://agent-ix/config-service/spec",
 		"version": "1.0.0",
 		"dialect": "spec-bundle",
-		"digest": "sha256:1cc6258ed111ea37ad9f0a74705746646a7d186b3655e865aa9d7eb777bfd1d8"
+		"digest": "sha256:bdb22ff3b4f18b4274dfbe7d06496a771c6ac32be59cb2d01941da1cf81e1f87"
 	},
 	"package": {
 		"identity": "agent-ix/config-service",
@@ -169,7 +169,7 @@
 					"identity": "ix://agent-ix/config-service/constraint/ConfigVersion-versionNumber-min",
 					"keyword": "min",
 					"operands": {
-						"value": 1
+						"value": "1"
 					},
 					"appliesTo": "ix://agent-ix/config-service/type/ConfigVersionVersionNumber",
 					"diagnosticCode": "agent-ix.config-service.CONFIGVERSION_VERSIONNUMBER_MIN",

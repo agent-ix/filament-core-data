@@ -466,7 +466,7 @@ export const TYPE_CONSTRAINTS = {
 			appliesTo: "ix://agent-ix/conformance/type/Count",
 			diagnosticCode: "agent-ix.conformance.COUNT_MIN",
 			operands: {
-				value: 0,
+				value: "0",
 			},
 		},
 	],

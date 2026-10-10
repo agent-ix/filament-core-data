@@ -20,11 +20,15 @@ import {
 	getFormat,
 	getMaxLength,
 	getMaxValue,
+	getMaxValueAsNumeric,
 	getMaxValueExclusive,
+	getMaxValueExclusiveAsNumeric,
 	getMinItems,
 	getMinLength,
 	getMinValue,
+	getMinValueAsNumeric,
 	getMinValueExclusive,
+	getMinValueExclusiveAsNumeric,
 	getNamespaceFullName,
 	getPattern,
 	getSourceLocation,
@@ -63,9 +67,9 @@ const BUILTIN_SCALARS = new Map([
 	["uint16", "integer"],
 	["uint32", "integer"],
 	["uint64", "integer"],
-	["float", "number"],
-	["float32", "number"],
-	["float64", "number"],
+	["float", "float64"],
+	["float32", "float32"],
+	["float64", "float64"],
 	["decimal", "decimal"],
 	["decimal128", "decimal"],
 	["numeric", "number"],
@@ -78,6 +82,17 @@ const BUILTIN_SCALARS = new Map([
 	["offsetDateTime", "datetime"],
 	["duration", "duration"],
 ]);
+
+const BUILTIN_INTEGER_BOUNDS = Object.freeze({
+	int8: { min: "-128", max: "127" },
+	int16: { min: "-32768", max: "32767" },
+	int32: { min: "-2147483648", max: "2147483647" },
+	int64: { min: "-9223372036854775808", max: "9223372036854775807" },
+	uint8: { min: "0", max: "255" },
+	uint16: { min: "0", max: "65535" },
+	uint32: { min: "0", max: "4294967295" },
+	uint64: { min: "0", max: "18446744073709551615" },
+});
 
 /**
  * IR scalar to the FR-032 kernel scalar a package-local definition is named for.
@@ -94,6 +109,8 @@ const KERNEL_NAMES = new Map([
 	["boolean", "Boolean"],
 	["integer", "Integer"],
 	["number", "Decimal"],
+	["float32", "Float32"],
+	["float64", "Float64"],
 	["decimal", "Decimal"],
 	["string", "String"],
 	["bytes", "Bytes"],
@@ -501,31 +518,76 @@ export function lowerProgram(options) {
 		const base = builtinBase(target?.kind === "Scalar" ? target : target?.type);
 		const scalar = base ? BUILTIN_SCALARS.get(base) : undefined;
 		if (
-			scalar === "decimal" &&
-			typeof value === "number" &&
-			Number.isFinite(value)
+			scalar === "integer" &&
+			value !== undefined &&
+			typeof value?.toString === "function"
 		)
-			return String(value);
+			return value.toString();
+		if (
+			scalar === "decimal" &&
+			value !== undefined &&
+			typeof value?.toString === "function"
+		)
+			return value.toString();
+		if (
+			(scalar === "float32" || scalar === "float64") &&
+			value !== undefined &&
+			typeof value?.asNumber === "function"
+		) {
+			const number = value.asNumber();
+			return number === null
+				? value.toString()
+				: scalar === "float32"
+					? Math.fround(number)
+					: number;
+		}
 		return value;
 	};
 	const constraintsOf = (target) => {
 		const found = [];
 		const push = (keyword, operands, decorator) =>
 			found.push({ keyword, operands, decorator });
-		const min = getMinValue(program, target);
+		const decoratorArgument = (name) => {
+			const application = target.decorators?.find(
+				(item) =>
+					item.decorator?.name === `$${name}` ||
+					item.definition?.name === `$${name}`,
+			);
+			return application?.args?.[0]?.jsValue;
+		};
+		const min =
+			getMinValueAsNumeric(program, target) ??
+			getMinValue(program, target) ??
+			decoratorArgument("minValue");
 		if (min !== undefined)
 			push("min", { value: literalFor(target, min) }, "@minValue");
-		const max = getMaxValue(program, target);
+		const max =
+			getMaxValueAsNumeric(program, target) ??
+			getMaxValue(program, target) ??
+			decoratorArgument("maxValue");
 		if (max !== undefined)
 			push("max", { value: literalFor(target, max) }, "@maxValue");
-		const exclusiveMin = getMinValueExclusive(program, target);
+		const width = BUILTIN_INTEGER_BOUNDS[builtinBase(target)];
+		if (width !== undefined) {
+			if (min === undefined)
+				push("min", { value: width.min }, "built-in width");
+			if (max === undefined)
+				push("max", { value: width.max }, "built-in width");
+		}
+		const exclusiveMin =
+			getMinValueExclusiveAsNumeric(program, target) ??
+			getMinValueExclusive(program, target) ??
+			decoratorArgument("minValueExclusive");
 		if (exclusiveMin !== undefined)
 			push(
 				"exclusiveMin",
 				{ value: literalFor(target, exclusiveMin) },
 				"@minValueExclusive",
 			);
-		const exclusiveMax = getMaxValueExclusive(program, target);
+		const exclusiveMax =
+			getMaxValueExclusiveAsNumeric(program, target) ??
+			getMaxValueExclusive(program, target) ??
+			decoratorArgument("maxValueExclusive");
 		if (exclusiveMax !== undefined)
 			push(
 				"exclusiveMax",
@@ -581,6 +643,77 @@ export function lowerProgram(options) {
 		if (definition.kind === "alias")
 			return resolvedKindOf(definition.target, seen);
 		return { kind: definition.kind, scalar: definition.scalar };
+	};
+
+	// Native integer widths also occur at declaration sites that have no field
+	// node: sequence items, union payloads, and operation returns.  Preserve
+	// those value-site bounds in a package-local alias just as lowerField does;
+	// otherwise all three sites silently collapse `int16`/`uint64` to native
+	// Integer and lose the authored interval before any backend sees it.
+	const ensureIntegerWidthAlias = (type, typeRef, nameParts, origin) => {
+		const width = BUILTIN_INTEGER_BOUNDS[builtinBase(type)];
+		if (
+			!width ||
+			typeof typeRef !== "string" ||
+			!typeRef.startsWith(NATIVE_PREFIX)
+		)
+			return typeRef;
+		const integerIdentity = typeIdentity("Integer");
+		if (!definitions.has(integerIdentity))
+			emit({
+				identity: integerIdentity,
+				displayName: "Integer",
+				kind: "scalar",
+				scalar: "integer",
+				constraints: [],
+				extensions: [],
+				roles: [],
+				unknownPolicy: "reject",
+				origin,
+			});
+		const aliasName = nameParts
+			.map((part, index) => {
+				const normalized = slug(part);
+				return index === 0
+					? normalized
+					: `${normalized.charAt(0).toUpperCase()}${normalized.slice(1)}`;
+			})
+			.join("");
+		// Keep the type alias itself flat (BytesItems, ChoiceSmall), while its
+		// constraints retain the authored value-site segments (Bytes-items and
+		// Choice-small).  These identities are the stable FR-053 diagnostic
+		// namespace and must not be derived from the display name.
+		const aliasConstraintParts = nameParts.map((part) => String(part));
+		const aliasIdentity = typeIdentity(aliasName);
+		if (!definitions.has(aliasIdentity)) {
+			const constraints = ["min", "max"].map((keyword) => ({
+				identity: mintIdentity(packageIdentity, "constraint", [
+					...aliasConstraintParts,
+					keyword,
+				]),
+				keyword,
+				operands: { value: width[keyword] },
+				appliesTo: aliasIdentity,
+				diagnosticCode: constraintDiagnosticCode(
+					packageIdentity,
+					aliasConstraintParts,
+					keyword,
+				),
+				origin,
+			}));
+			emit({
+				identity: aliasIdentity,
+				displayName: aliasName,
+				kind: "alias",
+				target: integerIdentity,
+				constraints,
+				extensions: [],
+				roles: [],
+				unknownPolicy: "reject",
+				origin,
+			});
+		}
+		return aliasIdentity;
 	};
 
 	// ---- pass one: every declaration becomes a definition -------------------
@@ -681,7 +814,7 @@ export function lowerProgram(options) {
 			continue;
 		}
 		if (classification.kind === "sequence") {
-			const items = resolveMemberType(
+			let items = resolveMemberType(
 				declaration.indexer.value,
 				context.locusOf(declaration),
 			);
@@ -693,11 +826,17 @@ export function lowerProgram(options) {
 				);
 				continue;
 			}
+			items = ensureIntegerWidthAlias(
+				declaration.indexer.value,
+				items,
+				[declaration.name, "items"],
+				context.originOf(declaration),
+			);
 			emit({ ...base, items });
 			continue;
 		}
 		if (classification.kind === "map") {
-			const values = resolveMemberType(
+			let values = resolveMemberType(
 				declaration.indexer.value,
 				context.locusOf(declaration),
 			);
@@ -709,6 +848,12 @@ export function lowerProgram(options) {
 				);
 				continue;
 			}
+			values = ensureIntegerWidthAlias(
+				declaration.indexer.value,
+				values,
+				[declaration.name, "values"],
+				context.originOf(declaration),
+			);
 			emit({ ...base, values });
 			continue;
 		}
@@ -747,9 +892,15 @@ export function lowerProgram(options) {
 					);
 					continue;
 				}
-				const payloadType = resolveMemberType(
+				let payloadType = resolveMemberType(
 					variant.type,
 					context.locusOf(declaration),
+				);
+				payloadType = ensureIntegerWidthAlias(
+					variant.type,
+					payloadType,
+					[declaration.name, name ?? "Variant"],
+					context.originOf(declaration),
 				);
 				variants.push({
 					identity: mintIdentity(packageIdentity, "variant", [
@@ -782,7 +933,7 @@ export function lowerProgram(options) {
 		const nullable = unwrapNullable(property.type);
 		const item = collectionItem(nullable.type);
 		const memberType = item ?? nullable.type;
-		const typeRef = resolveMemberType(memberType, at);
+		let typeRef = resolveMemberType(memberType, at);
 		if (!typeRef) {
 			context.raise(
 				DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
@@ -790,6 +941,147 @@ export function lowerProgram(options) {
 				at,
 			);
 			return undefined;
+		}
+		const constraints = constraintsOf(property);
+		const decimalPolicy = context.state("decimal", property);
+		const decimalBase = builtinBase(memberType);
+		const decimalBoundAlias =
+			decimalPolicy !== undefined &&
+			BUILTIN_SCALARS.get(decimalBase) === "decimal" &&
+			constraints.length > 0;
+		// Native integer widths are value-site declarations too. Preserve their
+		// closed interval on a package-local alias so fields, collection items and
+		// operation parameters do not silently collapse to unbounded Integer.
+		// Keep the alias name flat (the same owner/member spelling used by the
+		// semantic-core lowerer) so it cannot collide with the field identity.
+		const width = BUILTIN_INTEGER_BOUNDS[builtinBase(memberType)];
+		const integerTarget =
+			width !== undefined && typeRef.startsWith(NATIVE_PREFIX)
+				? typeIdentity("Integer")
+				: typeRef;
+		// Width aliases are package declarations, so their target must be the
+		// package's unbounded Integer definition.  A native reference is useful
+		// for a direct field, but it cannot be the target of an authored alias:
+		// consumers need one local node from which to resolve the effective range.
+		if (width !== undefined && typeRef.startsWith(NATIVE_PREFIX)) {
+			const integerIdentity = typeIdentity("Integer");
+			if (!definitions.has(integerIdentity)) {
+				emit({
+					identity: integerIdentity,
+					displayName: "Integer",
+					kind: "scalar",
+					scalar: "integer",
+					constraints: [],
+					extensions: [],
+					roles: [],
+					unknownPolicy: "reject",
+					origin: context.originOf(property),
+				});
+			}
+		}
+		if (
+			(width !== undefined || decimalBoundAlias) &&
+			typeRef.startsWith(NATIVE_PREFIX)
+		) {
+			const memberName = String(property.name);
+			const widthAlias = width !== undefined;
+			const operationSite = ownerParts.length > 1;
+			const aliasParts = width
+				? [...ownerParts, memberName, "width"]
+				: [
+						...ownerParts,
+						`${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`,
+					];
+			const capitalize = (value) =>
+				`${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+			const aliasName = operationSite
+				? `${ownerParts.map(capitalize).join("")}${capitalize(memberName)}Param`
+				: `${ownerParts.join("")}${capitalize(memberName)}`;
+			const aliasConstraintParts = widthAlias
+				? [...ownerParts, memberName]
+				: [aliasName];
+			const diagnosticParts = aliasConstraintParts;
+			const aliasIdentity =
+				widthAlias && operationSite
+					? mintIdentity(packageIdentity, "type", aliasParts)
+					: typeIdentity(aliasName);
+			const diagnosticCode = (keyword) => {
+				if (!operationSite)
+					return constraintDiagnosticCode(
+						packageIdentity,
+						diagnosticParts,
+						keyword,
+					);
+				const ownerCode = constraintDiagnosticCode(
+					packageIdentity,
+					ownerParts,
+					keyword,
+				);
+				const keywordToken = keyword.toUpperCase();
+				const ownerPrefix = ownerCode.slice(
+					0,
+					ownerCode.lastIndexOf(`_${keywordToken}`),
+				);
+				const memberToken = slug(memberName).replace(/-+/g, "_").toUpperCase();
+				return `${ownerPrefix}__${memberToken}_${keywordToken}`;
+			};
+			const constraintIdentity = (parts, keyword, suffix = []) =>
+				mintIdentity(
+					packageIdentity,
+					operationSite ? "typeConstraint" : "constraint",
+					[...parts, ...suffix, keyword],
+				);
+			const widthConstraints = width
+				? [
+						...(constraints.some((item) => item.keyword === "min")
+							? []
+							: ["min"]),
+						...(constraints.some((item) => item.keyword === "max")
+							? []
+							: ["max"]),
+					].map((keyword) => ({
+						identity: constraintIdentity(aliasConstraintParts, keyword),
+						keyword,
+						operands: { value: width[keyword] },
+						appliesTo: aliasIdentity,
+						diagnosticCode: diagnosticCode(keyword),
+						origin: context.originOf(property),
+					}))
+				: [];
+			if (!definitions.has(aliasIdentity)) {
+				emit({
+					identity: aliasIdentity,
+					displayName: aliasName,
+					kind: "alias",
+					target: integerTarget,
+					constraints: [
+						...widthConstraints,
+						...constraints.map((item) => ({
+							identity: constraintIdentity(aliasConstraintParts, item.keyword, [
+								"narrowed",
+							]),
+							keyword: item.keyword,
+							operands: item.operands,
+							appliesTo: aliasIdentity,
+							diagnosticCode: diagnosticCode(item.keyword),
+							origin: context.originOf(property),
+						})),
+					].sort(byIdentity),
+					...(decimalBoundAlias
+						? {
+								decimal: {
+									precision: decimalPolicy.precision,
+									scale: decimalPolicy.scale,
+								},
+							}
+						: {}),
+					extensions: [],
+					roles: [],
+					unknownPolicy: "reject",
+					origin: context.originOf(property),
+				});
+			}
+			typeRef = aliasIdentity;
 		}
 
 		const declared = context.state("multiplicity", property);
@@ -839,9 +1131,8 @@ export function lowerProgram(options) {
 			multiplicity.unique = false;
 		}
 
-		const constraints = constraintsOf(property);
 		let fieldConstraints;
-		if (constraints.length > 0) {
+		if (constraints.length > 0 && !decimalBoundAlias) {
 			// Gap 1 of FCD #199/#200: a constrained property keeps its constraints
 			// on the field itself, `appliesTo` the field's own identity; `typeRef`
 			// stays the field's resolved type, no synthetic alias.
@@ -894,7 +1185,6 @@ export function lowerProgram(options) {
 				payload: { identity: true },
 			});
 		}
-		const decimalPolicy = context.state("decimal", property);
 		if (decimalPolicy) {
 			extensions.push({
 				identity: `${EXTENSION_BASE}/decimal`,
@@ -917,7 +1207,7 @@ export function lowerProgram(options) {
 		}
 		if (
 			decimalPolicy &&
-			(decimalPolicy.precision > 38 ||
+			(decimalPolicy.precision > (decimalBase === "decimal128" ? 34 : 38) ||
 				decimalPolicy.scale > decimalPolicy.precision)
 		) {
 			context.raise(
@@ -950,7 +1240,7 @@ export function lowerProgram(options) {
 			origin: context.originOf(property),
 			extensions: extensions.sort(byIdentity),
 			...(fieldConstraints ? { constraints: fieldConstraints } : {}),
-			...(decimalPolicy
+			...(decimalPolicy && !decimalBoundAlias
 				? {
 						decimal: {
 							precision: decimalPolicy.precision,
@@ -1169,9 +1459,15 @@ export function lowerProgram(options) {
 					};
 					const returnType = unwrapNullable(operation.returnType);
 					const returnItem = collectionItem(returnType.type);
-					const typeRef = resolveMemberType(
+					let typeRef = resolveMemberType(
 						returnItem ?? returnType.type,
 						context.locusOf(operation),
+					);
+					typeRef = ensureIntegerWidthAlias(
+						returnItem ?? returnType.type,
+						typeRef,
+						[declaration.name, operation.name, "Return"],
+						context.originOf(operation),
 					);
 					if (typeRef) {
 						node.returns = {

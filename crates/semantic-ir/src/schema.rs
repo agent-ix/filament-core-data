@@ -200,9 +200,10 @@ fn is_unit(text: &str) -> bool {
 }
 
 const SCALARS: &[&str] = &[
-    "boolean", "integer", "decimal", "number", "string", "bytes", "date", "datetime", "duration",
-    "uuid", "any",
+    "boolean", "integer", "decimal", "float32", "float64", "string", "bytes", "date", "datetime",
+    "duration", "uuid", "any",
 ];
+const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
 /// The core kinds: every `typeDefinition.kind` that is a string. Every other
 /// kind is a construct kind, `{module, name}`, that the document's
 /// `constructs` table declares.
@@ -388,8 +389,42 @@ fn expect_integer(value: Option<&Json>, pointer: &str, min: i64, what: &str, f: 
         None => return,
     };
     match value.as_i64() {
-        Some(number) if number >= min => {}
+        Some(number) if number >= min && number <= MAX_SAFE_INTEGER => {}
         _ => f.push(pointer, what.to_string()),
+    }
+}
+
+fn decimal_policy_schema(policy: &Json, at: &str, f: &mut Findings) {
+    if !expect_object(policy, at, "a decimal policy", f) {
+        return;
+    }
+    require_members(policy, at, &["precision", "scale"], f);
+    forbid_extra(policy, at, &["precision", "scale"], f);
+    let precision_at = child(at, "precision");
+    let scale_at = child(at, "scale");
+    expect_integer(
+        policy.get("precision"),
+        &precision_at,
+        1,
+        "a decimal precision is a safe integer from 1 through 38",
+        f,
+    );
+    expect_integer(
+        policy.get("scale"),
+        &scale_at,
+        0,
+        "a decimal scale is a safe non-negative integer",
+        f,
+    );
+    if let Some(precision) = policy.get("precision").and_then(Json::as_i64) {
+        if !(1..=38).contains(&precision) {
+            f.push(at, "a decimal precision is between 1 and 38");
+        }
+        if let Some(scale) = policy.get("scale").and_then(Json::as_i64) {
+            if !(0..=38).contains(&scale) || scale > precision {
+                f.push(at, "a decimal scale is between zero and the precision");
+            }
+        }
     }
 }
 
@@ -946,6 +981,9 @@ fn type_definition(definition: &Json, at: &str, table: &mut ConstructTable<'_>, 
     }
     require_members(definition, at, TYPE_REQUIRED, f);
     forbid_extra(definition, at, TYPE_MEMBERS, f);
+    if let Some(decimal) = definition.get("decimal") {
+        decimal_policy_schema(decimal, &child(at, "decimal"), f);
+    }
     expect_shape(
         definition.get("identity"),
         &child(at, "identity"),
@@ -1416,6 +1454,9 @@ fn field_schema(field: &Json, at: &str, f: &mut Findings) {
     }
     require_members(field, at, FIELD_REQUIRED, f);
     forbid_extra(field, at, FIELD_MEMBERS, f);
+    if let Some(decimal) = field.get("decimal") {
+        decimal_policy_schema(decimal, &child(at, "decimal"), f);
+    }
     identity_list(field.get("subsets"), &child(at, "subsets"), "subsets", f);
     expect_shape(
         field.get("redefines"),
@@ -1848,6 +1889,9 @@ fn operation_schema(operation: &Json, at: &str, f: &mut Findings) {
                 f,
             );
             forbid_extra(returns, &returns_at, RETURNS_MEMBERS, f);
+            if let Some(decimal) = returns.get("decimal") {
+                decimal_policy_schema(decimal, &child(&returns_at, "decimal"), f);
+            }
             expect_shape(
                 returns.get("typeRef"),
                 &child(&returns_at, "typeRef"),

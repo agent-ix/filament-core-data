@@ -31,10 +31,42 @@ export const CLASSIFICATION_ORDER = [
 
 /** Keyword → the resolved scalar names or structural kinds it may apply to. */
 const KEYWORD_APPLICABILITY = {
-	min: ["date", "datetime", "duration", "integer", "number"],
-	max: ["date", "datetime", "duration", "integer", "number"],
-	exclusiveMin: ["date", "datetime", "duration", "integer", "number"],
-	exclusiveMax: ["date", "datetime", "duration", "integer", "number"],
+	min: [
+		"date",
+		"datetime",
+		"duration",
+		"integer",
+		"decimal",
+		"float32",
+		"float64",
+	],
+	max: [
+		"date",
+		"datetime",
+		"duration",
+		"integer",
+		"decimal",
+		"float32",
+		"float64",
+	],
+	exclusiveMin: [
+		"date",
+		"datetime",
+		"duration",
+		"integer",
+		"decimal",
+		"float32",
+		"float64",
+	],
+	exclusiveMax: [
+		"date",
+		"datetime",
+		"duration",
+		"integer",
+		"decimal",
+		"float32",
+		"float64",
+	],
 	minLength: ["bytes", "string"],
 	maxLength: ["bytes", "string"],
 	pattern: ["string"],
@@ -45,7 +77,9 @@ const KEYWORD_APPLICABILITY = {
 		"datetime",
 		"duration",
 		"integer",
-		"number",
+		"decimal",
+		"float32",
+		"float64",
 		"string",
 		"uuid",
 	],
@@ -159,6 +193,21 @@ function render(bundle, rows) {
 
 /* ------------------------------------------------------------ resolver ---- */
 
+/** The reader's closed set of native scalar references, with no IR definition. */
+const NATIVE_SCALARS = new Map([
+	["UUID", "uuid"],
+	["Boolean", "boolean"],
+	["Integer", "integer"],
+	["Decimal", "decimal"],
+	["Float32", "float32"],
+	["Float64", "float64"],
+	["String", "string"],
+	["Timestamp", "datetime"],
+	["Duration", "duration"],
+	["Bytes", "bytes"],
+	["JsonObject", "any"],
+]);
+
 /** Indexes `types[]` by identity, keeping the first declaration of each. */
 function indexTypes(ir) {
 	const byIdentity = new Map();
@@ -190,6 +239,13 @@ export function resolve(types, identity, limit = DEPTH_LIMIT) {
 		if (seen.has(current)) return { status: "cycle", chain };
 		seen.add(current);
 		chain.push(current);
+		if (current.startsWith("ix://quire/native/")) {
+			const scalar = NATIVE_SCALARS.get(
+				current.slice("ix://quire/native/".length),
+			);
+			if (scalar !== undefined)
+				return { status: "resolved", kind: "scalar", scalar, chain };
+		}
 		const definition = types.get(current);
 		if (!definition) return { status: "unresolved", chain };
 		if (definition.kind !== "alias") {
@@ -329,6 +385,26 @@ function checkField(field, at, types, out) {
 	// document this oracle ever sees can trigger it, so the check is removed
 	// rather than left calling out a condition no corpus case can reach.
 	checkMultiplicity(field.multiplicity, `${at}/multiplicity`, out);
+	if (
+		resolved.status === "resolved" &&
+		resolved.kind === "scalar" &&
+		Object.hasOwn(field, "defaultValue") &&
+		!defaultAdmitted(
+			resolved.scalar,
+			field.defaultValue,
+			decimalPolicyFor(types, field, resolved),
+		)
+	) {
+		out.push(
+			diagnostic(
+				defaultOutsideI128(resolved.scalar, field.defaultValue)
+					? "INTEGER_OUTSIDE_I128"
+					: "INVALID_DEFAULT_VALUE",
+				`${at}/defaultValue`,
+				"the default value is outside the exact scalar wire domain",
+			),
+		);
+	}
 
 	if (
 		field.unit !== undefined &&
@@ -356,13 +432,13 @@ function checkField(field, at, types, out) {
 		: []
 	).entries()) {
 		if (isObject(constraint))
-			checkConstraint(constraint, `${at}/constraints/${i}`, types, out);
+			checkConstraint(constraint, `${at}/constraints/${i}`, types, out, field);
 	}
 }
 
 /* ------------------------------------------------------------ document ---- */
 
-function checkConstraint(constraint, at, types, out) {
+function checkConstraint(constraint, at, types, out, field = undefined) {
 	const keyword = String(constraint.keyword);
 	// The schema closes the keyword vocabulary, so an unlisted keyword never
 	// reaches this layer; the applicability table is the only rule left.
@@ -419,17 +495,51 @@ function checkConstraint(constraint, at, types, out) {
 		resolved.kind === "scalar"
 	) {
 		const operands = isObject(constraint.operands) ? constraint.operands : {};
-		const numeric =
-			resolved.scalar === "integer" || resolved.scalar === "number";
+		const numeric = ["integer", "decimal", "float32", "float64"].includes(
+			resolved.scalar,
+		);
 		const value = operands.value;
-		if (!operandAdmitted(numeric, resolved.scalar, value)) {
+		if (
+			!operandAdmitted(
+				numeric,
+				resolved.scalar,
+				value,
+				decimalPolicyFor(types, field, resolved),
+			)
+		) {
+			const outsideI128 = integerOutsideI128(resolved.scalar, value);
 			out.push(
 				diagnostic(
-					"INVALID_OPERAND",
+					outsideI128 ? "INTEGER_OUTSIDE_I128" : "INVALID_OPERAND",
 					`${at}/operands/value`,
-					`${keyword} on ${String(resolved.scalar)} takes a ${numeric ? "number" : "string"} operand`,
+					outsideI128
+						? `${keyword} operand /operands/value ${value} is outside the exact i128 domain [-170141183460469231731687303715884105728, 170141183460469231731687303715884105727]`
+						: `${keyword} on ${String(resolved.scalar)} takes a ${numeric ? "number" : "string"} operand`,
 				),
 			);
+		}
+	}
+	if (keyword === "enumValues" && resolved.kind === "scalar") {
+		const operands = isObject(constraint.operands) ? constraint.operands : {};
+		const values = Array.isArray(operands.values) ? operands.values : [];
+		for (const [index, value] of values.entries()) {
+			if (
+				!valueAdmitted(
+					resolved.scalar,
+					value,
+					decimalPolicyFor(types, undefined, resolved),
+				)
+			) {
+				out.push(
+					diagnostic(
+						integerOutsideI128(resolved.scalar, value)
+							? "INTEGER_OUTSIDE_I128"
+							: "INVALID_OPERAND",
+						`${at}/operands/values/${index}`,
+						"an enum value is outside the exact scalar wire domain",
+					),
+				);
+			}
 		}
 	}
 }
@@ -1064,6 +1174,269 @@ export function verdict(bundle, schemaRows = []) {
 	};
 }
 
+/** Compare canonical decimal wire values using integer coefficients. */
+function compareDecimalWire(leftWire, rightWire) {
+	const parts = (wire) => {
+		const negative = wire.startsWith("-");
+		const [whole, fraction = ""] = (negative ? wire.slice(1) : wire).split(".");
+		return {
+			coefficient: BigInt(`${negative ? "-" : ""}${whole}${fraction}`),
+			scale: fraction.length,
+		};
+	};
+	const left = parts(leftWire);
+	const right = parts(rightWire);
+	const a = left.coefficient * 10n ** BigInt(right.scale);
+	const b = right.coefficient * 10n ** BigInt(left.scale);
+	return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/**
+ * Decides one generated numeric instance against the IR type graph. This is
+ * deliberately separate from `verdict`: the latter validates an IR document,
+ * while this small instance seam applies the declared scalar constraints to a
+ * record value so backend probes can be compared with an independent oracle.
+ */
+function enumMemberEquals(scalar, member, value) {
+	if (scalar === "integer") {
+		if (typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value))
+			return BigInt(member) === BigInt(value);
+		return (
+			typeof value === "number" &&
+			Number.isSafeInteger(value) &&
+			BigInt(member) === BigInt(value)
+		);
+	}
+	if (scalar === "float32")
+		return (
+			typeof value === "number" &&
+			Number.isFinite(Math.fround(value)) &&
+			Math.fround(member) === Math.fround(value)
+		);
+	if (scalar === "float64")
+		return (
+			typeof value === "number" && Number.isFinite(value) && member === value
+		);
+	if (scalar === "decimal") {
+		if (typeof value !== "string") return false;
+		return compareDecimalWire(member, value) === 0;
+	}
+	return typeof member === typeof value && member === value;
+}
+
+export function admitInstance(bundle, typeIdentity, record, options = {}) {
+	const structural = (code) => `agent-ix.typescript-backend.${code}`;
+	if (!isObject(bundle) || !isObject(bundle.ir))
+		return { ok: false, code: structural("INVALID_DOCUMENT") };
+	const { byIdentity } = indexTypes(bundle.ir);
+	const root = byIdentity.get(typeIdentity);
+	const field = Array.isArray(root?.fields)
+		? root.fields.find((one) => one?.name === "value")
+		: undefined;
+	if (!isObject(field))
+		return { ok: false, code: structural("UNRESOLVED_FIELD") };
+	const raw = isObject(record) ? record.value : undefined;
+	if (raw === undefined)
+		return { ok: false, code: structural("MISSING_VALUE") };
+	const values = options.nesting === "collection" ? raw : [raw];
+	if (options.nesting === "collection" && !Array.isArray(values))
+		return { ok: false, code: structural("INVALID_COLLECTION") };
+	const resolved = resolve(byIdentity, field.typeRef);
+	if (resolved.status !== "resolved")
+		return { ok: false, code: structural("UNRESOLVED_TYPE_REF") };
+	const scalar = resolved.scalar;
+	const definitions = resolved.chain
+		.map((identity) => byIdentity.get(identity))
+		.filter((one) => isObject(one));
+	const safeInteger = 2n ** 53n - 1n;
+	let effectiveLower;
+	let effectiveUpper;
+	let lowerConstraint;
+	let upperConstraint;
+	if (scalar === "integer") {
+		for (const definition of [field, ...definitions]) {
+			for (const constraint of Array.isArray(definition.constraints)
+				? definition.constraints
+				: []) {
+				if (
+					!isObject(constraint) ||
+					!["min", "max", "exclusiveMin", "exclusiveMax"].includes(
+						String(constraint.keyword),
+					)
+				)
+					continue;
+				const operand = BigInt(constraint.operands?.value);
+				if (
+					constraint.keyword === "min" &&
+					(effectiveLower === undefined || operand > effectiveLower)
+				) {
+					effectiveLower = operand;
+					lowerConstraint = constraint;
+				}
+				if (
+					constraint.keyword === "exclusiveMin" &&
+					(effectiveLower === undefined || operand + 1n > effectiveLower)
+				) {
+					effectiveLower = operand + 1n;
+					lowerConstraint = constraint;
+				}
+				if (
+					constraint.keyword === "max" &&
+					(effectiveUpper === undefined || operand < effectiveUpper)
+				) {
+					effectiveUpper = operand;
+					upperConstraint = constraint;
+				}
+				if (
+					constraint.keyword === "exclusiveMax" &&
+					(effectiveUpper === undefined || operand - 1n < effectiveUpper)
+				) {
+					effectiveUpper = operand - 1n;
+					upperConstraint = constraint;
+				}
+			}
+		}
+	}
+	if (effectiveLower === undefined) effectiveLower = -safeInteger;
+	if (effectiveUpper === undefined) effectiveUpper = safeInteger;
+	const hasExplicitLower = lowerConstraint !== undefined;
+	const hasExplicitUpper = upperConstraint !== undefined;
+	const effectiveRangeFailure =
+		effectiveLower > effectiveUpper
+			? (lowerConstraint ?? upperConstraint)
+			: undefined;
+	const integerWireIsString =
+		scalar === "integer" &&
+		(effectiveLower < -safeInteger ||
+			effectiveLower > safeInteger ||
+			effectiveUpper < -safeInteger ||
+			effectiveUpper > safeInteger);
+	for (const value of values) {
+		if (value === null) {
+			if (options.nullable === true) continue;
+			return { ok: false, code: structural("NULL_NOT_PERMITTED") };
+		}
+		let numeric = value;
+		if (scalar === "integer") {
+			if (integerWireIsString) {
+				if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
+					return { ok: false, code: structural("NOT_AN_INTEGER") };
+				try {
+					numeric = BigInt(value);
+				} catch {
+					return { ok: false, code: structural("NOT_AN_INTEGER") };
+				}
+			} else if (typeof value !== "number") {
+				return { ok: false, code: structural("NOT_A_NUMBER") };
+			} else if (!Number.isSafeInteger(value)) {
+				return { ok: false, code: structural("INTEGER_OUT_OF_SAFE_RANGE") };
+			} else {
+				numeric = BigInt(value);
+			}
+		} else if (scalar === "float32" || scalar === "float64") {
+			if (typeof value !== "number" || Number.isNaN(value))
+				return { ok: false, code: structural("NOT_A_NUMBER_VALUE") };
+			if (!Number.isFinite(value))
+				return { ok: false, code: structural("NOT_FINITE") };
+			numeric = scalar === "float32" ? Math.fround(value) : value;
+			if (!Number.isFinite(numeric))
+				return { ok: false, code: structural("NOT_A_NUMBER_VALUE") };
+		} else if (scalar === "decimal") {
+			const policy = decimalPolicyFor(byIdentity, field, resolved);
+			const canonical =
+				typeof value === "string" &&
+				/^-?(0|[1-9][0-9]*)(\.[0-9]+)?$/.test(value) &&
+				!/^-0(?:\.0+)?$/.test(value);
+			const unsigned = canonical ? value.replace(/^-/, "") : "";
+			const [whole, fraction = ""] = unsigned.split(".");
+			if (
+				!canonical ||
+				!policy ||
+				(whole === "0" ? 0 : whole.length) > policy.precision - policy.scale ||
+				fraction.length > policy.scale
+			)
+				return { ok: false, code: structural("SHAPE_MISMATCH") };
+		} else if (scalar === "boolean" || scalar === "string") {
+			if (typeof value !== scalar)
+				return { ok: false, code: structural("SHAPE_MISMATCH") };
+		}
+		for (const definition of [field, ...definitions]) {
+			const constraints = Array.isArray(definition.constraints)
+				? definition.constraints
+				: [];
+			let firstFailure;
+			for (const constraint of constraints) {
+				if (
+					!isObject(constraint) ||
+					!["min", "max", "exclusiveMin", "exclusiveMax"].includes(
+						String(constraint.keyword),
+					)
+				)
+					continue;
+				const operand =
+					scalar === "integer"
+						? BigInt(constraint.operands?.value)
+						: Number(constraint.operands?.value);
+				const ordering =
+					scalar === "decimal"
+						? compareDecimalWire(value, constraint.operands?.value)
+						: numeric < operand
+							? -1
+							: numeric > operand
+								? 1
+								: 0;
+				const violated =
+					constraint.keyword === "min"
+						? ordering < 0
+						: constraint.keyword === "max"
+							? ordering > 0
+							: constraint.keyword === "exclusiveMin"
+								? ordering <= 0
+								: ordering >= 0;
+				if (violated) {
+					const failure = { ok: false, code: constraint.diagnosticCode };
+					if (
+						(constraint.keyword === "exclusiveMin" ||
+							constraint.keyword === "exclusiveMax") &&
+						ordering === 0
+					)
+						return failure;
+					firstFailure ??= failure;
+				}
+			}
+			if (firstFailure) return firstFailure;
+		}
+		if (effectiveRangeFailure)
+			return { ok: false, code: effectiveRangeFailure.diagnosticCode };
+		if (scalar === "integer") {
+			if (!hasExplicitLower && numeric < effectiveLower)
+				return {
+					ok: false,
+					code: "agent-ix.typescript-backend.INTEGER_OUT_OF_SAFE_RANGE",
+				};
+			if (!hasExplicitUpper && numeric > effectiveUpper)
+				return {
+					ok: false,
+					code: "agent-ix.typescript-backend.INTEGER_OUT_OF_SAFE_RANGE",
+				};
+		}
+		for (const constraint of [
+			...(Array.isArray(field.constraints) ? field.constraints : []),
+			...definitions.flatMap((definition) =>
+				Array.isArray(definition.constraints) ? definition.constraints : [],
+			),
+		]) {
+			if (constraint?.keyword !== "enumValues") continue;
+			const members = Array.isArray(constraint.operands?.values)
+				? constraint.operands.values
+				: [];
+			if (!members.some((member) => enumMemberEquals(scalar, member, value)))
+				return { ok: false, code: constraint.diagnosticCode };
+		}
+	}
+	return { ok: true, code: "OK" };
+}
+
 /* ------------------------------------------------------ compatibility ----- */
 
 function fieldIndex(ir) {
@@ -1499,17 +1872,104 @@ export function classify(beforeBundle, afterBundle) {
 }
 
 /**
- * Whether a bound operand fits its scalar: a `number` or `integer` bound is a
- * JSON number, and an `integer` bound may instead be a canonical decimal
- * string (`0`, or an optional `-` and digits with no leading zero), so a value
- * past 2^53 is exact; every other scalar's bound is a string.
+ * Whether a bound operand fits its scalar. Integer and decimal value sites use
+ * canonical strings; float value sites use finite JSON numbers.
  */
-function operandAdmitted(numeric, scalar, value) {
+function operandAdmitted(numeric, scalar, value, policy) {
 	if (!numeric) return typeof value === "string";
-	if (typeof value === "number") return true;
+	if (scalar === "float32")
+		return (
+			typeof value === "number" &&
+			Number.isFinite(value) &&
+			Math.fround(value) === value
+		);
+	if (scalar === "decimal") return decimalAdmitted(value, policy);
+	if (scalar === "float64")
+		return typeof value === "number" && Number.isFinite(value);
 	return (
-		scalar === "integer" &&
 		typeof value === "string" &&
-		/^(0|-?[1-9][0-9]*)$/.test(value)
+		/^(0|-?[1-9][0-9]*)$/.test(value) &&
+		(() => {
+			try {
+				const parsed = BigInt(value);
+				return parsed >= -(2n ** 127n) && parsed <= 2n ** 127n - 1n;
+			} catch {
+				return false;
+			}
+		})()
 	);
+}
+
+function integerOutsideI128(scalar, value) {
+	if (
+		scalar !== "integer" ||
+		typeof value !== "string" ||
+		!/^(0|-?[1-9][0-9]*)$/.test(value)
+	)
+		return false;
+	try {
+		const parsed = BigInt(value);
+		return parsed < -(2n ** 127n) || parsed > 2n ** 127n - 1n;
+	} catch {
+		return false;
+	}
+}
+
+function defaultOutsideI128(scalar, value) {
+	if (Array.isArray(value))
+		return value.some((item) => integerOutsideI128(scalar, item));
+	return integerOutsideI128(scalar, value);
+}
+
+function decimalPolicyFor(types, field, resolved) {
+	if (isObject(field?.decimal)) return field.decimal;
+	for (const identity of resolved?.chain ?? []) {
+		const definition = types.get(identity);
+		if (isObject(definition?.decimal)) return definition.decimal;
+	}
+	return undefined;
+}
+
+function decimalAdmitted(value, policy) {
+	if (
+		typeof value !== "string" ||
+		!/^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$/.test(value) ||
+		!policy
+	)
+		return false;
+	const unsigned = value.startsWith("-") ? value.slice(1) : value;
+	const [whole, fraction = ""] = unsigned.split(".");
+	const integerDigits = whole === "0" ? 0 : whole.length;
+	return (
+		integerDigits <= policy.precision - policy.scale &&
+		fraction.length <= policy.scale
+	);
+}
+
+function defaultAdmitted(scalar, value, policy) {
+	if (value === null) return true;
+	const values = Array.isArray(value) ? value : [value];
+	return values.every((item) => {
+		if (scalar === "integer") return operandAdmitted(true, scalar, item);
+		if (scalar === "float32" || scalar === "float64")
+			return operandAdmitted(true, scalar, item);
+		if (scalar === "boolean") return typeof item === "boolean";
+		if (scalar === "decimal") return decimalAdmitted(item, policy);
+		if (
+			["string", "bytes", "date", "datetime", "duration", "uuid"].includes(
+				scalar,
+			)
+		)
+			return typeof item === "string";
+		return true;
+	});
+}
+
+function valueAdmitted(scalar, value, policy) {
+	if (scalar === "integer") return operandAdmitted(true, scalar, value);
+	if (scalar === "decimal") return decimalAdmitted(value, policy);
+	if (scalar === "float32" || scalar === "float64")
+		return operandAdmitted(true, scalar, value);
+	if (scalar === "boolean") return typeof value === "boolean";
+	return true;
 }

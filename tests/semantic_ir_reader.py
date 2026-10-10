@@ -17,7 +17,9 @@ from __future__ import annotations
 
 import copy
 import json
+import math
 import re
+import struct
 import sys
 from pathlib import Path
 from typing import Any
@@ -48,6 +50,8 @@ NATIVE_SCALARS = {
     "Boolean": "boolean",
     "Integer": "integer",
     "Decimal": "decimal",
+    "Float32": "float32",
+    "Float64": "float64",
     "String": "string",
     "Timestamp": "datetime",
     "Duration": "duration",
@@ -63,10 +67,10 @@ def _native_scalar(identity: Any) -> str | None:
 
 
 APPLICABILITY: dict[str, set[str]] = {
-    "min": {"integer", "decimal", "number", *TEMPORAL},
-    "max": {"integer", "decimal", "number", *TEMPORAL},
-    "exclusiveMin": {"integer", "decimal", "number", *TEMPORAL},
-    "exclusiveMax": {"integer", "decimal", "number", *TEMPORAL},
+    "min": {"integer", "decimal", "float32", "float64", *TEMPORAL},
+    "max": {"integer", "decimal", "float32", "float64", *TEMPORAL},
+    "exclusiveMin": {"integer", "decimal", "float32", "float64", *TEMPORAL},
+    "exclusiveMax": {"integer", "decimal", "float32", "float64", *TEMPORAL},
     "minLength": {"string", "bytes"},
     "maxLength": {"string", "bytes"},
     "pattern": {"string"},
@@ -74,7 +78,8 @@ APPLICABILITY: dict[str, set[str]] = {
         "boolean",
         "integer",
         "decimal",
-        "number",
+        "float32",
+        "float64",
         "string",
         "bytes",
         "date",
@@ -171,6 +176,79 @@ def _field_index(types: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
                 if isinstance(identity, str):
                     index[identity] = param
     return index
+
+
+_INTEGER_LITERAL = re.compile(r"^(0|-?[1-9][0-9]*)$")
+_DECIMAL_LITERAL = re.compile(r"^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$")
+_EXACT_NUMERIC_SCALARS = {"integer", "decimal", "float32", "float64"}
+
+
+def _decimal_policy(
+    types: dict[str, dict[str, Any]],
+    fields: dict[str, dict[str, Any]],
+    type_ref: Any,
+    seen: set[str] | None = None,
+) -> dict[str, Any] | None:
+    seen = seen or set()
+    if not isinstance(type_ref, str) or type_ref in seen:
+        return None
+    seen.add(type_ref)
+    node = fields.get(type_ref) or types.get(type_ref)
+    if not isinstance(node, dict):
+        return None
+    policy = node.get("decimal")
+    if isinstance(policy, dict):
+        return policy
+    if node.get("kind") == "alias":
+        return _decimal_policy(types, fields, node.get("target"), seen)
+    return None
+
+
+def _exact_numeric_admitted(
+    scalar: str | None, value: Any, policy: dict[str, Any] | None
+) -> bool:
+    if scalar == "integer":
+        if not isinstance(value, str) or not _INTEGER_LITERAL.fullmatch(value):
+            return False
+        try:
+            return -(2**127) <= int(value) <= 2**127 - 1
+        except ValueError:
+            return False
+    if scalar == "decimal":
+        if (
+            not isinstance(value, str)
+            or not _DECIMAL_LITERAL.fullmatch(value)
+            or not isinstance(policy, dict)
+        ):
+            return False
+        unsigned = value[1:] if value.startswith("-") else value
+        whole, _, fraction = unsigned.partition(".")
+        integer_digits = 0 if whole == "0" else len(whole)
+        return (
+            integer_digits <= policy["precision"] - policy["scale"]
+            and len(fraction) <= policy["scale"]
+        )
+    if scalar == "float64":
+        return (
+            isinstance(value, (int, float))
+            and not isinstance(value, bool)
+            and value == value
+            and value not in {float("inf"), float("-inf")}
+        )
+    if scalar == "float32":
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            return False
+        try:
+            binary64 = float(value)
+            if not math.isfinite(binary64):
+                return False
+            binary32 = struct.unpack(">f", struct.pack(">f", binary64))[0]
+        except (OverflowError, ValueError, struct.error):
+            return False
+        return math.isfinite(binary32) and binary32 == binary64
+    if scalar == "boolean":
+        return isinstance(value, bool)
+    return isinstance(value, str)
 
 
 def _check_multiplicity(
@@ -276,6 +354,41 @@ def _check_field(
     # the `fields` branch above, the same as a type-level constraint.
     for index, constraint in enumerate(_objects(field.get("constraints"))):
         _check_constraint(constraint, f"{path}.constraints.{index}", types, fields, out)
+    if "defaultValue" in field and resolved is not None:
+        value = field.get("defaultValue")
+        scalar = resolved[1] if resolved[0] == "scalar" else None
+        values = value if isinstance(value, list) else [value]
+        # `any` defaults are deliberately uninterpreted JSON. Exact scalar
+        # admission applies only after the field resolves to a concrete
+        # value domain; inspecting an arbitrary object here would reject a
+        # valid semantic default merely because one nested value is numeric.
+        if (
+            value is not None
+            and scalar not in {None, "any"}
+            and not all(
+                _exact_numeric_admitted(
+                    scalar,
+                    item,
+                    (
+                        field.get("decimal")
+                        if isinstance(field.get("decimal"), dict)
+                        else _decimal_policy(types, fields, field.get("typeRef"))
+                    ),
+                )
+                for item in values
+            )
+        ):
+            out.append(
+                _diag(
+                    (
+                        "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
+                        if any(_integer_outside_i128(item) for item in values)
+                        else "agent-ix.semantic-ir.INVALID_DEFAULT_VALUE"
+                    ),
+                    f"{path}.defaultValue",
+                    "the default value is outside the exact scalar wire domain",
+                )
+            )
 
 
 def _check_constraint(
@@ -336,25 +449,68 @@ def _check_constraint(
                 )
             )
     if keyword in BOUNDS and kind == "scalar":
-        numeric = scalar in {"integer", "decimal", "number"}
         value = operands.get("value")
-        ok = (
-            (
-                isinstance(value, str)
-                if scalar == "decimal"
-                else isinstance(value, (int, float)) and not isinstance(value, bool)
-            )
-            if numeric
-            else isinstance(value, str)
+        ok = _exact_numeric_admitted(
+            scalar,
+            value,
+            _decimal_policy(types, fields, constraint.get("appliesTo")),
         )
         if not ok:
             out.append(
                 _diag(
-                    "agent-ix.semantic-ir.INVALID_OPERAND",
+                    (
+                        "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
+                        if scalar == "integer" and _integer_outside_i128(value)
+                        else "agent-ix.semantic-ir.INVALID_OPERAND"
+                    ),
                     f"{path}.operands.value",
-                    "operand type does not match the scalar",
+                    (
+                        f"{keyword} operand /operands/value {value} is outside "
+                        "the exact i128 domain "
+                        "[-170141183460469231731687303715884105728, "
+                        "170141183460469231731687303715884105727]"
+                        if scalar == "integer" and _integer_outside_i128(value)
+                        else "operand type does not match the scalar"
+                    ),
                 )
             )
+    if keyword == "enumValues" and kind == "scalar":
+        enum_values = operands.get("values", [])
+        if not isinstance(enum_values, list):
+            enum_values = []
+        for index, value in enumerate(enum_values):
+            if scalar in _EXACT_NUMERIC_SCALARS and not _exact_numeric_admitted(
+                scalar,
+                value,
+                _decimal_policy(types, fields, constraint.get("appliesTo")),
+            ):
+                out.append(
+                    _diag(
+                        (
+                            "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
+                            if scalar == "integer" and _integer_outside_i128(value)
+                            else "agent-ix.semantic-ir.INVALID_OPERAND"
+                        ),
+                        f"{path}.operands.values.{index}",
+                        (
+                            f"enum value /operands/values/{index} {value} is outside "
+                            "the exact i128 domain "
+                            "[-170141183460469231731687303715884105728, "
+                            "170141183460469231731687303715884105727]"
+                            if scalar == "integer" and _integer_outside_i128(value)
+                            else "an enum value is outside the exact scalar wire domain"
+                        ),
+                    )
+                )
+
+
+def _integer_outside_i128(value: Any) -> bool:
+    if not isinstance(value, str) or not _INTEGER_LITERAL.fullmatch(value):
+        return False
+    try:
+        return not (-(2**127) <= int(value) <= 2**127 - 1)
+    except ValueError:
+        return False
 
 
 def _check_type(

@@ -85,4 +85,3 @@ def profile_by_id(identifier: str) -> dict[str, Any]:
         f"{', '.join(profile_ids())}"
     )
     raise UnknownProfileError(msg)
-

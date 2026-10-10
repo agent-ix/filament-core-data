@@ -202,6 +202,8 @@ const NATIVE_SCALARS = new Map([
 	["Boolean", "boolean"],
 	["Integer", "integer"],
 	["Decimal", "decimal"],
+	["Float32", "float32"],
+	["Float64", "float64"],
 	["String", "string"],
 	["Timestamp", "datetime"],
 	["Duration", "duration"],
@@ -440,7 +442,7 @@ export function readContractIr(document, options = {}) {
 		return value;
 	};
 
-	const checkField = (field) => {
+	const checkField = (field, fieldPointer = undefined) => {
 		const resolved = resolveKind(
 			types,
 			fields,
@@ -475,7 +477,6 @@ export function readContractIr(document, options = {}) {
 				);
 			}
 		}
-		let multiplicity;
 		if (field.multiplicity === undefined) {
 			raise(
 				DIAGNOSTIC_CODES.MISSING_MULTIPLICITY,
@@ -483,7 +484,7 @@ export function readContractIr(document, options = {}) {
 				locusOf(field),
 			);
 		} else {
-			multiplicity = checkMultiplicity(field.multiplicity, field);
+			checkMultiplicity(field.multiplicity, field);
 		}
 		if (field.unit !== undefined) {
 			if (typeof field.unit !== "string" || field.unit.length === 0) {
@@ -524,11 +525,7 @@ export function readContractIr(document, options = {}) {
 			}
 			if (
 				Object.hasOwn(field, "defaultValue") &&
-				!valueAdmitted(
-					resolved.scalar,
-					field.defaultValue,
-					policies[0]?.decimal,
-				)
+				!defaultValueAdmitted(field, resolved.scalar, policies[0]?.decimal)
 			) {
 				raise(
 					DIAGNOSTIC_CODES.INVALID_DEFAULT_VALUE,
@@ -540,12 +537,24 @@ export function readContractIr(document, options = {}) {
 		// Gap 1 of FCD #199/#200: a constrained field keeps its constraints
 		// inline rather than on a synthetic alias, so the field's own
 		// `constraints[]` needs the same check a type's does.
-		for (const constraint of asArray(field.constraints)) {
-			checkConstraint(constraint, field);
+		for (const [constraintIndex, constraint] of asArray(
+			field.constraints,
+		).entries()) {
+			checkConstraint(
+				constraint,
+				field,
+				fieldPointer === undefined
+					? undefined
+					: `${fieldPointer}/constraints/${constraintIndex}`,
+			);
 		}
 	};
 
-	const checkConstraint = (constraint, owner) => {
+	const checkConstraint = (
+		constraint,
+		owner,
+		constraintPointer = undefined,
+	) => {
 		const keyword = String(constraint.keyword);
 		if (!isKeyword(keyword)) {
 			raise(
@@ -607,10 +616,19 @@ export function readContractIr(document, options = {}) {
 			["min", "max", "exclusiveMin", "exclusiveMax"].includes(keyword) &&
 			resolved.kind === "scalar"
 		) {
-			const numeric = ["integer", "decimal", "number"].includes(
-				resolved.scalar,
-			);
+			const numeric = [
+				"integer",
+				"number",
+				"decimal",
+				"float32",
+				"float64",
+			].includes(resolved.scalar);
 			const value = operands.value;
+			const outsideI128 =
+				resolved.scalar === "integer" &&
+				typeof value === "string" &&
+				/^(0|-?[1-9][0-9]*)$/.test(value) &&
+				!withinI128(value);
 			if (
 				!operandAdmitted(
 					numeric,
@@ -619,22 +637,48 @@ export function readContractIr(document, options = {}) {
 					walked?.policies[0]?.decimal,
 				)
 			) {
+				const operandPointer =
+					constraintPointer === undefined
+						? "/operands/value"
+						: `${constraintPointer}/operands/value`;
 				raise(
-					DIAGNOSTIC_CODES.INVALID_OPERAND,
-					`${fragment(keyword)} on ${fragment(String(resolved.scalar))} takes an exact numeric operand`,
+					outsideI128
+						? DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128
+						: DIAGNOSTIC_CODES.INVALID_OPERAND,
+					outsideI128
+						? `${fragment(keyword)} operand ${operandPointer} ${fragment(String(value))} is outside the exact i128 domain [-170141183460469231731687303715884105728, 170141183460469231731687303715884105727]`
+						: `${fragment(keyword)} operand ${operandPointer} on ${fragment(String(resolved.scalar))} takes an exact numeric operand`,
 					locusOf(constraint) ?? locusOf(owner),
 				);
 			}
 		}
 		if (keyword === "enumValues" && resolved.kind === "scalar") {
 			const values = Array.isArray(operands.values) ? operands.values : [];
-			for (const value of values) {
+			for (const [index, value] of values.entries()) {
 				if (
 					!valueAdmitted(resolved.scalar, value, walked?.policies[0]?.decimal)
 				) {
 					raise(
-						DIAGNOSTIC_CODES.INVALID_OPERAND,
-						"an enum value is outside the exact scalar wire domain",
+						(() => {
+							const outsideI128 =
+								typeof value === "string" &&
+								resolved.scalar === "integer" &&
+								/^(0|-?[1-9][0-9]*)$/.test(value) &&
+								!withinI128(value);
+							return outsideI128
+								? DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128
+								: DIAGNOSTIC_CODES.INVALID_OPERAND;
+						})(),
+						(() => {
+							const outsideI128 =
+								typeof value === "string" &&
+								resolved.scalar === "integer" &&
+								/^(0|-?[1-9][0-9]*)$/.test(value) &&
+								!withinI128(value);
+							return outsideI128
+								? `enum operand /operands/values/${index} ${fragment(String(value))} is outside the exact i128 domain [-170141183460469231731687303715884105728, 170141183460469231731687303715884105727]`
+								: `enum operand /operands/values/${index} on ${fragment(String(resolved.scalar))} is outside the exact scalar wire domain`;
+						})(),
 						locusOf(constraint) ?? locusOf(owner),
 					);
 				}
@@ -642,7 +686,8 @@ export function readContractIr(document, options = {}) {
 		}
 	};
 
-	const checkDefinition = (definition) => {
+	const checkDefinition = (definition, definitionIndex) => {
+		const definitionPointer = `/types/${definitionIndex}`;
 		const resolvedSelf = resolveKind(
 			types,
 			fields,
@@ -650,6 +695,13 @@ export function readContractIr(document, options = {}) {
 			undefined,
 			false,
 		);
+		if (resolvedSelf?.kind === "scalar" && resolvedSelf.scalar === "number") {
+			raise(
+				DIAGNOSTIC_CODES.SCHEMA_VIOLATION,
+				"the legacy number scalar is not admitted; use float32 or float64",
+				locusOf(definition),
+			);
+		}
 		const walkedSelf = walkDecimal(definition.identity, definition);
 		if (resolvedSelf?.kind === "scalar") {
 			const policies = walkedSelf?.policies ?? [];
@@ -702,9 +754,17 @@ export function readContractIr(document, options = {}) {
 			);
 			return;
 		}
-		for (const field of ownFields) checkField(field);
-		for (const constraint of asArray(definition.constraints)) {
-			checkConstraint(constraint, definition);
+		for (const [fieldIndex, field] of ownFields.entries()) {
+			checkField(field, `${definitionPointer}/fields/${fieldIndex}`);
+		}
+		for (const [constraintIndex, constraint] of asArray(
+			definition.constraints,
+		).entries()) {
+			checkConstraint(
+				constraint,
+				definition,
+				`${definitionPointer}/constraints/${constraintIndex}`,
+			);
 		}
 
 		const relationships = asArray(definition.relationships);
@@ -804,9 +864,11 @@ export function readContractIr(document, options = {}) {
 			checkMultiplicity(relationship.targetEnd?.multiplicity, relationship);
 		}
 
-		for (const operation of operations) {
+		for (const [operationIndex, operation] of operations.entries()) {
 			const names = new Set();
-			for (const parameter of asArray(operation.params)) {
+			for (const [parameterIndex, parameter] of asArray(
+				operation.params,
+			).entries()) {
 				const name = String(parameter.name);
 				if (names.has(name)) {
 					raise(
@@ -816,7 +878,10 @@ export function readContractIr(document, options = {}) {
 					);
 				}
 				names.add(name);
-				checkField(parameter);
+				checkField(
+					parameter,
+					`${definitionPointer}/operations/${operationIndex}/params/${parameterIndex}`,
+				);
 			}
 			if (isObject(operation.returns)) {
 				if (
@@ -894,7 +959,7 @@ export function readContractIr(document, options = {}) {
 	checkConstructs(document, definitions, raise, locusOf);
 
 	const identities = new Set();
-	for (const definition of definitions) {
+	for (const [definitionIndex, definition] of definitions.entries()) {
 		const identity = String(definition.identity);
 		if (identities.has(identity)) {
 			raise(
@@ -904,7 +969,7 @@ export function readContractIr(document, options = {}) {
 			);
 		}
 		identities.add(identity);
-		checkDefinition(definition);
+		checkDefinition(definition, definitionIndex);
 	}
 
 	// A document too deep to canonicalise cannot be fingerprinted, so the bound
@@ -953,25 +1018,62 @@ export function readContractIr(document, options = {}) {
  * past 2^53 is exact; every other scalar's bound is a string.
  */
 function valueAdmitted(scalar, value, policy) {
+	if (scalar === "boolean") return typeof value === "boolean";
 	if (scalar === "integer") {
 		return (
-			(typeof value === "number" && Number.isSafeInteger(value)) ||
-			(typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value))
+			typeof value === "string" &&
+			/^(0|-?[1-9][0-9]*)$/.test(value) &&
+			withinI128(value)
 		);
 	}
 	if (scalar === "decimal") return decimalAdmitted(value, policy);
+	if (scalar === "float32" || scalar === "float64")
+		return (
+			typeof value === "number" &&
+			Number.isFinite(value) &&
+			(scalar !== "float32" || Math.fround(value) === value)
+		);
 
 	return true;
 }
 
+/**
+ * Validate a field default after applying the field's value wrappers. A
+ * nullable field may default to null, and a collection field defaults to an
+ * array whose members are checked against the element scalar. Keeping those
+ * wrappers at this boundary prevents a valid null or array from being handed
+ * to the scalar validator as though it were an element.
+ */
+function defaultValueAdmitted(field, scalar, policy) {
+	const value = field.defaultValue;
+	if (value === null && field.nullable === true) return true;
+	const upper = field.multiplicity?.upper;
+	const collection = upper === undefined || upper > 1;
+	if (collection) {
+		return (
+			Array.isArray(value) &&
+			value.every((item) => valueAdmitted(scalar, item, policy))
+		);
+	}
+	return valueAdmitted(scalar, value, policy);
+}
+
 function operandAdmitted(numeric, scalar, value, policy) {
 	if (!numeric) return typeof value === "string";
-	if (scalar === "integer")
+	if (scalar === "integer") {
 		return (
-			(typeof value === "number" && Number.isSafeInteger(value)) ||
-			(typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value))
+			typeof value === "string" &&
+			/^(0|-?[1-9][0-9]*)$/.test(value) &&
+			withinI128(value)
 		);
+	}
 	if (scalar === "decimal") return decimalAdmitted(value, policy);
+	if (scalar === "float32")
+		return (
+			typeof value === "number" &&
+			Number.isFinite(value) &&
+			Math.fround(value) === value
+		);
 	return typeof value === "number" && Number.isFinite(value);
 }
 
@@ -989,4 +1091,13 @@ function decimalAdmitted(value, policy) {
 		integerDigits <= policy.precision - policy.scale &&
 		fraction.length <= policy.scale
 	);
+}
+
+function withinI128(value) {
+	try {
+		const parsed = BigInt(value);
+		return parsed >= -(2n ** 127n) && parsed <= 2n ** 127n - 1n;
+	} catch {
+		return false;
+	}
 }

@@ -134,6 +134,30 @@ function pointerToken(name) {
  * the alias's own check has not narrowed.
  */
 
+/** Compare enum members in the scalar's wire domain without coercing an input. */
+function enumCondition(scalar, values, candidate, wideInteger = false) {
+	const members = values
+		.map((entry) =>
+			scalar === "integer" && !wideInteger
+				? literal(Number(entry))
+				: literal(entry),
+		)
+		.join(", ");
+	if (scalar === "integer" && wideInteger)
+		return `(typeof ${candidate} === "string" && /^(0|-?[1-9][0-9]*)$/.test(${candidate}) && [${members}].some((enumMember) => BigInt(enumMember) === BigInt(${candidate})))`;
+	if (scalar === "integer")
+		return `(typeof ${candidate} === "number" && Number.isSafeInteger(${candidate}) && [${members}].some((enumMember) => enumMember === ${candidate}))`;
+	if (scalar === "float32")
+		return `(typeof ${candidate} === "number" && Number.isFinite(Math.fround(${candidate})) && [${members}].some((enumMember) => Math.fround(enumMember) === Math.fround(${candidate})))`;
+	if (scalar === "float64")
+		return `(typeof ${candidate} === "number" && Number.isFinite(${candidate}) && [${members}].some((enumMember) => enumMember === ${candidate}))`;
+	if (scalar === "decimal")
+		return `(typeof ${candidate} === "string" && isCanonicalDecimal(${candidate}) && [${members}].some((enumMember) => compareDecimal(enumMember, ${candidate}) === 0))`;
+	if (scalar === "boolean" || scalar === "string")
+		return `(typeof ${candidate} === "${scalar}" && [${members}].some((enumMember) => enumMember === ${candidate}))`;
+	return `[${members}].some((enumMember) => Object.is(enumMember, ${candidate}))`;
+}
+
 /** The generated expression checking one constraint against `candidate`. */
 function constraintCondition(constraint, subject) {
 	const operands = constraint.operands ?? {};
@@ -154,21 +178,23 @@ function constraintCondition(constraint, subject) {
 			return length && `${length} <= ${literal(operands.value)}`;
 		case "pattern":
 			return `new RegExp(${literal(operands.regex)}).test(candidate)`;
-		case "enumValues": {
-			if (scalar === "decimal")
-				return `[${(operands.values ?? []).map((entry) => literal(entry)).join(", ")}].some((member) => compareDecimal(member, candidate) === 0)`;
-			const values = (operands.values ?? [])
-				.map((entry) => literal(entry))
-				.join(", ");
-			return `[${values}].some((member) => Object.is(member, candidate))`;
-		}
+		case "enumValues":
+			return enumCondition(
+				scalar,
+				operands.values ?? [],
+				"candidate",
+				subject.wideInteger,
+			);
 		case "nonEmpty":
 			return length && `${length} > 0`;
 		case "unique":
 			return subject.kind === "sequence" &&
 				subject.itemsEntry?.scalar === "decimal"
 				? "isUniqueDecimalCollection(candidate)"
-				: "isUniqueCollection(candidate)";
+				: subject.kind === "sequence" &&
+						subject.itemsEntry?.scalar === "float32"
+					? "isUniqueFloat32Collection(candidate)"
+					: "isUniqueCollection(candidate)";
 		case "format":
 			return formatCondition(operands.name);
 		default:
@@ -192,6 +218,12 @@ function orderedCondition(subject, operator, value) {
 	}
 	if (scalar === "decimal")
 		return `compareDecimal(candidate, ${literal(value)}) ${operator} 0`;
+	// Safe integer bounds can be compared as numbers. Wide integer subjects use
+	// the BigInt branch below and retain their decimal string exactly.
+	if (subject.wideInteger && typeof value === "string")
+		return `BigInt(candidate) ${operator} BigInt(${literal(value)})`;
+	if (scalar === "float32" && typeof value === "number")
+		return `Math.fround(candidate) ${operator} Math.fround(${literal(value)})`;
 	if (typeof value === "string")
 		return `candidate ${operator} ${Number(value)}`;
 	return `candidate ${operator} ${literal(value)}`;
@@ -262,6 +294,8 @@ const SCALAR_GUARDS = Object.freeze({
 	boolean: { test: 'typeof candidate === "boolean"', code: "NOT_A_BOOLEAN" },
 	integer: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
 	number: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
+	float32: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
+	float64: { test: 'typeof candidate === "number"', code: "NOT_A_NUMBER" },
 	decimal: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
 	string: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
 	bytes: { test: 'typeof candidate === "string"', code: "NOT_A_STRING" },
@@ -283,6 +317,14 @@ function numericStatements(scalar, indent) {
 		`${indent}\treturn false;`,
 		`${indent}}`,
 	];
+	if (scalar === "float32") {
+		lines.push(
+			`${indent}if (!Number.isFinite(Math.fround(candidate))) {`,
+			`${indent}\tfail(errors, pointer, CODES.NOT_A_NUMBER_VALUE, "the value is outside the binary32 range");`,
+			`${indent}\treturn false;`,
+			`${indent}}`,
+		);
+	}
 	if (scalar !== "integer") return lines;
 	return [
 		...lines,
@@ -308,13 +350,59 @@ function scalarCheckBody(model, entry) {
 		);
 		return lines;
 	}
+	const wideInteger = entry.scalar === "integer" && entry.wideInteger;
+	if (entry.scalar === "integer" && entry.impossibleIntegerBounds === true) {
+		const impossible =
+			entry.constraints?.find((one) =>
+				["min", "max", "exclusiveMin", "exclusiveMax"].includes(one.keyword),
+			) ?? entry.constraints?.[0];
+		if (impossible !== undefined) {
+			lines.push(
+				`\tfail(errors, pointer, ${literal(impossible.diagnosticCode)}, ${literal("the integer constraints admit no value")});`,
+				"\treturn false;",
+			);
+			return lines;
+		}
+	}
+	const guardTest = wideInteger ? 'typeof candidate === "string"' : guard.test;
+	const guardCode = wideInteger ? "NOT_AN_INTEGER" : guard.code;
 	lines.push(
-		`\tif (!(${guard.test})) {`,
-		`\t\tfail(errors, pointer, CODES.${guard.code}, "the value is of the wrong type");`,
+		`\tif (!(${guardTest})) {`,
+		`\t\tfail(errors, pointer, CODES.${guardCode}, "the value is of the wrong type");`,
 		"\t\treturn false;",
 		"\t}",
 	);
-	if (["integer", "number"].includes(entry.scalar)) {
+	if (wideInteger) {
+		lines.push(
+			"\tif (!/^(0|-?[1-9][0-9]*)$/.test(candidate)) {",
+			'\t\tfail(errors, pointer, CODES.NOT_AN_INTEGER, "the value is not a canonical integer string");',
+			"\t\treturn false;",
+			"\t}",
+			...(entry.effectiveIntegerBounds &&
+			(!entry.effectiveIntegerBounds.lowerExplicit ||
+				!entry.effectiveIntegerBounds.upperExplicit)
+				? [
+						`\tif (${[
+							!entry.effectiveIntegerBounds.lowerExplicit
+								? `BigInt(candidate) < BigInt(${literal(entry.effectiveIntegerBounds.lower)})`
+								: undefined,
+							!entry.effectiveIntegerBounds.upperExplicit
+								? `BigInt(candidate) > BigInt(${literal(entry.effectiveIntegerBounds.upper)})`
+								: undefined,
+						]
+							.filter(Boolean)
+							.join(" || ")}) {`,
+						'\t\tfail(errors, pointer, CODES.INTEGER_OUT_OF_SAFE_RANGE, "the integer is outside its effective range");',
+						"\t\treturn false;",
+						"\t}",
+					]
+				: []),
+			...constraintStatements(model, entry.identity, "\t"),
+			"\treturn errors.length === before;",
+		);
+		return lines;
+	}
+	if (["integer", "number", "float32", "float64"].includes(entry.scalar)) {
 		lines.push(...numericStatements(entry.scalar, "\t"));
 	}
 	if (entry.scalar === "bytes") {
@@ -418,7 +506,108 @@ function checkCall(element, valueExpression, pointerExpression) {
 	if (element === undefined || element.declared !== true) {
 		return `fail(errors, ${pointerExpression}, CODES.SHAPE_MISMATCH, "the element type is not declared")`;
 	}
+	if (element.native === true) {
+		const scalar = element.scalar;
+		if (scalar === "any") return "void 0";
+		const checks = [];
+		const canonicalWideInteger = `typeof ${valueExpression} === "string" && /^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression}))`;
+		if (scalar === "integer" && element.impossibleIntegerBounds === true) {
+			const impossible = element.constraints?.[0];
+			if (impossible !== undefined)
+				checks.push(
+					`fail(errors, ${pointerExpression}, ${literal(impossible.diagnosticCode)}, ${literal("the integer constraints admit no value")})`,
+				);
+		}
+		if (scalar === "integer" && element.wideInteger === true) {
+			checks.push(
+				`if (!(${canonicalWideInteger})) fail(errors, ${pointerExpression}, CODES.NOT_AN_INTEGER, "the native integer wire value has the wrong type")`,
+			);
+			const bounds = element.effectiveIntegerBounds;
+			if (bounds?.lowerExplicit === false || bounds?.upperExplicit === false) {
+				const terms = [];
+				if (bounds.lowerExplicit === false)
+					terms.push(
+						`BigInt(String(${valueExpression})) < BigInt(${literal(bounds.lower)})`,
+					);
+				if (bounds.upperExplicit === false)
+					terms.push(
+						`BigInt(String(${valueExpression})) > BigInt(${literal(bounds.upper)})`,
+					);
+				checks.push(
+					`if (${canonicalWideInteger} && (${terms.join(" || ")})) fail(errors, ${pointerExpression}, CODES.INTEGER_OUT_OF_SAFE_RANGE, "the integer is outside its effective range")`,
+				);
+			}
+		} else {
+			const guard =
+				scalar === "boolean"
+					? `typeof ${valueExpression} !== "boolean"`
+					: ["integer", "float32", "float64"].includes(scalar)
+						? `typeof ${valueExpression} !== "number" || !Number.isFinite(${valueExpression})${scalar === "float32" ? ` || !Number.isFinite(Math.fround(${valueExpression}))` : ""}${scalar === "integer" ? ` || !Number.isSafeInteger(${valueExpression})` : ""}`
+						: scalar === "decimal" && element.decimal !== undefined
+							? `typeof ${valueExpression} !== "string" || !isCanonicalDecimal(${valueExpression}) || !decimalWithinPolicy(${valueExpression}, ${element.decimal.precision}, ${element.decimal.scale})`
+							: `typeof ${valueExpression} !== "string"`;
+			checks.push(
+				`if (${guard}) fail(errors, ${pointerExpression}, CODES.SHAPE_MISMATCH, "the native scalar wire value has the wrong type")`,
+			);
+		}
+		for (const constraint of element.constraints ?? []) {
+			const value = constraint.operands?.value;
+			if (constraint.keyword === "enumValues") {
+				const equality = enumCondition(
+					scalar,
+					constraint.operands?.values ?? [],
+					valueExpression,
+					element.wideInteger === true,
+				);
+				checks.push(
+					`if (!(${equality})) fail(errors, ${pointerExpression}, ${literal(constraint.diagnosticCode)}, ${literal("the enumValues constraint is not satisfied")})`,
+				);
+				continue;
+			}
+			if (
+				!["min", "max", "exclusiveMin", "exclusiveMax"].includes(
+					constraint.keyword,
+				) ||
+				value === undefined
+			)
+				continue;
+			const operator = {
+				min: ">=",
+				max: "<=",
+				exclusiveMin: ">",
+				exclusiveMax: "<",
+			}[constraint.keyword];
+			const numeric = ["integer", "float32", "float64"].includes(scalar);
+			const wireGuard =
+				element.wideInteger === true
+					? canonicalWideInteger
+					: numeric
+						? `typeof ${valueExpression} === "number" && Number.isFinite(${valueExpression})${scalar === "integer" ? ` && Number.isSafeInteger(${valueExpression})` : ""}${scalar === "float32" ? ` && Number.isFinite(Math.fround(${valueExpression}))` : ""}`
+						: `typeof ${valueExpression} === "string"${scalar === "decimal" ? ` && isCanonicalDecimal(${valueExpression})` : ""}`;
+			const comparison =
+				element.wideInteger === true
+					? `BigInt(${valueExpression}) ${operator} BigInt(${literal(value)})`
+					: scalar === "float32"
+						? `Math.fround(${valueExpression}) ${operator} Math.fround(${literal(value)})`
+						: scalar === "decimal"
+							? `compareDecimal(${valueExpression}, ${literal(value)}) ${operator} 0`
+							: scalar === "date" || scalar === "datetime"
+								? `Date.parse(${valueExpression}) ${operator} Date.parse(${literal(value)})`
+								: `${valueExpression} ${operator} ${numeric ? literal(Number(value)) : literal(value)}`;
+			const condition = `(${wireGuard} && !(${comparison}))`;
+			checks.push(
+				`if (${condition}) fail(errors, ${pointerExpression}, ${literal(constraint.diagnosticCode)}, ${literal(`the ${constraint.keyword} constraint is not satisfied`)})`,
+			);
+		}
+		return checks.join("; ");
+	}
 	return `check${element.identifier}(${valueExpression}, ${pointerExpression}, errors, surfaced, depth + 1)`;
+}
+
+function prepareCall(element, valueExpression) {
+	if (element?.declared !== true || element.native === true)
+		return valueExpression;
+	return `prepare${element.identifier}(${valueExpression}, depth + 1)`;
 }
 
 /** The body of a `sequence` type's `check` predicate. */
@@ -471,6 +660,38 @@ function delegatingCheckBody(model, entry) {
 		);
 		return lines;
 	}
+	// A bounded child alias can narrow a wide integer parent back into the
+	// JSON-number domain. Delegating to the parent would then reject valid
+	// numbers (or accept strings) using the parent's wire form. Apply the
+	// child's effective constraints against its own primitive representation.
+	if (
+		entry.kind === "alias" &&
+		entry.scalar === "integer" &&
+		entry.wideInteger !== true &&
+		entry.constraints.length > 0
+	) {
+		lines.push(
+			'\tif (typeof candidate !== "number") {',
+			'\t\tfail(errors, pointer, CODES.NOT_AN_INTEGER, "the value is not a safe integer number");',
+			"\t\treturn false;",
+			"\t}",
+			...numericStatements("integer", "\t"),
+			...constraintStatements(model, entry.identity, "\t"),
+			"\treturn errors.length === before;",
+		);
+		return lines;
+	}
+	if (entry.kind === "alias" && entry.wideInteger) {
+		lines.push(
+			'\tif (typeof candidate !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(candidate)) {',
+			'\t\tfail(errors, pointer, CODES.NOT_AN_INTEGER, "the value is not a canonical integer string");',
+			"\t\treturn false;",
+			"\t}",
+			...constraintStatements(model, entry.identity, "\t"),
+			"\treturn errors.length === before;",
+		);
+		return lines;
+	}
 	if (entry.kind === "reference") {
 		lines.push(
 			'\tif (typeof candidate !== "string") {',
@@ -482,6 +703,23 @@ function delegatingCheckBody(model, entry) {
 		lines.push("\treturn errors.length === before;");
 		return lines;
 	}
+	// A child alias may narrow a wide integer target back into the safe number
+	// domain. Delegating that case to the target would apply the target's string
+	// wire guard before the child's effective intersection, rejecting numeric
+	// values and accepting string values that the child deliberately narrowed.
+	// `entry.constraints` already contains the inherited target constraints and
+	// the child's own bounds, so the scalar check is complete here.
+	if (
+		entry.scalar === "integer" &&
+		entry.wideInteger !== true &&
+		entry.targetEntry?.wideInteger === true
+	) {
+		return scalarCheckBody(model, entry);
+	}
+	// Native checks are emitted as statements because field checks collect
+	// their failures. Embedding one in the alias delegation conditional would
+	// produce invalid `if (if (...))` source, so render the scalar guard here.
+	if (entry.targetEntry?.native === true) return scalarCheckBody(model, entry);
 	// The predicate call sits in the condition so its `candidate is T` narrows
 	// the value the alias's own constraints are then applied to. The target's
 	// failures are already in `errors`, so nothing is lost by not entering.
@@ -550,7 +788,9 @@ function fieldStatements(field) {
 			const uniqueness =
 				field.element?.scalar === "decimal"
 					? "isUniqueDecimalCollection"
-					: "isUniqueCollection";
+					: field.element?.scalar === "float32"
+						? "isUniqueFloat32Collection"
+						: "isUniqueCollection";
 			lines.push(
 				`\t\t\t\tif (!${uniqueness}(member.value)) {`,
 				'\t\t\t\t\tfail(errors, at, CODES.COLLECTION_NOT_UNIQUE, "two members share a canonical form");',
@@ -653,7 +893,7 @@ function prepareBody(model, entry) {
 	if (entry.kind === "sequence") {
 		return [
 			"\tif (!Array.isArray(value)) return value;",
-			`\treturn value.map((member) => prepare${entry.itemsEntry?.identifier ?? ""}(member, depth + 1));`,
+			`\treturn value.map((member) => ${prepareCall(entry.itemsEntry, "member")});`,
 		];
 	}
 	if (entry.kind === "map") {
@@ -669,15 +909,13 @@ function prepareBody(model, entry) {
 			"\t\t\tcontinue;",
 			"\t\t}",
 			'\t\tif (member.state !== "value") continue;',
-			`\t\tout[key] = prepare${entry.valuesEntry?.identifier ?? ""}(member.value, depth + 1);`,
+			`\t\tout[key] = ${prepareCall(entry.valuesEntry, "member.value")};`,
 			"\t}",
 			"\treturn accessor ? out : { ...out };",
 		];
 	}
 	if (entry.kind === "alias") {
-		return [
-			`\treturn prepare${entry.targetEntry?.identifier ?? ""}(value, depth + 1);`,
-		];
+		return [`\treturn ${prepareCall(entry.targetEntry, "value")};`];
 	}
 	if (entry.kind === "union") return unionPrepareBody(entry);
 	return ["\treturn value;"];
@@ -689,7 +927,7 @@ function unionPrepareBody(entry) {
 		for (const variant of entry.variants ?? []) {
 			if (variant.payload?.declared !== true) continue;
 			lines.push(
-				`\tif (check${variant.payload.identifier}(value, "", [], [], depth + 1)) return prepare${variant.payload.identifier}(value, depth + 1);`,
+				`\tif (check${variant.payload.identifier}(value, "", [], [], depth + 1)) return ${prepareCall(variant.payload, "value")};`,
 			);
 		}
 		lines.push("\treturn value;");
@@ -709,7 +947,7 @@ function unionPrepareBody(entry) {
 	for (const variant of withPayload) {
 		lines.push(
 			`\t\tcase ${literal(variant.name)}:`,
-			`\t\t\treturn { ...value, value: prepare${variant.payload.identifier}(payload.value, depth + 1) };`,
+			`\t\t\treturn { ...value, value: ${prepareCall(variant.payload, "payload.value")} };`,
 		);
 	}
 	lines.push("\t\tdefault:", "\t\t\treturn value;", "\t}");
@@ -730,7 +968,7 @@ function recordPrepareBody(entry) {
 	for (const field of entry.fields ?? []) {
 		const name = literal(field.name);
 		const prepareCall =
-			field.element?.declared === true
+			field.element?.declared === true && field.element.native !== true
 				? `prepare${field.element.identifier}`
 				: undefined;
 		lines.push(
@@ -742,7 +980,7 @@ function recordPrepareBody(entry) {
 			lines.push(`\t\t\tout[${name}] = member.value;`);
 		} else if (field.collection) {
 			lines.push(
-				"\t\t\tout[" + name + "] = Array.isArray(member.value)",
+				`\t\t\tout[${name}] = Array.isArray(member.value)`,
 				`\t\t\t\t? member.value.map((item) => ${prepareCall}(item, depth + 1))`,
 				"\t\t\t\t: member.value;",
 			);
@@ -757,7 +995,7 @@ function recordPrepareBody(entry) {
 		if (field.defaultKind === "semantic") {
 			lines.push(
 				'\t\t} else if (member.state === "absent") {',
-				`\t\t\tout[${name}] = ${literal(field.defaultValue ?? null)};`,
+				`\t\t\tout[${name}] = ${defaultLiteral(field)};`,
 			);
 		}
 		lines.push(
@@ -803,6 +1041,18 @@ function recordPrepareBody(entry) {
 	// whole pass exists not to invoke.
 	lines.push("\treturn accessor ? out : { ...out };");
 	return lines;
+}
+
+function defaultLiteral(field) {
+	const value = field.defaultValue ?? null;
+	if (
+		field.element?.scalar === "integer" &&
+		field.element.wideInteger !== true
+	) {
+		if (Array.isArray(value)) return literal(value.map((one) => Number(one)));
+		if (typeof value === "string") return literal(Number(value));
+	}
+	return literal(value);
 }
 
 /**
@@ -1098,6 +1348,19 @@ export function isUniqueCollection(value: unknown): boolean {
 	return true;
 }
 
+/** Float32 uniqueness compares the rounded binary32 values. */
+export function isUniqueFloat32Collection(value: unknown): boolean {
+	if (!Array.isArray(value)) return true;
+	const seen = new Set<number>();
+	for (const member of value) {
+		if (typeof member !== "number") continue;
+		const rounded = Math.fround(member);
+		if (seen.has(rounded)) return false;
+		seen.add(rounded);
+	}
+	return true;
+}
+
 /** Order by pointer then code, by code unit, so the list is host-stable. */
 export function sortErrors(
 	errors: readonly ValidationError[],
@@ -1273,9 +1536,12 @@ export function renderValidators(model) {
 		"}",
 	].join("\n");
 	const blockBody = blocks.join("\n\n");
-	const body = blockBody.includes("isUniqueDecimalCollection")
-		? [decimalUnique, blockBody].join("\n\n")
-		: blockBody;
+	const body = [
+		blockBody.includes("isUniqueDecimalCollection") ? decimalUnique : undefined,
+		blockBody,
+	]
+		.filter(Boolean)
+		.join("\n\n");
 	const helpers = [
 		"VALIDATION_CODES as CODES",
 		"MAX_VALIDATION_DEPTH",
@@ -1289,6 +1555,7 @@ export function renderValidators(model) {
 		"isCanonicalDecimal",
 		"isPlainObject",
 		"isUniqueCollection",
+		"isUniqueFloat32Collection",
 		"join",
 		"ownKeys",
 		"ownMember",

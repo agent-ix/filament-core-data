@@ -82,6 +82,27 @@ function isObject(value) {
 const UNTAGGED_UNION_EXTENSION =
 	"ix://agent-ix/semantic-core/extension/untagged-union-wire-form";
 
+const NATIVE_SCALARS = new Map([
+	["UUID", "uuid"],
+	["Boolean", "boolean"],
+	["Integer", "integer"],
+	["Decimal", "decimal"],
+	["Float32", "float32"],
+	["Float64", "float64"],
+	["String", "string"],
+	["Timestamp", "datetime"],
+	["Duration", "duration"],
+	["Bytes", "bytes"],
+	["JsonObject", "any"],
+]);
+
+function nativeScalar(identity) {
+	const prefix = "ix://quire/native/";
+	if (typeof identity !== "string" || !identity.startsWith(prefix))
+		return undefined;
+	return NATIVE_SCALARS.get(identity.slice(prefix.length));
+}
+
 function wireFormOf(extensions) {
 	for (const extension of extensions ?? []) {
 		if (extension?.identity !== UNTAGGED_UNION_EXTENSION) continue;
@@ -104,7 +125,7 @@ function resolveScalar(types, identity, seen = new Set(), depth = 0) {
 	if (seen.has(identity) || depth > MAX_DEPTH) return undefined;
 	seen.add(identity);
 	const type = types.get(identity);
-	if (type === undefined) return undefined;
+	if (type === undefined) return nativeScalar(identity);
 	if (type.kind === "scalar") {
 		return typeof type.scalar === "string" ? type.scalar : undefined;
 	}
@@ -114,6 +135,139 @@ function resolveScalar(types, identity, seen = new Set(), depth = 0) {
 	return undefined;
 }
 
+function integerBounds(constraints) {
+	const safe = 2n ** 53n - 1n;
+	let lower = -safe;
+	let upper = safe;
+	let lowerExplicit = false;
+	let upperExplicit = false;
+	for (const constraint of constraints ?? []) {
+		const value = constraint?.operands?.value;
+		if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
+			continue;
+		const parsed = BigInt(value);
+		if (constraint.keyword === "min") {
+			if (!lowerExplicit || parsed > lower) lower = parsed;
+			lowerExplicit = true;
+		}
+		if (constraint.keyword === "exclusiveMin") {
+			const effective = parsed + 1n;
+			if (!lowerExplicit || effective > lower) lower = effective;
+			lowerExplicit = true;
+		}
+		if (constraint.keyword === "max") {
+			if (!upperExplicit || parsed < upper) upper = parsed;
+			upperExplicit = true;
+		}
+		if (constraint.keyword === "exclusiveMax") {
+			const effective = parsed - 1n;
+			if (!upperExplicit || effective < upper) upper = effective;
+			upperExplicit = true;
+		}
+	}
+	return { lower, upper, lowerExplicit, upperExplicit };
+}
+
+function effectiveIntegerBounds(types, identity, seen = new Set()) {
+	if (typeof identity !== "string" || seen.has(identity)) return undefined;
+	seen.add(identity);
+	const type = types.get(identity);
+	if (type === undefined) return undefined;
+	const parent =
+		type.kind === "alias" || type.kind === "reference"
+			? effectiveIntegerBounds(types, type.target, seen)
+			: undefined;
+	if (
+		type.kind !== "scalar" &&
+		type.kind !== "alias" &&
+		type.kind !== "reference"
+	)
+		return parent;
+	const scalar = resolveScalar(types, identity);
+	if (scalar !== "integer") return parent;
+	const own = integerBounds(type.constraints);
+	const lower =
+		own.lowerExplicit || !parent?.lowerExplicit ? own.lower : parent.lower;
+	const upper =
+		own.upperExplicit || !parent?.upperExplicit ? own.upper : parent.upper;
+	return {
+		lower:
+			parent && own.lowerExplicit && parent.lowerExplicit
+				? own.lower > parent.lower
+					? own.lower
+					: parent.lower
+				: lower,
+		upper:
+			parent && own.upperExplicit && parent.upperExplicit
+				? own.upper < parent.upper
+					? own.upper
+					: parent.upper
+				: upper,
+		lowerExplicit: Boolean(own.lowerExplicit || parent?.lowerExplicit),
+		upperExplicit: Boolean(own.upperExplicit || parent?.upperExplicit),
+	};
+}
+
+function effectiveWideInteger(types, identity) {
+	const bounds = effectiveIntegerBounds(types, identity);
+	if (!bounds) return false;
+	const safe = 2n ** 53n - 1n;
+	return (
+		bounds.lower < -safe ||
+		bounds.lower > safe ||
+		bounds.upper < -safe ||
+		bounds.upper > safe
+	);
+}
+
+function wideIntegerWithConstraints(types, identity, constraints) {
+	if (resolveScalar(types, identity) !== "integer") return false;
+	const base = effectiveIntegerBounds(types, identity) ?? {
+		lower: -(2n ** 53n - 1n),
+		upper: 2n ** 53n - 1n,
+		lowerExplicit: false,
+		upperExplicit: false,
+	};
+	const own = integerBounds(constraints);
+	const lower = own.lowerExplicit
+		? base.lowerExplicit && base.lower > own.lower
+			? base.lower
+			: own.lower
+		: base.lower;
+	const upper = own.upperExplicit
+		? base.upperExplicit && base.upper < own.upper
+			? base.upper
+			: own.upper
+		: base.upper;
+	const safe = 2n ** 53n - 1n;
+	return lower < -safe || lower > safe || upper < -safe || upper > safe;
+}
+
+function stringIntegerBounds(constraints) {
+	const bounds = integerBounds(constraints);
+	return Object.freeze({
+		lower: bounds.lower.toString(),
+		upper: bounds.upper.toString(),
+		lowerExplicit: bounds.lowerExplicit,
+		upperExplicit: bounds.upperExplicit,
+	});
+}
+
+function inheritedConstraintEntries(types, applied, identity) {
+	const chain = [];
+	const seen = new Set();
+	let current = identity;
+	while (typeof current === "string" && !seen.has(current)) {
+		seen.add(current);
+		const type = types.get(current);
+		if (type === undefined) break;
+		chain.unshift(current);
+		if (type.kind !== "alias") break;
+		current = type.target;
+	}
+	return chain.flatMap((one) => applied.get(one) ?? []);
+}
+
 /**
  * The acyclic summary of the entry `identity` names: what a renderer needs to
  * write a reference to it, and no object reference that could close a cycle.
@@ -121,12 +275,16 @@ function resolveScalar(types, identity, seen = new Set(), depth = 0) {
 function summaryOf(types, identifiers, identity) {
 	if (typeof identity !== "string") return undefined;
 	const type = types.get(identity);
+	const scalar = resolveScalar(types, identity);
 	return Object.freeze({
 		identity,
 		identifier: identifiers.get(identity),
 		kind: type === undefined ? undefined : kindName(type.kind),
-		scalar: resolveScalar(types, identity),
-		declared: type !== undefined,
+		scalar,
+		wideInteger: effectiveWideInteger(types, identity),
+		decimal: type?.decimal,
+		declared: type !== undefined || scalar !== undefined,
+		native: type === undefined && scalar !== undefined,
 	});
 }
 
@@ -163,11 +321,43 @@ function axesOf(field) {
 /** One field or one operation parameter, resolved. */
 function fieldEntry(types, identifiers, field) {
 	const axes = axesOf(field);
+	const summary = summaryOf(types, identifiers, field.typeRef);
+	const scalarSummary =
+		summary?.scalar === "decimal" && field.decimal !== undefined
+			? Object.freeze({ ...summary, decimal: field.decimal })
+			: summary;
+	const constraints = Object.freeze([...(field.constraints ?? [])]);
+	const element =
+		scalarSummary !== undefined && constraints.length > 0
+			? Object.freeze({
+					...scalarSummary,
+					constraints,
+					...(scalarSummary.scalar === "integer"
+						? {
+								effectiveIntegerBounds: stringIntegerBounds(constraints),
+								impossibleIntegerBounds:
+									integerBounds(constraints).lower >
+									integerBounds(constraints).upper,
+								wideInteger: wideIntegerWithConstraints(
+									types,
+									field.typeRef,
+									constraints,
+								),
+							}
+						: {}),
+				})
+			: scalarSummary?.scalar === "integer"
+				? Object.freeze({
+						...scalarSummary,
+						constraints,
+						effectiveIntegerBounds: stringIntegerBounds(constraints),
+					})
+				: scalarSummary;
 	const entry = {
 		identity: field.identity,
 		name: field.name,
 		typeRef: field.typeRef,
-		element: summaryOf(types, identifiers, field.typeRef),
+		element,
 		optional: axes.optional,
 		nullable: axes.nullable,
 		collection: axes.collection,
@@ -181,7 +371,6 @@ function fieldEntry(types, identifiers, field) {
 		extensions: Object.freeze([...(field.extensions ?? [])]),
 		origin: field.origin,
 	};
-	if (field.decimal !== undefined) entry.decimal = field.decimal;
 	// `defaultValue` is present exactly when `defaultKind` is not `none`, which
 	// the published schema enforces; carrying the member only when the document
 	// does keeps the two states distinguishable rather than collapsing an
@@ -254,13 +443,26 @@ export function buildModel(ir, options = {}) {
 			rendering: renderingOf(type),
 			roles: Object.freeze([...(type.roles ?? [])]),
 			unknownPolicy: type.unknownPolicy,
-			constraints: Object.freeze(byIdentity(applied.get(type.identity) ?? [])),
+			constraints: Object.freeze(
+				byIdentity(inheritedConstraintEntries(types, applied, type.identity)),
+			),
 			extensions: Object.freeze([...(type.extensions ?? [])]),
 			origin: type.origin,
 		};
 		const scalar = resolveScalar(types, type.identity);
 		if (scalar !== undefined) entry.scalar = scalar;
 		if (type.decimal !== undefined) entry.decimal = type.decimal;
+		if (scalar === "integer") {
+			const bounds = integerBounds(entry.constraints);
+			entry.impossibleIntegerBounds = bounds.lower > bounds.upper;
+			entry.effectiveIntegerBounds = Object.freeze({
+				lower: bounds.lower.toString(),
+				upper: bounds.upper.toString(),
+				lowerExplicit: bounds.lowerExplicit,
+				upperExplicit: bounds.upperExplicit,
+			});
+		}
+		entry.wideInteger = effectiveWideInteger(types, type.identity);
 
 		if (isRecordShaped(type) || isInstanceless(type)) {
 			// An interface and a namespace construct carry no fields: they have no

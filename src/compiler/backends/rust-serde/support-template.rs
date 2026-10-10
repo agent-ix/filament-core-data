@@ -19,6 +19,418 @@ use serde::de::{self, Deserializer, MapAccess, SeqAccess, Visitor};
 use serde::ser::{SerializeMap, SerializeSeq, Serializer};
 use serde::{Deserialize, Serialize};
 
+/// Parse one canonical decimal integer carried on the JSON string wire.
+pub fn parse_canonical_integer<T>(wire: &str) -> Result<T, String>
+where
+    T: std::str::FromStr + ToString,
+    T::Err: fmt::Display,
+{
+    let value = wire.parse::<T>().map_err(|error| error.to_string())?;
+    if value.to_string() != wire {
+        return Err("integer is not canonical".to_owned());
+    }
+    Ok(value)
+}
+
+// Native integer members whose effective range exceeds the JSON safe-number
+// interval use the canonical string wire form even when they are not minted
+// aliases.  These adapters are kept in the fixed support module so records,
+// optional fields, and collections all share the same parser and reject JSON
+// numbers instead of silently rounding them.
+macro_rules! wide_integer_scalar {
+    ($module:ident, $ty:ty) => {
+        /// Canonical string adapter for one wide integer.
+        pub mod $module {
+            use serde::{Deserialize, Deserializer, Serializer};
+
+            /// Serialize the integer as its canonical decimal string.
+            pub fn serialize<S>(value: &$ty, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer,
+            {
+                serializer.serialize_str(&value.to_string())
+            }
+
+            /// Deserialize and validate one canonical decimal integer.
+            pub fn deserialize<'de, D>(deserializer: D) -> Result<$ty, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                let wire = <String as Deserialize>::deserialize(deserializer)?;
+                super::parse_canonical_integer::<$ty>(&wire).map_err(serde::de::Error::custom)
+            }
+        }
+    };
+}
+
+wide_integer_scalar!(wide_i64, i64);
+wide_integer_scalar!(wide_u64, u64);
+wide_integer_scalar!(wide_i128, i128);
+
+macro_rules! wide_integer_vec {
+    ($module:ident, $ty:ty) => {
+        /// Canonical string adapter for a vector of wide integers.
+        pub mod $module {
+            use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+            /// Serialize all members as canonical decimal strings.
+            pub fn serialize<S>(values: &Vec<$ty>, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer,
+            {
+                values
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+                    .serialize(serializer)
+            }
+
+            /// Deserialize a vector of canonical decimal integers.
+            pub fn deserialize<'de, D>(deserializer: D) -> Result<Vec<$ty>, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                let wires = <Vec<String> as Deserialize>::deserialize(deserializer)?;
+                wires
+                    .into_iter()
+                    .map(|wire| {
+                        super::parse_canonical_integer::<$ty>(&wire)
+                            .map_err(serde::de::Error::custom)
+                    })
+                    .collect()
+            }
+        }
+    };
+}
+
+wide_integer_vec!(wide_vec_i64, i64);
+wide_integer_vec!(wide_vec_u64, u64);
+wide_integer_vec!(wide_vec_i128, i128);
+
+/// Generic adapters for the remaining member-axis compositions.  The
+/// `serde(with = ...)` contract monomorphizes these functions for the field's
+/// concrete integer type, so one implementation covers every width.
+/// Canonical integer adapter for wide option values.
+pub mod wide_option {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    /// Serialize canonical integer wire values.
+    pub fn serialize<S, T>(value: &Option<T>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        value
+            .as_ref()
+            .map(ToString::to_string)
+            .serialize(serializer)
+    }
+
+    /// Deserialize canonical integer wire values.
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr + ToString,
+        T::Err: Display,
+    {
+        <Option<String> as Deserialize>::deserialize(deserializer)?
+            .map(|wire| {
+                super::parse_canonical_integer::<T>(&wire).map_err(serde::de::Error::custom)
+            })
+            .transpose()
+    }
+}
+
+/// Canonical integer adapter for wide option vec values.
+pub mod wide_option_vec {
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    /// Serialize canonical integer wire values.
+    pub fn serialize<S, T>(value: &Option<Vec<T>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        value
+            .as_ref()
+            .map(|values| values.iter().map(ToString::to_string).collect::<Vec<_>>())
+            .serialize(serializer)
+    }
+
+    /// Deserialize canonical integer wire values.
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Vec<T>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr + ToString,
+        T::Err: Display,
+    {
+        <Option<Vec<String>> as Deserialize>::deserialize(deserializer)?
+            .map(|wires| {
+                wires
+                    .into_iter()
+                    .map(|wire| {
+                        super::parse_canonical_integer::<T>(&wire).map_err(serde::de::Error::custom)
+                    })
+                    .collect()
+            })
+            .transpose()
+    }
+}
+
+/// Canonical integer adapter for wide nullable values.
+pub mod wide_nullable {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    /// Serialize canonical integer wire values.
+    pub fn serialize<S, T>(value: &Nullable<T>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        match value {
+            Nullable::Null => serializer.serialize_none(),
+            Nullable::Value(inner) => serializer.serialize_str(&inner.to_string()),
+        }
+    }
+
+    /// Deserialize canonical integer wire values.
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Nullable<T>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr + ToString,
+        T::Err: Display,
+    {
+        match <Option<String> as Deserialize>::deserialize(deserializer)? {
+            None => Ok(Nullable::Null),
+            Some(wire) => super::parse_canonical_integer::<T>(&wire)
+                .map(Nullable::Value)
+                .map_err(serde::de::Error::custom),
+        }
+    }
+}
+
+/// Canonical integer adapter for wide nullable vec values.
+pub mod wide_nullable_vec {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    /// Serialize canonical integer wire values.
+    pub fn serialize<S, T>(value: &Nullable<Vec<T>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        match value {
+            Nullable::Null => serializer.serialize_none(),
+            Nullable::Value(values) => serializer
+                .serialize_some(&values.iter().map(ToString::to_string).collect::<Vec<_>>()),
+        }
+    }
+
+    /// Deserialize canonical integer wire values.
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Nullable<Vec<T>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr + ToString,
+        T::Err: Display,
+    {
+        match <Option<Vec<String>> as Deserialize>::deserialize(deserializer)? {
+            None => Ok(Nullable::Null),
+            Some(wires) => wires
+                .into_iter()
+                .map(|wire| {
+                    super::parse_canonical_integer::<T>(&wire).map_err(serde::de::Error::custom)
+                })
+                .collect::<Result<Vec<_>, _>>()
+                .map(Nullable::Value),
+        }
+    }
+}
+
+/// Canonical integer adapter for wide vec nullable values.
+pub mod wide_vec_nullable {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    /// Serialize canonical integer wire values.
+    pub fn serialize<S, T>(value: &Vec<Nullable<T>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        value
+            .iter()
+            .map(|item| match item {
+                Nullable::Null => None,
+                Nullable::Value(inner) => Some(inner.to_string()),
+            })
+            .collect::<Vec<_>>()
+            .serialize(serializer)
+    }
+
+    /// Deserialize canonical integer wire values.
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Vec<Nullable<T>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr + ToString,
+        T::Err: Display,
+    {
+        <Vec<Option<String>> as Deserialize>::deserialize(deserializer)?
+            .into_iter()
+            .map(|wire| match wire {
+                None => Ok(Nullable::Null),
+                Some(wire) => super::parse_canonical_integer::<T>(&wire)
+                    .map(Nullable::Value)
+                    .map_err(serde::de::Error::custom),
+            })
+            .collect()
+    }
+}
+
+/// Canonical integer adapter for wide option nullable values.
+pub mod wide_option_nullable {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    /// Serialize canonical integer wire values.
+    pub fn serialize<S, T>(value: &Option<Nullable<T>>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        match value {
+            None => serializer.serialize_none(),
+            Some(Nullable::Null) => serializer.serialize_none(),
+            Some(Nullable::Value(inner)) => serializer.serialize_str(&inner.to_string()),
+        }
+    }
+
+    /// Deserialize canonical integer wire values.
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Nullable<T>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr + ToString,
+        T::Err: Display,
+    {
+        match <Option<String> as Deserialize>::deserialize(deserializer)? {
+            None => Ok(Some(Nullable::Null)),
+            Some(wire) => super::parse_canonical_integer::<T>(&wire)
+                .map(Nullable::Value)
+                .map(Some)
+                .map_err(serde::de::Error::custom),
+        }
+    }
+}
+
+/// Canonical integer adapter for wide option nullable vec values.
+pub mod wide_option_nullable_vec {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    /// Serialize canonical integer wire values.
+    pub fn serialize<S, T>(
+        value: &Option<Nullable<Vec<T>>>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        match value {
+            None | Some(Nullable::Null) => serializer.serialize_none(),
+            Some(Nullable::Value(values)) => serializer
+                .serialize_some(&values.iter().map(ToString::to_string).collect::<Vec<_>>()),
+        }
+    }
+
+    /// Deserialize canonical integer wire values.
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Nullable<Vec<T>>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr + ToString,
+        T::Err: Display,
+    {
+        match <Option<Vec<String>> as Deserialize>::deserialize(deserializer)? {
+            None => Ok(Some(Nullable::Null)),
+            Some(wires) => wires
+                .into_iter()
+                .map(|wire| {
+                    super::parse_canonical_integer::<T>(&wire).map_err(serde::de::Error::custom)
+                })
+                .collect::<Result<Vec<_>, _>>()
+                .map(|values| Some(Nullable::Value(values))),
+        }
+    }
+}
+
+/// Canonical integer adapter for wide option vec nullable values.
+pub mod wide_option_vec_nullable {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    /// Serialize canonical integer wire values.
+    pub fn serialize<S, T>(
+        value: &Option<Vec<Nullable<T>>>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        value
+            .as_ref()
+            .map(|values| {
+                values
+                    .iter()
+                    .map(|item| match item {
+                        Nullable::Null => None,
+                        Nullable::Value(inner) => Some(inner.to_string()),
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .serialize(serializer)
+    }
+
+    /// Deserialize canonical integer wire values.
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Vec<Nullable<T>>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr + ToString,
+        T::Err: Display,
+    {
+        <Option<Vec<Option<String>>> as Deserialize>::deserialize(deserializer)?
+            .map(|wires| {
+                wires
+                    .into_iter()
+                    .map(|wire| match wire {
+                        None => Ok(Nullable::Null),
+                        Some(wire) => super::parse_canonical_integer::<T>(&wire)
+                            .map(Nullable::Value)
+                            .map_err(serde::de::Error::custom),
+                    })
+                    .collect()
+            })
+            .transpose()
+    }
+}
+
 /// The longest input-derived fragment a validation message echoes.
 pub const MAX_ECHOED_CODE_POINTS: usize = 120;
 

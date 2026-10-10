@@ -9,7 +9,7 @@ status: normative
 # Rust/Serde backend mapping and declared decisions
 
 Rendered from `src/compiler/backends/rust-serde/mapping-table.json`, which is
-the single machine-readable mapping table. 65 rows across
+the single machine-readable mapping table. 67 rows across
 12 axes. A construct that selects no row and no named refusal is an
 `agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT`; the mapping is total by
 construction, not by claim.
@@ -66,8 +66,10 @@ construction, not by claim.
 | `any` | `SemanticValue` | — | lossless JSON value retained by crate::support::SemanticValue | — |
 | `boolean` | `bool` | — | JSON boolean | — |
 | `integer` | `i64` | — | canonical integer string; i64, u64 or i128 selected by effective range | — |
+| `number` | `f64` | — | finite JSON number; retained legacy scalar | — |
 | `decimal` | `crate::support::Decimal` | — | canonical decimal string through support::Decimal | — |
-| `number` | `f64` | — | JSON number | — |
+| `float32` | `f32` | — | finite JSON number | — |
+| `float64` | `f64` | — | finite JSON number | — |
 | `string` | `String` | — | JSON string | — |
 | `bytes` | `null` | — | refused: no published artifact states the JSON wire form of bytes (issue #58) | `agent-ix.rust-backend.UNDECLARED_WIRE_FORM` |
 | `date` | `Date` | — | generated RFC 3339 full-date newtype over String; JSON string | — |
