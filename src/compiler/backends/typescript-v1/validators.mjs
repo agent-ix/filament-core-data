@@ -575,24 +575,24 @@ function checkCall(element, valueExpression, pointerExpression) {
 				exclusiveMin: ">",
 				exclusiveMax: "<",
 			}[constraint.keyword];
-			const rhs =
+			const numeric = ["integer", "float32", "float64"].includes(scalar);
+			const wireGuard =
 				element.wideInteger === true
-					? `BigInt(${literal(value)})`
-					: element.scalar === "float32"
-						? `Math.fround(${literal(value)})`
-						: typeof value === "string"
-							? literal(Number(value))
-							: literal(value);
-			const lhs =
+					? canonicalWideInteger
+					: numeric
+						? `typeof ${valueExpression} === "number" && Number.isFinite(${valueExpression})${scalar === "integer" ? ` && Number.isSafeInteger(${valueExpression})` : ""}${scalar === "float32" ? ` && Number.isFinite(Math.fround(${valueExpression}))` : ""}`
+						: `typeof ${valueExpression} === "string"${scalar === "decimal" ? ` && isCanonicalDecimal(${valueExpression})` : ""}`;
+			const comparison =
 				element.wideInteger === true
-					? `BigInt(String(${valueExpression}))`
-					: element.scalar === "float32"
-						? `Math.fround(${valueExpression})`
-						: `Number(${valueExpression})`;
-			const condition =
-				element.wideInteger === true
-					? `(typeof ${valueExpression} === "string" && /^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression})) && !(${lhs} ${operator} ${rhs}))`
-					: `!(${lhs} ${operator} ${rhs})`;
+					? `BigInt(${valueExpression}) ${operator} BigInt(${literal(value)})`
+					: scalar === "float32"
+						? `Math.fround(${valueExpression}) ${operator} Math.fround(${literal(value)})`
+						: scalar === "decimal"
+							? `compareDecimal(${valueExpression}, ${literal(value)}) ${operator} 0`
+							: scalar === "date" || scalar === "datetime"
+								? `Date.parse(${valueExpression}) ${operator} Date.parse(${literal(value)})`
+								: `${valueExpression} ${operator} ${numeric ? literal(Number(value)) : literal(value)}`;
+			const condition = `(${wireGuard} && !(${comparison}))`;
 			checks.push(
 				`if (${condition}) fail(errors, ${pointerExpression}, ${literal(constraint.diagnosticCode)}, ${literal(`the ${constraint.keyword} constraint is not satisfied`)})`,
 			);

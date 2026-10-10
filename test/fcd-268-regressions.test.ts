@@ -288,6 +288,27 @@ function scalarEnumIr(name: string, typeRef: string, values: unknown[]) {
 	]);
 }
 
+function nativeBoundIr(name: string, typeRef: string, bound: string | number) {
+	const recordIdentity = `ix://agent-ix/age-2229-regressions/type/${name}`;
+	const fieldIdentity = `${recordIdentity}#value`;
+	return document([
+		record(
+			recordIdentity,
+			field(recordIdentity, typeRef, {
+				constraints: [
+					{
+						identity: `${fieldIdentity}/constraint/min`,
+						keyword: "min",
+						operands: { value: bound },
+						appliesTo: fieldIdentity,
+						diagnosticCode: "ix://agent-ix/age-2229-regressions/NATIVE_BOUND",
+					},
+				],
+			}),
+		),
+	]);
+}
+
 function writeValidators(
 	directory: string,
 	ir: unknown,
@@ -887,6 +908,55 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 					).ok,
 					`${one.name} oracle ${String(value)}`,
 				).toBe(expected);
+			}
+		}
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
+});
+
+/** Trace: FR-066-AC-25. */
+it("rejects hostile native bound inputs without coercion or a thrown exception", async () => {
+	const cases = [
+		["BoundInteger", "ix://quire/native/Integer", "0"],
+		["BoundFloat32", "ix://quire/native/Float32", 0],
+		["BoundFloat64", "ix://quire/native/Float64", 0],
+	] as const;
+	const hostile = [
+		Symbol("zero"),
+		{
+			valueOf: () => {
+				throw new Error("valueOf must not run");
+			},
+		},
+		{
+			[Symbol.toPrimitive]: () => {
+				throw new Error("toPrimitive must not run");
+			},
+		},
+	];
+	const directory = mkdtempSync(join(tmpdir(), "fcd-268-bound-hostile-"));
+	try {
+		for (const [name, typeRef, bound] of cases) {
+			const ir = nativeBoundIr(name, typeRef, bound);
+			expect([...readContractIr(ir)], `${name} reader`).toEqual([]);
+			const generated = await writeValidators(directory, ir);
+			const validate = generated[`validate${name}`] as (input: unknown) => {
+				ok: boolean;
+				errors: { code: string; pointer: string }[];
+			};
+			for (const value of hostile) {
+				let result: ReturnType<typeof validate> | undefined;
+				expect(() => {
+					result = validate({ value });
+				}, `${name} must not throw`).not.toThrow();
+				expect(result?.ok, `${name} hostile input`).toBe(false);
+				expect(result?.errors).toContainEqual(
+					expect.objectContaining({
+						code: "agent-ix.typescript-backend.SHAPE_MISMATCH",
+						pointer: "/value",
+					}),
+				);
 			}
 		}
 	} finally {
