@@ -953,6 +953,37 @@ it("typechecks the float, bounded-integer, enum, and default TypeScript matrix",
 		};
 		expect(float32(0.1).ok).toBe(true);
 		expect(float32(3.5e38).ok).toBe(false);
+		const wideIr = structuredClone(numericIr());
+		wideIr.types.push({
+			identity: type("WideInteger"),
+			displayName: "WideInteger",
+			kind: "scalar",
+			scalar: "integer",
+			constraints: [
+				{
+					identity: type("WideInteger-max"),
+					keyword: "max",
+					operands: { value: "9007199254740993" },
+					appliesTo: type("WideInteger"),
+					diagnosticCode: "agent-ix.exact-numeric.WIDE_INTEGER_MAX",
+					origin: wideIr.types[0].origin,
+				},
+			],
+			origin: wideIr.types[0].origin,
+			roles: [],
+			unknownPolicy: "reject",
+			extensions: [],
+		});
+		const wideGenerated = await generatedNumericValidators(scratch, wideIr);
+		const wide = wideGenerated.validateWideInteger as (value: unknown) => {
+			ok: boolean;
+			errors?: { code: string }[];
+		};
+		const invalid = wide(1);
+		expect(invalid.ok).toBe(false);
+		expect(invalid.errors?.[0]?.code).toBe(
+			"agent-ix.typescript-backend.NOT_AN_INTEGER",
+		);
 	} finally {
 		rmSync(scratch, { recursive: true, force: true });
 	}

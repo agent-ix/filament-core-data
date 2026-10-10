@@ -544,15 +544,46 @@ export function lowerProgram(options) {
 		return value;
 	};
 	const constraintsOf = (target) => {
+		if (target.name === "bounded")
+			console.error(
+				"DEBUG_DECORATORS",
+				JSON.stringify(
+					target.decorators?.map((item) => ({
+						decorator: item.decorator?.name,
+						definition: item.definition?.name,
+					args: item.args?.map((arg) => ({
+						jsValueType: typeof arg.jsValue,
+						jsValueKeys: Object.keys(arg.jsValue ?? {}),
+						jsValueString: String(arg.jsValue),
+						jsValueAsNumber:
+							typeof arg.jsValue?.asNumber === "function"
+								? arg.jsValue.asNumber()
+								: undefined,
+					})),
+					})),
+				),
+			);
 		const found = [];
 		const push = (keyword, operands, decorator) =>
 			found.push({ keyword, operands, decorator });
+		const decoratorArgument = (name) => {
+			const application = target.decorators?.find(
+				(item) =>
+					item.decorator?.name === `$${name}` ||
+					item.definition?.name === `$${name}`,
+			);
+			return application?.args?.[0]?.jsValue;
+		};
 		const min =
-			getMinValueAsNumeric(program, target) ?? getMinValue(program, target);
+			getMinValueAsNumeric(program, target) ??
+			getMinValue(program, target) ??
+			decoratorArgument("minValue");
 		if (min !== undefined)
 			push("min", { value: literalFor(target, min) }, "@minValue");
 		const max =
-			getMaxValueAsNumeric(program, target) ?? getMaxValue(program, target);
+			getMaxValueAsNumeric(program, target) ??
+			getMaxValue(program, target) ??
+			decoratorArgument("maxValue");
 		if (max !== undefined)
 			push("max", { value: literalFor(target, max) }, "@maxValue");
 		const width = BUILTIN_INTEGER_BOUNDS[builtinBase(target)];
@@ -564,7 +595,8 @@ export function lowerProgram(options) {
 		}
 		const exclusiveMin =
 			getMinValueExclusiveAsNumeric(program, target) ??
-			getMinValueExclusive(program, target);
+			getMinValueExclusive(program, target) ??
+			decoratorArgument("minValueExclusive");
 		if (exclusiveMin !== undefined)
 			push(
 				"exclusiveMin",
@@ -573,7 +605,8 @@ export function lowerProgram(options) {
 			);
 		const exclusiveMax =
 			getMaxValueExclusiveAsNumeric(program, target) ??
-			getMaxValueExclusive(program, target);
+			getMaxValueExclusive(program, target) ??
+			decoratorArgument("maxValueExclusive");
 		if (exclusiveMax !== undefined)
 			push(
 				"exclusiveMax",
@@ -840,23 +873,27 @@ export function lowerProgram(options) {
 			return undefined;
 		}
 		const constraints = constraintsOf(property);
+		const decimalPolicy = context.state("decimal", property);
+		const decimalBase = builtinBase(memberType);
+		const decimalBoundAlias =
+			decimalPolicy !== undefined &&
+			BUILTIN_SCALARS.get(decimalBase) === "decimal" &&
+			constraints.length > 0;
 		// Native integer widths are value-site declarations too. Preserve their
 		// closed interval on a package-local alias so fields, collection items and
 		// operation parameters do not silently collapse to unbounded Integer.
 		// Keep the alias name flat (the same owner/member spelling used by the
 		// semantic-core lowerer) so it cannot collide with the field identity.
 		const width = BUILTIN_INTEGER_BOUNDS[builtinBase(memberType)];
-		if (width !== undefined && typeRef.startsWith(NATIVE_PREFIX)) {
+		if (
+			(width !== undefined || decimalBoundAlias) &&
+			typeRef.startsWith(NATIVE_PREFIX)
+		) {
 			const memberName = String(property.name);
 			const aliasName = `${ownerParts.join("")}${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`;
 			const aliasIdentity = typeIdentity(aliasName);
-			if (!definitions.has(aliasIdentity)) {
-				emit({
-					identity: aliasIdentity,
-					displayName: aliasName,
-					kind: "alias",
-					target: typeRef,
-					constraints: [
+			const widthConstraints = width
+				? [
 						...["min", "max"].map((keyword) => ({
 							identity: mintIdentity(packageIdentity, "constraint", [
 								aliasName,
@@ -872,6 +909,16 @@ export function lowerProgram(options) {
 							),
 							origin: context.originOf(property),
 						})),
+					]
+				: [];
+			if (!definitions.has(aliasIdentity)) {
+				emit({
+					identity: aliasIdentity,
+					displayName: aliasName,
+					kind: "alias",
+					target: typeRef,
+					constraints: [
+						...widthConstraints,
 						...constraints.map((item) => ({
 							identity: mintIdentity(packageIdentity, "constraint", [
 								aliasName,
@@ -889,6 +936,7 @@ export function lowerProgram(options) {
 							origin: context.originOf(property),
 						})),
 					],
+					...(decimalBoundAlias ? { decimal: decimalPolicy } : {}),
 					extensions: [],
 					roles: [],
 					unknownPolicy: "reject",
@@ -946,7 +994,7 @@ export function lowerProgram(options) {
 		}
 
 		let fieldConstraints;
-		if (constraints.length > 0) {
+		if (constraints.length > 0 && !decimalBoundAlias) {
 			// Gap 1 of FCD #199/#200: a constrained property keeps its constraints
 			// on the field itself, `appliesTo` the field's own identity; `typeRef`
 			// stays the field's resolved type, no synthetic alias.
@@ -999,7 +1047,6 @@ export function lowerProgram(options) {
 				payload: { identity: true },
 			});
 		}
-		const decimalPolicy = context.state("decimal", property);
 		if (decimalPolicy) {
 			extensions.push({
 				identity: `${EXTENSION_BASE}/decimal`,
@@ -1022,7 +1069,7 @@ export function lowerProgram(options) {
 		}
 		if (
 			decimalPolicy &&
-			(decimalPolicy.precision > 38 ||
+			(decimalPolicy.precision > (decimalBase === "decimal128" ? 34 : 38) ||
 				decimalPolicy.scale > decimalPolicy.precision)
 		) {
 			context.raise(
@@ -1055,7 +1102,7 @@ export function lowerProgram(options) {
 			origin: context.originOf(property),
 			extensions: extensions.sort(byIdentity),
 			...(fieldConstraints ? { constraints: fieldConstraints } : {}),
-			...(decimalPolicy
+			...(decimalPolicy && !decimalBoundAlias
 				? {
 						decimal: {
 							precision: decimalPolicy.precision,

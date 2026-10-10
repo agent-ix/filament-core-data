@@ -334,7 +334,7 @@ function scalarCheckBody(model, entry) {
 	}
 	const wideInteger = entry.scalar === "integer" && entry.wideInteger;
 	const guardTest = wideInteger ? 'typeof candidate === "string"' : guard.test;
-	const guardCode = wideInteger ? "NOT_A_INTEGER" : guard.code;
+	const guardCode = wideInteger ? "NOT_AN_INTEGER" : guard.code;
 	lines.push(
 		`\tif (!(${guardTest})) {`,
 		`\t\tfail(errors, pointer, CODES.${guardCode}, "the value is of the wrong type");`,
@@ -344,7 +344,7 @@ function scalarCheckBody(model, entry) {
 	if (wideInteger) {
 		lines.push(
 			"\tif (!/^(0|-?[1-9][0-9]*)$/.test(candidate)) {",
-			'\t\tfail(errors, pointer, CODES.NOT_A_INTEGER, "the value is not a canonical integer string");',
+			'\t\tfail(errors, pointer, CODES.NOT_AN_INTEGER, "the value is not a canonical integer string");',
 			"\t\treturn false;",
 			"\t}",
 			...constraintStatements(model, entry.identity, "\t"),
@@ -471,7 +471,8 @@ function checkCall(element, valueExpression, pointerExpression) {
 }
 
 function prepareCall(element, valueExpression) {
-	if (element?.declared !== true || element.native === true) return valueExpression;
+	if (element?.declared !== true || element.native === true)
+		return valueExpression;
 	return `prepare${element.identifier}(${valueExpression}, depth + 1)`;
 }
 
@@ -537,7 +538,7 @@ function delegatingCheckBody(model, entry) {
 	) {
 		lines.push(
 			'\tif (typeof candidate !== "number" || !Number.isSafeInteger(candidate)) {',
-			'\t\tfail(errors, pointer, CODES.NOT_A_INTEGER, "the value is not a safe integer number");',
+			'\t\tfail(errors, pointer, CODES.NOT_AN_INTEGER, "the value is not a safe integer number");',
 			"\t\treturn false;",
 			"\t}",
 			...constraintStatements(model, entry.identity, "\t"),
@@ -548,7 +549,7 @@ function delegatingCheckBody(model, entry) {
 	if (entry.kind === "alias" && entry.wideInteger) {
 		lines.push(
 			'\tif (typeof candidate !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(candidate)) {',
-			'\t\tfail(errors, pointer, CODES.NOT_A_INTEGER, "the value is not a canonical integer string");',
+			'\t\tfail(errors, pointer, CODES.NOT_AN_INTEGER, "the value is not a canonical integer string");',
 			"\t\treturn false;",
 			"\t}",
 			...constraintStatements(model, entry.identity, "\t"),
@@ -773,9 +774,7 @@ function prepareBody(model, entry) {
 		];
 	}
 	if (entry.kind === "alias") {
-		return [
-			`\treturn ${prepareCall(entry.targetEntry, "value")};`,
-		];
+		return [`\treturn ${prepareCall(entry.targetEntry, "value")};`];
 	}
 	if (entry.kind === "union") return unionPrepareBody(entry);
 	return ["\treturn value;"];

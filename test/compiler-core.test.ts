@@ -1485,6 +1485,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"model WidthCorpus {",
 				"  signed: int8;",
 				"  wide: uint64;",
+				"  @minValue(0) bounded: int8;",
 				"  @maxValueExclusive(100) narrowed: uint64;",
 				"}",
 			].join("\n"),
@@ -1510,6 +1511,18 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				(constraint) => constraint.keyword,
 			),
 		).toContain("exclusiveMax");
+		const bounded = types.find(
+			(type) => type.displayName === "WidthCorpusBounded",
+		) as Json;
+		expect(
+			(bounded?.constraints as Json[]).map((constraint) => [
+				constraint.keyword,
+				constraint.operands?.value,
+			]),
+		).toEqual([
+			["min", "0"],
+			["max", "127"],
+		]);
 		const generated = typescriptBackend.generate(
 			{ ir: result.ir } as never,
 			{ host: result.host } as never,
@@ -1529,6 +1542,37 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			rust.diagnostics.filter((one) => one.blocking),
 			JSON.stringify(rust.diagnostics),
 		).toEqual([]);
+		const invalidDecimal = await compileSource(
+			[
+				"using AgentIx.Semantic.Decorators;",
+				"namespace AgentIx.Semantic;",
+				"model Bad { @decimal(35, 2) value: decimal128; }",
+			].join("\n"),
+		);
+		expect(codesOf(invalidDecimal.diagnostics as never)).toContain(
+			DIAGNOSTIC_CODES.DECIMAL_PRECISION_EXCEEDS_BASE.code,
+		);
+		const boundedDecimal = await compileSource(
+			[
+				"using AgentIx.Semantic.Decorators;",
+				"namespace AgentIx.Semantic;",
+				"model DecimalBound { @decimal(5, 2) @minValue(0) value: decimal; }",
+			].join("\n"),
+		);
+		expect(codesOf(boundedDecimal.diagnostics as never)).toEqual([]);
+		const decimalTypes = (boundedDecimal.ir as never as { types: Json[] })
+			.types;
+		const decimalAlias = decimalTypes.find(
+			(type) => type.displayName === "DecimalBoundValue",
+		) as Json;
+		expect(decimalAlias?.decimal).toEqual({ precision: 5, scale: 2 });
+		expect(decimalAlias?.constraints).toHaveLength(1);
+		expect(
+			(
+				decimalTypes.find((type) => type.displayName === "DecimalBound")
+					?.fields as Json[]
+			)[0].constraints,
+		).toBeUndefined();
 	}, 120000);
 
 	/** Traces: TC-435; FR-046-AC-4. */
