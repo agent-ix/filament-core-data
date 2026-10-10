@@ -75,6 +75,7 @@ pub enum Code {
     DuplicateIdentity,
     DuplicateConstraint,
     ConstraintNotApplicable,
+    DecimalPolicyMissing,
     DeclaredLoss,
     UnresolvedRelationshipTarget,
     UnknownEdgeVerb,
@@ -159,7 +160,7 @@ pub enum Disposition {
 
 impl Code {
     /// Every variant, in registry order.
-    pub const ALL: [Code; 27] = [
+    pub const ALL: [Code; 28] = [
         Code::ModuleWithoutSemanticBlock,
         Code::ModuleRefused,
         Code::BundleUnidentified,
@@ -175,6 +176,7 @@ impl Code {
         Code::DuplicateIdentity,
         Code::DuplicateConstraint,
         Code::ConstraintNotApplicable,
+        Code::DecimalPolicyMissing,
         Code::DeclaredLoss,
         Code::UnresolvedRelationshipTarget,
         Code::UnknownEdgeVerb,
@@ -207,6 +209,7 @@ impl Code {
             Code::DuplicateIdentity => "DUPLICATE_IDENTITY",
             Code::DuplicateConstraint => "DUPLICATE_CONSTRAINT",
             Code::ConstraintNotApplicable => "CONSTRAINT_NOT_APPLICABLE",
+            Code::DecimalPolicyMissing => "DECIMAL_POLICY_MISSING",
             Code::DeclaredLoss => "DECLARED_LOSS",
             Code::UnresolvedRelationshipTarget => "UNRESOLVED_RELATIONSHIP_TARGET",
             Code::UnknownEdgeVerb => "UNKNOWN_EDGE_VERB",
@@ -262,6 +265,9 @@ impl Code {
             Code::DuplicateConstraint => "one row carries one constraint keyword twice",
             Code::ConstraintNotApplicable => {
                 "a constraint keyword does not apply to the resolved type of its row"
+            }
+            Code::DecimalPolicyMissing => {
+                "a Decimal field row has no precision and scale policy"
             }
             Code::DeclaredLoss => {
                 "the frontend dropped a construct the extraction contract declares lossy"

@@ -75,11 +75,27 @@ pub fn extract(bundle: &Bundle) -> Extractions {
         };
         let extraction = extract_semantic(document.raw(), &context, &required);
         for diagnostic in &extraction.diagnostics {
-            out.diagnostics.push(Diagnostic::engine(
-                diagnostic,
-                &source_identity,
-                document.path(),
-            ));
+            if diagnostic.code == "agent-ix.semantic-core.MISSING_DECIMAL_POLICY" {
+                let locus = diagnostic.line.map(|line| {
+                    Locus::new(
+                        &source_identity,
+                        document.path(),
+                        line,
+                        diagnostic.column.unwrap_or(1),
+                    )
+                });
+                out.diagnostics.push(Diagnostic::frontend(
+                    Code::DecimalPolicyMissing,
+                    diagnostic.message.clone(),
+                    locus,
+                ));
+            } else {
+                out.diagnostics.push(Diagnostic::engine(
+                    diagnostic,
+                    &source_identity,
+                    document.path(),
+                ));
+            }
         }
         out.artifacts.insert(
             document.id().to_string(),

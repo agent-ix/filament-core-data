@@ -507,11 +507,38 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
         &entity(
             "FR-001",
             "NumericRows",
-            "| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n",
+            "| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n| unpriced | Decimal | 1 | |\n",
         ),
     );
 
-    let lift = lift_at(root.path(), &[&business_module(), &edge_vocabulary()]);
+    let blocked = lift_at(root.path(), &[&business_module(), &edge_vocabulary()]);
+    assert!(
+        blocked.extractions.diagnostics.iter().any(|diagnostic| {
+            diagnostic.registry_code() == Some(Code::DecimalPolicyMissing)
+                && diagnostic.locus.as_ref().is_some_and(|locus| {
+                    locus.path.ends_with("FR-001.md") && locus.start_line == 16
+                })
+        }),
+        "missing frontend Decimal policy diagnostic: {:?}",
+        blocked.extractions.diagnostics
+    );
+    let blocked_types = types_json(&blocked);
+    assert!(!blocked_types
+        .iter()
+        .any(|definition| definition["displayName"] == "NumericRows"));
+
+    let valid_root = tempfile::tempdir().expect("valid numeric spec bundle");
+    scratch_spec(valid_root.path());
+    write_fixture(
+        valid_root.path(),
+        "spec/functional/FR-001.md",
+        &entity(
+            "FR-001",
+            "NumericRows",
+            "| versionNumber | Integer | 1 | min: 1 |\n| price | Decimal(10,2) | 1 | min: 1.50 |\n",
+        ),
+    );
+    let lift = lift_at(valid_root.path(), &[&business_module(), &edge_vocabulary()]);
     let types = types_json(&lift);
     let record = type_named(&types, "NumericRows");
     let version = field_named(record, "versionNumber");
@@ -534,24 +561,6 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
     );
 
     let document = ir_document(&lift);
-    let mut missing_document = document.clone();
-    let alias = missing_document["ir"]["types"]
-        .as_array_mut()
-        .expect("types")
-        .iter_mut()
-        .find(|definition| definition["displayName"] == "NumericRows.price")
-        .expect("price alias");
-    alias
-        .as_object_mut()
-        .expect("alias object")
-        .remove("decimal");
-    let missing = reader_codes(&missing_document);
-    assert!(
-        missing
-            .iter()
-            .any(|entry| entry.starts_with("agent-ix.semantic-ir.DECIMAL_POLICY_MISSING")),
-        "{missing:?}"
-    );
     let canonical = normalized(
         &parse_json(&serde_json::to_string(&document).expect("serialize"))
             .expect("parse canonical input"),
