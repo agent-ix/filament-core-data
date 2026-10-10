@@ -83,6 +83,14 @@ function identifier(name, node, diagnostics) {
 	return null;
 }
 
+function packageShortName(identity) {
+	const tail =
+		String(identity ?? "Model")
+			.split("/")
+			.at(-1) ?? "Model";
+	return tail.replace(/[^A-Za-z0-9_]/g, "_");
+}
+
 function scalarName(type) {
 	return type?.kind === "scalar" ? SCALARS[type.scalar] : undefined;
 }
@@ -275,7 +283,6 @@ export const sysmlBackend = Object.freeze({
 		const types = new Map(
 			(ir.types ?? []).map((type) => [type.identity, type]),
 		);
-		const packageName = "Model";
 		const definitions = [];
 		refuseUnmappedMembers(ir, ["extensions", "constructs"], diagnostics);
 		for (const type of ir.types ?? []) {
@@ -288,10 +295,22 @@ export const sysmlBackend = Object.freeze({
 		if (diagnostics.some((entry) => entry.blocking)) {
 			return { state: "unsupported", files: [], diagnostics };
 		}
+		const packageIdentity = ir.package?.identity ?? ir.source?.identity;
+		const packageNode = {
+			identity: packageIdentity,
+			origin: { source: ir.source?.origin ?? ir.source },
+		};
+		const packageName = identifier(
+			packageShortName(packageIdentity),
+			packageNode,
+			diagnostics,
+		);
+		if (packageName === null)
+			return { state: "unsupported", files: [], diagnostics };
 		const provenance = `source ${ir.source?.identity}; digest ${ir.source?.digest}; contract ${ir.contractVersion}; generator ${sysmlBackend.identity}`;
 		const text = [
 			`package ${packageName} {`,
-			`  doc /* ${provenance} */`,
+			`  doc /* semantic identity: ${packageIdentity}; ${provenance} */`,
 			...definitions,
 			"}",
 			"",

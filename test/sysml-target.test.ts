@@ -231,6 +231,10 @@ describe("SysML v2 textual target", () => {
 		child.displayName = "Child";
 		child.fields = [];
 		const cases = [
+			[
+				"reserved package",
+				(ir: any) => (ir.package.identity = "agent-ix/package"),
+			],
 			["sequence", (ir: any) => (ir.types[0].kind = "sequence")],
 			["union", (ir: any) => (ir.types[0].kind = "union")],
 			[
