@@ -4528,9 +4528,31 @@ describe("compatibility (FR-051)", () => {
 			},
 		];
 	};
+	const duration = (document: Json) =>
+		(
+			(document as unknown as { types: Record<string, unknown>[] }).types.find(
+				(type) => type.displayName === "Artifact",
+			)?.fields as Record<string, unknown>[]
+		).find((field) => field.name === "duration") as Record<string, unknown>;
+	const fieldBound = (document: Json, keyword: string, value: string) => {
+		const field = duration(document);
+		field.constraints = [
+			...((field.constraints as Record<string, unknown>[]) ?? []),
+			{
+				identity: `ix://agent-ix/assurance/constraint/Artifact-duration-${keyword}`,
+				keyword,
+				operands: { value },
+				appliesTo: field.identity,
+				diagnosticCode: "agent-ix.assurance.DURATION_BOUND",
+				origin: field.origin,
+			},
+		];
+	};
 	const numericDisposition = (old: Json, next: Json, family: string) => {
 		expect(validateIrDocument(old as never)).toEqual([]);
 		expect(validateIrDocument(next as never)).toEqual([]);
+		expect([...readContractIr(old as never)]).toEqual([]);
+		expect([...readContractIr(next as never)]).toEqual([]);
 		return reportOfPair(old, next).changes.find(
 			(change) =>
 				change.identity === "ix://agent-ix/assurance/type/Seconds" &&
@@ -4614,6 +4636,69 @@ describe("compatibility (FR-051)", () => {
 				)?.disposition,
 			).toBe(expected);
 		}
+	});
+
+	/** Trace: FR-051-AC-18, FR-051-AC-19. */
+	it("classifies alias-chain and native-field numeric bounds", () => {
+		const alias = numericPair();
+		for (const document of [alias.old, alias.next]) {
+			seconds(document).kind = "alias";
+			delete seconds(document).scalar;
+			seconds(document).target = "ix://quire/native/Integer";
+			bound(document, "min", "0");
+		}
+		bound(alias.old, "max", "100");
+		bound(alias.next, "max", "18446744073709551615");
+		expect(numericDisposition(alias.old, alias.next, "type")).toBe("breaking");
+		expect(
+			reportOfPair(alias.old, alias.next).changes.find(
+				(change) => change.family === "constraint",
+			)?.disposition,
+		).toBe("conditional");
+
+		const integerField = numericPair();
+		for (const document of [integerField.old, integerField.next]) {
+			duration(document).typeRef = "ix://quire/native/Integer";
+			fieldBound(document, "min", "0");
+		}
+		fieldBound(integerField.old, "max", "100");
+		fieldBound(integerField.next, "max", "18446744073709551615");
+		for (const document of [integerField.old, integerField.next]) {
+			expect(validateIrDocument(document as never)).toEqual([]);
+			expect([...readContractIr(document as never)]).toEqual([]);
+		}
+		const fieldChanges = reportOfPair(
+			integerField.old,
+			integerField.next,
+		).changes;
+		expect(
+			fieldChanges.find(
+				(change) =>
+					change.identity === duration(integerField.old).identity &&
+					change.family === "type",
+			)?.disposition,
+		).toBe("breaking");
+		expect(
+			fieldChanges.find((change) => change.family === "constraint")
+				?.disposition,
+		).toBe("conditional");
+
+		const decimalField = numericPair();
+		for (const document of [decimalField.old, decimalField.next]) {
+			duration(document).typeRef = "ix://quire/native/Decimal";
+			duration(document).decimal = { precision: 5, scale: 2 };
+		}
+		fieldBound(decimalField.old, "max", "10.51");
+		fieldBound(decimalField.next, "max", "10.5");
+		for (const document of [decimalField.old, decimalField.next]) {
+			expect(validateIrDocument(document as never)).toEqual([]);
+			expect([...readContractIr(document as never)]).toEqual([]);
+		}
+		expect(
+			reportOfPair(decimalField.old, decimalField.next).changes.find(
+				(change) => change.family === "constraint",
+			)?.disposition,
+		).toBe("breaking");
 	});
 
 	/** Traces: TC-527, TC-602; FR-051-AC-1. */
