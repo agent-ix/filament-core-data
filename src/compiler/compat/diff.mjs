@@ -130,6 +130,16 @@ function wideInteger(constraints) {
 	);
 }
 
+function integerDomainWidened(before, after) {
+	const oldRange = integerRange(before);
+	const newRange = integerRange(after);
+	return (
+		newRange.lower <= oldRange.lower &&
+		newRange.upper >= oldRange.upper &&
+		(newRange.lower < oldRange.lower || newRange.upper > oldRange.upper)
+	);
+}
+
 function decimalPolicyChange(before, after) {
 	if (same(before ?? null, after ?? null)) return undefined;
 	if (!before || !after) return "breaking";
@@ -178,6 +188,7 @@ const NATIVE_NUMERIC = new Map([
 function numericSubject(types, identity) {
 	const seen = new Set();
 	const constraints = [];
+	let decimal;
 	let current = identity;
 	while (typeof current === "string" && !seen.has(current)) {
 		seen.add(current);
@@ -186,14 +197,36 @@ function numericSubject(types, identity) {
 			const native = current.startsWith("ix://quire/native/")
 				? current.slice("ix://quire/native/".length)
 				: undefined;
-			return { scalar: NATIVE_NUMERIC.get(native), constraints };
+			return { scalar: NATIVE_NUMERIC.get(native), constraints, decimal };
 		}
 		constraints.push(...(type.constraints ?? []));
-		if (type.kind === "scalar") return { scalar: type.scalar, constraints };
+		decimal ??= type.decimal;
+		if (type.kind === "scalar")
+			return { scalar: type.scalar, constraints, decimal };
 		if (type.kind !== "alias" && type.kind !== "reference") break;
 		current = type.target;
 	}
-	return { scalar: undefined, constraints };
+	return { scalar: undefined, constraints, decimal };
+}
+
+function fieldRefDisposition(original, field, oldSubject, newSubject) {
+	if (oldSubject.scalar !== newSubject.scalar) {
+		return scalarChange(oldSubject.scalar, newSubject.scalar) ?? "breaking";
+	}
+	if (oldSubject.scalar === "integer") {
+		const before = [...oldSubject.constraints, ...(original.constraints ?? [])];
+		const after = [...newSubject.constraints, ...(field.constraints ?? [])];
+		if (wideInteger(before) !== wideInteger(after)) return "breaking";
+		if (integerDomainWidened(before, after)) return "conditional";
+	}
+	if (oldSubject.scalar === "decimal") {
+		const policy = decimalPolicyChange(
+			original.decimal ?? oldSubject.decimal,
+			field.decimal ?? newSubject.decimal,
+		);
+		if (policy) return policy;
+	}
+	return "breaking";
 }
 
 function scalarChange(before, after) {
@@ -725,7 +758,7 @@ function diffFields(
 			record(
 				identity,
 				"type",
-				"breaking",
+				fieldRefDisposition(original, field, oldSubject, newSubject),
 				`the field's type reference changed from ${original.typeRef} to ${field.typeRef}`,
 			);
 		}

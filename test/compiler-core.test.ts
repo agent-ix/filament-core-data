@@ -4507,7 +4507,12 @@ describe("compatibility (FR-051)", () => {
 		(document as unknown as { types: Record<string, unknown>[] }).types.find(
 			(type) => type.displayName === "Seconds",
 		) as Record<string, unknown>;
-	const bound = (document: Json, keyword: string, value: string) => {
+	const bound = (
+		document: Json,
+		keyword: string,
+		value: string,
+		subject = seconds(document),
+	) => {
 		const types = (document as unknown as { types: Record<string, unknown>[] })
 			.types;
 		const seed = (
@@ -4516,12 +4521,11 @@ describe("compatibility (FR-051)", () => {
 				unknown
 			>[]
 		)[0];
-		const subject = seconds(document);
 		subject.constraints = [
 			...((subject.constraints as Record<string, unknown>[]) ?? []),
 			{
 				...seed,
-				identity: `ix://agent-ix/assurance/constraint/Seconds-${keyword}`,
+				identity: `ix://agent-ix/assurance/constraint/${subject.displayName}-${keyword}`,
 				keyword,
 				operands: { value },
 				appliesTo: subject.identity,
@@ -4700,6 +4704,141 @@ describe("compatibility (FR-051)", () => {
 			)?.disposition,
 		).toBe("breaking");
 	});
+
+	const numericStates: {
+		key: string;
+		scalar: "integer" | "float32" | "float64" | "decimal";
+		max?: string;
+		decimal?: { precision: number; scale: number };
+	}[] = [
+		{ key: "IntegerSafe", scalar: "integer", max: "100" },
+		{ key: "IntegerWide", scalar: "integer", max: "18446744073709551615" },
+		{ key: "Float32", scalar: "float32" },
+		{ key: "Float64", scalar: "float64" },
+		{
+			key: "Decimal52",
+			scalar: "decimal",
+			decimal: { precision: 5, scale: 2 },
+		},
+		{
+			key: "Decimal73",
+			scalar: "decimal",
+			decimal: { precision: 7, scale: 3 },
+		},
+	];
+	type NumericState = (typeof numericStates)[number];
+	const nativeRef = (state: NumericState) =>
+		`ix://quire/native/${state.scalar[0].toUpperCase()}${state.scalar.slice(1)}`;
+	const configureType = (
+		document: Json,
+		subject: Record<string, unknown>,
+		state: NumericState,
+		alias: boolean,
+	) => {
+		subject.constraints = [];
+		delete subject.scalar;
+		delete subject.target;
+		delete subject.decimal;
+		subject.kind = alias ? "alias" : "scalar";
+		if (alias) subject.target = nativeRef(state);
+		else subject.scalar = state.scalar;
+		if (state.decimal) subject.decimal = state.decimal;
+		if (state.max) {
+			bound(document, "min", "0", subject);
+			bound(document, "max", state.max, subject);
+		}
+	};
+	const configureField = (
+		document: Json,
+		state: NumericState,
+		alias: boolean,
+	) => {
+		const field = duration(document);
+		field.constraints = [];
+		delete field.decimal;
+		if (alias) {
+			const definition = structuredClone(seconds(document));
+			definition.identity = `ix://agent-ix/assurance/type/Numeric${state.key}`;
+			definition.displayName = `Numeric${state.key}`;
+			configureType(document, definition, state, true);
+			const types = (
+				document as unknown as { types: Record<string, unknown>[] }
+			).types;
+			if (!types.some((type) => type.identity === definition.identity))
+				types.push(definition);
+			field.typeRef = definition.identity;
+		} else {
+			field.typeRef = nativeRef(state);
+			if (state.decimal) field.decimal = state.decimal;
+			if (state.max) {
+				fieldBound(document, "min", "0");
+				fieldBound(document, "max", state.max);
+			}
+		}
+	};
+	const numericTransition = (before: NumericState, after: NumericState) => {
+		if (before.key === after.key) return "patch";
+		if (before.scalar === "float32" && after.scalar === "float64")
+			return "conditional";
+		if (before.scalar === "decimal" && after.scalar === "decimal") {
+			return after.decimal!.scale >= before.decimal!.scale &&
+				after.decimal!.precision - after.decimal!.scale >=
+					before.decimal!.precision - before.decimal!.scale
+				? "conditional"
+				: "breaking";
+		}
+		return "breaking";
+	};
+	for (const surface of [
+		"scalar",
+		"alias-target",
+		"native-field",
+		"alias-field",
+	] as const) {
+		for (const before of numericStates) {
+			/** Trace: FR-051-AC-18, FR-051-AC-19. */
+			it(`classifies numeric transition matrix ${surface} from ${before.key}`, () => {
+				for (const after of numericStates) {
+					const pair = numericPair();
+					if (surface === "scalar" || surface === "alias-target") {
+						configureType(
+							pair.old,
+							seconds(pair.old),
+							before,
+							surface === "alias-target",
+						);
+						configureType(
+							pair.next,
+							seconds(pair.next),
+							after,
+							surface === "alias-target",
+						);
+					} else if (surface === "native-field") {
+						configureField(pair.old, before, false);
+						configureField(pair.next, after, false);
+					} else {
+						for (const document of [pair.old, pair.next]) {
+							configureField(document, before, true);
+							configureField(document, after, true);
+						}
+						duration(pair.old).typeRef =
+							`ix://agent-ix/assurance/type/Numeric${before.key}`;
+						duration(pair.next).typeRef =
+							`ix://agent-ix/assurance/type/Numeric${after.key}`;
+					}
+					const label = `${surface}: ${before.key}>${after.key}`;
+					expect(validateIrDocument(pair.old as never), label).toEqual([]);
+					expect(validateIrDocument(pair.next as never), label).toEqual([]);
+					expect([...readContractIr(pair.old as never)], label).toEqual([]);
+					expect([...readContractIr(pair.next as never)], label).toEqual([]);
+					expect(
+						reportOfPair(pair.old, pair.next).aggregateDisposition,
+						label,
+					).toBe(numericTransition(before, after));
+				}
+			});
+		}
+	}
 
 	/** Traces: TC-527, TC-602; FR-051-AC-1. */
 	it("reproduces every published compatibility case", () => {
