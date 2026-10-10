@@ -107,7 +107,7 @@ author.
   case, including one the schema layer has already decided invalid, because the
   harness compares the string unconditionally.
 - `normalized` SHALL be: serialize the document with object members sorted by
-  code point, array order preserved, no insignificant whitespace, and every
+  UTF-16 code unit, array order preserved, no insignificant whitespace, and every
   JSON number rendered by the ECMAScript `Number::toString` algorithm.
   `nullable` is materialized as a literal boolean on every field and operation
   parameter, unconditionally on `contractVersion`. `nullable` materializes

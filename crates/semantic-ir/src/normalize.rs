@@ -1,4 +1,4 @@
-//! The corpus comparison form of an IR document.
+//! The normalized form of an IR document.
 //!
 //! `spec/functional/FR-036` fixes it: "a document materializes `nullable` as
 //! a literal boolean on every field and operation parameter, gating on no
@@ -6,7 +6,7 @@
 //! and independently authored, so neither is ever materialized from the
 //! other, and a well-formed `2.0.0` document — whose schema already requires
 //! both on every field — gains no member beyond `nullable`", serialized in
-//! `agent-ix-conformance-jcs-v1`.
+//! `rfc8785-v1`, with its canonicalization descriptor materialized.
 //!
 //! Materialization below is unconditional on `contractVersion`: `normalized`
 //! runs on every bundle, including one the schema layer already rejected
@@ -38,13 +38,28 @@ fn materialize_ir(ir: &Json) -> Json {
         Some(members) => members,
         None => return ir.clone(),
     };
-    let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len());
+    let mut out: Vec<(String, Json)> = Vec::with_capacity(members.len() + 1);
+    let descriptor = || {
+        Json::Object(vec![
+            ("algorithm".to_owned(), Json::Str("rfc8785-v1".to_owned())),
+            ("digest".to_owned(), Json::Str("sha256-jcs".to_owned())),
+        ])
+    };
+    let mut emitted_descriptor = false;
     for (name, value) in members {
-        if name == "types" {
+        if name == "canonicalization" {
+            if !emitted_descriptor {
+                out.push((name.clone(), descriptor()));
+                emitted_descriptor = true;
+            }
+        } else if name == "types" {
             out.push((name.clone(), materialize_types(value)));
         } else {
             out.push((name.clone(), value.clone()));
         }
+    }
+    if !emitted_descriptor {
+        out.push(("canonicalization".to_owned(), descriptor()));
     }
     Json::Object(out)
 }
@@ -178,13 +193,13 @@ mod tests {
                 None => String::new(),
             };
             let bundle_text = format!(
-                r#"{{"ir":{{"contractVersion":"2.0.0","types":[{{"kind":"record","fields":[{{"name":"a","presence":"required","multiplicity":{{"lower":1,"upper":1}}{nullable_member}}}]}}]}}}}"#
+                r#"{{"ir":{{"canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"contractVersion":"2.0.0","types":[{{"kind":"record","fields":[{{"name":"a","presence":"required","multiplicity":{{"lower":1,"upper":1}}{nullable_member}}}]}}]}}}}"#
             );
             let bundle = parse(&bundle_text).expect("a well-formed document");
             assert_eq!(
                 normalized(&bundle),
                 format!(
-                    r#"{{"contractVersion":"2.0.0","types":[{{"fields":[{{"multiplicity":{{"lower":1,"upper":1}},"name":"a","nullable":{expected},"presence":"required"}}],"kind":"record"}}]}}"#
+                    r#"{{"canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"contractVersion":"2.0.0","types":[{{"fields":[{{"multiplicity":{{"lower":1,"upper":1}},"name":"a","nullable":{expected},"presence":"required"}}],"kind":"record"}}]}}"#
                 ),
                 "case {id}"
             );
@@ -194,12 +209,12 @@ mod tests {
     #[test]
     fn tc_1378_preserves_authored_presence_disagreeing_with_multiplicity() {
         let bundle = parse(
-            r#"{"ir":{"contractVersion":"2.0.0","types":[{"kind":"record","fields":[{"name":"a","presence":"optional","multiplicity":{"lower":1,"upper":1}}]}]}}"#,
+            r#"{"ir":{"contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"types":[{"kind":"record","fields":[{"name":"a","presence":"optional","multiplicity":{"lower":1,"upper":1}}]}]}}"#,
         )
         .expect("a well-formed document");
         assert_eq!(
             normalized(&bundle),
-            r#"{"contractVersion":"2.0.0","types":[{"fields":[{"multiplicity":{"lower":1,"upper":1},"name":"a","nullable":false,"presence":"optional"}],"kind":"record"}]}"#
+            r#"{"canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"contractVersion":"2.0.0","types":[{"fields":[{"multiplicity":{"lower":1,"upper":1},"name":"a","nullable":false,"presence":"optional"}],"kind":"record"}]}"#
         );
     }
 
@@ -210,19 +225,19 @@ mod tests {
     #[test]
     fn tc_1378_never_derives_multiplicity_from_presence() {
         let bundle = parse(
-            r#"{"ir":{"contractVersion":"2.0.0","types":[{"kind":"record","fields":[{"name":"a","presence":"required"}]}]}}"#,
+            r#"{"ir":{"contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"types":[{"kind":"record","fields":[{"name":"a","presence":"required"}]}]}}"#,
         )
         .expect("a well-formed document");
         assert_eq!(
             normalized(&bundle),
-            r#"{"contractVersion":"2.0.0","types":[{"fields":[{"name":"a","nullable":false,"presence":"required"}],"kind":"record"}]}"#
+            r#"{"canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"contractVersion":"2.0.0","types":[{"fields":[{"name":"a","nullable":false,"presence":"required"}],"kind":"record"}]}"#
         );
     }
 
     /// A `2.0.0` document of one field whose members are spliced in.
     fn one_field(presence: &str, nullable: &str, default_kind: &str) -> String {
         let bundle = parse(&format!(
-            r#"{{"ir":{{"contractVersion":"2.0.0","types":[{{"kind":"record","fields":[{{"name":"a","multiplicity":{{"lower":0,"upper":1}},"presence":"{presence}","nullable":{nullable},"defaultKind":"{default_kind}"}}]}}]}}}}"#
+            r#"{{"ir":{{"canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"contractVersion":"2.0.0","types":[{{"kind":"record","fields":[{{"name":"a","multiplicity":{{"lower":0,"upper":1}},"presence":"{presence}","nullable":{nullable},"defaultKind":"{default_kind}"}}]}}]}}}}"#
         ))
         .expect("a well-formed document");
         normalized(&bundle)
@@ -234,7 +249,7 @@ mod tests {
         // Nothing is derived: a lower bound of 0 leaves `required` authored.
         assert_eq!(
             base,
-            r#"{"contractVersion":"2.0.0","types":[{"fields":[{"defaultKind":"none","multiplicity":{"lower":0,"upper":1},"name":"a","nullable":false,"presence":"required"}],"kind":"record"}]}"#
+            r#"{"canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"contractVersion":"2.0.0","types":[{"fields":[{"defaultKind":"none","multiplicity":{"lower":0,"upper":1},"name":"a","nullable":false,"presence":"required"}],"kind":"record"}]}"#
         );
         let cases = [
             (

@@ -13,13 +13,13 @@ export function isObject(value) {
 }
 
 /**
- * Canonical serialization: object keys sorted by code point, no insignificant
- * whitespace. Array order is significant and is preserved.
+ * Canonical serialization: object keys sorted by RFC 8785 UTF-16 code unit,
+ * no insignificant whitespace. Array order is significant and is preserved.
  */
 export function canonical(value) {
 	if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
 	if (isObject(value)) {
-		const keys = Object.keys(value).sort(compareCodePoint);
+		const keys = Object.keys(value).sort(compareCodeUnits);
 		return `{${keys
 			.map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`)
 			.join(",")}}`;
@@ -27,8 +27,8 @@ export function canonical(value) {
 	return JSON.stringify(value === undefined ? null : value);
 }
 
-/** Code-point ordering. Never `localeCompare`: locale is excluded (NFR-015). */
-export function compareCodePoint(left, right) {
+/** UTF-16 code-unit ordering. Never `localeCompare`: locale is excluded. */
+export function compareCodeUnits(left, right) {
 	if (left === right) return 0;
 	return left < right ? -1 : 1;
 }

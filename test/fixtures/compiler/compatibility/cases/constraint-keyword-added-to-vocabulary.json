@@ -4,6 +4,7 @@
 	"observedFamily": "constraint-vocabulary",
 	"old": {
 		"contractVersion": "2.0.0",
+			"canonicalization": {"algorithm": "rfc8785-v1", "digest": "sha256-jcs"},
 		"constructs": [],
 		"source": {
 			"identity": "ix://agent-ix/assurance/source/typespec",
@@ -335,6 +336,7 @@
 	},
 	"new": {
 		"contractVersion": "2.0.0",
+			"canonicalization": {"algorithm": "rfc8785-v1", "digest": "sha256-jcs"},
 		"constructs": [],
 		"source": {
 			"identity": "ix://agent-ix/assurance/source/typespec",

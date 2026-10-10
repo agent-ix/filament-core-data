@@ -46,7 +46,7 @@ own** (FR-090-AC-9). Every answer, the contract's expectation included, is:
 3. compared as text. Two answers agree when their `substantive` projections are
    the same string.
 
-The comparison form is `agent-ix-conformance-jcs-v1`, the corpus's own. It is
+The comparison form is `rfc8785-v1`, the corpus's own. It is
 not, and does not claim to be, `RFC8785-JCS-with-identity-sorted-sets-v1`, which
 `conformance/contract-gaps.json` GAP-004 records as named but undefined.
 

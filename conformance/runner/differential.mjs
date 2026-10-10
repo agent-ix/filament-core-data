@@ -24,7 +24,7 @@ import {
 	oracleVerdict,
 	ROOT,
 } from "../corpus.mjs";
-import { canonical, compareCodePoint } from "../oracle/json.mjs";
+import { canonical, compareCodeUnits } from "../oracle/json.mjs";
 import { validateConformance } from "../oracle/schema-layer.mjs";
 import { formatJson } from "../tools/format-json.mjs";
 import { materializeCases } from "../tools/materialize-cases.mjs";
@@ -123,10 +123,10 @@ export function run(options = {}) {
 
 	const registryIds = registry.adapters
 		.map((entry) => entry.id)
-		.sort(compareCodePoint);
+		.sort(compareCodeUnits);
 	const thresholdIds = thresholds.thresholds
 		.map((entry) => entry.adapter)
-		.sort(compareCodePoint);
+		.sort(compareCodeUnits);
 	for (const id of registryIds) {
 		if (!thresholdIds.includes(id)) {
 			problems.push({
@@ -164,7 +164,7 @@ export function run(options = {}) {
 	materializeCases(stagingDirectory);
 	try {
 		for (const adapter of [...registry.adapters].sort((left, right) =>
-			compareCodePoint(left.id, right.id),
+			compareCodeUnits(left.id, right.id),
 		)) {
 			const supplied = adapterResults?.[adapter.id];
 			const outcome = supplied
@@ -372,7 +372,7 @@ export function buildCoverage(manifest, cases, adapterRows, unmet) {
 			byClass[klass] = cases
 				.filter((entry) => entry.family === family && entry.class === klass)
 				.map((entry) => entry.id)
-				.sort(compareCodePoint);
+				.sort(compareCodeUnits);
 		}
 		const notApplicable = (row.notApplicable ?? []).map((one) => one.class);
 		const missing = Object.entries(byClass)

@@ -88,10 +88,10 @@ Classification is the half that depends on admissibility, and only for the
   form `docs/semantic-data-system/contracts-v1.md` names for the v1 fingerprint,
   and it is what makes two documents differing only in set order carry one
   fingerprint.
-- The prior corpus-local name `agent-ix-conformance-jcs-v1` is retired as an
-  algorithm label by [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md);
-  corpus fixtures and adapter results SHALL use `rfc8785-v1` and its RFC 8785
-  UTF-16 ordering.
+- The normalized-document name `rfc8785-v1` is the sole corpus comparison
+  algorithm label under [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md);
+  corpus fixtures and adapter results SHALL use it and its RFC 8785 UTF-16
+  ordering.
 - `IDENTITY_SET_PATHS`, which applies to the fingerprint form only, SHALL be exactly these thirteen container paths: `/types`, `/types/*/fields`, `/types/*/variants`, `/types/*/constraints`, `/types/*/relationships`, `/types/*/operations`, `/types/*/clauses`, `/types/*/extensions`, `/types/*/fields/*/extensions`, `/types/*/operations/*/params`, `/types/*/operations/*/params/*/extensions`, `/occurrences`, and `/extensions`.
 - `canonicalize` SHALL order object keys by RFC 8785 UTF-16 code unit.
 - Where two members of an identity-sorted container carry the same `identity`, the fingerprint form SHALL order them by the code-point order of their own canonical forms.

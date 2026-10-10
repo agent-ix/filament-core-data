@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 import {
 	applyPatch,
 	canonical,
-	compareCodePoint,
+	compareCodeUnits,
 	countNodes,
 	isObject,
 	resolvePointer,
@@ -46,14 +46,14 @@ function readJson(path) {
 export function listJson(dir) {
 	const out = [];
 	const walk = (current) => {
-		for (const entry of readdirSync(current).sort(compareCodePoint)) {
+		for (const entry of readdirSync(current).sort(compareCodeUnits)) {
 			const full = join(current, entry);
 			if (statSync(full).isDirectory()) walk(full);
 			else if (entry.endsWith(".json")) out.push(full);
 		}
 	};
 	walk(dir);
-	return out.sort(compareCodePoint);
+	return out.sort(compareCodeUnits);
 }
 
 /** Repository-relative POSIX path, so the manifest is platform-independent. */
@@ -506,8 +506,8 @@ export function computeIndex() {
 			class: entry.class,
 		};
 	});
-	cases.sort((left, right) => compareCodePoint(left.id, right.id));
-	bases.sort((left, right) => compareCodePoint(left.id, right.id));
+	cases.sort((left, right) => compareCodeUnits(left.id, right.id));
+	bases.sort((left, right) => compareCodeUnits(left.id, right.id));
 	return { bases, cases };
 }
 

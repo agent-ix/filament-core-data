@@ -192,6 +192,7 @@ function documentOf(types) {
 		// model — so the value is cosmetic to every detector here, but a test
 		// fixture should not claim a contract that no longer exists.
 		contractVersion: "2.0.0",
+		canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" },
 		source: {
 			identity: "ix://agent-ix/filament-core-data/source/typespec",
 			version: "1.0.0",
@@ -445,6 +446,7 @@ export const DETECTORS = Object.freeze([
 						},
 					]),
 					contractVersion: "2.0.0",
+					canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" },
 					constructs: [
 						{
 							kind: keyed,

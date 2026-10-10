@@ -41,6 +41,13 @@
 		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
 	},
 	{
+		"id": "ir-canonicalization-missing-descriptor",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"remove": "canonicalization",
+		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
+	},
+	{
 		"id": "ir-unnamespaced-role",
 		"schema": "semantic-ir.schema.json",
 		"base": "positive/semantic-ir-v1-1.json",

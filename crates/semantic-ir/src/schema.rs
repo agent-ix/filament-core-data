@@ -482,6 +482,7 @@ fn bundle_schema(bundle: &Json, f: &mut Findings) {
 
 const IR_MEMBERS: &[&str] = &[
     "contractVersion",
+    "canonicalization",
     "source",
     "package",
     "types",
@@ -497,7 +498,6 @@ const IR_OPTIONAL_MEMBERS: &[&str] = &[
     "extensions",
     "constructs",
     "populations",
-    "canonicalization",
 ];
 const NORMALIZED_CANONICALIZATION_MEMBERS: &[&str] = &["algorithm", "digest"];
 /// The members of one `constructs` entry.

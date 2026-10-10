@@ -762,10 +762,28 @@ def _integral_floats(value: Any) -> Any:
     return value
 
 
+def _utf16_key(value: str) -> tuple[int, ...]:
+    encoded = value.encode("utf-16-be", "surrogatepass")
+    return tuple(
+        (encoded[index] << 8) | encoded[index + 1]
+        for index in range(0, len(encoded), 2)
+    )
+
+
+def _order_keys(value: Any) -> Any:
+    if isinstance(value, list):
+        return [_order_keys(item) for item in value]
+    if isinstance(value, dict):
+        return {
+            key: _order_keys(value[key])
+            for key in sorted(value, key=_utf16_key)
+        }
+    return value
+
+
 def canonical(value: Any) -> str:
     return json.dumps(
-        _integral_floats(value),
-        sort_keys=True,
+        _order_keys(_integral_floats(value)),
         separators=(",", ":"),
         ensure_ascii=False,
     )
@@ -779,6 +797,10 @@ def normalize(document: Any) -> str:
     if not isinstance(document, dict):
         return canonical(document)
     copy_ = copy.deepcopy(document)
+    copy_["canonicalization"] = {
+        "algorithm": "rfc8785-v1",
+        "digest": "sha256-jcs",
+    }
 
     def materialize(field: dict[str, Any]) -> None:
         field["nullable"] = field.get("nullable") is True

@@ -30,7 +30,7 @@ function isObject(value) {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-function byCodePoint(left, right) {
+function byCodeUnits(left, right) {
 	if (left < right) return -1;
 	if (left > right) return 1;
 	return 0;
@@ -51,7 +51,7 @@ export function canonicalize(value, options = {}) {
 		if (Array.isArray(node)) {
 			const items = sets.has(path)
 				? [...node].sort((left, right) =>
-						byCodePoint(
+						byCodeUnits(
 							isObject(left) ? String(left.identity ?? "") : String(left),
 							isObject(right) ? String(right.identity ?? "") : String(right),
 						),
@@ -64,7 +64,7 @@ export function canonicalize(value, options = {}) {
 		if (isObject(node)) {
 			const keys = Object.keys(node)
 				.filter((key) => node[key] !== undefined)
-				.sort(byCodePoint);
+				.sort(byCodeUnits);
 			return `{${keys
 				.map(
 					(key) =>
