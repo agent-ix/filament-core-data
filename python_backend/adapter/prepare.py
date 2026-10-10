@@ -113,6 +113,8 @@ def _expand_conditional_numeric(
     scale_schema = properties["scale"]
     if not isinstance(precision_schema, dict) or not isinstance(scale_schema, dict):
         return schema
+    if "const" in precision_schema:
+        return schema
     if precision_schema.get("type") != "integer" or scale_schema.get("type") != "integer":
         return schema
     minimum = precision_schema.get("minimum")

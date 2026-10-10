@@ -223,6 +223,7 @@ def test_conditional_numeric_rewrite_preserves_domain_and_existing_bounds() -> N
             const=True
         ),
         lambda value: value["properties"]["precision"].update(maximum=True),
+        lambda value: value["properties"]["precision"].update(const=2),
     ):
         candidate = copy.deepcopy(policy)
         mutate(candidate)
