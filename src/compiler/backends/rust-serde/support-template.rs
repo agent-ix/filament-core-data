@@ -11,6 +11,8 @@
 //! a regular-expression engine, and the instant arithmetic a date or date-time
 //! bound is compared with is written out rather than taken from a date library.
 
+#![allow(missing_docs)]
+
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::fmt;
@@ -114,7 +116,7 @@ pub mod wide_option {
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
     where
         D: Deserializer<'de>,
-        T: FromStr,
+        T: FromStr + ToString,
         T::Err: Display,
     {
         <Option<String> as Deserialize>::deserialize(deserializer)?
@@ -148,7 +150,7 @@ pub mod wide_option_vec {
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Vec<T>>, D::Error>
     where
         D: Deserializer<'de>,
-        T: FromStr,
+        T: FromStr + ToString,
         T::Err: Display,
     {
         <Option<Vec<String>> as Deserialize>::deserialize(deserializer)?
@@ -188,7 +190,7 @@ pub mod wide_nullable {
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Nullable<T>, D::Error>
     where
         D: Deserializer<'de>,
-        T: FromStr,
+        T: FromStr + ToString,
         T::Err: Display,
     {
         match <Option<String> as Deserialize>::deserialize(deserializer)? {
@@ -226,7 +228,7 @@ pub mod wide_nullable_vec {
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Nullable<Vec<T>>, D::Error>
     where
         D: Deserializer<'de>,
-        T: FromStr,
+        T: FromStr + ToString,
         T::Err: Display,
     {
         match <Option<Vec<String>> as Deserialize>::deserialize(deserializer)? {
@@ -243,6 +245,52 @@ pub mod wide_nullable_vec {
                 .collect::<Result<Vec<_>, _>>()
                 .map(Nullable::Value),
         }
+    }
+}
+
+pub mod wide_vec_nullable {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    pub fn serialize<S, T>(
+        value: &Vec<Nullable<T>>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        value
+            .iter()
+            .map(|item| match item {
+                Nullable::Null => None,
+                Nullable::Value(inner) => Some(inner.to_string()),
+            })
+            .collect::<Vec<_>>()
+            .serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Vec<Nullable<T>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr + ToString,
+        T::Err: Display,
+    {
+        <Vec<Option<String>> as Deserialize>::deserialize(deserializer)?
+            .into_iter()
+            .map(|wire| match wire {
+                None => Ok(Nullable::Null),
+                Some(wire) => {
+                    let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
+                    if value.to_string() != wire {
+                        return Err(serde::de::Error::custom("integer is not canonical"));
+                    }
+                    Ok(Nullable::Value(value))
+                }
+            })
+            .collect()
     }
 }
 
@@ -267,7 +315,7 @@ pub mod wide_option_nullable {
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Nullable<T>>, D::Error>
     where
         D: Deserializer<'de>,
-        T: FromStr,
+        T: FromStr + ToString,
         T::Err: Display,
     {
         match <Option<String> as Deserialize>::deserialize(deserializer)? {
@@ -307,7 +355,7 @@ pub mod wide_option_nullable_vec {
     pub fn deserialize<'de, D, T>(deserializer: D) -> Result<Option<Nullable<Vec<T>>>, D::Error>
     where
         D: Deserializer<'de>,
-        T: FromStr,
+        T: FromStr + ToString,
         T::Err: Display,
     {
         match <Option<Vec<String>> as Deserialize>::deserialize(deserializer)? {
@@ -324,6 +372,62 @@ pub mod wide_option_nullable_vec {
                 .collect::<Result<Vec<_>, _>>()
                 .map(|values| Some(Nullable::Value(values))),
         }
+    }
+}
+
+pub mod wide_option_vec_nullable {
+    use super::Nullable;
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
+    use std::fmt::Display;
+    use std::str::FromStr;
+
+    pub fn serialize<S, T>(
+        value: &Option<Vec<Nullable<T>>>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+        T: ToString,
+    {
+        value
+            .as_ref()
+            .map(|values| {
+                values
+                    .iter()
+                    .map(|item| match item {
+                        Nullable::Null => None,
+                        Nullable::Value(inner) => Some(inner.to_string()),
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .serialize(serializer)
+    }
+
+    pub fn deserialize<'de, D, T>(
+        deserializer: D,
+    ) -> Result<Option<Vec<Nullable<T>>>, D::Error>
+    where
+        D: Deserializer<'de>,
+        T: FromStr + ToString,
+        T::Err: Display,
+    {
+        <Option<Vec<Option<String>>> as Deserialize>::deserialize(deserializer)?
+            .map(|wires| {
+                wires
+                    .into_iter()
+                    .map(|wire| match wire {
+                        None => Ok(Nullable::Null),
+                        Some(wire) => {
+                            let value = wire.parse::<T>().map_err(serde::de::Error::custom)?;
+                            if value.to_string() != wire {
+                                return Err(serde::de::Error::custom("integer is not canonical"));
+                            }
+                            Ok(Nullable::Value(value))
+                        }
+                    })
+                    .collect()
+            })
+            .transpose()
     }
 }
 

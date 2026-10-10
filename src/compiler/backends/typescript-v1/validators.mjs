@@ -166,7 +166,7 @@ function constraintCondition(constraint, subject) {
 				return `[${values}].some((member) => Object.is(member, candidate))`;
 			}
 			if (scalar === "float32")
-				return `[${(operands.values ?? []).map((entry) => literal(entry)).join(", ")}].some((member) => Object.is(Math.fround(member), Math.fround(candidate)))`;
+				return `[${(operands.values ?? []).map((entry) => literal(entry)).join(", ")}].some((member) => { const left = Math.fround(member); const right = Math.fround(candidate); return Object.is(left, right) || (left === 0 && right === 0); })`;
 			const values = (operands.values ?? [])
 				.map((entry) => literal(entry))
 				.join(", ");
@@ -750,6 +750,8 @@ function fieldStatements(field) {
 			const uniqueness =
 				field.element?.scalar === "decimal"
 					? "isUniqueDecimalCollection"
+					: field.element?.scalar === "float32"
+						? "isUniqueFloat32Collection"
 					: "isUniqueCollection";
 			lines.push(
 				`\t\t\t\tif (!${uniqueness}(member.value)) {`,
@@ -1308,6 +1310,19 @@ export function isUniqueCollection(value: unknown): boolean {
 	return true;
 }
 
+/** Float32 uniqueness compares the rounded binary32 values. */
+export function isUniqueFloat32Collection(value: unknown): boolean {
+	if (!Array.isArray(value)) return true;
+	const seen = new Set<number>();
+	for (const member of value) {
+		if (typeof member !== "number") continue;
+		const rounded = Math.fround(member);
+		if (seen.has(rounded)) return false;
+		seen.add(rounded);
+	}
+	return true;
+}
+
 /** Order by pointer then code, by code unit, so the list is host-stable. */
 export function sortErrors(
 	errors: readonly ValidationError[],
@@ -1482,24 +1497,9 @@ export function renderValidators(model) {
 		"\treturn true;",
 		"}",
 	].join("\n");
-	const float32Unique = [
-		"/** Float32 collection uniqueness compares the rounded binary32 values. */",
-		"function isUniqueFloat32Collection(value: unknown): boolean {",
-		"\tif (!Array.isArray(value)) return true;",
-		"\tconst seen = new Set<number>();",
-		"\tfor (const member of value) {",
-		"\t\tif (typeof member !== \"number\") continue;",
-		"\t\tconst rounded = Math.fround(member);",
-		"\t\tif (seen.has(rounded)) return false;",
-		"\t\tseen.add(rounded);",
-		"\t}",
-		"\treturn true;",
-		"}",
-	].join("\n");
 	const blockBody = blocks.join("\n\n");
 	const body = [
 		blockBody.includes("isUniqueDecimalCollection") ? decimalUnique : undefined,
-		blockBody.includes("isUniqueFloat32Collection") ? float32Unique : undefined,
 		blockBody,
 	]
 		.filter(Boolean)

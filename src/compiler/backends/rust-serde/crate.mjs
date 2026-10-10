@@ -1685,7 +1685,13 @@ function isImpossibleIntegerBound(type, check) {
 }
 
 /** The effective FR-144 safe interval can itself be empty. */
-function impossibleIntegerRangeCheck(checks) {
+function impossibleIntegerRangeCheck(checks, type) {
+	if (type !== undefined) {
+		const impossibleBound = (checks ?? []).find((check) =>
+			isImpossibleIntegerBound(type, check),
+		);
+		if (impossibleBound !== undefined) return impossibleBound;
+	}
 	let lower;
 	let upper;
 	let lowerCheck;
@@ -1722,9 +1728,14 @@ function impossibleIntegerRangeCheck(checks) {
 			upperCheck = check;
 		}
 	}
-	if (lower === undefined) lower = -(2n ** 53n - 1n);
-	if (upper === undefined) upper = 2n ** 53n - 1n;
-	return lower > upper ? lowerCheck ?? upperCheck : undefined;
+	// The constructor's impossible-range check is about the native Rust
+	// primitive and explicit authored bounds. FR-144's effective safe-number
+	// defaults are emitted as guards separately; treating an absent side as a
+	// safe-number endpoint here would remove the successful return from valid
+	// wide-integer records such as [min, u64::MAX].
+	return lower !== undefined && upper !== undefined && lower > upper
+		? lowerCheck ?? upperCheck
+		: undefined;
 }
 
 function effectiveIntegerRange(checks) {
@@ -1861,7 +1872,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			"        }",
 		);
 	}
-	const impossibleRange = impossibleIntegerRangeCheck(checks);
+	const impossibleRange = impossibleIntegerRangeCheck(checks, type);
 	if (impossibleRange !== undefined) {
 		// The constructor parameter is otherwise unused when the effective
 		// interval is empty; keep the generated crate warning-clean.
@@ -2383,7 +2394,9 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		if (field.presence === "optional") {
 			attributes.push('skip_serializing_if = "Option::is_none"');
 		}
-		attributes.push(...(field.serdeAttributes ?? []));
+		attributes.push(
+			...(field.serdeAttributes ?? []).filter((one) => one.startsWith("with =")),
+		);
 		if (attributes.length > 0) {
 			lines.push(`    #[serde(${attributes.join(", ")})]`);
 		}
@@ -2428,7 +2441,9 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 		if (field.presence === "optional" && field.nullable) {
 			attributes.push('deserialize_with = "crate::support::present_or_absent"');
 		}
-		attributes.push(...(field.serdeAttributes ?? []));
+		attributes.push(
+			...(field.serdeAttributes ?? []).filter((one) => one.startsWith("with =")),
+		);
 		if (attributes.length > 0) {
 			lines.push(`    #[serde(${attributes.join(", ")})]`);
 		}
@@ -2472,7 +2487,13 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	}
 	const initialisers = type.fields.map((field) => field.ident);
 	if (retains) initialisers.push("unknown_members");
-	lines.push(...okSelf("        ", initialisers), "    }", "");
+	const impossibleField = type.fields.some((field) =>
+		impossibleIntegerRangeCheck(field.checks ?? [], {
+			inner: field.elementInner ?? field.elementType,
+		}) !== undefined,
+	);
+	if (!impossibleField) lines.push(...okSelf("        ", initialisers));
+	lines.push("    }", "");
 
 	lines.push("    /// The non-blocking diagnostics this value carries.");
 	lines.push("    pub fn validate(&self) -> Vec<crate::support::Diagnostic> {");
@@ -2833,7 +2854,7 @@ function renderInlineFieldChecks(type, field) {
 				};
 	const impossibleRange =
 		field.elementScalar === "integer"
-			? impossibleIntegerRangeCheck(field.checks ?? [])
+			? impossibleIntegerRangeCheck(field.checks ?? [], subject)
 			: undefined;
 	const render = (expression, extraIndent = 0) => {
 		const impossible =
@@ -2871,8 +2892,10 @@ function renderInlineFieldChecks(type, field) {
 		return [...renderFinite(expression, extraIndent), ...impossible, ...renderedChecks];
 	};
 	const lines = [];
-	const renderValue = (expression, extraIndent = 0) =>
-		lines.push(...renderIntegerImplicit(expression, extraIndent), ...render(expression, extraIndent));
+	const renderValue = (expression, extraIndent = 0) => [
+		...renderIntegerImplicit(expression, extraIndent),
+		...render(expression, extraIndent),
+	];
 	const renderIntegerImplicit = (expression, extraIndent = 0) => {
 		if (implicitIntegerRange === undefined) return [];
 		const indent = " ".repeat(extraIndent);
@@ -2902,39 +2925,45 @@ function renderInlineFieldChecks(type, field) {
 	};
 	if (field.collection) {
 		const source = field.presence === "optional" ? "items" : field.ident;
+		const valueLines = field.nullable
+			? [
+				"                if let crate::support::Nullable::Value(value) = item {",
+				...renderValue("*value", 4),
+				"                }",
+			]
+			: renderValue("*item");
+		if (valueLines.length === 0) return lines;
 		if (field.presence === "optional")
 			lines.push(`        if let Some(items) = &${field.ident} {`);
 		lines.push(
 			`            for item in ${field.presence === "optional" ? source : `&${source}`} {`,
 		);
-		if (field.nullable) {
-			lines.push(
-				"                if let crate::support::Nullable::Value(value) = item {",
-			);
-			renderValue("*value", 4);
-			lines.push("                }");
-		} else renderValue("*item");
+		lines.push(...valueLines);
 		lines.push("            }");
 		if (field.presence === "optional") lines.push("        }");
 		return lines;
 	}
 	if (field.presence === "optional") {
-		lines.push(`        if let Some(value) = &${field.ident} {`);
-		if (field.nullable) {
-			lines.push(
+		const valueLines = field.nullable
+			? [
 				"            if let crate::support::Nullable::Value(value) = value {",
-			);
-			renderValue("*value", 4);
-			lines.push("            }");
-		} else renderValue("*value");
+				...renderValue("*value", 4),
+				"            }",
+			]
+			: renderValue("*value");
+		if (valueLines.length === 0) return lines;
+		lines.push(`        if let Some(value) = &${field.ident} {`);
+		lines.push(...valueLines);
 		lines.push("        }");
 	} else if (field.nullable) {
+		const valueLines = renderValue("*value");
+		if (valueLines.length === 0) return lines;
 		lines.push(
 			`        if let crate::support::Nullable::Value(value) = &${field.ident} {`,
 		);
-		renderValue("*value");
+		lines.push(...valueLines);
 		lines.push("        }");
-	} else renderValue(`&${field.ident}`);
+	} else lines.push(...renderValue(`&${field.ident}`));
 	return lines;
 }
 

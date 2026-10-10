@@ -1224,15 +1224,15 @@ function mapField(field, owner, context, _version) {
 		const moduleName =
 			optional && nullable
 				? collection
-					? "wide_option_nullable_vec"
+					? "wide_option_vec_nullable"
 					: "wide_option_nullable"
 				: optional
 					? collection
 						? "wide_option_vec"
 						: "wide_option"
-					: nullable
+				: nullable
 					? collection
-						? "wide_nullable_vec"
+						? "wide_vec_nullable"
 						: "wide_nullable"
 					: collection
 						? `wide_vec_${nativeIntegerType}`

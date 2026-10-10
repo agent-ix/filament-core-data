@@ -94,6 +94,25 @@ function applyFloat32Constraint(schema, keyword, value) {
 		schema.not = {};
 		return;
 	}
+	const lower = boundary.keyword === "minimum" || boundary.keyword === "exclusiveMinimum";
+	const inclusiveKey = lower ? "minimum" : "maximum";
+	const exclusiveKey = lower ? "exclusiveMinimum" : "exclusiveMaximum";
+	const currentInclusive = schema[inclusiveKey];
+	const currentExclusive = schema[exclusiveKey];
+	const current = currentInclusive !== undefined
+		? { value: currentInclusive, exclusive: false }
+		: currentExclusive !== undefined
+			? { value: currentExclusive, exclusive: true }
+			: undefined;
+	const stronger = current === undefined ||
+		(lower
+			? boundary.value > current.value ||
+				(boundary.value === current.value && boundary.keyword === exclusiveKey && !current.exclusive)
+			: boundary.value < current.value ||
+				(boundary.value === current.value && boundary.keyword === exclusiveKey && !current.exclusive));
+	if (!stronger) return;
+	delete schema[inclusiveKey];
+	delete schema[exclusiveKey];
 	schema[boundary.keyword] = boundary.value;
 }
 
@@ -109,6 +128,9 @@ function float32EnumSchema(values) {
 	return anyOf;
 }
 
+// A binary32 scalar accepts exactly the finite binary64 values whose rounded
+// value is finite.  The two overflow midpoints are therefore strict bounds;
+// inclusive minimum/maximum would admit the midpoint that rounds to infinity.
 const FLOAT32_MINIMUM = float32Boundary(-FLOAT32_MAX, "min");
 const FLOAT32_MAXIMUM = float32Boundary(FLOAT32_MAX, "max");
 
@@ -120,7 +142,11 @@ const scalarSchema = Object.freeze({
 		maximum: 2 ** 53 - 1,
 	},
 	number: { type: "number" },
-	float32: { type: "number", minimum: FLOAT32_MINIMUM, maximum: FLOAT32_MAXIMUM },
+	float32: {
+		type: "number",
+		exclusiveMinimum: FLOAT32_MINIMUM,
+		exclusiveMaximum: FLOAT32_MAXIMUM,
+	},
 	float64: { type: "number" },
 	decimal: { type: "string", pattern: "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$" },
 	string: { type: "string" },
