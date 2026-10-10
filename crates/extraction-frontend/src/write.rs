@@ -25,6 +25,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 
 use crate::bundle::Refusal;
 use crate::canonical::canonical_bytes;
@@ -35,16 +36,20 @@ use crate::validate::ValidDocument;
 pub const MANIFEST: &str = "manifest.yaml";
 /// The suffix of the default diagnostics sidecar.
 pub const DIAGNOSTICS_SUFFIX: &str = ".diagnostics.json";
+/// The suffix of the normalized-document digest sidecar.
+pub const DIGEST_SUFFIX: &str = ".digest";
 /// The suffix of a temporary file.
 const TEMP_SUFFIX: &str = ".tmp";
 
-/// The two paths one lift writes.
+/// The paths one lift may write.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OutputPaths {
     /// `<out>`.
     pub document: PathBuf,
     /// `--diagnostics`, or `<out>.diagnostics.json`.
     pub diagnostics: PathBuf,
+    /// An optional normalized-document digest sidecar.
+    pub digest: Option<PathBuf>,
 }
 
 /// Which option a path came from, for a refusal's message.
@@ -52,6 +57,7 @@ pub struct OutputPaths {
 pub enum Slot {
     Document,
     Diagnostics,
+    Digest,
 }
 
 impl Slot {
@@ -59,6 +65,7 @@ impl Slot {
         match self {
             Slot::Document => "--out",
             Slot::Diagnostics => "--diagnostics",
+            Slot::Digest => "--digest",
         }
     }
 }
@@ -81,15 +88,26 @@ impl OutputPaths {
             diagnostics: diagnostics
                 .map(Path::to_path_buf)
                 .unwrap_or_else(|| with_suffix(out, DIAGNOSTICS_SUFFIX)),
+            digest: None,
         }
     }
 
-    /// Every path with its slot, in the rename order.
-    pub fn slots(&self) -> [(Slot, &Path); 2] {
-        [
+    /// Add a normalized-document digest sidecar at `path`.
+    pub fn with_digest(mut self, path: &Path) -> Self {
+        self.digest = Some(path.to_path_buf());
+        self
+    }
+
+    /// Every configured path with its slot, in the rename order.
+    pub fn slots(&self) -> Vec<(Slot, &Path)> {
+        let mut slots = vec![
             (Slot::Diagnostics, &self.diagnostics),
             (Slot::Document, &self.document),
-        ]
+        ];
+        if let Some(path) = &self.digest {
+            slots.push((Slot::Digest, path));
+        }
+        slots
     }
 }
 
@@ -184,6 +202,16 @@ fn sidecar_bytes<T: Serialize>(value: &T) -> Vec<u8> {
     canonical_bytes(&serde_json::to_value(value).unwrap_or(serde_json::Value::Null))
 }
 
+/// The digest envelope for the normalized document bytes.
+pub fn normalized_digest(bytes: &[u8]) -> String {
+    format!("sha256-jcs:{:x}", Sha256::digest(bytes))
+}
+
+/// The canonical bytes of the normalized-document digest sidecar.
+fn digest_sidecar_bytes(document: &[u8]) -> Vec<u8> {
+    format!("{}\n", normalized_digest(document)).into_bytes()
+}
+
 /// One temporary file that is removed unless [`Temp::keep`] is called.
 struct Temp {
     path: PathBuf,
@@ -233,8 +261,8 @@ impl Drop for Temp {
 }
 
 /// Write the lift's files (FR-097 "Atomic write and sidecars"): on
-/// [`Emission::Document`] both, on [`Emission::Blocked`] the
-/// diagnostics sidecar alone. Every file is written to a temporary file in
+/// [`Emission::Document`] both, and an optional digest sidecar. On
+/// [`Emission::Blocked`] the diagnostics sidecar alone is written. Every file is written to a temporary file in
 /// its own directory and renamed over its final path, in the order
 /// diagnostics, document. A failure refuses with
 /// `OUTPUT_UNWRITABLE` naming the path and leaves no temporary file.
@@ -247,6 +275,9 @@ pub fn write_lift(
         vec![(&paths.diagnostics, sidecar_bytes(&diagnostics))];
     if let Emission::Document { document } = emission {
         planned.push((&paths.document, document.bytes().to_vec()));
+        if let Some(digest) = &paths.digest {
+            planned.push((digest, digest_sidecar_bytes(document.bytes())));
+        }
     }
     let mut temps: Vec<(&Path, Temp)> = Vec::with_capacity(planned.len());
     for (path, bytes) in &planned {

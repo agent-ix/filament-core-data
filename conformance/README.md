@@ -77,8 +77,7 @@ The normalized form is `rfc8785-v1`: RFC 8785 object keys ordered by
 UTF-16 code unit, no insignificant whitespace, and array order preserved.
 Normalized documents carry `{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`.
 The `digest` member names the domain; the computed value is recorded as
-`sha256:<64 lowercase hexadecimal digits>` (QSL's equivalent envelope is
-`sha256-jcs:<64 lowercase hexadecimal digits>`). The supplementary-plane
+`sha256-jcs:<64 lowercase hexadecimal digits>`. The supplementary-plane
 golden and its expected metadata live at
 `test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json`. The form
 is separate from the contract's

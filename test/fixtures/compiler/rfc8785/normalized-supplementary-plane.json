@@ -7,5 +7,5 @@
 		"𐀀": "u+10000"
 	},
 	"expectedBytes": "{\"𐀀\":\"u+10000\",\"\":\"u+e000\"}",
-	"sha256": "sha256:f2f9d8d296cfccc513f47745f7ebf0020d38d219d0dea92a3c9b77b3a53c84f7"
+	"sha256": "sha256-jcs:f2f9d8d296cfccc513f47745f7ebf0020d38d219d0dea92a3c9b77b3a53c84f7"
 }
