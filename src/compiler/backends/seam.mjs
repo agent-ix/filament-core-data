@@ -42,6 +42,7 @@ import {
 	pythonPydanticBackend,
 } from "./python-v1/index.mjs";
 import { rustBackend } from "./rust-serde/backend.mjs";
+import { sysmlBackend } from "./sysml-v2/index.mjs";
 import { BACKEND_TARGETS } from "./targets.mjs";
 import { typescriptBackend } from "./typescript-v1/index.mjs";
 
@@ -127,6 +128,15 @@ const REGISTRY = new Map([
 			target: "json-schema",
 			owner: jsonSchemaBackend.owningIssue,
 			backend: jsonSchemaBackend,
+			implemented: true,
+		},
+	],
+	[
+		"sysml-v2-textual",
+		{
+			target: "sysml-v2-textual",
+			owner: sysmlBackend.owningIssue,
+			backend: sysmlBackend,
 			implemented: true,
 		},
 	],

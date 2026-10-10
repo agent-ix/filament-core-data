@@ -187,6 +187,7 @@
 							"typescript",
 							"python-pydantic-v2",
 							"python-dataclass",
+							"sysml-v2-textual",
 							"markdown",
 							"json",
 							"postgresql",
