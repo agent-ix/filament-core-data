@@ -1370,18 +1370,17 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 			"ix://agent-ix/semantic-core/ext/decimal",
 		);
 		expect(extensionsOf("id")).toContain("ix://agent-ix/semantic-core/ext/doc");
-		// A field typed by a built-in directly names its native kernel scalar
-		// (gap 1 of FCD #199/#200): no package-local `Integer` node is minted,
-		// so no `ext/kernel-scalar` extension exists to carry its name.
+		// A native integer width is represented by a package-local unbounded
+		// Integer target plus a field-specific alias carrying its effective range.
 		expect(
 			(compiled.ir as never as { types: Json[] }).types.find(
 				(type) => type.identity === "ix://agent-ix/assurance/Integer",
 			),
-		).toBeUndefined();
+		).toMatchObject({ kind: "scalar", scalar: "integer" });
 		expect(
 			(artifact?.fields as Json[]).find((field) => field.name === "revision")
 				?.typeRef,
-		).toBe("ix://quire/native/Integer");
+		).toBe("ix://agent-ix/assurance/ArtifactRevision");
 
 		const arbitrary = await compileSource(
 			[
@@ -1873,12 +1872,11 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 
 	/** Traces: TC-441; FR-046-AC-10. */
 	it("names a built-in used directly by its native kernel scalar reference", async () => {
-		// Gap 1 of FCD #199/#200: a field typed by a built-in scalar
-		// directly mints no package-local definition; its `typeRef` names
-		// the kernel scalar's native reference over the closed FR-032 set.
-		expect(typeOf("Integer")).toBeUndefined();
+		// Native integer widths use the package-local unbounded Integer target and
+		// a field-specific alias carrying the effective width.
+		expect(typeOf("Integer")).toMatchObject({ kind: "scalar", scalar: "integer" });
 		expect(fieldOf("Artifact", "revision").typeRef).toBe(
-			"ix://quire/native/Integer",
+			"ix://agent-ix/assurance/ArtifactRevision",
 		);
 		expect(typeOf("Timestamp")).toBeUndefined();
 		expect(fieldOf("AuditEvent", "at").typeRef).toBe(
@@ -3258,7 +3256,7 @@ describe("the diagnostic registry (FR-049)", () => {
 			expect(document, name).toContain(`| \`${name}\` | ${value} |`);
 		}
 		const documented = [
-			...document.matchAll(/\| `(agent-ix\.[a-z-]+\.[A-Z_]+)` \|/g),
+			...document.matchAll(/\| `(agent-ix\.[a-z-]+\.[A-Z0-9_]+)` \|/g),
 		].map((match) => match[1]);
 		expect([...new Set(documented)].sort()).toEqual(
 			entries.map((entry) => entry.code).sort(),

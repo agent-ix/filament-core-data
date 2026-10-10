@@ -1357,6 +1357,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1823 | An operation's `redefines` resolves against supertype operations and compares return multiplicity | Unit | P1 | FR-141-AC-10 |
 | TC-1824 | A text field and a scalar-string type carry a closed-set `textProfile`; other values and kinds are refused | Unit | P1 | FR-141-AC-11 |
 | TC-1825 | An integer value site is a canonical integer string at every magnitude within the i128 ceiling, and a non-canonical spelling or a JSON number is refused | Unit | P1 | FR-050-AC-14, FR-144-AC-2 |
+| TC-1826 | The generated Rust field matrix compiles and deserializes float32 and float64 scalar and collection fields, a nullable float, bounded integer and enum values, and a semantic default | Unit | P0 | FR-144-AC-3, FR-144-AC-7, FR-144-AC-13, FR-144-AC-18 |
 | TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 |
 
 ## Option Permutation Matrix

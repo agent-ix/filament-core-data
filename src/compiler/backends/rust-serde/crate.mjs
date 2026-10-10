@@ -2620,7 +2620,7 @@ function renderInlineFieldChecks(type, field) {
 		if (!finiteFloat) return [];
 		const indent = " ".repeat(extraIndent);
 		return [
-			`${indent}if !${expression}.is_finite() {`,
+			`${indent}if !(${expression}).is_finite() {`,
 			...callLines(
 				`${indent}    `,
 				"return Err(crate::support::ValidationError::new",

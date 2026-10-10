@@ -945,7 +945,7 @@ export function lowerProgram(options) {
 							),
 							origin: context.originOf(property),
 						})),
-					],
+					].sort(byIdentity),
 					...(decimalBoundAlias
 						? {
 								decimal: {

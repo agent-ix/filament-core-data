@@ -846,7 +846,7 @@ fn field_check_matrix_compiles_and_validates() {
 	}
 });
 
-/** Trace: FR-144-AC-3, FR-144-AC-7, FR-144-AC-13, FR-144-AC-18. */
+/** Traces: TC-1826; FR-144-AC-3, FR-144-AC-7, FR-144-AC-13, FR-144-AC-18. */
 it("compiles the float, bounded-integer, enum, and default Rust field matrix", () => {
 	const result = emitCrate(
 		{
