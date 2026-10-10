@@ -32,11 +32,12 @@ const FLOAT32_MIN_SUBNORMAL = 2 ** -149;
 // float32 subject after rounding the instance to binary32. Use the midpoint
 // between adjacent binary32 values as the schema boundary.
 function nextFloat32(value, direction) {
-	if (value === 0) return direction < 0 ? -FLOAT32_MIN_SUBNORMAL : FLOAT32_MIN_SUBNORMAL;
+	if (value === 0)
+		return direction < 0 ? -FLOAT32_MIN_SUBNORMAL : FLOAT32_MIN_SUBNORMAL;
 	const view = new DataView(new ArrayBuffer(4));
 	view.setFloat32(0, value);
 	let bits = view.getUint32(0);
-	if ((direction < 0) === (value > 0)) bits -= 1;
+	if (direction < 0 === value > 0) bits -= 1;
 	else bits += 1;
 	view.setUint32(0, bits);
 	return view.getFloat32(0);
@@ -73,7 +74,13 @@ function float32Preimage(value, keyword) {
 			: nextFloat32(rounded, -1);
 	if (!Number.isFinite(accepted)) return undefined;
 	const boundary = float32Boundary(
-		lower ? (keyword === "min" ? rounded : accepted) : (keyword === "max" ? rounded : accepted),
+		lower
+			? keyword === "min"
+				? rounded
+				: accepted
+			: keyword === "max"
+				? rounded
+				: accepted,
 		lower ? "min" : "max",
 	);
 	return {
@@ -94,22 +101,29 @@ function applyFloat32Constraint(schema, keyword, value) {
 		schema.not = {};
 		return;
 	}
-	const lower = boundary.keyword === "minimum" || boundary.keyword === "exclusiveMinimum";
+	const lower =
+		boundary.keyword === "minimum" || boundary.keyword === "exclusiveMinimum";
 	const inclusiveKey = lower ? "minimum" : "maximum";
 	const exclusiveKey = lower ? "exclusiveMinimum" : "exclusiveMaximum";
 	const currentInclusive = schema[inclusiveKey];
 	const currentExclusive = schema[exclusiveKey];
-	const current = currentInclusive !== undefined
-		? { value: currentInclusive, exclusive: false }
-		: currentExclusive !== undefined
-			? { value: currentExclusive, exclusive: true }
-			: undefined;
-	const stronger = current === undefined ||
+	const current =
+		currentInclusive !== undefined
+			? { value: currentInclusive, exclusive: false }
+			: currentExclusive !== undefined
+				? { value: currentExclusive, exclusive: true }
+				: undefined;
+	const stronger =
+		current === undefined ||
 		(lower
 			? boundary.value > current.value ||
-				(boundary.value === current.value && boundary.keyword === exclusiveKey && !current.exclusive)
+				(boundary.value === current.value &&
+					boundary.keyword === exclusiveKey &&
+					!current.exclusive)
 			: boundary.value < current.value ||
-				(boundary.value === current.value && boundary.keyword === exclusiveKey && !current.exclusive));
+				(boundary.value === current.value &&
+					boundary.keyword === exclusiveKey &&
+					!current.exclusive));
 	if (!stronger) return;
 	delete schema[inclusiveKey];
 	delete schema[exclusiveKey];
@@ -598,6 +612,29 @@ function fieldSchema(field, types) {
 			);
 		target = types.get(target.target);
 	}
+	const fieldSubject =
+		integerScalar(types, field.typeRef) === "integer"
+			? { ...(target ?? {}), scalar: "integer" }
+			: decimalScalar(types, field.typeRef) === "decimal"
+				? { ...(target ?? {}), scalar: "decimal" }
+				: nativeScalar(field.typeRef) !== undefined
+					? { ...(target ?? {}), scalar: nativeScalar(field.typeRef) }
+					: target;
+	for (const one of field.constraints ?? [])
+		constraint(schema, one, fieldSubject, effectiveDecimalPolicy);
+	if (
+		integerScalar(types, field.typeRef) === "integer" &&
+		(inheritedIntegerConstraints.length > 0 ||
+			(field.constraints ?? []).some((one) =>
+				["min", "max", "exclusiveMin", "exclusiveMax"].includes(one.keyword),
+			))
+	) {
+		const integer = integerSchema([
+			...inheritedIntegerConstraints,
+			...(field.constraints ?? []),
+		]);
+		schema = schema.enum ? { ...integer, enum: schema.enum } : integer;
+	}
 	if (
 		field.multiplicity &&
 		(field.multiplicity.upper === undefined || field.multiplicity.upper > 1)
@@ -610,48 +647,6 @@ function fieldSchema(field, types) {
 		if (field.multiplicity.unique) schema.uniqueItems = true;
 	}
 	if (field.nullable) schema = { anyOf: [schema, { type: "null" }] };
-	for (const one of field.constraints ?? [])
-		constraint(
-			schema,
-			one,
-			integerScalar(types, field.typeRef) === "integer"
-				? { ...(target ?? {}), scalar: "integer" }
-				: decimalScalar(types, field.typeRef) === "decimal"
-					? { ...(target ?? {}), scalar: "decimal" }
-					: nativeScalar(field.typeRef) !== undefined
-						? { ...(target ?? {}), scalar: nativeScalar(field.typeRef) }
-						: target,
-			effectiveDecimalPolicy,
-		);
-	if (
-		integerScalar(types, field.typeRef) === "integer" &&
-		(inheritedIntegerConstraints.length > 0 ||
-			(field.constraints ?? []).some((one) =>
-				["min", "max", "exclusiveMin", "exclusiveMax"].includes(one.keyword),
-			))
-	) {
-		const integer = integerSchema([
-			...inheritedIntegerConstraints,
-			...(field.constraints ?? []),
-		]);
-		const bounded = schema.enum ? { ...integer, enum: schema.enum } : integer;
-		schema = Array.isArray(schema.items)
-			? { ...schema, items: bounded }
-			: schema.type === "array"
-				? { ...schema, items: bounded }
-				: schema.anyOf
-					? {
-							...schema,
-							anyOf: schema.anyOf.map((branch) =>
-								branch?.type === "null"
-									? branch
-									: branch?.type === "array"
-										? { ...branch, items: bounded }
-										: bounded,
-							),
-						}
-					: bounded;
-	}
 	return annotated(schema, field);
 }
 /**

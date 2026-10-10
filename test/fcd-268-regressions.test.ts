@@ -20,6 +20,7 @@ import {
 	renderErrors,
 	renderValidators,
 } from "../src/compiler/backends/typescript-v1/validators.mjs";
+import { renderTypes } from "../src/compiler/backends/typescript-v1/types.mjs";
 import {
 	buildMatrixIr,
 	cellRecordName,
@@ -64,7 +65,11 @@ function document(types: unknown[]) {
 	};
 }
 
-function scalar(identity: string, scalarName: string, constraints = []) {
+function scalar(
+	identity: string,
+	scalarName: string,
+	constraints: Record<string, unknown>[] = [],
+) {
 	return {
 		identity,
 		displayName: identity.split("/").at(-1),
@@ -77,10 +82,7 @@ function scalar(identity: string, scalarName: string, constraints = []) {
 	};
 }
 
-function record(
-	identity: string,
-	field: Record<string, unknown>,
-) {
+function record(identity: string, field: Record<string, unknown>) {
 	return {
 		identity,
 		displayName: identity.split("/").at(-1),
@@ -114,7 +116,8 @@ function field(
 
 function enumIr() {
 	const scalarIdentity = "ix://agent-ix/age-2229-regressions/type/SignedZero";
-	const recordIdentity = "ix://agent-ix/age-2229-regressions/type/SignedZeroRecord";
+	const recordIdentity =
+		"ix://agent-ix/age-2229-regressions/type/SignedZeroRecord";
 	return document([
 		scalar(scalarIdentity, "float32", [
 			{
@@ -130,7 +133,8 @@ function enumIr() {
 }
 
 function uniqueIr() {
-	const scalarIdentity = "ix://agent-ix/age-2229-regressions/type/UniqueFloat32";
+	const scalarIdentity =
+		"ix://agent-ix/age-2229-regressions/type/UniqueFloat32";
 	const recordIdentity = "ix://agent-ix/age-2229-regressions/type/UniqueRecord";
 	return document([
 		scalar(scalarIdentity, "float32"),
@@ -143,7 +147,12 @@ function uniqueIr() {
 	]);
 }
 
-function nativeFloat32BoundIr(collection = false, enumValue = false) {
+function nativeFloat32BoundIr(
+	collection = false,
+	enumValue = false,
+	keyword: "min" | "max" = "min",
+	boundValue = 0.10000000149011612,
+) {
 	const recordIdentity =
 		"ix://agent-ix/age-2229-regressions/type/NativeFloat32Boundary";
 	return document([
@@ -152,24 +161,26 @@ function nativeFloat32BoundIr(collection = false, enumValue = false) {
 			field(recordIdentity, "ix://quire/native/Float32", {
 				collection,
 				multiplicity: collection
-					? { lower: 1, upper: 3, ordered: true, unique: true }
+					? { lower: 1, upper: 3, ordered: true, unique: !enumValue }
 					: { lower: 1, upper: 1, ordered: false, unique: false },
 				constraints: [
 					{
-						identity: `${recordIdentity}#value/constraint/min`,
-						keyword: "min",
-						operands: { value: 0.10000000149011612 },
+						identity: `${recordIdentity}#value/constraint/${keyword}`,
+						keyword,
+						operands: { value: boundValue },
 						appliesTo: `${recordIdentity}#value`,
 						diagnosticCode: "ix://agent-ix/age-2229-regressions/F32_MIN",
 					},
 					...(enumValue
-						? [{
-								identity: `${recordIdentity}#value/constraint/enumValues`,
-								keyword: "enumValues",
-								operands: { values: [0.10000000149011612] },
-								appliesTo: `${recordIdentity}#value`,
-								diagnosticCode: "ix://agent-ix/age-2229-regressions/F32_ENUM",
-							}]
+						? [
+								{
+									identity: `${recordIdentity}#value/constraint/enumValues`,
+									keyword: "enumValues",
+									operands: { values: [boundValue] },
+									appliesTo: `${recordIdentity}#value`,
+									diagnosticCode: "ix://agent-ix/age-2229-regressions/F32_ENUM",
+								},
+							]
 						: []),
 				],
 			}),
@@ -177,7 +188,7 @@ function nativeFloat32BoundIr(collection = false, enumValue = false) {
 	]);
 }
 
-function nativeNullableCollectionIr() {
+function nativeNullableCollectionIr(impossible = false, nullable = true) {
 	const recordIdentity =
 		"ix://agent-ix/age-2229-regressions/type/NativeNullableWideCollection";
 	return document([
@@ -185,7 +196,7 @@ function nativeNullableCollectionIr() {
 			recordIdentity,
 			field(recordIdentity, "ix://quire/native/Integer", {
 				collection: true,
-				nullable: true,
+				nullable,
 				multiplicity: { lower: 1, upper: 3, ordered: true, unique: false },
 				constraints: [
 					{
@@ -198,7 +209,9 @@ function nativeNullableCollectionIr() {
 					{
 						identity: `${recordIdentity}#value/constraint/max`,
 						keyword: "max",
-						operands: { value: "18446744073709551615" },
+						operands: {
+							value: impossible ? "-1" : "18446744073709551615",
+						},
 						appliesTo: `${recordIdentity}#value`,
 						diagnosticCode: "ix://agent-ix/age-2229-regressions/NATIVE_MAX",
 					},
@@ -222,8 +235,7 @@ function nativeIntegerEnumIr() {
 						keyword: "enumValues",
 						operands: { values: ["1", "2"] },
 						appliesTo: fieldIdentity,
-						diagnosticCode:
-							"ix://agent-ix/age-2229-regressions/NATIVE_ENUM",
+						diagnosticCode: "ix://agent-ix/age-2229-regressions/NATIVE_ENUM",
 					},
 				],
 			}),
@@ -231,7 +243,11 @@ function nativeIntegerEnumIr() {
 	]);
 }
 
-function writeValidators(directory: string, ir: unknown, mutate?: (source: string) => string) {
+function writeValidators(
+	directory: string,
+	ir: unknown,
+	mutate?: (source: string) => string,
+) {
 	writeFileSync(join(directory, "package.json"), '{"type":"module"}\n');
 	writeFileSync(
 		join(directory, "errors.js"),
@@ -250,7 +266,9 @@ function writeValidators(directory: string, ir: unknown, mutate?: (source: strin
 	}).outputText;
 	writeFileSync(join(directory, "validators.mjs"), mutate?.(source) ?? source);
 	moduleNonce += 1;
-	return import(`${pathToFileURL(join(directory, "validators.mjs"))}?regression=${moduleNonce}`);
+	return import(
+		`${pathToFileURL(join(directory, "validators.mjs"))}?regression=${moduleNonce}`
+	);
 }
 
 function nextFloat32(value: number, direction: -1 | 1) {
@@ -296,7 +314,10 @@ function mutateFloat32Maximum(schema: Record<string, unknown>) {
 	return copy;
 }
 
-function writeGeneratedFiles(directory: string, files: readonly { path: string; text: string }[]) {
+function writeGeneratedFiles(
+	directory: string,
+	files: readonly { path: string; text: string }[],
+) {
 	for (const file of files) {
 		const path = join(directory, file.path);
 		const parent = resolve(path, "..");
@@ -316,7 +337,7 @@ function runTsc(directory: string) {
 				moduleResolution: "NodeNext",
 				strict: true,
 				noEmit: true,
-				 skipLibCheck: true,
+				skipLibCheck: true,
 			},
 			include: ["**/*.ts"],
 		}),
@@ -328,17 +349,26 @@ function runTsc(directory: string) {
 	});
 }
 
+/** Trace: FR-144-AC-14. */
 it("covers the Float32 boundary grid and proves overflow regression is live", async () => {
 	const ir = buildMatrixIr();
 	const directory = mkdtempSync(join(tmpdir(), "fcd-268-f32-ts-"));
 	try {
 		const generated = await writeValidators(directory, ir);
-		const cell = MATRIX_CELLS.find((one) => one.name === "native-float32-in-range");
+		const cell = MATRIX_CELLS.find(
+			(one: (typeof MATRIX_CELLS)[number]) =>
+				one.name === "native-float32-in-range",
+		);
 		expect(cell).toBeDefined();
 		const name = cellRecordName(cell!);
-		const validate = generated[`validate${name}`] as (value: unknown) => { ok: boolean };
+		const validate = generated[`validate${name}`] as (value: unknown) => {
+			ok: boolean;
+		};
 		const { ajv, schemas } = jsonSchemas(ir);
-		const schema = schemas.find((one) => one.title === name) as Record<string, unknown>;
+		const schema = schemas.find((one) => one.title === name) as Record<
+			string,
+			unknown
+		>;
 		const validateJson = ajv.getSchema(schema.$id as string)!;
 		const one = 1;
 		const previous = nextFloat32(one, -1);
@@ -374,12 +404,15 @@ it("covers the Float32 boundary grid and proves overflow regression is live", as
 	}
 });
 
+/** Trace: FR-066-AC-5. */
 it("keeps signed-zero enum equality and proves the broken comparison is red", async () => {
 	const ir = enumIr();
 	const directory = mkdtempSync(join(tmpdir(), "fcd-268-zero-"));
 	try {
 		const generated = await writeValidators(directory, ir);
-		const real = generated.validateSignedZeroRecord as (value: unknown) => { ok: boolean };
+		const real = generated.validateSignedZeroRecord as (value: unknown) => {
+			ok: boolean;
+		};
 		expect(real({ value: -0 }).ok).toBe(true);
 		const mutant = await writeValidators(directory, ir, (source) =>
 			source.replace("|| (left === 0 && right === 0)", "|| false"),
@@ -390,44 +423,169 @@ it("keeps signed-zero enum equality and proves the broken comparison is red", as
 	}
 });
 
+/** Trace: FR-066-AC-5. */
 it("rounds native Float32 bounds and rejects rounded duplicate members", async () => {
 	const ir = nativeFloat32BoundIr();
 	const directory = mkdtempSync(join(tmpdir(), "fcd-268-native-f32-"));
 	try {
 		const generated = await writeValidators(directory, ir);
-		const real = generated.validateNativeFloat32Boundary as (value: unknown) => { ok: boolean };
+		const real = generated.validateNativeFloat32Boundary as (
+			value: unknown,
+		) => { ok: boolean };
 		expect(real({ value: 0.1 }).ok).toBe(true);
 		const { ajv, schemas } = jsonSchemas(ir);
-		const schema = schemas.find((one) => one.title === "NativeFloat32Boundary") as Record<string, unknown>;
+		const schema = schemas.find(
+			(one) => one.title === "NativeFloat32Boundary",
+		) as Record<string, unknown>;
 		expect(ajv.getSchema(schema.$id as string)!({ value: 0.1 })).toBe(true);
 		const enumIrValue = nativeFloat32BoundIr(false, true);
 		const enumGenerated = await writeValidators(directory, enumIrValue);
-		expect((enumGenerated.validateNativeFloat32Boundary as (value: unknown) => { ok: boolean })({ value: 0.1 }).ok).toBe(true);
+		expect(
+			(
+				enumGenerated.validateNativeFloat32Boundary as (value: unknown) => {
+					ok: boolean;
+				}
+			)({ value: 0.1 }).ok,
+		).toBe(true);
 		const enumSchemas = jsonSchemas(enumIrValue);
-		const enumSchema = enumSchemas.schemas.find((one) => one.title === "NativeFloat32Boundary") as Record<string, unknown>;
-		expect(enumSchemas.ajv.getSchema(enumSchema.$id as string)!({ value: 0.1 })).toBe(true);
+		const enumSchema = enumSchemas.schemas.find(
+			(one) => one.title === "NativeFloat32Boundary",
+		) as Record<string, unknown>;
+		expect(
+			enumSchemas.ajv.getSchema(enumSchema.$id as string)!({ value: 0.1 }),
+		).toBe(true);
+		const oddMin = nativeFloat32BoundIr(
+			false,
+			false,
+			"min",
+			1.0000001192092896,
+		);
+		const oddMinGenerated = await writeValidators(directory, oddMin);
+		expect(
+			(
+				oddMinGenerated.validateNativeFloat32Boundary as (value: unknown) => {
+					ok: boolean;
+				}
+			)({ value: 1.0000000596046448 }).ok,
+		).toBe(false);
+		const oddMinSchemas = jsonSchemas(oddMin);
+		const oddMinSchema = oddMinSchemas.schemas.find(
+			(one) => one.title === "NativeFloat32Boundary",
+		) as Record<string, unknown>;
+		expect(
+			oddMinSchemas.ajv.getSchema(oddMinSchema.$id as string)!({
+				value: 1.0000000596046448,
+			}),
+		).toBe(false);
+		const oddMax = nativeFloat32BoundIr(
+			false,
+			false,
+			"max",
+			1.0000001192092896,
+		);
+		const oddMaxGenerated = await writeValidators(directory, oddMax);
+		expect(
+			(
+				oddMaxGenerated.validateNativeFloat32Boundary as (value: unknown) => {
+					ok: boolean;
+				}
+			)({ value: 1.0000001788139343 }).ok,
+		).toBe(false);
+		const oddMaxSchemas = jsonSchemas(oddMax);
+		const oddMaxSchema = oddMaxSchemas.schemas.find(
+			(one) => one.title === "NativeFloat32Boundary",
+		) as Record<string, unknown>;
+		expect(
+			oddMaxSchemas.ajv.getSchema(oddMaxSchema.$id as string)!({
+				value: 1.0000001788139343,
+			}),
+		).toBe(false);
+		for (const [keyword, rejected] of [
+			["min", 1.0000000596046448],
+			["max", 1.0000001788139343],
+		] as const) {
+			const collection = nativeFloat32BoundIr(
+				true,
+				false,
+				keyword,
+				1.0000001192092896,
+			);
+			const validators = await writeValidators(directory, collection);
+			const validate = validators.validateNativeFloat32Boundary as (
+				value: unknown,
+			) => { ok: boolean };
+			expect(validate({ value: [rejected] }).ok).toBe(false);
+			const { ajv, schemas } = jsonSchemas(collection);
+			const schema = schemas.find(
+				(one) => one.title === "NativeFloat32Boundary",
+			) as Record<string, unknown>;
+			expect(ajv.getSchema(schema.$id as string)!({ value: [rejected] })).toBe(
+				false,
+			);
+		}
+		const enumCollection = nativeFloat32BoundIr(true, true);
+		const enumCollectionGenerated = await writeValidators(
+			directory,
+			enumCollection,
+		);
+		expect(
+			(
+				enumCollectionGenerated.validateNativeFloat32Boundary as (
+					value: unknown,
+				) => { ok: boolean }
+			)({ value: [0.1] }).ok,
+		).toBe(true);
+		const enumCollectionSchemas = jsonSchemas(enumCollection);
+		const enumCollectionSchema = enumCollectionSchemas.schemas.find(
+			(one) => one.title === "NativeFloat32Boundary",
+		) as Record<string, unknown>;
+		expect(
+			enumCollectionSchemas.ajv.getSchema(enumCollectionSchema.$id as string)!({
+				value: [0.1],
+			}),
+		).toBe(true);
 	} finally {
 		rmSync(directory, { recursive: true, force: true });
 	}
 	const collectionIr = nativeFloat32BoundIr(true);
-	const collectionDirectory = mkdtempSync(join(tmpdir(), "fcd-268-native-f32-collection-"));
+	const collectionDirectory = mkdtempSync(
+		join(tmpdir(), "fcd-268-native-f32-collection-"),
+	);
 	try {
 		const generated = await writeValidators(collectionDirectory, collectionIr);
-		const validate = generated.validateNativeFloat32Boundary as (value: unknown) => { ok: boolean };
+		const validate = generated.validateNativeFloat32Boundary as (
+			value: unknown,
+		) => { ok: boolean };
 		expect(validate({ value: [0.1, 0.10000000149011612] }).ok).toBe(false);
 	} finally {
 		rmSync(collectionDirectory, { recursive: true, force: true });
 	}
 });
 
-it("enforces Float32 rounded uniqueness and proves generic uniqueness is red", async () => {
+/** Trace: FR-066-AC-5. */
+it("enforces Float32 rounded uniqueness and maps JSON uniqueness", async () => {
 	const ir = uniqueIr();
 	const directory = mkdtempSync(join(tmpdir(), "fcd-268-unique-"));
 	try {
 		const generated = await writeValidators(directory, ir);
-		const duplicateAfterRounding = { value: [0.1, 0.100000001] };
-		const real = generated.validateUniqueRecord as (value: unknown) => { ok: boolean };
+		const x = 0.1;
+		// AGE-2234: TS compares the nearest binary32 values; JSON Schema's
+		// required uniqueItems keyword compares the authored JSON numbers.
+		const duplicateAfterRounding = { value: [x, Math.fround(x)] };
+		const real = generated.validateUniqueRecord as (value: unknown) => {
+			ok: boolean;
+		};
 		expect(real(duplicateAfterRounding).ok).toBe(false);
+		const { ajv, schemas } = jsonSchemas(ir);
+		const schema = schemas.find(
+			(one) => one.title === "UniqueRecord",
+		) as Record<string, unknown>;
+		expect(schema.properties).toMatchObject({
+			value: { type: "array", uniqueItems: true },
+		});
+		expect(ajv.getSchema(schema.$id as string)!(duplicateAfterRounding)).toBe(
+			true,
+		);
 		const mutant = await writeValidators(directory, ir, (source) =>
 			source.replaceAll("isUniqueFloat32Collection", "isUniqueCollection"),
 		);
@@ -440,10 +598,14 @@ it("enforces Float32 rounded uniqueness and proves generic uniqueness is red", a
 it("keeps the Float32 uniqueness helper on the generated export surface", () => {
 	const errors = renderErrors();
 	expect(errors).toContain("export function isUniqueFloat32Collection");
-	const broken = errors.replace("export function isUniqueFloat32Collection", "function isUniqueFloat32Collection");
+	const broken = errors.replace(
+		"export function isUniqueFloat32Collection",
+		"function isUniqueFloat32Collection",
+	);
 	expect(broken).not.toContain("export function isUniqueFloat32Collection");
 });
 
+/** Trace: FR-144-AC-13. */
 it("renders native nullable wide collections with the dedicated serde adapter", () => {
 	const ir = nativeNullableCollectionIr();
 	const generated = emitCrate(
@@ -451,21 +613,42 @@ it("renders native nullable wide collections with the dedicated serde adapter", 
 		{ licenseText: "" },
 	);
 	expect(generated.diagnostics.filter((one) => one.blocking)).toEqual([]);
-	const files = new Map(generated.files);
-	const recordSource = files.get("src/types/native_nullable_wide_collection.rs");
-	expect(recordSource).toBeDefined();
-	const support = files.get("src/support.rs");
+	const files = new Map<string, string>(
+		generated.files as readonly (readonly [string, string])[],
+	);
+	const recordSource =
+		files.get("src/types/native_nullable_wide_collection.rs") ?? "";
+	expect(recordSource).not.toBe("");
+	const support = files.get("src/support.rs") ?? "";
 	expect(support).toContain("pub mod wide_vec_nullable");
-	expect((support.match(/pub fn parse_canonical_integer/g) ?? [])).toHaveLength(1);
+	expect(support.match(/pub fn parse_canonical_integer/g) ?? []).toHaveLength(
+		1,
+	);
 	expect(support.match(/wire\.parse::<(?!T>)/g)).toBeNull();
 	// Mutation: using the scalar adapter for Vec<Nullable<T>> would be a type
 	// error in the generated crate and is deliberately rejected by this probe.
 	expect(recordSource).toContain('with = "crate::support::wide_vec_nullable"');
-	expect(recordSource?.replaceAll("wide_vec_nullable", "wide_i64")).not.toContain(
-		'with = "crate::support::wide_vec_nullable"',
+	expect(
+		recordSource.replaceAll("wide_vec_nullable", "wide_i64"),
+	).not.toContain('with = "crate::support::wide_vec_nullable"');
+	const impossible = emitCrate(
+		{
+			ir: nativeNullableCollectionIr(true),
+			outputRoot: "generated/rust",
+			limits,
+		} as never,
+		{ licenseText: "" },
 	);
+	const impossibleRecord = new Map<string, string>(
+		impossible.files as readonly (readonly [string, string])[],
+	).get("src/types/native_nullable_wide_collection.rs");
+	// The item domain is empty, but a required collection still has the
+	// collection constructor's successful return path.
+	expect(impossibleRecord).toContain("Ok(Self");
+	expect(impossibleRecord).toContain("return Err");
 });
 
+/** Trace: FR-066-AC-5. */
 it("enforces native Integer enumValues and proves the missing check is red", async () => {
 	const ir = nativeIntegerEnumIr();
 	const directory = mkdtempSync(join(tmpdir(), "fcd-268-native-enum-"));
@@ -476,6 +659,13 @@ it("enforces native Integer enumValues and proves the missing check is red", asy
 		};
 		expect(real({ value: 1 }).ok).toBe(true);
 		expect(real({ value: 3 }).ok).toBe(false);
+		writeFileSync(join(directory, "errors.ts"), renderErrors());
+		writeFileSync(
+			join(directory, "validators.ts"),
+			renderValidators(buildModel(ir)),
+		);
+		writeFileSync(join(directory, "types.ts"), renderTypes(buildModel(ir)));
+		expect(() => runTsc(directory)).not.toThrow();
 		const mutant = await writeValidators(directory, ir, (source) =>
 			source.replace("[1, 2].some", "[1, 2, 3].some"),
 		);
@@ -485,6 +675,7 @@ it("enforces native Integer enumValues and proves the missing check is red", asy
 	}
 });
 
+/** Trace: FR-066-AC-19. */
 it("typechecks the generated TypeScript export surface and proves an export mutation is red", () => {
 	const ir = JSON.parse(
 		readFileSync(
@@ -494,8 +685,13 @@ it("typechecks the generated TypeScript export surface and proves an export muta
 	);
 	const generated = typescriptBackend.generate(
 		{ ir } as never,
-		{ host: { readText: (path: string) => readFileSync(path, "utf8") } } as never,
-	) as { files: readonly { path: string; text: string }[]; diagnostics: readonly { blocking: boolean }[] };
+		{
+			host: { readText: (path: string) => readFileSync(path, "utf8") },
+		} as never,
+	) as {
+		files: readonly { path: string; text: string }[];
+		diagnostics: readonly { blocking: boolean }[];
+	};
 	expect(generated.diagnostics.filter((one) => one.blocking)).toEqual([]);
 	const directory = mkdtempSync(join(tmpdir(), "fcd-268-tsc-"));
 	try {
@@ -503,22 +699,36 @@ it("typechecks the generated TypeScript export surface and proves an export muta
 		expect(() => runTsc(directory)).not.toThrow();
 		const errors = join(directory, "errors.ts");
 		const original = readFileSync(errors, "utf8");
-		writeFileSync(errors, original.replace("export interface ValidationError", "interface ValidationError"));
+		writeFileSync(
+			errors,
+			original.replace(
+				"export interface ValidationError",
+				"interface ValidationError",
+			),
+		);
 		expect(() => runTsc(directory)).toThrow();
 	} finally {
 		rmSync(directory, { recursive: true, force: true });
 	}
 });
 
+/** Trace: FR-144-AC-13. */
 it("compiles the generated Rust nullable collection with warnings denied and proves an adapter mutation is red", () => {
 	const generated = emitCrate(
-		{ ir: nativeNullableCollectionIr(), outputRoot: "generated/rust", limits } as never,
+		{
+			ir: nativeNullableCollectionIr(),
+			outputRoot: "generated/rust",
+			limits,
+		} as never,
 		{ licenseText: "" },
 	);
 	expect(generated.diagnostics.filter((one) => one.blocking)).toEqual([]);
 	const directory = mkdtempSync(join(tmpdir(), "fcd-268-rust-"));
 	try {
-		const files = Array.from(generated.files, ([path, text]) => ({ path, text }));
+		const files = Array.from(generated.files, ([path, text]) => ({
+			path,
+			text,
+		}));
 		writeGeneratedFiles(directory, files);
 		const runCargo = () =>
 			execFileSync("cargo", ["check", "--offline"], {
@@ -527,14 +737,58 @@ it("compiles the generated Rust nullable collection with warnings denied and pro
 				stdio: "pipe",
 				env: {
 					...process.env,
+					CARGO_TARGET_DIR: join(directory, "target"),
 					RUSTFLAGS: "-D warnings",
 				},
 			});
 		expect(runCargo).not.toThrow();
 		const support = join(directory, "src/support.rs");
 		const original = readFileSync(support, "utf8");
-		writeFileSync(support, original.replace("pub mod wide_vec_nullable", "pub mod broken_wide_vec_nullable"));
+		writeFileSync(
+			support,
+			original.replace(
+				"pub mod wide_vec_nullable",
+				"pub mod broken_wide_vec_nullable",
+			),
+		);
 		expect(runCargo).toThrow();
+	} finally {
+		rmSync(directory, { recursive: true, force: true });
+	}
+});
+
+/** Trace: FR-144-AC-13. */
+it("compiles a required collection whose integer element domain is empty", () => {
+	const generated = emitCrate(
+		{
+			ir: nativeNullableCollectionIr(true, false),
+			outputRoot: "generated/rust",
+			limits,
+		} as never,
+		{ licenseText: "" },
+	);
+	expect(generated.diagnostics.filter((one) => one.blocking)).toEqual([]);
+	const directory = mkdtempSync(join(tmpdir(), "fcd-268-rust-required-"));
+	try {
+		writeGeneratedFiles(
+			directory,
+			Array.from(generated.files, ([path, text]) => ({ path, text })),
+		);
+		try {
+			execFileSync("cargo", ["check", "--offline"], {
+				cwd: directory,
+				encoding: "utf8",
+				stdio: "pipe",
+				env: {
+					...process.env,
+					CARGO_TARGET_DIR: join(directory, "target"),
+					RUSTFLAGS: "-D warnings",
+				},
+			});
+		} catch (error) {
+			const stderr = (error as { stderr?: Buffer }).stderr?.toString();
+			throw new Error(stderr ?? String(error));
+		}
 	} finally {
 		rmSync(directory, { recursive: true, force: true });
 	}

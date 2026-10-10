@@ -474,15 +474,6 @@ impl<'a> Document<'a> {
             .map(PolicyOrigin::Type)
     }
 
-    /// The policy nodes crossed while resolving an identity that owns its
-    /// policy, such as a field, alias, or scalar definition.
-    fn decimal_policies(&self, identity: &str) -> Vec<&'a Json> {
-        self.decimal_policies_from(identity, None)
-            .first
-            .into_iter()
-            .collect()
-    }
-
     fn decimal_policy(&self, identity: &str) -> Option<(u32, u32)> {
         let policy = self.decimal_policies_from(identity, None).first?;
         let precision = policy.get("precision").and_then(Json::as_i64)?;
@@ -949,7 +940,7 @@ fn expansion_would_exceed_budget(lexeme: &str) -> Option<bool> {
         // scanner once the decimal position itself overflows i64.
         None => return Some(true),
     };
-    Some(decimal_at > MAX_EXACT_EXPANSION || decimal_at < -MAX_EXACT_EXPANSION)
+    Some(!(-MAX_EXACT_EXPANSION..=MAX_EXACT_EXPANSION).contains(&decimal_at))
 }
 
 fn huge_exponent_is_integer(lexeme: &str) -> bool {

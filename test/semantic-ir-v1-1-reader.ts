@@ -416,11 +416,12 @@ function checkConstraint(
 			"decimal",
 			"float32",
 			"float64",
-		].includes(resolved.scalar);
+		].includes(String(resolved.scalar));
 		const value = operands.value;
+		const integerValue = canonicalInteger(value) ? value : undefined;
 		const valid =
 			numeric && resolved.scalar === "integer"
-				? canonicalInteger(value) && withinI128(value)
+				? integerValue !== undefined && withinI128(integerValue)
 				: numeric
 					? typeof value === "number" && Number.isFinite(value)
 					: typeof value === "string";
@@ -428,8 +429,8 @@ function checkConstraint(
 			diagnostics.push({
 				code:
 					resolved.scalar === "integer" &&
-					canonicalInteger(value) &&
-					!withinI128(value)
+					integerValue !== undefined &&
+					!withinI128(integerValue)
 						? "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
 						: "agent-ix.semantic-ir.INVALID_OPERAND",
 				path: `${path}.operands.value`,

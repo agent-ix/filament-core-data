@@ -1699,10 +1699,7 @@ function impossibleIntegerRangeCheck(checks, type) {
 	for (const check of checks ?? []) {
 		if (check.form !== "numeric" || check.scalar !== "integer") continue;
 		const value = BigInt(check.value);
-		if (
-			check.keyword === "min" &&
-			(lower === undefined || value > lower)
-		) {
+		if (check.keyword === "min" && (lower === undefined || value > lower)) {
 			lower = value;
 			lowerCheck = check;
 		}
@@ -1713,10 +1710,7 @@ function impossibleIntegerRangeCheck(checks, type) {
 			lower = value + 1n;
 			lowerCheck = check;
 		}
-		if (
-			check.keyword === "max" &&
-			(upper === undefined || value < upper)
-		) {
+		if (check.keyword === "max" && (upper === undefined || value < upper)) {
 			upper = value;
 			upperCheck = check;
 		}
@@ -1734,7 +1728,7 @@ function impossibleIntegerRangeCheck(checks, type) {
 	// safe-number endpoint here would remove the successful return from valid
 	// wide-integer records such as [min, u64::MAX].
 	return lower !== undefined && upper !== undefined && lower > upper
-		? lowerCheck ?? upperCheck
+		? (lowerCheck ?? upperCheck)
 		: undefined;
 }
 
@@ -1893,7 +1887,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 	} else {
 		const effectiveRange =
 			type.scalar === "integer"
-				? effectiveIntegerRange(checks) ?? {
+				? (effectiveIntegerRange(checks) ?? {
 						lower: -(2n ** 53n - 1n),
 						upper: 2n ** 53n - 1n,
 						lowerExplicit: false,
@@ -1908,7 +1902,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 							keyword: "max",
 							value: String(2n ** 53n - 1n),
 						},
-					}
+					})
 				: effectiveIntegerRange(checks);
 		if (effectiveRange !== undefined) {
 			const rustInteger = rustIntegerTypeFor(type);
@@ -1931,27 +1925,19 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 				);
 			};
 			if (!effectiveRange.lowerExplicit && rustInteger !== "u64")
-				emitImplicit(
-					"min",
-					effectiveRange.lowerCheck,
-					-safe,
-					"<",
-				);
+				emitImplicit("min", effectiveRange.lowerCheck, -safe, "<");
 			if (!effectiveRange.upperExplicit)
-				emitImplicit(
-					"max",
-					effectiveRange.upperCheck,
-					safe,
-					">",
-				);
+				emitImplicit("max", effectiveRange.upperCheck, safe, ">");
 		}
 		if (checks.length > 0) {
-		lines.push("        {");
-		checks.forEach((check, index) => {
-			lines.push(...renderCheck(type, check, index, expression, subjectScalar));
-		});
-		lines.push("        }");
-	}
+			lines.push("        {");
+			checks.forEach((check, index) => {
+				lines.push(
+					...renderCheck(type, check, index, expression, subjectScalar),
+				);
+			});
+			lines.push("        }");
+		}
 	}
 	if (impossibleRange === undefined) lines.push("        Ok(Self(value))");
 	lines.push(
@@ -2393,7 +2379,9 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 			attributes.push('skip_serializing_if = "Option::is_none"');
 		}
 		attributes.push(
-			...(field.serdeAttributes ?? []).filter((one) => one.startsWith("with =")),
+			...(field.serdeAttributes ?? []).filter((one) =>
+				one.startsWith("with ="),
+			),
 		);
 		if (attributes.length > 0) {
 			lines.push(`    #[serde(${attributes.join(", ")})]`);
@@ -2444,7 +2432,9 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 			attributes.push('deserialize_with = "crate::support::present_or_absent"');
 		}
 		attributes.push(
-			...(field.serdeAttributes ?? []).filter((one) => one.startsWith("with =")),
+			...(field.serdeAttributes ?? []).filter((one) =>
+				one.startsWith("with ="),
+			),
 		);
 		if (attributes.length > 0) {
 			lines.push(`    #[serde(${attributes.join(", ")})]`);
@@ -2489,12 +2479,14 @@ function renderRecord(type, model, byIdentity, diagnostics) {
 	}
 	const initialisers = type.fields.map((field) => field.ident);
 	if (retains) initialisers.push("unknown_members");
-	const impossibleField = type.fields.some((field) =>
-		field.presence === "required" &&
-		!field.nullable &&
-		impossibleIntegerRangeCheck(field.checks ?? [], {
-			inner: field.elementInner ?? field.elementType,
-		}) !== undefined,
+	const impossibleField = type.fields.some(
+		(field) =>
+			field.presence === "required" &&
+			!field.nullable &&
+			!field.collection &&
+			impossibleIntegerRangeCheck(field.checks ?? [], {
+				inner: field.elementInner ?? field.elementType,
+			}) !== undefined,
 	);
 	if (!impossibleField) lines.push(...okSelf("        ", initialisers));
 	lines.push("    }", "");
@@ -2823,14 +2815,14 @@ function renderInlineFieldChecks(type, field) {
 	const implicitIntegerRange =
 		field.elementScalar === "integer" &&
 		["i64", "u64", "i128"].includes(field.elementType)
-			? effectiveIntegerRange(field.checks ?? []) ?? {
+			? (effectiveIntegerRange(field.checks ?? []) ?? {
 					lower: -(2n ** 53n - 1n),
 					upper: 2n ** 53n - 1n,
 					lowerExplicit: false,
 					upperExplicit: false,
 					lowerCheck: undefined,
 					upperCheck: undefined,
-				}
+				})
 			: undefined;
 	const finiteFloat =
 		["float32", "float64", "number"].includes(field.elementScalar) &&
@@ -2855,7 +2847,7 @@ function renderInlineFieldChecks(type, field) {
 			),
 			`${indent}}`,
 		];
-				};
+	};
 	const impossibleRange =
 		field.elementScalar === "integer"
 			? impossibleIntegerRangeCheck(field.checks ?? [], subject)
@@ -2887,13 +2879,15 @@ function renderInlineFieldChecks(type, field) {
 							prefix,
 							field.wrapperDepth,
 						).map((line) =>
-							line.length === 0
-								? line
-								: `${" ".repeat(extraIndent)}${line}`,
+							line.length === 0 ? line : `${" ".repeat(extraIndent)}${line}`,
 						),
-						)
+					)
 				: [];
-		return [...renderFinite(expression, extraIndent), ...impossible, ...renderedChecks];
+		return [
+			...renderFinite(expression, extraIndent),
+			...impossible,
+			...renderedChecks,
+		];
 	};
 	const lines = [];
 	const renderValue = (expression, extraIndent = 0) => [
@@ -2929,9 +2923,11 @@ function renderInlineFieldChecks(type, field) {
 	};
 	if (field.collection) {
 		const source = field.presence === "optional" ? "items" : field.ident;
+		const itemBinding =
+			impossibleRange !== undefined && !field.nullable ? "_item" : "item";
 		const renderedValue = field.nullable
 			? renderValue("*value", 4)
-			: renderValue("*item");
+			: renderValue(`*${itemBinding}`);
 		const valueLines =
 			field.nullable && renderedValue.length > 0
 				? [
@@ -2944,7 +2940,7 @@ function renderInlineFieldChecks(type, field) {
 		if (field.presence === "optional")
 			lines.push(`        if let Some(items) = &${field.ident} {`);
 		lines.push(
-			`            for item in ${field.presence === "optional" ? source : `&${source}`} {`,
+			`            for ${itemBinding} in ${field.presence === "optional" ? source : `&${source}`} {`,
 		);
 		lines.push(...valueLines);
 		lines.push("            }");
@@ -2975,7 +2971,17 @@ function renderInlineFieldChecks(type, field) {
 		);
 		lines.push(...valueLines);
 		lines.push("        }");
-	} else lines.push(...renderValue(`&${field.ident}`));
+	} else {
+		lines.push(
+			...renderValue(`&${field.ident}`).map((line) =>
+				line.length === 0
+					? line
+					: line.startsWith("            ")
+						? line.slice(4)
+						: `        ${line}`,
+			),
+		);
+	}
 	return lines;
 }
 

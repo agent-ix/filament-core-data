@@ -1601,7 +1601,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(
 			(bounded?.constraints as Json[]).map((constraint) => [
 				constraint.keyword,
-				constraint.operands?.value,
+				(constraint.operands as Json | undefined)?.value,
 			]),
 		).toEqual([
 			["max", "127"],
@@ -1697,7 +1697,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(
 			(bytesItems.constraints as Json[]).map((one) => [
 				one.keyword,
-				one.operands?.value,
+				(one.operands as Json | undefined)?.value,
 			]),
 		).toEqual([
 			["min", "0"],
@@ -1718,9 +1718,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"agent-ix.probe.BYTES_ITEMS_MAX",
 			],
 		]);
-		const values = types.find(
-			(type) => type.displayName === "Values",
-		) as Json;
+		const values = types.find((type) => type.displayName === "Values") as Json;
 		const valuesAlias = types.find(
 			(type) => type.displayName === "ValuesValues",
 		) as Json;
@@ -1735,9 +1733,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			"ix://agent-ix/probe/constraint/Values-values-min",
 			"agent-ix.probe.VALUES_VALUES_MIN",
 		]);
-		const choice = types.find(
-			(type) => type.displayName === "Choice",
-		) as Json;
+		const choice = types.find((type) => type.displayName === "Choice") as Json;
 		const small = (choice.variants as Json[]).find(
 			(variant) => variant.name === "small",
 		) as Json;
@@ -1768,7 +1764,9 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		const smallValueAlias = types.find(
 			(type) => type.identity === smallValue.payloadType,
 		) as Json;
-		expect(smallValueAlias.identity).toBe("ix://agent-ix/probe/ChoiceSmallValue");
+		expect(smallValueAlias.identity).toBe(
+			"ix://agent-ix/probe/ChoiceSmallValue",
+		);
 		expect(
 			(smallValueAlias.constraints as Json[]).map((one) => [
 				one.identity,
@@ -1797,7 +1795,8 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		const operation = types.find(
 			(type) => type.displayName === "Order",
 		) as Json;
-		const cancelOperation = operation.operations.find(
+		const operations = operation.operations as Json[];
+		const cancelOperation = operations.find(
 			(one: Json) => one.name === "cancel",
 		) as Json;
 		const returns = cancelOperation.returns as Json;
@@ -1816,23 +1815,33 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(returns.typeRef).toBe(returnAlias.identity);
 		expect(returnAlias.identity).toBe("ix://agent-ix/probe/OrderCancelReturn");
 		expect(returnAlias.target).toBe("ix://agent-ix/probe/Integer");
-		const wideOperation = operation.operations.find(
+		const wideOperation = operations.find(
 			(one: Json) => one.name === "wide",
 		) as Json;
+		const wideParams = wideOperation.params as Json[];
 		const wideParameter = types.find(
-			(type) => type.identity === wideOperation.params[0].typeRef,
+			(type) => type.identity === wideParams[0].typeRef,
 		) as Json;
 		expect(wideParameter.identity).toBe(
 			"ix://agent-ix/probe/Order/wide/value/width",
 		);
-		expect(wideParameter.constraints.find((one: Json) => one.keyword === "max").operands.value).toBe(
-			"18446744073709551615",
-		);
+		expect(
+			(
+				(wideParameter.constraints as Json[]).find(
+					(one: Json) => one.keyword === "max",
+				)?.operands as Json | undefined
+			)?.value,
+		).toBe("18446744073709551615");
 		const fieldAlias = types.find(
 			(type) => type.displayName === "OrderCancelReason",
 		) as Json;
 		expect(fieldAlias.identity).toBe("ix://agent-ix/probe/OrderCancelReason");
-		expect(fieldAlias.constraints.map((one: Json) => [one.identity, one.diagnosticCode])).toEqual([
+		expect(
+			(fieldAlias.constraints as Json[]).map((one: Json) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toEqual([
 			[
 				"ix://agent-ix/probe/constraint/Order-cancelReason-max",
 				"agent-ix.probe.ORDER_CANCELREASON_MAX",
@@ -1845,33 +1854,46 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		const cancelUnderscore = types.find(
 			(type) => type.identity === "ix://agent-ix/probe/OrderCancel-reason",
 		) as Json;
-		expect(cancelUnderscore.constraints.find((one: Json) => one.keyword === "min").diagnosticCode).toBe(
-			"agent-ix.probe.ORDER_CANCEL_REASON_MIN",
-		);
+		expect(
+			(cancelUnderscore.constraints as Json[]).find(
+				(one: Json) => one.keyword === "min",
+			)?.diagnosticCode,
+		).toBe("agent-ix.probe.ORDER_CANCEL_REASON_MIN");
 		const cancelParam = types.find(
-			(type) => type.identity === "ix://agent-ix/probe/OrderCancel-param-reason",
-		) as Json;
-		expect(cancelParam.constraints.find((one: Json) => one.keyword === "min").diagnosticCode).toBe(
-			"agent-ix.probe.ORDER_CANCEL_PARAM_REASON_MIN",
-		);
-		expect(parameterAlias.constraints.find((one: Json) => one.keyword === "min").identity).toBe(
-			"ix://agent-ix/probe/constraint/Order/cancel/reason/min",
-		);
-		expect(parameterAlias.constraints.find((one: Json) => one.keyword === "min").diagnosticCode).toBe(
-			"agent-ix.probe.ORDER_CANCEL__REASON_MIN",
-		);
-		const reasonOperation = operation.operations.find(
-			(one: Json) => one.name === "reason",
-		) as Json;
-		const reasonParameter = types.find(
-			(type) => type.identity === reasonOperation.params[0].typeRef,
+			(type) =>
+				type.identity === "ix://agent-ix/probe/OrderCancel-param-reason",
 		) as Json;
 		expect(
-			reasonParameter.constraints.find((one: Json) => one.keyword === "min")
-				.diagnosticCode,
+			(cancelParam.constraints as Json[]).find(
+				(one: Json) => one.keyword === "min",
+			)?.diagnosticCode,
+		).toBe("agent-ix.probe.ORDER_CANCEL_PARAM_REASON_MIN");
+		expect(
+			(parameterAlias.constraints as Json[]).find(
+				(one: Json) => one.keyword === "min",
+			)?.identity,
+		).toBe("ix://agent-ix/probe/constraint/Order/cancel/reason/min");
+		expect(
+			(parameterAlias.constraints as Json[]).find(
+				(one: Json) => one.keyword === "min",
+			)?.diagnosticCode,
+		).toBe("agent-ix.probe.ORDER_CANCEL__REASON_MIN");
+		const reasonOperation = operations.find(
+			(one: Json) => one.name === "reason",
+		) as Json;
+		const reasonParams = reasonOperation.params as Json[];
+		const reasonParameter = types.find(
+			(type) => type.identity === reasonParams[0].typeRef,
+		) as Json;
+		expect(
+			(reasonParameter.constraints as Json[]).find(
+				(one: Json) => one.keyword === "min",
+			)?.diagnosticCode,
 		).toBe("agent-ix.probe.ORDER_REASON__REASON_MIN");
 		const aliases = types.filter((type) => type.kind === "alias");
-		expect(new Set(aliases.map((type) => type.identity)).size).toBe(aliases.length);
+		expect(new Set(aliases.map((type) => type.identity)).size).toBe(
+			aliases.length,
+		);
 	}, 120000);
 
 	/** Traces: TC-435; FR-046-AC-4. */

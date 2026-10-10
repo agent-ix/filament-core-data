@@ -58,11 +58,14 @@ function rustTypeName(cell: (typeof MATRIX_CELLS)[number]) {
 		.join("");
 }
 
-function numericIntegerProbe(cell: (typeof MATRIX_CELLS)[number]) {
+function numericIntegerProbe(_cell: (typeof MATRIX_CELLS)[number]) {
 	return { value: 5 };
 }
 
-function fuzzRecordValue(testCase: ReturnType<typeof buildDifferentialFuzzCases>[number], value: unknown) {
+function fuzzRecordValue(
+	testCase: ReturnType<typeof buildDifferentialFuzzCases>[number],
+	value: unknown,
+) {
 	const fieldValue = testCase.nesting === "collection" ? [value] : value;
 	return { value: fieldValue };
 }
@@ -96,8 +99,10 @@ it("rejects an integer-only-min probe outside the effective safe range", () => {
 	);
 	expect(fuzzOutcome.ok).toBe(false);
 
-	const baseIdentity = "ix://agent-ix/age-2229-numeric-matrix/type/EffectiveRangeBase";
-	const recordIdentity = "ix://agent-ix/age-2229-numeric-matrix/type/EffectiveRange";
+	const baseIdentity =
+		"ix://agent-ix/age-2229-numeric-matrix/type/EffectiveRangeBase";
+	const recordIdentity =
+		"ix://agent-ix/age-2229-numeric-matrix/type/EffectiveRange";
 	const ir = {
 		contractVersion: "2.0.0",
 		types: [
@@ -228,9 +233,13 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			const valid = cellValue(cell);
 			const validExpected = cellHasValidProbe(cell);
 			const validResult = validate(valid);
-			expect(validResult.ok, `${cell.name} TypeScript valid`).toBe(validExpected);
-		if (validExpected)
-			expect(validResult.value, `${cell.name} TypeScript wire`).toEqual(valid);
+			expect(validResult.ok, `${cell.name} TypeScript valid`).toBe(
+				validExpected,
+			);
+			if (validExpected)
+				expect(validResult.value, `${cell.name} TypeScript wire`).toEqual(
+					valid,
+				);
 			expect(
 				validate(cellValue(cell, false)).ok,
 				`${cell.name} TypeScript invalid`,
@@ -258,7 +267,9 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 			expect(schema, `${cell.name} JSON Schema`).toBeDefined();
 			const validateJson = ajv.getSchema(schema.$id);
 			expect(validateJson, `${cell.name} compiled JSON Schema`).toBeDefined();
-			expect(validateJson?.(valid), `${cell.name} JSON valid`).toBe(validExpected);
+			expect(validateJson?.(valid), `${cell.name} JSON valid`).toBe(
+				validExpected,
+			);
 			expect(
 				validateJson?.(cellValue(cell, false)),
 				`${cell.name} JSON invalid`,
@@ -365,10 +376,12 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 		let oracleCount = 0;
 		let oracleInstanceCount = 0;
 		for (const testCase of cases) {
-			const validate = generated[
-				`validate${testCase.name}`
-			] as (value: unknown) => { ok: boolean; errors?: readonly { code?: string }[] };
-			expect(validate, `${testCase.name} TypeScript validator`).toBeTypeOf("function");
+			const validate = generated[`validate${testCase.name}`] as (
+				value: unknown,
+			) => { ok: boolean; errors?: readonly { code?: string }[] };
+			expect(validate, `${testCase.name} TypeScript validator`).toBeTypeOf(
+				"function",
+			);
 			const schema = schemas.find((one: any) => one.title === testCase.name);
 			expect(schema, `${testCase.name} schema`).toBeDefined();
 			const validateJson = ajv.getSchema(schema.$id);
@@ -389,7 +402,9 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 					tsResult.ok !== expected ||
 					ajvResult !== expected ||
 					tsResult.ok !== ajvResult ||
-					(!expected && oracleOutcome.code !== undefined && tsCode !== oracleOutcome.code)
+					(!expected &&
+						oracleOutcome.code !== undefined &&
+						tsCode !== oracleOutcome.code)
 				) {
 					disagreements.push({
 						name: testCase.name,
@@ -425,7 +440,11 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 			types: ir.types.filter((type: any) => rustNames.has(type.displayName)),
 		};
 		const rust = emitCrate(
-			{ ir: rustIr, outputRoot: "generated/rust", limits: RUST_LIMITS } as never,
+			{
+				ir: rustIr,
+				outputRoot: "generated/rust",
+				limits: RUST_LIMITS,
+			} as never,
 			{ licenseText: "" },
 		);
 		expect(rust.diagnostics.filter((one) => one.blocking)).toEqual([]);
@@ -441,23 +460,44 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 			`${[...rust.files].find(([path]) => path === "Cargo.toml")?.[1] ?? ""}\n[dev-dependencies]\nserde_json = "1.0.145"\n`,
 		);
 		const rustImports = rustCases.map((testCase) => testCase.name).join(", ");
-		const rustProbes = rustCases.map((testCase) => {
-			const typeName = testCase.name;
-			const valid = JSON.stringify(fuzzRecordValue(testCase, testCase.probes.valid));
-			const invalid = JSON.stringify(fuzzRecordValue(testCase, testCase.probes.invalid));
-			const validProbe = fuzzOracleOutcome(ir, testCase, testCase.probes.valid).ok
-				? `let _: ${typeName} = serde_json::from_str(${JSON.stringify(valid)}).unwrap_or_else(|error| panic!("${typeName} valid: {error}"));`
-				: `assert!(serde_json::from_str::<${typeName}>(${JSON.stringify(valid)}).is_err(), "${typeName} impossible valid accepted");`;
-			return `${validProbe} assert!(serde_json::from_str::<${typeName}>(${JSON.stringify(invalid)}).is_err(), "${typeName} invalid accepted");`;
-		}).join("\n    ");
+		const rustProbes = rustCases
+			.map((testCase) => {
+				const typeName = testCase.name;
+				const valid = JSON.stringify(
+					fuzzRecordValue(testCase, testCase.probes.valid),
+				);
+				const invalid = JSON.stringify(
+					fuzzRecordValue(testCase, testCase.probes.invalid),
+				);
+				const validProbe = fuzzOracleOutcome(
+					ir,
+					testCase,
+					testCase.probes.valid,
+				).ok
+					? `let _: ${typeName} = serde_json::from_str(${JSON.stringify(valid)}).unwrap_or_else(|error| panic!("${typeName} valid: {error}"));`
+					: `assert!(serde_json::from_str::<${typeName}>(${JSON.stringify(valid)}).is_err(), "${typeName} impossible valid accepted");`;
+				return `${validProbe} assert!(serde_json::from_str::<${typeName}>(${JSON.stringify(invalid)}).is_err(), "${typeName} invalid accepted");`;
+			})
+			.join("\n    ");
 		writeFileSync(
 			join(rustRoot, "tests", "differential_fuzz.rs"),
 			`#![allow(missing_docs)]\nuse agent_ix_age_2229_numeric_matrix::{${rustImports}};\n#[test]\nfn seeded_fuzz_serde_batch() { ${rustProbes} }\n`,
 		);
 		execFileSync(
 			"cargo",
-			["test", "--offline", "--manifest-path", join(rustRoot, "Cargo.toml"), "--test", "differential_fuzz"],
-			{ cwd: rustRoot, stdio: "pipe", env: { ...process.env, CARGO_TARGET_DIR: join(rustRoot, "target") } },
+			[
+				"test",
+				"--offline",
+				"--manifest-path",
+				join(rustRoot, "Cargo.toml"),
+				"--test",
+				"differential_fuzz",
+			],
+			{
+				cwd: rustRoot,
+				stdio: "pipe",
+				env: { ...process.env, CARGO_TARGET_DIR: join(rustRoot, "target") },
+			},
 		);
 
 		// Python consumes the same schema documents. Run its real producer and
@@ -467,8 +507,10 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 		// field bounds to collection containers. Its direct scalar/optional/nested
 		// rows are the comparable wire lane; keep that lane deterministic and
 		// report its size separately from the full corpus.
-		const pythonCases = cases
-			.filter((testCase) => testCase.nesting !== "collection" && testCase.aliasDepth === 0);
+		const pythonCases = cases.filter(
+			(testCase) =>
+				testCase.nesting !== "collection" && testCase.aliasDepth === 0,
+		);
 		const pythonNames = new Set(
 			pythonCases.flatMap((testCase) => [
 				testCase.name,
@@ -484,7 +526,11 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 		const python = pythonPydanticBackend.generate(
 			{ ir: pythonIr } as never,
 			{ produce: poetryProducer() } as never,
-		) as never as { state: string; files: { path: string; text: string }[]; diagnostics: { blocking?: boolean }[] };
+		) as never as {
+			state: string;
+			files: { path: string; text: string }[];
+			diagnostics: { blocking?: boolean }[];
+		};
 		expect(python.state).toBe("success");
 		expect(python.diagnostics.filter((one) => one.blocking)).toEqual([]);
 		for (const testCase of pythonCases) {
@@ -503,7 +549,9 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 		}
 		const pythonScript = [
 			"import json",
-			...pythonCases.map((testCase) => `from fuzzpkg.${testCase.name} import ${testCase.name}`),
+			...pythonCases.map(
+				(testCase) => `from fuzzpkg.${testCase.name} import ${testCase.name}`,
+			),
 			"answers = []",
 			"cases = json.loads(__import__('os').environ['AGE_2229_FUZZ_CASES'])",
 			"for case in cases:",
@@ -523,7 +571,11 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 				env: {
 					...process.env,
 					AGE_2229_FUZZ_CASES: JSON.stringify(
-						pythonCases.map(({ name, nesting, probes }) => ({ name, nesting, probes })),
+						pythonCases.map(({ name, nesting, probes }) => ({
+							name,
+							nesting,
+							probes,
+						})),
 					),
 				},
 			}),
@@ -532,7 +584,11 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 		for (const [index, answer] of pythonAnswers.entries()) {
 			const testCase = pythonCases[Math.floor(index / 2)];
 			const label = index % 2 === 0 ? "valid" : "invalid";
-			const expected = fuzzOracleOutcome(ir, testCase, testCase.probes[label]).ok;
+			const expected = fuzzOracleOutcome(
+				ir,
+				testCase,
+				testCase.probes[label],
+			).ok;
 			if (answer !== expected)
 				disagreements.push({
 					backend: "python",

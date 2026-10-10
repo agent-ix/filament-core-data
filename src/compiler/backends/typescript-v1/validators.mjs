@@ -175,11 +175,11 @@ function constraintCondition(constraint, subject) {
 		case "nonEmpty":
 			return length && `${length} > 0`;
 		case "unique":
-		return subject.kind === "sequence" &&
+			return subject.kind === "sequence" &&
 				subject.itemsEntry?.scalar === "decimal"
 				? "isUniqueDecimalCollection(candidate)"
 				: subject.kind === "sequence" &&
-					  subject.itemsEntry?.scalar === "float32"
+						subject.itemsEntry?.scalar === "float32"
 					? "isUniqueFloat32Collection(candidate)"
 					: "isUniqueCollection(candidate)";
 		case "format":
@@ -339,9 +339,10 @@ function scalarCheckBody(model, entry) {
 	}
 	const wideInteger = entry.scalar === "integer" && entry.wideInteger;
 	if (entry.scalar === "integer" && entry.impossibleIntegerBounds === true) {
-		const impossible = entry.constraints?.find((one) =>
-			["min", "max", "exclusiveMin", "exclusiveMax"].includes(one.keyword),
-		) ?? entry.constraints?.[0];
+		const impossible =
+			entry.constraints?.find((one) =>
+				["min", "max", "exclusiveMin", "exclusiveMax"].includes(one.keyword),
+			) ?? entry.constraints?.[0];
 		if (impossible !== undefined) {
 			lines.push(
 				`\tfail(errors, pointer, ${literal(impossible.diagnosticCode)}, ${literal("the integer constraints admit no value")});`,
@@ -365,7 +366,8 @@ function scalarCheckBody(model, entry) {
 			"\t\treturn false;",
 			"\t}",
 			...(entry.effectiveIntegerBounds &&
-				(!entry.effectiveIntegerBounds.lowerExplicit || !entry.effectiveIntegerBounds.upperExplicit)
+			(!entry.effectiveIntegerBounds.lowerExplicit ||
+				!entry.effectiveIntegerBounds.upperExplicit)
 				? [
 						`\tif (${[
 							!entry.effectiveIntegerBounds.lowerExplicit
@@ -374,7 +376,9 @@ function scalarCheckBody(model, entry) {
 							!entry.effectiveIntegerBounds.upperExplicit
 								? `BigInt(candidate) > BigInt(${literal(entry.effectiveIntegerBounds.upper)})`
 								: undefined,
-						].filter(Boolean).join(" || ")}) {`,
+						]
+							.filter(Boolean)
+							.join(" || ")}) {`,
 						'\t\tfail(errors, pointer, CODES.INTEGER_OUT_OF_SAFE_RANGE, "the integer is outside its effective range");',
 						"\t\treturn false;",
 						"\t}",
@@ -493,8 +497,7 @@ function checkCall(element, valueExpression, pointerExpression) {
 		const scalar = element.scalar;
 		if (scalar === "any") return "void 0";
 		const checks = [];
-		const canonicalWideInteger =
-			`typeof ${valueExpression} === "string" && /^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression}))`;
+		const canonicalWideInteger = `typeof ${valueExpression} === "string" && /^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression}))`;
 		if (scalar === "integer" && element.impossibleIntegerBounds === true) {
 			const impossible = element.constraints?.[0];
 			if (impossible !== undefined)
@@ -510,9 +513,13 @@ function checkCall(element, valueExpression, pointerExpression) {
 			if (bounds?.lowerExplicit === false || bounds?.upperExplicit === false) {
 				const terms = [];
 				if (bounds.lowerExplicit === false)
-					terms.push(`BigInt(String(${valueExpression})) < BigInt(${literal(bounds.lower)})`);
+					terms.push(
+						`BigInt(String(${valueExpression})) < BigInt(${literal(bounds.lower)})`,
+					);
 				if (bounds.upperExplicit === false)
-					terms.push(`BigInt(String(${valueExpression})) > BigInt(${literal(bounds.upper)})`);
+					terms.push(
+						`BigInt(String(${valueExpression})) > BigInt(${literal(bounds.upper)})`,
+					);
 				checks.push(
 					`if (${canonicalWideInteger} && (${terms.join(" || ")})) fail(errors, ${pointerExpression}, CODES.INTEGER_OUT_OF_SAFE_RANGE, "the integer is outside its effective range")`,
 				);
@@ -552,7 +559,7 @@ function checkCall(element, valueExpression, pointerExpression) {
 						? `(${canonicalWideInteger} && !(${equality}))`
 						: `!(${equality})`;
 				checks.push(
-					`if ${guardedEquality} fail(errors, ${pointerExpression}, ${literal(constraint.diagnosticCode)}, ${literal("the enumValues constraint is not satisfied")})`,
+					`if (${guardedEquality}) fail(errors, ${pointerExpression}, ${literal(constraint.diagnosticCode)}, ${literal("the enumValues constraint is not satisfied")})`,
 				);
 				continue;
 			}
@@ -574,15 +581,15 @@ function checkCall(element, valueExpression, pointerExpression) {
 					? `BigInt(${literal(value)})`
 					: element.scalar === "float32"
 						? `Math.fround(${literal(value)})`
-					: typeof value === "string"
-						? literal(Number(value))
-						: literal(value);
+						: typeof value === "string"
+							? literal(Number(value))
+							: literal(value);
 			const lhs =
 				element.wideInteger === true
 					? `BigInt(String(${valueExpression}))`
 					: element.scalar === "float32"
 						? `Math.fround(${valueExpression})`
-					: `Number(${valueExpression})`;
+						: `Number(${valueExpression})`;
 			const condition =
 				element.wideInteger === true
 					? `(typeof ${valueExpression} === "string" && /^(0|-?[1-9][0-9]*)$/.test(String(${valueExpression})) && !(${lhs} ${operator} ${rhs}))`
@@ -782,7 +789,7 @@ function fieldStatements(field) {
 					? "isUniqueDecimalCollection"
 					: field.element?.scalar === "float32"
 						? "isUniqueFloat32Collection"
-					: "isUniqueCollection";
+						: "isUniqueCollection";
 			lines.push(
 				`\t\t\t\tif (!${uniqueness}(member.value)) {`,
 				'\t\t\t\t\tfail(errors, at, CODES.COLLECTION_NOT_UNIQUE, "two members share a canonical form");',
