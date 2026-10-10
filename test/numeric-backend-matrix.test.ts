@@ -7,6 +7,8 @@ import { pathToFileURL } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import { expect, it } from "vitest";
 import { jsonSchemaBackend } from "../src/compiler/backends/json-schema-v1/index.mjs";
+import { pythonPydanticBackend } from "../src/compiler/backends/python-v1/index.mjs";
+import { poetryProducer } from "../src/compiler/backends/python-v1/produce.mjs";
 import { emitCrate } from "../src/compiler/backends/rust-serde/crate.mjs";
 import { buildModel } from "../src/compiler/backends/typescript-v1/model.mjs";
 import {
@@ -16,6 +18,8 @@ import {
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
 import {
 	buildMatrixIr,
+	buildDifferentialFuzzCases,
+	buildDifferentialFuzzIr,
 	cellRecordName,
 	cellValue,
 	inlineWideInteger,
@@ -54,6 +58,11 @@ function rustTypeName(cell: (typeof MATRIX_CELLS)[number]) {
 
 function numericIntegerProbe(cell: (typeof MATRIX_CELLS)[number]) {
 	return { value: 5 };
+}
+
+function fuzzRecordValue(testCase: ReturnType<typeof buildDifferentialFuzzCases>[number], value: unknown) {
+	const fieldValue = testCase.nesting === "collection" ? [value] : value;
+	return { value: fieldValue };
 }
 
 async function generatedValidators(directory: string, ir: any) {
@@ -233,4 +242,202 @@ it("runs every generated numeric matrix cell through all consumer probes", async
 	} finally {
 		rmSync(scratch, { recursive: true, force: true });
 	}
-});
+}, 120000);
+
+/** A seeded cross-backend corpus catches interactions the hand-written matrix cannot enumerate. */
+it("runs the seeded differential fuzz corpus with a minimal disagreement report", async () => {
+	const cases = buildDifferentialFuzzCases();
+	const ir = buildDifferentialFuzzIr();
+	expect(cases).toHaveLength(2048);
+	expect([...readContractIr(ir)]).toEqual([]);
+	const scratch = mkdtempSync(join(tmpdir(), "fcd-age-2229-fuzz-"));
+	try {
+		const generated = await generatedValidators(scratch, ir);
+		const json = jsonSchemaBackend.generate({ ir } as never);
+		expect(json.diagnostics.filter((one) => one.blocking)).toEqual([]);
+		const ajv = new Ajv2020({ strict: false });
+		const schemas = json.files
+			.filter((file) => file.path !== "index.json")
+			.map((file) => JSON.parse(file.text));
+		for (const schema of schemas) ajv.addSchema(schema);
+		const disagreements: Array<Record<string, unknown>> = [];
+		for (const testCase of cases) {
+			const validate = generated[
+				`validate${testCase.name}`
+			] as (value: unknown) => { ok: boolean; errors?: readonly { code?: string }[] };
+			expect(validate, `${testCase.name} TypeScript validator`).toBeTypeOf("function");
+			const schema = schemas.find((one: any) => one.title === testCase.name);
+			expect(schema, `${testCase.name} schema`).toBeDefined();
+			const validateJson = ajv.getSchema(schema.$id);
+			expect(validateJson, `${testCase.name} Ajv validator`).toBeDefined();
+			for (const [label, probe, expected] of [
+				["valid", testCase.probes.valid, true],
+				["invalid", testCase.probes.invalid, false],
+			] as const) {
+				const record = fuzzRecordValue(testCase, probe);
+				const tsResult = validate(record);
+				const ajvResult = Boolean(validateJson?.(record));
+				const referenceCode = expected
+					? "OK"
+					: `ix://agent-ix/age-2229-numeric-matrix/FUZZ_${testCase.index}_${testCase.constraints[0].keyword.toUpperCase()}`;
+				if (!expected)
+					expect(tsResult.errors?.[0]?.code, `${testCase.name} reference diagnostic`).toBe(referenceCode);
+				if (tsResult.ok !== expected || ajvResult !== expected || tsResult.ok !== ajvResult) {
+					disagreements.push({
+						name: testCase.name,
+						label,
+						baseType: testCase.baseType,
+						shape: testCase.shape,
+						aliasDepth: testCase.aliasDepth,
+						nesting: testCase.nesting,
+						wire: testCase.wire,
+						expected,
+						typescript: tsResult.ok,
+						ajv: ajvResult,
+						diagnostic: tsResult.errors?.[0]?.code ?? null,
+					});
+				}
+			}
+		}
+		// The full corpus is exercised by the JS/schema lanes. Rust's generated
+		// identity module is bounded to the first 1,024 seeded cases so the source
+		// stays below the host parser's call-stack limit.
+		const rustCases = cases.slice(0, 1024);
+		const rustNames = new Set(
+			rustCases.flatMap((testCase) => [
+				testCase.name,
+				`${testCase.name}Base`,
+				`${testCase.name}Alias1`,
+				`${testCase.name}Alias2`,
+			]),
+		);
+		const rustIr = {
+			...ir,
+			types: ir.types.filter((type: any) => rustNames.has(type.displayName)),
+		};
+		const rust = emitCrate(
+			{ ir: rustIr, outputRoot: "generated/rust", limits: RUST_LIMITS } as never,
+			{ licenseText: "" },
+		);
+		expect(rust.diagnostics.filter((one) => one.blocking)).toEqual([]);
+		const rustRoot = join(scratch, "rust");
+		mkdirSync(join(rustRoot, "tests"), { recursive: true });
+		for (const [path, text] of rust.files) {
+			const destination = join(rustRoot, path);
+			mkdirSync(resolve(destination, ".."), { recursive: true });
+			writeFileSync(destination, text);
+		}
+		writeFileSync(
+			join(rustRoot, "Cargo.toml"),
+			`${[...rust.files].find(([path]) => path === "Cargo.toml")?.[1] ?? ""}\n[dev-dependencies]\nserde_json = "1.0.145"\n`,
+		);
+		const rustImports = rustCases.map((testCase) => testCase.name).join(", ");
+		const rustProbes = rustCases.map((testCase) => {
+			const typeName = testCase.name;
+			const valid = JSON.stringify(fuzzRecordValue(testCase, testCase.probes.valid));
+			const invalid = JSON.stringify(fuzzRecordValue(testCase, testCase.probes.invalid));
+			return `let _: ${typeName} = serde_json::from_str(${JSON.stringify(valid)}).unwrap_or_else(|error| panic!("${typeName} valid: {error}")); assert!(serde_json::from_str::<${typeName}>(${JSON.stringify(invalid)}).is_err(), "${typeName} invalid accepted");`;
+		}).join("\n    ");
+		writeFileSync(
+			join(rustRoot, "tests", "differential_fuzz.rs"),
+			`#![allow(missing_docs)]\nuse agent_ix_age_2229_numeric_matrix::{${rustImports}};\n#[test]\nfn seeded_fuzz_serde_batch() { ${rustProbes} }\n`,
+		);
+		execFileSync(
+			"cargo",
+			["test", "--offline", "--manifest-path", join(rustRoot, "Cargo.toml"), "--test", "differential_fuzz"],
+			{ cwd: rustRoot, stdio: "pipe", env: { ...process.env, CARGO_TARGET_DIR: join(rustRoot, "target") } },
+		);
+
+		// Python consumes the same schema documents. Run its real producer and
+		// require every fuzz record to reach a generated module; the runtime
+		// acceptance verdict is the schema oracle already compared above.
+		// The Python generator represents aliases as RootModel objects and applies
+		// field bounds to collection containers. Its direct scalar/optional/nested
+		// rows are the comparable wire lane; keep that lane deterministic and
+		// report its size separately from the full corpus.
+		const pythonCases = cases
+			.filter((testCase) => testCase.nesting !== "collection" && testCase.aliasDepth === 0)
+			.slice(0, 512);
+		const pythonNames = new Set(
+			pythonCases.flatMap((testCase) => [
+				testCase.name,
+				`${testCase.name}Base`,
+				`${testCase.name}Alias1`,
+				`${testCase.name}Alias2`,
+			]),
+		);
+		const pythonIr = {
+			...ir,
+			types: ir.types.filter((type: any) => pythonNames.has(type.displayName)),
+		};
+		const python = pythonPydanticBackend.generate(
+			{ ir: pythonIr } as never,
+			{ produce: poetryProducer() } as never,
+		) as never as { state: string; files: { path: string; text: string }[]; diagnostics: { blocking?: boolean }[] };
+		expect(python.state).toBe("success");
+		expect(python.diagnostics.filter((one) => one.blocking)).toEqual([]);
+		for (const testCase of pythonCases) {
+			expect(
+				python.files.some((file) => file.path.includes(testCase.name)),
+				`${testCase.name} Python generated module`,
+			).toBe(true);
+		}
+		const pythonRoot = join(scratch, "python");
+		const pythonPackage = join(pythonRoot, "fuzzpkg");
+		mkdirSync(pythonPackage, { recursive: true });
+		for (const file of python.files) {
+			const destination = join(pythonPackage, file.path);
+			mkdirSync(resolve(destination, ".."), { recursive: true });
+			writeFileSync(destination, file.text);
+		}
+		const pythonScript = [
+			"import json",
+			...pythonCases.map((testCase) => `from fuzzpkg.${testCase.name} import ${testCase.name}`),
+			"answers = []",
+			"cases = json.loads(__import__('os').environ['AGE_2229_FUZZ_CASES'])",
+			"for case in cases:",
+			"    model = globals()[case['name']]",
+			"    for label in ('valid', 'invalid'):",
+			"        try:",
+			"            model.model_validate({'value': [case['probes'][label]] if case['nesting'] == 'collection' else {'value': case['probes'][label]}['value']})",
+			"            answers.append(True)",
+			"        except Exception:",
+			"            answers.append(False)",
+			"print(json.dumps(answers))",
+		].join("\n");
+		const pythonAnswers = JSON.parse(
+			execFileSync("python3", ["-c", pythonScript], {
+				cwd: pythonRoot,
+				encoding: "utf8",
+				env: {
+					...process.env,
+					AGE_2229_FUZZ_CASES: JSON.stringify(
+						pythonCases.map(({ name, nesting, probes }) => ({ name, nesting, probes })),
+					),
+				},
+			}),
+		) as boolean[];
+		expect(pythonAnswers).toHaveLength(pythonCases.length * 2);
+		for (const [index, answer] of pythonAnswers.entries()) {
+			const expected = index % 2 === 0;
+			if (answer !== expected)
+				disagreements.push({
+					backend: "python",
+					name: pythonCases[Math.floor(index / 2)].name,
+					label: expected ? "valid" : "invalid",
+					expected,
+					python: answer,
+				});
+		}
+		process.stdout.write(
+			`AGE-2229 differential fuzz seed: ${0x9e3779b9} count: ${cases.length} rustBatch: ${rustCases.length} pythonBatch: ${pythonCases.length} disagreements: ${disagreements.length}\n`,
+		);
+		if (disagreements.length)
+			process.stdout.write(
+				`AGE-2229 minimal disagreement: ${JSON.stringify(disagreements[0])}\n`,
+			);
+		expect(disagreements.slice(0, 1)).toEqual([]);
+	} finally {
+		rmSync(scratch, { recursive: true, force: true });
+	}
+}, 120000);

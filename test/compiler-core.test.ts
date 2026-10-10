@@ -1668,6 +1668,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			[
 				"using AgentIx.Semantic.Decorators;",
 				"namespace AgentIx.Semantic;",
+				"scalar ScalarWidth extends uint8;",
 				"model Bytes is Array<uint8>;",
 				"union ChoiceValue { small: int16, text: string, }",
 				"model Choice { value: string; }",
@@ -1680,6 +1681,11 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			JSON.stringify(result.diagnostics),
 		).toEqual([]);
 		const types = (result.ir as never as { types: Json[] }).types;
+		const scalarWidth = types.find(
+			(type) => type.displayName === "ScalarWidth",
+		) as Json;
+		expect(scalarWidth.kind).toBe("scalar");
+		expect(scalarWidth.scalar).toBe("integer");
 		const bytes = types.find((type) => type.displayName === "Bytes") as Json;
 		const bytesItems = types.find(
 			(type) => type.displayName === "BytesItems",

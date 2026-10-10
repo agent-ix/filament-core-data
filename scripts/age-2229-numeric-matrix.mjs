@@ -192,6 +192,215 @@ export const MATRIX_CELLS = Object.freeze([
 	decimalRegexCell,
 ]);
 
+export const DIFFERENTIAL_FUZZ_SEED = 0x9e3779b9;
+export const DIFFERENTIAL_FUZZ_COUNT = 2048;
+const FUZZ_CENTERS = [
+	-10n,
+	-1n,
+	0n,
+	1n,
+	10n,
+	2n ** 53n - 1n,
+	2n ** 53n,
+	2n ** 64n - 1n,
+];
+const FUZZ_SHAPES = [
+	"min",
+	"max",
+	"exclusiveMin",
+	"exclusiveMax",
+	"min+max",
+	"min+exclusiveMin",
+	"min+exclusiveMax",
+	"max+exclusiveMin",
+	"max+exclusiveMax",
+	"exclusiveMin+exclusiveMax",
+];
+
+function fuzzRandom(state) {
+	return (Math.imul(state, 1664525) + 1013904223) >>> 0;
+}
+
+function fuzzEntries(shape, center, baseType) {
+	const integer = baseType === "integer";
+	const delta = integer ? 1n : 0.1;
+	const pairs = {
+		min: [["min", center]],
+		max: [["max", center]],
+		exclusiveMin: [["exclusiveMin", center - delta]],
+		exclusiveMax: [["exclusiveMax", center + delta]],
+		"min+max": [["min", center], ["max", center]],
+		"min+exclusiveMin": [["min", center], ["exclusiveMin", center - delta]],
+		"min+exclusiveMax": [["min", center], ["exclusiveMax", center + delta]],
+		"max+exclusiveMin": [["max", center], ["exclusiveMin", center - delta]],
+		"max+exclusiveMax": [["max", center], ["exclusiveMax", center + delta]],
+		"exclusiveMin+exclusiveMax": [
+			["exclusiveMin", center - delta],
+			["exclusiveMax", center + delta],
+		],
+	};
+	const exact = (operand) =>
+		baseType === "float32" ? Math.fround(operand) : operand;
+	return (pairs[shape] ?? pairs.min).map(([keyword, operand]) => ({
+		keyword,
+		operand: integer ? String(operand) : exact(operand),
+	}));
+}
+
+function fuzzProbes(shape, center, baseType, wire) {
+	const delta = baseType === "integer" ? 1n : 0.1;
+	const normalizedShape = shape.toLowerCase();
+	const invalid = normalizedShape.includes("min") && !normalizedShape.includes("max")
+		? center - delta
+		: shape.includes("exclusiveMin") && shape.includes("exclusiveMax")
+			? center - delta
+			: center + delta;
+	const encode = (value) =>
+		baseType === "integer" && wire === "string"
+			? String(value)
+			: baseType === "float32"
+				? Math.fround(Number(value))
+				: Number(value);
+	return { valid: encode(center), invalid: encode(invalid) };
+}
+
+export function buildDifferentialFuzzCases() {
+	let state = DIFFERENTIAL_FUZZ_SEED;
+	const cases = [];
+	const baseTypes = ["integer", "float32", "float64"];
+	const centers = {
+		integer: FUZZ_CENTERS,
+		float32: [-10, -1, 0, 1, 10, 0.5],
+		float64: [-10, -1, 0, 1, 10, 0.5],
+	};
+	for (let index = 0; index < DIFFERENTIAL_FUZZ_COUNT; index += 1) {
+		state = fuzzRandom(state);
+		const baseType = baseTypes[state % baseTypes.length];
+		const center = centers[baseType][state % centers[baseType].length];
+		state = fuzzRandom(state);
+		const shape = FUZZ_SHAPES[state % FUZZ_SHAPES.length];
+		state = fuzzRandom(state);
+		const aliasDepth = state % 3;
+		state = fuzzRandom(state);
+		const nesting = NESTINGS[state % NESTINGS.length];
+		state = fuzzRandom(state);
+		const wire =
+			baseType === "integer" &&
+			(center > 2n ** 53n - 1n || center < -(2n ** 53n - 1n))
+				? "string"
+				: "number";
+		state = fuzzRandom(state);
+		const optional = Boolean(state % 2);
+		state = fuzzRandom(state);
+		const nullable = Boolean(state % 2);
+		cases.push({
+			index,
+			name: `DifferentialFuzz${index}`,
+			baseType,
+			center,
+			shape,
+			constraints: fuzzEntries(shape, center, baseType),
+			aliasDepth,
+			nesting,
+			wire,
+			optional,
+			nullable,
+			probes: fuzzProbes(shape, center, baseType, wire),
+		});
+	}
+	return cases;
+}
+
+export function buildDifferentialFuzzIr() {
+	const types = [];
+	for (const testCase of buildDifferentialFuzzCases()) {
+		const { index, name, baseType, constraints, aliasDepth, nesting, optional, nullable } = testCase;
+		const baseName = `${name}Base`;
+		const baseIdentity = identity(baseName);
+		types.push({
+			identity: baseIdentity,
+			displayName: baseName,
+			kind: "scalar",
+			scalar: baseType,
+			constraints: constraints.map((entry, constraintIndex) => ({
+				identity: `${ROOT}/fuzz-constraint/${index}-${constraintIndex}`,
+				keyword: entry.keyword,
+				operands: { value: entry.operand },
+				appliesTo: baseIdentity,
+				diagnosticCode: `${ROOT}/FUZZ_${index}_${entry.keyword.toUpperCase()}`,
+				origin,
+			})),
+			extensions: [],
+			roles: [],
+			unknownPolicy: "reject",
+			origin,
+		});
+		let valueRef = baseIdentity;
+		for (let depth = 1; depth <= aliasDepth; depth += 1) {
+			const aliasName = `${name}Alias${depth}`;
+			const aliasIdentity = identity(aliasName);
+			types.push({
+				identity: aliasIdentity,
+				displayName: aliasName,
+				kind: "alias",
+				target: valueRef,
+				constraints: depth === aliasDepth
+					? constraints.map((entry, constraintIndex) => ({
+						identity: `${ROOT}/fuzz-constraint/${index}-${constraintIndex}`,
+						keyword: entry.keyword,
+						operands: { value: entry.operand },
+						appliesTo: aliasIdentity,
+						diagnosticCode: `${ROOT}/FUZZ_${index}_${entry.keyword.toUpperCase()}`,
+						origin,
+					}))
+					: [],
+				extensions: [],
+				roles: [],
+				unknownPolicy: "reject",
+				origin,
+			});
+			valueRef = aliasIdentity;
+		}
+		const typeIdentity = identity(name);
+		const fieldIdentity = `${typeIdentity}#value`;
+		const fieldConstraints = aliasDepth === 0
+			? constraints.map((entry, constraintIndex) => ({
+					identity: `${ROOT}/fuzz-constraint/${index}-${constraintIndex}`,
+					keyword: entry.keyword,
+					operands: { value: entry.operand },
+					appliesTo: fieldIdentity,
+					diagnosticCode: `${ROOT}/FUZZ_${index}_${entry.keyword.toUpperCase()}`,
+					origin,
+				}))
+			: [];
+		types.push({
+			identity: typeIdentity,
+			displayName: name,
+			kind: "record",
+			fields: [{
+				identity: fieldIdentity,
+				name: "value",
+				typeRef: valueRef,
+				constraints: fieldConstraints,
+				presence: optional ? "optional" : "required",
+				nullable,
+				multiplicity: nesting === "collection"
+					? { lower: 1, upper: 2, ordered: true, unique: false }
+					: { lower: optional ? 0 : 1, upper: 1, ordered: false, unique: false },
+				defaultKind: "none",
+				extensions: [],
+				origin,
+			}],
+			constraints: [],
+			extensions: [],
+			roles: [],
+			unknownPolicy: "reject",
+			origin,
+		});
+	}
+	return { contractVersion: "2.0.0", source: SOURCE, package: PACKAGE, types, occurrences: [], extensions: [], constructs: [] };
+}
+
 const origin = {
 	source: {
 		sourceIdentity: SOURCE.identity,

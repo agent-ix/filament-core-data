@@ -624,6 +624,10 @@ function delegatingCheckBody(model, entry) {
 	) {
 		return scalarCheckBody(model, entry);
 	}
+	// Native checks are emitted as statements because field checks collect
+	// their failures. Embedding one in the alias delegation conditional would
+	// produce invalid `if (if (...))` source, so render the scalar guard here.
+	if (entry.targetEntry?.native === true) return scalarCheckBody(model, entry);
 	// The predicate call sits in the condition so its `candidate is T` narrows
 	// the value the alias's own constraints are then applied to. The target's
 	// failures are already in `errors`, so nothing is lost by not entering.

@@ -209,6 +209,8 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		expect(
 			new RegExp(String(wideInteger.pattern)).test("18446744073709551616"),
 		).toBe(false);
+		expect(new RegExp(String(wideInteger.pattern)).test("0")).toBe(false);
+		expect(new RegExp(String(wideInteger.pattern)).test("-1")).toBe(false);
 		const decimal = schema("Decimal");
 		expect(decimal.type).toBe("string");
 		expect(new RegExp(String(decimal.pattern)).test("-0.5")).toBe(true);
