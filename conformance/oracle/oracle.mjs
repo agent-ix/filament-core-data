@@ -1182,6 +1182,64 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 	const definitions = resolved.chain
 		.map((identity) => byIdentity.get(identity))
 		.filter((one) => isObject(one));
+	const safeInteger = 2n ** 53n - 1n;
+	let effectiveLower;
+	let effectiveUpper;
+	let lowerConstraint;
+	let upperConstraint;
+	if (scalar === "integer") {
+		for (const definition of definitions) {
+			for (const constraint of Array.isArray(definition.constraints)
+				? definition.constraints
+				: []) {
+				if (
+					!isObject(constraint) ||
+					!["min", "max", "exclusiveMin", "exclusiveMax"].includes(
+						String(constraint.keyword),
+					)
+				)
+					continue;
+				const operand = BigInt(constraint.operands?.value);
+				if (
+					constraint.keyword === "min" &&
+					(effectiveLower === undefined || operand > effectiveLower)
+				) {
+					effectiveLower = operand;
+					lowerConstraint = constraint;
+				}
+				if (
+					constraint.keyword === "exclusiveMin" &&
+					(effectiveLower === undefined || operand + 1n > effectiveLower)
+				) {
+					effectiveLower = operand + 1n;
+					lowerConstraint = constraint;
+				}
+				if (
+					constraint.keyword === "max" &&
+					(effectiveUpper === undefined || operand < effectiveUpper)
+				) {
+					effectiveUpper = operand;
+					upperConstraint = constraint;
+				}
+				if (
+					constraint.keyword === "exclusiveMax" &&
+					(effectiveUpper === undefined || operand - 1n < effectiveUpper)
+				) {
+					effectiveUpper = operand - 1n;
+					upperConstraint = constraint;
+				}
+			}
+		}
+	}
+	if (effectiveLower === undefined) effectiveLower = -safeInteger;
+	if (effectiveUpper === undefined) effectiveUpper = safeInteger;
+	const effectiveRangeFailure =
+		effectiveLower > effectiveUpper
+			? lowerConstraint ?? upperConstraint
+			: undefined;
+	const integerWireIsString =
+		scalar === "integer" &&
+		(effectiveLower < -safeInteger || effectiveUpper > safeInteger);
 	for (const value of values) {
 		if (value === null) {
 			if (options.nullable === true) continue;
@@ -1189,16 +1247,18 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 		}
 		let numeric = value;
 		if (scalar === "integer") {
-			if (options.wire === "string") {
+			if (integerWireIsString) {
 				if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
-					return { ok: false, code: "INVALID_INTEGER_WIRE" };
+					return { ok: false, code: "NOT_AN_INTEGER" };
 				try {
 					numeric = BigInt(value);
 				} catch {
-					return { ok: false, code: "INVALID_INTEGER_WIRE" };
+					return { ok: false, code: "NOT_AN_INTEGER" };
 				}
-			} else if (typeof value !== "number" || !Number.isSafeInteger(value)) {
-				return { ok: false, code: "INVALID_INTEGER_WIRE" };
+			} else if (typeof value !== "number") {
+				return { ok: false, code: "NOT_A_NUMBER" };
+			} else if (!Number.isSafeInteger(value)) {
+				return { ok: false, code: "INTEGER_OUT_OF_SAFE_RANGE" };
 			} else {
 				numeric = BigInt(value);
 			}
@@ -1206,49 +1266,28 @@ export function admitInstance(bundle, typeIdentity, record, options = {}) {
 			if (typeof value !== "number" || !Number.isFinite(value))
 				return { ok: false, code: "INVALID_NUMBER_WIRE" };
 			numeric = scalar === "float32" ? Math.fround(value) : value;
+			if (!Number.isFinite(numeric))
+				return { ok: false, code: "INVALID_NUMBER_WIRE" };
+		}
+		if (effectiveRangeFailure)
+			return { ok: false, code: effectiveRangeFailure.diagnosticCode };
+		if (scalar === "integer") {
+			if (numeric < effectiveLower)
+				return {
+					ok: false,
+					code: lowerConstraint?.diagnosticCode ?? "INTEGER_OUT_OF_SAFE_RANGE",
+				};
+			if (numeric > effectiveUpper)
+				return {
+					ok: false,
+					code: upperConstraint?.diagnosticCode ?? "INTEGER_OUT_OF_SAFE_RANGE",
+				};
 		}
 		for (const definition of definitions) {
 			const constraints = Array.isArray(definition.constraints)
 				? definition.constraints
 				: [];
 			let firstFailure;
-			if (scalar === "integer") {
-				const safe = 2n ** 53n - 1n;
-				let lower = -safe;
-				let upper = safe;
-				let lowerConstraint;
-				let upperConstraint;
-				for (const constraint of constraints) {
-					if (
-						!isObject(constraint) ||
-						!["min", "max", "exclusiveMin", "exclusiveMax"].includes(
-							String(constraint.keyword),
-						)
-					)
-						continue;
-					const operand = BigInt(constraint.operands?.value);
-					if (constraint.keyword === "min" && operand > lower) {
-						lower = operand;
-						lowerConstraint = constraint;
-					}
-					if (constraint.keyword === "exclusiveMin" && operand + 1n > lower) {
-						lower = operand + 1n;
-						lowerConstraint = constraint;
-					}
-					if (constraint.keyword === "max" && operand < upper) {
-						upper = operand;
-						upperConstraint = constraint;
-					}
-					if (constraint.keyword === "exclusiveMax" && operand - 1n < upper) {
-						upper = operand - 1n;
-						upperConstraint = constraint;
-					}
-				}
-				if (lower > upper) {
-					const constraint = lowerConstraint ?? upperConstraint;
-					return { ok: false, code: constraint?.diagnosticCode };
-				}
-			}
 			for (const constraint of constraints) {
 				if (!isObject(constraint) || !["min", "max", "exclusiveMin", "exclusiveMax"].includes(String(constraint.keyword)))
 					continue;

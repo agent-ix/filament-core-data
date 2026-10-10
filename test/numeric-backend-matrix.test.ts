@@ -142,6 +142,38 @@ it("rejects an integer-only-min probe outside the effective safe range", () => {
 	});
 });
 
+it("keeps the impossible integer Rust constructor warning-clean", () => {
+	const rust = emitCrate(
+		{ ir: buildDifferentialFuzzIr(), outputRoot: "generated/rust", limits: RUST_LIMITS } as never,
+		{ licenseText: "" },
+	);
+	const source = [...rust.files]
+		.filter(([path]) => path.endsWith(".rs"))
+		.map(([, text]) => text)
+		.join("\n");
+	expect(source).toContain("let _ = value;");
+	expect(source).not.toContain("-9007199254740991u64");
+});
+
+	it("reports the DifferentialFuzz0 impossible-range diagnostic in TypeScript", async () => {
+	const cases = buildDifferentialFuzzCases();
+	const ir = buildDifferentialFuzzIr();
+	const scratch = mkdtempSync(join(tmpdir(), "fcd-age-2229-fuzz-code-"));
+	try {
+		const generated = await generatedValidators(scratch, ir);
+		const validate = generated.validateDifferentialFuzz0 as (
+			value: unknown,
+		) => { ok: boolean; errors?: readonly { code?: string }[] };
+		const result = validate(fuzzRecordValue(cases[0], cases[0].probes.valid));
+		expect(result.ok).toBe(false);
+		expect(result.errors?.[0]?.code).toBe(
+			"ix://agent-ix/age-2229-numeric-matrix/FUZZ_0_MIN",
+		);
+	} finally {
+		rmSync(scratch, { recursive: true, force: true });
+	}
+}, 120000);
+
 async function generatedValidators(directory: string, ir: any) {
 	writeFileSync(join(directory, "package.json"), '{"type":"module"}\n');
 	writeFileSync(

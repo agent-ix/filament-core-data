@@ -430,6 +430,14 @@ export function buildModel(ir, options = {}) {
 		const scalar = resolveScalar(types, type.identity);
 		if (scalar !== undefined) entry.scalar = scalar;
 		if (type.decimal !== undefined) entry.decimal = type.decimal;
+		if (scalar === "integer") {
+			const bounds = integerBounds(entry.constraints);
+			entry.impossibleIntegerBounds = bounds.lower > bounds.upper;
+			entry.effectiveIntegerBounds = Object.freeze({
+				lower: bounds.lower.toString(),
+				upper: bounds.upper.toString(),
+			});
+		}
 		entry.wideInteger = effectiveWideInteger(types, type.identity);
 
 		if (isRecordShaped(type) || isInstanceless(type)) {

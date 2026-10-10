@@ -333,6 +333,18 @@ function scalarCheckBody(model, entry) {
 		return lines;
 	}
 	const wideInteger = entry.scalar === "integer" && entry.wideInteger;
+	if (entry.scalar === "integer" && entry.impossibleIntegerBounds === true) {
+		const impossible = entry.constraints?.find((one) =>
+			["min", "max", "exclusiveMin", "exclusiveMax"].includes(one.keyword),
+		) ?? entry.constraints?.[0];
+		if (impossible !== undefined) {
+			lines.push(
+				`\tfail(errors, pointer, ${literal(impossible.diagnosticCode)}, ${literal("the integer constraints admit no value")});`,
+				"\treturn false;",
+			);
+			return lines;
+		}
+	}
 	const guardTest = wideInteger ? 'typeof candidate === "string"' : guard.test;
 	const guardCode = wideInteger ? "NOT_AN_INTEGER" : guard.code;
 	lines.push(
@@ -347,6 +359,14 @@ function scalarCheckBody(model, entry) {
 			'\t\tfail(errors, pointer, CODES.NOT_AN_INTEGER, "the value is not a canonical integer string");',
 			"\t\treturn false;",
 			"\t}",
+			...(entry.effectiveIntegerBounds
+				? [
+						`\tif (BigInt(candidate) < BigInt(${literal(entry.effectiveIntegerBounds.lower)}) || BigInt(candidate) > BigInt(${literal(entry.effectiveIntegerBounds.upper)})) {`,
+						'\t\tfail(errors, pointer, CODES.INTEGER_OUT_OF_SAFE_RANGE, "the integer is outside its effective range");',
+						"\t\treturn false;",
+						"\t}",
+					]
+				: []),
 			...constraintStatements(model, entry.identity, "\t"),
 			"\treturn errors.length === before;",
 		);

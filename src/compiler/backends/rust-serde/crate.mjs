@@ -1684,6 +1684,85 @@ function isImpossibleIntegerBound(type, check) {
 	);
 }
 
+/** The effective FR-144 safe interval can itself be empty. */
+function impossibleIntegerRangeCheck(checks) {
+	let lower;
+	let upper;
+	let lowerCheck;
+	let upperCheck;
+	for (const check of checks ?? []) {
+		if (check.form !== "numeric" || check.scalar !== "integer") continue;
+		const value = BigInt(check.value);
+		if (
+			check.keyword === "min" &&
+			(lower === undefined || value > lower)
+		) {
+			lower = value;
+			lowerCheck = check;
+		}
+		if (
+			check.keyword === "exclusiveMin" &&
+			(lower === undefined || value + 1n > lower)
+		) {
+			lower = value + 1n;
+			lowerCheck = check;
+		}
+		if (
+			check.keyword === "max" &&
+			(upper === undefined || value < upper)
+		) {
+			upper = value;
+			upperCheck = check;
+		}
+		if (
+			check.keyword === "exclusiveMax" &&
+			(upper === undefined || value - 1n < upper)
+		) {
+			upper = value - 1n;
+			upperCheck = check;
+		}
+	}
+	if (lower === undefined) lower = -(2n ** 53n - 1n);
+	if (upper === undefined) upper = 2n ** 53n - 1n;
+	return lower > upper ? lowerCheck ?? upperCheck : undefined;
+}
+
+function effectiveIntegerRange(checks) {
+	let lower;
+	let upper;
+	let lowerCheck;
+	let upperCheck;
+	for (const check of checks ?? []) {
+		if (check.form !== "numeric" || check.scalar !== "integer") continue;
+		const value = BigInt(check.value);
+		if (
+			(check.keyword === "min" || check.keyword === "exclusiveMin") &&
+			(lower === undefined ||
+				(check.keyword === "min" ? value : value + 1n) > lower)
+		) {
+			lower = check.keyword === "min" ? value : value + 1n;
+			lowerCheck = check;
+		}
+		if (
+			(check.keyword === "max" || check.keyword === "exclusiveMax") &&
+			(upper === undefined ||
+				(check.keyword === "max" ? value : value - 1n) < upper)
+		) {
+			upper = check.keyword === "max" ? value : value - 1n;
+			upperCheck = check;
+		}
+	}
+	if (lower === undefined && upper === undefined) return undefined;
+	return {
+		lower: lower ?? -(2n ** 53n - 1n),
+		upper: upper ?? 2n ** 53n - 1n,
+		lowerExplicit: lower !== undefined,
+		upperExplicit: upper !== undefined,
+		lowerCheck: lowerCheck ?? upperCheck,
+		upperCheck: upperCheck ?? lowerCheck,
+	};
+}
+
 /**
  * `let inner = <T as Deserialize>::deserialize(deserializer)?;`, wrapped the
  * way `rustfmt` wraps it when the mapped inner type is wide.
@@ -1782,12 +1861,68 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
 			"        }",
 		);
 	}
-	if (checks.length > 0) {
+	const impossibleRange = impossibleIntegerRangeCheck(checks);
+	if (impossibleRange !== undefined) {
+		// The constructor parameter is otherwise unused when the effective
+		// interval is empty; keep the generated crate warning-clean.
+		lines.push("        let _ = value;");
+		lines.push(
+			...callLines(
+				"        ",
+				"return Err(crate::support::ValidationError::new",
+				[
+					rustString(impossibleRange.identity),
+					rustString(impossibleRange.keyword),
+					rustString(""),
+					rustString(String(impossibleRange.value)),
+				],
+				");",
+			),
+		);
+	} else {
+		const effectiveRange = effectiveIntegerRange(checks);
+		if (effectiveRange !== undefined) {
+			const rustInteger = rustIntegerTypeFor(type);
+			const safe = 2n ** 53n - 1n;
+			const emitImplicit = (keyword, check, value, operator) => {
+				lines.push(
+					`        if value ${operator} ${value}${rustInteger} {`,
+					...callLines(
+						"            ",
+						"return Err(crate::support::ValidationError::new",
+						[
+							rustString(check.identity),
+							rustString(keyword),
+							rustString(""),
+							rustString(String(value)),
+						],
+						");",
+					),
+					"        }",
+				);
+			};
+			if (!effectiveRange.lowerExplicit && rustInteger !== "u64")
+				emitImplicit(
+					"min",
+					effectiveRange.lowerCheck,
+					safe,
+					"<",
+				);
+			if (!effectiveRange.upperExplicit)
+				emitImplicit(
+					"max",
+					effectiveRange.upperCheck,
+					safe,
+					">",
+				);
+		}
+		if (checks.length > 0) {
 		lines.push("        {");
 		checks.forEach((check, index) => {
 			lines.push(...renderCheck(type, check, index, expression, subjectScalar));
 		});
 		lines.push("        }");
+	}
 	}
 	lines.push(
 		"        Ok(Self(value))",

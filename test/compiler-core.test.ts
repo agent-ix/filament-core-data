@@ -1670,7 +1670,8 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"namespace AgentIx.Semantic;",
 				"scalar ScalarWidth extends uint8;",
 				"model Bytes is Array<uint8>;",
-				"union Choice { small: int16, smallValue: int16, text: string, }",
+				"model Values is Record<uint64>;",
+				"union Choice { small: int16, smallValue: int16, Items: int16, text: string, }",
 				"model Order { value: string; cancelReason: uint8; cancel_reason: uint8; cancel_param_reason: uint8; }",
 				'@operations("Order")',
 				"interface OrderOperations { cancel(reason: uint8): uint8; reason(reason: uint64): uint64; wide(value: uint64): uint64; }",
@@ -1717,6 +1718,23 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"agent-ix.probe.BYTES_ITEMS_MAX",
 			],
 		]);
+		const values = types.find(
+			(type) => type.displayName === "Values",
+		) as Json;
+		const valuesAlias = types.find(
+			(type) => type.displayName === "ValuesValues",
+		) as Json;
+		expect(values.values).toBe(valuesAlias.identity);
+		expect(valuesAlias.target).toBe("ix://agent-ix/probe/Integer");
+		expect(
+			(valuesAlias.constraints as Json[]).map((one) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toContainEqual([
+			"ix://agent-ix/probe/constraint/Values-values-min",
+			"agent-ix.probe.VALUES_VALUES_MIN",
+		]);
 		const choice = types.find(
 			(type) => type.displayName === "Choice",
 		) as Json;
@@ -1759,6 +1777,22 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		).toContainEqual([
 			"ix://agent-ix/probe/constraint/Choice-smallValue-min",
 			"agent-ix.probe.CHOICE_SMALLVALUE_MIN",
+		]);
+		const itemsVariant = (choice.variants as Json[]).find(
+			(variant) => variant.name === "Items",
+		) as Json;
+		const itemsAlias = types.find(
+			(type) => type.identity === itemsVariant.payloadType,
+		) as Json;
+		expect(itemsAlias.identity).toBe("ix://agent-ix/probe/ChoiceItems");
+		expect(
+			(itemsAlias.constraints as Json[]).map((one) => [
+				one.identity,
+				one.diagnosticCode,
+			]),
+		).toContainEqual([
+			"ix://agent-ix/probe/constraint/Choice-Items-min",
+			"agent-ix.probe.CHOICE_ITEMS_MIN",
 		]);
 		const operation = types.find(
 			(type) => type.displayName === "Order",

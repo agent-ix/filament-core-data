@@ -680,13 +680,7 @@ export function lowerProgram(options) {
 		// constraints retain the authored value-site segments (Bytes-items and
 		// Choice-small).  These identities are the stable FR-053 diagnostic
 		// namespace and must not be derived from the display name.
-		const aliasConstraintParts = nameParts.map((part, index) =>
-			index === 0
-				? String(part)
-				: part === "Items"
-					? "items"
-					: String(part),
-		);
+		const aliasConstraintParts = nameParts.map((part) => String(part));
 		const aliasIdentity = typeIdentity(aliasName);
 		if (!definitions.has(aliasIdentity)) {
 			const constraints = ["min", "max"].map((keyword) => ({
@@ -832,14 +826,14 @@ export function lowerProgram(options) {
 			items = ensureIntegerWidthAlias(
 				declaration.indexer.value,
 				items,
-				[declaration.name, "Items"],
+				[declaration.name, "items"],
 				context.originOf(declaration),
 			);
 			emit({ ...base, items });
 			continue;
 		}
 		if (classification.kind === "map") {
-			const values = resolveMemberType(
+			let values = resolveMemberType(
 				declaration.indexer.value,
 				context.locusOf(declaration),
 			);
@@ -851,6 +845,12 @@ export function lowerProgram(options) {
 				);
 				continue;
 			}
+			values = ensureIntegerWidthAlias(
+				declaration.indexer.value,
+				values,
+				[declaration.name, "values"],
+				context.originOf(declaration),
+			);
 			emit({ ...base, values });
 			continue;
 		}
