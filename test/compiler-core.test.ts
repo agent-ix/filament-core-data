@@ -1436,7 +1436,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		]);
 	});
 
-	/** Traces: TC-434; FR-046-AC-3; FR-144-AC-10, FR-144-AC-11, FR-144-AC-20, FR-144-AC-23. */
+	/** Trace: TC-434; FR-046-AC-3; FR-144-AC-10, FR-144-AC-11, FR-144-AC-20, FR-144-AC-23. */
 	it("maps every built-in scalar row and refuses an unmapped base", async () => {
 		const rows: [string, string][] = [
 			["boolean", "boolean"],
@@ -1477,7 +1477,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		);
 	}, 120000);
 
-	/** Traces: FR-144-AC-11, FR-144-AC-20, FR-144-AC-23. */
+	/** Trace: FR-144-AC-5, FR-144-AC-11, FR-144-AC-20, FR-144-AC-23. */
 	it("lowers a real TypeSpec width and narrowing corpus into usable backend aliases", async () => {
 		const result = await compileSource(
 			[

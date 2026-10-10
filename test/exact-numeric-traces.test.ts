@@ -710,7 +710,7 @@ it("renders decimal equality and uniqueness checks in the generated validator", 
 	);
 });
 
-/** Traces: FR-144-AC-4, FR-144-AC-13, FR-144-AC-17, FR-144-AC-18, FR-144-AC-19. */
+/** Trace: FR-144-AC-4, FR-144-AC-13, FR-144-AC-17, FR-144-AC-18, FR-144-AC-19. */
 it("executes Rust decimal read/write boundaries", () => {
 	const result = emitCrate(
 		{
@@ -846,7 +846,7 @@ fn field_check_matrix_compiles_and_validates() {
 	}
 });
 
-/** Traces: FR-144-AC-3, FR-144-AC-7, FR-144-AC-13, FR-144-AC-18. */
+/** Trace: FR-144-AC-3, FR-144-AC-7, FR-144-AC-13, FR-144-AC-18. */
 it("compiles the float, bounded-integer, enum, and default Rust field matrix", () => {
 	const result = emitCrate(
 		{
@@ -902,7 +902,7 @@ fn every_feature_shape_deserializes_and_defaults() {
 	}
 });
 
-/** Traces: FR-144-AC-3, FR-144-AC-15, FR-144-AC-18, FR-144-AC-19. */
+/** Trace: FR-144-AC-3, FR-144-AC-15, FR-144-AC-18, FR-144-AC-19. */
 it("executes decimal enum equality and unique collection rejection", async () => {
 	const scratch = mkdtempSync(join(tmpdir(), "fcd-exact-numeric-ts-"));
 	try {
@@ -922,7 +922,7 @@ it("executes decimal enum equality and unique collection rejection", async () =>
 	}
 });
 
-/** Traces: FR-144-AC-1, FR-144-AC-7, FR-144-AC-14, FR-144-AC-15, FR-144-AC-17, FR-144-AC-18. */
+/** Trace: FR-144-AC-1, FR-144-AC-7, FR-144-AC-14, FR-144-AC-15, FR-144-AC-17, FR-144-AC-18. */
 it("typechecks the float, bounded-integer, enum, and default TypeScript matrix", async () => {
 	const scratch = mkdtempSync(join(tmpdir(), "fcd-feature-matrix-ts-"));
 	try {
@@ -983,7 +983,7 @@ it("typechecks the float, bounded-integer, enum, and default TypeScript matrix",
 	}
 });
 
-/** Traces: FR-144-AC-1, FR-144-AC-10, FR-144-AC-12, FR-144-AC-15, FR-144-AC-17. */
+/** Trace: FR-144-AC-1, FR-144-AC-10, FR-144-AC-15, FR-144-AC-17. */
 it("AJV-compiles the JSON Schema feature matrix and preserves named wrappers", () => {
 	const result = jsonSchemaBackend.generate({
 		ir: featureOnlyIr(),
@@ -1021,7 +1021,7 @@ it("admits the feature matrix through the semantic reader before generation", ()
 	expect([...readContractIr(featureFieldMatrixIr())]).toEqual([]);
 });
 
-/** Traces: FR-144-AC-5, FR-144-AC-6, FR-144-AC-15, FR-144-AC-19. */
+/** Trace: FR-144-AC-5, FR-144-AC-6, FR-144-AC-15, FR-144-AC-19. */
 it("renders normalized Decimal forms and refuses alias, bound, and native losses", () => {
 	const oracleIr = structuredClone(numericIr());
 	oracleIr.types = oracleIr.types.filter(
@@ -1177,7 +1177,7 @@ it("refuses JSON Schema decimal bounds and decimal unique collections as declare
 	expect(uniqueResult.diagnostics[0].message).toContain("decimal uniqueness");
 });
 
-/** Traces: FR-144-AC-1, FR-144-AC-2, FR-144-AC-8, FR-144-AC-22, FR-144-CON-1. */
+/** Trace: FR-144-AC-1, FR-144-AC-2, FR-144-CON-1. */
 it("compares the Node, Python, and oracle numeric reader verdicts and pointers", async () => {
 	const document = {
 		contractVersion: "2.0.0",

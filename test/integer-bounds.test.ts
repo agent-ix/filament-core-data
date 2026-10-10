@@ -72,7 +72,7 @@ const OUTSIDE_I128 = [
 ];
 
 describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
-	/** Traces: FR-144-AC-2, FR-144-AC-8, FR-144-AC-9. */
+	/** Trace: FR-144-AC-2. */
 	it("the reader accepts canonical strings and refuses the rest (TC-1825)", () => {
 		for (const value of ACCEPTED) {
 			expect(readerCodes(withBound(value)), String(value)).toEqual([]);
@@ -85,7 +85,7 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		}
 	});
 
-	/** Traces: FR-144-AC-2, FR-144-AC-8. */
+	/** Trace: FR-144-AC-2. */
 	it("the oracle accepts canonical strings and refuses the rest (TC-1825)", () => {
 		for (const value of ACCEPTED) {
 			expect(oracleCodes(withBound(value)), String(value)).toEqual([]);
@@ -95,7 +95,7 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		}
 	});
 
-	/** Traces: FR-144-AC-2, FR-144-AC-8, FR-144-CON-1. */
+	/** Trace: FR-144-AC-2, FR-144-CON-1. */
 	it("keeps the reader and oracle diagnoses aligned at integer boundaries", () => {
 		for (const value of [
 			"01",
