@@ -6,13 +6,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 211,
-			"validatingTypes": 140,
+			"declaredTypes": 250,
+			"validatingTypes": 179,
 			"nonValidatingDeclarations": 71,
-			"exercisedTypes": 72,
-			"unexercisedValidatingTypes": 68,
-			"constraintsExercised": 227,
-			"typesRejectingAnEmptyOrUndeclaredValue": 96,
+			"exercisedTypes": 73,
+			"unexercisedValidatingTypes": 106,
+			"constraintsExercised": 303,
+			"typesRejectingAnEmptyOrUndeclaredValue": 134,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
 				"common_schema.ManifestTarget",
@@ -53,6 +53,7 @@
 				"semantic_ir_schema.Constraint",
 				"semantic_ir_schema.ContractItem",
 				"semantic_ir_schema.ContractItem1",
+				"semantic_ir_schema.DecimalPolicy",
 				"semantic_ir_schema.IdentityList",
 				"semantic_ir_schema.ReferencesAdditionalPropertyItem",
 				"semantic_ir_schema.Role",
@@ -842,6 +843,316 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy1",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy10",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy11",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy12",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy13",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy14",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy15",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy16",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy17",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy18",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy19",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy2",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy20",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy21",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy22",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy23",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy24",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy25",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy26",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy27",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy28",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy29",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy3",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy30",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy31",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy32",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy33",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy34",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy35",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy36",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy37",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy38",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy4",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy5",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy6",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy7",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy8",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy9",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "FieldModel",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -1101,13 +1412,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 215,
-			"validatingTypes": 98,
-			"nonValidatingDeclarations": 117,
-			"exercisedTypes": 72,
-			"unexercisedValidatingTypes": 26,
-			"constraintsExercised": 222,
-			"typesRejectingAnEmptyOrUndeclaredValue": 95,
+			"declaredTypes": 254,
+			"validatingTypes": 136,
+			"nonValidatingDeclarations": 118,
+			"exercisedTypes": 73,
+			"unexercisedValidatingTypes": 63,
+			"constraintsExercised": 298,
+			"typesRejectingAnEmptyOrUndeclaredValue": 133,
 			"typesAcceptingAnything": [
 				"module_manifest_schema.Defaults",
 				"module_manifest_schema.LintRuleEntry",
@@ -1672,6 +1983,310 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy1",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy10",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy11",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy12",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy13",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy14",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy15",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy16",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy17",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy18",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy19",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy2",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy20",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy21",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy22",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy23",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy24",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy25",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy26",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy27",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy28",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy29",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy3",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy30",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy31",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy32",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy33",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy34",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy35",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy36",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy37",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy38",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy4",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy5",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy6",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy7",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy8",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy9",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "FieldModel",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -1907,6 +2522,7 @@
 				"closure-additional",
 				"closure-unevaluated",
 				"constraints-array-unique",
+				"constraints-decimal-policy",
 				"constraints-numeric",
 				"constraints-string",
 				"description",
@@ -1924,6 +2540,7 @@
 			"statement": "This family was declared, measured, and judged not-qualified. No package is emitted for it, so it is covered by neither static checking nor runtime validation, and it is not counted as either.",
 			"lost": [
 				"constraints-array-unique",
+				"constraints-decimal-policy",
 				"constraints-numeric",
 				"constraints-string",
 				"default-non-nullable",
@@ -1939,11 +2556,11 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 215,
-			"validatingTypes": 98,
-			"nonValidatingDeclarations": 117,
+			"declaredTypes": 254,
+			"validatingTypes": 136,
+			"nonValidatingDeclarations": 118,
 			"exercisedTypes": 63,
-			"unexercisedValidatingTypes": 35,
+			"unexercisedValidatingTypes": 73,
 			"constraintsExercised": 217,
 			"typesRejectingAnEmptyOrUndeclaredValue": 92,
 			"typesAcceptingAnything": [
@@ -1952,7 +2569,45 @@
 				"module_manifest_schema.LocatorAssert",
 				"module_manifest_schema.Nav",
 				"module_manifest_schema.Pattern",
-				"module_manifest_schema.YieldPattern"
+				"module_manifest_schema.YieldPattern",
+				"semantic_ir_schema.DecimalPolicy1",
+				"semantic_ir_schema.DecimalPolicy10",
+				"semantic_ir_schema.DecimalPolicy11",
+				"semantic_ir_schema.DecimalPolicy12",
+				"semantic_ir_schema.DecimalPolicy13",
+				"semantic_ir_schema.DecimalPolicy14",
+				"semantic_ir_schema.DecimalPolicy15",
+				"semantic_ir_schema.DecimalPolicy16",
+				"semantic_ir_schema.DecimalPolicy17",
+				"semantic_ir_schema.DecimalPolicy18",
+				"semantic_ir_schema.DecimalPolicy19",
+				"semantic_ir_schema.DecimalPolicy2",
+				"semantic_ir_schema.DecimalPolicy20",
+				"semantic_ir_schema.DecimalPolicy21",
+				"semantic_ir_schema.DecimalPolicy22",
+				"semantic_ir_schema.DecimalPolicy23",
+				"semantic_ir_schema.DecimalPolicy24",
+				"semantic_ir_schema.DecimalPolicy25",
+				"semantic_ir_schema.DecimalPolicy26",
+				"semantic_ir_schema.DecimalPolicy27",
+				"semantic_ir_schema.DecimalPolicy28",
+				"semantic_ir_schema.DecimalPolicy29",
+				"semantic_ir_schema.DecimalPolicy3",
+				"semantic_ir_schema.DecimalPolicy30",
+				"semantic_ir_schema.DecimalPolicy31",
+				"semantic_ir_schema.DecimalPolicy32",
+				"semantic_ir_schema.DecimalPolicy33",
+				"semantic_ir_schema.DecimalPolicy34",
+				"semantic_ir_schema.DecimalPolicy35",
+				"semantic_ir_schema.DecimalPolicy36",
+				"semantic_ir_schema.DecimalPolicy37",
+				"semantic_ir_schema.DecimalPolicy38",
+				"semantic_ir_schema.DecimalPolicy4",
+				"semantic_ir_schema.DecimalPolicy5",
+				"semantic_ir_schema.DecimalPolicy6",
+				"semantic_ir_schema.DecimalPolicy7",
+				"semantic_ir_schema.DecimalPolicy8",
+				"semantic_ir_schema.DecimalPolicy9"
 			],
 			"typesAcceptingAnythingNote": "The generator emits one root model per input document, over a document root that declares no instance obligation. Such a model accepting any value is faithful, and the FR-078 inspection classifies the same annotation `sanctioned`.",
 			"lost": [
@@ -2511,6 +3166,234 @@
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy1",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy10",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy11",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy12",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy13",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy14",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy15",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy16",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy17",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy18",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy19",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy2",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy20",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy21",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy22",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy23",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy24",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy25",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy26",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy27",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy28",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy29",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy3",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy30",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy31",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy32",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy33",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy34",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy35",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy36",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy37",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy38",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy4",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy5",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy6",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy7",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy8",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "DecimalPolicy9",
+					"exercised": false,
+					"why": "no schema node carries this type's property set"
 				},
 				{
 					"module": "semantic_ir_schema",

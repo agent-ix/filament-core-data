@@ -11,6 +11,7 @@ import json
 import pathlib
 import subprocess
 import sys
+import tomllib
 from typing import Any
 
 import pytest
@@ -44,6 +45,7 @@ CONSTRUCT_AREAS = {
     "closure-unevaluated",
     "constraints-string",
     "constraints-numeric",
+    "constraints-decimal-policy",
     "constraints-array-unique",
     "string-format",
     "alias",
@@ -281,9 +283,11 @@ def test_no_backend_path_reaches_a_published_manifest() -> None:
     package = json.loads((REPO / "package.json").read_text())
     joined = json.dumps(package)
     assert "python_backend" not in joined
-    pyproject = (REPO / "pyproject.toml").read_text()
-    include = pyproject.split("include = [")[1].split("]")[0]
-    assert "python_backend" not in include
+    pyproject = tomllib.loads((REPO / "pyproject.toml").read_text())
+    poetry = pyproject.get("tool", {}).get("poetry", {})
+    assert poetry.get("package-mode") is False
+    for key in ("packages", "include"):
+        assert "python_backend" not in json.dumps(poetry.get(key, []))
 
 
 def test_strict_type_checking_reports_no_error() -> None:
@@ -354,6 +358,41 @@ def test_a_retained_constraint_is_enforced_at_run_time() -> None:
     assert "startLine" in module.rejects_out_of_range()
     assert "extra" in module.rejects_unknown_member()
     assert "path" in module.rejects_escaping_path()
+
+
+@pytest.mark.parametrize(
+    "profile_id", ["pydantic_v2_basemodel", "pydantic_v2_dataclass", "msgspec_struct"]
+)
+def test_decimal_policy_rejects_scale_above_precision(profile_id: str) -> None:
+    """TC-936: FR-080-AC-4."""
+    # Trace: FR-080-AC-4.
+    import importlib  # noqa: PLC0415
+
+    module = importlib.import_module(
+        f"python_backend.generated.{profile_id}.semantic_ir_schema"
+    )
+    value = {"precision": 3, "scale": 2}
+    invalid = {"precision": 3, "scale": 4}
+    if profile_id == "pydantic_v2_basemodel":
+        from pydantic import ValidationError  # noqa: PLC0415
+
+        validator = module.DecimalPolicy.model_validate
+        failure = ValidationError
+    elif profile_id == "pydantic_v2_dataclass":
+        from pydantic import TypeAdapter, ValidationError  # noqa: PLC0415
+
+        validator = TypeAdapter(module.DecimalPolicy).validate_python
+        failure = ValidationError
+    else:
+        import msgspec  # noqa: PLC0415
+
+        def validator(item: dict[str, int]) -> object:
+            return msgspec.convert(item, type=module.DecimalPolicy)
+
+        failure = msgspec.ValidationError
+    assert validator(value)
+    with pytest.raises(failure):
+        validator(invalid)
 
 
 def test_a_recorded_loss_is_real(tmp_path: pathlib.Path) -> None:

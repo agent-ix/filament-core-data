@@ -150,6 +150,161 @@ class ConstructKind(Struct):
 type ContractItem1 = Annotated[str, Meta(min_length=1)]
 
 
+class DecimalPolicy1(Struct, tag_field='precision', tag=1):
+    scale: Annotated[int, Meta(ge=0, le=1)]
+
+
+class DecimalPolicy2(Struct, tag_field='precision', tag=2):
+    scale: Annotated[int, Meta(ge=0, le=2)]
+
+
+class DecimalPolicy3(Struct, tag_field='precision', tag=3):
+    scale: Annotated[int, Meta(ge=0, le=3)]
+
+
+class DecimalPolicy4(Struct, tag_field='precision', tag=4):
+    scale: Annotated[int, Meta(ge=0, le=4)]
+
+
+class DecimalPolicy5(Struct, tag_field='precision', tag=5):
+    scale: Annotated[int, Meta(ge=0, le=5)]
+
+
+class DecimalPolicy6(Struct, tag_field='precision', tag=6):
+    scale: Annotated[int, Meta(ge=0, le=6)]
+
+
+class DecimalPolicy7(Struct, tag_field='precision', tag=7):
+    scale: Annotated[int, Meta(ge=0, le=7)]
+
+
+class DecimalPolicy8(Struct, tag_field='precision', tag=8):
+    scale: Annotated[int, Meta(ge=0, le=8)]
+
+
+class DecimalPolicy9(Struct, tag_field='precision', tag=9):
+    scale: Annotated[int, Meta(ge=0, le=9)]
+
+
+class DecimalPolicy10(Struct, tag_field='precision', tag=10):
+    scale: Annotated[int, Meta(ge=0, le=10)]
+
+
+class DecimalPolicy11(Struct, tag_field='precision', tag=11):
+    scale: Annotated[int, Meta(ge=0, le=11)]
+
+
+class DecimalPolicy12(Struct, tag_field='precision', tag=12):
+    scale: Annotated[int, Meta(ge=0, le=12)]
+
+
+class DecimalPolicy13(Struct, tag_field='precision', tag=13):
+    scale: Annotated[int, Meta(ge=0, le=13)]
+
+
+class DecimalPolicy14(Struct, tag_field='precision', tag=14):
+    scale: Annotated[int, Meta(ge=0, le=14)]
+
+
+class DecimalPolicy15(Struct, tag_field='precision', tag=15):
+    scale: Annotated[int, Meta(ge=0, le=15)]
+
+
+class DecimalPolicy16(Struct, tag_field='precision', tag=16):
+    scale: Annotated[int, Meta(ge=0, le=16)]
+
+
+class DecimalPolicy17(Struct, tag_field='precision', tag=17):
+    scale: Annotated[int, Meta(ge=0, le=17)]
+
+
+class DecimalPolicy18(Struct, tag_field='precision', tag=18):
+    scale: Annotated[int, Meta(ge=0, le=18)]
+
+
+class DecimalPolicy19(Struct, tag_field='precision', tag=19):
+    scale: Annotated[int, Meta(ge=0, le=19)]
+
+
+class DecimalPolicy20(Struct, tag_field='precision', tag=20):
+    scale: Annotated[int, Meta(ge=0, le=20)]
+
+
+class DecimalPolicy21(Struct, tag_field='precision', tag=21):
+    scale: Annotated[int, Meta(ge=0, le=21)]
+
+
+class DecimalPolicy22(Struct, tag_field='precision', tag=22):
+    scale: Annotated[int, Meta(ge=0, le=22)]
+
+
+class DecimalPolicy23(Struct, tag_field='precision', tag=23):
+    scale: Annotated[int, Meta(ge=0, le=23)]
+
+
+class DecimalPolicy24(Struct, tag_field='precision', tag=24):
+    scale: Annotated[int, Meta(ge=0, le=24)]
+
+
+class DecimalPolicy25(Struct, tag_field='precision', tag=25):
+    scale: Annotated[int, Meta(ge=0, le=25)]
+
+
+class DecimalPolicy26(Struct, tag_field='precision', tag=26):
+    scale: Annotated[int, Meta(ge=0, le=26)]
+
+
+class DecimalPolicy27(Struct, tag_field='precision', tag=27):
+    scale: Annotated[int, Meta(ge=0, le=27)]
+
+
+class DecimalPolicy28(Struct, tag_field='precision', tag=28):
+    scale: Annotated[int, Meta(ge=0, le=28)]
+
+
+class DecimalPolicy29(Struct, tag_field='precision', tag=29):
+    scale: Annotated[int, Meta(ge=0, le=29)]
+
+
+class DecimalPolicy30(Struct, tag_field='precision', tag=30):
+    scale: Annotated[int, Meta(ge=0, le=30)]
+
+
+class DecimalPolicy31(Struct, tag_field='precision', tag=31):
+    scale: Annotated[int, Meta(ge=0, le=31)]
+
+
+class DecimalPolicy32(Struct, tag_field='precision', tag=32):
+    scale: Annotated[int, Meta(ge=0, le=32)]
+
+
+class DecimalPolicy33(Struct, tag_field='precision', tag=33):
+    scale: Annotated[int, Meta(ge=0, le=33)]
+
+
+class DecimalPolicy34(Struct, tag_field='precision', tag=34):
+    scale: Annotated[int, Meta(ge=0, le=34)]
+
+
+class DecimalPolicy35(Struct, tag_field='precision', tag=35):
+    scale: Annotated[int, Meta(ge=0, le=35)]
+
+
+class DecimalPolicy36(Struct, tag_field='precision', tag=36):
+    scale: Annotated[int, Meta(ge=0, le=36)]
+
+
+class DecimalPolicy37(Struct, tag_field='precision', tag=37):
+    scale: Annotated[int, Meta(ge=0, le=37)]
+
+
+class DecimalPolicy38(Struct, tag_field='precision', tag=38):
+    scale: Annotated[int, Meta(ge=0, le=38)]
+
+
+type DecimalPolicy = DecimalPolicy1 | DecimalPolicy2 | DecimalPolicy3 | DecimalPolicy4 | DecimalPolicy5 | DecimalPolicy6 | DecimalPolicy7 | DecimalPolicy8 | DecimalPolicy9 | DecimalPolicy10 | DecimalPolicy11 | DecimalPolicy12 | DecimalPolicy13 | DecimalPolicy14 | DecimalPolicy15 | DecimalPolicy16 | DecimalPolicy17 | DecimalPolicy18 | DecimalPolicy19 | DecimalPolicy20 | DecimalPolicy21 | DecimalPolicy22 | DecimalPolicy23 | DecimalPolicy24 | DecimalPolicy25 | DecimalPolicy26 | DecimalPolicy27 | DecimalPolicy28 | DecimalPolicy29 | DecimalPolicy30 | DecimalPolicy31 | DecimalPolicy32 | DecimalPolicy33 | DecimalPolicy34 | DecimalPolicy35 | DecimalPolicy36 | DecimalPolicy37 | DecimalPolicy38
+
+
 class DefaultKind(Enum):
     none = 'none'
     semantic = 'semantic'
@@ -183,6 +338,7 @@ class Returns(Struct):
     multiplicity: Multiplicity
     nullable: bool
     typeRef: common_schema.SemanticIdentity
+    decimal: DecimalPolicy | UnsetType = UNSET
 
 
 class Extent(Enum):
@@ -258,7 +414,9 @@ type Role = Annotated[
 class Scalar(Enum):
     boolean = 'boolean'
     integer = 'integer'
-    number = 'number'
+    decimal = 'decimal'
+    float32 = 'float32'
+    float64 = 'float64'
     string = 'string'
     bytes = 'bytes'
     date = 'date'
@@ -361,6 +519,7 @@ class Field(Struct):
     presence: Presence
     typeRef: common_schema.SemanticIdentity
     constraints: list[Constraint] | UnsetType = UNSET
+    decimal: DecimalPolicy | UnsetType = UNSET
     defaultValue: Any | UnsetType = UNSET
     extensions: list[common_schema.Extension] | UnsetType = UNSET
     redefines: common_schema.SemanticIdentity | UnsetType = UNSET
@@ -470,6 +629,7 @@ class TypeDefinition(Struct):
     unknownPolicy: common_schema.UnknownPolicy
     abstract: bool | UnsetType = UNSET
     clauses: list[Clause] | UnsetType = UNSET
+    decimal: DecimalPolicy | UnsetType = UNSET
     declaredType: common_schema.SemanticIdentity | UnsetType = UNSET
     direction: Direction1 | UnsetType = UNSET
     featureOrder: (

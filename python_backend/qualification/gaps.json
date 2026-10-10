@@ -56,6 +56,15 @@
 			"note": "No family carries it. The contract states set semantics and every Python surface renders a list."
 		},
 		{
+			"construct": "decimal precision and scale condition",
+			"probe": "constraints-decimal-policy",
+			"family": "stdlib_dataclass",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "Scale must not exceed precision when both properties are present."
+		},
+		{
 			"construct": "numeric constraints",
 			"probe": "constraints-numeric",
 			"family": "stdlib_dataclass",
@@ -126,6 +135,15 @@
 			"closableByPreparation": false,
 			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
 			"note": "No family carries it. The contract states set semantics and every Python surface renders a list."
+		},
+		{
+			"construct": "decimal precision and scale condition",
+			"probe": "constraints-decimal-policy",
+			"family": "typed_dict",
+			"severity": "medium",
+			"closableByPreparation": false,
+			"disposition": "recorded; the pinned generator does not carry this construct into this family and no schema rewrite can add it. Upstream is the place to fix it; this repository records the loss.",
+			"note": "Scale must not exceed precision when both properties are present."
 		},
 		{
 			"construct": "numeric constraints",

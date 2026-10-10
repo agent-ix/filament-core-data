@@ -182,6 +182,355 @@ class ContractItem1(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
+class DecimalPolicy1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[1], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=1)]
+
+
+class DecimalPolicy2(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[2], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=2)]
+
+
+class DecimalPolicy3(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[3], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=3)]
+
+
+class DecimalPolicy4(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[4], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=4)]
+
+
+class DecimalPolicy5(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[5], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=5)]
+
+
+class DecimalPolicy6(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[6], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=6)]
+
+
+class DecimalPolicy7(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[7], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=7)]
+
+
+class DecimalPolicy8(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[8], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=8)]
+
+
+class DecimalPolicy9(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[9], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=9)]
+
+
+class DecimalPolicy10(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[10], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=10)]
+
+
+class DecimalPolicy11(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[11], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=11)]
+
+
+class DecimalPolicy12(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[12], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=12)]
+
+
+class DecimalPolicy13(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[13], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=13)]
+
+
+class DecimalPolicy14(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[14], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=14)]
+
+
+class DecimalPolicy15(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[15], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=15)]
+
+
+class DecimalPolicy16(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[16], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=16)]
+
+
+class DecimalPolicy17(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[17], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=17)]
+
+
+class DecimalPolicy18(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[18], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=18)]
+
+
+class DecimalPolicy19(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[19], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=19)]
+
+
+class DecimalPolicy20(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[20], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=20)]
+
+
+class DecimalPolicy21(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[21], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=21)]
+
+
+class DecimalPolicy22(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[22], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=22)]
+
+
+class DecimalPolicy23(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[23], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=23)]
+
+
+class DecimalPolicy24(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[24], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=24)]
+
+
+class DecimalPolicy25(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[25], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=25)]
+
+
+class DecimalPolicy26(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[26], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=26)]
+
+
+class DecimalPolicy27(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[27], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=27)]
+
+
+class DecimalPolicy28(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[28], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=28)]
+
+
+class DecimalPolicy29(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[29], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=29)]
+
+
+class DecimalPolicy30(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[30], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=30)]
+
+
+class DecimalPolicy31(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[31], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=31)]
+
+
+class DecimalPolicy32(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[32], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=32)]
+
+
+class DecimalPolicy33(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[33], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=33)]
+
+
+class DecimalPolicy34(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[34], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=34)]
+
+
+class DecimalPolicy35(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[35], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=35)]
+
+
+class DecimalPolicy36(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[36], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=36)]
+
+
+class DecimalPolicy37(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[37], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=37)]
+
+
+class DecimalPolicy38(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    precision: Annotated[Literal[38], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=38)]
+
+
+class DecimalPolicy(
+    RootModel[
+        DecimalPolicy1
+        | DecimalPolicy2
+        | DecimalPolicy3
+        | DecimalPolicy4
+        | DecimalPolicy5
+        | DecimalPolicy6
+        | DecimalPolicy7
+        | DecimalPolicy8
+        | DecimalPolicy9
+        | DecimalPolicy10
+        | DecimalPolicy11
+        | DecimalPolicy12
+        | DecimalPolicy13
+        | DecimalPolicy14
+        | DecimalPolicy15
+        | DecimalPolicy16
+        | DecimalPolicy17
+        | DecimalPolicy18
+        | DecimalPolicy19
+        | DecimalPolicy20
+        | DecimalPolicy21
+        | DecimalPolicy22
+        | DecimalPolicy23
+        | DecimalPolicy24
+        | DecimalPolicy25
+        | DecimalPolicy26
+        | DecimalPolicy27
+        | DecimalPolicy28
+        | DecimalPolicy29
+        | DecimalPolicy30
+        | DecimalPolicy31
+        | DecimalPolicy32
+        | DecimalPolicy33
+        | DecimalPolicy34
+        | DecimalPolicy35
+        | DecimalPolicy36
+        | DecimalPolicy37
+        | DecimalPolicy38
+    ]
+):
+    root: DecimalPolicy1 | DecimalPolicy2 | DecimalPolicy3 | DecimalPolicy4 | DecimalPolicy5 | DecimalPolicy6 | DecimalPolicy7 | DecimalPolicy8 | DecimalPolicy9 | DecimalPolicy10 | DecimalPolicy11 | DecimalPolicy12 | DecimalPolicy13 | DecimalPolicy14 | DecimalPolicy15 | DecimalPolicy16 | DecimalPolicy17 | DecimalPolicy18 | DecimalPolicy19 | DecimalPolicy20 | DecimalPolicy21 | DecimalPolicy22 | DecimalPolicy23 | DecimalPolicy24 | DecimalPolicy25 | DecimalPolicy26 | DecimalPolicy27 | DecimalPolicy28 | DecimalPolicy29 | DecimalPolicy30 | DecimalPolicy31 | DecimalPolicy32 | DecimalPolicy33 | DecimalPolicy34 | DecimalPolicy35 | DecimalPolicy36 | DecimalPolicy37 | DecimalPolicy38
+
+
 class DefaultKind(Enum):
     none = 'none'
     semantic = 'semantic'
@@ -222,6 +571,7 @@ class Returns(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
+    decimal: DecimalPolicy | None = None
     multiplicity: Multiplicity
     nullable: bool
     typeRef: common_schema.SemanticIdentity
@@ -307,7 +657,9 @@ class Role(RootModel[str]):
 class Scalar(Enum):
     boolean = 'boolean'
     integer = 'integer'
-    number = 'number'
+    decimal = 'decimal'
+    float32 = 'float32'
+    float64 = 'float64'
     string = 'string'
     bytes = 'bytes'
     date = 'date'
@@ -442,6 +794,7 @@ class FieldModel(BaseModel):
         extra='forbid',
     )
     constraints: list[Constraint] | None = None
+    decimal: DecimalPolicy | None = None
     defaultKind: DefaultKind
     defaultValue: Any | None = None
     extensions: list[common_schema.Extension] | None = None
@@ -586,6 +939,7 @@ class TypeDefinition(BaseModel):
     abstract: bool | None = None
     clauses: list[Clause] | None = None
     constraints: list[Constraint]
+    decimal: DecimalPolicy | None = None
     declaredType: common_schema.SemanticIdentity | None = None
     direction: Direction1 | None = None
     displayName: Annotated[str, Field(min_length=1)]

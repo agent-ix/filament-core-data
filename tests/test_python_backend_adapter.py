@@ -6,6 +6,7 @@ Trace ids live in each test's own docstring; see the note in
 
 from __future__ import annotations
 
+import copy
 import json
 import pathlib
 import re
@@ -177,6 +178,60 @@ def test_unevaluated_properties_is_rewritten_at_any_depth(closure: Any) -> None:
     assert len(prepared.preparation) == 2
 
 
+def test_conditional_numeric_rewrite_preserves_domain_and_existing_bounds() -> None:
+    """Conditional numeric rewrites preserve the schema's domain bounds."""
+    # Trace: FR-074-AC-8, FR-074-CON-2.
+    policy = {
+        "type": "object",
+        "required": ["precision", "scale"],
+        "properties": {
+            "precision": {"type": "integer", "minimum": 1, "maximum": 2},
+            "scale": {"type": "integer", "minimum": 0, "maximum": 0},
+        },
+        "allOf": [
+            {
+                "if": {"properties": {"precision": {"const": precision}}},
+                "then": {"properties": {"scale": {"maximum": precision}}},
+            }
+            for precision in (1, 2)
+        ],
+        "additionalProperties": False,
+    }
+    prepared = prepare.prepare_for_python(policy)
+    document = prepared.documents["input.schema.json"]
+    assert len(document["oneOf"]) == 2
+    assert [
+        branch["properties"]["scale"]["maximum"] for branch in document["oneOf"]
+    ] == [0, 0]
+
+    partial = dict(policy)
+    partial["allOf"] = partial["allOf"][:1]
+    unchanged = prepare.prepare_for_python(partial)
+    assert unchanged.preparation == []
+    assert "allOf" in unchanged.documents["input.schema.json"]
+
+    # The finite-union rewrite is deliberately conservative: an extra
+    # predicate, a fractional bound, or a boolean masquerading as an integer
+    # must remain in the source form so no condition is silently dropped.
+    for mutate in (
+        lambda value: value["allOf"][0]["if"].update(required=["precision"]),
+        lambda value: value["allOf"][0]["then"]["properties"]["scale"].update(
+            maximum=1.5
+        ),
+        lambda value: value["properties"]["scale"].update(maximum=0.5),
+        lambda value: value["allOf"][0]["if"]["properties"]["precision"].update(
+            const=True
+        ),
+        lambda value: value["properties"]["precision"].update(maximum=True),
+        lambda value: value["properties"]["precision"].update(const=2),
+    ):
+        candidate = copy.deepcopy(policy)
+        mutate(candidate)
+        result = prepare.prepare_for_python(candidate)
+        assert result.preparation == []
+        assert "allOf" in result.documents["input.schema.json"]
+
+
 def test_conflicting_closure_raises_and_agreeing_closure_does_not() -> None:
     """TC-866: FR-074-AC-4."""
     with pytest.raises(prepare.PreparationConflictError) as raised:
@@ -225,6 +280,11 @@ def test_the_preparation_record_is_complete_and_empty_when_nothing_applies() -> 
             "rule": "enum-default-conflict-dropped",
             "document": "module-manifest.schema.json",
             "pointer": "/properties/semantic/properties/legacy_forms",
+        },
+        {
+            "rule": "conditional-numeric-to-one-of",
+            "document": "semantic-ir.schema.json",
+            "pointer": "/$defs/decimalPolicy",
         },
     ]
 
@@ -282,13 +342,89 @@ def test_no_constraint_keyword_and_no_reference_is_lost() -> None:
     Two documents validate identically whether or not it is present, so
     dropping it changes nothing this test exists to catch.
     """
+    # Trace: FR-074-AC-8, FR-074-CON-2.
     prepared = prepare.prepare_input_set(PUBLISHED)
     for path in PUBLISHED:
+        raw_document = json.loads(path.read_text())
+        prepared_document = prepared.documents[path.name]
+        if path.name == "semantic-ir.schema.json":
+            raw_policy = raw_document["$defs"]["decimalPolicy"]
+            prepared_policy = prepared_document["$defs"]["decimalPolicy"]
+            assert set(raw_policy) == {
+                "type",
+                "required",
+                "properties",
+                "allOf",
+                "additionalProperties",
+            }
+            assert set(prepared_policy) == {"oneOf"}
+            assert len(prepared_policy["oneOf"]) == len(raw_policy["allOf"])
+            assert "allOf" in raw_policy
+            assert "oneOf" in prepared_policy
+            for branch, clause in zip(prepared_policy["oneOf"], raw_policy["allOf"]):
+                assert set(branch) == {
+                    "type",
+                    "required",
+                    "properties",
+                    "additionalProperties",
+                }
+                assert branch["type"] == raw_policy["type"]
+                assert branch["required"] == raw_policy["required"]
+                assert (
+                    branch["additionalProperties"] == raw_policy["additionalProperties"]
+                )
+                assert set(branch["properties"]) == {"precision", "scale"}
+                assert set(branch["properties"]["precision"]) == {
+                    "type",
+                    "minimum",
+                    "maximum",
+                    "const",
+                }
+                assert set(branch["properties"]["scale"]) == {
+                    "type",
+                    "minimum",
+                    "maximum",
+                }
+                assert (
+                    branch["properties"]["precision"]["const"]
+                    == clause["if"]["properties"]["precision"]["const"]
+                )
+                assert (
+                    branch["properties"]["precision"]["type"]
+                    == raw_policy["properties"]["precision"]["type"]
+                )
+                assert (
+                    branch["properties"]["scale"]["maximum"]
+                    == clause["then"]["properties"]["scale"]["maximum"]
+                )
+                assert (
+                    branch["properties"]["scale"]["minimum"]
+                    == raw_policy["properties"]["scale"]["minimum"]
+                )
+            # The conditional relation is intentionally represented by the
+            # finite union; all branch shape and constraint keywords remain
+            # visible to the comparison below.
+            raw_document["$defs"] = {
+                key: value
+                for key, value in raw_document["$defs"].items()
+                if key != "decimalPolicy"
+            }
+            prepared_document["$defs"] = {
+                key: value
+                for key, value in prepared_document["$defs"].items()
+                if key != "decimalPolicy"
+            }
         before: list[str] = []
         after: list[str] = []
-        _keywords(json.loads(path.read_text()), before)
-        _keywords(prepared.documents[path.name], after)
-        changed = {"unevaluatedProperties", "additionalProperties", "default"}
+        _keywords(raw_document, before)
+        _keywords(prepared_document, after)
+        changed = {
+            "unevaluatedProperties",
+            "additionalProperties",
+            "default",
+            "allOf",
+            "oneOf",
+        }
         assert sorted(k for k in before if k not in changed) == sorted(
             k for k in after if k not in changed
         )

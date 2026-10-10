@@ -12,5 +12,5 @@ class DecimalPolicy(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    precision: Annotated[int, Field(ge=1, le=2147483647)]
-    scale: Annotated[int, Field(ge=0, le=2147483647)]
+    precision: Annotated[int, Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=38)]

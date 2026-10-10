@@ -160,6 +160,237 @@ class ConstructKind:
 type ContractItem1 = Annotated[str, Field(min_length=1)]
 
 
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy1:
+    precision: Annotated[Literal[1], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=1)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy2:
+    precision: Annotated[Literal[2], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=2)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy3:
+    precision: Annotated[Literal[3], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=3)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy4:
+    precision: Annotated[Literal[4], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=4)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy5:
+    precision: Annotated[Literal[5], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=5)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy6:
+    precision: Annotated[Literal[6], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=6)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy7:
+    precision: Annotated[Literal[7], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=7)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy8:
+    precision: Annotated[Literal[8], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=8)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy9:
+    precision: Annotated[Literal[9], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=9)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy10:
+    precision: Annotated[Literal[10], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=10)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy11:
+    precision: Annotated[Literal[11], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=11)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy12:
+    precision: Annotated[Literal[12], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=12)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy13:
+    precision: Annotated[Literal[13], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=13)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy14:
+    precision: Annotated[Literal[14], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=14)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy15:
+    precision: Annotated[Literal[15], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=15)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy16:
+    precision: Annotated[Literal[16], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=16)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy17:
+    precision: Annotated[Literal[17], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=17)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy18:
+    precision: Annotated[Literal[18], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=18)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy19:
+    precision: Annotated[Literal[19], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=19)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy20:
+    precision: Annotated[Literal[20], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=20)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy21:
+    precision: Annotated[Literal[21], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=21)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy22:
+    precision: Annotated[Literal[22], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=22)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy23:
+    precision: Annotated[Literal[23], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=23)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy24:
+    precision: Annotated[Literal[24], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=24)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy25:
+    precision: Annotated[Literal[25], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=25)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy26:
+    precision: Annotated[Literal[26], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=26)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy27:
+    precision: Annotated[Literal[27], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=27)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy28:
+    precision: Annotated[Literal[28], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=28)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy29:
+    precision: Annotated[Literal[29], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=29)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy30:
+    precision: Annotated[Literal[30], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=30)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy31:
+    precision: Annotated[Literal[31], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=31)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy32:
+    precision: Annotated[Literal[32], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=32)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy33:
+    precision: Annotated[Literal[33], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=33)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy34:
+    precision: Annotated[Literal[34], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=34)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy35:
+    precision: Annotated[Literal[35], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=35)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy36:
+    precision: Annotated[Literal[36], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=36)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy37:
+    precision: Annotated[Literal[37], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=37)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class DecimalPolicy38:
+    precision: Annotated[Literal[38], Field(ge=1, le=38)]
+    scale: Annotated[int, Field(ge=0, le=38)]
+
+
+type DecimalPolicy = DecimalPolicy1 | DecimalPolicy2 | DecimalPolicy3 | DecimalPolicy4 | DecimalPolicy5 | DecimalPolicy6 | DecimalPolicy7 | DecimalPolicy8 | DecimalPolicy9 | DecimalPolicy10 | DecimalPolicy11 | DecimalPolicy12 | DecimalPolicy13 | DecimalPolicy14 | DecimalPolicy15 | DecimalPolicy16 | DecimalPolicy17 | DecimalPolicy18 | DecimalPolicy19 | DecimalPolicy20 | DecimalPolicy21 | DecimalPolicy22 | DecimalPolicy23 | DecimalPolicy24 | DecimalPolicy25 | DecimalPolicy26 | DecimalPolicy27 | DecimalPolicy28 | DecimalPolicy29 | DecimalPolicy30 | DecimalPolicy31 | DecimalPolicy32 | DecimalPolicy33 | DecimalPolicy34 | DecimalPolicy35 | DecimalPolicy36 | DecimalPolicy37 | DecimalPolicy38
+
+
 class DefaultKind(Enum):
     none = 'none'
     semantic = 'semantic'
@@ -196,6 +427,7 @@ class Returns:
     multiplicity: Multiplicity
     nullable: bool
     typeRef: common_schema.SemanticIdentity
+    decimal: DecimalPolicy | None = None
 
 
 class Extent(Enum):
@@ -273,7 +505,9 @@ type Role = Annotated[
 class Scalar(Enum):
     boolean = 'boolean'
     integer = 'integer'
-    number = 'number'
+    decimal = 'decimal'
+    float32 = 'float32'
+    float64 = 'float64'
     string = 'string'
     bytes = 'bytes'
     date = 'date'
@@ -386,6 +620,7 @@ class FieldModel:
     presence: Presence
     typeRef: common_schema.SemanticIdentity
     constraints: list[Constraint] | None = None
+    decimal: DecimalPolicy | None = None
     defaultValue: Any | None = None
     extensions: list[common_schema.Extension] | None = None
     redefines: common_schema.SemanticIdentity | None = None
@@ -506,6 +741,7 @@ class TypeDefinition:
     unknownPolicy: common_schema.UnknownPolicy
     abstract: bool | None = None
     clauses: list[Clause] | None = None
+    decimal: DecimalPolicy | None = None
     declaredType: common_schema.SemanticIdentity | None = None
     direction: Direction1 | None = None
     featureOrder: Annotated[
