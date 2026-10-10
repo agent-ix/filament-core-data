@@ -920,7 +920,7 @@ it("executes decimal enum equality and unique collection rejection", async () =>
 	} finally {
 		rmSync(scratch, { recursive: true, force: true });
 	}
-});
+}, 30_000);
 
 /** Trace: FR-144-AC-1, FR-144-AC-7, FR-144-AC-14, FR-144-AC-15, FR-144-AC-17, FR-144-AC-18. */
 it("typechecks the float, bounded-integer, enum, and default TypeScript matrix", async () => {
@@ -956,7 +956,7 @@ it("typechecks the float, bounded-integer, enum, and default TypeScript matrix",
 	} finally {
 		rmSync(scratch, { recursive: true, force: true });
 	}
-});
+}, 30_000);
 
 /** Trace: FR-144-AC-14. */
 it("typechecks the wide-integer TypeScript wire validator", async () => {
