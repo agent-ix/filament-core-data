@@ -671,13 +671,16 @@ export function lowerProgram(options) {
 				unknownPolicy: "reject",
 				origin,
 			});
-		const aliasParts = [...nameParts, "width"];
-		const aliasName = nameParts.join("");
-		const aliasConstraintParts = aliasParts;
-		// Width aliases are value-site declarations. Keep each owner/member
-		// segment in the identity so `Order.cancel(reason)` cannot collide with
-		// another `reason` site or collapse into `OrdercancelReason`.
-		const aliasIdentity = mintIdentity(packageIdentity, "type", aliasParts);
+		const aliasName = nameParts
+			.map((part, index) =>
+				index === 0 ? part : `${part.charAt(0).toUpperCase()}${part.slice(1)}`,
+			)
+			.join("");
+		const aliasConstraintParts = [aliasName];
+		// Sequence and union aliases retain their historical flat identities
+		// (BytesItems, ChoiceValueSmall). Operation parameters use the nested
+		// value-site path in lowerField below because their owner is an operation.
+		const aliasIdentity = typeIdentity(aliasName);
 		if (!definitions.has(aliasIdentity)) {
 			const constraints = ["min", "max"].map((keyword) => ({
 				identity: mintIdentity(packageIdentity, "constraint", [
@@ -977,10 +980,19 @@ export function lowerProgram(options) {
 				? [...ownerParts, memberName, "width"]
 				: [...ownerParts, `${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`];
 			const aliasName = `${ownerParts.join("")}${memberName.charAt(0).toUpperCase()}${memberName.slice(1)}`;
-			const aliasConstraintParts = widthAlias && operationSite ? aliasParts : [aliasName];
+			const aliasConstraintParts = widthAlias
+				? [...ownerParts, memberName]
+				: [aliasName];
+			const diagnosticParts = aliasConstraintParts;
 			const aliasIdentity = widthAlias && operationSite
 				? mintIdentity(packageIdentity, "type", aliasParts)
 				: typeIdentity(aliasName);
+			const diagnosticCode = (keyword) => {
+				const code = constraintDiagnosticCode(packageIdentity, diagnosticParts, keyword);
+				if (!operationSite) return code;
+				const memberToken = memberName.replace(/[^A-Za-z0-9]+/g, "_").toUpperCase();
+				return code.replace(`_${memberToken}_`, `__${memberToken}_`);
+			};
 			const widthConstraints = width
 				? [
 						...(constraints.some((item) => item.keyword === "min")
@@ -997,11 +1009,7 @@ export function lowerProgram(options) {
 						keyword,
 						operands: { value: width[keyword] },
 						appliesTo: aliasIdentity,
-						diagnosticCode: constraintDiagnosticCode(
-							packageIdentity,
-							aliasConstraintParts,
-							keyword,
-						),
+							diagnosticCode: diagnosticCode(keyword),
 						origin: context.originOf(property),
 					}))
 				: [];
@@ -1022,11 +1030,7 @@ export function lowerProgram(options) {
 							keyword: item.keyword,
 							operands: item.operands,
 							appliesTo: aliasIdentity,
-							diagnosticCode: constraintDiagnosticCode(
-								packageIdentity,
-								[...aliasConstraintParts, "narrowed"],
-								item.keyword,
-							),
+							diagnosticCode: diagnosticCode(item.keyword),
 							origin: context.originOf(property),
 						})),
 					].sort(byIdentity),

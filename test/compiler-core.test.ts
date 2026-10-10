@@ -1671,9 +1671,9 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 				"scalar ScalarWidth extends uint8;",
 				"model Bytes is Array<uint8>;",
 				"union ChoiceValue { small: int16, text: string, }",
-				"model Order { value: string; cancelReason: int16; }",
+				"model Order { value: string; cancelReason: uint8; cancel_reason: uint8; cancel_param_reason: uint8; }",
 				'@operations("Order")',
-				"interface OrderOperations { cancel(reason: int16): int16; }",
+				"interface OrderOperations { cancel(reason: uint8): uint8; wide(value: uint64): uint64; }",
 			].join("\n"),
 		);
 		expect(
@@ -1712,15 +1712,16 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 			(type) => type.identity === small.payloadType,
 		) as Json;
 		expect(small.payloadType).toBe(smallAlias.identity);
-		expect(smallAlias.identity).toBe(
-			"ix://agent-ix/probe/ChoiceValue/small/width",
-		);
+		expect(smallAlias.identity).toBe("ix://agent-ix/probe/ChoiceValueSmall");
 		expect(smallAlias.target).toBe("ix://agent-ix/probe/Integer");
 		const operation = types.find(
 			(type) => type.displayName === "Order",
 		) as Json;
-		const returns = operation.operations[0].returns as Json;
-		const params = operation.operations[0].params as Json[];
+		const cancelOperation = operation.operations.find(
+			(one: Json) => one.name === "cancel",
+		) as Json;
+		const returns = cancelOperation.returns as Json;
+		const params = cancelOperation.params as Json[];
 		const returnAlias = types.find(
 			(type) => type.identity === returns.typeRef,
 		) as Json;
@@ -1732,23 +1733,54 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		);
 		expect(parameterAlias.target).toBe("ix://agent-ix/probe/Integer");
 		expect(returns.typeRef).toBe(returnAlias.identity);
-		expect(returnAlias.identity).toBe(
-			"ix://agent-ix/probe/Order/cancel/Return/width",
-		);
+		expect(returnAlias.identity).toBe("ix://agent-ix/probe/OrderCancelReturn");
 		expect(returnAlias.target).toBe("ix://agent-ix/probe/Integer");
+		const wideOperation = operation.operations.find(
+			(one: Json) => one.name === "wide",
+		) as Json;
+		const wideParameter = types.find(
+			(type) => type.identity === wideOperation.params[0].typeRef,
+		) as Json;
+		expect(wideParameter.identity).toBe(
+			"ix://agent-ix/probe/Order/wide/value/width",
+		);
+		expect(wideParameter.constraints.find((one: Json) => one.keyword === "max").operands.value).toBe(
+			"18446744073709551615",
+		);
 		const fieldAlias = types.find(
 			(type) => type.displayName === "OrderCancelReason",
 		) as Json;
 		expect(fieldAlias.identity).toBe("ix://agent-ix/probe/OrderCancelReason");
-		expect(
-			fieldAlias.constraints.map((one: Json) => one.diagnosticCode),
-		).not.toEqual(parameterAlias.constraints.map((one: Json) => one.diagnosticCode));
-		const widthAliases = types.filter(
-			(type) => type.kind === "alias" && String(type.identity).endsWith("/width"),
+		expect(fieldAlias.constraints.map((one: Json) => [one.identity, one.diagnosticCode])).toEqual([
+			[
+				"ix://agent-ix/probe/constraint/Order-cancelReason-max",
+				"agent-ix.probe.ORDER_CANCELREASON_MAX",
+			],
+			[
+				"ix://agent-ix/probe/constraint/Order-cancelReason-min",
+				"agent-ix.probe.ORDER_CANCELREASON_MIN",
+			],
+		]);
+		const cancelUnderscore = types.find(
+			(type) => type.identity === "ix://agent-ix/probe/OrderCancel-reason",
+		) as Json;
+		expect(cancelUnderscore.constraints.find((one: Json) => one.keyword === "min").diagnosticCode).toBe(
+			"agent-ix.probe.ORDER_CANCEL_REASON_MIN",
 		);
-		expect(new Set(widthAliases.map((type) => type.identity)).size).toBe(
-			widthAliases.length,
+		const cancelParam = types.find(
+			(type) => type.identity === "ix://agent-ix/probe/OrderCancel-param-reason",
+		) as Json;
+		expect(cancelParam.constraints.find((one: Json) => one.keyword === "min").diagnosticCode).toBe(
+			"agent-ix.probe.ORDER_CANCEL_PARAM_REASON_MIN",
 		);
+		expect(parameterAlias.constraints.find((one: Json) => one.keyword === "min").identity).toBe(
+			"ix://agent-ix/probe/constraint/Order-cancel-reason-min",
+		);
+		expect(parameterAlias.constraints.find((one: Json) => one.keyword === "min").diagnosticCode).toBe(
+			"agent-ix.probe.ORDER_CANCEL__REASON_MIN",
+		);
+		const aliases = types.filter((type) => type.kind === "alias");
+		expect(new Set(aliases.map((type) => type.identity)).size).toBe(aliases.length);
 	}, 120000);
 
 	/** Traces: TC-435; FR-046-AC-4. */

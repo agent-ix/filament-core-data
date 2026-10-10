@@ -1155,6 +1155,80 @@ export function verdict(bundle, schemaRows = []) {
 	};
 }
 
+/**
+ * Decides one generated numeric instance against the IR type graph. This is
+ * deliberately separate from `verdict`: the latter validates an IR document,
+ * while this small instance seam applies the declared scalar constraints to a
+ * record value so backend probes can be compared with an independent oracle.
+ */
+export function admitInstance(bundle, typeIdentity, record, options = {}) {
+	if (!isObject(bundle) || !isObject(bundle.ir))
+		return { ok: false, code: "INVALID_DOCUMENT" };
+	const { byIdentity } = indexTypes(bundle.ir);
+	const root = byIdentity.get(typeIdentity);
+	const field = Array.isArray(root?.fields)
+		? root.fields.find((one) => one?.name === "value")
+		: undefined;
+	if (!isObject(field)) return { ok: false, code: "UNRESOLVED_FIELD" };
+	const raw = isObject(record) ? record.value : undefined;
+	if (raw === undefined) return { ok: false, code: "MISSING_VALUE" };
+	const values = options.nesting === "collection" ? raw : [raw];
+	if (options.nesting === "collection" && !Array.isArray(values))
+		return { ok: false, code: "INVALID_COLLECTION" };
+	const resolved = resolve(byIdentity, field.typeRef);
+	if (resolved.status !== "resolved")
+		return { ok: false, code: "UNRESOLVED_TYPE_REF" };
+	const scalar = resolved.scalar;
+	const definitions = resolved.chain
+		.map((identity) => byIdentity.get(identity))
+		.filter((one) => isObject(one));
+	for (const value of values) {
+		if (value === null) {
+			if (options.nullable === true) continue;
+			return { ok: false, code: "NULL_NOT_ALLOWED" };
+		}
+		let numeric = value;
+		if (scalar === "integer") {
+			if (options.wire === "string") {
+				if (typeof value !== "string" || !/^(0|-?[1-9][0-9]*)$/.test(value))
+					return { ok: false, code: "INVALID_INTEGER_WIRE" };
+				try {
+					numeric = BigInt(value);
+				} catch {
+					return { ok: false, code: "INVALID_INTEGER_WIRE" };
+				}
+			} else if (typeof value !== "number" || !Number.isSafeInteger(value)) {
+				return { ok: false, code: "INVALID_INTEGER_WIRE" };
+			} else {
+				numeric = BigInt(value);
+			}
+		} else if (scalar === "float32" || scalar === "float64") {
+			if (typeof value !== "number" || !Number.isFinite(value))
+				return { ok: false, code: "INVALID_NUMBER_WIRE" };
+			numeric = scalar === "float32" ? Math.fround(value) : value;
+		}
+		for (const definition of definitions) {
+			for (const constraint of Array.isArray(definition.constraints)
+				? definition.constraints
+				: []) {
+				if (!isObject(constraint) || !["min", "max", "exclusiveMin", "exclusiveMax"].includes(String(constraint.keyword)))
+					continue;
+				const operand = scalar === "integer" ? BigInt(constraint.operands?.value) : Number(constraint.operands?.value);
+				const violated =
+					constraint.keyword === "min"
+						? numeric < operand
+						: constraint.keyword === "max"
+							? numeric > operand
+							: constraint.keyword === "exclusiveMin"
+								? numeric <= operand
+								: numeric >= operand;
+				if (violated) return { ok: false, code: constraint.diagnosticCode };
+			}
+		}
+	}
+	return { ok: true, code: "OK" };
+}
+
 /* ------------------------------------------------------ compatibility ----- */
 
 function fieldIndex(ir) {
