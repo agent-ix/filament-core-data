@@ -67,7 +67,8 @@ def extract_pinned_archives(cache: Path) -> tuple[Path, Path, Path, Path]:
         )
         if jar is None or library is None or java is None:
             fail(
-                "verified archives did not contain the pilot jar, library, and Java executable"
+                "verified archives did not contain the pilot jar, library, "
+                "and Java executable"
             )
         return scratch, jar, library, java
     except Exception:
@@ -172,7 +173,8 @@ def main() -> None:
                     result.strip().startswith("Package ") for result in package_results
                 ):
                     fail(
-                        f"pilot returned no accepted package for {path}: {package_results}"
+                        "pilot returned no accepted package for "
+                        f"{path}: {package_results}"
                     )
                 print(f"FR-138-AC-3 pilot accepted {path.name}")
             finally:
