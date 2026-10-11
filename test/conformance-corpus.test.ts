@@ -473,6 +473,31 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 		expect(exercised).toBeGreaterThan(0);
 	});
 
+	/** Trace: FR-145-CON-3. TC-1833. */
+	it("TC-1833 oracle refuses lone surrogates in normalized names and values", () => {
+		const base = read(join(CONF, "bases", "core-2-0.json")) as {
+			ir: Json;
+		};
+		for (const malformed of ["\ud800", "\udc00", "a\ud800b"]) {
+			const bundle = structuredClone(base);
+			(bundle.ir.types as Json[])[0].displayName = malformed;
+			expect(schemaDiagnostics(bundle)).toEqual([]);
+			expect(() => oracle.normalize(bundle.ir)).toThrow(
+				/unpaired UTF-16 surrogate/,
+			);
+			expect(() => canonical({ [malformed]: "name" })).toThrow(
+				/unpaired UTF-16 surrogate/,
+			);
+		}
+		expect(canonical({ "\ud83d\ude00": "\ud83d\ude00" })).toBe(
+			'{"😀":"😀"}',
+		);
+		expect(canonical(1e-7)).toBe("1e-7");
+		expect(canonical(1e-6)).toBe("0.000001");
+		expect(canonical(1e21)).toBe("1e+21");
+		expect(() => canonical(Number.POSITIVE_INFINITY)).toThrow(/non-finite/);
+	});
+
 	it("TC-296 an optional plus a required addition classifies breaking and names both", () => {
 		const verdict = corpus.oracleVerdict(corpus.loadCase("COMP-003")) as {
 			classification: string;

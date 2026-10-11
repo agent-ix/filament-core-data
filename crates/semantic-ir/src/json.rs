@@ -652,7 +652,10 @@ impl<'a> Reader<'a> {
             }
         }
         match core::str::from_utf8(&self.bytes[start..self.pos]) {
-            Ok(lexeme) => Ok(Json::Number(lexeme.to_string())),
+            Ok(lexeme) if matches!(lexeme.parse::<f64>(), Ok(number) if number.is_finite()) => {
+                Ok(Json::Number(lexeme.to_string()))
+            }
+            Ok(_) => self.err("a number is outside the finite binary64 domain"),
             Err(_) => self.err("a number lexeme is not UTF-8"),
         }
     }
@@ -689,7 +692,6 @@ impl<'a> Reader<'a> {
                         b'u' => {
                             let first = self.hex4()?;
                             if (0xD800..0xDC00).contains(&first) {
-                                let saved = self.pos;
                                 if self.peek() == Some(b'\\')
                                     && self.bytes.get(self.pos + 1) == Some(&b'u')
                                 {
@@ -700,22 +702,18 @@ impl<'a> Reader<'a> {
                                             0x1_0000 + ((first - 0xD800) << 10) + (second - 0xDC00);
                                         match char::from_u32(combined) {
                                             Some(ch) => out.push(ch),
-                                            None => out.push('\u{FFFD}'),
+                                            None => return self.err("an unpaired UTF-16 surrogate"),
                                         }
                                         continue;
                                     }
-                                    self.pos = saved;
                                 }
-                                // A lone surrogate cannot be held by a Rust
-                                // `String`; it becomes the replacement
-                                // character. No corpus string carries one.
-                                out.push('\u{FFFD}');
+                                return self.err("an unpaired UTF-16 surrogate");
                             } else if (0xDC00..0xE000).contains(&first) {
-                                out.push('\u{FFFD}');
+                                return self.err("an unpaired UTF-16 surrogate");
                             } else {
                                 match char::from_u32(first) {
                                     Some(ch) => out.push(ch),
-                                    None => out.push('\u{FFFD}'),
+                                    None => return self.err("an invalid Unicode escape"),
                                 }
                             }
                         }
@@ -859,8 +857,9 @@ fn write_iteratively(out: &mut String, value: &Json, sorted: bool) {
                     Ok(number) if number.is_finite() => {
                         out.push_str(&ecma_number_to_string(number));
                     }
-                    // `JSON.stringify` writes a non-finite number as `null`.
-                    _ => out.push_str("null"),
+                    // Parsed documents refuse this case. A caller constructing
+                    // `Json::Number` directly must not silently change its value.
+                    _ => panic!("Json::Number is not a finite binary64 value"),
                 },
                 Json::Str(text) => write_string(out, text),
                 Json::Array(items) => {
@@ -927,6 +926,38 @@ mod tests {
         ] {
             assert!(parse(input).is_err(), "{input:?} is not a JSON document");
         }
+    }
+
+    /// Trace: FR-145-CON-3. TC-1834.
+    #[test]
+    fn tc_1834_refuses_unpaired_surrogates_before_normalizing_a_semantic_document() {
+        let base = include_str!("../../../conformance/bases/core-2-0.json");
+        let source = r#""displayName": "Text""#;
+        assert!(base.contains(source));
+        for escaped in [r"\uD800", r"\uDC00", r"\uD800\u0041"] {
+            let mutated = base.replacen(source, &format!(r#""displayName": "{escaped}""#), 1);
+            let refusal = parse(&mutated).expect_err("a lone surrogate must not become U+FFFD");
+            assert_eq!(refusal.kind, JsonErrorKind::Malformed);
+            assert!(refusal.message.contains("unpaired UTF-16 surrogate"));
+        }
+        let paired = parse(r#"{"displayName":"\uD83D\uDE00"}"#).expect("paired surrogate");
+        assert_eq!(to_canonical_string(&paired), "{\"displayName\":\"😀\"}");
+    }
+
+    /// Trace: FR-145-CON-3. TC-1835.
+    #[test]
+    fn tc_1835_refuses_non_finite_numbers_instead_of_writing_null() {
+        let refusal = parse(r#"{"value":1e400}"#).expect_err("infinite binary64 value");
+        assert_eq!(refusal.kind, JsonErrorKind::Malformed);
+        assert!(refusal.message.contains("finite binary64"));
+        assert_eq!(
+            to_canonical_string(&parse(r#"{"value":1e-7}"#).expect("finite number")),
+            r#"{"value":1e-7}"#
+        );
+        assert!(std::panic::catch_unwind(|| {
+            to_canonical_string(&Json::Number("1e400".to_owned()))
+        })
+        .is_err());
     }
 
     /// Runs `check` on a 256 KiB thread, a stack a recursion that grows with
