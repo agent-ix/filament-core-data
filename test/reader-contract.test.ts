@@ -17,6 +17,55 @@ const fixtureBytes = readFileSync(
 const fixture = () => JSON.parse(fixtureBytes);
 
 describe("package revision and unused construct reader contract", () => {
+	/** Trace: FR-145-AC-2. TC-1831. */
+	it("TC-1831 requires the exact normalized canonicalization descriptor", () => {
+		const clean = fixture();
+		expect(clean.canonicalization).toEqual({
+			algorithm: "rfc8785-v1",
+			digest: "sha256-jcs",
+		});
+		expect(validateIrDocument(clean)).toEqual([]);
+		expect([...readContractIr(clean)]).toEqual([]);
+		for (const [mutate, pointer] of [
+			[
+				(document: ReturnType<typeof fixture>) => {
+					delete document.canonicalization;
+				},
+				"/canonicalization",
+			],
+			[
+				(document: ReturnType<typeof fixture>) => {
+					delete document.canonicalization.digest;
+				},
+				"/canonicalization/digest",
+			],
+			[
+				(document: ReturnType<typeof fixture>) => {
+					document.canonicalization.algorithm = "unknown-v1";
+				},
+				"/canonicalization/algorithm",
+			],
+			[
+				(document: ReturnType<typeof fixture>) => {
+					document.canonicalization.extra = "unexpected";
+				},
+				"/canonicalization/extra",
+			],
+		] as const) {
+			const malformed = fixture();
+			mutate(malformed);
+			const diagnostics = validateIrDocument(malformed);
+			expect(diagnostics.length).toBeGreaterThan(0);
+			expect(JSON.stringify(diagnostics)).toContain(pointer);
+		}
+		const authored = fixture();
+		delete authored.canonicalization;
+		expect(JSON.parse(normalizeIr(authored)).canonicalization).toEqual({
+			algorithm: "rfc8785-v1",
+			digest: "sha256-jcs",
+		});
+	});
+
 	/** Trace: FR-142-AC-15 */
 	it("admits an unused population meaning independently of revision or kind name", () => {
 		const document = fixture();

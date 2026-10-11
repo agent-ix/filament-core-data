@@ -36,6 +36,24 @@ function byCodeUnits(left, right) {
 	return 0;
 }
 
+function renderString(value, path) {
+	for (let index = 0; index < value.length; index += 1) {
+		const code = value.charCodeAt(index);
+		if (code >= 0xd800 && code <= 0xdbff) {
+			const next = value.charCodeAt(index + 1);
+			if (next >= 0xdc00 && next <= 0xdfff) {
+				index += 1;
+				continue;
+			}
+			throw new TypeError(`unpaired UTF-16 surrogate at ${path}`);
+		}
+		if (code >= 0xdc00 && code <= 0xdfff) {
+			throw new TypeError(`unpaired UTF-16 surrogate at ${path}`);
+		}
+	}
+	return JSON.stringify(value);
+}
+
 /**
  * `options.sets` names, by `/`-joined path, each array whose order is not
  * semantic; the IR normalizer declares the IR's node lists there. `*` stands for
@@ -68,14 +86,16 @@ export function canonicalize(value, options = {}) {
 			return `{${keys
 				.map(
 					(key) =>
-						`${JSON.stringify(key)}:${walk(node[key], `${path}/${key}`, depth + 1)}`,
+						`${renderString(key, `${path}/${key}`)}:${walk(node[key], `${path}/${key}`, depth + 1)}`,
 				)
 				.join(",")}}`;
 		}
 		if (typeof node === "number" && !Number.isFinite(node)) {
 			throw new TypeError(`non-finite number is not canonicalizable: ${node}`);
 		}
-		return JSON.stringify(node === undefined ? null : node);
+		return typeof node === "string"
+			? renderString(node, path)
+			: JSON.stringify(node === undefined ? null : node);
 	};
 
 	return walk(value, "", 0);

@@ -742,15 +742,33 @@ export function readSemanticIr(
 	return diagnostics;
 }
 
+function jcsString(value: string): string {
+	for (let index = 0; index < value.length; index += 1) {
+		const code = value.charCodeAt(index);
+		if (code >= 0xd800 && code <= 0xdbff) {
+			const next = value.charCodeAt(index + 1);
+			if (next >= 0xdc00 && next <= 0xdfff) {
+				index += 1;
+				continue;
+			}
+			throw new TypeError("unpaired UTF-16 surrogate");
+		}
+		if (code >= 0xdc00 && code <= 0xdfff)
+			throw new TypeError("unpaired UTF-16 surrogate");
+	}
+	return JSON.stringify(value);
+}
+
 /** Canonical JSON: sorted object keys, no whitespace (JCS-style, identity-sorted sets are the caller's job). */
 export function canonical(value: unknown): string {
 	if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
 	if (isObject(value)) {
 		return `{${Object.keys(value)
 			.sort()
-			.map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`)
+			.map((key) => `${jcsString(key)}:${canonical(value[key])}`)
 			.join(",")}}`;
 	}
+	if (typeof value === "string") return jcsString(value);
 	return JSON.stringify(value);
 }
 

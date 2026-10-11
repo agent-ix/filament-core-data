@@ -9,8 +9,6 @@ relationships:
     type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-069"
     type: "depends_on"
-  - target: "ix://agent-ix/filament-core-data/FR-097"
-    type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-048"
     type: "depends_on"
   - target: "ix://agent-ix/quire-spec-language/FR-056"
@@ -76,9 +74,10 @@ the normalized document form.
 
 - The normalizer SHALL materialize the exact two-member descriptor
   `{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}` before schema
-  validation and publication. The published `semantic-ir.schema.json` SHALL
-  require and validate that descriptor; a pre-normalization authoring value
-  that omits it is not admitted as a normalized document.
+  validation and publication.
+- The published `semantic-ir.schema.json` SHALL require and validate that
+  descriptor; a pre-normalization authoring value that omits it is not admitted
+  as a normalized document.
 - A reader SHALL accept a normalized document only when its canonicalization
   descriptor is present, has exactly the `algorithm` and `digest` members, and
   names `rfc8785-v1` and `sha256-jcs`, respectively.

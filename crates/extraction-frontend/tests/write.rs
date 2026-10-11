@@ -40,6 +40,8 @@ fn read_all(request: &LiftRequest) -> Vec<(&'static str, Vec<u8>)> {
 }
 
 #[trace("TC-1827", "FR-145-AC-3")]
+#[trace("TC-1827", "FR-145-AC-7")]
+#[trace("TC-1827", "FR-145-CON-3")]
 #[test]
 fn tc_1827_shared_supplementary_plane_golden_is_consumed_and_digest_sidecar_is_exact() {
     let golden: Value = serde_json::from_str(include_str!(

@@ -174,6 +174,7 @@ fn run_binary(args: &[OsString]) -> Output {
 }
 
 #[trace("TC-1300", "NFR-031-AC-1")]
+#[trace("TC-1300", "FR-145-AC-7")]
 #[test]
 fn tc_1300_two_lifts_in_process_and_two_across_processes_match_each_other_the_goldens_and_decide_normalized(
 ) {
@@ -210,6 +211,7 @@ fn tc_1300_two_lifts_in_process_and_two_across_processes_match_each_other_the_go
 }
 
 #[trace("TC-1301", "NFR-031-AC-2")]
+#[trace("TC-1301", "FR-145-AC-7")]
 #[test]
 fn tc_1301_a_lift_under_a_changed_cwd_empty_home_and_varied_tz_lang_lc_all_and_target_dir_reproduces_the_golden(
 ) {

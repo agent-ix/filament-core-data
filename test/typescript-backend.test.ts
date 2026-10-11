@@ -20,7 +20,11 @@ import {
 	admitIr,
 	SCHEMA_FILES,
 } from "../src/compiler/backends/typescript-v1/admit.mjs";
-import { normalizeIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
+import {
+	CanonicalError,
+	canonicalize as canonicalizeForTarget,
+	normalizeIrForTarget,
+} from "../src/compiler/backends/typescript-v1/canonical.mjs";
 import {
 	classifySurface,
 	VARIANT_ADDITION_POLICIES,
@@ -1311,6 +1315,78 @@ describe("FR-069 canonicalization: nullable materialization (fcd#187)", () => {
 			)[0];
 			expect(normalizedField.nullable, testCase.id).toBe(testCase.normalized);
 		}
+	});
+});
+
+describe("FR-145 RFC 8785 normalized bytes", () => {
+	/** Trace: FR-145-AC-4. TC-1832. */
+	it("TC-1832 preserves array order while ignoring object member order", () => {
+		const first = {
+			types: [{ identity: "b", displayName: "Bee" }, { identity: "a" }],
+			source: { z: 1, a: 2 },
+		};
+		const reorderedMembers = {
+			source: { a: 2, z: 1 },
+			types: [{ displayName: "Bee", identity: "b" }, { identity: "a" }],
+		};
+		const reversedArray = {
+			source: { z: 1, a: 2 },
+			types: [{ identity: "a" }, { identity: "b", displayName: "Bee" }],
+		};
+		expect(normalizeIrForTarget(first)).toBe(
+			normalizeIrForTarget(reorderedMembers),
+		);
+		expect(normalizeIrForTarget(first)).not.toBe(
+			normalizeIrForTarget(reversedArray),
+		);
+		expect(normalizeIrForTarget(first)).not.toBe(
+			normalizeIrForTarget({
+				types: [{ identity: "changed" }, { identity: "a" }],
+			}),
+		);
+		expect(canonicalizeForTarget({ b: 1, a: 2 }, { sets: false })).toBe(
+			canonicalizeForTarget({ a: 2, b: 1 }, { sets: false }),
+		);
+	});
+
+	/** Traces: TC-1829; FR-145-CON-3. */
+	it("TC-1829 uses the shared binary64 number spellings", () => {
+		const vectors = JSON.parse(
+			readFileSync(
+				resolve(root, "test/fixtures/compiler/rfc8785/number-spelling.json"),
+				"utf8",
+			),
+		) as { numbers: { input: number; expected: string }[] };
+		for (const row of vectors.numbers) {
+			expect(canonicalizeForTarget(row.input)).toBe(row.expected);
+			expect(
+				normalizeIrForTarget({
+					types: [{ displayName: "Number", value: row.input }],
+				}),
+			).toContain(`"value":${row.expected}`);
+		}
+	});
+
+	/** Traces: TC-1830; FR-145-CON-3. */
+	it("TC-1830 refuses unpaired surrogates in values and member names", () => {
+		for (const malformed of ["\ud800", "\udc00", "a\ud800b"]) {
+			let failure: unknown;
+			try {
+				normalizeIrForTarget({ types: [{ displayName: malformed }] });
+			} catch (error) {
+				failure = error;
+			}
+			expect(failure).toBeInstanceOf(CanonicalError);
+			expect((failure as InstanceType<typeof CanonicalError>).pointer).toBe(
+				"/types/0/displayName",
+			);
+			expect(() => canonicalizeForTarget({ [malformed]: "name" })).toThrow(
+				/unpaired UTF-16 surrogate/,
+			);
+		}
+		expect(canonicalizeForTarget({ "\ud83d\ude00": "\ud83d\ude00" })).toBe(
+			'{"😀":"😀"}',
+		);
 	});
 });
 

@@ -1,0 +1,10 @@
+{
+	"numbers": [
+		{ "input": 1e-7, "expected": "1e-7" },
+		{ "input": 1.25e-7, "expected": "1.25e-7" },
+		{ "input": 1e-6, "expected": "0.000001" },
+		{ "input": 1e20, "expected": "100000000000000000000" },
+		{ "input": 1e21, "expected": "1e+21" },
+		{ "input": -0.0, "expected": "0" }
+	]
+}

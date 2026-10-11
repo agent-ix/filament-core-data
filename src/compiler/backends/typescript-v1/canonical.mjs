@@ -91,7 +91,21 @@ function isIdentitySet(segments) {
  * RFC 8785 string serialization. `JSON.stringify` already emits the JCS form
  * for a string: minimal escaping, `\u00XX` only for the control range.
  */
-function renderString(value) {
+function renderString(value, pointer) {
+	for (let index = 0; index < value.length; index += 1) {
+		const code = value.charCodeAt(index);
+		if (code >= 0xd800 && code <= 0xdbff) {
+			const next = value.charCodeAt(index + 1);
+			if (next >= 0xdc00 && next <= 0xdfff) {
+				index += 1;
+				continue;
+			}
+			throw new CanonicalError("unpaired UTF-16 surrogate", pointer);
+		}
+		if (code >= 0xdc00 && code <= 0xdfff) {
+			throw new CanonicalError("unpaired UTF-16 surrogate", pointer);
+		}
+	}
 	return JSON.stringify(value);
 }
 
@@ -122,7 +136,7 @@ function render(value, segments, depth, sets) {
 	if (value === null) return "null";
 	if (typeof value === "boolean") return value ? "true" : "false";
 	if (typeof value === "number") return renderNumber(value, pointer);
-	if (typeof value === "string") return renderString(value);
+	if (typeof value === "string") return renderString(value, pointer);
 	if (Array.isArray(value)) {
 		const members = value.map((member, index) => ({
 			index,
@@ -145,7 +159,7 @@ function render(value, segments, depth, sets) {
 			.sort(compareCodeUnits);
 		const members = keys.map(
 			(key) =>
-				`${renderString(key)}:${render(value[key], [...segments, key], depth + 1, sets)}`,
+				`${renderString(key, `/${[...segments, key].join("/")}`)}:${render(value[key], [...segments, key], depth + 1, sets)}`,
 		);
 		return `{${members.join(",")}}`;
 	}

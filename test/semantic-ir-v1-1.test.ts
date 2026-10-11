@@ -6,7 +6,11 @@ import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
-import { normalize, readSemanticIr } from "./semantic-ir-v1-1-reader";
+import {
+	canonical,
+	normalize,
+	readSemanticIr,
+} from "./semantic-ir-v1-1-reader";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const schemaRoot = resolve(root, "schema/semantic/v1");
@@ -405,6 +409,19 @@ function seededRandom(seed: number): () => number {
 		return state / 0x100000000;
 	};
 }
+
+/** Traces: TC-1830; FR-145-CON-3. */
+it("TC-1830 second TypeScript reader refuses malformed UTF-16 names and values", () => {
+	for (const malformed of ["\ud800", "\udc00", "a\ud800b"]) {
+		expect(() => canonical({ displayName: malformed })).toThrow(
+			/unpaired UTF-16 surrogate/,
+		);
+		expect(() => canonical({ [malformed]: "name" })).toThrow(
+			/unpaired UTF-16 surrogate/,
+		);
+	}
+	expect(canonical({ "\ud83d\ude00": "\ud83d\ude00" })).toBe('{"😀":"😀"}');
+});
 
 describe("FR-027 field multiplicity and units", () => {
 	/** Traces: TC-203; FR-027-AC-1, FR-020-AC-7, US-006-EX-1. */
