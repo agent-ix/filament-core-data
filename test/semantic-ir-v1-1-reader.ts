@@ -769,6 +769,8 @@ export function canonical(value: unknown): string {
 			.join(",")}}`;
 	}
 	if (typeof value === "string") return jcsString(value);
+	if (typeof value === "number" && !Number.isFinite(value))
+		throw new TypeError("non-finite number is not RFC 8785 JSON");
 	return JSON.stringify(value);
 }
 

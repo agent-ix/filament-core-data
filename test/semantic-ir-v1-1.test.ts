@@ -423,6 +423,18 @@ it("TC-1830 second TypeScript reader refuses malformed UTF-16 names and values",
 	expect(canonical({ "\ud83d\ude00": "\ud83d\ude00" })).toBe('{"😀":"😀"}');
 });
 
+/** Traces: TC-1836; FR-145-CON-3. */
+it("TC-1836 second TypeScript reader refuses non-finite numbers", () => {
+	for (const value of [
+		Number.NaN,
+		Number.POSITIVE_INFINITY,
+		Number.NEGATIVE_INFINITY,
+	]) {
+		expect(() => canonical({ value })).toThrow(/non-finite number/);
+	}
+	expect(canonical({ value: 1e-7 })).toBe('{"value":1e-7}');
+});
+
 describe("FR-027 field multiplicity and units", () => {
 	/** Traces: TC-203; FR-027-AC-1, FR-020-AC-7, US-006-EX-1. */
 	it("validates a 0..1 field with presence authored explicitly and rejects one with presence omitted", () => {

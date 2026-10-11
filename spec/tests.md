@@ -1355,6 +1355,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1833 | The independent conformance oracle refuses a schema-valid normalized document with an unpaired UTF-16 surrogate in a type display name; its canonical writer refuses malformed member names, accepts a valid supplementary-plane pair, and spells number boundaries as RFC 8785 requires | Unit | P0 | FR-145-CON-3 |
 | TC-1834 | The Rust semantic IR reader refuses a schema-valid document whose type display name carries an unpaired surrogate escape rather than replacing it with U+FFFD; a valid surrogate pair remains a supplementary-plane scalar | Unit | P0 | FR-145-CON-3 |
 | TC-1835 | The Rust semantic IR reader refuses a number outside finite binary64 rather than normalizing it to null, writes 1e-7 with RFC 8785 spelling, and refuses a programmatically constructed invalid number | Unit | P0 | FR-145-CON-3 |
+| TC-1836 | The second TypeScript semantic IR reader refuses non-finite numbers rather than normalizing them to null, while preserving RFC 8785 spelling for finite numbers | Unit | P0 | FR-145-CON-3 |
 | TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 |
 
 ## Option Permutation Matrix
