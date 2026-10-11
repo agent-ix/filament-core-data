@@ -702,7 +702,9 @@ impl<'a> Reader<'a> {
                                             0x1_0000 + ((first - 0xD800) << 10) + (second - 0xDC00);
                                         match char::from_u32(combined) {
                                             Some(ch) => out.push(ch),
-                                            None => return self.err("an unpaired UTF-16 surrogate"),
+                                            None => {
+                                                return self.err("an unpaired UTF-16 surrogate")
+                                            }
                                         }
                                         continue;
                                     }

@@ -489,9 +489,7 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 				/unpaired UTF-16 surrogate/,
 			);
 		}
-		expect(canonical({ "\ud83d\ude00": "\ud83d\ude00" })).toBe(
-			'{"😀":"😀"}',
-		);
+		expect(canonical({ "\ud83d\ude00": "\ud83d\ude00" })).toBe('{"😀":"😀"}');
 		expect(canonical(1e-7)).toBe("1e-7");
 		expect(canonical(1e-6)).toBe("0.000001");
 		expect(canonical(1e21)).toBe("1e+21");
