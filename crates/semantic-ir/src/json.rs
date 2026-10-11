@@ -782,6 +782,29 @@ pub fn write_string(out: &mut String, text: &str) {
     out.push('"');
 }
 
+/// Why an in-memory JSON value cannot be written in RFC 8785 form.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct CanonicalError {
+    /// The reason serialization refused the value.
+    pub message: &'static str,
+}
+
+impl core::fmt::Display for CanonicalError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(self.message)
+    }
+}
+
+/// Tries to write `value` in the normalized `rfc8785-v1` form.
+///
+/// Parsed documents already satisfy the finite-number invariant. This
+/// checked path also refuses a caller-built `Json::Number` outside it.
+pub fn try_to_canonical_string(value: &Json) -> Result<String, CanonicalError> {
+    let mut out = String::new();
+    write_canonical(&mut out, value)?;
+    Ok(out)
+}
+
 /// Writes `value` in the normalized `rfc8785-v1` form.
 ///
 /// Object members are ordered by the UTF-16 code units of their names, array
@@ -789,10 +812,12 @@ pub fn write_string(out: &mut String, text: &str) {
 /// resolved the way `JSON.parse` resolves it, and every number is rendered by
 /// the ECMAScript `Number::toString` algorithm from its parsed `f64` — which is
 /// what a `JSON.parse` followed by a `JSON.stringify` does to it.
+///
+/// This compatibility surface has no error channel. An invalid caller-built
+/// number yields empty bytes, which are not a JSON document; callers that may
+/// hold one use [`try_to_canonical_string`] for a typed refusal.
 pub fn to_canonical_string(value: &Json) -> String {
-    let mut out = String::new();
-    write_canonical(&mut out, value);
-    out
+    try_to_canonical_string(value).unwrap_or_default()
 }
 
 /// Writes `value` keeping every object's member order, so a node copied out of
@@ -804,8 +829,10 @@ pub fn to_canonical_string(value: &Json) -> String {
 /// difference.
 pub fn to_document_string(value: &Json) -> String {
     let mut out = String::new();
-    write_document(&mut out, value);
-    out
+    match write_document(&mut out, value) {
+        Ok(()) => out,
+        Err(_) => String::new(),
+    }
 }
 
 /// One piece of work in the iterative writers.
@@ -828,12 +855,12 @@ fn resolved_members(members: &[(String, Json)]) -> Vec<(&str, &Json)> {
     resolved
 }
 
-fn write_document(out: &mut String, value: &Json) {
-    write_iteratively(out, value, false);
+fn write_document(out: &mut String, value: &Json) -> Result<(), CanonicalError> {
+    write_iteratively(out, value, false)
 }
 
-fn write_canonical(out: &mut String, value: &Json) {
-    write_iteratively(out, value, true);
+fn write_canonical(out: &mut String, value: &Json) -> Result<(), CanonicalError> {
+    write_iteratively(out, value, true)
 }
 
 fn compare_utf16(left: &str, right: &str) -> core::cmp::Ordering {
@@ -842,7 +869,7 @@ fn compare_utf16(left: &str, right: &str) -> core::cmp::Ordering {
 
 /// Writes `value` over an explicit stack, sorting object members by name when
 /// `sorted`, so a document of any depth is written on any thread.
-fn write_iteratively(out: &mut String, value: &Json, sorted: bool) {
+fn write_iteratively(out: &mut String, value: &Json, sorted: bool) -> Result<(), CanonicalError> {
     let mut stack = vec![Emit::Node(value)];
     while let Some(emit) = stack.pop() {
         match emit {
@@ -860,8 +887,12 @@ fn write_iteratively(out: &mut String, value: &Json, sorted: bool) {
                         out.push_str(&ecma_number_to_string(number));
                     }
                     // Parsed documents refuse this case. A caller constructing
-                    // `Json::Number` directly must not silently change its value.
-                    _ => panic!("Json::Number is not a finite binary64 value"),
+                    // `Json::Number` directly receives a typed refusal.
+                    _ => {
+                        return Err(CanonicalError {
+                            message: "Json::Number is not a finite binary64 value",
+                        });
+                    }
                 },
                 Json::Str(text) => write_string(out, text),
                 Json::Array(items) => {
@@ -892,6 +923,7 @@ fn write_iteratively(out: &mut String, value: &Json, sorted: bool) {
             },
         }
     }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -956,10 +988,11 @@ mod tests {
             to_canonical_string(&parse(r#"{"value":1e-7}"#).expect("finite number")),
             r#"{"value":1e-7}"#
         );
-        assert!(std::panic::catch_unwind(|| {
-            to_canonical_string(&Json::Number("1e400".to_owned()))
-        })
-        .is_err());
+        let constructed = Json::Number("1e400".to_owned());
+        let refusal = try_to_canonical_string(&constructed).expect_err("non-finite number");
+        assert!(refusal.message.contains("finite binary64"));
+        assert_eq!(to_canonical_string(&constructed), "");
+        assert_eq!(to_document_string(&constructed), "");
     }
 
     /// Runs `check` on a 256 KiB thread, a stack a recursion that grows with
