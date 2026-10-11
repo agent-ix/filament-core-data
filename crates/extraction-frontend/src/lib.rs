@@ -73,4 +73,4 @@ pub use resolve::{
 };
 pub use scalars::KernelScalar;
 pub use validate::{validate, validate_document, ValidDocument};
-pub use write::{check_output, write_lift, Emission, OutputPaths};
+pub use write::{check_output, normalized_digest, write_lift, Emission, OutputPaths};

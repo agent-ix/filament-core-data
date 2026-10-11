@@ -1,6 +1,6 @@
 //! The ECMAScript `Number::toString` algorithm.
 //!
-//! The corpus comparison form `agent-ix-conformance-jcs-v1` is produced by
+//! The corpus comparison form `rfc8785-v1` is produced by
 //! `JSON.stringify`, so every number this crate writes has to render exactly as
 //! ECMAScript renders it. Rust's own `f64` `Display` never uses exponent
 //! notation at all, so it disagrees with ECMAScript at both exponent thresholds
@@ -8,7 +8,8 @@
 //!
 //! Derivation: ECMA-262 `Number::toString` (the `Number` to `String` algorithm),
 //! reached from `conformance/README.md`'s canonical-form clause ("object keys
-//! ordered by code point, no insignificant whitespace, array order preserved")
+//! ordered by UTF-16 code unit, no insignificant whitespace, array order
+//! preserved")
 //! and `spec/functional/FR-036`'s clause that `normalized` is that form, which a
 //! `JSON.stringify` implementation produces.
 //!

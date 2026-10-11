@@ -11,6 +11,15 @@
 			"type": "string",
 			"pattern": "^sha256:[0-9a-f]{64}$"
 		},
+		"normalizedCanonicalization": {
+			"type": "object",
+			"required": ["algorithm", "digest"],
+			"properties": {
+				"algorithm": { "const": "rfc8785-v1" },
+				"digest": { "const": "sha256-jcs" }
+			},
+			"additionalProperties": false
+		},
 		"semanticIdentity": {
 			"type": "string",
 			"pattern": "^ix://[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._~:/-]*$"

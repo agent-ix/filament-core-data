@@ -46,6 +46,10 @@ pub fn assemble(
         "contractVersion".to_string(),
         Value::String(CONTRACT_VERSION.to_string()),
     );
+    members.insert(
+        "canonicalization".to_string(),
+        serde_json::json!({"algorithm": "rfc8785-v1", "digest": "sha256-jcs"}),
+    );
     members.insert("source".to_string(), to_value(&envelope.source));
     members.insert("package".to_string(), to_value(&envelope.package));
     let types_value = Value::Array(types.iter().map(to_value).collect());

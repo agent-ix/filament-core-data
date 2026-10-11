@@ -75,27 +75,25 @@ Classification is the half that depends on admissibility, and only for the
 
 ### Canonicalization
 
-- The backend SHALL carry **two** named canonical forms, because the published
-  record names two and they are not the same algorithm.
+- The backend SHALL carry **two** named canonical forms: the normalized
+  document form settled by [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md)
+  and the identity-sorted-set fingerprint form.
 - `canonicalize(value, { sets: false })` SHALL implement RFC 8785 JSON
-  Canonicalization Scheme unextended, leaving every array in document order;
-  this is the `agent-ix-conformance-jcs-v1` form the conformance corpus declares
-  and the form an adapter answer's `normalized` member carries.
+  Canonicalization Scheme unextended, including UTF-16 code-unit object-key
+  ordering and authored array order; this is the `rfc8785-v1` form a normalized
+  document and an adapter answer's `normalized` member carry.
 - `canonicalize(value, { sets: true })` SHALL implement the same scheme extended
   by sorting the members of a declared set of containers by their `identity`
   before serialization; this is the `RFC8785-JCS-with-identity-sorted-sets-v1`
   form `docs/semantic-data-system/contracts-v1.md` names for the v1 fingerprint,
   and it is what makes two documents differing only in set order carry one
   fingerprint.
-- The requirement stated one form before this was measured. The first run of the
-  canonicalizer against the corpus matched **1 of 111** cases, and the single
-  cause was that the corpus's `normalized` is the unextended form while this
-  requirement described the extended one; with the two separated the same run
-  matches 111 of 111. Which of the two a `normalized` answer must carry is
-  stated in no contract document, and that is filed as
-  `agent-ix/filament-core-data#67` beside GAP-004.
+- The normalized-document name `rfc8785-v1` is the sole corpus comparison
+  algorithm label under [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md);
+  corpus fixtures and adapter results SHALL use it and its RFC 8785 UTF-16
+  ordering.
 - `IDENTITY_SET_PATHS`, which applies to the fingerprint form only, SHALL be exactly these thirteen container paths: `/types`, `/types/*/fields`, `/types/*/variants`, `/types/*/constraints`, `/types/*/relationships`, `/types/*/operations`, `/types/*/clauses`, `/types/*/extensions`, `/types/*/fields/*/extensions`, `/types/*/operations/*/params`, `/types/*/operations/*/params/*/extensions`, `/occurrences`, and `/extensions`.
-- `canonicalize` SHALL order object keys by code point.
+- `canonicalize` SHALL order object keys by RFC 8785 UTF-16 code unit.
 - Where two members of an identity-sorted container carry the same `identity`, the fingerprint form SHALL order them by the code-point order of their own canonical forms.
 - Where two members remain equal under that tie-break, `canonicalize` SHALL keep their original array order, so the ordering is total on every input.
 - The tie-break SHALL be stated rather than left to the sort's stability, because `DUPLICATE_IDENTITY` is a registered admissibility code, documents carrying duplicate identities therefore exist in the corpus, and the adapter emits `normalized` for those cases as well as for admissible ones.
@@ -103,7 +101,10 @@ Classification is the half that depends on admissibility, and only for the
 - `canonicalize` SHALL refuse a non-finite number rather than serializing it, because JSON has no representation for one and a silent substitution would change the document.
 - `canonicalize` SHALL serialize the number negative zero as `0`, following RFC 8785, so that a document differing only in the sign of a zero canonicalizes identically.
 - `canonicalize` SHALL refuse a value nested deeper than the declared depth bound rather than recursing without bound.
-- Because `docs/semantic-data-system/contracts-v1.md` names the algorithm `RFC8785-JCS-with-identity-sorted-sets-v1` and defines it nowhere, which `conformance/contract-gaps.json` records as GAP-004, `canonical.mjs` SHALL publish its own definition of both forms with the gap cited beside them.
+- `canonical.mjs` SHALL publish the `rfc8785-v1` definition and the separately
+  named identity-sorted-set fingerprint definition, with their byte domains
+  kept distinct as [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md)
+  requires.
 - `normalizeIrForTarget` SHALL use the unextended form, so that the string an adapter answer carries is the corpus's.
 - `fingerprintIrForTarget` SHALL use the extended form, so that the fingerprint it returns is the contract's.
 - `normalizeIrForTarget` SHALL force `nullable` to a literal boolean on every field and every operation parameter, unconditionally on `contractVersion`. `nullable` materializes `true` only where the authored member is the JSON literal `true`; every other value or its absence — `null`, `false`, a number, a string, an array, or an object, or no member at all — materializes `false` (fcd#187).
@@ -217,10 +218,10 @@ Classification is the half that depends on admissibility, and only for the
 |---|---|---|---|
 | FR-069-CON-1 | The canonical form and the classifier are deliberately second implementations beside the compiler's; neither SHALL import the compiler's normalization, canonicalization, or diff module, so agreement between them is evidence rather than a tautology. | Correctness | Static analysis |
 | FR-069-CON-2 | `canonical.mjs` SHALL declare `IDENTITY_SET_PATHS` as data in one place, so a fourteenth container path is a data edit that a test can see rather than a scattered code change. | Maintainability | Test |
-| FR-069-CON-3 | The GAP-004 citation SHALL stay in `canonical.mjs` until a published definition of the named algorithm exists, so the local definition is never mistaken for the contract's; the citation names the gap row and `agent-ix/filament-core-data#59`, because the row's declared owner `agent-ix/filament-core-data#9` is closed. | Integrity | Static analysis |
+| FR-069-CON-3 | The normalized and fingerprint forms SHALL retain their separate published algorithm labels and byte domains; a local canonicalizer silently substituting one for the other is prohibited. | Integrity | Static analysis |
 | FR-069-CON-4 | `classifySurface` SHALL NOT read the clock, so a report is a function of the two documents alone. | Determinism | Static analysis |
-| FR-069-CON-5 | This requirement SHALL NOT change a byte of `schema/semantic/v1/**` or `docs/semantic-data-system/**`; where the contract is ambiguous the gap is cited, not amended. | Non-disruption | Change-set diff |
-| FR-069-CON-6 | `canonical.mjs` SHALL declare `IDENTITY_SET_PATHS` and the key-ordering rule as data in one module, because GAP-004 leaves the named algorithm undefined and a later definition then becomes a data edit rather than a rewrite of every rule that reads them. | Maintainability | Test |
+| FR-069-CON-5 | The backend implementation SHALL NOT change a byte of `schema/semantic/v1/**` or `docs/semantic-data-system/**`; contract changes are authored by the owning specification requirement. | Non-disruption | Change-set diff |
+| FR-069-CON-6 | `canonical.mjs` SHALL declare `IDENTITY_SET_PATHS`, the key-ordering rule, and the selected algorithm label as data in one module, so a later contract revision is a data edit rather than a rewrite of every rule that reads them. | Maintainability | Test |
 | FR-069-CON-7 | `MODELLED_CHANGES` SHALL NOT be narrowed to make a corpus case agree; a rule the backend models and the oracle does not is reported as a divergence for the owner. | Integrity | Test |
 
 ## Acceptance Criteria
@@ -243,7 +244,7 @@ Classification is the half that depends on admissibility, and only for the
 | FR-069-AC-14 | `canonical.mjs` and `classify.mjs` contain no import of the compiler's normalization, canonicalization, or diff modules, and none of any module under `conformance/`. | Static |
 | FR-069-AC-15 | `pnpm-lock.yaml` gains no entry from this requirement, and neither module imports a package outside the Node standard library. | Analysis |
 | FR-069-AC-22 | `normalizeIrForTarget` reproduces the oracle's `normalized` string byte for byte for all 115 corpus cases, measured with no admissibility answer computed. | Snapshot |
-| FR-069-AC-23 | The unextended and the extended forms differ for a document whose set members are out of identity order, and agree for one already in order, so the two named algorithms are demonstrably two. | Unit |
+| FR-069-AC-23 | The `rfc8785-v1` and identity-sorted-set forms differ for a document whose set members are out of identity order, and agree for one already in order; a supplementary-plane key also proves the normalized form uses RFC 8785 UTF-16 ordering. | Unit |
 | FR-069-AC-16 | A document carrying two members with the same `identity` in an identity-sorted container canonicalizes to the same bytes whatever order those two members arrive in, and a document carrying two byte-identical such members canonicalizes without dropping either. | Property |
 | FR-069-AC-17 | A removed field, an added required field, a removed variant, and a removed relationship each classify `breaking`; an added optional field classifies `conditional` with no consumer policy; and an added variant classifies `additive` under a policy admitting unknown members, `breaking` with no policy under the `contract` setting of `VARIANT_ADDITION_POLICY`, and `conditional` with no policy under its default `corpus` setting. | Unit |
 | FR-069-AC-25 | `VARIANT_ADDITION_POLICY` is the only place in the backend that decides how a variant addition with no consumer policy classifies; under `contract` an added variant classifies `breaking` with no policy and `additive` under a policy admitting unknown members; and flipping it changes the answer for the corpus cases `ENUM-004` and `UNION-004` and for no other case. | Static |
@@ -256,4 +257,4 @@ Classification is the half that depends on admissibility, and only for the
 - **Upstream**: [FR-025](./FR-025-classify-semantic-and-target-compatibility.md), [FR-063](./FR-063-declare-the-generation-backend-seam.md), [FR-068](./FR-068-decide-and-report-ir-admissibility.md)
 - **Downstream**: [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md), [FR-070](./FR-070-run-the-typescript-conformance-adapter.md), [FR-071](./FR-071-provide-the-generate-command-and-surface-fixtures.md)
 - **Constrained by**: [NFR-024](../non-functional/NFR-024-portable-deterministic-generated-typescript.md), [NFR-025](../non-functional/NFR-025-non-disruptive-typescript-backend.md)
-- **Open contract questions**: GAP-004 is the highest-volatility open question this ticket carries, ranked above GAP-011. `docs/semantic-data-system/contracts-v1.md` names `RFC8785-JCS-with-identity-sorted-sets-v1` and defines it nowhere; `normalized` is compared byte for byte on all 115 corpus cases; and the fingerprint [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md) computes derives from it. A later definition that changed the set-path list or the key-ordering rule would move every case, every fingerprint, and every committed generated fixture at once, which is why FR-069-CON-6 requires both to be declared as data in one place. The GAP-004 row names `agent-ix/filament-core-data#9` as its owner and that issue is closed, so the definition has no live decider; `agent-ix/filament-core-data#59` records that and asks for one. GAP-010 (the unknown-policy tightening direction is unordered) is owned by `agent-ix/filament-core-data#25` and moves one rule.
+- **Settled contract question**: [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md) names `rfc8785-v1` for normalized documents and keeps `RFC8785-JCS-with-identity-sorted-sets-v1` for the package-lock fingerprint. GAP-004's former ambiguity is resolved by that requirement; its set-path list and the normalized supplementary-plane vector remain explicit evidence. GAP-010 (the unknown-policy tightening direction is unordered) is owned by `agent-ix/filament-core-data#25` and moves one rule.

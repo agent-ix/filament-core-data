@@ -1562,6 +1562,7 @@ export function lowerProgram(options) {
 	const types = [...definitions.values()].sort(byIdentity);
 	const ir = {
 		contractVersion: "2.0.0",
+		canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" },
 		source: {
 			identity: sourceIdentity,
 			version: options.packageVersion,

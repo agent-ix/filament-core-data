@@ -30,10 +30,28 @@ function isObject(value) {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-function byCodePoint(left, right) {
+function byCodeUnits(left, right) {
 	if (left < right) return -1;
 	if (left > right) return 1;
 	return 0;
+}
+
+function renderString(value, path) {
+	for (let index = 0; index < value.length; index += 1) {
+		const code = value.charCodeAt(index);
+		if (code >= 0xd800 && code <= 0xdbff) {
+			const next = value.charCodeAt(index + 1);
+			if (next >= 0xdc00 && next <= 0xdfff) {
+				index += 1;
+				continue;
+			}
+			throw new TypeError(`unpaired UTF-16 surrogate at ${path}`);
+		}
+		if (code >= 0xdc00 && code <= 0xdfff) {
+			throw new TypeError(`unpaired UTF-16 surrogate at ${path}`);
+		}
+	}
+	return JSON.stringify(value);
 }
 
 /**
@@ -51,7 +69,7 @@ export function canonicalize(value, options = {}) {
 		if (Array.isArray(node)) {
 			const items = sets.has(path)
 				? [...node].sort((left, right) =>
-						byCodePoint(
+						byCodeUnits(
 							isObject(left) ? String(left.identity ?? "") : String(left),
 							isObject(right) ? String(right.identity ?? "") : String(right),
 						),
@@ -64,18 +82,20 @@ export function canonicalize(value, options = {}) {
 		if (isObject(node)) {
 			const keys = Object.keys(node)
 				.filter((key) => node[key] !== undefined)
-				.sort(byCodePoint);
+				.sort(byCodeUnits);
 			return `{${keys
 				.map(
 					(key) =>
-						`${JSON.stringify(key)}:${walk(node[key], `${path}/${key}`, depth + 1)}`,
+						`${renderString(key, `${path}/${key}`)}:${walk(node[key], `${path}/${key}`, depth + 1)}`,
 				)
 				.join(",")}}`;
 		}
 		if (typeof node === "number" && !Number.isFinite(node)) {
 			throw new TypeError(`non-finite number is not canonicalizable: ${node}`);
 		}
-		return JSON.stringify(node === undefined ? null : node);
+		return typeof node === "string"
+			? renderString(node, path)
+			: JSON.stringify(node === undefined ? null : node);
 	};
 
 	return walk(value, "", 0);

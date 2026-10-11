@@ -472,10 +472,10 @@ computed by `quire matrix` from those trace tags.
 | TC-474 | The resolver SHALL implement version-constraint satisfaction in this repository against the two accepted forms, adding no semver dependency | Static | P1 | FR-047-CON-3 |
 | TC-475 | The resolver SHALL NOT execute any file it reads; manifests, mappings, profiles, and locks are data | Integration | P1 | FR-047-CON-4 |
 | TC-476 | `fixtures/semantic/v1/package-graph-cases.json` SHALL remain byte-unchanged; it is the read-only case index | Static | P1 | FR-047-CON-5 |
-| TC-477 | `canonicalize` reproduces every vector in `test/fixtures/compiler/rfc8785/vectors.json` for string escaping, number formatting, and key ordering | Unit | P0 | FR-048-AC-1 |
+| TC-477 | `canonicalize` reproduces every vector in `test/fixtures/compiler/rfc8785/vectors.json` for string escaping, number formatting, and key ordering | Unit | P0 | FR-048-AC-1, FR-145-AC-5 |
 | TC-478 | Permuting object key order, permuting a declared identity-keyed set, changing the working directory | Property | P0 | FR-048-AC-2 |
 | TC-479 | Changing one byte of a source file, of a manifest, of a mapping, of a profile, of a resolved package version, of a published schema file | Property | P0 | FR-048-AC-3 |
-| TC-480 | A built lock validates against `package-lock.schema.json`, and its `canonicalization` block equals the algorithm named here | Unit | P0 | FR-048-AC-4 |
+| TC-480 | A built lock validates against `package-lock.schema.json`, and its `canonicalization` block equals the algorithm named here | Unit | P0 | FR-048-AC-4, FR-145-AC-5 |
 | TC-481 | `STALE_LOCK`, `STALE_LOCK_PACKAGE`, `LOCK_GRAPH_MISMATCH`, and `UNSUPPORTED_CANONICALIZATION` each fire on a fixture, each at the declared locus | Unit | P0 | FR-048-AC-5 |
 | TC-482 | Verifying a lock leaves the lock file byte-unchanged on disk | Unit | P0 | FR-048-AC-6 |
 | TC-483 | Two lock builds over the same graph produce identical bytes | Snapshot | P0 | FR-048-AC-7 |
@@ -1098,8 +1098,8 @@ computed by `quire matrix` from those trace tags.
 | TC-1295 | lift over snapshot-table exits 0 and writes the document and .diagnostics.json; with --diagnostics d.json it writes that in its place with the same document bytes | E2E | P0 | FR-099-AC-1 |
 | TC-1296 | lift over negatives/UNRESOLVED_TYPE_TOKEN exits 1 writing only the diagnostics sidecar; lift without --module, under negatives/MODULE_WITHOUT_SEMANTIC_BLOCK, and with --out under the bundle root each exit 2 writing nothing | E2E | P1 | FR-099-AC-2 |
 | TC-1297 | inspect --ir over a lifted document prints one line per type in types order and exits 0; over a document missing contractVersion it prints INVALID_IR naming the reader's SCHEMA_VIOLATION at /ir ("a required member contractVersion is absent") and exits 1 | E2E | P1 | FR-099-AC-3 |
-| TC-1300 | Two lifts of snapshot-table, within one run and across two runs, produce IR and diagnostic bytes identical to each other, to the committed expected/ goldens, and to decide normalized | Snapshot | P0 | NFR-031-AC-1 |
-| TC-1301 | A lift with the working directory changed, HOME at an empty directory, and TZ, LANG, LC_ALL, and CARGO_TARGET_DIR varied produces bytes identical to the committed golden | Snapshot | P0 | NFR-031-AC-2 |
+| TC-1300 | Two lifts of snapshot-table, within one run and across two runs, produce IR and diagnostic bytes identical to each other, to the committed expected/ goldens, and to decide normalized | Snapshot | P0 | NFR-031-AC-1, FR-145-AC-7 |
+| TC-1301 | A lift with the working directory changed, HOME at an empty directory, and TZ, LANG, LC_ALL, and CARGO_TARGET_DIR varied produces bytes identical to the committed golden | Snapshot | P0 | NFR-031-AC-2, FR-145-AC-7 |
 | TC-1302 | The line-aligned snapshot-table and snapshot-fence bundle roots, each holding one copy of FR-006 at the same bundle-relative path, lift to identical types[] and diagnostics bytes; source.digest differs by construction | Snapshot | P0 | NFR-031-AC-3 |
 | TC-1303 | The crate enumerates no directory itself: every document and module arrives through load_repo and load_module_set, whose results are path-sorted (quire-rs walk.rs, TC-473), so enumeration order cannot reach the output | Static | P1 | NFR-031-AC-4 |
 | TC-1304 | No module under src/ references SystemTime, Instant, std::env, env!, option_env!, a hostname API, an RNG, std::net, or Command; std::fs only in write.rs (reads: manifest.yaml per module root, the golden walk, inspect --ir; writes: the atomic outputs), every other module std::fs-free; the gate fails on a planted std::env::var in lower.rs | Static | P0 | NFR-031-AC-5 |
@@ -1346,6 +1346,16 @@ computed by `quire matrix` from those trace tags.
 | TC-1824 | A text field and a scalar-string type carry a closed-set `textProfile`; other values and kinds are refused | Unit | P1 | FR-141-AC-11 |
 | TC-1825 | An integer value site is a canonical integer string at every magnitude within the i128 ceiling, and a non-canonical spelling or a JSON number is refused | Unit | P1 | FR-050-AC-14, FR-144-AC-2 |
 | TC-1826 | The generated Rust field matrix compiles and deserializes float32 and float64 scalar and collection fields, a nullable float, bounded integer and enum values, and a semantic default | Unit | P0 | FR-144-AC-3, FR-144-AC-7, FR-144-AC-13, FR-144-AC-18 |
+| TC-1827 | The shared supplementary-plane golden has RFC 8785 UTF-16 member ordering and the expected SHA-256 digest; the extraction frontend digest sidecar uses the exact written document bytes and changes after a one-byte mutation | Integration | P0 | FR-145-AC-3, FR-145-AC-7, FR-145-CON-3 |
+| TC-1828 | The digest sidecar is published before the document, and a failed document replacement leaves no temporary files | Unit | P0 | FR-145-CON-2 |
+| TC-1829 | The Python and TypeScript normalized forms use RFC 8785 binary64 spelling at the fixed/exponent boundaries, including 1e-7 | Unit | P0 | FR-145-CON-3 |
+| TC-1830 | The Python, compiler, TypeScript backend, and second TypeScript reader canonicalizers reject unpaired UTF-16 surrogates in member names and values while accepting a supplementary-plane pair | Unit | P0 | FR-145-CON-3 |
+| TC-1831 | The published reader contract accepts the exact normalized canonicalization descriptor and refuses missing, unknown, or extra members with a located diagnostic; normalization materializes the exact descriptor | Unit | P0 | FR-145-AC-2 |
+| TC-1832 | The TypeScript normalized bytes ignore object member order, preserve array order, and change when a semantic value changes | Unit | P0 | FR-145-AC-4 |
+| TC-1833 | The independent conformance oracle refuses a schema-valid normalized document with an unpaired UTF-16 surrogate in a type display name; its canonical writer refuses malformed member names, accepts a valid supplementary-plane pair, and spells number boundaries as RFC 8785 requires | Unit | P0 | FR-145-CON-3 |
+| TC-1834 | The Rust semantic IR reader refuses a schema-valid document whose type display name carries an unpaired surrogate escape rather than replacing it with U+FFFD; a valid surrogate pair remains a supplementary-plane scalar | Unit | P0 | FR-145-CON-3 |
+| TC-1835 | The Rust semantic IR reader refuses a number outside finite binary64 rather than normalizing it to null, writes 1e-7 with RFC 8785 spelling, and refuses a programmatically constructed invalid number | Unit | P0 | FR-145-CON-3 |
+| TC-1836 | The second TypeScript semantic IR reader refuses non-finite numbers rather than normalizing them to null, while preserving RFC 8785 spelling for finite numbers | Unit | P0 | FR-145-CON-3 |
 | TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 |
 
 ## Option Permutation Matrix

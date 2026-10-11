@@ -12,23 +12,43 @@ export function isObject(value) {
 	return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+function canonicalString(value) {
+	for (let index = 0; index < value.length; index += 1) {
+		const code = value.charCodeAt(index);
+		if (code >= 0xd800 && code <= 0xdbff) {
+			const next = value.charCodeAt(index + 1);
+			if (next >= 0xdc00 && next <= 0xdfff) {
+				index += 1;
+				continue;
+			}
+			throw new TypeError("unpaired UTF-16 surrogate is not RFC 8785 JSON");
+		}
+		if (code >= 0xdc00 && code <= 0xdfff)
+			throw new TypeError("unpaired UTF-16 surrogate is not RFC 8785 JSON");
+	}
+	return JSON.stringify(value);
+}
+
 /**
- * Canonical serialization: object keys sorted by code point, no insignificant
- * whitespace. Array order is significant and is preserved.
+ * Canonical serialization: object keys sorted by RFC 8785 UTF-16 code unit,
+ * no insignificant whitespace. Array order is significant and is preserved.
  */
 export function canonical(value) {
 	if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
 	if (isObject(value)) {
-		const keys = Object.keys(value).sort(compareCodePoint);
+		const keys = Object.keys(value).sort(compareCodeUnits);
 		return `{${keys
-			.map((key) => `${JSON.stringify(key)}:${canonical(value[key])}`)
+			.map((key) => `${canonicalString(key)}:${canonical(value[key])}`)
 			.join(",")}}`;
 	}
+	if (typeof value === "string") return canonicalString(value);
+	if (typeof value === "number" && !Number.isFinite(value))
+		throw new TypeError("non-finite number is not RFC 8785 JSON");
 	return JSON.stringify(value === undefined ? null : value);
 }
 
-/** Code-point ordering. Never `localeCompare`: locale is excluded (NFR-015). */
-export function compareCodePoint(left, right) {
+/** UTF-16 code-unit ordering. Never `localeCompare`: locale is excluded. */
+export function compareCodeUnits(left, right) {
 	if (left === right) return 0;
 	return left < right ? -1 : 1;
 }

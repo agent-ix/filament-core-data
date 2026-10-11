@@ -73,11 +73,11 @@ performs a publication or contacts a registry.
 - `conformance/corpus.json` read, never written: `corpusVersion`, the
   twenty-two-row `constructRegister`, the `unmetAreas` register carrying
   `UA-serialization-parity`, the four bases, and the one hundred and eleven cases
-- The corpus comparison form `agent-ix-conformance-jcs-v1`: object members
-  ordered by code point, no insignificant whitespace, array order preserved —
-  which `conformance/README.md` states is **not** the contract's
-  `RFC8785-JCS-with-identity-sorted-sets-v1` fingerprint form, recorded as named
-  but undefined in `conformance/contract-gaps.json` GAP-004
+- The corpus comparison form `rfc8785-v1`: RFC 8785 object members ordered by
+  UTF-16 code unit, no insignificant whitespace, array order preserved, and the
+  normalized document carrying its `canonicalization` descriptor. This is
+  separate from the contract's `RFC8785-JCS-with-identity-sorted-sets-v1`
+  package-lock fingerprint form.
 - `conformance/contract-gaps.json` and `conformance/divergences.json`, read as
   the record of what is already known to disagree and with whom
 - The thirty JSON Schema 2020-12 documents under
@@ -169,15 +169,14 @@ following, and a disagreement on any one is a disagreement:
 - **Unknown-member states.** For each of `preserve`, `reject`, and `surface`,
   the four SHALL agree on whether an undeclared member is kept, refused, or
   reported, and a `preserve` document SHALL survive a deserialize–serialize
-  round trip canonically equal under `agent-ix-conformance-jcs-v1` in all four.
+  round trip canonically equal under `rfc8785-v1` in all four.
 - **Relation semantics.** `RelationDecl` — its `EdgeCategory`, its
   `multiplicity` including `ordered` and `unique`, and its target identity —
   SHALL be read and written identically across the four.
 
-- Comparison SHALL be under `agent-ix-conformance-jcs-v1` and SHALL NOT claim to
-  be under `RFC8785-JCS-with-identity-sorted-sets-v1`, which
-  `conformance/contract-gaps.json` GAP-004 records as named but undefined. A
-  comparison naming an undefined form proves nothing.
+- Comparison SHALL be under `rfc8785-v1` and SHALL NOT claim to be under
+  `RFC8785-JCS-with-identity-sorted-sets-v1`; the two forms have separate
+  byte-domain definitions under [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md).
 - Byte identity SHALL be asserted only where a package retained the source
   bytes, following the retained-bytes rule
   [FR-061](./FR-061-consume-the-generated-crate.md) states; everywhere else the
@@ -320,7 +319,7 @@ following, and a disagreement on any one is a disagreement:
 | FR-090-AC-4 | For every golden document, the serialized member name of every declared member is identical across the four packages; renaming one member in one package's emitted output makes the run fail naming the document, the member, and the two packages that differ. | Test |
 | FR-090-AC-5 | For every golden document, an absent member and a present-but-null member are distinguished identically across the four on deserialization and on re-serialization, and a package that writes a null for an absent optional member fails the run. | Test |
 | FR-090-AC-6 | For every `DefaultKind`, whether a default is materialized into the serialized document is identical across the four. | Test |
-| FR-090-AC-7 | For each of `preserve`, `reject`, and `surface`, the four agree on the fate of an undeclared member, and a `preserve` document round-trips canonically equal under `agent-ix-conformance-jcs-v1` in all four, byte-identical only where the package retained the source bytes. | Test |
+| FR-090-AC-7 | For each of `preserve`, `reject`, and `surface`, the four agree on the fate of an undeclared member, and a `preserve` document round-trips canonically equal under `rfc8785-v1` in all four, byte-identical only where the package retained the source bytes. | Test |
 | FR-090-AC-8 | For every `RelationDecl` document, the `EdgeCategory`, the `multiplicity` including `ordered` and `unique`, and the target identity are read and written identically across the four. | Test |
 | FR-090-AC-9 | The comparison is performed by `compare` and `substantive` imported from `conformance/oracle/index.mjs`; no module under `packages/semantic-kernel/parity/` defines its own verdict, canonicalization, or comparison function, no module there imports any other path under `conformance/`, and no decision emitter imports `conformance/` at all. | Analysis |
 | FR-090-AC-10 | A full parity run leaves every file under `conformance/` byte-unchanged, including `conformance/corpus.json`, `conformance/coverage.json`, `conformance/divergences.json`, `conformance/adapters/registry.json`, and `conformance/thresholds.json`, compared before and after. | Test |
@@ -343,4 +342,4 @@ following, and a disagreement on any one is a disagreement:
 - **Consumed read-only**: `conformance/oracle/index.mjs`, the one declared import surface of the issue #20 corpus, together with `conformance/corpus.json`, `conformance/contract-gaps.json`, `conformance/divergences.json`, `conformance/thresholds.json`, and `conformance/adapters/registry.json`, all owned by `agent-ix/filament-core-data#20` and all prohibited paths for issue #11 under NFR-030
 - **Downstream**: `agent-ix/quoin#290`, the publication sign-off every one of the four packages is blocked on; `agent-ix/filament-core-data#20`, which owns closing the `UA-serialization-parity` row on the evidence this requirement reports; `agent-ix/filament-core-data#7`
 - **Constrained by**: [NFR-028](../non-functional/NFR-028-deterministic-kernel-generation.md), [NFR-029](../non-functional/NFR-029-portable-semantic-kernel-packages.md), [NFR-030](../non-functional/NFR-030-non-disruptive-kernel-packaging.md)
-- **Open contract questions this requirement records rather than decides**: `conformance/contract-gaps.json` GAP-004, the named but undefined `RFC8785-JCS-with-identity-sorted-sets-v1` fingerprint form, which is why the comparison names `agent-ix-conformance-jcs-v1` instead; and GAP-002, the four-lookahead `sourceLocus` path pattern that cannot compile under RE2 and that the Rust package must hand-write. `FR-106` makes presence and multiplicity independent under contract `2.0.0`, the only contract, so no reconciliation gap remains to record
+- **Open contract questions this requirement records rather than decides**: GAP-002, the four-lookahead `sourceLocus` path pattern that cannot compile under RE2 and that the Rust package must hand-write. The former GAP-004 canonicalization ambiguity is settled by [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md). `FR-106` makes presence and multiplicity independent under contract `2.0.0`, the only contract, so no reconciliation gap remains to record

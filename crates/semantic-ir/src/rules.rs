@@ -2229,7 +2229,7 @@ mod tests {
         };
         let wrap = |field: String| {
             parse(&format!(
-                r#"{{"ir": {{"contractVersion": "2.0.0", "types": [{{"identity": "ix://acme/pkg/T", "kind": "record", "fields": [{field}]}}]}}}}"#
+                r#"{{"ir": {{"contractVersion": "2.0.0", "canonicalization": {{"algorithm": "rfc8785-v1", "digest": "sha256-jcs"}}, "types": [{{"identity": "ix://acme/pkg/T", "kind": "record", "fields": [{field}]}}]}}}}"#
             ))
             .expect("a document")
         };
@@ -2267,7 +2267,7 @@ mod tests {
         let bundle = parse(
             r#"{
                 "ir": {
-                    "contractVersion": "2.0.0",
+                    "contractVersion": "2.0.0", "canonicalization": {"algorithm": "rfc8785-v1", "digest": "sha256-jcs"},
                     "types": [
                         {
                             "identity": "ix://acme/pkg/T",
@@ -2319,7 +2319,7 @@ mod tests {
         let bundle = parse(
             r#"{
                 "ir": {
-                    "contractVersion": "2.0.0",
+                    "contractVersion": "2.0.0", "canonicalization": {"algorithm": "rfc8785-v1", "digest": "sha256-jcs"},
                     "types": [
                         {
                             "identity": "ix://acme/pkg/T",
@@ -2404,7 +2404,9 @@ mod tests {
     /// or, when `closed` is false, an acyclic chain with the last type
     /// relating to nothing.
     fn composite_ring(count: usize, closed: bool) -> Json {
-        let mut text = String::from(r#"{"ir":{"contractVersion":"2.0.0","types":["#);
+        let mut text = String::from(
+            r#"{"ir":{"contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"types":["#,
+        );
         for position in 0..count {
             if position > 0 {
                 text.push(',');
@@ -2514,7 +2516,9 @@ mod tests {
     /// `count` alias types, each naming the next, the last naming a record,
     /// so the chain is acyclic and `count` links long.
     fn alias_chain(count: usize) -> Json {
-        let mut text = String::from(r#"{"ir":{"contractVersion":"2.0.0","types":["#);
+        let mut text = String::from(
+            r#"{"ir":{"contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"types":["#,
+        );
         for position in 0..count {
             if position > 0 {
                 text.push(',');
@@ -2536,7 +2540,9 @@ mod tests {
     /// so a policy walk must retain conflict semantics without copying every
     /// growing suffix for every alias.
     fn decimal_policy_alias_chain(count: usize) -> Json {
-        let mut text = String::from(r#"{"ir":{"contractVersion":"2.0.0","types":["#);
+        let mut text = String::from(
+            r#"{"ir":{"contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"types":["#,
+        );
         for position in 0..count {
             if position > 0 {
                 text.push(',');

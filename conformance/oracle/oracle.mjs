@@ -8,7 +8,7 @@
  * `conformance/adapters/`; it reads no clock, no network, and no environment.
  */
 
-import { canonical, compareCodePoint, isObject, pointer } from "./json.mjs";
+import { canonical, compareCodeUnits, isObject, pointer } from "./json.mjs";
 
 /** Maximum reference-expansion depth (FR-036). Cycles are caught before this. */
 export const DEPTH_LIMIT = 256;
@@ -96,10 +96,10 @@ function diagnostic(code, pointerText, message, severity = "error") {
 
 function compareDiagnostics(left, right) {
 	return (
-		compareCodePoint(left.pointer, right.pointer) ||
-		compareCodePoint(left.code, right.code) ||
-		compareCodePoint(left.message, right.message) ||
-		compareCodePoint(canonical(left), canonical(right))
+		compareCodeUnits(left.pointer, right.pointer) ||
+		compareCodeUnits(left.code, right.code) ||
+		compareCodeUnits(left.message, right.message) ||
+		compareCodeUnits(canonical(left), canonical(right))
 	);
 }
 
@@ -1059,6 +1059,7 @@ function materializeNullable(definition) {
 export function normalize(ir) {
 	if (!isObject(ir)) return canonical(ir);
 	const cloned = structuredClone(ir);
+	cloned.canonicalization = { algorithm: "rfc8785-v1", digest: "sha256-jcs" };
 	for (const definition of Array.isArray(cloned.types) ? cloned.types : []) {
 		if (isObject(definition)) materializeNullable(definition);
 	}
@@ -1861,8 +1862,8 @@ export function classify(beforeBundle, afterBundle) {
 
 	changes.sort(
 		(left, right) =>
-			compareCodePoint(left.pointer, right.pointer) ||
-			compareCodePoint(left.message, right.message),
+			compareCodeUnits(left.pointer, right.pointer) ||
+			compareCodeUnits(left.message, right.message),
 	);
 	const classification = changes.reduce(
 		(worst, change) => moreRestrictive(worst, change.classification),

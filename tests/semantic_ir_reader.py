@@ -757,24 +757,91 @@ def read_semantic_ir(
     return out
 
 
-def _integral_floats(value: Any) -> Any:
-    """ES6/RFC 8785 number form: an integral float serializes without ``.0``."""
-    if isinstance(value, float) and value.is_integer():
-        return int(value)
-    if isinstance(value, list):
-        return [_integral_floats(item) for item in value]
-    if isinstance(value, dict):
-        return {key: _integral_floats(item) for key, item in value.items()}
-    return value
+def _jcs_number(value: int | float) -> str:
+    """Render a binary64 number with ECMAScript's fixed/exponent cutoffs."""
+    try:
+        number = float(value)
+    except OverflowError as error:
+        raise ValueError("number is outside the RFC 8785 binary64 domain") from error
+    if not math.isfinite(number):
+        raise ValueError("non-finite number is not RFC 8785 JSON")
+    if number == 0:
+        return "0"
+
+    shortest = repr(abs(number))
+    mantissa, _, exponent = shortest.partition("e")
+    before, dot, after = mantissa.partition(".")
+    digits = before + (after if dot else "")
+    decimal_place = len(before) + (int(exponent) if exponent else 0)
+    leading = len(digits) - len(digits.lstrip("0"))
+    digits = digits[leading:].rstrip("0")
+    decimal_place -= leading
+    scientific_exponent = decimal_place - 1
+
+    if -6 <= scientific_exponent < 21:
+        if decimal_place <= 0:
+            rendered = "0." + "0" * -decimal_place + digits
+        elif decimal_place >= len(digits):
+            rendered = digits + "0" * (decimal_place - len(digits))
+        else:
+            rendered = digits[:decimal_place] + "." + digits[decimal_place:]
+    else:
+        rendered = digits[0]
+        if len(digits) > 1:
+            rendered += "." + digits[1:]
+        rendered += f"e{scientific_exponent:+d}"
+    return ("-" if number < 0 else "") + rendered
+
+
+def _jcs_string(value: str) -> str:
+    """RFC 8785 rejects unpaired UTF-16 surrogates in names and values."""
+    index = 0
+    scalars = []
+    while index < len(value):
+        code = ord(value[index])
+        if 0xD800 <= code <= 0xDBFF:
+            if index + 1 >= len(value) or not 0xDC00 <= ord(value[index + 1]) <= 0xDFFF:
+                raise ValueError("unpaired UTF-16 surrogate is not RFC 8785 JSON")
+            low = ord(value[index + 1])
+            scalars.append(chr(0x10000 + ((code - 0xD800) << 10) + low - 0xDC00))
+            index += 2
+            continue
+        if 0xDC00 <= code <= 0xDFFF:
+            raise ValueError("unpaired UTF-16 surrogate is not RFC 8785 JSON")
+        scalars.append(value[index])
+        index += 1
+    return json.dumps("".join(scalars), ensure_ascii=False)
+
+
+def _utf16_key(value: str) -> tuple[int, ...]:
+    encoded = value.encode("utf-16-be", "surrogatepass")
+    return tuple(
+        (encoded[index] << 8) | encoded[index + 1]
+        for index in range(0, len(encoded), 2)
+    )
 
 
 def canonical(value: Any) -> str:
-    return json.dumps(
-        _integral_floats(value),
-        sort_keys=True,
-        separators=(",", ":"),
-        ensure_ascii=False,
-    )
+    if value is None:
+        return "null"
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        return _jcs_number(value)
+    if isinstance(value, str):
+        return _jcs_string(value)
+    if isinstance(value, list):
+        return "[" + ",".join(canonical(item) for item in value) + "]"
+    if isinstance(value, dict):
+        return (
+            "{"
+            + ",".join(
+                _jcs_string(key) + ":" + canonical(value[key])
+                for key in sorted(value, key=_utf16_key)
+            )
+            + "}"
+        )
+    raise TypeError(f"value of type {type(value).__name__} is not RFC 8785 JSON")
 
 
 def normalize(document: Any) -> str:
@@ -785,6 +852,10 @@ def normalize(document: Any) -> str:
     if not isinstance(document, dict):
         return canonical(document)
     copy_ = copy.deepcopy(document)
+    copy_["canonicalization"] = {
+        "algorithm": "rfc8785-v1",
+        "digest": "sha256-jcs",
+    }
 
     def materialize(field: dict[str, Any]) -> None:
         field["nullable"] = field.get("nullable") is True

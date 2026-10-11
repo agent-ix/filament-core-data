@@ -2879,7 +2879,7 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 		objects: { input: unknown; expected: string }[];
 	};
 
-	/** Traces: TC-477; FR-048-AC-1. */
+	/** Trace: FR-145-AC-5. TC-477; FR-048-AC-1. */
 	it("reproduces every RFC 8785 vector", () => {
 		for (const group of ["numbers", "strings", "objects"] as const) {
 			for (const row of vectors[group]) {
@@ -2902,9 +2902,7 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 		const insertionOrdered = JSON.stringify({ b: 1, a: 2 });
 		expect(insertionOrdered).toBe('{"b":1,"a":2}');
 		expect(canonicalize({ b: 1, a: 2 })).toBe('{"a":2,"b":1}');
-		// A lone surrogate and a supplementary-plane key are the cases a naive
-		// implementation gets wrong; both are emitted literally, and the key
-		// ordering is by UTF-16 code unit, which puts the pair last.
+		// A supplementary-plane key is ordered by UTF-16 code unit.
 		expect(canonicalize({ "\u{1F600}": 1, z: 2 })).toBe(
 			'{"z":2,"\u{1F600}":1}',
 		);
@@ -2912,6 +2910,21 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 		expect(() => canonicalize(Number.NaN)).toThrow(/non-finite/);
 		expect(digest("abc")).toBe(
 			"sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+		);
+	});
+
+	/** Traces: TC-1830; FR-145-CON-3. */
+	it("TC-1830 refuses unpaired surrogates in the compiler normalizer", () => {
+		for (const malformed of ["\ud800", "\udc00", "a\ud800b"]) {
+			expect(() => canonicalize({ displayName: malformed })).toThrow(
+				/unpaired UTF-16 surrogate/,
+			);
+			expect(() => canonicalize({ [malformed]: "name" })).toThrow(
+				/unpaired UTF-16 surrogate/,
+			);
+		}
+		expect(canonicalize({ "\ud83d\ude00": "\ud83d\ude00" })).toBe(
+			'{"😀":"😀"}',
 		);
 	});
 
@@ -3018,7 +3031,7 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 		).not.toBe(base);
 	});
 
-	/** Traces: TC-480, TC-483; FR-048-AC-4, FR-048-AC-7. */
+	/** Trace: FR-145-AC-5. TC-480, TC-483; FR-048-AC-4, FR-048-AC-7. */
 	it("builds a schema-valid lock, twice identically", () => {
 		const lock = buildLock(compiled.resolution as never);
 		expect(

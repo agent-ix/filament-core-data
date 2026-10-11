@@ -12,9 +12,9 @@
 //!   than something the reader silently resolved. Lookups resolve a duplicate
 //!   the way `JSON.parse` does — the last occurrence wins.
 //!
-//! The writer emits the corpus comparison form `agent-ix-conformance-jcs-v1`,
-//! which `conformance/README.md` defines as "object keys ordered by code point,
-//! no insignificant whitespace, array order preserved".
+//! The writer emits the normalized `rfc8785-v1` form, which
+//! `conformance/README.md` defines as object keys ordered by RFC 8785 UTF-16
+//! code unit, with no insignificant whitespace and array order preserved.
 
 use crate::number::ecma_number_to_string;
 use core::fmt::Write as _;
@@ -652,7 +652,10 @@ impl<'a> Reader<'a> {
             }
         }
         match core::str::from_utf8(&self.bytes[start..self.pos]) {
-            Ok(lexeme) => Ok(Json::Number(lexeme.to_string())),
+            Ok(lexeme) if matches!(lexeme.parse::<f64>(), Ok(number) if number.is_finite()) => {
+                Ok(Json::Number(lexeme.to_string()))
+            }
+            Ok(_) => self.err("a number is outside the finite binary64 domain"),
             Err(_) => self.err("a number lexeme is not UTF-8"),
         }
     }
@@ -689,7 +692,6 @@ impl<'a> Reader<'a> {
                         b'u' => {
                             let first = self.hex4()?;
                             if (0xD800..0xDC00).contains(&first) {
-                                let saved = self.pos;
                                 if self.peek() == Some(b'\\')
                                     && self.bytes.get(self.pos + 1) == Some(&b'u')
                                 {
@@ -700,22 +702,20 @@ impl<'a> Reader<'a> {
                                             0x1_0000 + ((first - 0xD800) << 10) + (second - 0xDC00);
                                         match char::from_u32(combined) {
                                             Some(ch) => out.push(ch),
-                                            None => out.push('\u{FFFD}'),
+                                            None => {
+                                                return self.err("an unpaired UTF-16 surrogate")
+                                            }
                                         }
                                         continue;
                                     }
-                                    self.pos = saved;
                                 }
-                                // A lone surrogate cannot be held by a Rust
-                                // `String`; it becomes the replacement
-                                // character. No corpus string carries one.
-                                out.push('\u{FFFD}');
+                                return self.err("an unpaired UTF-16 surrogate");
                             } else if (0xDC00..0xE000).contains(&first) {
-                                out.push('\u{FFFD}');
+                                return self.err("an unpaired UTF-16 surrogate");
                             } else {
                                 match char::from_u32(first) {
                                     Some(ch) => out.push(ch),
-                                    None => out.push('\u{FFFD}'),
+                                    None => return self.err("an invalid Unicode escape"),
                                 }
                             }
                         }
@@ -782,17 +782,42 @@ pub fn write_string(out: &mut String, text: &str) {
     out.push('"');
 }
 
-/// Writes `value` in the corpus comparison form `agent-ix-conformance-jcs-v1`.
+/// Why an in-memory JSON value cannot be written in RFC 8785 form.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct CanonicalError {
+    /// The reason serialization refused the value.
+    pub message: &'static str,
+}
+
+impl core::fmt::Display for CanonicalError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str(self.message)
+    }
+}
+
+/// Tries to write `value` in the normalized `rfc8785-v1` form.
 ///
-/// Object members are ordered by the code points of their names, array order is
-/// preserved, no insignificant whitespace is written, a duplicate member is
+/// Parsed documents already satisfy the finite-number invariant. This
+/// checked path also refuses a caller-built `Json::Number` outside it.
+pub fn try_to_canonical_string(value: &Json) -> Result<String, CanonicalError> {
+    let mut out = String::new();
+    write_canonical(&mut out, value)?;
+    Ok(out)
+}
+
+/// Writes `value` in the normalized `rfc8785-v1` form.
+///
+/// Object members are ordered by the UTF-16 code units of their names, array
+/// order is preserved, no insignificant whitespace is written, a duplicate member is
 /// resolved the way `JSON.parse` resolves it, and every number is rendered by
 /// the ECMAScript `Number::toString` algorithm from its parsed `f64` — which is
 /// what a `JSON.parse` followed by a `JSON.stringify` does to it.
+///
+/// This compatibility surface has no error channel. An invalid caller-built
+/// number yields empty bytes, which are not a JSON document; callers that may
+/// hold one use [`try_to_canonical_string`] for a typed refusal.
 pub fn to_canonical_string(value: &Json) -> String {
-    let mut out = String::new();
-    write_canonical(&mut out, value);
-    out
+    try_to_canonical_string(value).unwrap_or_default()
 }
 
 /// Writes `value` keeping every object's member order, so a node copied out of
@@ -804,8 +829,10 @@ pub fn to_canonical_string(value: &Json) -> String {
 /// difference.
 pub fn to_document_string(value: &Json) -> String {
     let mut out = String::new();
-    write_document(&mut out, value);
-    out
+    match write_document(&mut out, value) {
+        Ok(()) => out,
+        Err(_) => String::new(),
+    }
 }
 
 /// One piece of work in the iterative writers.
@@ -828,17 +855,21 @@ fn resolved_members(members: &[(String, Json)]) -> Vec<(&str, &Json)> {
     resolved
 }
 
-fn write_document(out: &mut String, value: &Json) {
-    write_iteratively(out, value, false);
+fn write_document(out: &mut String, value: &Json) -> Result<(), CanonicalError> {
+    write_iteratively(out, value, false)
 }
 
-fn write_canonical(out: &mut String, value: &Json) {
-    write_iteratively(out, value, true);
+fn write_canonical(out: &mut String, value: &Json) -> Result<(), CanonicalError> {
+    write_iteratively(out, value, true)
+}
+
+fn compare_utf16(left: &str, right: &str) -> core::cmp::Ordering {
+    left.encode_utf16().cmp(right.encode_utf16())
 }
 
 /// Writes `value` over an explicit stack, sorting object members by name when
 /// `sorted`, so a document of any depth is written on any thread.
-fn write_iteratively(out: &mut String, value: &Json, sorted: bool) {
+fn write_iteratively(out: &mut String, value: &Json, sorted: bool) -> Result<(), CanonicalError> {
     let mut stack = vec![Emit::Node(value)];
     while let Some(emit) = stack.pop() {
         match emit {
@@ -855,8 +886,13 @@ fn write_iteratively(out: &mut String, value: &Json, sorted: bool) {
                     Ok(number) if number.is_finite() => {
                         out.push_str(&ecma_number_to_string(number));
                     }
-                    // `JSON.stringify` writes a non-finite number as `null`.
-                    _ => out.push_str("null"),
+                    // Parsed documents refuse this case. A caller constructing
+                    // `Json::Number` directly receives a typed refusal.
+                    _ => {
+                        return Err(CanonicalError {
+                            message: "Json::Number is not a finite binary64 value",
+                        });
+                    }
                 },
                 Json::Str(text) => write_string(out, text),
                 Json::Array(items) => {
@@ -872,7 +908,7 @@ fn write_iteratively(out: &mut String, value: &Json, sorted: bool) {
                 Json::Object(members) => {
                     let mut resolved = resolved_members(members);
                     if sorted {
-                        resolved.sort_by(|left, right| left.0.as_bytes().cmp(right.0.as_bytes()));
+                        resolved.sort_by(|left, right| compare_utf16(left.0, right.0));
                     }
                     out.push('{');
                     stack.push(Emit::Text("}"));
@@ -887,6 +923,7 @@ fn write_iteratively(out: &mut String, value: &Json, sorted: bool) {
             },
         }
     }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -923,6 +960,39 @@ mod tests {
         ] {
             assert!(parse(input).is_err(), "{input:?} is not a JSON document");
         }
+    }
+
+    /// Trace: FR-145-CON-3. TC-1834.
+    #[test]
+    fn tc_1834_refuses_unpaired_surrogates_before_normalizing_a_semantic_document() {
+        let base = include_str!("../../../conformance/bases/core-2-0.json");
+        let source = r#""displayName": "Text""#;
+        assert!(base.contains(source));
+        for escaped in [r"\uD800", r"\uDC00", r"\uD800\u0041"] {
+            let mutated = base.replacen(source, &format!(r#""displayName": "{escaped}""#), 1);
+            let refusal = parse(&mutated).expect_err("a lone surrogate must not become U+FFFD");
+            assert_eq!(refusal.kind, JsonErrorKind::Malformed);
+            assert!(refusal.message.contains("unpaired UTF-16 surrogate"));
+        }
+        let paired = parse(r#"{"displayName":"\uD83D\uDE00"}"#).expect("paired surrogate");
+        assert_eq!(to_canonical_string(&paired), "{\"displayName\":\"😀\"}");
+    }
+
+    /// Trace: FR-145-CON-3. TC-1835.
+    #[test]
+    fn tc_1835_refuses_non_finite_numbers_instead_of_writing_null() {
+        let refusal = parse(r#"{"value":1e400}"#).expect_err("infinite binary64 value");
+        assert_eq!(refusal.kind, JsonErrorKind::Malformed);
+        assert!(refusal.message.contains("finite binary64"));
+        assert_eq!(
+            to_canonical_string(&parse(r#"{"value":1e-7}"#).expect("finite number")),
+            r#"{"value":1e-7}"#
+        );
+        let constructed = Json::Number("1e400".to_owned());
+        let refusal = try_to_canonical_string(&constructed).expect_err("non-finite number");
+        assert!(refusal.message.contains("finite binary64"));
+        assert_eq!(to_canonical_string(&constructed), "");
+        assert_eq!(to_document_string(&constructed), "");
     }
 
     /// Runs `check` on a 256 KiB thread, a stack a recursion that grows with

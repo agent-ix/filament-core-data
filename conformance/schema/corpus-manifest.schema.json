@@ -27,7 +27,7 @@
 			"items": { "enum": ["2.0.0"] },
 			"uniqueItems": true
 		},
-		"canonicalForm": { "const": "agent-ix-conformance-jcs-v1" },
+		"canonicalForm": { "const": "rfc8785-v1" },
 		"caseIdPattern": { "type": "string", "minLength": 1 },
 		"minimizationBudget": { "type": "integer", "minimum": 1 },
 		"depthLimit": { "type": "integer", "minimum": 1 },

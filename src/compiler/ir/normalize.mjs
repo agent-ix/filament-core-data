@@ -52,6 +52,7 @@ export function canonicalIr(document, options = {}) {
 export function normalizeIr(document, options = {}) {
 	if (!isObject(document)) return canonicalIr(document, options);
 	const copy = structuredClone(document);
+	copy.canonicalization = { algorithm: "rfc8785-v1", digest: "sha256-jcs" };
 	const materialize = (field) => {
 		field.nullable = field.nullable === true;
 	};

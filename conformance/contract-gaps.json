@@ -29,7 +29,7 @@
 			"artifacts": ["docs/semantic-data-system/contracts-v1.md"],
 			"finding": "`contracts-v1.md` names `RFC8785-JCS-with-identity-sorted-sets-v1` and `package-lock.schema.json` fixes it as a constant, but no artifact defines what an identity-sorted set is or how it is serialized.",
 			"consequence": "Two conforming implementations can produce different fingerprints for the same input, which defeats the determinism the fingerprint exists to prove.",
-			"corpusDisposition": "The corpus names its own comparison form `agent-ix-conformance-jcs-v1` and states in `README.md` that it is not the fingerprint form, so no reader mistakes one for the other.",
+			"corpusDisposition": "The corpus names its own comparison form `rfc8785-v1` and states in `README.md` that it is not the fingerprint form, so no reader mistakes one for the other.",
 			"owningIssue": "agent-ix/filament-core-data#9",
 			"discoveredBy": "agent-ix/filament-core-data#20",
 			"status": "open"

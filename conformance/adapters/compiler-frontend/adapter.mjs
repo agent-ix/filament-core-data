@@ -91,8 +91,8 @@ function answer(entry) {
 			pointer: "",
 			diagnostic: entry_,
 		})),
-		// `{ sets: [] }` selects the corpus comparison form
-		// `agent-ix-conformance-jcs-v1`, which preserves array order, over the
+		// `{ sets: [] }` selects the normalized `rfc8785-v1` form, which preserves
+		// array order, over the
 		// contract's `RFC8785-JCS-with-identity-sorted-sets-v1` fingerprint form,
 		// which identity-sorts thirteen set paths. `conformance/README.md` states
 		// they are different forms and GAP-004 records that the fingerprint form is

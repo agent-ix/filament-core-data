@@ -19,6 +19,7 @@ from tests.semantic_ir_reader import (
     _is_edge_kind,
     _native_scalar,
     _schema_validator,
+    canonical,
     construct_findings,
     normalize,
     read_semantic_ir,
@@ -54,6 +55,29 @@ def validator():
 
 def _fixture(name: str):
     return json.loads((FIXTURE_ROOT / name).read_text())
+
+
+def test_tc_1829_python_normalizer_uses_rfc8785_number_spelling() -> None:
+    """TC-1829, FR-145-CON-3: binary64 spelling agrees with the shared vectors."""
+    vectors = json.loads(
+        (ROOT / "test/fixtures/compiler/rfc8785/number-spelling.json").read_text()
+    )
+    for row in vectors["numbers"]:
+        assert canonical(row["input"]) == row["expected"]
+        normalized = normalize(
+            {"types": [{"displayName": "Number", "value": row["input"]}]}
+        )
+        assert f'"value":{row["expected"]}' in normalized
+
+
+def test_tc_1830_python_normalizer_refuses_unpaired_surrogates() -> None:
+    """TC-1830, FR-145-CON-3: neither member names nor values may be malformed."""
+    for malformed in ("\ud800", "\udc00", "a\ud800b"):
+        with pytest.raises(ValueError, match="unpaired UTF-16 surrogate"):
+            canonical({"displayName": malformed})
+        with pytest.raises(ValueError, match="unpaired UTF-16 surrogate"):
+            canonical({malformed: "name"})
+    assert canonical({"\U0001f600": "\U0001f600"}) == '{"\U0001f600":"\U0001f600"}'
 
 
 class TestSecondReader:

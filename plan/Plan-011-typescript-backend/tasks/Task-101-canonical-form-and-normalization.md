@@ -29,7 +29,7 @@ Land `canonical.mjs`: RFC 8785 JCS extended with identity-sorted sets over thirt
 
 ## Subtasks
 
-- [x] Implement `canonicalize(value, { sets })`: object keys ordered by code point, `undefined`-valued keys dropped, a non-finite number refused with a named error rather than serialized, and a declared depth bound.
+- [x] Implement `canonicalize(value, { sets })`: object keys ordered by RFC 8785 UTF-16 code unit, `undefined`-valued keys dropped, a non-finite number refused with a named error rather than serialized, and a declared depth bound.
 - [x] Declare `IDENTITY_SET_PATHS` as data in one place — the thirteen paths `/types`, `/types/*/fields`, `/types/*/variants`, `/types/*/constraints`, `/types/*/relationships`, `/types/*/operations`, `/types/*/clauses`, `/types/*/extensions`, `/types/*/fields/*/extensions`, `/types/*/operations/*/params`, `/types/*/operations/*/params/*/extensions`, `/occurrences`, `/extensions` — together with the key-ordering rule, so a later GAP-004 definition is a data edit.
 - [x] Implement the total tie-break: equal identities order by the code-point order of their own canonical forms, and elements still equal keep their original array index. Duplicate identities exist in the corpus because `DUPLICATE_IDENTITY` is a registered code, and the adapter must still emit `normalized` for those cases.
 - [x] Implement `normalizeIrForTarget(document)`: for `contractVersion` `1.1.0` materialize every field's and every operation parameter's `multiplicity` from `presence` when absent, re-derive `presence` from `multiplicity.lower`, and force `nullable` to a literal boolean; a `1.0.0` document gains no member.
