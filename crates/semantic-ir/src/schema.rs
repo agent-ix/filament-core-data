@@ -1136,6 +1136,12 @@ fn type_definition(definition: &Json, at: &str, table: &mut ConstructTable<'_>, 
                 .iter()
                 .filter(|member| member.default_presence() == Presence::Forbidden);
             for member in construct_members {
+                // `target` is shared by the two core alias kinds as well as
+                // by construct aliases; the core kind's required-member rule
+                // above validates its presence.
+                if *member == Member::Target && matches!(kind, "alias" | "reference") {
+                    continue;
+                }
                 let name = member.name();
                 if definition.has(name) {
                     f.push(

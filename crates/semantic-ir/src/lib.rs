@@ -715,12 +715,11 @@ mod tests {
         assert_eq!(
             verdict.result_state,
             ResultState::Success,
-            "valid alias-chain diagnostics: {:?}",
+            "first valid alias-chain diagnostic: {:?}",
             verdict
                 .diagnostics
-                .iter()
+                .first()
                 .map(|diagnostic| (&diagnostic.code, &diagnostic.pointer))
-                .collect::<Vec<_>>()
         );
         let valid_time = started.elapsed();
         // The same chain with a required member missing from every type: one

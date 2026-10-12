@@ -123,6 +123,19 @@ fn construct_alias_cycles_are_reported_by_the_alias_rule() {
     )));
 }
 
+/// Trace: FR-142-AC-15
+#[test]
+fn non_alias_construct_shapes_still_forbid_the_target_member() {
+    let document = K2_BOUNDARY.replace(
+        "\"identity\": \"ix://test/orders/OrderPlaced\"",
+        "\"identity\": \"ix://test/orders/OrderPlaced\", \"target\": \"ix://test/orders/Instant\"",
+    );
+    assert!(diagnostics(&document).contains(&(
+        "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+        "/ir/types/2/target".into(),
+    )));
+}
+
 /// Trace: FR-050-AC-16
 #[test]
 fn revision_admission_preserves_canonical_strings_and_refuses_other_spellings() {
