@@ -473,7 +473,8 @@ fn occurrence_field(
 }
 
 /// A transition's `from` and `to` name states of its type or a supertype,
-/// `trigger` an operation of either, and `guard` a clause of its own type.
+/// `trigger` an operation of either, and `guard` a clause of its own type or
+/// a supertype.
 fn transitions(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
     let visible = std::iter::once(definition)
         .chain(ancestors(document, definition))
@@ -488,8 +489,9 @@ fn transitions(document: &Document<'_>, definition: &Json, type_at: &str, sink: 
         .flat_map(|owner| items(owner, "operations"))
         .filter_map(identity_of)
         .collect();
-    let clause_ids: Vec<&str> = items(definition, "clauses")
+    let clause_ids: Vec<&str> = visible
         .iter()
+        .flat_map(|owner| items(owner, "clauses"))
         .filter_map(|clause| clause.get("clauseId").and_then(Json::as_str))
         .collect();
     let transitions_at = child(type_at, "transitions");
@@ -520,7 +522,7 @@ fn transitions(document: &Document<'_>, definition: &Json, type_at: &str, sink: 
                 sink.emit(
                     child(&transition_at, "guard"),
                     DANGLING_CLAUSE_REF,
-                    "a transition's guard binds by clauseId to a clause this type declares",
+                    "a transition's guard binds by clauseId to a clause this type or a supertype declares",
                 );
             }
         }
