@@ -13,11 +13,7 @@ const K2_BOUNDARY: &str =
     include_str!("../../../fixtures/semantic/v1/reader-contract/k2-boundary.json");
 
 fn diagnostics(document: &str) -> Vec<(&'static str, String)> {
-    let verdict = decide(&parse(&format!(r#"{{"ir":{document}}}"#)).expect("valid JSON"));
-    if !verdict.diagnostics.is_empty() {
-        eprintln!("reader-contract diagnostics: {:#?}", verdict.diagnostics);
-    }
-    verdict
+    decide(&parse(&format!(r#"{{"ir":{document}}}"#)).expect("valid JSON"))
         .diagnostics
         .into_iter()
         .map(|diagnostic| (diagnostic.code, diagnostic.pointer))
@@ -79,7 +75,7 @@ fn admits_authored_revision_one_and_unused_population_with_timestamp_binding() {
         diagnostics(&K2_BOUNDARY.replace("native/Timestamp", "native/Integer")),
         vec![(
             "agent-ix.semantic-ir.INVALID_OCCURRENCE_FIELD",
-            "/ir/types/1/occurrenceField".into(),
+            "/ir/types/2/occurrenceField".into(),
         )]
     );
 }
@@ -199,6 +195,10 @@ fn revision_admission_preserves_canonical_strings_and_refuses_other_spellings() 
                 "agent-ix.semantic-ir.SCHEMA_VIOLATION",
                 "/ir/constructs/1/moduleVersion".into()
             ),
+            (
+                "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+                "/ir/constructs/2/moduleVersion".into()
+            ),
         ]
     );
 }
@@ -217,7 +217,7 @@ fn unused_declarations_still_refuse_broken_shapes_duplicates_and_dangling_kinds(
         ),
         (
             K2_BOUNDARY.replacen("\"name\": \"happened\"", "\"name\": \"missing\"", 1),
-            vec!["/ir/constructs/0/kind", "/ir/types/1/kind"],
+            vec!["/ir/constructs/0/kind", "/ir/types/2/kind"],
         ),
     ] {
         assert_eq!(
