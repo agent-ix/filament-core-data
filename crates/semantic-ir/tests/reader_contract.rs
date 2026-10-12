@@ -13,7 +13,11 @@ const K2_BOUNDARY: &str =
     include_str!("../../../fixtures/semantic/v1/reader-contract/k2-boundary.json");
 
 fn diagnostics(document: &str) -> Vec<(&'static str, String)> {
-    decide(&parse(&format!(r#"{{"ir":{document}}}"#)).expect("valid JSON"))
+    let verdict = decide(&parse(&format!(r#"{{"ir":{document}}}"#)).expect("valid JSON"));
+    if !verdict.diagnostics.is_empty() {
+        eprintln!("reader-contract diagnostics: {:#?}", verdict.diagnostics);
+    }
+    verdict
         .diagnostics
         .into_iter()
         .map(|diagnostic| (diagnostic.code, diagnostic.pointer))
