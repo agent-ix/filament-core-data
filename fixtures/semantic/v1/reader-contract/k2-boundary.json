@@ -53,7 +53,7 @@
 		{
 			"kind": {
 				"module": "test/business",
-				"name": "value-type"
+				"name": "value_type"
 			},
 			"moduleVersion": "1.0.0",
 			"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -82,7 +82,7 @@
 			"displayName": "Instant",
 			"kind": {
 				"module": "test/business",
-				"name": "value-type"
+				"name": "value_type"
 			},
 			"target": "ix://quire/native/Timestamp"
 		},
@@ -102,7 +102,7 @@
 			"displayName": "InstantAlias",
 			"kind": {
 				"module": "test/business",
-				"name": "value-type"
+				"name": "value_type"
 			},
 			"target": "ix://test/orders/Instant"
 		},
