@@ -66,7 +66,7 @@ fn document(target: &str, trigger: &str) -> Json {
     Json::Object(vec![("ir".into(), ir)])
 }
 
-/// Trace: FR-142-AC-15
+/// Trace: FR-142-AC-16
 /// Provenance: AGE-2239, QSL TC-235 M19 run 1.
 #[test]
 fn subtype_transition_resolves_own_and_inherited_states_and_operations() {
@@ -78,7 +78,7 @@ fn subtype_transition_resolves_own_and_inherited_states_and_operations() {
     assert!(verdict.diagnostics.is_empty());
 }
 
-/// Trace: FR-142-AC-15
+/// Trace: FR-142-AC-4, FR-142-AC-16
 /// Provenance: AGE-2239.
 #[test]
 fn subtype_transition_refuses_state_and_trigger_absent_from_all_ancestors() {
