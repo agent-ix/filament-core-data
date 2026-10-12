@@ -652,6 +652,12 @@ impl Declaration {
                 ));
             }
         }
+        if self.shape != Shape::Alias && self.presence(Member::Target) != Presence::Forbidden {
+            return Err(error(
+                "/members/target",
+                "only an alias construct may admit target",
+            ));
+        }
         Ok(())
     }
 
@@ -974,5 +980,22 @@ mod tests {
             let refused = declaration(text).expect_err(text);
             assert_eq!(refused.pointer, pointer, "{}", refused.message);
         }
+    }
+
+    #[test]
+    fn tc_1827_only_alias_construct_declarations_may_admit_target() {
+        for presence in ["optional", "required"] {
+            let text = format!(
+                r#"{{"identity":"none","shape":"record","members":{{"target":"{presence}"}},"references":{{}},"rules":[],"meaning":"m"}}"#
+            );
+            let error = declaration(&text).expect_err("record construct cannot opt into target");
+            assert_eq!(error.pointer, "/members/target");
+        }
+
+        let alias = declaration(
+            r#"{"identity":"none","shape":"alias","members":{"target":"required"},"references":{},"rules":[],"meaning":"m"}"#,
+        )
+        .expect("an alias construct admits target");
+        assert_eq!(alias.presence(Member::Target), Presence::Required);
     }
 }
