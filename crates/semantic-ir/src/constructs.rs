@@ -234,7 +234,7 @@ pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
             occurrence_field(document, definition, &type_at, sink);
         }
         if definition.has("transitions") {
-            transitions(definition, &type_at, sink);
+            transitions(document, definition, &type_at, sink);
         }
         if definition.has("identityFields") {
             identity_fields(document, definition, &type_at, sink);
@@ -472,15 +472,20 @@ fn occurrence_field(
     }
 }
 
-/// A transition's `from` and `to` name states of its type, `trigger` an
-/// operation and `guard` a clause.
-fn transitions(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
-    let states: Vec<&str> = items(definition, "states")
+/// A transition's `from` and `to` name states of its type or a supertype,
+/// `trigger` an operation of either, and `guard` a clause of its own type.
+fn transitions(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
+    let visible = std::iter::once(definition)
+        .chain(ancestors(document, definition))
+        .collect::<Vec<_>>();
+    let states: Vec<&str> = visible
         .iter()
+        .flat_map(|owner| items(owner, "states"))
         .filter_map(identity_of)
         .collect();
-    let operations: Vec<&str> = items(definition, "operations")
+    let operations: Vec<&str> = visible
         .iter()
+        .flat_map(|owner| items(owner, "operations"))
         .filter_map(identity_of)
         .collect();
     let clause_ids: Vec<&str> = items(definition, "clauses")
@@ -496,7 +501,7 @@ fn transitions(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
                     sink.emit(
                         child(&transition_at, end),
                         UNRESOLVED_CONSTRUCT_REF,
-                        "a transition's from and to name states of its type",
+                        "a transition's from and to name states of its type or a supertype",
                     );
                 }
             }
@@ -506,7 +511,7 @@ fn transitions(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
                 sink.emit(
                     child(&transition_at, "trigger"),
                     UNRESOLVED_CONSTRUCT_REF,
-                    "a transition's trigger names an operation of its type",
+                    "a transition's trigger names an operation of its type or a supertype",
                 );
             }
         }
