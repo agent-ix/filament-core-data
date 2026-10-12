@@ -98,6 +98,26 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
+			"identity": "ix://test/orders/InstantAlias",
+			"displayName": "InstantAlias",
+			"kind": {
+				"module": "test/business",
+				"name": "value-type"
+			},
+			"target": "ix://test/orders/Instant"
+		},
+		{
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://test/orders/reader-fixture",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://test/orders/source"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
 			"identity": "ix://test/orders/OrderPlaced",
 			"displayName": "OrderPlaced",
 			"kind": {
@@ -108,7 +128,7 @@
 				{
 					"identity": "ix://test/orders/OrderPlaced/occurred_at",
 					"name": "occurred_at",
-					"typeRef": "ix://test/orders/Instant",
+					"typeRef": "ix://test/orders/InstantAlias",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
