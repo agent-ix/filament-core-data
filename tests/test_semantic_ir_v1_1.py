@@ -20,6 +20,7 @@ from tests.semantic_ir_reader import (
     _native_scalar,
     _schema_validator,
     canonical,
+    construct_diagnostics,
     construct_findings,
     normalize,
     read_semantic_ir,
@@ -31,6 +32,28 @@ GOLDEN = (
     "positive/semantic-ir-v1-1.json",
     "positive/semantic-ir-v1-1-spec-bundle.json",
 )
+
+
+def test_core_alias_and_reference_targets_are_not_construct_members() -> None:
+    """FCD core aliases carry target independently of the construct table."""
+    for kind in ("alias", "reference"):
+        document = {
+            "contractVersion": "2.0.0",
+            "constructs": [],
+            "types": [{"kind": kind, "target": "ix://example/type/Target"}],
+        }
+        assert construct_diagnostics(document) == []
+
+    for kind in ("scalar", "record"):
+        document = {
+            "contractVersion": "2.0.0",
+            "constructs": [],
+            "types": [{"kind": kind, "target": "ix://example/type/Target"}],
+        }
+        diagnostics = construct_diagnostics(document)
+        assert [(row["code"], row["path"]) for row in diagnostics] == [
+            ("agent-ix.semantic-ir.SCHEMA_VIOLATION", "types.0.target")
+        ]
 
 # `normalize` (`tests/semantic_ir_reader.py`) materializes `nullable`
 # unconditionally — it does not gate on `contractVersion` and never derives

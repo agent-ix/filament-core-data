@@ -981,6 +981,8 @@ def construct_diagnostics(document: Any) -> list[dict[str, str]]:
         kind = definition.get("kind")
         if not isinstance(kind, dict):
             for name, default in MEMBER_DEFAULTS.items():
+                if name == "target" and kind in ("alias", "reference"):
+                    continue
                 if default == "forbidden" and name in definition:
                     emit(f"{at}.{name}", "carried by a construct kind only")
             continue
