@@ -13,7 +13,7 @@ use std::collections::{BTreeSet, HashSet};
 
 use crate::diag::{child, index};
 use crate::json::Json;
-use crate::rules::{Document, Sink, DANGLING_CLAUSE_REF, UNRESOLVED_TYPE_REF};
+use crate::rules::{Document, Resolved, Sink, DANGLING_CLAUSE_REF, UNRESOLVED_TYPE_REF};
 use crate::schema::SCHEMA_VIOLATION;
 use crate::vocabulary::{Declaration, Member, Rule, Shape};
 
@@ -340,6 +340,11 @@ fn references(
                 .flatten()
         });
         let Some(found) = found else {
+            if member == Member::Target
+                && matches!(document.resolve(&name), Some(Resolved::Native(_)))
+            {
+                continue;
+            }
             let message = if member == Member::SourceElement {
                 "a construct member names a type the document declares, or an operation of one"
             } else {

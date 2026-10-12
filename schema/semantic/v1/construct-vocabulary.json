@@ -7,7 +7,8 @@
 		"interface",
 		"state_machine",
 		"sequence",
-		"namespace"
+		"namespace",
+		"alias"
 	],
 	"presences": ["required", "optional", "forbidden"],
 	"members": [
@@ -125,6 +126,11 @@
 		{
 			"name": "featureOrder",
 			"default": "forbidden"
+		},
+		{
+			"name": "target",
+			"default": "forbidden",
+			"referenceItems": []
 		}
 	],
 	"rules": [
@@ -192,6 +198,11 @@
 		{
 			"shape": "enumeration",
 			"member": "variants",
+			"presence": "required"
+		},
+		{
+			"shape": "alias",
+			"member": "target",
 			"presence": "required"
 		}
 	],

@@ -1562,7 +1562,8 @@
 						"interface",
 						"state_machine",
 						"sequence",
-						"namespace"
+						"namespace",
+						"alias"
 					]
 				},
 				"members": {
@@ -1594,7 +1595,8 @@
 							"targetEnd",
 							"sourceElement",
 							"targetElement",
-							"featureOrder"
+							"featureOrder",
+							"target"
 						]
 					},
 					"additionalProperties": {
@@ -1615,7 +1617,8 @@
 							"sourceEnd",
 							"targetEnd",
 							"sourceElement",
-							"targetElement"
+							"targetElement",
+							"target"
 						]
 					},
 					"additionalProperties": {

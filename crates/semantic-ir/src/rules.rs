@@ -744,7 +744,10 @@ impl<'a> Document<'a> {
             let Some(current) = self.types.get(position) else {
                 return Cached::Nothing;
             };
-            if current.get("kind").and_then(Json::as_str) != Some("alias") {
+            let is_core_alias = current.get("kind").and_then(Json::as_str) == Some("alias");
+            let is_construct_alias =
+                crate::constructs::shape_of(self, current) == Some(crate::vocabulary::Shape::Alias);
+            if !is_core_alias && !is_construct_alias {
                 return Cached::Node(position);
             }
             let Some(target) = current.get("target").and_then(Json::as_str) else {

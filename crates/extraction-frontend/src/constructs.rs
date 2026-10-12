@@ -631,6 +631,7 @@ const fn lowers(member: Member) -> bool {
         | Member::SourceElement
         | Member::TargetElement
         | Member::FeatureOrder => true,
+        Member::Target => false,
     }
 }
 
@@ -664,7 +665,8 @@ const fn has_source_table(member: Member, model: &ModelDeclarations) -> Option<b
         | Member::Transitions
         | Member::Steps
         | Member::Persists
-        | Member::Vocabulary => None,
+        | Member::Vocabulary
+        | Member::Target => None,
     }
 }
 

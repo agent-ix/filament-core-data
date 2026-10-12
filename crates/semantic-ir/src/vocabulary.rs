@@ -73,6 +73,8 @@ vocabulary! {
         Sequence => "sequence",
         /// A grouping of other types, not a data type.
         Namespace => "namespace",
+        /// A named type alias to another document or native type.
+        Alias => "alias",
     }
 }
 
@@ -145,6 +147,8 @@ vocabulary! {
         /// `featureOrder`: the type's own fields and operations, each once,
         /// in authored order.
         FeatureOrder => "featureOrder",
+        /// `target`: the document or native type named by an alias.
+        Target => "target",
     }
 }
 
@@ -203,7 +207,8 @@ impl Member {
             | Member::TargetEnd
             | Member::SourceElement
             | Member::TargetElement
-            | Member::FeatureOrder => Presence::Forbidden,
+            | Member::FeatureOrder
+            | Member::Target => Presence::Forbidden,
         }
     }
 
@@ -219,7 +224,8 @@ impl Member {
             | Member::InterfaceType
             | Member::DeclaredType
             | Member::SourceElement
-            | Member::TargetElement => Some(&[]),
+            | Member::TargetElement
+            | Member::Target => Some(&[]),
             Member::SourceEnd | Member::TargetEnd => Some(&["type"]),
             Member::Transitions => Some(&["emits"]),
             Member::Steps => Some(&["consumes", "emits"]),
@@ -291,6 +297,7 @@ impl Shape {
     pub const fn requires(self) -> Option<(Member, Presence)> {
         match self {
             Shape::Enumeration => Some((Member::Variants, Presence::Required)),
+            Shape::Alias => Some((Member::Target, Presence::Required)),
             Shape::Record
             | Shape::Interface
             | Shape::StateMachine
