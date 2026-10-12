@@ -20,7 +20,7 @@ fn diagnostics(document: &str) -> Vec<(&'static str, String)> {
         .collect()
 }
 
-/// Trace: FR-142-AC-15
+/// Trace: FR-142-AC-3
 #[test]
 fn admits_unused_population_meaning_independently_of_revision_or_kind_name() {
     let document = K2_BOUNDARY.replace("\"version\": \"1\"", "\"version\": \"1.0.0\"");
@@ -75,9 +75,65 @@ fn admits_authored_revision_one_and_unused_population_with_timestamp_binding() {
         diagnostics(&K2_BOUNDARY.replace("native/Timestamp", "native/Integer")),
         vec![(
             "agent-ix.semantic-ir.INVALID_OCCURRENCE_FIELD",
-            "/ir/types/1/occurrenceField".into(),
+            "/ir/types/2/occurrenceField".into(),
         )]
     );
+}
+
+/// Trace: FR-142-AC-15
+#[test]
+fn construct_alias_target_must_resolve_to_a_document_or_native_type() {
+    let diagnostics = diagnostics(
+        &K2_BOUNDARY.replace("ix://quire/native/Timestamp", "ix://test/orders/Missing"),
+    );
+    assert!(diagnostics.contains(&(
+        "agent-ix.semantic-ir.UNRESOLVED_CONSTRUCT_REF",
+        "/ir/types/0/target".into(),
+    )));
+}
+
+/// Trace: FR-142-AC-15
+#[test]
+fn construct_alias_target_does_not_accept_a_field_that_resolves_to_native() {
+    let document = K2_BOUNDARY
+        .replace(
+            "\"target\": \"ix://quire/native/Timestamp\"",
+            "\"target\": \"ix://test/orders/OrderPlaced/occurred_at\"",
+        )
+        .replace(
+            "\"typeRef\": \"ix://test/orders/InstantAlias\"",
+            "\"typeRef\": \"ix://quire/native/Timestamp\"",
+        );
+    assert!(diagnostics(&document).contains(&(
+        "agent-ix.semantic-ir.UNRESOLVED_CONSTRUCT_REF",
+        "/ir/types/0/target".into(),
+    )));
+}
+
+/// Trace: FR-142-AC-15
+#[test]
+fn construct_alias_cycles_are_reported_by_the_alias_rule() {
+    let document = K2_BOUNDARY.replace(
+        "\"target\": \"ix://test/orders/Instant\"",
+        "\"target\": \"ix://test/orders/InstantAlias\"",
+    );
+    assert!(diagnostics(&document).contains(&(
+        "agent-ix.semantic-ir.ALIAS_CYCLE",
+        "/ir/types/1/target".into(),
+    )));
+}
+
+/// Trace: FR-142-AC-15
+#[test]
+fn non_alias_construct_shapes_still_forbid_the_target_member() {
+    let document = K2_BOUNDARY.replace(
+        "\"identity\": \"ix://test/orders/OrderPlaced\"",
+        "\"identity\": \"ix://test/orders/OrderPlaced\", \"target\": \"ix://test/orders/Instant\"",
+    );
+    assert!(diagnostics(&document).contains(&(
+        "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+        "/ir/types/2/target".into(),
+    )));
 }
 
 /// Trace: FR-050-AC-16
@@ -139,6 +195,10 @@ fn revision_admission_preserves_canonical_strings_and_refuses_other_spellings() 
                 "agent-ix.semantic-ir.SCHEMA_VIOLATION",
                 "/ir/constructs/1/moduleVersion".into()
             ),
+            (
+                "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+                "/ir/constructs/2/moduleVersion".into()
+            ),
         ]
     );
 }
@@ -157,7 +217,7 @@ fn unused_declarations_still_refuse_broken_shapes_duplicates_and_dangling_kinds(
         ),
         (
             K2_BOUNDARY.replacen("\"name\": \"happened\"", "\"name\": \"missing\"", 1),
-            vec!["/ir/constructs/0/kind", "/ir/types/1/kind"],
+            vec!["/ir/constructs/0/kind", "/ir/types/2/kind"],
         ),
     ] {
         assert_eq!(

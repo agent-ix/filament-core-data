@@ -711,7 +711,16 @@ mod tests {
         ))
         .expect("a bundle");
         let started = std::time::Instant::now();
-        assert_eq!(decide(&valid).result_state, ResultState::Success);
+        let verdict = decide(&valid);
+        assert_eq!(
+            verdict.result_state,
+            ResultState::Success,
+            "first valid alias-chain diagnostic: {:?}",
+            verdict
+                .diagnostics
+                .first()
+                .map(|diagnostic| (&diagnostic.code, &diagnostic.pointer))
+        );
         let valid_time = started.elapsed();
         // The same chain with a required member missing from every type: one
         // schema finding per type.

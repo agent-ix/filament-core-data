@@ -16,7 +16,7 @@
 
 use crate::diag::{child, index, is_semantic_identity, Located, Severity};
 use crate::json::Json;
-use crate::vocabulary::{Declaration, Member, Presence};
+use crate::vocabulary::{Declaration, Member, Presence, Shape};
 
 /// The code every schema-layer defect carries.
 pub const SCHEMA_VIOLATION: &str = "agent-ix.semantic-ir.SCHEMA_VIOLATION";
@@ -1136,6 +1136,12 @@ fn type_definition(definition: &Json, at: &str, table: &mut ConstructTable<'_>, 
                 .iter()
                 .filter(|member| member.default_presence() == Presence::Forbidden);
             for member in construct_members {
+                // `target` is shared by the two core alias kinds as well as
+                // by construct aliases; the core kind's required-member rule
+                // above validates its presence.
+                if *member == Member::Target && matches!(kind, "alias" | "reference") {
+                    continue;
+                }
                 let name = member.name();
                 if definition.has(name) {
                     f.push(
@@ -1293,6 +1299,15 @@ fn construct_schema(
     declaration: &Declaration,
     f: &mut Findings,
 ) {
+    if declaration.shape == Shape::Alias {
+        expect_shape(
+            definition.get("target"),
+            &child(at, "target"),
+            is_semantic_identity,
+            "an alias target is a document or native type identity",
+            f,
+        );
+    }
     for member in Member::ALL {
         let name = member.name();
         match declaration.presence(*member) {
