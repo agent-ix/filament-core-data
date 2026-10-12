@@ -265,6 +265,8 @@ pub struct Document<'a> {
     /// The position of the first type declaring each identity, so a lookup
     /// by identity is one map access however many types the document holds.
     by_identity: HashMap<&'a str, usize>,
+    /// Type positions declared with the `alias` construct shape.
+    construct_aliases: HashSet<usize>,
     /// The first field or operation parameter declaring each identity, in
     /// document order.
     by_feature: HashMap<&'a str, &'a Json>,
@@ -298,6 +300,36 @@ impl<'a> Document<'a> {
                 by_identity.entry(identity).or_insert(position);
             }
         }
+        let alias_kinds: HashSet<(&str, &str)> = ir
+            .get("constructs")
+            .and_then(Json::as_array)
+            .into_iter()
+            .flatten()
+            .filter(|entry| {
+                entry
+                    .get("construct")
+                    .and_then(|construct| construct.get("shape"))
+                    .and_then(Json::as_str)
+                    == Some("alias")
+            })
+            .filter_map(|entry| {
+                let kind = entry.get("kind")?;
+                Some((
+                    kind.get("module")?.as_str()?,
+                    kind.get("name")?.as_str()?,
+                ))
+            })
+            .collect();
+        let construct_aliases = types
+            .iter()
+            .enumerate()
+            .filter_map(|(position, definition)| {
+                let kind = definition.get("kind")?;
+                let module = kind.get("module")?.as_str()?;
+                let name = kind.get("name")?.as_str()?;
+                alias_kinds.contains(&(module, name)).then_some(position)
+            })
+            .collect();
         let mut by_feature = HashMap::new();
         for definition in types {
             let params = definition
@@ -327,6 +359,7 @@ impl<'a> Document<'a> {
             types,
             limits,
             by_identity,
+            construct_aliases,
             by_feature,
             resolved: RefCell::new(HashMap::new()),
             decimal_policy_cache: RefCell::new(HashMap::new()),
@@ -745,9 +778,7 @@ impl<'a> Document<'a> {
                 return Cached::Nothing;
             };
             let is_core_alias = current.get("kind").and_then(Json::as_str) == Some("alias");
-            let is_construct_alias =
-                crate::constructs::shape_of(self, current) == Some(crate::vocabulary::Shape::Alias);
-            if !is_core_alias && !is_construct_alias {
+            if !is_core_alias && !self.construct_aliases.contains(&position) {
                 return Cached::Node(position);
             }
             let Some(target) = current.get("target").and_then(Json::as_str) else {
