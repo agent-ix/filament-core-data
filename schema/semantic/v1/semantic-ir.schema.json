@@ -975,6 +975,23 @@
 						"type": "object",
 						"properties": {
 							"kind": {
+								"enum": ["scalar", "record", "enum", "union", "sequence", "map"]
+							}
+						},
+						"required": ["kind"]
+					},
+					"then": {
+						"type": "object",
+						"properties": {
+							"target": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
 								"const": "record"
 							}
 						}
@@ -1657,7 +1674,50 @@
 					"type": "boolean"
 				}
 			},
-			"additionalProperties": false
+			"additionalProperties": false,
+			"allOf": [
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"shape": { "const": "alias" }
+						},
+						"required": ["shape"]
+					},
+					"then": {
+						"type": "object",
+						"properties": {
+							"members": {
+								"type": "object",
+								"required": ["target"],
+								"properties": {
+									"target": { "const": "required" }
+								}
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"shape": { "not": { "const": "alias" } }
+						},
+						"required": ["shape"]
+					},
+					"then": {
+						"type": "object",
+						"properties": {
+							"members": {
+								"type": "object",
+								"properties": {
+									"target": { "const": "forbidden" }
+								}
+							}
+						}
+					}
+				}
+			]
 		},
 		"packageRevision": {
 			"description": "A package or source revision: SemVer or a canonical non-negative integer string, preserved as authored.",
