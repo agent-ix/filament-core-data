@@ -13,9 +13,7 @@ use std::collections::{BTreeSet, HashSet};
 
 use crate::diag::{child, index};
 use crate::json::Json;
-use crate::rules::{
-    native_scalar, Document, Resolved, Sink, DANGLING_CLAUSE_REF, UNRESOLVED_TYPE_REF,
-};
+use crate::rules::{native_scalar, Document, Sink, DANGLING_CLAUSE_REF, UNRESOLVED_TYPE_REF};
 use crate::schema::SCHEMA_VIOLATION;
 use crate::vocabulary::{Declaration, Member, Rule, Shape};
 
