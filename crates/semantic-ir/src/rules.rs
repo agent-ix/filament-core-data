@@ -59,7 +59,7 @@ const NATIVE_SCALARS: &[(&str, &str)] = &[
 
 /// The `irScalar` value a native type reference names, when `identity` is
 /// one and the library declares its name.
-fn native_scalar(identity: &str) -> Option<&'static str> {
+pub(crate) fn native_scalar(identity: &str) -> Option<&'static str> {
     let name = identity.strip_prefix(NATIVE_PREFIX)?;
     NATIVE_SCALARS
         .iter()
@@ -314,10 +314,7 @@ impl<'a> Document<'a> {
             })
             .filter_map(|entry| {
                 let kind = entry.get("kind")?;
-                Some((
-                    kind.get("module")?.as_str()?,
-                    kind.get("name")?.as_str()?,
-                ))
+                Some((kind.get("module")?.as_str()?, kind.get("name")?.as_str()?))
             })
             .collect();
         let construct_aliases = types
@@ -376,6 +373,19 @@ impl<'a> Document<'a> {
         self.by_identity
             .get(identity)
             .and_then(|&position| self.types.get(position))
+    }
+
+    /// Whether a type definition is an alias by either the core IR kind or
+    /// the declaration-selected construct shape.
+    fn is_alias_definition(&self, definition: &Json) -> bool {
+        if definition.get("kind").and_then(Json::as_str) == Some("alias") {
+            return true;
+        }
+        let Some(identity) = definition.get("identity").and_then(Json::as_str) else {
+            return false;
+        };
+        self.by_position(identity)
+            .is_some_and(|position| self.construct_aliases.contains(&position))
     }
 
     /// The type declaring the operation an identity names, when the document
@@ -1167,15 +1177,19 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         let type_at = index("/ir/types", position);
         let kind = definition.get("kind").and_then(Json::as_str).unwrap_or("");
 
-        if matches!(kind, "alias" | "reference") {
+        let is_alias = document.is_alias_definition(definition);
+        if is_alias || kind == "reference" {
             if let Some(target) = definition.get("target").and_then(Json::as_str) {
                 if !resolves(&declared, target) {
                     sink.emit(
                         child(&type_at, "target"),
                         UNRESOLVED_TYPE_REF,
-                        format!("the {kind} target resolves to no declared type"),
+                        format!(
+                            "the {} target resolves to no declared type",
+                            if is_alias { "alias" } else { kind }
+                        ),
                     );
-                } else if kind == "alias" {
+                } else if is_alias {
                     match walk_alias(document, definition, &mut alias_memo) {
                         Walk::Cycle => sink.emit(
                             child(&type_at, "target"),
@@ -1426,7 +1440,7 @@ fn walk_alias<'a>(document: &Document<'a>, start: &'a Json, memo: &mut AliasMemo
                 memo.insert(identity, end);
                 break end;
             }
-            Some(next) if next.get("kind").and_then(Json::as_str) != Some("alias") => {
+            Some(next) if !document.is_alias_definition(next) => {
                 path.pop();
                 let end = Chain::Ends {
                     steps: 1,

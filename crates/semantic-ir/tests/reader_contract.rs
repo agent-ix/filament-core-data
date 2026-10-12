@@ -84,14 +84,42 @@ fn admits_authored_revision_one_and_unused_population_with_timestamp_binding() {
 #[test]
 fn construct_alias_target_must_resolve_to_a_document_or_native_type() {
     let diagnostics = diagnostics(
-        &K2_BOUNDARY.replace(
-            "ix://quire/native/Timestamp",
-            "ix://test/orders/Missing",
-        ),
+        &K2_BOUNDARY.replace("ix://quire/native/Timestamp", "ix://test/orders/Missing"),
     );
     assert!(diagnostics.contains(&(
         "agent-ix.semantic-ir.UNRESOLVED_CONSTRUCT_REF",
         "/ir/types/0/target".into(),
+    )));
+}
+
+/// Trace: FR-142-AC-15
+#[test]
+fn construct_alias_target_does_not_accept_a_field_that_resolves_to_native() {
+    let document = K2_BOUNDARY
+        .replace(
+            "\"target\": \"ix://quire/native/Timestamp\"",
+            "\"target\": \"ix://test/orders/OrderPlaced/occurred_at\"",
+        )
+        .replace(
+            "\"typeRef\": \"ix://test/orders/InstantAlias\"",
+            "\"typeRef\": \"ix://quire/native/Timestamp\"",
+        );
+    assert!(diagnostics(&document).contains(&(
+        "agent-ix.semantic-ir.UNRESOLVED_CONSTRUCT_REF",
+        "/ir/types/0/target".into(),
+    )));
+}
+
+/// Trace: FR-142-AC-15
+#[test]
+fn construct_alias_cycles_are_reported_by_the_alias_rule() {
+    let document = K2_BOUNDARY.replace(
+        "\"target\": \"ix://test/orders/Instant\"",
+        "\"target\": \"ix://test/orders/InstantAlias\"",
+    );
+    assert!(diagnostics(&document).contains(&(
+        "agent-ix.semantic-ir.ALIAS_CYCLE",
+        "/ir/types/1/target".into(),
     )));
 }
 
