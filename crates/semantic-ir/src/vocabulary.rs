@@ -207,8 +207,10 @@ impl Member {
             | Member::TargetEnd
             | Member::SourceElement
             | Member::TargetElement
-            | Member::FeatureOrder
-            | Member::Target => Presence::Forbidden,
+            | Member::FeatureOrder => Presence::Forbidden,
+            // `target` is also a core alias member; construct aliases make it
+            // required through their shape-specific requirement below.
+            Member::Target => Presence::Optional,
         }
     }
 
