@@ -1705,7 +1705,7 @@ fn tc_1755_state_machine_process_and_domain_lift_their_engine_members() {
             let tail = |key: &str| {
                 one[key]
                     .as_str()
-                    .and_then(|state| state.rsplit('-').next())
+                    .and_then(|state| state.rsplit('/').next())
                     .unwrap_or_default()
                     .to_owned()
             };
