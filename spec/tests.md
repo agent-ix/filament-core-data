@@ -1358,7 +1358,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1836 | The second TypeScript semantic IR reader refuses non-finite numbers rather than normalizing them to null, while preserving RFC 8785 spelling for finite numbers | Unit | P0 | FR-145-CON-3 |
 | TC-1837 | The business fixture's states, transitions, steps and clause lift to <owner identity>/<member name> (states draft, placed, shipped, cancelled; transitions transition0..transition2 in row order with from, to and trigger naming state and operation identities; steps placed, picked, shipped; clause single_root), every such identity is its declaring type's identity and one member name matching the identifier pattern, and a name or clauseId equals the member name | Unit | P0 | FR-095-AC-19 |
 | TC-1838 | A state beside an operation, a state named like a transition member, a step beside a field and a clause beside a field of one owner each raise one blocking DUPLICATE_IDENTITY with the earlier locus in related; the same member name under two owners mints two identities and raises nothing | Unit | P0 | FR-095-AC-20 |
-| TC-1839 | A state named "in review" or "on-hold" and a step named "1st" each raise one blocking UNSLUGGABLE_NAME at their row; a state named on_hold mints SM_001/on_hold | Unit | P1 | FR-095-AC-21 |
+| TC-1839 | A state named _hold and a step named _pick each raise one blocking UNSLUGGABLE_NAME at their row; a state named on_hold mints SM_001/on_hold | Unit | P1 | FR-095-AC-21 |
 | TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 |
 
 ## Option Permutation Matrix

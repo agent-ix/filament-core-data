@@ -166,14 +166,8 @@ fn tc_1837_every_member_identity_is_its_declaring_types_identity_and_one_member_
     let mut seen = BTreeSet::new();
     for definition in &types {
         let owner = definition["identity"].as_str().expect("identity");
-        let construct = &definition["construct"];
-        for (list, source) in [
-            ("clauses", definition),
-            ("states", construct),
-            ("transitions", construct),
-            ("steps", construct),
-        ] {
-            for node in source[list].as_array().into_iter().flatten() {
+        for list in ["clauses", "states", "transitions", "steps"] {
+            for node in definition[list].as_array().into_iter().flatten() {
                 let identity = node["identity"].as_str().expect("identity");
                 let member = identity
                     .strip_prefix(&format!("{owner}/"))
@@ -254,36 +248,33 @@ fn tc_1838_the_same_member_name_under_two_owners_mints_two_identities() {
 
 #[trace("TC-1839", "FR-095-AC-21")]
 #[test]
-fn tc_1839_a_state_or_step_name_that_is_no_member_name_is_unsluggable_at_its_row() {
+fn tc_1839_a_state_or_step_name_outside_the_member_name_pattern_is_unsluggable_at_its_row() {
+    // The engine already refuses a name with a space, a hyphen or a leading
+    // digit; a leading underscore passes the engine and is the case only the
+    // frontend's member-name rule refuses.
     let state = lift_edited(SM_001, |text| {
         text.replace(
             "| cancelled | The order",
-            "| in review | Not an identifier |\n| cancelled | The order",
+            "| _hold | Leading underscore |\n| cancelled | The order",
         )
     });
     let step = lift_edited(PR_001, |text| {
-        format!("{text}| 1st | wait | | | Starts with a digit |\n")
-    });
-    let hyphen = lift_edited(SM_001, |text| {
-        text.replace(
-            "| cancelled | The order",
-            "| on-hold | Hyphenated |\n| cancelled | The order",
-        )
+        format!("{text}| _pick | wait | | | Leading underscore |\n")
     });
     for (label, lowered, name) in [
-        ("state with a space", &state, "in review"),
-        ("step with a leading digit", &step, "1st"),
-        ("state with a hyphen", &hyphen, "on-hold"),
+        ("state with a leading underscore", &state, "_hold"),
+        ("step with a leading underscore", &step, "_pick"),
     ] {
         let refusals = with_code(lowered, Code::UnsluggableName);
         assert_eq!(refusals.len(), 1, "{label}: {:?}", lowered.diagnostics);
-        assert!(refusals[0].blocking, "{label}");
+        let refusal = refusals[0];
+        assert!(refusal.blocking, "{label}");
         assert!(
-            refusals[0].message.contains(name),
+            refusal.message.contains(name),
             "{label}: {}",
-            refusals[0].message
+            refusal.message
         );
-        assert!(refusals[0].locus.is_some(), "{label}");
+        assert!(refusal.locus.is_some(), "{label}");
     }
 }
 
