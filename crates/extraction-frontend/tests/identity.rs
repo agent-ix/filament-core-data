@@ -6,7 +6,9 @@ use std::path::{Path, PathBuf};
 
 use agent_ix_extraction_frontend::diagnostics::{Code, Severity, WireCode};
 use agent_ix_extraction_frontend::lower::diagnostic_code;
-use agent_ix_extraction_frontend::{extract, slug, Bundle, NodeKind, PackageIdentity, Unsluggable};
+use agent_ix_extraction_frontend::{
+    extract, slug, Bundle, NodeKind, PackageIdentity, Unsluggable, UnsluggableReason,
+};
 use ix_trace_rs::trace;
 
 mod common;
@@ -56,7 +58,8 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
     assert_eq!(
         slug("--"),
         Err(Unsluggable {
-            name: "--".to_string()
+            name: "--".to_string(),
+            reason: UnsluggableReason::Slug,
         })
     );
     assert!(slug("").is_err());
@@ -78,7 +81,8 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
     assert_eq!(
         package.type_identity("Snap Shot"),
         Err(Unsluggable {
-            name: "Snap Shot".to_string()
+            name: "Snap Shot".to_string(),
+            reason: UnsluggableReason::Slug,
         }),
         "an id carrying a character `semanticIdentity` bars from a segment mints nothing"
     );
@@ -130,42 +134,51 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
     );
     assert_eq!(
         package.clause_identity("Snapshot", "immutable").as_deref(),
-        Ok("ix://agent-ix/docs-service/clause/Snapshot-immutable")
+        Ok("ix://agent-ix/docs-service/Snapshot/immutable")
     );
     assert_eq!(
         package.state_identity("SM_001", "placed").as_deref(),
-        Ok("ix://agent-ix/docs-service/state/SM_001-placed")
+        Ok("ix://agent-ix/docs-service/SM_001/placed")
     );
     assert_eq!(
-        package
-            .transition_identity("SM_001", "placed", "shipped", "advance")
-            .as_deref(),
-        Ok("ix://agent-ix/docs-service/transition/SM_001-placed-shipped-advance")
+        package.transition_identity("SM_001", 2).as_deref(),
+        Ok("ix://agent-ix/docs-service/SM_001/transition2")
+    );
+    assert_eq!(
+        package.state_identity("SM_001", "in review"),
+        Err(Unsluggable {
+            name: "in review".to_string(),
+            reason: UnsluggableReason::MemberName,
+        }),
+        "a state name outside the member-name pattern mints nothing"
+    );
+    assert_eq!(
+        package.state_identity("SM_001", "in_review").as_deref(),
+        Ok("ix://agent-ix/docs-service/SM_001/in_review"),
+        "an underscore is kept: a member name is verbatim, never slugged"
+    );
+    assert_ne!(
+        package.state_identity("SM_001", "placed"),
+        package.step_identity("PR_001", "placed"),
+        "one member name under two owners names two nodes"
     );
     assert_eq!(
         package.step_identity("PR_001", "picked").as_deref(),
-        Ok("ix://agent-ix/docs-service/step/PR_001-picked")
+        Ok("ix://agent-ix/docs-service/PR_001/picked")
     );
     assert_eq!(
         package.field_identity("Snapshot", "--"),
         Err(Unsluggable {
-            name: "--".to_string()
+            name: "--".to_string(),
+            reason: UnsluggableReason::Slug,
         }),
         "an unsluggable segment refuses the whole identity"
     );
     let segments: Vec<&str> = NodeKind::ALL.iter().map(|k| k.segment()).collect();
     assert_eq!(
         segments,
-        [
-            "constraint",
-            "relationship",
-            "variant",
-            "clause",
-            "state",
-            "transition",
-            "step"
-        ],
-        "a type definition and a member (field, operation, operation parameter) mint no NodeKind segment of their own"
+        ["constraint", "relationship", "variant"],
+        "a type definition and a member (field, operation, operation parameter, clause, state, transition, step) mint no NodeKind segment of their own"
     );
 
     // An artifact titled `---` raises UNSLUGGABLE_NAME at its frontmatter,

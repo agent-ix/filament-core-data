@@ -701,8 +701,7 @@ fn tc_1748_occurrence_transition_guard_and_domain_membership_rules_raise_their_c
 
     let sm = at("SM-001");
     let mut state = positive();
-    type_mut(&mut state, "SM-001")["transitions"][0]["to"] =
-        json!(format!("{PREFIX}state/SM-001-lost"));
+    type_mut(&mut state, "SM-001")["transitions"][0]["to"] = json!(format!("{PREFIX}SM-001/lost"));
     assert_rust(
         "undeclared state",
         &state,

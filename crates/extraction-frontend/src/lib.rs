@@ -60,7 +60,9 @@ pub use edges::{frontmatter_edges, lower_relationships, Relationship, PART_OF};
 pub use enumeration::{lower_enum, values_rows, Unsatisfied, ValueRow};
 pub use envelope::{Envelope, ModuleManifest, PackageBlock, SourceBlock};
 pub use extract::{extract, Extracted, Extractions};
-pub use identity::{slug, NodeKind, PackageIdentity, Unsluggable};
+pub use identity::{
+    member_segment, slug, NodeKind, PackageIdentity, Unsluggable, UnsluggableReason,
+};
 pub use lift::{emit, lift, LiftOutcome, LiftRequest};
 pub use limits::{Limit, Limits, LimitsError};
 pub use lower::{

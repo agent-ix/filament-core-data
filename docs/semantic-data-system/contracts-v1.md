@@ -159,10 +159,14 @@ field, an operation or an operation parameter mint no slot segment: a type's
 identity is `ix://<package identity>/<Name>`, and such a member's identity is
 its owner's identity, `/`, and the member's own part, nested as deep as the
 member sits (an operation parameter is nested under its operation, which is
-nested under its type). Every other slot — `variant`, `relationship`,
-`clause`, `state`, `transition`, `step`, `constraint` — occupies
+nested under its type). In the spec-bundle frontend a clause, a state, a
+transition and a step nest under their owner type the same way:
+`<Name>/<member name>`, the member name matching `^[A-Za-z][A-Za-z0-9_]*$`
+(a transition has no name, so its member name is `transition<i>`, `<i>` its
+zero-based row position). Every other slot — `variant`, `relationship`,
+`constraint`, and a TypeSpec-frontend `clause` — occupies
 `ix://<package identity>/<slot>/<tail>`, so a relationship is
-`relationship/<Name>-<verb>-<TargetName>` and a clause is
+`relationship/<Name>-<verb>-<TargetName>` and a TypeSpec clause is
 `clause/<Name>-<clauseId>`, never nested under their owner. Every name part of
 every slot is slugged; an artifact id part (`<Name>` in the spec-bundle
 frontend) is verbatim, as the paragraph below the table states:
@@ -174,10 +178,10 @@ frontend) is verbatim, as the paragraph below the table states:
 | `variant` | `variant/<Name>-<member>` | owner enum or union, member |
 | `relationship` | `relationship/<Name>-<verb>-<TargetName>` | owner record, verb, target type name |
 | `operation` | `<Name>/<name>` | owner type identity, `/`, operation slug |
-| `clause` | `clause/<Name>-<clauseId>` | owner type, clause id |
-| `state` | `state/<Name>-<state>` | owner state machine, state |
-| `transition` | `transition/<Name>-<from>-<to>-<trigger>` | owner state machine, from state, to state, trigger operation (a transition row has no name) |
-| `step` | `step/<Name>-<step>` | owner process, step |
+| `clause` | spec-bundle frontend: `<Name>/<clauseId>`; TypeSpec frontend: `clause/<Name>-<clauseId>` | owner type, clause id |
+| `state` | `<Name>/<state>` | owner state machine identity, `/`, state name |
+| `transition` | `<Name>/transition<i>` | owner state machine identity, `/`, `transition` and the zero-based row position (a transition row has no name) |
+| `step` | `<Name>/<step>` | owner process identity, `/`, step name |
 | `constraint` | `constraint/<Name>-<field>-<keyword>` for a field constraint; `constraint/<Name>/<keyword>` for a type constraint | owner, (field,) keyword |
 
 `<Name>` is the declaring type's name part. The TypeSpec frontend takes it
@@ -191,8 +195,9 @@ inside a segment (`[A-Za-z0-9._~:/-]`), so slugging an id would rewrite a
 datum the pattern already accepts. An id carrying a character that pattern
 does not admit inside a segment, or no ASCII alphanumeric at all (`_`), mints
 no segment and is refused as `UNSLUGGABLE_NAME`. Every other part — a field,
-member, verb, keyword, state, step, or clause name — is slugged on both
-sides. The type's name is its `displayName`.
+member, verb or keyword — is slugged on both sides; a spec-bundle clause id,
+state name or step name is the member name verbatim, and a name outside
+`^[A-Za-z][A-Za-z0-9_]*$` is refused as `UNSLUGGABLE_NAME`. The type's name is its `displayName`.
 
 `slug(value)` replaces every run of characters outside `[A-Za-z0-9]` with one
 `-` and trims leading and trailing `-`; case is preserved (`Config Version` →
