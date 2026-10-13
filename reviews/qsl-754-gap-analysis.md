@@ -88,3 +88,4 @@ this PR. It needs a follow-up ticket. Remove or measure the PR body's
 | FND-002 | fixed | 4aaa1c7e: TC-1838 asserts the locus is the later node's `(path, line)` and `related[0]` is the earlier node's, in all four cases; AC-20 states the owner node order that decides which node is later |
 | FND-003 | deferred | QSL-754 items 6-7 (a second PR under QSL-754): pass field, operation and parameter names through unchanged, plus an end-to-end FCD-to-QSL admission test. The PR body no longer claims QSL admission; it says the business bundle is not admitted until that follow-up lands. |
 | FND-004 | accepted-no-change | Planner ruling: the TypeSpec clause rule gets no ticket. QSL consumes only the Rust lift, and contracts-v1 records the difference. |
+| FND-005 | fixed | 5a4be8b9: for both SM_001 cases, TC-1839 asserts an ARTIFACT_NOT_LOWERED naming FR-001 and SM_001; AC-21 names FR-001. FR-001 is the fixture's only artifact with a relationship targeting SM_001 or PR_001 |

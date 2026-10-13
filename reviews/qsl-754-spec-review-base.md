@@ -40,6 +40,12 @@ check for that case.
 | FND-003 | low | FR-095-AC-21's "lift to no definition" is ambiguous. It can mean the refused state or step row is left out, or that the whole state machine or process lifts to no definition. The two readings give different tests (SR-9052 FND-001). Name which one. | spec/functional/FR-095-mint-package-identity-and-provenance.md:167 |
 | FND-004 | low | The member-name refusal statement covers a clause `clauseId`, a state name and a step name. AC-21 and TC-1839 exercise only a state and a step, so the clause branch of the statement has no criterion. Add a non-member `clauseId` case to AC-21, if the engine admits one, or say why it cannot be reached. | spec/functional/FR-095-mint-package-identity-and-provenance.md:121 |
 
+## New findings (disposition pass 2)
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-005 | low | Two places in public text ascribe a rule to a QSpec requirement: the FR-095 statement on transition rows ("refusing equal rows is the consumer's rule", followed by a QSpec id) and the comment in TC-1840. Public text should cite QSpec by id only, never state what it requires. Nothing new is disclosed, because QSL's public code implements the same refusal (qsl-semantics/src/model/normalize.rs:1617). Cite that public QSL behaviour, or drop the parenthetical. This does not block the merge. | spec/functional/FR-095-mint-package-identity-and-provenance.md:122, crates/extraction-frontend/tests/owner_nested.rs:294 |
+
 ## Dispositions
 
 | FND | outcome | sha/reason |

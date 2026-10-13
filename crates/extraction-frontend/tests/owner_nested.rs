@@ -291,7 +291,7 @@ fn tc_1838_a_state_clause_or_step_named_like_a_field_or_operation_of_its_owner_i
 #[test]
 fn tc_1840_two_transition_rows_with_equal_from_to_and_trigger_lift_as_two_transitions() {
     // The producer names the members, so the frontend does not compare rows
-    // semantically; refusing equal rows is the consumer's rule (QSpec FR-154).
+    // semantically; refusing equal rows is the consumer's rule (QSL's normalizer refuses them by shape).
     let lowered = lift_edited(SM_001, |text| {
         text.replace(
             "| placed | cancelled | advance | | |",

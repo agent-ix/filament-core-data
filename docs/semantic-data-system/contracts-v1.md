@@ -361,8 +361,8 @@ A document using a module construct kind carries a `constructs` table with
 one entry per kind used by a type or population: `kind`, `moduleVersion`,
 `manifestDigest` and the `construct` declaration. An unused declaration
 carrying the recognized meaning `quire.meaning.model.population/v1` is admitted
-and preserved, independently of its kind name, for the QSpec TC-235 K2
-boundary. Every other unused kind is refused. Every declaration is checked
+and preserved, independently of its kind name, for a package that declares a population
+construct before any type uses it. Every other unused kind is refused. Every declaration is checked
 against the same core vocabulary and declaration requirements regardless of
 use. A kind with no entry, a kind declared twice and a declaration outside the vocabulary or its
 declaration requirements are refused with `SCHEMA_VIOLATION` by the Rust, Node
@@ -570,7 +570,7 @@ retain the authored string, including `1`; a revision is not a numeric scalar
 value and is not converted. JSON numbers, signs, leading zeros on integers,
 fractional revision strings and whitespace are refused at the version member.
 Other version fields retain their existing contracts. See FR-050-AC-16 and
-FR-142-AC-15 for the K2 reader boundary: its unused population declaration is
+FR-142-AC-15 for the unused-population reader boundary: an unused population declaration is
 retained by its recognized `quire.meaning.model.population/v1` meaning, and
 `Instant` continues to resolve to native `Timestamp`, whose
 semantic scalar is `datetime`.
