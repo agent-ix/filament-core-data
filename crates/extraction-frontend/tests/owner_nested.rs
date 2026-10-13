@@ -50,14 +50,27 @@ fn copy_tree(from: &Path, to: &Path) {
     }
 }
 
-/// The business fixture with `edit` applied to the document at `path`.
-fn lift_edited(path: &str, edit: impl FnOnce(String) -> String) -> Lowered {
+/// The business fixture with `edit` applied to the document at `path`, and
+/// the edited text.
+fn lift_edited_text(path: &str, edit: impl FnOnce(String) -> String) -> (Lowered, String) {
     let scratch = tempfile::tempdir().expect("tempdir");
     copy_tree(&fixture("business"), scratch.path());
     let file = scratch.path().join(path);
-    let text = fs::read_to_string(&file).expect("document");
-    fs::write(&file, edit(text)).expect("write");
-    lift_at(scratch.path())
+    let text = edit(fs::read_to_string(&file).expect("document"));
+    fs::write(&file, &text).expect("write");
+    (lift_at(scratch.path()), text)
+}
+
+fn lift_edited(path: &str, edit: impl FnOnce(String) -> String) -> Lowered {
+    lift_edited_text(path, edit).0
+}
+
+/// The 1-based line of the first line of `text` starting with `prefix`.
+fn line_of(text: &str, prefix: &str) -> usize {
+    text.lines()
+        .position(|line| line.starts_with(prefix))
+        .unwrap_or_else(|| panic!("no line starts with {prefix:?}"))
+        + 1
 }
 
 fn types_json(lowered: &Lowered) -> Vec<Value> {
@@ -184,35 +197,68 @@ fn tc_1837_every_member_identity_is_its_declaring_types_identity_and_one_member_
 #[test]
 fn tc_1838_a_state_clause_or_step_named_like_a_field_or_operation_of_its_owner_is_a_duplicate_identity(
 ) {
+    let state_row = "| advance | Same name as the operation |";
+    let ordinal_row = "| transition0 | Same name as a transition |";
+    let step_row = "| id | wait | | | Same name as the field |";
+    let clause_edit =
+        "\n## Invariants\n\n### current\n\n```ocl\ncontext OrderLifecycle inv current: true\n```\n";
     // State `advance` beside operation `advance` of SM_001.
-    let state = lift_edited(SM_001, |text| {
+    let (state, state_text) = lift_edited_text(SM_001, |text| {
         text.replace(
             "| cancelled | The order",
-            "| advance | Same name as the operation |\n| cancelled | The order",
+            &format!("{state_row}\n| cancelled | The order"),
         )
     });
     // State `transition0` beside the first transition's member name.
-    let ordinal = lift_edited(SM_001, |text| {
+    let (ordinal, ordinal_text) = lift_edited_text(SM_001, |text| {
         text.replace(
             "| cancelled | The order",
-            "| transition0 | Same name as a transition |\n| cancelled | The order",
+            &format!("{ordinal_row}\n| cancelled | The order"),
         )
     });
     // Step `id` beside field `id` of PR_001.
-    let step = lift_edited(PR_001, |text| {
-        format!("{text}| id | wait | | | Same name as the field |\n")
-    });
+    let (step, step_text) = lift_edited_text(PR_001, |text| format!("{text}{step_row}\n"));
+    let step_field = line_of(
+        &fs::read_to_string(fixture("business").join(PR_001)).expect("PR_001"),
+        "| id | UUID",
+    );
     // Clause `current` beside field `current` of SM_001.
-    let clause = lift_edited(SM_001, |text| {
-        format!(
-            "{text}\n## Invariants\n\n### current\n\n```ocl\ncontext OrderLifecycle inv current: true\n```\n"
-        )
-    });
-    for (label, lowered, identity) in [
-        ("state beside operation", &state, "SM_001/advance"),
-        ("state beside transition", &ordinal, "SM_001/transition0"),
-        ("step beside field", &step, "PR_001/id"),
-        ("clause beside field", &clause, "SM_001/current"),
+    let (clause, clause_text) = lift_edited_text(SM_001, |text| format!("{text}{clause_edit}"));
+    let clause_field = line_of(&clause_text, "| current |");
+    // (label, lowered, identity, path, later node's line, earlier node's line)
+    for (label, lowered, identity, path, later, earlier) in [
+        (
+            "state beside operation",
+            &state,
+            "SM_001/advance",
+            SM_001,
+            line_of(&state_text, state_row),
+            line_of(&state_text, "### advance"),
+        ),
+        (
+            "transition beside state",
+            &ordinal,
+            "SM_001/transition0",
+            SM_001,
+            line_of(&ordinal_text, "| draft | placed | advance"),
+            line_of(&ordinal_text, ordinal_row),
+        ),
+        (
+            "step beside field",
+            &step,
+            "PR_001/id",
+            PR_001,
+            line_of(&step_text, step_row),
+            step_field,
+        ),
+        (
+            "clause beside field",
+            &clause,
+            "SM_001/current",
+            SM_001,
+            line_of(&clause_text, "```ocl"),
+            clause_field,
+        ),
     ] {
         let duplicates = with_code(lowered, Code::DuplicateIdentity);
         assert_eq!(duplicates.len(), 1, "{label}: {:?}", lowered.diagnostics);
@@ -225,12 +271,46 @@ fn tc_1838_a_state_clause_or_step_named_like_a_field_or_operation_of_its_owner_i
             "{label}: {}",
             duplicate.message
         );
+        let at = duplicate.locus.as_ref().expect("locus");
         assert_eq!(
-            duplicate.related.len(),
-            1,
-            "{label}: names the earlier node"
+            (at.path.as_str(), at.start_line),
+            (path, later),
+            "{label}: the later node"
+        );
+        assert_eq!(duplicate.related.len(), 1, "{label}");
+        let related = &duplicate.related[0];
+        assert_eq!(
+            (related.path.as_str(), related.start_line),
+            (path, earlier),
+            "{label}: the earlier node"
         );
     }
+}
+
+#[trace("TC-1840", "FR-095-AC-22")]
+#[test]
+fn tc_1840_two_transition_rows_with_equal_from_to_and_trigger_lift_as_two_transitions() {
+    // The producer names the members, so the frontend does not compare rows
+    // semantically; refusing equal rows is the consumer's rule (QSpec FR-154).
+    let lowered = lift_edited(SM_001, |text| {
+        text.replace(
+            "| placed | cancelled | advance | | |",
+            "| placed | cancelled | advance | | |\n| placed | cancelled | advance | | |",
+        )
+    });
+    assert!(
+        !is_blocked(&lowered.diagnostics),
+        "{:?}",
+        lowered.diagnostics
+    );
+    assert!(with_code(&lowered, Code::DuplicateIdentity).is_empty());
+    let types = types_json(&lowered);
+    let machine = type_with_identity(&types, &format!("{PACKAGE}/SM_001"));
+    assert_eq!(
+        identities(&machine["transitions"]),
+        ["transition0", "transition1", "transition2", "transition3"]
+            .map(|name| format!("{PACKAGE}/SM_001/{name}"))
+    );
 }
 
 #[trace("TC-1838", "FR-095-AC-20")]
@@ -248,22 +328,48 @@ fn tc_1838_the_same_member_name_under_two_owners_mints_two_identities() {
 
 #[trace("TC-1839", "FR-095-AC-21")]
 #[test]
-fn tc_1839_a_state_or_step_name_outside_the_member_name_pattern_is_unsluggable_at_its_row() {
+fn tc_1839_a_clause_state_or_step_name_outside_the_member_name_pattern_is_unsluggable_at_its_row() {
     // The engine already refuses a name with a space, a hyphen or a leading
     // digit; a leading underscore passes the engine and is the case only the
     // frontend's member-name rule refuses.
-    let state = lift_edited(SM_001, |text| {
+    let state_row = "| _hold | Leading underscore |";
+    let step_row = "| _pick | wait | | | Leading underscore |";
+    let clause_edit =
+        "\n## Invariants\n\n### _tight\n\n```ocl\ncontext OrderLifecycle inv _tight: true\n```\n";
+    let (state, state_text) = lift_edited_text(SM_001, |text| {
         text.replace(
             "| cancelled | The order",
-            "| _hold | Leading underscore |\n| cancelled | The order",
+            &format!("{state_row}\n| cancelled | The order"),
         )
     });
-    let step = lift_edited(PR_001, |text| {
-        format!("{text}| _pick | wait | | | Leading underscore |\n")
-    });
-    for (label, lowered, name) in [
-        ("state with a leading underscore", &state, "_hold"),
-        ("step with a leading underscore", &step, "_pick"),
+    let (step, step_text) = lift_edited_text(PR_001, |text| format!("{text}{step_row}\n"));
+    let (clause, clause_text) = lift_edited_text(SM_001, |text| format!("{text}{clause_edit}"));
+    // (label, lowered, name, owner, path, row line)
+    for (label, lowered, name, owner, path, row) in [
+        (
+            "state",
+            &state,
+            "_hold",
+            "SM_001",
+            SM_001,
+            line_of(&state_text, state_row),
+        ),
+        (
+            "step",
+            &step,
+            "_pick",
+            "PR_001",
+            PR_001,
+            line_of(&step_text, step_row),
+        ),
+        (
+            "clause",
+            &clause,
+            "_tight",
+            "SM_001",
+            SM_001,
+            line_of(&clause_text, "```ocl"),
+        ),
     ] {
         let refusals = with_code(lowered, Code::UnsluggableName);
         assert_eq!(refusals.len(), 1, "{label}: {:?}", lowered.diagnostics);
@@ -274,7 +380,30 @@ fn tc_1839_a_state_or_step_name_outside_the_member_name_pattern_is_unsluggable_a
             "{label}: {}",
             refusal.message
         );
-        assert!(refusal.locus.is_some(), "{label}");
+        let at = refusal.locus.as_ref().expect("locus");
+        assert_eq!(
+            (at.path.as_str(), at.start_line),
+            (path, row),
+            "{label}: the row"
+        );
+        // The owning artifact lifts to no definition, so neither the refused
+        // member nor its owner is in the output.
+        let owner_identity = format!("{PACKAGE}/{owner}");
+        assert!(
+            lowered.types.iter().all(|t| t.identity != owner_identity),
+            "{label}: {owner} is emitted"
+        );
+        assert!(is_blocked(&lowered.diagnostics), "{label}");
+        // FR-001 owns SM_001, so a refused state machine takes its owner down
+        // with it; PR_001 has no dependents in the fixture.
+        if owner == "SM_001" {
+            assert!(
+                with_code(lowered, Code::ArtifactNotLowered)
+                    .iter()
+                    .any(|d| d.message.contains("FR-001") && d.message.contains("SM_001")),
+                "{label}: FR-001 is not reported as not lowered"
+            );
+        }
     }
 }
 
