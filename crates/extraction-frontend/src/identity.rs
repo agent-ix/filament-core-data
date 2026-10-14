@@ -17,9 +17,13 @@
 //! parameter, or an operation — mints its owner's identity, `/`, and its own
 //! slugged part, nested as deep as it sits: an operation is
 //! `<owner type identity>/<operation>`, and its parameter is `<operation
-//! identity>/<param>`. Every other kind (constraint, relationship, variant,
-//! clause, state, transition, step) still mints under its own [`NodeKind`]
-//! segment.
+//! identity>/<param>`. A clause, a state, a transition and a step nest under
+//! their owner type the same way, `<owner identity>/<member name>`: the member
+//! name of a clause, state or step is its name verbatim, admitted only when it
+//! matches `^[A-Za-z][A-Za-z0-9_]*$` ([`member_segment`]), and a transition,
+//! which has no name, is `transition<i>` for its zero-based row position. Every
+//! other kind (constraint, relationship, variant) still mints under its own
+//! [`NodeKind`] segment.
 
 use std::fmt;
 
@@ -30,19 +34,40 @@ use crate::diagnostics::{Code, Diagnostic, Locus};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Unsluggable {
     pub name: String,
+    pub reason: UnsluggableReason,
+}
+
+/// Why a name mints no identity segment.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UnsluggableReason {
+    /// The name slugs to the empty string, or an artifact id carries a
+    /// character no segment admits.
+    Slug,
+    /// A clause, state or step name that is not `^[A-Za-z][A-Za-z0-9_]*$`.
+    MemberName,
 }
 
 impl Unsluggable {
+    fn slug(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            reason: UnsluggableReason::Slug,
+        }
+    }
+
     /// The `UNSLUGGABLE_NAME` diagnostic at the declaration's locus.
     pub fn diagnostic(&self, locus: Locus) -> Diagnostic {
-        Diagnostic::frontend(
-            Code::UnsluggableName,
-            format!(
+        let message = match self.reason {
+            UnsluggableReason::Slug => format!(
                 "name `{}` slugs to the empty string; no identity segment can be minted from it",
                 self.name
             ),
-            Some(locus),
-        )
+            UnsluggableReason::MemberName => format!(
+                "name `{}` is not a member name; a clause id, state name or step name matches ^[A-Za-z][A-Za-z0-9_]*$",
+                self.name
+            ),
+        };
+        Diagnostic::frontend(Code::UnsluggableName, message, Some(locus))
     }
 }
 
@@ -75,9 +100,7 @@ pub fn slug(name: &str) -> Result<String, Unsluggable> {
         }
     }
     if out.is_empty() {
-        return Err(Unsluggable {
-            name: name.to_string(),
-        });
+        return Err(Unsluggable::slug(name));
     }
     Ok(out)
 }
@@ -99,16 +122,32 @@ pub fn id_segment(id: &str) -> Result<String, Unsluggable> {
         .chars()
         .all(|c| c.is_ascii_alphanumeric() || SEGMENT_CHARACTERS.contains(&c));
     if !admitted || !id.chars().any(|c| c.is_ascii_alphanumeric()) {
-        return Err(Unsluggable {
-            name: id.to_string(),
-        });
+        return Err(Unsluggable::slug(id));
     }
     Ok(id.to_string())
 }
 
+/// The member name of a clause, state or step: `name` verbatim, so that the
+/// name equals the last segment of the node's identity, when it matches
+/// `^[A-Za-z][A-Za-z0-9_]*$`; otherwise [`Unsluggable`].
+pub fn member_segment(name: &str) -> Result<String, Unsluggable> {
+    let mut chars = name.chars();
+    let admitted = chars.next().is_some_and(|c| c.is_ascii_alphabetic())
+        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_');
+    if admitted {
+        Ok(name.to_string())
+    } else {
+        Err(Unsluggable {
+            name: name.to_string(),
+            reason: UnsluggableReason::MemberName,
+        })
+    }
+}
+
 /// The closed list of node kinds that mint an identity under their own
 /// segment (FR-095 "Node identities"). A type definition and a member
-/// (field, operation, operation parameter) mint no segment of their own —
+/// (field, operation, operation parameter, clause, state, transition, step)
+/// mint no segment of their own —
 /// see [`PackageIdentity::type_identity`] and [`PackageIdentity::
 /// field_identity`] — so they carry no `NodeKind`. The segment after
 /// `ix://<org>/<name>/` is [`NodeKind::segment`]; no identity of this list's
@@ -118,22 +157,14 @@ pub enum NodeKind {
     Constraint,
     Relationship,
     Variant,
-    Clause,
-    State,
-    Transition,
-    Step,
 }
 
 impl NodeKind {
     /// Every kind, in FR-095's order.
-    pub const ALL: [NodeKind; 7] = [
+    pub const ALL: [NodeKind; 3] = [
         NodeKind::Constraint,
         NodeKind::Relationship,
         NodeKind::Variant,
-        NodeKind::Clause,
-        NodeKind::State,
-        NodeKind::Transition,
-        NodeKind::Step,
     ];
 
     /// The path segment naming the kind.
@@ -142,10 +173,6 @@ impl NodeKind {
             NodeKind::Constraint => "constraint",
             NodeKind::Relationship => "relationship",
             NodeKind::Variant => "variant",
-            NodeKind::Clause => "clause",
-            NodeKind::State => "state",
-            NodeKind::Transition => "transition",
-            NodeKind::Step => "step",
         }
     }
 }
@@ -285,32 +312,40 @@ impl PackageIdentity {
         Ok(self.node(NodeKind::Variant, &join(enumeration, &[value])?))
     }
 
-    /// `ix://<org>/<name>/clause/<record id>-<clause-slug>`.
+    /// `<owner type identity>/<clauseId>`: a clause nests under the type that
+    /// declares it, and its `clauseId` is its member name.
     pub fn clause_identity(&self, record: &str, clause: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Clause, &join(record, &[clause])?))
+        self.member(record, clause)
     }
 
-    /// `ix://<org>/<name>/state/<machine id>-<state-slug>`.
+    /// `<owner type identity>/<state>`: a state nests under its state machine.
     pub fn state_identity(&self, machine: &str, state: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::State, &join(machine, &[state])?))
+        self.member(machine, state)
     }
 
-    /// `ix://<org>/<name>/transition/<machine id>-<from-slug>-<to-slug>-<trigger-slug>`:
-    /// a transition row has no name, so its from state, to state and trigger
-    /// operation are its parts.
+    /// `<owner type identity>/transition<position>`: a transition row has no
+    /// name, so its member name is `transition` and its zero-based position
+    /// among the machine's transition rows.
     pub fn transition_identity(
         &self,
         machine: &str,
-        from: &str,
-        to: &str,
-        trigger: &str,
+        position: usize,
     ) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Transition, &join(machine, &[from, to, trigger])?))
+        self.member(machine, &format!("transition{position}"))
     }
 
-    /// `ix://<org>/<name>/step/<process id>-<step-slug>`.
+    /// `<owner type identity>/<step>`: a step nests under its process.
     pub fn step_identity(&self, process: &str, step: &str) -> Result<String, Unsluggable> {
-        Ok(self.node(NodeKind::Step, &join(process, &[step])?))
+        self.member(process, step)
+    }
+
+    /// `<owner type identity>/<member name>`.
+    fn member(&self, owner: &str, name: &str) -> Result<String, Unsluggable> {
+        Ok(format!(
+            "{}/{}",
+            self.type_identity(owner)?,
+            member_segment(name)?
+        ))
     }
 }
 

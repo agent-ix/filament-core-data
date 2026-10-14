@@ -155,7 +155,7 @@ fn tc_1239_the_immutable_ocl_fence_lowers_to_one_clause_with_the_engine_span_and
     assert_eq!(clause["clauseId"], "immutable");
     assert_eq!(
         clause["identity"],
-        "ix://agent-ix/docs-service/clause/FR-006-immutable"
+        "ix://agent-ix/docs-service/FR-006/immutable"
     );
     let extraction = &lift.extractions.artifacts["FR-006"].extraction;
     let text = &extraction.clause_text.as_ref().expect("clause_text")["immutable"];
@@ -401,6 +401,26 @@ fn nested_ok(identity: &str, package: &str, count: usize) -> bool {
         .unwrap_or(false)
 }
 
+/// A clause, state, transition or step nests under its owner type:
+/// `ix://<package>/<owner id>/<member name>`, the member name matching
+/// `^[A-Za-z][A-Za-z0-9_]*$` and the owner part no global slot name.
+fn owner_nested_ok(identity: &str, package: &str) -> bool {
+    nested_ok(identity, package, 2)
+        && identity
+            .strip_prefix(&format!("ix://{package}/"))
+            .and_then(|rest| rest.split_once('/'))
+            .is_some_and(|(owner, member)| {
+                !["clause", "state", "transition", "step"].contains(&owner)
+                    && member
+                        .chars()
+                        .next()
+                        .is_some_and(|c| c.is_ascii_alphabetic())
+                    && member
+                        .chars()
+                        .all(|c| c.is_ascii_alphanumeric() || c == '_')
+            })
+}
+
 /// Every other node kind still mints under its own `NodeKind` segment,
 /// `ix://<package>/<segment>/<tail>` (FR-095).
 fn segment_ok(identity: &str, package: &str, kind: NodeKind) -> bool {
@@ -467,12 +487,10 @@ fn tc_1243_and_tc_1251_every_identity_of_the_business_document_matches_one_fr_09
             Some("variants") => {
                 segment_ok(identity, &package, NodeKind::Variant).then_some("variant")
             }
-            Some("clauses") => segment_ok(identity, &package, NodeKind::Clause).then_some("clause"),
-            Some("states") => segment_ok(identity, &package, NodeKind::State).then_some("state"),
-            Some("transitions") => {
-                segment_ok(identity, &package, NodeKind::Transition).then_some("transition")
-            }
-            Some("steps") => segment_ok(identity, &package, NodeKind::Step).then_some("step"),
+            Some("clauses") => owner_nested_ok(identity, &package).then_some("clause"),
+            Some("states") => owner_nested_ok(identity, &package).then_some("state"),
+            Some("transitions") => owner_nested_ok(identity, &package).then_some("transition"),
+            Some("steps") => owner_nested_ok(identity, &package).then_some("step"),
             other => panic!("{pointer}: unexpected node list {other:?}"),
         }
         .unwrap_or_else(|| panic!("{pointer}: {identity} matches no FR-095 pattern"));

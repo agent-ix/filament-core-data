@@ -1005,7 +1005,7 @@ fn lift_transitions(
     let clauses: &[Clause] = definition.clauses.as_deref().unwrap_or(&[]);
     let mut out = Vec::with_capacity(decls.len());
     let mut unsluggable = Vec::new();
-    for decl in decls {
+    for (position, decl) in decls.iter().enumerate() {
         let site = format!(
             "transition {} -> {} on {}",
             decl.from, decl.to, decl.trigger
@@ -1035,8 +1035,7 @@ fn lift_transitions(
         let identities = (
             ctx.package.state_identity(ctx.id, &decl.from),
             ctx.package.state_identity(ctx.id, &decl.to),
-            ctx.package
-                .transition_identity(ctx.id, &decl.from, &decl.to, &decl.trigger),
+            ctx.package.transition_identity(ctx.id, position),
         );
         match identities {
             (Ok(from), Ok(to), Ok(identity)) => out.push(Transition {
