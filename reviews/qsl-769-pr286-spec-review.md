@@ -53,3 +53,9 @@ scope:
   role: context_only
   excerpt: "case \"$PKG\" in semantic-core) DIR=\"packages/semantic-core\" ;; semantic-schema) DIR=\"schema\" ;; ... npm publish"
 ```
+
+## Dispositions
+
+| FND | outcome | sha/reason |
+| --- | --- | --- |
+| FND-001 | fixed | 5dd885c3b545131b1ca9d64adc754c9e5ae32131 |

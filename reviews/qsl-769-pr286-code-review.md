@@ -41,3 +41,9 @@ scope:
   role: context_only
   excerpt: "# The private workspace root has no distribution payload. ...\n*"
 ```
+
+## Dispositions
+
+| FND | outcome | sha/reason |
+| --- | --- | --- |
+| FND-001 | fixed | 5dd885c3b545131b1ca9d64adc754c9e5ae32131 (PR body corrected at this head; the vacuous TC-1065 check is unchanged and needs a follow-up ticket) |
