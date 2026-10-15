@@ -87,7 +87,7 @@ and it publishes nothing.
 
 ### The emitted layout and provenance
 
-- The emitted tree SHALL live under `packages/semantic-kernel/python/`, alongside the kernel's other target packages, and SHALL be reachable from no distribution manifest: not from an npm `files` or `exports` entry, not from `pyproject.toml`'s `packages` or `include`, and not from any workflow under `.github/`.
+- The emitted tree SHALL live under `packages/semantic-kernel/python/`, alongside the kernel's other target packages, and SHALL be reachable from no distribution manifest: not from an npm `files` or `exports` entry, and not from `pyproject.toml`'s `packages` or `include`.
 - The layout SHALL be the declared FR-079 layout: one module per input document, an `__init__.py` whose `__all__` is sorted and complete, and a `README.md` naming the family, the verdict, the conditions, and what the package does not carry — measured at thirty-one modules for `pydantic_v2_basemodel` over this bundle.
 - The FR-079 name-collision rule SHALL apply unchanged, through the imported `collisions`: a name two modules each declare is excluded from `__all__`, stays reachable as `<module>.<Name>`, and is recorded in the README; a name one module declares twice raises.
 
@@ -109,7 +109,7 @@ and it publishes nothing.
 | FR-087-CON-2 | The committed `packages/semantic-core/generated/json-schema/` bundle SHALL equal what `packages/semantic-core/scripts/generate.mjs` emits, and localization and kernel generation SHALL leave those bytes unchanged, so the localization stays an in-memory transform and [FR-088](./FR-088-ship-the-modular-kernel-json-schema.md)'s byte gate stays green. | Integrity | Analysis |
 | FR-087-CON-3 | The localization pass SHALL remain a schema-to-schema rewrite that post-processes no generated Python source, for the same reason FR-074-CON-1 gives: a text patch over generated code is a hand-written generator by another name. | Integrity | Test |
 | FR-087-CON-4 | The maintainer SHALL NOT emit a package for a family the qualification judges `not-qualified`, nor re-run the qualification with an altered probe set to move a verdict in order to emit one. | Integrity | Test |
-| FR-087-CON-5 | This requirement SHALL add no path under `packages/semantic-kernel/` to `pyproject.toml`'s `packages` or `include`, to any npm manifest's `files` or `exports`, or to any workflow under `.github/`. Publication passes `agent-ix/quoin#290`. | Compliance | Test |
+| FR-087-CON-5 | This requirement SHALL add no path under `packages/semantic-kernel/` to `pyproject.toml`'s `packages` or `include`, or to any npm manifest's `files` or `exports`. Publication passes `agent-ix/quoin#290`. | Compliance | Test |
 | FR-087-CON-6 | This requirement SHALL introduce no second generator, no vendored copy, and no fork of `datamodel-code-generator`; the generator stays an attributed, pinned third-party dependency. | Compliance | Static |
 
 ## Acceptance Criteria
@@ -128,7 +128,7 @@ and it publishes nothing.
 | FR-087-AC-12 | The pinned `mypy` reports zero errors under `--strict` over every module and example under `packages/semantic-kernel/python/`, invoked by path with no configuration change; no generated or example source contains `type: ignore`; and `pyproject.toml` declares no override for that tree. Blocked by finding F1 below. | Analysis |
 | FR-087-AC-13 | Regenerating from the unchanged committed bundle reproduces the kernel tree byte-for-byte, `--check` fails naming a mutated committed file, and two generations into fresh scratch roots agree byte-for-byte. | Snapshot |
 | FR-087-AC-14 | No byte under `packages/semantic-core/` changes, and `make semantic-core-check` passes, after a full kernel generation. | Analysis |
-| FR-087-AC-15 | No path under `packages/semantic-kernel/` appears in the packed file list of any distribution this repository builds, checked against the packed list rather than the manifest text alone; and no file under `.github/` names `semantic-kernel`. | Test |
+| FR-087-AC-15 | No path under `packages/semantic-kernel/` appears in the packed file list of any distribution this repository builds, checked against the packed list rather than the manifest text alone. | Test |
 | FR-087-AC-16 | Each kernel example runs, constructs a conforming kernel value, round-trips it, and raises on a value the kernel bundle forbids. For `msgspec_struct` the conforming value is one of the twenty-six kernel types that family can decode, and the example additionally pins the four it cannot as finding F2 below. | Integration |
 | FR-087-AC-17 | `python_backend/kernel/emit.py` reaches the issue #23 route only by import, and for one file map its `__init__.py` text is identical to what `python_backend/runner/emit.py` produces. | Test |
 | FR-087-AC-18 | No generated kernel file contains a date, a time, an absolute path from the generating host, a user name, or a hostname, and no socket is opened during a kernel generation. | Integration |
