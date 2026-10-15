@@ -87,7 +87,7 @@ and it publishes nothing.
 
 ### The emitted layout and provenance
 
-- The emitted tree SHALL live under `packages/semantic-kernel/python/`, alongside the kernel's other target packages, and SHALL be reachable from no distribution manifest: not from an npm `files` or `exports` entry, not from `pyproject.toml`'s `packages` or `include`, and not from any workflow under `.github/`.
+- The emitted tree SHALL live under `packages/semantic-kernel/python/`, alongside the kernel's other target packages, and SHALL be reachable from no distribution manifest: not from an npm `files` or `exports` entry, and not from `pyproject.toml`'s `packages` or `include`.
 - The layout SHALL be the declared FR-079 layout: one module per input document, an `__init__.py` whose `__all__` is sorted and complete, and a `README.md` naming the family, the verdict, the conditions, and what the package does not carry — measured at thirty-one modules for `pydantic_v2_basemodel` over this bundle.
 - The FR-079 name-collision rule SHALL apply unchanged, through the imported `collisions`: a name two modules each declare is excluded from `__all__`, stays reachable as `<module>.<Name>`, and is recorded in the README; a name one module declares twice raises.
 
@@ -109,7 +109,7 @@ and it publishes nothing.
 | FR-087-CON-2 | The committed `packages/semantic-core/generated/json-schema/` bundle SHALL equal what `packages/semantic-core/scripts/generate.mjs` emits, and localization and kernel generation SHALL leave those bytes unchanged, so the localization stays an in-memory transform and [FR-088](./FR-088-ship-the-modular-kernel-json-schema.md)'s byte gate stays green. | Integrity | Analysis |
 | FR-087-CON-3 | The localization pass SHALL remain a schema-to-schema rewrite that post-processes no generated Python source, for the same reason FR-074-CON-1 gives: a text patch over generated code is a hand-written generator by another name. | Integrity | Test |
 | FR-087-CON-4 | The maintainer SHALL NOT emit a package for a family the qualification judges `not-qualified`, nor re-run the qualification with an altered probe set to move a verdict in order to emit one. | Integrity | Test |
-| FR-087-CON-5 | This requirement SHALL add no path under `packages/semantic-kernel/` to `pyproject.toml`'s `packages` or `include`, to any npm manifest's `files` or `exports`. Publication passes `agent-ix/quoin#290`. | Compliance | Test |
+| FR-087-CON-5 | This requirement SHALL add no path under `packages/semantic-kernel/` to `pyproject.toml`'s `packages` or `include`, or to any npm manifest's `files` or `exports`. Publication passes `agent-ix/quoin#290`. | Compliance | Test |
 | FR-087-CON-6 | This requirement SHALL introduce no second generator, no vendored copy, and no fork of `datamodel-code-generator`; the generator stays an attributed, pinned third-party dependency. | Compliance | Static |
 
 ## Acceptance Criteria
