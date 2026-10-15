@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
@@ -22,6 +22,14 @@ class Severity(Enum):
 class FrontendDialect(Enum):
     typespec = 'typespec'
     spec_bundle = 'spec-bundle'
+
+
+class NormalizedCanonicalization(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    algorithm: Literal['rfc8785-v1']
+    digest: Literal['sha256-jcs']
 
 
 class PackageIdentity(RootModel[str]):
@@ -93,6 +101,7 @@ class Target(Enum):
     typescript = 'typescript'
     python_pydantic_v2 = 'python-pydantic-v2'
     python_dataclass = 'python-dataclass'
+    sysml_v2_textual = 'sysml-v2-textual'
 
 
 class TextProfile(Enum):

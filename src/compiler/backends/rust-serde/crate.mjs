@@ -20,6 +20,7 @@
  */
 
 import {
+	isAliasShaped,
 	isEnumerationShaped,
 	isRecordShaped,
 	renderingOf,
@@ -271,7 +272,7 @@ function subjectAccess(definition, byIdentity) {
 	let current = definition;
 	let expression = "value";
 	const seen = new Set();
-	while (current !== undefined && current.kind === "alias") {
+	while (current !== undefined && isAliasShaped(current)) {
 		if (seen.has(current.identity)) return undefined;
 		seen.add(current.identity);
 		const target = byIdentity.get(current.target);

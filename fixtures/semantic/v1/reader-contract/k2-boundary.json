@@ -61,7 +61,7 @@
 				"identity": "none",
 				"shape": "alias",
 				"meaning": "quire.meaning.model.value-type/v1",
-				"members": {"target": "required"}
+				"members": { "target": "required" }
 			}
 		}
 	],

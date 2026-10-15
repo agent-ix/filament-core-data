@@ -31,6 +31,7 @@ import {
 	declarationOf,
 	equalityOf,
 	identityFieldNames,
+	isAliasShaped,
 	isEnumerationShaped,
 	isRecordShaped,
 	kindName,
@@ -427,7 +428,7 @@ function hashableType(ref, byIdentity, newtypes, seen = new Set()) {
 	if (definition === undefined) return false;
 	const within = new Set(seen).add(ref);
 	let hashable;
-	switch (definition.kind) {
+	switch (renderingOf(definition)) {
 		case "scalar":
 			hashable = HASHABLE_SCALARS.includes(definition.scalar);
 			break;
@@ -526,7 +527,7 @@ export function resolveKind(byIdentity, typeRef, seen = new Set()) {
 	const definition = byIdentity.get(typeRef);
 	if (definition === undefined) return undefined;
 	seen.add(typeRef);
-	if (definition.kind === "alias")
+	if (isAliasShaped(definition))
 		return resolveKind(byIdentity, definition.target, seen);
 	return {
 		kind: String(definition.kind),
@@ -545,7 +546,7 @@ function constraintsThroughAliases(byIdentity, typeRef) {
 		const definition = byIdentity.get(current);
 		if (definition === undefined) break;
 		chain.unshift(...(definition.constraints ?? []));
-		if (definition.kind !== "alias") break;
+		if (!isAliasShaped(definition)) break;
 		current = definition.target;
 	}
 	return chain;
@@ -558,7 +559,7 @@ function decimalPolicyOf(byIdentity, typeRef, seen = new Set()) {
 	if (definition === undefined) return undefined;
 	seen.add(typeRef);
 	if (definition.decimal !== undefined) return definition.decimal;
-	if (definition.kind === "alias")
+	if (isAliasShaped(definition))
 		return decimalPolicyOf(byIdentity, definition.target, seen);
 	return undefined;
 }
@@ -618,10 +619,9 @@ function mapType(definition, context) {
 	typeScope.push({ identifier: resolvedName.value, identity });
 
 	const resolved = resolveKind(byIdentity, identity);
-	const inheritedConstraints =
-		definition.kind === "alias"
-			? constraintsThroughAliases(byIdentity, identity)
-			: (definition.constraints ?? []);
+	const inheritedConstraints = isAliasShaped(definition)
+		? constraintsThroughAliases(byIdentity, identity)
+		: (definition.constraints ?? []);
 	const lowered = lowerConstraints(
 		{ ...definition, constraints: inheritedConstraints },
 		resolved,
@@ -871,7 +871,7 @@ function mapType(definition, context) {
 			break;
 		}
 		case "alias": {
-			model.row = "kind:alias";
+			model.row = rowOf(declaration, kind);
 			const resolvedAlias = resolveKind(context.byIdentity, identity);
 			model.scalar = resolvedAlias?.scalar;
 			model.decimal = decimalPolicyOf(context.byIdentity, identity);
@@ -1148,7 +1148,7 @@ function mapField(field, owner, context, _version) {
 	while (typeof wrapperRef === "string" && !wrapperSeen.has(wrapperRef)) {
 		wrapperSeen.add(wrapperRef);
 		const wrapper = context.byIdentity.get(wrapperRef);
-		if (wrapper?.kind !== "alias") break;
+		if (!isAliasShaped(wrapper)) break;
 		wrapperDepth += 1;
 		wrapperRef = wrapper.target;
 	}

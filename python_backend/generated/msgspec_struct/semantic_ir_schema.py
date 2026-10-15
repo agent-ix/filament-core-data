@@ -112,15 +112,16 @@ class Shape(Enum):
     state_machine = 'state_machine'
     sequence = 'sequence'
     namespace = 'namespace'
+    alias = 'alias'
 
 
 class ConstructDeclaration(Struct):
     identity: Identity
     meaning: Annotated[str, Meta(min_length=1)]
-    members: dict[Literal['fields', 'variants', 'relationships', 'operations', 'clauses', 'supertypes', 'abstract', 'identityFields', 'owner', 'members', 'occurrenceField', 'states', 'transitions', 'steps', 'persists', 'vocabulary', 'direction', 'interfaceType', 'multiplicity', 'declaredType', 'flowDirection', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'featureOrder'], Members]
+    members: dict[Literal['fields', 'variants', 'relationships', 'operations', 'clauses', 'supertypes', 'abstract', 'identityFields', 'owner', 'members', 'occurrenceField', 'states', 'transitions', 'steps', 'persists', 'vocabulary', 'direction', 'interfaceType', 'multiplicity', 'declaredType', 'flowDirection', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'featureOrder', 'target'], Members]
     shape: Shape
     immutable: bool | UnsetType = UNSET
-    references: dict[Literal['owner', 'members', 'transitions', 'steps', 'persists', 'interfaceType', 'declaredType', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement'], ReferencesAdditionalProperty] | UnsetType = (
+    references: dict[Literal['owner', 'members', 'transitions', 'steps', 'persists', 'interfaceType', 'declaredType', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'target'], ReferencesAdditionalProperty] | UnsetType = (
         UNSET
     )
     rules: list[Rule] | UnsetType = UNSET
@@ -683,6 +684,7 @@ class TypeDefinition(Struct):
 
 
 class FilamentSemanticIrV1ContractVersion200(Struct):
+    canonicalization: common_schema.NormalizedCanonicalization
     constructs: list[Construct]
     contractVersion: ContractVersion
     extensions: list[common_schema.Extension]

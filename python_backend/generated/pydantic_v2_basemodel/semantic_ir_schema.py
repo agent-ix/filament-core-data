@@ -131,6 +131,7 @@ class Shape(Enum):
     state_machine = 'state_machine'
     sequence = 'sequence'
     namespace = 'namespace'
+    alias = 'alias'
 
 
 class ConstructDeclaration(BaseModel):
@@ -140,8 +141,8 @@ class ConstructDeclaration(BaseModel):
     identity: Identity
     immutable: bool | None = None
     meaning: Annotated[str, Field(min_length=1)]
-    members: dict[Literal['fields', 'variants', 'relationships', 'operations', 'clauses', 'supertypes', 'abstract', 'identityFields', 'owner', 'members', 'occurrenceField', 'states', 'transitions', 'steps', 'persists', 'vocabulary', 'direction', 'interfaceType', 'multiplicity', 'declaredType', 'flowDirection', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'featureOrder'], Members]
-    references: dict[Literal['owner', 'members', 'transitions', 'steps', 'persists', 'interfaceType', 'declaredType', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement'], ReferencesAdditionalProperty] | None = (
+    members: dict[Literal['fields', 'variants', 'relationships', 'operations', 'clauses', 'supertypes', 'abstract', 'identityFields', 'owner', 'members', 'occurrenceField', 'states', 'transitions', 'steps', 'persists', 'vocabulary', 'direction', 'interfaceType', 'multiplicity', 'declaredType', 'flowDirection', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'featureOrder', 'target'], Members]
+    references: dict[Literal['owner', 'members', 'transitions', 'steps', 'persists', 'interfaceType', 'declaredType', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'target'], ReferencesAdditionalProperty] | None = (
         None
     )
     rules: list[Rule] | None = None
@@ -1008,6 +1009,7 @@ class FilamentSemanticIrV1ContractVersion200(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
+    canonicalization: common_schema.NormalizedCanonicalization
     constructs: list[Construct]
     contractVersion: ContractVersion
     extensions: list[common_schema.Extension]

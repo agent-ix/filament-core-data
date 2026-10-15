@@ -130,6 +130,15 @@
 			"diagnosticCode": null
 		},
 		{
+			"rowKey": "shape:alias",
+			"axis": "shape",
+			"selector": "alias",
+			"rustForm": "pub struct N(T);",
+			"serdeAttributes": ["transparent"],
+			"mechanism": "the alias kind's newtype over the target's Rust type with try_new; an alias construct is a named type that is transparent over its target",
+			"diagnosticCode": null
+		},
+		{
 			"rowKey": "identity:identified",
 			"axis": "identity",
 			"selector": "identified",
@@ -534,12 +543,12 @@
 			"rowKey": "unknownPolicy:inert",
 			"axis": "unknownPolicy",
 			"selector": {
-				"kind": "scalar|alias|sequence|map|reference|shape:interface|shape:namespace",
+				"kind": "scalar|alias|sequence|map|reference|shape:alias|shape:interface|shape:namespace",
 				"policy": "any"
 			},
 			"rustForm": null,
 			"serdeAttributes": [],
-			"mechanism": "inert: a scalar has no members, a sequence and a map admit every element and every key by construction, and an alias and a reference are transparent, and an interface and a namespace construct carry no instance data. The declared value is carried verbatim into the type's metadata constant and stated inert in the generated documentation; it is never dropped and never refused",
+			"mechanism": "inert: a scalar has no members, a sequence and a map admit every element and every key by construction, and an alias (core kind or construct) and a reference are transparent, and an interface and a namespace construct carry no instance data. The declared value is carried verbatim into the type's metadata constant and stated inert in the generated documentation; it is never dropped and never refused",
 			"diagnosticCode": null
 		},
 		{

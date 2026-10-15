@@ -3934,7 +3934,10 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				$defs: {
 					typeDefinition: {
 						properties: { kind: { anyOf: { enum?: string[] }[] } };
-						allOf: { if: { properties?: { kind: { enum?: string[] } } } }[];
+						allOf: {
+							if: { properties?: { kind: { enum?: string[] } } };
+							then?: { properties?: Record<string, unknown> };
+						}[];
 					};
 				};
 			}
@@ -3946,7 +3949,10 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect([...CORE_KINDS]).toEqual(CONTRACT_KINDS_BEFORE_CONSTRUCTS);
 		// The one branch forbidding relationships and operations names every core
 		// kind but `record`; a construct kind is governed by its declaration.
+		// The branch forbidding `target` on the non-alias core kinds is a different
+		// rule and is left out.
 		const edgeless = definition.allOf
+			.filter((branch) => branch.then?.properties?.target === undefined)
 			.map((branch) => branch.if.properties?.kind.enum)
 			.filter((kinds) => kinds !== undefined && kinds.length > 2);
 		expect(edgeless).toHaveLength(1);

@@ -19,6 +19,7 @@ from tests.semantic_ir_reader import (
     read_semantic_ir,
     resolve_kind,
     schema_valid,
+    type_index,
 )
 
 
@@ -42,9 +43,9 @@ CONSTRUCT_REFUSALS = [
     ("shape_requirement", "/ir/constructs/1/construct/shape"),
     ("rule_requirement", "/ir/constructs/1/construct/rules/0"),
     ("forbidden_reference", "/ir/constructs/1/construct/references/owner"),
-    ("required_member", "/ir/types/1"),
-    ("forbidden_member", "/ir/types/1/identityFields"),
-    ("nonempty_rule", "/ir/types/1/clauses"),
+    ("required_member", "/ir/types/2"),
+    ("forbidden_member", "/ir/types/2/identityFields"),
+    ("nonempty_rule", "/ir/types/2/clauses"),
     ("population_kind", "/ir/populations/0/kind"),
 ]
 
@@ -53,7 +54,7 @@ def construct_case(name):
     document = fixture()
     unused = document["constructs"][1]["construct"]
     used = document["constructs"][0]["construct"]
-    event = document["types"][1]
+    event = document["types"][2]
     match name:
         case "duplicate_kind":
             document["constructs"][1]["kind"]["name"] = "happened"
@@ -175,7 +176,7 @@ def test_authored_revision_one_and_unused_population_preserve_timestamp_binding(
     assert normalized["package"]["version"] == "1"
     assert normalized["constructs"] == document["constructs"]
     assert normalized["types"][0]["target"] == "ix://quire/native/Timestamp"
-    types = {definition["identity"]: definition for definition in document["types"]}
+    types = type_index(document)
     assert resolve_kind(types, {}, "ix://test/orders/Instant") == ("scalar", "datetime")
     result = conformance_adapter.answer(
         {"caseId": "k2-boundary", "kind": "admissibility", "input": {"ir": document}}
@@ -216,11 +217,11 @@ def test_adapter_resolves_known_natives_and_refuses_unknown_natives(
             }
         ]
         target = subject["variants"][0]
-        pointer = "/ir/types/2/variants/0/payloadType"
+        pointer = "/ir/types/3/variants/0/payloadType"
     else:
         subject[member] = "ix://quire/native/Timestamp"
         target = subject
-        pointer = f"/ir/types/2/{member}"
+        pointer = f"/ir/types/3/{member}"
     document["types"].append(subject)
     assert schema_valid(_schema_validator(), document)
     result = conformance_adapter.answer(
@@ -243,7 +244,7 @@ def test_construct_identity_axis_preserves_semantic_identity_collision_refusal(
 ):
     """Trace: FR-142-AC-15"""
     document = fixture()
-    document["types"][1]["identity"] = document["types"][0]["identity"]
+    document["types"][2]["identity"] = document["types"][0]["identity"]
     result = conformance_adapter.answer(
         {
             "caseId": "duplicate-identity",
@@ -254,7 +255,7 @@ def test_construct_identity_axis_preserves_semantic_identity_collision_refusal(
     assert result["resultState"] == "invalid"
     assert [
         (row["diagnostic"]["code"], row["pointer"]) for row in result["diagnostics"]
-    ] == [("agent-ix.semantic-ir.DUPLICATE_IDENTITY", "/ir/types/1/identity")]
+    ] == [("agent-ix.semantic-ir.DUPLICATE_IDENTITY", "/ir/types/2/identity")]
 
 
 @pytest.mark.parametrize(
@@ -294,9 +295,9 @@ def test_unused_declarations_still_validate_and_kinds_must_resolve():
         ["constructs", 1, "construct", "shape"]
     ]
     unresolved = fixture()
-    unresolved["types"][1]["kind"]["name"] = "missing"
+    unresolved["types"][2]["kind"]["name"] = "missing"
     assert construct_findings(unresolved) == [
-        "types.1.kind: names no constructs entry",
+        "types.2.kind: names no constructs entry",
         "constructs.0.kind: no type or population is of that kind",
     ]
 

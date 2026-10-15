@@ -113,9 +113,13 @@ frontend, a generated programming-language package, or an ambient registry.
 - A `union` definition SHALL render a `oneOf` with one branch per variant; a
   payload-free variant SHALL constrain its tag alone and a payload-carrying
   variant SHALL constrain its tag and payload.
-- An `alias` definition SHALL render the schema of its target and its own
-  constraints in an `allOf` composition, except that an alias whose resolution
-  walk reaches `integer` or `decimal` SHALL render the schema [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) gives its
+- An `alias` definition (a core alias, or a construct of the alias shape) whose
+  resolution walk reaches a document scalar other than `integer` or `decimal`
+  SHALL render that scalar's schema inline, carrying the constraints of every
+  alias and scalar on the chain and its own; a consumer then reads one document
+  and sees a value of that scalar. An alias of any other target SHALL render the
+  schema of its target and its own constraints in an `allOf` composition, and an
+  alias whose resolution walk reaches `integer` or `decimal` SHALL render the schema [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) gives its
   own subject (over its own effective range or decimal policy) in place of its
   target's schema, because a safe target renders `type: integer` and a wide or
   decimal alias's instance value is a string.
@@ -222,6 +226,7 @@ that decision requires.
 | FR-100-AC-12 | An alias carrying `min` `"0"` and `max` `"18446744073709551615"` over an unbounded `integer` definition renders a string schema with the interval pattern and no `minimum`, `maximum` or target `type: integer`; a safe subject with `exclusiveMax` `"100"` renders `maximum` `99`; a `decimal(5, 2)` subject's `enumValues` `["1.1"]` renders a pattern admitting `"1.1"` and `"1.10"` and rejecting `"1.2"`; a unique collection of that decimal subject raises `UNDECLARED_LOSS` and writes no file. | Test |
 | FR-100-AC-13 | A field with `multiplicity.unique: true` and a `float32` item subject, and a sequence with a `unique` constraint over that subject, each produce blocking `agent-ix.semantic-ir.UNDECLARED_LOSS` naming the field or constraint and zero files. Direct scalar, alias-chain and native `ix://quire/native/Float32` references have the same result. | Test |
 | FR-100-AC-14 | Removing uniqueness from each Float32 case in AC-13 permits generation when the input has no other unrepresentable member. Replacing its item subject with `float64` retains `uniqueItems: true`; the emitted schema accepts `[0.1, 0.10000000149011612]` and rejects `[0.1, 0.1]` and `[0, -0]`. | Test |
+| FR-100-AC-15 | Generating the contract `2.0.0` constructs fixture renders `OrderLineKind.json` as `type: string` with `enum: ["physical", "digital"]` and no `allOf`; an alias of that alias carrying `maxLength` renders `type: string`, the same `enum` and the `maxLength`; an alias of `integer` or `decimal` renders as before. | Test |
 
 ## Dependencies
 

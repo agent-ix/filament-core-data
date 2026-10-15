@@ -14,8 +14,10 @@
  * readers already emit, which is what makes the comparison possible at all.
  */
 import {
+	bindConstructs,
 	CONSTRUCT_VOCABULARY,
 	constructOnlyMembers,
+	isAliasShaped,
 	isConstructKind,
 	kindLabel,
 	presenceOf,
@@ -247,7 +249,7 @@ export function resolveKind(
 	}
 	const definition = types.get(typeRef);
 	if (!definition) return undefined;
-	if (definition.kind === "alias")
+	if (isAliasShaped(definition))
 		return resolveKind(types, fields, definition.target, seen, allowField);
 	return {
 		kind: String(definition.kind),
@@ -318,6 +320,9 @@ export function readContractIr(document, options = {}) {
 		return Object.assign(diagnostics, { suppressions });
 	}
 
+	// Bind each construct-kind type to its declaration, so a type of the alias
+	// shape resolves through its target as a core alias does.
+	bindConstructs(document);
 	const types = new Map();
 	for (const definition of definitions) {
 		types.set(String(definition.identity), definition);
@@ -367,7 +372,7 @@ export function readContractIr(document, options = {}) {
 			const definition = types.get(ref);
 			if (!definition) return undefined;
 			node = definition;
-			if (definition.kind === "alias") {
+			if (isAliasShaped(definition)) {
 				ref = definition.target;
 				continue;
 			}

@@ -564,6 +564,51 @@ export const DETECTORS = Object.freeze([
 			has("order_repository", "pub const PERSISTS: &[&str]", "shape:interface");
 			has("ordering", "pub struct Ordering;", "shape:namespace");
 			has("ordering", "pub const VOCABULARY:", "shape:namespace");
+			// An alias construct renders as the core alias: a transparent newtype
+			// over its target, which the constructs fixture does not carry.
+			const aliasKind = { module: "agent-ix/detector", name: "value_type" };
+			const aliased = backend.mapping.mapDocument(
+				{
+					...documentOf([
+						scalarType("Instant", "datetime"),
+						{
+							...scalarType("Stamp", "datetime"),
+							kind: aliasKind,
+							scalar: undefined,
+							target: `${NS}/type/Instant`,
+						},
+					]),
+					contractVersion: "2.0.0",
+					canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" },
+					constructs: [
+						{
+							kind: aliasKind,
+							moduleVersion: "1.0.0",
+							manifestDigest: `sha256:${"4".repeat(64)}`,
+							construct: {
+								identity: "none",
+								shape: "alias",
+								members: { target: "required" },
+								references: {},
+								rules: [],
+								meaning: "quire.meaning.model.value-type/v1",
+							},
+						},
+					],
+				},
+				{},
+			);
+			const stamp = aliased.model?.types.find(
+				(one) => one.identity === `${NS}/type/Stamp`,
+			);
+			assert(
+				stamp?.row === "shape:alias" && rows.has("shape:alias"),
+				`an alias construct selected ${stamp?.row} (${aliased.diagnostics.map((one) => one.code).join(", ")})`,
+			);
+			assert(
+				typeof stamp.inner === "string" && stamp.inner.length > 0,
+				"an alias construct carries no target type",
+			);
 			has("order", "pub const SUPERTYPES: &[&str]", "construct:supertypes");
 			has("order", "    pub labels:", "construct:supertypes");
 			has("party", "pub const ABSTRACT: bool = true;", "construct:abstract");

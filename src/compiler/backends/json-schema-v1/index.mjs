@@ -5,6 +5,7 @@ import {
 	constructFeatures,
 	constructOf,
 	inheritedNameCollisions,
+	isAliasShaped,
 	isEnumerationShaped,
 	isInstanceless,
 	isRecordShaped,
@@ -471,9 +472,37 @@ function decimalScalar(types, identity, seen = new Set()) {
 	seen.add(identity);
 	const type = types.get(identity);
 	if (type?.kind === "scalar") return type.scalar;
-	if (type?.kind === "alias" || type?.kind === "reference")
+	if (isAliasShaped(type) || type?.kind === "reference")
 		return decimalScalar(types, type.target, seen);
 	return undefined;
+}
+
+/**
+ * The schema of an alias: the scalar it resolves to, stated inline with the
+ * constraints of every alias and scalar on the way, so a consumer that reads
+ * one document sees a value of that scalar and not an empty object. An alias
+ * of anything else is the reference to its target.
+ */
+function aliasOfScalarSchema(types, type) {
+	const scalar = decimalScalar(types, type.identity);
+	// The exact numeric scalars carry policies of their own (FR-144) and keep
+	// their reference.
+	if (
+		scalar === undefined ||
+		scalar === "decimal" ||
+		scalarSchema[scalar] === undefined
+	)
+		return { allOf: [ref(types, type.target)] };
+	const schema = { ...scalarSchema[scalar] };
+	const seen = new Set([type.identity]);
+	let ancestor = types.get(type.target);
+	while (ancestor !== undefined && !seen.has(ancestor.identity)) {
+		seen.add(ancestor.identity);
+		for (const one of ancestor.constraints ?? [])
+			constraint(schema, one, { ...ancestor, scalar });
+		ancestor = isAliasShaped(ancestor) ? types.get(ancestor.target) : undefined;
+	}
+	return schema;
 }
 
 function integerScalar(types, identity, seen = new Set()) {
@@ -483,7 +512,7 @@ function integerScalar(types, identity, seen = new Set()) {
 	const type = types.get(identity);
 	if (type?.kind === "scalar")
 		return type.scalar === "integer" ? "integer" : undefined;
-	if (type?.kind === "alias" || type?.kind === "reference")
+	if (isAliasShaped(type) || type?.kind === "reference")
 		return integerScalar(types, type.target, seen);
 	return undefined;
 }
@@ -494,7 +523,7 @@ function integerConstraints(types, identity, seen = new Set()) {
 	const type = types.get(identity);
 	if (!type) return [];
 	const own = [...(type.constraints ?? [])];
-	return type.kind === "alias" || type.kind === "reference"
+	return isAliasShaped(type) || type.kind === "reference"
 		? [...integerConstraints(types, type.target, seen), ...own]
 		: own;
 }
@@ -509,7 +538,7 @@ function decimalPolicy(types, identity, seen = new Set()) {
 		return type.decimal;
 	if (type?.kind === "scalar")
 		return type.scalar === "decimal" ? type.decimal : undefined;
-	if (type?.kind === "alias" || type?.kind === "reference")
+	if (isAliasShaped(type) || type?.kind === "reference")
 		return decimalPolicy(types, type.target, seen);
 	return undefined;
 }
@@ -594,12 +623,12 @@ function fieldSchema(field, types) {
 	// those beside the reference: a bare sibling reference would erase the
 	// constraint at the API boundary this backend exists to enforce.
 	let target = types.get(field.typeRef);
-	if (target?.kind === "alias" && (target.constraints ?? []).length > 0)
+	if (isAliasShaped(target) && (target.constraints ?? []).length > 0)
 		schema = { allOf: [schema] };
 	const effectiveDecimalPolicy =
 		field.decimal ?? decimalPolicy(types, field.typeRef);
 	const seen = new Set();
-	while (target?.kind === "alias" && !seen.has(target.identity)) {
+	while (isAliasShaped(target) && !seen.has(target.identity)) {
 		seen.add(target.identity);
 		for (const one of target.constraints ?? [])
 			constraint(
@@ -765,13 +794,13 @@ function renderType(ir, type, types, authored) {
 				}),
 			};
 			break;
-		case type.kind === "alias":
+		case isAliasShaped(type):
 			schema =
 				integerScalar(types, type.identity) === "integer"
 					? integerSchema(integerConstraints(types, type.identity))
 					: type.decimal
 						? decimalSchema(type.decimal)
-						: { allOf: [ref(types, type.target)] };
+						: aliasOfScalarSchema(types, type);
 			break;
 		case type.kind === "sequence":
 			schema = { type: "array", items: ref(types, type.items) };
