@@ -60,3 +60,22 @@ Recorded, not blocking:
 - low: FR-039 line 37 ("SHALL compute ... and SHALL NOT read ...") trips
   `[ears:non-singular]`; split into two statements.
 - low: FR-090-CON-2 / FR-090-AC-10 still list `conformance/coverage.json`.
+
+## Dispositions
+
+| FND | Outcome | sha/reason |
+| --- | --- | --- |
+| FND-001 | fixed | ec1a282097415d373192644921611cac5438dd0f |
+
+Round 1 at ec1a2820. FR-070 Outputs, Accounting, CON-2, CON-6, AC-4, AC-8
+and the concurrent-tickets note now state the slot delta against the
+coverage account in the run report; no "regenerated and committed" or
+byte-for-byte wording remains. AC-8 and TC-821 move from Snapshot to Test,
+which is the honest method: there is no golden file left to snapshot, and
+the criterion is an assertion over a run report. TC-821 has no implementing
+test under `test/`, as before this PR (it was untested as Snapshot too);
+that is a pre-existing coverage gap the matrix reports, not something this
+fix introduced. No new findings. Recorded lows: TC-818 still says "read from
+the regenerated coverage account" (wording only, no file named);
+FR-059-CON-2 / FR-059-AC-12 keep `coverage.json` as delivered-branch
+history. Gate `cleanup-fcd-test3.log`: 94/94, EXIT=0.
