@@ -1454,14 +1454,8 @@ describe("TC-314..319 and TC-622..401 the construct register and the defect regi
 });
 
 describe("TC-626..410 coverage, thresholds, mutations, and the import API (FR-039)", () => {
-	it("TC-626 regenerating the coverage account reproduces the committed file", () => {
-		const committed = readFileSync(join(CONF, "coverage.json"), "utf8");
-		const report = run() as { coverage: unknown };
-		expect(renderCoverage(report.coverage)).toBe(committed);
-	});
-
-	it("TC-626 adding a case without regenerating leaves the committed account stale", () => {
-		const committed = readFileSync(join(CONF, "coverage.json"), "utf8");
+	it("TC-626 adding a case raises the coverage account's total", () => {
+		const committed = renderCoverage((run() as { coverage: unknown }).coverage);
 		const added = structuredClone(manifest) as { cases: { id: string }[] };
 		added.cases.push({
 			...structuredClone(manifest.cases[0]),
@@ -1640,7 +1634,9 @@ describe("TC-626..410 coverage, thresholds, mutations, and the import API (FR-03
 				encoding: "utf8",
 			},
 		);
-		expect(elsewhere).toBe(readFileSync(join(CONF, "coverage.json"), "utf8"));
+		expect(elsewhere).toBe(
+			renderCoverage((run() as { coverage: unknown }).coverage),
+		);
 	});
 });
 

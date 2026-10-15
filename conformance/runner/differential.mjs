@@ -8,13 +8,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import {
-	mkdirSync,
-	mkdtempSync,
-	readFileSync,
-	rmSync,
-	writeFileSync,
-} from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 import {
@@ -32,7 +26,6 @@ import { materializeCases } from "../tools/materialize-cases.mjs";
 const REGISTRY_PATH = join(ROOT, "adapters", "registry.json");
 const DIVERGENCES_PATH = join(ROOT, "divergences.json");
 const THRESHOLDS_PATH = join(ROOT, "thresholds.json");
-const COVERAGE_PATH = join(ROOT, "coverage.json");
 const MUTATIONS_PATH = join(ROOT, "mutations.json");
 
 const readJson = (path) => JSON.parse(readFileSync(path, "utf8"));
@@ -407,14 +400,9 @@ export function buildCoverage(manifest, cases, adapterRows, unmet) {
 	};
 }
 
-/** Renders the coverage account exactly as the committed file carries it. */
+/** Renders the coverage account in the repository's formatted JSON. */
 export function renderCoverage(coverage) {
 	return formatJson(coverage, "coverage.json");
-}
-
-/** Writes `conformance/coverage.json` from a run report. */
-export function writeCoverage(report) {
-	writeFileSync(COVERAGE_PATH, renderCoverage(report.coverage));
 }
 
 /** The mutation catalogue's detection score. */
@@ -444,7 +432,6 @@ export function mutationScore(options = {}) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
 	const report = run();
-	writeCoverage(report);
 	process.stdout.write(`${JSON.stringify(report, null, "\t")}\n`);
 	process.exit(report.exitCode);
 }

@@ -25,7 +25,6 @@ implementer of the thing it checks is not an oracle.
 | `divergences.json` | Adapter divergences the run suppresses, each with an owner and a verdict |
 | `thresholds.json` | The promotion thresholds proposed to each owning issue |
 | `mutations.json` | The committed mutation catalogue |
-| `coverage.json` | Generated on every run; never hand-edited |
 
 ## An input bundle
 
