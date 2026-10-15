@@ -6,13 +6,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 250,
-			"validatingTypes": 179,
+			"declaredTypes": 253,
+			"validatingTypes": 182,
 			"nonValidatingDeclarations": 71,
-			"exercisedTypes": 73,
-			"unexercisedValidatingTypes": 106,
-			"constraintsExercised": 303,
-			"typesRejectingAnEmptyOrUndeclaredValue": 134,
+			"exercisedTypes": 74,
+			"unexercisedValidatingTypes": 108,
+			"constraintsExercised": 305,
+			"typesRejectingAnEmptyOrUndeclaredValue": 135,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
 				"common_schema.ManifestTarget",
@@ -55,6 +55,8 @@
 				"semantic_ir_schema.ContractItem1",
 				"semantic_ir_schema.DecimalPolicy",
 				"semantic_ir_schema.IdentityList",
+				"semantic_ir_schema.PackageRevision",
+				"semantic_ir_schema.PackageRevision1",
 				"semantic_ir_schema.ReferencesAdditionalPropertyItem",
 				"semantic_ir_schema.Role",
 				"semantic_ir_schema.Value",
@@ -98,6 +100,14 @@
 					"type": "ManifestTarget",
 					"exercised": false,
 					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "common_schema",
+					"type": "NormalizedCanonicalization",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "common_schema",
@@ -1263,6 +1273,18 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "PackageRevision",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "PackageRevision1",
+					"exercised": false,
+					"why": "no property is required and nothing else closes the type, so no undeclared-or-incomplete value exists for this profile to reject"
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "Population",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -1412,13 +1434,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 254,
-			"validatingTypes": 136,
-			"nonValidatingDeclarations": 118,
-			"exercisedTypes": 73,
+			"declaredTypes": 257,
+			"validatingTypes": 137,
+			"nonValidatingDeclarations": 120,
+			"exercisedTypes": 74,
 			"unexercisedValidatingTypes": 63,
-			"constraintsExercised": 298,
-			"typesRejectingAnEmptyOrUndeclaredValue": 133,
+			"constraintsExercised": 300,
+			"typesRejectingAnEmptyOrUndeclaredValue": 134,
 			"typesAcceptingAnything": [
 				"module_manifest_schema.Defaults",
 				"module_manifest_schema.LintRuleEntry",
@@ -1450,6 +1472,14 @@
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 1
+				},
+				{
+					"module": "common_schema",
+					"type": "NormalizedCanonicalization",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "common_schema",
@@ -2556,13 +2586,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 254,
-			"validatingTypes": 136,
-			"nonValidatingDeclarations": 118,
-			"exercisedTypes": 63,
-			"unexercisedValidatingTypes": 73,
-			"constraintsExercised": 217,
-			"typesRejectingAnEmptyOrUndeclaredValue": 92,
+			"declaredTypes": 257,
+			"validatingTypes": 137,
+			"nonValidatingDeclarations": 120,
+			"exercisedTypes": 62,
+			"unexercisedValidatingTypes": 75,
+			"constraintsExercised": 219,
+			"typesRejectingAnEmptyOrUndeclaredValue": 93,
 			"typesAcceptingAnything": [
 				"module_manifest_schema.Defaults",
 				"module_manifest_schema.LintRuleEntry",
@@ -2642,6 +2672,14 @@
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 1
+				},
+				{
+					"module": "common_schema",
+					"type": "NormalizedCanonicalization",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 2
 				},
 				{
 					"module": "common_schema",
@@ -3494,8 +3532,8 @@
 				{
 					"module": "semantic_ir_schema",
 					"type": "Package",
-					"exercised": true,
-					"acceptsAConformingValue": true,
+					"exercised": false,
+					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 0
 				},
@@ -3542,8 +3580,8 @@
 				{
 					"module": "semantic_ir_schema",
 					"type": "Source",
-					"exercised": true,
-					"acceptsAConformingValue": true,
+					"exercised": false,
+					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 0
 				},

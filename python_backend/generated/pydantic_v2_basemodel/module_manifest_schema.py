@@ -81,6 +81,7 @@ class Target(Enum):
     typescript = 'typescript'
     python_pydantic_v2 = 'python-pydantic-v2'
     python_dataclass = 'python-dataclass'
+    sysml_v2_textual = 'sysml-v2-textual'
     markdown = 'markdown'
     json = 'json'
     postgresql = 'postgresql'

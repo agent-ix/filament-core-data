@@ -3,6 +3,7 @@
 
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { bindConstructs } from "../src/compiler/constructs.mjs";
 import { normalizeIr } from "../src/compiler/ir/normalize.mjs";
 import { readContractIr, resolveKind } from "../src/compiler/ir/reader.mjs";
 import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
@@ -86,6 +87,9 @@ describe("package revision and unused construct reader contract", () => {
 		expect(normalized.source.version).toBe("1");
 		expect(normalized.constructs).toEqual(document.constructs);
 		expect(normalized.types[0].target).toBe("ix://quire/native/Timestamp");
+		// Instant is a construct of the alias shape: bound, it resolves through
+		// its target as a core alias does.
+		bindConstructs(document);
 		const types = new Map<string, Record<string, unknown>>(
 			document.types.map((type: { identity: string }) => [type.identity, type]),
 		);
@@ -167,9 +171,9 @@ describe("package revision and unused construct reader contract", () => {
 			],
 			[
 				(document: ReturnType<typeof fixture>) => {
-					document.types[1].kind.name = "missing";
+					document.types[2].kind.name = "missing";
 				},
-				["/ir/types/1/kind", "/ir/constructs/0/kind"],
+				["/ir/types/2/kind", "/ir/constructs/0/kind"],
 			],
 		] as const) {
 			const document = fixture();

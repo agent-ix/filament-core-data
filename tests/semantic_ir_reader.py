@@ -123,6 +123,42 @@ def _objects(value: Any) -> list[dict[str, Any]]:
     )
 
 
+class TypeIndex(dict[str, dict[str, Any]]):
+    """A document's types by identity, aware of which construct kinds are aliases."""
+
+    alias_kinds: frozenset[tuple[Any, Any]] = frozenset()
+
+
+def type_index(document: dict[str, Any]) -> TypeIndex:
+    """The document's types by identity. A type whose construct declaration has
+    the ``alias`` shape resolves through its ``target`` as a core alias does."""
+    index = TypeIndex(
+        {
+            str(definition.get("identity")): definition
+            for definition in _objects(document.get("types"))
+        }
+    )
+    index.alias_kinds = frozenset(
+        (entry["kind"].get("module"), entry["kind"].get("name"))
+        for entry in _objects(document.get("constructs"))
+        if isinstance(entry.get("kind"), dict)
+        and isinstance(entry.get("construct"), dict)
+        and entry["construct"].get("shape") == "alias"
+    )
+    return index
+
+
+def _is_alias(types: dict[str, dict[str, Any]], definition: dict[str, Any]) -> bool:
+    """Whether a type is a core alias, or a construct of the alias shape."""
+    kind = definition.get("kind")
+    if kind == "alias":
+        return True
+    if not isinstance(kind, dict):
+        return False
+    alias_kinds = getattr(types, "alias_kinds", frozenset())
+    return (kind.get("module"), kind.get("name")) in alias_kinds
+
+
 def resolve_kind(
     types: dict[str, dict[str, Any]],
     fields: dict[str, dict[str, Any]],
@@ -153,7 +189,7 @@ def resolve_kind(
     if type_ref not in types:
         return None
     definition = types[type_ref]
-    if definition.get("kind") == "alias":
+    if _is_alias(types, definition):
         return resolve_kind(types, fields, definition.get("target"), seen, allow_field)
     scalar = definition.get("scalar")
     return (
@@ -199,7 +235,7 @@ def _decimal_policy(
     policy = node.get("decimal")
     if isinstance(policy, dict):
         return policy
-    if node.get("kind") == "alias":
+    if _is_alias(types, node):
         return _decimal_policy(types, fields, node.get("target"), seen)
     return None
 
@@ -745,10 +781,7 @@ def read_semantic_ir(
     if out:
         return out
     version = str(document.get("contractVersion"))
-    types = {
-        str(definition.get("identity")): definition
-        for definition in _objects(document.get("types"))
-    }
+    types = type_index(document)
     fields = _field_index(types)
     exports = set(lock_exports or ())
     for index, definition in enumerate(_objects(document.get("types"))):

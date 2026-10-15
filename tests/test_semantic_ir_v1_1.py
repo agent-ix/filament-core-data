@@ -55,6 +55,7 @@ def test_core_alias_and_reference_targets_are_not_construct_members() -> None:
             ("agent-ix.semantic-ir.SCHEMA_VIOLATION", "types.0.target")
         ]
 
+
 # `normalize` (`tests/semantic_ir_reader.py`) materializes `nullable`
 # unconditionally — it does not gate on `contractVersion` and never derives
 # `multiplicity` from `presence` — so this exercises the round-trip property

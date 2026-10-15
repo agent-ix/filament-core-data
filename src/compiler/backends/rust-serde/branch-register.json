@@ -11,11 +11,11 @@
 	],
 	"contributions": {
 		"diagnostics.mjs": 21,
-		"mapping-table.json": 72,
+		"mapping-table.json": 73,
 		"names.mjs": 10,
 		"src/compiler/ir/applicability.mjs": 55
 	},
-	"rowCount": 158,
+	"rowCount": 159,
 	"unmetCount": 0,
 	"unreachableCount": 1,
 	"rows": [
@@ -1290,6 +1290,15 @@
 			"construct": "identifier injectivity over one record's member set",
 			"cases": [
 				"TC-725 every identifier renderer derives from the source the requirement names and refuses a collision"
+			]
+		},
+		{
+			"branchId": "shape:alias",
+			"axis": "shape",
+			"vocabulary": "mapping-table.json",
+			"construct": "pub struct N(T);",
+			"cases": [
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
 			]
 		},
 		{

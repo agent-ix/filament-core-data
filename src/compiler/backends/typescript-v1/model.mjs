@@ -40,6 +40,7 @@ import {
 	constructOf,
 	equalityOf,
 	identityFieldNames,
+	isAliasShaped,
 	isEnumerationShaped,
 	isInstanceless,
 	isRecordShaped,
@@ -129,7 +130,7 @@ function resolveScalar(types, identity, seen = new Set(), depth = 0) {
 	if (type.kind === "scalar") {
 		return typeof type.scalar === "string" ? type.scalar : undefined;
 	}
-	if (type.kind === "alias" || type.kind === "reference") {
+	if (isAliasShaped(type) || type.kind === "reference") {
 		return resolveScalar(types, type.target, seen, depth + 1);
 	}
 	return undefined;
@@ -174,12 +175,12 @@ function effectiveIntegerBounds(types, identity, seen = new Set()) {
 	const type = types.get(identity);
 	if (type === undefined) return undefined;
 	const parent =
-		type.kind === "alias" || type.kind === "reference"
+		isAliasShaped(type) || type.kind === "reference"
 			? effectiveIntegerBounds(types, type.target, seen)
 			: undefined;
 	if (
 		type.kind !== "scalar" &&
-		type.kind !== "alias" &&
+		!isAliasShaped(type) &&
 		type.kind !== "reference"
 	)
 		return parent;
@@ -262,7 +263,7 @@ function inheritedConstraintEntries(types, applied, identity) {
 		const type = types.get(current);
 		if (type === undefined) break;
 		chain.unshift(current);
-		if (type.kind !== "alias") break;
+		if (!isAliasShaped(type)) break;
 		current = type.target;
 	}
 	return chain.flatMap((one) => applied.get(one) ?? []);
@@ -439,7 +440,7 @@ export function buildModel(ir, options = {}) {
 			identity: type.identity,
 			displayName: type.displayName,
 			identifier: identifiers.get(type.identity),
-			kind: kindName(type.kind),
+			kind: isAliasShaped(type) ? "alias" : kindName(type.kind),
 			rendering: renderingOf(type),
 			roles: Object.freeze([...(type.roles ?? [])]),
 			unknownPolicy: type.unknownPolicy,

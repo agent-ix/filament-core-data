@@ -77,7 +77,8 @@ const CORE_REQUIRED_MEMBERS = new Set(
  * (the parity test holds the keys to it): a record shape renders as a record,
  * an enumeration as a closed set of literals, an interface as operations with
  * no instance data, and a namespace as no data type at all. A state machine is
- * a record carrying its states.
+ * a record carrying its states. An alias renders as the core `alias` kind: a
+ * named type that is transparent over its `target`.
  */
 export const SHAPE_RENDERINGS = Object.freeze({
 	record: "record",
@@ -86,6 +87,7 @@ export const SHAPE_RENDERINGS = Object.freeze({
 	state_machine: "state_machine",
 	sequence: "record",
 	namespace: "namespace",
+	alias: "alias",
 });
 
 /**
@@ -416,6 +418,11 @@ export function renderingOf(node) {
 export function isRecordShaped(node) {
 	const rendering = renderingOf(node);
 	return rendering === "record" || rendering === "state_machine";
+}
+
+/** Whether `node` is a core alias, or a construct of the alias shape. */
+export function isAliasShaped(node) {
+	return renderingOf(node) === "alias";
 }
 
 /** Whether `node` renders as a closed set of literals. */

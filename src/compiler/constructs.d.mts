@@ -64,6 +64,7 @@ export declare function constructTable(
 export declare function bindConstructs(
 	ir: unknown,
 ): Map<string, ConstructDeclaration>;
+export declare function isAliasShaped(node: unknown): boolean;
 export declare function declarationOf(
 	node: unknown,
 ): ConstructDeclaration | undefined;

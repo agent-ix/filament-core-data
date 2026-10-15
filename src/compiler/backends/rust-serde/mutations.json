@@ -94,7 +94,7 @@
 		"support-source.mjs",
 		"support-template.rs"
 	],
-	"mutationCount": 19,
+	"mutationCount": 18,
 	"mutations": [
 		{
 			"mutationId": "drop-blocking-flag@diagnostics.mjs",
@@ -152,7 +152,8 @@
 			],
 			"site": "push('deserialize_with = \"crate::support::present_or_absent\"')",
 			"detectedBy": [
-				"TC-727 the corpus bases emit the bytes the pristine emitter produced"
+				"TC-727 the corpus bases emit the bytes the pristine emitter produced",
+				"TC-725 the eight field-axis rows produce the member type and the serde attributes the table states"
 			]
 		},
 		{
@@ -219,6 +220,7 @@
 			"site": "return bare === wireName ? undefined : wireName;",
 			"detectedBy": [
 				"TC-727 the corpus bases emit the bytes the pristine emitter produced",
+				"TC-725 the eight field-axis rows produce the member type and the serde attributes the table states",
 				"TC-725 every identifier renderer derives from the source the requirement names and refuses a collision"
 			]
 		},
@@ -327,17 +329,6 @@
 			"site": "!applies(keyword, resolved.kind, resolved.scalar)",
 			"detectedBy": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
-			]
-		},
-		{
-			"mutationId": "widen-applicability-row@mapping-table.json",
-			"operator": "widen-applicability-row",
-			"description": "widen an applicability row so a subject it excludes is admitted",
-			"target": "mapping-table.json",
-			"branches": ["constraint:pattern/string", "unknownPolicy:inert"],
-			"site": "\"kind\": \"scalar|alias|sequence|map|reference|shape:interface|shape:namespace\"",
-			"detectedBy": [
-				"TC-725 the unknownPolicy rows dispose each kind exactly once"
 			]
 		},
 		{

@@ -37,6 +37,8 @@
  * Pure: no filesystem, clock, environment, or network access.
  */
 
+import { renderingOf } from "../../constructs.mjs";
+
 /** The positions at which a reference edge may materialize its target. */
 export const POSITIONS = Object.freeze({
 	DIRECT: "direct",
@@ -61,7 +63,7 @@ export function collectEdges(ir) {
 
 	for (const definition of ir.types ?? []) {
 		const from = definition.identity;
-		switch (definition.kind) {
+		switch (renderingOf(definition)) {
 			case "record":
 				break;
 			case "alias":
