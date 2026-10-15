@@ -94,7 +94,7 @@
 		"support-source.mjs",
 		"support-template.rs"
 	],
-	"mutationCount": 18,
+	"mutationCount": 19,
 	"mutations": [
 		{
 			"mutationId": "drop-blocking-flag@diagnostics.mjs",
@@ -329,6 +329,17 @@
 			"site": "!applies(keyword, resolved.kind, resolved.scalar)",
 			"detectedBy": [
 				"TC-725 every constraint keyword lowers onto every subject its applicability row admits"
+			]
+		},
+		{
+			"mutationId": "widen-applicability-row@mapping-table.json",
+			"operator": "widen-applicability-row",
+			"description": "widen an applicability row so a subject it excludes is admitted",
+			"target": "mapping-table.json",
+			"branches": ["constraint:pattern/string", "unknownPolicy:inert"],
+			"site": "\"kind\": \"scalar|alias|sequence|map|reference|shape:alias|shape:interface|shape:namespace\"",
+			"detectedBy": [
+				"TC-725 the unknownPolicy rows dispose each kind exactly once"
 			]
 		},
 		{

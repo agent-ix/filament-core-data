@@ -51,4 +51,39 @@ describe("construct-shaped aliases in the Node backends", () => {
 			{ $ref: "./Instant.json" },
 		]);
 	});
+
+	/** Trace: FR-100-AC-15 */
+	it("renders an alias of a document scalar inline, carrying the constraints of the chain", () => {
+		const ir = JSON.parse(
+			readFileSync(
+				resolve(
+					root,
+					"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
+				),
+				"utf8",
+			),
+		);
+		const byName = (name: string) =>
+			ir.types.find((one: { displayName: string }) => one.displayName === name);
+		// OrderNote (maxLength) becomes an alias of OrderLineKind (enumValues).
+		byName("OrderNote").target = byName("OrderLineKind").identity;
+		const result = jsonSchemaBackend.generate(
+			{ ir } as never,
+			{ host: createHost({ readRoots: [root] }) } as never,
+		) as unknown as { state: string; files: { path: string; text: string }[] };
+		expect(result.state).toBe("success");
+		const schema = (name: string) =>
+			JSON.parse(
+				result.files.find((file) => file.path === `${name}.json`)?.text ?? "{}",
+			);
+		const kind = schema("OrderLineKind");
+		expect(kind.type).toBe("string");
+		expect(kind.enum).toEqual(["physical", "digital"]);
+		expect(kind.allOf).toBeUndefined();
+		const note = schema("OrderNote");
+		expect(note.type).toBe("string");
+		expect(note.enum).toEqual(["physical", "digital"]);
+		expect(note.maxLength).toBeDefined();
+		expect(note.allOf).toBeUndefined();
+	});
 });
