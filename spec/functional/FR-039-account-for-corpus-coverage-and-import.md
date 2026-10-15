@@ -27,15 +27,14 @@ oracle verdicts without copying them.
 
 ## Outputs
 
-- `conformance/coverage.json`: the generated coverage account — per register row, the case ids by class, the adapters that answered, the unmet rows, and the unmet areas
+- the `coverage` account in the harness report — per register row, the case ids by class, the adapters that answered, the unmet rows, and the unmet areas
 - `conformance/thresholds.json`: the proposed promotion thresholds and their owning issues
 - `conformance/mutations.json`: the committed mutation catalogue
 - `conformance/oracle/index.mjs`: the import API
 
 ## Behavior
 
-- The harness SHALL regenerate `conformance/coverage.json` on every run.
-- If the regenerated coverage account differs from the committed one, then the coverage gate SHALL fail and name the differing rows.
+- The harness SHALL compute the coverage account from the corpus and the run, never from a stored file.
 - The coverage account SHALL report, per register row, the case ids by class, each adapter's verdict count, and each adapter's unmet count.
 - The coverage account SHALL report a register row with zero cases as an unmet row rather than omitting it.
 - The coverage account SHALL report, as an unmet area with its owning issues, every deliverable the corpus does not cover, including cross-language generated-package serialization parity.
@@ -63,7 +62,6 @@ oracle verdicts without copying them.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-039-CON-1 | The harness SHALL generate `coverage.json`, and the coverage gate compares a fresh generation with the committed file so that a hand edit fails. | Reproducibility | Test |
 | FR-039-CON-2 | The import API SHALL expose no mutable reference to corpus data, so that a consumer mutating a returned case cannot affect a later load. | Integrity | Test |
 | FR-039-CON-3 | The mutation catalogue SHALL be committed and fixed, so that a score cannot be raised by removing a mutation. | Integrity | Test |
 
@@ -71,7 +69,7 @@ oracle verdicts without copying them.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-039-AC-1 | Regenerating `coverage.json` reproduces the committed file byte-for-byte; adding a case without regenerating fails the gate. | Test |
+| FR-039-AC-1 | Adding a case to the corpus raises the coverage account's `totalCases` by one. | Test |
 | FR-039-AC-2 | `thresholds.json` declares a `proposed` row for each of issues #19, #21, #22, and #23, each naming its coverage, pass-rate, divergence, and mutation-score thresholds and its owning issue. | Test |
 | FR-039-AC-3 | Every mutation in the committed catalogue is detected by at least one case; suppressing one detecting case drops the score and fails the gate. | Test |
 | FR-039-AC-4 | The mutation catalogue carries at least one mutation for every construct-register family. | Test |

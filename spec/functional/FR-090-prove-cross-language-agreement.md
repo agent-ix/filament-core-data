@@ -200,8 +200,7 @@ following, and a disagreement on any one is a disagreement:
   reporting the oracle's opinion under its own name.
 - The harness SHALL read corpus artifacts and write none. It SHALL create,
   modify, or delete no file under `conformance/` — including
-  `conformance/corpus.json`, `conformance/coverage.json`,
-  `conformance/divergences.json`, `conformance/adapters/registry.json`, and
+  `conformance/corpus.json`, `conformance/divergences.json`, `conformance/adapters/registry.json`, and
   `conformance/thresholds.json` — because NFR-030 makes the whole directory a
   prohibited path for issue #11.
 - This requirement SHALL NOT add an adapter slot to
@@ -297,7 +296,7 @@ following, and a disagreement on any one is a disagreement:
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-090-CON-1 | Every one of the four kernel packages SHALL decide every golden document. The harness SHALL count a package excused from a document as unmet, never as passed, following the rule `conformance/README.md` states for the four hundred and forty-four unmet rows. | Correctness | Test |
-| FR-090-CON-2 | The parity harness SHALL create, modify, or delete no file under `conformance/`, which NFR-030 makes a prohibited path for issue #11 in its entirety — `conformance/corpus.json`, `conformance/coverage.json`, `conformance/divergences.json`, `conformance/adapters/registry.json`, and `conformance/thresholds.json` included. | Non-disruption | Manifest comparison |
+| FR-090-CON-2 | The parity harness SHALL create, modify, or delete no file under `conformance/`, which NFR-030 makes a prohibited path for issue #11 in its entirety — `conformance/corpus.json`, `conformance/divergences.json`, `conformance/adapters/registry.json`, and `conformance/thresholds.json` included. | Non-disruption | Manifest comparison |
 | FR-090-CON-3 | The harness SHALL consume the corpus only through `conformance/oracle/index.mjs`, importing no other module under `conformance/`, and define no second comparison engine, canonicalizer, or verdict function of its own. | Integrity | Static analysis |
 | FR-090-CON-4 | No package decision emitter SHALL import `conformance/oracle/index.mjs` or call `oracleVerdict` or `compare`; each answers from its own package's decision path, as `conformance/adapters/registry.json` records for the `typescript-backend` slot. | Integrity | Static analysis |
 | FR-090-CON-5 | This requirement SHALL NOT close, edit, or reword the `UA-serialization-parity` row of `conformance/corpus.json` or the "What this corpus does not do" section of `conformance/README.md`. It reports the evidence and files an issue asking the corpus owner, `agent-ix/filament-core-data#20`, to close the row. Editing the record of an unmet area is not the same act as meeting it. | Integrity | Inspection |
@@ -322,7 +321,7 @@ following, and a disagreement on any one is a disagreement:
 | FR-090-AC-7 | For each of `preserve`, `reject`, and `surface`, the four agree on the fate of an undeclared member, and a `preserve` document round-trips canonically equal under `rfc8785-v1` in all four, byte-identical only where the package retained the source bytes. | Test |
 | FR-090-AC-8 | For every `RelationDecl` document, the `EdgeCategory`, the `multiplicity` including `ordered` and `unique`, and the target identity are read and written identically across the four. | Test |
 | FR-090-AC-9 | The comparison is performed by `compare` and `substantive` imported from `conformance/oracle/index.mjs`; no module under `packages/semantic-kernel/parity/` defines its own verdict, canonicalization, or comparison function, no module there imports any other path under `conformance/`, and no decision emitter imports `conformance/` at all. | Analysis |
-| FR-090-AC-10 | A full parity run leaves every file under `conformance/` byte-unchanged, including `conformance/corpus.json`, `conformance/coverage.json`, `conformance/divergences.json`, `conformance/adapters/registry.json`, and `conformance/thresholds.json`, compared before and after. | Test |
+| FR-090-AC-10 | A full parity run leaves every file under `conformance/` byte-unchanged, including `conformance/corpus.json`, `conformance/divergences.json`, `conformance/adapters/registry.json`, and `conformance/thresholds.json`, compared before and after. | Test |
 | FR-090-AC-11 | `conformance/adapters/registry.json` still declares exactly the four slots `compiler-frontend`, `rust-backend`, `typescript-backend`, and `python-backend` with their original `owningIssue` values, and this requirement supplies no command for any of them. | Analysis |
 | FR-090-AC-12 | An injected disagreement — one package's emitted member name changed by one character — produces a row in `packages/semantic-kernel/parity/divergences.json` naming the document, the property, both decisions, the wrong side, and an adjudicating issue, and the run fails rather than passing with the row present. | Test |
 | FR-090-AC-13 | A divergence row without an adjudicating owner is rejected by the gate, and a row the run does not reproduce fails the run, exercised by leaving a row in place after the injected disagreement is reverted. | Test |

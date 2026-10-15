@@ -601,7 +601,7 @@ computed by `quire matrix` from those trace tags.
 | TC-623 | An export added and removed produces the stated result | Unit | P0 | FR-038-AC-8 |
 | TC-624 | Every register row's `sources` resolve, and every listed issue #19 criterion is quoted in its row and covered by a case | Unit | P0 | FR-038-AC-9, FR-038-CON-1, FR-038-CON-2 |
 | TC-625 | Cross-language generated-package serialization parity is recorded as an unmet area with issues #21, #22, #23, and #11 as owners | Static | P0 | FR-038-CON-3 |
-| TC-626 | Regenerating `coverage.json` reproduces the committed file byte-for-byte; adding a case without regenerating fails the gate | Unit | P0 | FR-039-AC-1, FR-039-CON-1 |
+| TC-626 | Adding a case to the corpus raises the coverage account's `totalCases` by one | Unit | P0 | FR-039-AC-1 |
 | TC-627 | `thresholds.json` declares a `proposed` row for each of issues #19, #21, #22, and #23 with all four thresholds and an owning issue | Unit | P0 | FR-039-AC-2 |
 | TC-628 | Every catalogued mutation is detected by at least one case; suppressing a detecting case drops the score and fails the gate | Unit | P0 | FR-039-AC-3, FR-039-CON-3 |
 | TC-629 | The mutation catalogue carries at least one mutation for every construct-register family | Unit | P0 | FR-039-AC-4 |
@@ -609,7 +609,7 @@ computed by `quire matrix` from those trace tags.
 | TC-631 | `loadCase` on an unknown id throws naming the id and the corpus version; mutating a returned case does not affect a later load | Unit | P0 | FR-039-AC-6, FR-039-CON-2 |
 | TC-632 | A registry adapter with no threshold row, and a threshold row with no registry adapter, each fail the gate | Unit | P0 | FR-039-AC-7 |
 | TC-633 | `package.json` gains no `exports` or `files` entry for `conformance/`, and the coverage account names the unmet serialization area | Static | P0 | FR-039-AC-8 |
-| TC-634 | The coverage account is byte-identical when regenerated from a different working directory and under a different locale | Property | P0 | FR-039-AC-9 |
+| TC-634 | The coverage account is byte-identical when computed from a different working directory | Property | P0 | FR-039-AC-9 |
 | TC-635 | No case is blessed from a run and every `derivedFrom` quote occurs verbatim in the named contract artifact | Unit | P0 | NFR-015-AC-1 |
 | TC-636 | Oracle verdicts, the harness report, and the coverage account are byte-identical across two runs, two locales, and two working directories | Property | P0 | NFR-015-AC-2 |
 | TC-637 | The oracle and the harness import no judged implementation and read no clock, network, or environment outside the audit target | Static | P0 | NFR-015-AC-3 |
@@ -694,7 +694,7 @@ computed by `quire matrix` from those trace tags.
 | TC-818 | The measured match, failure and divergence counts are recorded with the command that produced them and read from the regenerated coverage account rather than restated, and the first-run divergence count is measured before the first fix and never remeasured | Analysis | P0 | FR-070-AC-4, FR-070-AC-17, FR-070-CON-6, FR-070-CON-8 |
 | TC-819 | Neither the adapter nor any module it reaches references `oracleVerdict`, `compare`, or the oracle's own modules, and the harness starts it as a process rather than importing it | Static | P0 | FR-070-AC-5, FR-070-CON-1, FR-070-CON-5 |
 | TC-820 | Substituting the oracle's answer for the backend's makes a deliberately seeded backend defect invisible, showing the independence constraint is load-bearing | Integration | P0 | FR-070-AC-6 |
-| TC-821 | Two adapter runs from different working directories and under `LC_ALL=tr_TR.UTF-8` are byte-identical; the regenerated coverage account reproduces, records `matched` 115 and `unmet` 0 for this slot, and a total exactly 115 lower than at this change's base commit; and no criterion of the requirement names a whole-corpus absolute | Snapshot | P0 | FR-070-AC-7, FR-070-AC-8, FR-070-AC-20, FR-070-CON-7 |
+| TC-821 | Two adapter runs from different working directories and under `LC_ALL=tr_TR.UTF-8` are byte-identical; the coverage account in the run report records `matched` 115 and `unmet` 0 for this slot, and a total exactly 115 lower than at this change's base commit; and no criterion of the requirement names a whole-corpus absolute | Test | P0 | FR-070-AC-7, FR-070-AC-8, FR-070-AC-20, FR-070-CON-7 |
 | TC-822 | The ten named corpus paths, `conformance/divergences.json`, the three sibling registry rows and the Rust inventory component are byte-unchanged, and no corpus file is edited to make the backend agree | Analysis | P0 | FR-070-AC-9, FR-070-AC-14, FR-070-AC-18, FR-070-CON-2 |
 | TC-823 | Every admitted case generates a package and all of them typecheck as one compiler program, and a case refused on representability emits no file and names the construct; instance-level acceptance and rejection are FR-066's authored corpus, because the conformance corpus supplies no payloads | Compile | P0 | FR-070-AC-10, FR-070-AC-12 |
 | TC-824 | A seeded disagreement is registered as a divergence with an owner and a verdict and fails once unreproduced, the inventory discharges only the conformance clause, and nothing is published | Integration | P0 | FR-070-AC-13, FR-070-AC-15, FR-070-AC-16, FR-070-CON-3, FR-070-CON-4 |
@@ -1673,7 +1673,7 @@ computed by `quire matrix` from those trace tags.
 | normalized bundle | issue #31 fixed upstream | normalization removed; raw bundle validates | TC-266 |
 | adapter `status: unavailable` | the owning backend ships | `status: available`; every `unavailable` answer now fails | TC-305 |
 | divergence entry open | the owning issue fixes the defect | the entry no longer reproduces and the run fails until it is removed | TC-306 |
-| corpus `1.x.y` | a case is added | minor bump, regenerated `coverage.json` | TC-626 |
+| corpus `1.x.y` | a case is added | minor bump, the coverage account counts the case | TC-626 |
 | package version `v1` | an export is added and another removed | additive plus breaking; the pair classifies `breaking` | TC-321 |
 | spike emitter package present | promotion removes the `file:` dependency | spike replays through `src/compiler/` and stays byte-identical | TC-371, TC-375, TC-377 |
 | promoted compiler in the tree | every path differing from the pre-promotion commit is restored from it | the spike emitter returns as the only generator | TC-395 |
@@ -1792,7 +1792,6 @@ computed by `quire matrix` from those trace tags.
 | ERR-108 | An adapter command exits non-zero or emits a result failing its schema | Harness fails that adapter per case and exits non-zero | TC-308 |
 | ERR-109 | An adapter answers `unsupported` or `unavailable` where nothing declares it | Harness fails naming the case and the adapter | TC-305, TC-309 |
 | ERR-110 | A divergence entry reproduces nothing, or its `reviewBy` has passed | Harness fails, or the audit target reports it | TC-306 |
-| ERR-111 | `coverage.json` is hand-edited | Coverage gate fails naming the differing rows | TC-626 |
 | ERR-112 | `loadCase` is called with an id the corpus does not declare | The import API throws naming the id and the corpus version | TC-631 |
 | ERR-075 | An indexed `replace` or `remove` op carries no preceding `test` op | Corpus gate fails naming the case | TC-286 |
 | ERR-061 | A caller names a source dialect outside the closed vocabulary | `selectFrontend` throws a `TypeError` naming the permitted set | TC-399 |
