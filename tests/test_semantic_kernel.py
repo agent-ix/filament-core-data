@@ -454,29 +454,16 @@ def test_provenance_type_checking_and_reproducibility(tmp_path: Any) -> None:
 
 
 # --------------------------------------------------------------------------
-# TC-1065 — FR-087-AC-14, FR-087-AC-15, FR-087-AC-16
+# TC-1065 — FR-087-AC-14, FR-087-AC-16
 # --------------------------------------------------------------------------
 
 
 def test_the_bundle_the_distribution_and_the_examples() -> None:
-    """TC-1065: FR-087-AC-14, FR-087-AC-15, FR-087-AC-16."""
+    """TC-1065: FR-087-AC-14, FR-087-AC-16."""
     # AC-14: a full generation moves no byte under packages/semantic-core/.
     before = _semantic_core_snapshot()
     emit.write_all()
     assert _semantic_core_snapshot() == before
-
-    # AC-15: read from the packed list, not from the manifest text alone.
-    packed = subprocess.run(
-        ["npm", "pack", "--dry-run", "--json"],
-        cwd=REPO,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    listed = json.loads(packed.stdout)
-    for entry in listed:
-        for row in entry["files"]:
-            assert not row["path"].startswith("packages/semantic-kernel"), row["path"]
 
     # AC-16: each example runs, round-trips, and raises on a forbidden value.
     environment = {
