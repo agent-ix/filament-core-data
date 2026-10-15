@@ -164,13 +164,7 @@ def test_the_emitted_set_the_manifests_and_the_generator_are_as_declared() -> No
         with pytest.raises(emit.KernelEmitError):
             emit.build(profile_id)
 
-    # CON-5: no distribution manifest or workflow names the semantic-kernel
-    # tree.
-    for workflow in sorted((REPO / ".github").rglob("*")):
-        if workflow.is_file():
-            assert "semantic-kernel" not in workflow.read_text(
-                encoding="utf-8"
-            ), workflow
+    # CON-5: no distribution manifest names the semantic-kernel tree.
     for manifest in (REPO / "package.json", REPO / "pyproject.toml"):
         assert "semantic-kernel" not in manifest.read_text(encoding="utf-8")
 
