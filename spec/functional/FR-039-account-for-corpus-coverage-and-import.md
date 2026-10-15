@@ -34,7 +34,7 @@ oracle verdicts without copying them.
 
 ## Behavior
 
-- The harness SHALL compute the coverage account from the corpus and the run on every run, and SHALL NOT read it from a stored file.
+- The harness SHALL compute the coverage account from the corpus and the run, never from a stored file.
 - The coverage account SHALL report, per register row, the case ids by class, each adapter's verdict count, and each adapter's unmet count.
 - The coverage account SHALL report a register row with zero cases as an unmet row rather than omitting it.
 - The coverage account SHALL report, as an unmet area with its owning issues, every deliverable the corpus does not cover, including cross-language generated-package serialization parity.

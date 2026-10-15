@@ -58,7 +58,7 @@ obliges honesty about how the agreement was reached.
 
 - `conformance/adapters/typescript-backend/adapter.mjs`, the result emitter the harness spawns
 - The rewritten `typescript-backend` row of `conformance/adapters/registry.json`, carrying `status: "available"`, a `command`, and a rationale naming what now exists
-- The regenerated `conformance/coverage.json`
+- The `typescript-backend` row of the coverage account in the run report
 - The measured conformance figures, including the first-run divergence count, recorded in `spec/tests.md`
 
 ## Behavior
@@ -128,11 +128,10 @@ obliges honesty about how the agreement was reached.
 
 ### Accounting
 
-- `conformance/coverage.json` SHALL be regenerated and committed with the run that makes the slot available.
-- The regenerated `coverage.json` SHALL record the `typescript-backend` row's `unmet` falling from 115 to 0 and its `matched` rising to 115.
-- The regenerated `coverage.json` SHALL record a corpus-wide `unmetCases` total 115 lower than the total the committed account carried immediately before this change.
-- No acceptance criterion of this requirement SHALL name a whole-corpus absolute, because `conformance/coverage.json` carries one row per adapter and issues #21 and #23 each flip their own row in the same window, so an absolute encodes a merge order that nobody controls and fails the branch that merges second for work it did not do.
-- `conformance/coverage.json`, `docs/semantic-data-system/compiler-diagnostics.md`, and the `spec/tests.md` execution summary are machine-generated or shared with issues #21 and #23, and on rebase they SHALL be regenerated from the rebased tree rather than merged hunk by hunk.
+- The coverage account in the run report SHALL record the `typescript-backend` row's `unmet` falling from 115 to 0 and its `matched` rising to 115.
+- The coverage account in the run report SHALL record a corpus-wide `unmetCases` total 115 lower than the total the account reported at this change's base commit.
+- No acceptance criterion of this requirement SHALL name a whole-corpus absolute, because the coverage account carries one row per adapter and issues #21 and #23 each flip their own row in the same window, so an absolute encodes a merge order that nobody controls and fails the branch that merges second for work it did not do.
+- `docs/semantic-data-system/compiler-diagnostics.md` and the `spec/tests.md` execution summary are machine-generated or shared with issues #21 and #23, and on rebase they SHALL be regenerated from the rebased tree rather than merged hunk by hunk.
 - `agent-ix/filament-core-data#63` records that three concurrent backend tickets each regenerate the shared artifacts and asks for a reconciliation owner, and this requirement SHALL cite it rather than assume a merge order.
 - `spec/tests.md` SHALL record the measured pass count, the measured divergence count, the first-run divergence count, and what each number counts, rather than a claim that the corpus passes.
 
@@ -146,11 +145,11 @@ obliges honesty about how the agreement was reached.
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-070-CON-1 | The adapter SHALL derive no member of its answer from the oracle, so a static check finds no reference to `oracleVerdict` or `compare` in the adapter or in any module it reaches. | Correctness | Static analysis |
-| FR-070-CON-2 | The corpus SHALL NOT be edited to make the backend agree with it; the permitted edits are the registry row and the regenerated coverage account, and nothing else under `conformance/`. | Integrity | Change-set diff |
+| FR-070-CON-2 | The corpus SHALL NOT be edited to make the backend agree with it; the only permitted edit is the registry row, and nothing else under `conformance/` changes. | Integrity | Change-set diff |
 | FR-070-CON-3 | A measured disagreement SHALL be left failing and reported to the owner rather than suppressed by a divergence entry, because a suppressed case counts as matched and this work registers none. | Integrity | Test |
 | FR-070-CON-4 | This requirement SHALL neither publish a package nor move a consumer, because the corpus run is evidence for the publication gate and not a substitute for it. | Safety | Registry inspection |
 | FR-070-CON-5 | The adapter SHALL be reached as a process and never imported by the harness, which is the isolation TC-310 already asserts. | Maintainability | Static analysis |
-| FR-070-CON-6 | Every figure this requirement claims SHALL be read from the regenerated coverage account rather than restated in prose, so the account and the claim cannot drift apart. | Integrity | Test |
+| FR-070-CON-6 | Every figure this requirement claims SHALL be read from the coverage account in the run report rather than restated in prose, so the account and the claim cannot drift apart. | Integrity | Test |
 | FR-070-CON-7 | No acceptance criterion SHALL name a whole-corpus absolute; a criterion states this slot's own delta, so a sibling backend landing first cannot falsify it. | Maintainability | Analysis |
 | FR-070-CON-8 | The implementer SHALL measure the first-run divergence count before making the first fix, and never again afterwards, because a count taken after tuning measures nothing. | Integrity | Manual |
 
@@ -161,11 +160,11 @@ obliges honesty about how the agreement was reached.
 | FR-070-AC-1 | `make conformance` runs the `typescript-backend` command over all 115 cases and the harness reports no `adapter`, `unknown-case`, `duplicate-answer`, or `missing-answer` problem. | Integration |
 | FR-070-AC-2 | Every document the adapter emits validates against `conformance/schema/adapter-result.schema.json`. | Test |
 | FR-070-AC-3 | The adapter answers `support: "supported"` for all 115 cases and `unavailable` for none. | Test |
-| FR-070-AC-4 | The measured match count, failure count, and divergence count are recorded in `spec/tests.md` with the command that produced them, and a claimed figure that the regenerated coverage account contradicts fails the suite. | Analysis |
+| FR-070-AC-4 | The measured match count, failure count, and divergence count are recorded in `spec/tests.md` with the command that produced them, and a claimed figure that the coverage account in the run report contradicts fails the suite. | Analysis |
 | FR-070-AC-5 | The adapter source, and the transitive module set it imports, contain no reference to `oracleVerdict`, `compare`, `conformance/oracle/oracle.mjs`, `conformance/oracle/schema-layer.mjs`, or `conformance/corpus.mjs`. | Static |
 | FR-070-AC-6 | Replacing the backend's admissibility answer with the oracle's makes at least one deliberately seeded backend defect invisible, demonstrating that the independence constraint is load-bearing. | Test |
 | FR-070-AC-7 | Two consecutive adapter runs, one from a different working directory and one under `LC_ALL=tr_TR.UTF-8`, produce byte-identical output. | Integration |
-| FR-070-AC-8 | The regenerated `conformance/coverage.json` reproduces from a fresh run byte for byte; its `typescript-backend` row records `matched` 115 and `unmet` 0; and its corpus-wide `unmetCases` total is exactly 115 lower than the total the account carried at this change's base commit. | Snapshot |
+| FR-070-AC-8 | The coverage account in a fresh run report has a `typescript-backend` row recording `matched` 115 and `unmet` 0, and a corpus-wide `unmetCases` total exactly 115 lower than the total the account reported at this change's base commit. | Test |
 | FR-070-AC-9 | `conformance/cases/**`, `conformance/bases/**`, `conformance/oracle/**`, `conformance/runner/**`, `conformance/corpus.json`, `conformance/thresholds.json`, `conformance/defects.json`, `conformance/contract-gaps.json`, `conformance/diagnostic-codes.json`, `conformance/mutations.json`, and `conformance/divergences.json` are byte-unchanged in this change's own path set. | Analysis |
 | FR-070-AC-10 | Every case the backend admits generates a package, and all of those packages typecheck as one program under the generated-package configuration with no error. | Compile |
 | FR-070-AC-11 | The harness reports 115 matched cases and zero unsuppressed divergences for the `typescript-backend` slot, and a single seeded backend defect reduces the matched count. | Integration |
@@ -183,5 +182,5 @@ obliges honesty about how the agreement was reached.
 - **Upstream**: [FR-037](./FR-037-run-the-differential-conformance-harness.md), [FR-066](./FR-066-generate-runtime-validators.md), [FR-068](./FR-068-decide-and-report-ir-admissibility.md), [FR-069](./FR-069-canonicalize-and-classify-the-ir-surface.md)
 - **Downstream**: issue #11 (publication), issue #52 (the `compiler-frontend` slot, which this requirement neither wires nor blocks)
 - **Constrained by**: [NFR-025](../non-functional/NFR-025-non-disruptive-typescript-backend.md)
-- **Concurrent tickets**: issues #21 and #23 own the `rust-backend` and `python-backend` slots and regenerate the same `conformance/coverage.json`, and `docs/semantic-data-system/compiler-diagnostics.md`. This requirement states every figure as its own slot's delta so that merge order cannot falsify it, and regenerates rather than merges those artifacts on rebase.
+- **Concurrent tickets**: issues #21 and #23 own the `rust-backend` and `python-backend` slots and report rows in the same coverage account, and regenerate `docs/semantic-data-system/compiler-diagnostics.md`. This requirement states every figure as its own slot's delta so that merge order cannot falsify it, and regenerates rather than merges those artifacts on rebase.
 - **Open contract questions**: GAP-011, the unstated resolution rule for a `reference` target, names `agent-ix/filament-core-data#9` as its owner and that issue is closed, so it has no live decider; `agent-ix/filament-core-data#59` records that and asks for one. This adapter answers cases REF-001..004 under the `strict` default of [FR-068](./FR-068-decide-and-report-ir-admissibility.md), which is conformance with the corpus's published reading and not a ruling on the contract. When a live owner settles GAP-011 the other way, those four rows move with a `corpus-defect` verdict and this backend follows by one edit. The contract-version round-trip rule of [FR-069](./FR-069-canonicalize-and-classify-the-ir-surface.md), recorded as `agent-ix/filament-core-data#64`, is a second point where a measured disagreement is reported to the owner rather than absorbed. `agent-ix/filament-core-data#61` and `agent-ix/filament-core-data#62`, which FR-068 cites, bear on the diagnostic comparison this adapter's answers are keyed on.

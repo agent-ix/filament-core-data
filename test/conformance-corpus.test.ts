@@ -1455,7 +1455,7 @@ describe("TC-314..319 and TC-622..401 the construct register and the defect regi
 
 describe("TC-626..410 coverage, thresholds, mutations, and the import API (FR-039)", () => {
 	it("TC-626 adding a case raises the coverage account's total", () => {
-		const committed = renderCoverage((run() as { coverage: unknown }).coverage);
+		const baseline = renderCoverage((run() as { coverage: unknown }).coverage);
 		const added = structuredClone(manifest) as { cases: { id: string }[] };
 		added.cases.push({
 			...structuredClone(manifest.cases[0]),
@@ -1464,7 +1464,7 @@ describe("TC-626..410 coverage, thresholds, mutations, and the import API (FR-03
 		const regenerated = renderCoverage(
 			buildCoverage(added, [...cases, { ...cases[0], id: "ENV-999" }], [], []),
 		) as string;
-		expect(regenerated).not.toBe(committed);
+		expect(regenerated).not.toBe(baseline);
 		expect((JSON.parse(regenerated) as { totalCases: number }).totalCases).toBe(
 			manifest.cases.length + 1,
 		);
