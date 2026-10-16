@@ -1,6 +1,6 @@
 {
 	"$comment": "Issue #11, FR-088. An index over packages/semantic-core/generated/json-schema/, never a copy of it.",
-	"base": "https://schemas.agent-ix.org/semantic-core/0.3.2/",
+	"base": "https://schemas.agent-ix.org/semantic-core/0.3.3/",
 	"documents": [
 		{
 			"name": "ClauseLanguage.json",
@@ -37,6 +37,10 @@
 		{
 			"name": "EnumValue.json",
 			"path": "../../semantic-core/generated/json-schema/EnumValue.json"
+		},
+		{
+			"name": "EnumValueName.json",
+			"path": "../../semantic-core/generated/json-schema/EnumValueName.json"
 		},
 		{
 			"name": "EnumValuesConstraint.json",

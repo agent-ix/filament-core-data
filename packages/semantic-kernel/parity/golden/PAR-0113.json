@@ -1,0 +1,21 @@
+{
+	"id": "PAR-0113",
+	"title": "`EnumValue` round-trips an exact kebab-case name",
+	"declaration": "EnumValue",
+	"class": "positive",
+	"properties": ["serialized-member-names", "round-trip"],
+	"unknownPolicy": "reject",
+	"instance": { "value": "invalid-syntax" },
+	"expected": {
+		"resultState": "success",
+		"wire": { "value": "invalid-syntax" }
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/EnumValue.json",
+			"locator": "#/properties/value/$ref",
+			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.3.3/EnumValueName.json\""
+		}
+	],
+	"provenance": { "authoredFor": "FR-090", "blessedFromRun": false }
+}

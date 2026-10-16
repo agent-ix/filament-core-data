@@ -14,6 +14,7 @@ from .DefaultDecl import DefaultDecl
 from .DefaultKind import DefaultKind
 from .EdgeCategory import EdgeCategory
 from .EnumValue import EnumValue
+from .EnumValueName import EnumValueName
 from .EnumValuesConstraint import EnumValuesConstraint
 from .ExclusiveMaxConstraint import ExclusiveMaxConstraint
 from .ExclusiveMinConstraint import ExclusiveMinConstraint
@@ -46,6 +47,7 @@ __all__ = [
     "DefaultKind",
     "EdgeCategory",
     "EnumValue",
+    "EnumValueName",
     "EnumValuesConstraint",
     "ExclusiveMaxConstraint",
     "ExclusiveMinConstraint",

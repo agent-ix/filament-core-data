@@ -79,10 +79,12 @@ export type EdgeCategory =
 
 export interface EnumValue {
 	readonly doc?: EnumValueDoc;
-	readonly value: Identifier;
+	readonly value: EnumValueName;
 }
 
 export type EnumValueDoc = string;
+
+export type EnumValueName = string;
 
 export interface EnumValuesConstraint {
 	readonly keyword: EnumValuesConstraintKeyword;

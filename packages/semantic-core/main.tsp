@@ -24,8 +24,8 @@ namespace AgentIx.Semantic.Core;
 @pattern("^[A-Za-z_][A-Za-z0-9_]*$")
 scalar Identifier extends string;
 
-/** An enum member name may use hyphens for externally specified code spellings. */
-@pattern("^[A-Za-z_][A-Za-z0-9_-]*$")
+/** An enum member name may use single, internal hyphens for exact external spellings. */
+@pattern("^[A-Za-z_][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*$")
 scalar EnumValueName extends string;
 
 /** A stable semantic identity, same pattern as the IR `semanticIdentity`. */

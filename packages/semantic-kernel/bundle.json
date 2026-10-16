@@ -13,6 +13,7 @@
 		"DefaultKind.json",
 		"EdgeCategory.json",
 		"EnumValue.json",
+		"EnumValueName.json",
 		"EnumValuesConstraint.json",
 		"ExclusiveMaxConstraint.json",
 		"ExclusiveMinConstraint.json",

@@ -142,6 +142,7 @@ export type ExportedTypeName =
 	| "EdgeCategory"
 	| "EnumValue"
 	| "EnumValueDoc"
+	| "EnumValueName"
 	| "EnumValuesConstraint"
 	| "EnumValuesConstraintKeyword"
 	| "EnumValuesConstraintValues"
@@ -289,6 +290,7 @@ export const TYPE_IDENTITY = {
 	EdgeCategory: "ix://agent-ix/semantic-core/EdgeCategory",
 	EnumValue: "ix://agent-ix/semantic-core/EnumValue",
 	EnumValueDoc: "ix://agent-ix/semantic-core/EnumValueDoc",
+	EnumValueName: "ix://agent-ix/semantic-core/EnumValueName",
 	EnumValuesConstraint: "ix://agent-ix/semantic-core/EnumValuesConstraint",
 	EnumValuesConstraintKeyword:
 		"ix://agent-ix/semantic-core/EnumValuesConstraintKeyword",
@@ -399,6 +401,7 @@ export const TYPE_KIND = {
 	EdgeCategory: "enum",
 	EnumValue: "record",
 	EnumValueDoc: "scalar",
+	EnumValueName: "scalar",
 	EnumValuesConstraint: "record",
 	EnumValuesConstraintKeyword: "enum",
 	EnumValuesConstraintValues: "union",
@@ -483,6 +486,7 @@ export const TYPE_ROLES = {
 	EdgeCategory: [],
 	EnumValue: [],
 	EnumValueDoc: [],
+	EnumValueName: [],
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
 	EnumValuesConstraintValues: [],
@@ -573,6 +577,7 @@ export const TYPE_UNKNOWN_POLICY = {
 	EdgeCategory: "reject",
 	EnumValue: "reject",
 	EnumValueDoc: "reject",
+	EnumValueName: "reject",
 	EnumValuesConstraint: "reject",
 	EnumValuesConstraintKeyword: "reject",
 	EnumValuesConstraintValues: "reject",
@@ -675,6 +680,7 @@ export const TYPE_EXTENSIONS = {
 	EdgeCategory: [],
 	EnumValue: [],
 	EnumValueDoc: [],
+	EnumValueName: [],
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
 	EnumValuesConstraintValues: [
@@ -819,6 +825,7 @@ export const TYPE_RELATIONSHIPS = {
 	EdgeCategory: [],
 	EnumValue: [],
 	EnumValueDoc: [],
+	EnumValueName: [],
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
 	EnumValuesConstraintValues: [],
@@ -1077,6 +1084,7 @@ export const TYPE_OPERATIONS = {
 	EdgeCategory: [],
 	EnumValue: [],
 	EnumValueDoc: [],
+	EnumValueName: [],
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
 	EnumValuesConstraintValues: [],
@@ -1166,6 +1174,7 @@ export const TYPE_CLAUSES = {
 	EdgeCategory: [],
 	EnumValue: [],
 	EnumValueDoc: [],
+	EnumValueName: [],
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
 	EnumValuesConstraintValues: [],
@@ -1432,6 +1441,7 @@ export const TYPE_VARIANTS = {
 	],
 	EnumValue: [],
 	EnumValueDoc: [],
+	EnumValueName: [],
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [
 		{
@@ -1780,6 +1790,7 @@ export const TYPE_CONSTRAINTS = {
 	EdgeCategory: [],
 	EnumValue: [],
 	EnumValueDoc: [],
+	EnumValueName: [],
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
 	EnumValuesConstraintValues: [],

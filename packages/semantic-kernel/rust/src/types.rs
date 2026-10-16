@@ -13,6 +13,7 @@ pub mod default_kind;
 pub mod edge_category;
 pub mod enum_value;
 pub mod enum_value_doc;
+pub mod enum_value_name;
 pub mod enum_values_constraint;
 pub mod enum_values_constraint_keyword;
 pub mod enum_values_constraint_values;

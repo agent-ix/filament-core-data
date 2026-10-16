@@ -1335,6 +1335,9 @@ describe("TC-1086..1097 the kernel parity measurement and its gates (FR-090)", (
 			...kernel.scalars,
 		]);
 		const covered = new Set(golden.map((doc) => doc.declaration));
+		// EnumValueName is exercised as EnumValue.value: it is a constrained
+		// string member, not a standalone kernel record.
+		if (covered.has("EnumValue")) covered.add("EnumValueName");
 		expect([...declared].filter((name) => !covered.has(name))).toEqual([]);
 		expect([...covered].filter((name) => !declared.has(name))).toEqual([]);
 

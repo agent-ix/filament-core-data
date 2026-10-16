@@ -1,0 +1,5 @@
+{
+	"model": "EnumValueName",
+	"reason": "value violates EnumValueName",
+	"value": "invalid--syntax"
+}

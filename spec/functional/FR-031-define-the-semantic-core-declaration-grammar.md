@@ -45,11 +45,11 @@ constraint, relation, operation, clause reference, and enum value.
 - `RelationDecl` SHALL be `{ verb: Identifier; category: EdgeCategory; composite?: boolean; target: SemanticId; multiplicity?: Multiplicity }`.
 - `OperationDecl` SHALL be `{ name: Identifier; params: FieldDecl[]; returns?: TypeRef; pre?: ClauseRef[]; post?: ClauseRef[] }`.
 - `ClauseRef` SHALL be `{ language: ClauseLanguage; clauseId: Identifier; sourceSpan?: SourceLocus }`.
-- `EnumValue` SHALL be `{ value: EnumValueName; doc?: string }`, where an enum member name admits letters, digits, underscores and hyphens, and does not begin with a digit.
+- `EnumValue` SHALL be `{ value: EnumValueName; doc?: string }`. An enum member name SHALL start with a letter or underscore; it MAY contain letters, digits and underscores, with single hyphens between nonempty name segments.
 - `SemanticId` SHALL carry the IR `semanticIdentity` pattern (`^ix://[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._~:/-]*$`).
 - `SourceLocus` SHALL have the IR `sourceLocus` shape (`sourceIdentity`, `path`, `startLine`, `startColumn`, `endLine?`, `endColumn?`).
 - `Identifier` SHALL carry the pattern `^[A-Za-z_][A-Za-z0-9_]*$`.
-- `EnumValueName` SHALL carry the pattern `^[A-Za-z_][A-Za-z0-9_-]*$`, so exact externally specified kebab-case enum values remain valid.
+- `EnumValueName` SHALL carry the pattern `^[A-Za-z_][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*$`, so exact externally specified kebab-case enum values remain valid while leading, trailing and repeated hyphens are refused.
 - `UnitSymbol` SHALL carry the UCUM case-sensitive symbol charset pattern `^[!-~]+$` (printable ASCII, no whitespace).
 - `ClauseLanguage` SHALL carry the pattern `^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$`.
 - `EdgeCategory`, `ConstraintKeyword`, and `ClauseLanguage` SHALL equal the IR schema's `relationship.category`, `constraint.keyword`, and clause-language sets respectively.
@@ -93,6 +93,7 @@ rule SHALL have a negative fixture:
 | FR-031-AC-6 | Adding one model at a new minor version changes only that model's emitted file and the bundle index; every previously emitted file is byte-identical. | Test |
 | FR-031-AC-7 | Each reader-enforced grammar rule has one negative fixture the reader rejects at the declaration's locus, and the FR-006 declaration set reads clean. | Test |
 | FR-031-AC-8 | The emitted schema rejects a `DecimalPolicy` with `precision` 0 or 39 or a negative `scale`, and the semantic-core reader rejects `(2, 3)`; `(1, 0)` and `(38, 38)` are accepted. | Test |
+| FR-031-AC-9 | The emitted `EnumValue` schema accepts an exact kebab-case name and refuses a leading digit, leading hyphen, trailing hyphen, or repeated hyphens. | Test |
 
 ## Dependencies
 

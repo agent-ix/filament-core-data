@@ -6,10 +6,10 @@ from __future__ import annotations
 from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
 
-from .Identifier import Identifier
+from .EnumValueName import EnumValueName
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
 class EnumValue:
-    value: Identifier
+    value: EnumValueName
     doc: str | None = None

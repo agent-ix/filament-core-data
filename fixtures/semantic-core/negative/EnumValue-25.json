@@ -1,7 +1,7 @@
 {
 	"model": "EnumValue",
-	"reason": "value violates Identifier",
+	"reason": "value violates EnumValueName",
 	"value": {
-		"value": "a-b"
+		"value": "a-"
 	}
 }

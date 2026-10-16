@@ -6,7 +6,7 @@
 	},
 	"source": {
 		"identity": "ix://agent-ix/semantic-core",
-		"version": "0.3.2",
+		"version": "0.3.3",
 		"dialect": "spec-bundle",
 		"digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
 	},
@@ -875,7 +875,7 @@
 				{
 					"identity": "ix://agent-ix/semantic-core/EnumValue/value",
 					"name": "value",
-					"typeRef": "ix://agent-ix/semantic-core/Identifier",
+					"typeRef": "ix://agent-ix/semantic-core/EnumValueName",
 					"presence": "required",
 					"nullable": false,
 					"defaultKind": "none",
@@ -927,6 +927,24 @@
 				"source": {
 					"sourceIdentity": "ix://agent-ix/semantic-core",
 					"path": "packages/semantic-core/generated/json-schema/EnumValue.json",
+					"startLine": 1,
+					"startColumn": 1
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "string"
+		},
+		{
+			"identity": "ix://agent-ix/semantic-core/EnumValueName",
+			"displayName": "EnumValueName",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"source": {
+					"sourceIdentity": "ix://agent-ix/semantic-core",
+					"path": "packages/semantic-core/generated/json-schema/EnumValueName.json",
 					"startLine": 1,
 					"startColumn": 1
 				}
