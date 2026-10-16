@@ -55,6 +55,10 @@ const NATIVE_SCALARS: &[(&str, &str)] = &[
     ("Duration", "duration"),
     ("Bytes", "bytes"),
     ("JsonObject", "any"),
+    // The model document's text name (QSpec FR-056): scalar `string`, its
+    // bounds `minLength`/`maxLength` and its profile the `format`
+    // `text-profile:<profile>`. It is not an FR-032 kernel scalar.
+    ("Text", "string"),
 ];
 
 /// The `irScalar` value a native type reference names, when `identity` is
@@ -1763,12 +1767,15 @@ fn constraint_rules(
         // FCD #199/#200).
         let (kind, scalar): (&str, &str) = match resolved {
             Resolved::Node(node) => {
+                let scalar = node.get("scalar").and_then(Json::as_str).unwrap_or("");
                 let kind = match crate::constructs::shape_of(document, node) {
                     Some(Shape::Enumeration) => "enumeration",
+                    // A value type: a construct definition that carries a
+                    // `scalar` is decided by that scalar, as a core scalar is.
+                    Some(_) if !scalar.is_empty() => "scalar",
                     Some(_) => "construct",
                     None => node.get("kind").and_then(Json::as_str).unwrap_or(""),
                 };
-                let scalar = node.get("scalar").and_then(Json::as_str).unwrap_or("");
                 (kind, scalar)
             }
             Resolved::Native(scalar) => ("scalar", scalar),
@@ -2428,10 +2435,13 @@ mod tests {
             .get("scalars")
             .and_then(Json::as_object)
             .expect("kernel-scalars.json carries a scalars object");
+        // `Text` is the model document's name (QSpec FR-056), not a kernel
+        // scalar, so the library holds every native name but that one.
+        assert!(!scalars.iter().any(|(name, _)| name == "Text"));
         assert_eq!(
-            scalars.len(),
+            scalars.len() + 1,
             NATIVE_SCALARS.len(),
-            "the canonical library and this crate's copy declare the same count"
+            "this crate's copy declares the canonical library and Text"
         );
         for (name, definition) in scalars {
             let canonical_scalar = definition
