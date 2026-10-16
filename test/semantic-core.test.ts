@@ -561,10 +561,7 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 			).toBe(true);
 		}
 		for (const value of ["1invalid", "-invalid", "invalid-", "invalid--syntax"])
-			expect(
-				validatesModel(ajv, "EnumValue", { value }),
-				value,
-			).toBe(false);
+			expect(validatesModel(ajv, "EnumValue", { value }), value).toBe(false);
 	});
 
 	/** Traces: TC-263, TC-250; FR-033-AC-3, FR-031-AC-3. */

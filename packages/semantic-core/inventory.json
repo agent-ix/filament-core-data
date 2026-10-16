@@ -26,5 +26,11 @@
 	],
 	"unions": ["ConstraintDecl"],
 	"enums": ["KernelScalar", "EdgeCategory", "ConstraintKeyword", "DefaultKind"],
-	"scalars": ["Identifier", "EnumValueName", "SemanticId", "UnitSymbol", "ClauseLanguage"]
+	"scalars": [
+		"Identifier",
+		"EnumValueName",
+		"SemanticId",
+		"UnitSymbol",
+		"ClauseLanguage"
+	]
 }
