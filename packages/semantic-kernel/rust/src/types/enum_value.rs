@@ -10,8 +10,8 @@ pub const FIELDS: &[crate::identity::FieldMeta] = &[
         identity: "ix://agent-ix/semantic-core/EnumValue/value",
         name: "value",
         rust_name: "value",
-        type_ref: "ix://agent-ix/semantic-core/Identifier",
-        rust_type: "crate::Identifier",
+        type_ref: "ix://agent-ix/semantic-core/EnumValueName",
+        rust_type: "crate::EnumValueName",
         row: "field:single/non-null/required",
         presence: "required",
         nullable: false,
@@ -76,7 +76,7 @@ pub struct EnumValue {
     /// value
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/EnumValue/value.
-    pub value: crate::Identifier,
+    pub value: crate::EnumValueName,
     /// doc
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/EnumValue/doc.
@@ -92,7 +92,7 @@ pub struct EnumValue {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct EnumValueWire {
-    value: crate::Identifier,
+    value: crate::EnumValueName,
     #[serde(default)]
     doc: Option<crate::EnumValueDoc>,
 }
@@ -102,7 +102,7 @@ impl EnumValue {
     /// contract declares on its members. Deserialization routes through
     /// this constructor.
     pub fn try_new(
-        value: crate::Identifier,
+        value: crate::EnumValueName,
         doc: Option<crate::EnumValueDoc>,
     ) -> Result<Self, crate::support::ValidationError> {
         Ok(Self { value, doc })

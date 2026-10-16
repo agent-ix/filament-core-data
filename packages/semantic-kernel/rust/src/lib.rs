@@ -24,6 +24,7 @@ pub use crate::types::default_kind::DefaultKind;
 pub use crate::types::edge_category::EdgeCategory;
 pub use crate::types::enum_value::EnumValue;
 pub use crate::types::enum_value_doc::EnumValueDoc;
+pub use crate::types::enum_value_name::EnumValueName;
 pub use crate::types::enum_values_constraint::EnumValuesConstraint;
 pub use crate::types::enum_values_constraint_keyword::EnumValuesConstraintKeyword;
 pub use crate::types::enum_values_constraint_values::EnumValuesConstraintValues;
@@ -151,6 +152,10 @@ pub enum SemanticType {
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/EnumValueDoc.
     EnumValueDoc,
+    /// EnumValueName
+    ///
+    /// Semantic identity: ix://agent-ix/semantic-core/EnumValueName.
+    EnumValueName,
     /// EnumValuesConstraint
     ///
     /// Semantic identity: ix://agent-ix/semantic-core/EnumValuesConstraint.
@@ -440,6 +445,7 @@ impl SemanticType {
             SemanticType::EdgeCategory => "ix://agent-ix/semantic-core/EdgeCategory",
             SemanticType::EnumValue => "ix://agent-ix/semantic-core/EnumValue",
             SemanticType::EnumValueDoc => "ix://agent-ix/semantic-core/EnumValueDoc",
+            SemanticType::EnumValueName => "ix://agent-ix/semantic-core/EnumValueName",
             SemanticType::EnumValuesConstraint => {
                 "ix://agent-ix/semantic-core/EnumValuesConstraint"
             }

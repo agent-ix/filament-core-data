@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
-from .Identifier import Identifier
+from .EnumValueName import EnumValueName
 
 
 class EnumValue(BaseModel):
@@ -13,4 +13,4 @@ class EnumValue(BaseModel):
         extra='forbid',
     )
     doc: str | None = None
-    value: Identifier
+    value: EnumValueName

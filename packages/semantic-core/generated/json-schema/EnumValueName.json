@@ -1,0 +1,8 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.3.3/EnumValueName.json",
+	"type": "string",
+	"pattern": "^[A-Za-z_][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*$",
+	"description": "An enum member name may use single, internal hyphens for exact external spellings.",
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/EnumValueName"
+}

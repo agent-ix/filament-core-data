@@ -176,6 +176,7 @@ describe("semantic-core package inventory (Task-042)", () => {
 		]);
 		expect(array(inventory.scalars, "scalars").map(String).sort()).toEqual([
 			"ClauseLanguage",
+			"EnumValueName",
 			"Identifier",
 			"SemanticId",
 			"UnitSymbol",
@@ -548,6 +549,22 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 				validatesModel(ajv, "ClauseRef", clause),
 				JSON.stringify(ajv.errors),
 			).toBe(true);
+	});
+
+	/** Traces: TC-1812; FR-031-AC-9. */
+	it("accepts kebab enum values and rejects malformed enum names", () => {
+		const ajv = grammarAjv();
+		for (const value of ["invalid-syntax", "unknown_required-feature", "a1"]) {
+			expect(
+				validatesModel(ajv, "EnumValue", { value }),
+				`${value}: ${JSON.stringify(ajv.errors)}`,
+			).toBe(true);
+		}
+		for (const value of ["1invalid", "-invalid", "invalid-", "invalid--syntax"])
+			expect(
+				validatesModel(ajv, "EnumValue", { value }),
+				value,
+			).toBe(false);
 	});
 
 	/** Traces: TC-263, TC-250; FR-033-AC-3, FR-031-AC-3. */

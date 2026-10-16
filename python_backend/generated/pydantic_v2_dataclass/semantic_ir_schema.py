@@ -386,6 +386,16 @@ class Presence(Enum):
     optional = 'optional'
 
 
+@dataclass(config=ConfigDict(extra='forbid'))
+class Frame:
+    creates: list[common_schema.SemanticIdentity]
+    deletes: list[common_schema.SemanticIdentity]
+    modifies: list[common_schema.SemanticIdentity]
+    deletes_parameters: list[str] | None = None
+    deletes_receiver: bool | None = None
+    modifies_receiver: list[str] | None = None
+
+
 type IdentityList = list[common_schema.SemanticIdentity]
 
 
@@ -645,13 +655,6 @@ class FieldModel:
     subsets: IdentityList | None = None
     textProfile: common_schema.TextProfile | None = None
     unit: Annotated[str | None, Field(min_length=1, pattern='^[!-~]+$')] = None
-
-
-@dataclass(config=ConfigDict(extra='forbid'))
-class Frame:
-    creates: IdentityList
-    deletes: IdentityList
-    modifies: IdentityList
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))

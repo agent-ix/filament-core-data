@@ -45,6 +45,7 @@ import type {
 	EdgeCategory,
 	EnumValue,
 	EnumValueDoc,
+	EnumValueName,
 	EnumValuesConstraint,
 	EnumValuesConstraintKeyword,
 	EnumValuesConstraintValues,
@@ -1218,7 +1219,7 @@ function prepareEnumValue(value: unknown, depth: number): unknown {
 			out["value"] =
 				member.value === null
 					? member.value
-					: prepareIdentifier(member.value, depth + 1);
+					: prepareEnumValueName(member.value, depth + 1);
 		} else if (member.state === "accessor") {
 			copyAccessor(out, value, "value");
 			accessor = true;
@@ -1312,7 +1313,7 @@ function checkEnumValue(
 				"the property is null and the field is not nullable",
 			);
 		} else {
-			checkIdentifier(member.value, at, errors, surfaced, depth + 1);
+			checkEnumValueName(member.value, at, errors, surfaced, depth + 1);
 		}
 	}
 	const declared: readonly string[] = ["doc", "value"];
@@ -1376,6 +1377,48 @@ export function validateEnumValueDoc(
 	const surfaced: ValidationError[] = [];
 	const value = prepareEnumValueDoc(input, 0);
 	if (checkEnumValueDoc(value, "", errors, surfaced, 0)) {
+		return { ok: true, value, surfaced: sortErrors(surfaced) };
+	}
+	return { ok: false, errors: sortErrors(errors) };
+}
+
+function prepareEnumValueName(value: unknown, depth: number): unknown {
+	if (depth > MAX_VALIDATION_DEPTH) return value;
+	return value;
+}
+
+function checkEnumValueName(
+	candidate: unknown,
+	pointer: string,
+	errors: ValidationError[],
+	_surfaced: ValidationError[],
+	depth: number,
+): candidate is EnumValueName {
+	const before = errors.length;
+	if (depth > MAX_VALIDATION_DEPTH) {
+		fail(
+			errors,
+			pointer,
+			CODES.DEPTH_LIMIT_EXCEEDED,
+			"the value nests past the declared bound",
+		);
+		return false;
+	}
+	if (!(typeof candidate === "string")) {
+		fail(errors, pointer, CODES.NOT_A_STRING, "the value is of the wrong type");
+		return false;
+	}
+	return errors.length === before;
+}
+
+/** Decide an untrusted value against `ix://agent-ix/semantic-core/EnumValueName`. */
+export function validateEnumValueName(
+	input: unknown,
+): ValidationResult<EnumValueName> {
+	const errors: ValidationError[] = [];
+	const surfaced: ValidationError[] = [];
+	const value = prepareEnumValueName(input, 0);
+	if (checkEnumValueName(value, "", errors, surfaced, 0)) {
 		return { ok: true, value, surfaced: sortErrors(surfaced) };
 	}
 	return { ok: false, errors: sortErrors(errors) };

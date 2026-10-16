@@ -5,9 +5,9 @@ from __future__ import annotations
 
 from msgspec import UNSET, Struct, UnsetType
 
-from .Identifier import Identifier
+from .EnumValueName import EnumValueName
 
 
 class EnumValue(Struct):
-    value: Identifier
+    value: EnumValueName
     doc: str | UnsetType = UNSET
