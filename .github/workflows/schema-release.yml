@@ -192,12 +192,35 @@ jobs:
           rm -f "$tgz"
           test -f "$dest/manifest.yaml"
 
+      # The Node suite launches Python readers and the SysML pilot from its
+      # subprocess tests. Keep the Python interpreter inside Poetry's installed
+      # environment, and provision the same checksum-pinned pilot/JRE inputs
+      # used by the local assurance gate.
+      - name: Provision the pinned SysML pilot gate inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          cache="$HOME/.cache/filament-core-data/sysml-pilot"
+          mkdir -p "$cache"
+          curl --fail --location --retry 3 \
+            "https://github.com/Systems-Modeling/SysML-v2-Pilot-Implementation/releases/download/2025-04/jupyter-sysml-kernel-0.49.0.zip" \
+            --output "$cache/jupyter-sysml-kernel-0.49.0.zip"
+          curl --fail --location --retry 3 \
+            "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jre_x64_linux_hotspot_17.0.20.1_1.tar.gz" \
+            --output "$cache/OpenJDK17U-jre_x64_linux_hotspot_17.0.20.1_1.tar.gz"
+          printf '%s  %s\n' \
+            'ae4a6c5348a50394df86ce55523e3cd5434d50113c6c13ec4f071a6cb8bd5c27' \
+            "$cache/jupyter-sysml-kernel-0.49.0.zip" \
+            '0b2b640e3046b64c8ec504de0ab9d91bb5610182bda21fad454681ce54d45a62' \
+            "$cache/OpenJDK17U-jre_x64_linux_hotspot_17.0.20.1_1.tar.gz" \
+            | sha256sum --check
+
       # The vitest main process sits at V8's default ~4 GB heap ceiling on this
       # suite: the seventh dispatch completed, the eighth aborted with
       # "Reached heap limit" (exit 134) after every test file it reached had
       # passed. The runner has 16 GB. This raises the ceiling; it changes no
       # test and no gate.
-      - run: make test-node
+      - run: poetry run make test-node
         env:
           NODE_OPTIONS: --max-old-space-size=8192
 
