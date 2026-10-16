@@ -1460,6 +1460,21 @@
 				},
 				"deletes": {
 					"$ref": "#/$defs/identityList"
+				},
+				"modifies_receiver": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"deletes_receiver": {
+					"type": "boolean"
+				},
+				"deletes_parameters": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
 				}
 			},
 			"additionalProperties": false

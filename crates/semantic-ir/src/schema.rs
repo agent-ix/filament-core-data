@@ -1817,6 +1817,12 @@ const OPERATION_MEMBERS: &[&str] = &[
     "frame",
 ];
 const FRAME_MEMBERS: &[&str] = &["modifies", "creates", "deletes"];
+/// The optional receiver-scoped members (QSpec model contract, Frames).
+const FRAME_RECEIVER_MEMBERS: &[&str] = &[
+    "modifies_receiver",
+    "deletes_receiver",
+    "deletes_parameters",
+];
 const INLINE_CLAUSE_MEMBERS: &[&str] = &["language", "text", "sourceSpan", "origin"];
 
 /// A frame declares `modifies`, `creates` and `deletes` as declaration
@@ -1824,14 +1830,51 @@ const INLINE_CLAUSE_MEMBERS: &[&str] = &["language", "text", "sourceSpan", "orig
 /// path. `modifies` names a field or relationship; `creates` and `deletes`
 /// name a type. Which identity kind an entry must resolve to is a semantic
 /// rule (`constructs.rs`), not a schema-layer shape check.
+///
+/// Three optional members carry the receiver-scoped entries:
+/// `modifies_receiver` and `deletes_parameters` are arrays of strings and
+/// `deletes_receiver` is a boolean. A wrong type, or an array element that is
+/// not a string, is reported at the member.
 fn frame_schema(frame: &Json, at: &str, f: &mut Findings) {
     if !expect_object(frame, at, "a frame", f) {
         return;
     }
     require_members(frame, at, FRAME_MEMBERS, f);
-    forbid_extra(frame, at, FRAME_MEMBERS, f);
+    let allowed: Vec<&str> = FRAME_MEMBERS
+        .iter()
+        .chain(FRAME_RECEIVER_MEMBERS)
+        .copied()
+        .collect();
+    forbid_extra(frame, at, &allowed, f);
     for name in FRAME_MEMBERS {
         identity_list(frame.get(name), &child(at, name), name, f);
+    }
+    for name in ["modifies_receiver", "deletes_parameters"] {
+        string_list(frame.get(name), &child(at, name), name, f);
+    }
+    expect_bool(
+        frame.get("deletes_receiver"),
+        &child(at, "deletes_receiver"),
+        "deletes_receiver",
+        f,
+    );
+}
+
+/// An array whose every element is a string; a defect is reported at the array.
+fn string_list(value: Option<&Json>, at: &str, what: &str, f: &mut Findings) {
+    let Some(value) = value else {
+        return;
+    };
+    if !expect_array(value, at, what, f) {
+        return;
+    }
+    if value
+        .as_array()
+        .unwrap_or(&[])
+        .iter()
+        .any(|item| item.as_str().is_none())
+    {
+        f.push(at, format!("{what} entries are strings"));
     }
 }
 
