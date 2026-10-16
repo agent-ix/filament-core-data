@@ -1327,12 +1327,12 @@ computed by `quire matrix` from those trace tags.
 | TC-1592 | The corpus run exits clean over all 115 cases | Integration | P0 | FR-090-CON-1 |
 | TC-1805 | Two fields whose `typeRef`s name each other, with `unit` on one, do not overflow the stack; `decide` returns, the cycle resolves to no scalar and each field's `typeRef` is reported unresolved | Unit | P0 | FR-059-AC-11 |
 | TC-1806 | `ordered`/`unique` are required on every multiplicity and are never refused by the reader: `true`/`true` on a field whose upper bound is at most one, the mandatory `false`/`false` pair on that same shape, and `ordered`/`unique` on an actual collection all decide with no diagnostic | Unit | P0 | FR-027-AC-8 |
-| TC-1807 | The Rust reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 |
-| TC-1808 | The Node IR reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 |
-| TC-1809 | The JSON-Schema backend's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 |
-| TC-1810 | The rust-serde backend's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 |
-| TC-1811 | The Python reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 |
-| TC-1812 | The v1-1 TS reader's `NATIVE_SCALARS` carries the same names and `irScalar` mapping as `packages/semantic-core/kernel-scalars.json` | Unit | P1 | FR-032-AC-3 |
+| TC-1807 | The Rust reader's `NATIVE_SCALARS` carries the names and `irScalar` mapping of `packages/semantic-core/kernel-scalars.json` and, beside them, the model document's `Text` (scalar `string`) | Unit | P1 | FR-032-AC-3 |
+| TC-1808 | The Node IR reader's `NATIVE_SCALARS` carries the names and `irScalar` mapping of `packages/semantic-core/kernel-scalars.json` and, beside them, the model document's `Text` (scalar `string`) | Unit | P1 | FR-032-AC-3 |
+| TC-1809 | The JSON-Schema backend's `NATIVE_SCALARS` carries the names and `irScalar` mapping of `packages/semantic-core/kernel-scalars.json` and, beside them, the model document's `Text` (scalar `string`) | Unit | P1 | FR-032-AC-3 |
+| TC-1810 | The rust-serde backend's `NATIVE_SCALARS` carries the names and `irScalar` mapping of `packages/semantic-core/kernel-scalars.json` and, beside them, the model document's `Text` (scalar `string`) | Unit | P1 | FR-032-AC-3 |
+| TC-1811 | The Python reader's `NATIVE_SCALARS` carries the names and `irScalar` mapping of `packages/semantic-core/kernel-scalars.json` and, beside them, the model document's `Text` (scalar `string`) | Unit | P1 | FR-032-AC-3 |
+| TC-1812 | The v1-1 TS reader's `NATIVE_SCALARS` carries the names and `irScalar` mapping of `packages/semantic-core/kernel-scalars.json` and, beside them, the model document's `Text` (scalar `string`) | Unit | P1 | FR-032-AC-3 |
 | TC-1813 | A `min` constraint inline on a field's own `constraints` array, naming a `String`-valued field as `appliesTo`, is refused `CONSTRAINT_NOT_APPLICABLE` by the Rust reader, the same as a type-level constraint | Unit | P1 | FR-093-AC-6, FR-093-CON-4 |
 | TC-1814 | The same inline field constraint is refused `CONSTRAINT_NOT_APPLICABLE` by the Python reader | Unit | P1 | FR-093-AC-6, FR-093-CON-4 |
 | TC-1815 | The same inline field constraint is refused `CONSTRAINT_NOT_APPLICABLE` by the v1-1 TS reader | Unit | P1 | FR-093-AC-6, FR-093-CON-4 |

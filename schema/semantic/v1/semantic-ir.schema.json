@@ -1453,13 +1453,22 @@
 			"required": ["modifies", "creates", "deletes"],
 			"properties": {
 				"modifies": {
-					"$ref": "#/$defs/identityList"
+					"type": "array",
+					"items": {
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					}
 				},
 				"creates": {
-					"$ref": "#/$defs/identityList"
+					"type": "array",
+					"items": {
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					}
 				},
 				"deletes": {
-					"$ref": "#/$defs/identityList"
+					"type": "array",
+					"items": {
+						"$ref": "common.schema.json#/$defs/semanticIdentity"
+					}
 				},
 				"modifies_receiver": {
 					"type": "array",

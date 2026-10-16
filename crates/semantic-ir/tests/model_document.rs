@@ -57,6 +57,7 @@ fn framed(frame: &str) -> String {
 
 const FRAME_POINTER: &str = "/ir/types/0/operations/0/frame";
 
+/// Trace: FR-141
 #[test]
 fn a_frame_admits_each_receiver_scoped_member() {
     for frame in [
@@ -72,6 +73,7 @@ fn a_frame_admits_each_receiver_scoped_member() {
     }
 }
 
+/// Trace: FR-141
 #[test]
 fn a_frame_member_of_the_wrong_type_is_refused_at_the_member() {
     for (member, value) in [
@@ -92,6 +94,7 @@ fn a_frame_member_of_the_wrong_type_is_refused_at_the_member() {
     }
 }
 
+/// Trace: FR-141
 #[test]
 fn a_non_string_element_of_a_scoped_array_is_refused_at_the_member() {
     for member in ["modifies_receiver", "deletes_parameters"] {
@@ -108,17 +111,19 @@ fn a_non_string_element_of_a_scoped_array_is_refused_at_the_member() {
     }
 }
 
+/// Trace: FR-141
 #[test]
-fn a_frame_member_the_schema_does_not_name_is_refused() {
-    let frame = r#"{"modifies":[],"creates":[],"deletes":[],"deletes_scoped":[]}"#;
+fn a_frame_member_the_schema_does_not_name_is_refused_at_that_member() {
+    let frame = r#"{"modifies":[],"creates":[],"deletes":[],"modifies_self":[]}"#;
     assert_eq!(
         diagnostics("", &[framed(frame)]),
-        vec![(FRAME_POINTER.to_string(), SCHEMA_VIOLATION)]
+        vec![(format!("{FRAME_POINTER}/modifies_self"), SCHEMA_VIOLATION)]
     );
 }
 
+/// Trace: FR-141
 #[test]
-fn a_frame_missing_a_required_array_is_refused() {
+fn a_frame_missing_a_required_array_is_refused_at_the_absent_member() {
     for missing in ["modifies", "creates", "deletes"] {
         let members: Vec<String> = ["modifies", "creates", "deletes"]
             .into_iter()
@@ -128,10 +133,17 @@ fn a_frame_missing_a_required_array_is_refused() {
         let frame = format!(r#"{{{},"deletes_receiver":true}}"#, members.join(","));
         assert_eq!(
             diagnostics("", &[framed(&frame)]),
-            vec![(FRAME_POINTER.to_string(), SCHEMA_VIOLATION)],
+            vec![(format!("{FRAME_POINTER}/{missing}"), SCHEMA_VIOLATION)],
             "{frame}"
         );
     }
+}
+
+/// Trace: FR-141
+#[test]
+fn a_frame_entry_written_twice_is_one_entry() {
+    let frame = r#"{"modifies":["ix://acme/pkg/T/f","ix://acme/pkg/T/f"],"creates":["ix://acme/pkg/T","ix://acme/pkg/T"],"deletes":["ix://acme/pkg/T","ix://acme/pkg/T"]}"#;
+    assert_eq!(diagnostics("", &[framed(frame)]), vec![]);
 }
 
 fn text_field_type() -> String {
@@ -145,9 +157,34 @@ fn text_field_type() -> String {
     )
 }
 
+/// Trace: FR-141
 #[test]
 fn a_field_typed_by_the_native_text_name_resolves() {
     assert_eq!(diagnostics("", &[text_field_type()]), vec![]);
+}
+
+/// Trace: FR-141
+#[test]
+fn the_native_text_name_is_the_string_scalar() {
+    // minLength is defined for string and never for integer; min the reverse.
+    let with = |keyword: &str, operands: &str| {
+        let item = text_field_type().replace(
+            r#""extensions":[]}]"#,
+            &format!(
+                r#""extensions":[],"constraints":[{}]}}]"#,
+                constraint("k", keyword, operands, "ix://acme/pkg/Item/label")
+            ),
+        );
+        diagnostics("", &[item])
+    };
+    assert_eq!(with("minLength", r#"{"value":1}"#), vec![]);
+    assert_eq!(
+        with("min", r#"{"value":"1"}"#),
+        vec![(
+            "/ir/types/0/fields/0/constraints/0".to_string(),
+            CONSTRAINT_NOT_APPLICABLE
+        )]
+    );
 }
 
 fn constraint(id: &str, keyword: &str, operands: &str, applies_to: &str) -> String {
@@ -166,6 +203,7 @@ fn value_type(scalar: &str, constraints: &[String]) -> String {
 
 const V: &str = "ix://acme/pkg/V";
 
+/// Trace: FR-141
 #[test]
 fn a_string_value_type_takes_the_text_constraints_applied_to_itself() {
     let constraints = [
@@ -179,6 +217,7 @@ fn a_string_value_type_takes_the_text_constraints_applied_to_itself() {
     );
 }
 
+/// Trace: FR-141
 #[test]
 fn an_integer_value_type_takes_the_integer_constraints_applied_to_itself() {
     let constraints = [
@@ -191,6 +230,7 @@ fn an_integer_value_type_takes_the_integer_constraints_applied_to_itself() {
     );
 }
 
+/// Trace: FR-141
 #[test]
 fn a_keyword_the_value_types_scalar_does_not_define_is_not_applicable() {
     // `min` is defined for numeric scalars, never for string; `minLength` is
@@ -206,6 +246,23 @@ fn a_keyword_the_value_types_scalar_does_not_define_is_not_applicable() {
     let on_integer = [constraint("len", "minLength", r#"{"value":1}"#, V)];
     assert_eq!(
         diagnostics(VALUE_TYPE_CONSTRUCT, &[value_type("integer", &on_integer)]),
+        vec![(
+            "/ir/types/0/constraints/0".to_string(),
+            CONSTRAINT_NOT_APPLICABLE
+        )]
+    );
+}
+
+/// Trace: FR-141
+#[test]
+fn a_construct_definition_with_no_scalar_keeps_the_construct_decision() {
+    let no_scalar = value_type(
+        "string",
+        &[constraint("e", "enumValues", r#"{"values":["a"]}"#, V)],
+    )
+    .replace(r#","scalar":"string""#, "");
+    assert_eq!(
+        diagnostics(VALUE_TYPE_CONSTRUCT, &[no_scalar]),
         vec![(
             "/ir/types/0/constraints/0".to_string(),
             CONSTRAINT_NOT_APPLICABLE
