@@ -38,9 +38,9 @@ REPO = pathlib.Path(__file__).resolve().parents[1]
 KERNEL_SCHEMAS = REPO / "packages/semantic-core/generated/json-schema"
 BACKEND = REPO / "python_backend"
 
-#: The bundle, measured. Thirty documents carrying thirty-five absolute `$ref`s,
+#: The bundle, measured. Thirty-one documents carrying thirty-five absolute `$ref`s,
 #: none of them with a `title`.
-DOCUMENTS = 30
+DOCUMENTS = 31
 ABSOLUTE_REFS = 35
 
 

@@ -302,6 +302,15 @@ class Presence(Enum):
     optional = 'optional'
 
 
+class Frame(Struct):
+    creates: list[common_schema.SemanticIdentity]
+    deletes: list[common_schema.SemanticIdentity]
+    modifies: list[common_schema.SemanticIdentity]
+    deletes_parameters: list[str] | UnsetType = UNSET
+    deletes_receiver: bool | UnsetType = UNSET
+    modifies_receiver: list[str] | UnsetType = UNSET
+
+
 type IdentityList = list[common_schema.SemanticIdentity]
 
 
@@ -544,12 +553,6 @@ class Field(Struct):
     subsets: IdentityList | UnsetType = UNSET
     textProfile: common_schema.TextProfile | UnsetType = UNSET
     unit: Annotated[str, Meta(min_length=1, pattern='^[!-~]+$')] | UnsetType = UNSET
-
-
-class Frame(Struct):
-    creates: IdentityList
-    deletes: IdentityList
-    modifies: IdentityList
 
 
 class InlineClause(Struct):

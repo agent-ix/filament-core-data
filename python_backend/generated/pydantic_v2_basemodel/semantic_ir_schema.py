@@ -522,6 +522,18 @@ class Presence(Enum):
     optional = 'optional'
 
 
+class Frame(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    creates: list[common_schema.SemanticIdentity]
+    deletes: list[common_schema.SemanticIdentity]
+    deletes_parameters: list[str] | None = None
+    deletes_receiver: bool | None = None
+    modifies: list[common_schema.SemanticIdentity]
+    modifies_receiver: list[str] | None = None
+
+
 class IdentityList(RootModel[list[common_schema.SemanticIdentity]]):
     root: list[common_schema.SemanticIdentity]
 
@@ -832,15 +844,6 @@ class FieldModel(BaseModel):
     textProfile: common_schema.TextProfile | None = None
     typeRef: common_schema.SemanticIdentity
     unit: Annotated[str | None, Field(min_length=1, pattern='^[!-~]+$')] = None
-
-
-class Frame(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-    )
-    creates: IdentityList
-    deletes: IdentityList
-    modifies: IdentityList
 
 
 class InlineClause(BaseModel):
