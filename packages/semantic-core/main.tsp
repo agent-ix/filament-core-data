@@ -13,7 +13,7 @@ using TypeSpec.JsonSchema;
  * are enforced by the semantic-core reader (FR-031, "Grammar rules the reader
  * enforces").
  */
-@jsonSchema("https://schemas.agent-ix.org/semantic-core/0.3.2/")
+@jsonSchema("https://schemas.agent-ix.org/semantic-core/0.3.3/")
 namespace AgentIx.Semantic.Core;
 
 // ---------------------------------------------------------------------------
@@ -23,6 +23,10 @@ namespace AgentIx.Semantic.Core;
 /** A declaration name: letters, digits, underscore; no leading digit. */
 @pattern("^[A-Za-z_][A-Za-z0-9_]*$")
 scalar Identifier extends string;
+
+/** An enum member name may use hyphens for externally specified code spellings. */
+@pattern("^[A-Za-z_][A-Za-z0-9_-]*$")
+scalar EnumValueName extends string;
 
 /** A stable semantic identity, same pattern as the IR `semanticIdentity`. */
 @pattern("^ix://[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._~:/-]*$")
@@ -238,6 +242,6 @@ model OperationDecl {
 
 /** An enum member declaration; lowers to an IR variant. */
 model EnumValue {
-  value: Identifier;
+  value: EnumValueName;
   doc?: string;
 }

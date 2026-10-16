@@ -37,7 +37,7 @@ constraint, relation, operation, clause reference, and enum value.
 
 ## Behavior
 
-- The package SHALL declare exactly this inventory and nothing else: grammar models `Multiplicity`, `TypeRef`, `DecimalPolicy`, `DefaultDecl`, `FieldDecl`, `ConstraintDecl` (as a union of the eleven per-keyword models `MinConstraint`, `MaxConstraint`, `ExclusiveMinConstraint`, `ExclusiveMaxConstraint`, `PatternConstraint`, `MinLengthConstraint`, `MaxLengthConstraint`, `EnumValuesConstraint`, `NonEmptyConstraint`, `UniqueConstraint`, `FormatConstraint`), `RelationDecl`, `OperationDecl`, `ClauseRef`, `EnumValue`, `SourceLocus`; enums `KernelScalar`, `EdgeCategory`, `ConstraintKeyword`, `DefaultKind`; scalars `Identifier`, `SemanticId`, `UnitSymbol`, `ClauseLanguage`.
+- The package SHALL declare exactly this inventory and nothing else: grammar models `Multiplicity`, `TypeRef`, `DecimalPolicy`, `DefaultDecl`, `FieldDecl`, `ConstraintDecl` (as a union of the eleven per-keyword models `MinConstraint`, `MaxConstraint`, `ExclusiveMinConstraint`, `ExclusiveMaxConstraint`, `PatternConstraint`, `MinLengthConstraint`, `MaxLengthConstraint`, `EnumValuesConstraint`, `NonEmptyConstraint`, `UniqueConstraint`, `FormatConstraint`), `RelationDecl`, `OperationDecl`, `ClauseRef`, `EnumValue`, `SourceLocus`; enums `KernelScalar`, `EdgeCategory`, `ConstraintKeyword`, `DefaultKind`; scalars `Identifier`, `EnumValueName`, `SemanticId`, `UnitSymbol`, `ClauseLanguage`.
 - `Multiplicity` SHALL be `{ lower: int32; upper?: int32; ordered?: boolean; unique?: boolean }` with `@minValue(0)` on both bounds; an absent `upper` means unbounded.
 - `TypeRef` SHALL be `{ target: SemanticId | KernelScalar; multiplicity?: Multiplicity; unit?: UnitSymbol; decimal?: DecimalPolicy }` where `DecimalPolicy` is `{ precision: int32; scale: int32 }` with `@minValue(1)` and `@maxValue(38)` on `precision` and `@minValue(0)` on `scale`, the ranges [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) gives the IR's decimal policy.
 - `FieldDecl` SHALL be `{ name: Identifier; type: TypeRef; identity?: boolean; nullable?: boolean; default?: DefaultDecl; doc?: string; constraints?: ConstraintDecl[] }` where `DefaultDecl` is `{ kind: DefaultKind; value?: unknown }` and `DefaultKind` enumerates `semantic`, `representation`, `migration`.
@@ -45,10 +45,11 @@ constraint, relation, operation, clause reference, and enum value.
 - `RelationDecl` SHALL be `{ verb: Identifier; category: EdgeCategory; composite?: boolean; target: SemanticId; multiplicity?: Multiplicity }`.
 - `OperationDecl` SHALL be `{ name: Identifier; params: FieldDecl[]; returns?: TypeRef; pre?: ClauseRef[]; post?: ClauseRef[] }`.
 - `ClauseRef` SHALL be `{ language: ClauseLanguage; clauseId: Identifier; sourceSpan?: SourceLocus }`.
-- `EnumValue` SHALL be `{ value: Identifier; doc?: string }`.
+- `EnumValue` SHALL be `{ value: EnumValueName; doc?: string }`, where an enum member name admits letters, digits, underscores and hyphens, and does not begin with a digit.
 - `SemanticId` SHALL carry the IR `semanticIdentity` pattern (`^ix://[a-z0-9][a-z0-9._-]*/[A-Za-z0-9][A-Za-z0-9._~:/-]*$`).
 - `SourceLocus` SHALL have the IR `sourceLocus` shape (`sourceIdentity`, `path`, `startLine`, `startColumn`, `endLine?`, `endColumn?`).
 - `Identifier` SHALL carry the pattern `^[A-Za-z_][A-Za-z0-9_]*$`.
+- `EnumValueName` SHALL carry the pattern `^[A-Za-z_][A-Za-z0-9_-]*$`, so exact externally specified kebab-case enum values remain valid.
 - `UnitSymbol` SHALL carry the UCUM case-sensitive symbol charset pattern `^[!-~]+$` (printable ASCII, no whitespace).
 - `ClauseLanguage` SHALL carry the pattern `^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$`.
 - `EdgeCategory`, `ConstraintKeyword`, and `ClauseLanguage` SHALL equal the IR schema's `relationship.category`, `constraint.keyword`, and clause-language sets respectively.
