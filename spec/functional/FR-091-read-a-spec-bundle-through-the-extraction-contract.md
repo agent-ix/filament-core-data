@@ -69,6 +69,7 @@ mapping.
 - If a document's `object` names a type no loaded module declares, then the frontend SHALL emit `agent-ix.extraction-frontend.UNKNOWN_OBJECT_TYPE` at the document's frontmatter.
 - If a document's `object` names a type no loaded module declares, then the frontend SHALL NOT lower that document.
 - The frontend SHALL skip a document with no `object` frontmatter without a diagnostic; requirement, use-case, and review artifacts are not domain declarations.
+- The frontend SHALL skip, without a diagnostic, a composed document: a document whose frontmatter `type` is neither an object type a loaded module declares nor the document's own `object` (an artifact type such as `FR`, `US`, or `TC`), even when it carries `object:`. A composed document is not extracted, is not lowered, and is not an object-typed artifact of the `BundleIndex`; a document whose `type` names its object type, such as `type: enumeration` with `object: enumeration`, is extracted as before.
 - The frontend SHALL record every `SemanticDiagnostic` the engine returns, in the engine's order.
 - The frontend SHALL hand each recorded `SemanticDiagnostic` to FR-096, which wraps it as one `ENGINE_DIAGNOSTIC` whose message is `<engine code> (reason: <reason>): <engine message>`, whose `causes` is empty, and whose severity is the FR-096 mapping of the engine severity.
 - The frontend SHALL carry the engine's `line` and `column` into the `ENGINE_DIAGNOSTIC` locus unchanged whenever the engine's `line` is at least `1`.
@@ -101,6 +102,7 @@ contract today; FR-094-CON-1 records the upstream dependency.
 | FR-091-AC-9 | Every `SemanticDiagnostic` the engine returns for the `legacy-form` control appears in the frontend's diagnostics as one `ENGINE_DIAGNOSTIC` whose message begins with the engine code followed by ` (reason: <reason>): `, whose `causes` is empty, whose severity is the FR-096 mapping of the engine severity, and whose locus line and column equal the engine's. | Test (TC-1208) |
 | FR-091-AC-10 | The legacy `docs-service` FR-006 (free-column table) yields `fields` `unavailable` with reason `legacy-form` and the engine's `semantic.legacy-properties-form` warning at line 17, and the document is not lowered. | Test (TC-1209) |
 | FR-091-AC-11 | A bundle holding two documents with `id: FR-006` refuses with `DUPLICATE_ARTIFACT_ID` at the second path naming both; an engine diagnostic injected with `line: 0` reaches the diagnostics array with no `locus` and the document path in `related`, and the array validates against `common.schema.json#/$defs/diagnostic`. | Test (TC-1331) |
+| FR-091-AC-12 | A document with `type: FR` and `object: entity`, one with `type: FR` and `object: enumeration`, and one with `type: FR` and no `object` yield no extraction, no diagnostic, and no `BundleIndex` entry; a document with `type: entity` and `object: entity`, and one with `type: enumeration` and `object: enumeration`, are extracted. | Test (TC-1841) |
 
 ## Dependencies
 

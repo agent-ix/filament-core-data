@@ -55,7 +55,7 @@ repository's existing Cargo workspace.
 
 ### [US-015-EX-1] A typed entity reaches the IR with its clause
 
-- **Given** a bundle whose `FR-006` carries `object: entity`, a typed `## Properties` table, a frontmatter `relationships:` entry `belongs_to` → `FR-007`, and an `## Invariants` `ocl` fence
+- **Given** a bundle whose `FR-006` is an `entity` document (`type: entity`, `object: entity`), a typed `## Properties` table, a frontmatter `relationships:` entry `belongs_to` → `FR-007`, and an `## Invariants` `ocl` fence
 - **When** the author lifts the bundle
 - **Then** the IR carries one `record` for `Snapshot` with its fields, one `belongs_to` relationship to `SnapshotGroup`, and one opaque `ocl` clause with the fence's span; the document passes the independent reader's schema and cross-field rules at lift time; and lifting it a second time produces the committed golden's bytes
 

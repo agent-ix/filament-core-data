@@ -2,7 +2,7 @@
 id: FR-006
 title: Snapshot
 object: entity
-type: FR
+type: entity
 ---
 
 # FR-006: Snapshot

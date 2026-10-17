@@ -2,7 +2,7 @@
 id: EN_001
 title: Colour
 object: enumeration
-type: FR
+type: enumeration
 name: Colour
 ---
 

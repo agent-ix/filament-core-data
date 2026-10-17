@@ -438,7 +438,10 @@ impl Doc {
         if let Some(object) = &self.object {
             s.push_str(&format!("object: {object}\n"));
         }
-        s.push_str("type: FR\n");
+        s.push_str(&format!(
+            "type: {}\n",
+            self.object.as_deref().unwrap_or("FR")
+        ));
         if let Some(name) = &self.name {
             s.push_str(&format!("name: {name}\n"));
         }

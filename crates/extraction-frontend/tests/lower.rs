@@ -95,7 +95,7 @@ fn scratch_spec(root: &Path) {
 
 fn entity(id: &str, name: &str, fields: &str) -> String {
     format!(
-        "---\nid: {id}\ntitle: {name}\nname: {name}\nobject: entity\ntype: FR\n---\n# {name}\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n| --- | --- | --- | --- |\n{fields}"
+        "---\nid: {id}\ntitle: {name}\nname: {name}\nobject: entity\ntype: entity\n---\n# {name}\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n| --- | --- | --- | --- |\n{fields}"
     )
 }
 
@@ -1405,7 +1405,7 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_field_and_variant_levels() {
     write_fixture(
         variants.path(),
         "spec/functional/EN_001.md",
-        "---\nid: EN_001\ntitle: Marks\nname: Marks\nobject: enumeration\ntype: FR\n---\n# Marks\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| a_b | first |\n| a__b | second |\n",
+        "---\nid: EN_001\ntitle: Marks\nname: Marks\nobject: enumeration\ntype: enumeration\n---\n# Marks\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| a_b | first |\n| a__b | second |\n",
     );
     let variant_lift = lift_at(variants.path(), &[&business_module(), &edge_vocabulary()]);
     let variant_diagnostics = with_code(&variant_lift.lowered.diagnostics, Code::UnsluggableName);

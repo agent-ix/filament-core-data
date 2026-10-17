@@ -2,7 +2,7 @@
 id: FR-007
 title: String
 object: entity
-type: FR
+type: entity
 ---
 
 # FR-007: String

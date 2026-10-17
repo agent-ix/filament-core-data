@@ -2,7 +2,7 @@
 id: FR-001
 title: Order Entity
 object: entity
-type: FR
+type: entity
 name: Order
 relationships:
   - target: SM_001

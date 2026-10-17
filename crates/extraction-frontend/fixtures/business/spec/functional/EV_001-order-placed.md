@@ -2,7 +2,7 @@
 id: EV_001
 title: Order Placed
 object: event
-type: FR
+type: event
 name: OrderPlaced
 relationships:
   - target: VO_001

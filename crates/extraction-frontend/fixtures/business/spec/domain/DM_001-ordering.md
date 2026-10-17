@@ -2,7 +2,7 @@
 id: DM_001
 title: Ordering
 object: domain
-type: FR
+type: domain
 relationships:
   - target: FR-001
     type: contains

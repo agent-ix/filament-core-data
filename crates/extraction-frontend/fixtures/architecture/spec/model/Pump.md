@@ -2,7 +2,7 @@
 id: Pump
 title: Pump
 object: entity
-type: FR
+type: entity
 name: Pump
 ---
 

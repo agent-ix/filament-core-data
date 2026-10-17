@@ -2,7 +2,7 @@
 id: SM_001
 title: Order Lifecycle
 object: state_machine
-type: FR
+type: state_machine
 name: OrderLifecycle
 relationships:
   - target: EV_001

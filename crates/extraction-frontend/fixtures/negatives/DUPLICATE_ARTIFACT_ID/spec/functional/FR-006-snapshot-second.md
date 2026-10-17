@@ -2,7 +2,7 @@
 id: FR-006
 title: Snapshot Entity (second declaration)
 object: entity
-type: FR
+type: entity
 name: SnapshotAgain
 relationships:
   - target: "ix://agent-ix/docs-service/FR-005"

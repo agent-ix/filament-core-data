@@ -2,7 +2,7 @@
 id: EN_001
 title: Order Status
 object: enumeration
-type: FR
+type: enumeration
 name: OrderStatus
 ---
 

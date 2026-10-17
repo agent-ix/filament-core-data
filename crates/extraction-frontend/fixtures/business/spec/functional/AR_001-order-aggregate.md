@@ -2,7 +2,7 @@
 id: AR_001
 title: Order Aggregate
 object: aggregate_root
-type: FR
+type: aggregate_root
 name: OrderAggregate
 relationships:
   - target: FR-001
