@@ -67,3 +67,10 @@ scope:
   role: context_only
   excerpt: "The frontend SHALL skip a document with no `object` frontmatter without a diagnostic; requirement, use-case, and review artifacts are not domain declarations."
 ```
+
+## Dispositions
+
+| FND | outcome | sha/reason |
+| --- | --- | --- |
+| FND-001 | fixed | 794218c6 (FR-091 now states that a document is never lifted by `type` alone, and that `object` selects the type when `type` is a different loaded object type; TC-1841 tests BARE-1 and MIX-1. The QSpec FR-154-AC-14 lift-by-type clause is being dropped upstream; FCD and QSpec agree only once that change lands) |
+| FND-002 | fixed | 794218c6 (MIX-1, `type: entity` + `object: value_object`, must lift as value_object, which fails without the registry lookup; the BundleIndex check now covers FR-204, FR-271, FR-100, FR-300, FR-301 and BARE-1; `type: FR` + undeclared object is tested) |

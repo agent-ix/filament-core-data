@@ -87,3 +87,10 @@ scope:
   role: examined
   excerpt: "document.composed = frontmatter.and_then(|fm| fm.get(\"type\")?.as_str()).is_some_and(|doc_type| { !object_type_names.contains(doc_type) && Some(doc_type) != object });"
 ```
+
+## Dispositions
+
+| FND | outcome | sha/reason |
+| --- | --- | --- |
+| FND-001 | fixed | 794218c6 (the UNKNOWN_OBJECT_TYPE statements now exempt composed documents explicitly; `tc_1841_unknown_object_diagnoses_only_a_non_composed_document` pins `type: FR` + `object: widget` as silent and `type: widget` + `object: widget` as diagnosed) |
+| FND-002 | accepted-no-change | The planner ruled the rule stays as written. TC-1841 now pins `type: gadget` + `object: entity` as composed, so the silent typo drop is specified behaviour. Recorded medium, not fixed, under the one-reviewer major-bugs-only policy. |
