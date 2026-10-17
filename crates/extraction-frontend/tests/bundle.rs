@@ -400,6 +400,26 @@ fn tc_1841_composed_document_is_never_extracted_even_with_object() {
         &dir.path().join("spec/functional/FR-100-plain.md"),
         &typed_md("FR-100", "Plain", "FR", None),
     );
+    // `type` is not a loaded object type: composed, so exempt from
+    // UNKNOWN_OBJECT_TYPE even though `widget` is undeclared.
+    write(
+        &dir.path().join("spec/functional/FR-300-widget.md"),
+        &typed_md("FR-300", "Widget", "FR", Some("widget")),
+    );
+    write(
+        &dir.path().join("spec/functional/FR-301-gadget.md"),
+        &typed_md("FR-301", "Gadget", "gadget", Some("entity")),
+    );
+    // A loaded object type is not composed; `object` decides.
+    write(
+        &dir.path().join("spec/domain/Mixed.md"),
+        &typed_md("MIX-1", "Mixed", "entity", Some("value_object")),
+    );
+    // No `object`: never lifted by `type` alone.
+    write(
+        &dir.path().join("spec/domain/Bare.md"),
+        &typed_md("BARE-1", "Bare", "entity", None),
+    );
     // Object-typed documents lift, `enumeration` included.
     write(
         &dir.path().join("spec/domain/Order.md"),
@@ -412,7 +432,8 @@ fn tc_1841_composed_document_is_never_extracted_even_with_object() {
     let bundle = Bundle::load(dir.path(), &[&business_module()]).expect("loads");
     let out = extract(&bundle);
     let ids: Vec<&String> = out.artifacts.keys().collect();
-    assert_eq!(ids, ["ENUM-1", "ORD-1"]);
+    assert_eq!(ids, ["ENUM-1", "MIX-1", "ORD-1"]);
+    assert_eq!(out.artifacts["MIX-1"].object, "value_object");
     assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
     // A composed document is not an object-typed artifact of the index.
     let indexed: Vec<&str> = bundle
@@ -421,7 +442,37 @@ fn tc_1841_composed_document_is_never_extracted_even_with_object() {
         .iter()
         .map(|o| o.id.as_str())
         .collect();
-    assert!(!indexed.contains(&"FR-204"), "{indexed:?}");
+    for composed in ["FR-204", "FR-271", "FR-100", "FR-300", "FR-301", "BARE-1"] {
+        assert!(!indexed.contains(&composed), "{composed} in {indexed:?}");
+    }
+}
+
+#[trace("TC-1841", "FR-091-AC-12")]
+#[test]
+fn tc_1841_unknown_object_diagnoses_only_a_non_composed_document() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    write(
+        &dir.path().join("spec/spec.md"),
+        &spec_md(Some("agent-ix"), "docs-service"),
+    );
+    write(
+        &dir.path().join("spec/functional/FR-300-widget.md"),
+        &typed_md("FR-300", "Widget", "FR", Some("widget")),
+    );
+    let out = extract(&Bundle::load(dir.path(), &[&business_module()]).expect("loads"));
+    assert!(out.artifacts.is_empty());
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+
+    write(
+        &dir.path().join("spec/functional/W-1-widget.md"),
+        &typed_md("W-1", "Widget Two", "widget", Some("widget")),
+    );
+    let out = extract(&Bundle::load(dir.path(), &[&business_module()]).expect("loads"));
+    assert_eq!(out.diagnostics.len(), 1, "{:?}", out.diagnostics);
+    assert_eq!(
+        out.diagnostics[0].code,
+        WireCode::Registry(Code::UnknownObjectType)
+    );
 }
 
 #[trace("TC-1206", "FR-091-AC-7")]
