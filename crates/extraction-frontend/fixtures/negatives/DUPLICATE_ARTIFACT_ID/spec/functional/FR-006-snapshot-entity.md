@@ -2,7 +2,7 @@
 id: FR-006
 title: Snapshot Entity
 object: entity
-type: FR
+type: entity
 name: Snapshot
 relationships:
   - target: "ix://agent-ix/docs-service/FR-005"

@@ -2,7 +2,7 @@
 id: NE_001
 title: Shipment
 object: nested_entity
-type: FR
+type: nested_entity
 name: Shipment
 relationships:
   - target: VO_001

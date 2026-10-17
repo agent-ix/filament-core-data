@@ -2,7 +2,7 @@
 id: FR-001
 title: Counter
 object: entity
-type: FR
+type: entity
 ---
 
 # FR-001: Counter

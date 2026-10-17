@@ -2,7 +2,7 @@
 id: FR-007
 title: Widget
 object: widget
-type: FR
+type: widget
 ---
 
 # FR-007: Widget

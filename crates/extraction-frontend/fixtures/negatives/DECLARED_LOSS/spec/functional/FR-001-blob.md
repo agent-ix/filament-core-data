@@ -2,7 +2,7 @@
 id: FR-001
 title: Blob
 object: entity
-type: FR
+type: entity
 ---
 
 # FR-001: Blob

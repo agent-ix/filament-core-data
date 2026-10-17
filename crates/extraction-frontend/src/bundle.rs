@@ -92,6 +92,10 @@ impl Package {
 pub struct Document {
     path: String,
     loaded: LoadedDocument,
+    /// Frontmatter `type` names an artifact type (neither an object type a
+    /// loaded module declares nor the document's own `object`): the document is classified by `type`
+    /// alone and never declares a model node, `object:` or not.
+    composed: bool,
 }
 
 impl Document {
@@ -105,9 +109,19 @@ impl Document {
         &self.loaded.id
     }
 
-    /// Frontmatter `object`, when the document is a domain declaration.
+    /// Frontmatter `object`, when the document is a domain declaration. A
+    /// composed document (`type` an artifact type) has none.
     pub fn object(&self) -> Option<&str> {
+        if self.composed {
+            return None;
+        }
         self.frontmatter()?.get("object")?.as_str()
+    }
+
+    /// Whether frontmatter `type` names an artifact type rather than an
+    /// object type a loaded module declares.
+    pub fn is_composed(&self) -> bool {
+        self.composed
     }
 
     pub fn frontmatter(&self) -> Option<&serde_json::Map<String, serde_json::Value>> {
@@ -198,12 +212,13 @@ impl Bundle {
     /// for an object-typed document without an `id`.
     pub fn load(root: &Path, module_roots: &[&Path]) -> Result<Self, Refusal> {
         let repo = load_repo(root);
-        let documents: Vec<Document> = repo
+        let mut documents: Vec<Document> = repo
             .documents
             .into_iter()
             .map(|loaded| Document {
                 path: relative_path(root, &loaded.path),
                 loaded,
+                composed: false,
             })
             .collect();
         let package = identify(&documents)?;
@@ -217,12 +232,28 @@ impl Bundle {
             ))
         })?;
         let modules = accepted_modules(&registry, &source_identity)?;
+        let object_type_names: BTreeSet<&str> = registry
+            .active_archetypes()
+            .filter(|archetype| modules.contains_key(&archetype.module))
+            .map(|archetype| archetype.name.as_str())
+            .collect();
+        for document in &mut documents {
+            let frontmatter = document.frontmatter();
+            let object = frontmatter.and_then(|fm| fm.get("object")?.as_str());
+            document.composed = frontmatter
+                .and_then(|fm| fm.get("type")?.as_str())
+                .is_some_and(|doc_type| {
+                    !object_type_names.contains(doc_type) && Some(doc_type) != object
+                });
+        }
+        drop(object_type_names);
         check_documents(&documents, &source_identity)?;
 
         let index = BundleIndex::from_documents(
             &package.identity(),
             documents
                 .iter()
+                .filter(|document| !document.composed)
                 .filter_map(|document| Some((document.frontmatter()?, document.raw()))),
             modules.values(),
         );

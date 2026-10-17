@@ -1649,7 +1649,7 @@ fn tc_1754_a_nested_entity_with_no_owner_or_two_owners_is_refused_naming_the_own
     .expect("write");
     fs::write(
         root.join("spec/functional/NE_002-parcel.md"),
-        "---\nid: NE_002\ntitle: Parcel\nobject: nested_entity\ntype: FR\nname: Parcel\n---\n\n# NE_002: Parcel\n\n## Description\n\nA parcel of one shipment.\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|-------|------|--------------|-------------|\n| id | UUID | 1 | identity |\n| tags | String | 0..* | |\n",
+        "---\nid: NE_002\ntitle: Parcel\nobject: nested_entity\ntype: nested_entity\nname: Parcel\n---\n\n# NE_002: Parcel\n\n## Description\n\nA parcel of one shipment.\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|-------|------|--------------|-------------|\n| id | UUID | 1 | identity |\n| tags | String | 0..* | |\n",
     )
     .expect("write");
     let chained = lower(&root);
@@ -1841,7 +1841,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     copy_tree(&fixture("business"), &root);
     fs::write(
         root.join("spec/functional/PO-001-open-orders.md"),
-        "---\nid: PO-001\ntitle: Open Orders\nobject: population\ntype: FR\nname: OpenOrders\n---\n\n# PO-001: Open Orders\n\n## Description\n\nThe open orders.\n\n## Members\n\n| Type | Extent |\n|------|--------|\n| Order | 0..* |\n",
+        "---\nid: PO-001\ntitle: Open Orders\nobject: population\ntype: population\nname: OpenOrders\n---\n\n# PO-001: Open Orders\n\n## Description\n\nThe open orders.\n\n## Members\n\n| Type | Extent |\n|------|--------|\n| Order | 0..* |\n",
     )
     .expect("write");
     let bundle = Bundle::load(&root, &[module.as_path(), edge_vocabulary().as_path()])
@@ -1992,7 +1992,7 @@ fn tc_1799_a_specializes_edge_and_an_abstract_flag_lower_to_supertypes_and_abstr
 
     fs::write(
         functional.join("VO_002-order-line-variant.md"),
-        "---\nid: VO_002\ntitle: Order Line Variant\nobject: value_object\ntype: FR\n\
+        "---\nid: VO_002\ntitle: Order Line Variant\nobject: value_object\ntype: value_object\n\
          name: OrderLineVariant\n---\n\n# VO_002: Order Line Variant\n\n\
          ## Description\n\nA same-kind `specializes` target for `VO_001`.\n\n\
          ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
@@ -2002,7 +2002,7 @@ fn tc_1799_a_specializes_edge_and_an_abstract_flag_lower_to_supertypes_and_abstr
     .expect("write VO_002");
     fs::write(
         functional.join("EN_002-order-status-variant.md"),
-        "---\nid: EN_002\ntitle: Order Status Variant\nobject: enumeration\ntype: FR\n\
+        "---\nid: EN_002\ntitle: Order Status Variant\nobject: enumeration\ntype: enumeration\n\
          name: OrderStatusVariant\n---\n\n# EN_002: Order Status Variant\n\n\
          ## Values\n\n| Value | Description |\n|-------|-------------|\n\
          | draft | Not yet placed |\n",
@@ -2012,7 +2012,11 @@ fn tc_1799_a_specializes_edge_and_an_abstract_flag_lower_to_supertypes_and_abstr
     let vo_path = functional.join("VO_001-order-line.md");
     let vo_text = fs::read_to_string(&vo_path).expect("read VO_001");
     let vo_edited = vo_text
-        .replacen("type: FR\n", "type: FR\nabstract: true\n", 1)
+        .replacen(
+            "type: value_object\n",
+            "type: value_object\nabstract: true\n",
+            1,
+        )
         .replace(
             "relationships:\n",
             "relationships:\n  - target: VO_002\n    type: specializes\n",
@@ -2023,8 +2027,8 @@ fn tc_1799_a_specializes_edge_and_an_abstract_flag_lower_to_supertypes_and_abstr
     let en_path = functional.join("EN_001-order-status.md");
     let en_text = fs::read_to_string(&en_path).expect("read EN_001");
     let en_edited = en_text.replacen(
-        "type: FR\n",
-        "type: FR\nabstract: true\nrelationships:\n  - target: EN_002\n    type: specializes\n",
+        "type: enumeration\n",
+        "type: enumeration\nabstract: true\nrelationships:\n  - target: EN_002\n    type: specializes\n",
         1,
     );
     assert_ne!(en_edited, en_text, "EN_001: the edit changes nothing");

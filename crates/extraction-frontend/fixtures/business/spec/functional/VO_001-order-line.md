@@ -2,7 +2,7 @@
 id: VO_001
 title: Order Line
 object: value_object
-type: FR
+type: value_object
 name: OrderLine
 relationships:
   - target: EN_001

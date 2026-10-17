@@ -2,7 +2,7 @@
 id: Count
 title: Count
 object: value_object
-type: FR
+type: value_object
 name: Count
 ---
 

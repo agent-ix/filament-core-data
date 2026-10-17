@@ -2,7 +2,7 @@
 id: FR-005
 title: SnapshotGroup Entity
 object: entity
-type: FR
+type: entity
 traces:
   - US-002
 status: IMPLEMENTED

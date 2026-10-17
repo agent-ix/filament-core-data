@@ -2,7 +2,7 @@
 id: EN_001
 title: Marks
 object: enumeration
-type: FR
+type: enumeration
 ---
 
 # EN_001: Marks

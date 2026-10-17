@@ -196,7 +196,7 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
     .expect("copy spec.md");
     fs::write(
         root.join("spec/functional/FR-008-punctuation.md"),
-        "---\nid: FR-008\ntitle: \"---\"\nobject: entity\ntype: FR\n---\n\n# FR-008: ---\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|-------|------|--------------|-------------|\n| id | UUID | 1 | identity |\n",
+        "---\nid: FR-008\ntitle: \"---\"\nobject: entity\ntype: entity\n---\n\n# FR-008: ---\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|-------|------|--------------|-------------|\n| id | UUID | 1 | identity |\n",
     )
     .expect("write FR-008");
     let bundle = Bundle::load(&root, &[&business_module()]).expect("the bundle loads");

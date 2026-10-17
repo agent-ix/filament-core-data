@@ -2,7 +2,7 @@
 id: Tank
 title: Tank
 object: entity
-type: FR
+type: entity
 name: Tank
 ---
 
