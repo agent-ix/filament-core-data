@@ -1550,6 +1550,9 @@
 				"extent": {
 					"enum": ["closed", "open"]
 				},
+				"symmetric": {
+					"type": "boolean"
+				},
 				"origin": {
 					"$ref": "common.schema.json#/$defs/origin"
 				}
