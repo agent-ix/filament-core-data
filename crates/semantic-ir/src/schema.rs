@@ -823,6 +823,9 @@ const POPULATION_MEMBERS: &[&str] = &[
     "extent",
     "origin",
 ];
+/// Optional population members: `symmetric` marks a symmetric population
+/// (QSpec FR-381); absent means false.
+const POPULATION_OPTIONAL_MEMBERS: &[&str] = &["symmetric"];
 /// A population's `extent`: one value for the whole population (QSpec
 /// FR-153/AD-006), never a per-member multiplicity.
 const POPULATION_EXTENTS: &[&str] = &["closed", "open"];
@@ -837,7 +840,18 @@ fn population_schema(
         return;
     }
     require_members(population, at, POPULATION_MEMBERS, f);
-    forbid_extra(population, at, POPULATION_MEMBERS, f);
+    let allowed: Vec<&str> = POPULATION_MEMBERS
+        .iter()
+        .chain(POPULATION_OPTIONAL_MEMBERS)
+        .copied()
+        .collect();
+    forbid_extra(population, at, &allowed, f);
+    expect_bool(
+        population.get("symmetric"),
+        &child(at, "symmetric"),
+        "symmetric",
+        f,
+    );
     expect_shape(
         population.get("identity"),
         &child(at, "identity"),
