@@ -1,9 +1,12 @@
 ---
 id: ADR-INDEX
+type: index
 title: "Semantic data architecture decision index"
 status: normative
 ---
 # Semantic data architecture decision index
+
+## Contents
 
 | Decision | Status | Supersedes | Resolution gate |
 |---|---|---|---|
@@ -18,6 +21,7 @@ status: normative
 | [ADR-0009: Reference target resolution](0009-reference-target-resolution.md) | normative | — | ruled under agent-ix/filament-core-data#59 |
 | [ADR-0010: Reserved-namespace resolution](0010-reserved-namespace-resolution.md) | normative | — | ruled under agent-ix/filament-core-data#80 |
 | [ADR-0011: Domain packages: construct kinds are module data](0011-domain-packages-construct-kinds-are-module-data.md) | normative | — | ruled under agent-ix/filament-core-data#172 |
+| [ADR-0012: Lift dependency feature selection](0012-lift-dependency-feature-selection.md) | normative | — | IR-640 implementation and qualification planned |
 
 Accepted decisions remain normative until an indexed successor explicitly
 supersedes them. A historical decision links exactly one current successor. The

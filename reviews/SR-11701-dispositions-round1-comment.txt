@@ -1,0 +1,24 @@
+<!-- reviewer-dispositions repo=agent-ix/filament-core-data visibility=public quoin=0.28.4 module=spec-artifacts-process@b82e42e893612b4b4ee94127714b4577ee893502 id=SR-11701 round=1 model=gpt-6.1-sol run=2376f0ed-7a5d-46cb-aecf-a389040a92b9 -->
+
+Frozen head 1f5cfa0ce6b6e889c1cf5835918ffc25a0e26389.
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-001 | fixed | Verified FR-091 Behavior, AC-12 and ADR-0012 consistently cover all normal/build paths through frontend lift; unrelated normal or build edges remain outside the guarantee. |
+
+Full repository gap remains FAIL. Spec-only scoped readiness does not establish implementation or qualification.
+
++++ [reviewer data]
+
+```yaml
+dispositions:
+- fnd: FND-001
+  outcome: fixed
+  after_excerpt: A consumer whose normal/build dependency paths to the pinned `quire-rs` package all pass through
+    the frontend's public lift dependency has no activated normal/build path to the source parser packages excluded
+    above. A scratch negative control restoring default features activates the excluded parsers and is rejected
+    by the same graph check. The assertion inspects the resolved activated graph, not only manifest text or lockfile
+    names.
+```
+
++++
