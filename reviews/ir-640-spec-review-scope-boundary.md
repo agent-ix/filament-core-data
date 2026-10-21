@@ -26,3 +26,21 @@ CONDITIONAL — Findings require explicit disposition.
 The owner is extraction-frontend, consuming quire-rs Markdown/filesystem extraction with a contract-tested dependency boundary. FR-091 is core; FR-099 CLI is core and unchanged; NFR-033 dependency/toolchain qualification is cross-cutting; ADR-0006 injected JS producer remains the process boundary. Upstream defaults and unrelated consumer feature edges remain external. QSL/CG ordinary adoption is integration work, not a new owner layer. One introduced consumer-premise mismatch must be fixed.
 
 Frozen head remains unchanged. No native aggregate or implementation qualification is claimed.
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | Inspected the fix at 1f5cfa0ce6b6e889c1cf5835918ffc25a0e26389; AC-12 now conditions on all normal/build paths passing through public lift; Behavior and ADR state the same premise and exclude unrelated normal or build edges. |
+
+## Disposition round 1 verification
+
+Rechecked frozen head 1f5cfa0ce6b6e889c1cf5835918ffc25a0e26389. The only contract edits since review consistently tighten the normal/build premise in FR-091 Behavior, AC-12 and ADR-0012. Existing feature selection, lift/CLI/API/model/enum/identity/refusal controls and measurement method remain unchanged. Eight other method conclusions remain applicable after this narrow context check; no new defects found. The ten initial artifacts in the frozen branch were byte-exact reviewer copies before these appended dispositions.
+
+Current scope-boundary disposition: PASS; FND-001 fixed.
+
+After excerpt (FR-091-AC-12, verbatim):
+
+> A consumer whose normal/build dependency paths to the pinned `quire-rs` package all pass through the frontend's public lift dependency has no activated normal/build path to the source parser packages excluded above. A scratch negative control restoring default features activates the excluded parsers and is rejected by the same graph check. The assertion inspects the resolved activated graph, not only manifest text or lockfile names.
+
+No full matrix or semantic-review repeat was warranted by this wording-only fix. No native command, implementation change, candidate measurement or savings claim occurred.

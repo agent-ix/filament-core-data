@@ -35,3 +35,20 @@ Complete matrices and untagged inventories are retained alongside this review as
 Whole-tree source surface inventory spans compiler/frontends/IR/package graph/CLI, Rust semantic reader and extraction frontend, semantic schema, conformance adapters and consumers, generated kernel language bindings, and scripts. Requirement owners are FR-041..053 and FR-063/130/131/136/138 for compiler seams; FR-054..080 for backends/readers; FR-081..090 for kernel/packages/consumers; FR-091..099 and FR-142/143 for lift; FR-035..039/140 for conformance; FR-106/133..145 for later vocabulary/identity/numeric contracts. These behavioral families have stated owners. Source scan found no confirmed production todo!/unimplemented! stub or test stub behind changed criteria; test negative-control stubs are intentional perturbations. No changed code creates an unowned behavior. This inventory is static and does not assert exhaustive semantic correctness or test execution.
 
 Frozen head remains unchanged. No native aggregate or implementation qualification is claimed.
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | deferred | Deferred outside PR295 to open agent-ix/filament-core-data#296 (https://github.com/agent-ix/filament-core-data/issues/296), assigned to kreneskyp under FCD program #3. Verified the issue inventory equals all 1546 original computed untagged criterion IDs exactly. Lead decision IR-640 comment 635d9824-2d31-4512-97e9-262a4cb920bf explicitly authorizes this scoped deferral; the full repository gap remains FAIL and no waiver, implementation completion or evidence execution is asserted. |
+| FND-002 | deferred | Deferred for this spec-only PR to the SAME open IR-640 implementation stage by lead decision 635d9824-2d31-4512-97e9-262a4cb920bf. Deliver the dependency-edge change and a real resolved normal/build graph positive check plus restored-default negative control; no existing tag or execution is claimed. |
+| FND-003 | deferred | Deferred for this spec-only PR to the SAME open IR-640 implementation stage by lead decision 635d9824-2d31-4512-97e9-262a4cb920bf. Deliver real public lift/CLI regression for selected features preserving canonical bytes, identities, model/enum extraction, typed outcomes and diagnostics and CLI exits; no success or runtime acceptance is claimed. |
+| FND-004 | deferred | Deferred for this spec-only PR to the SAME open IR-640 qualification stage by lead decision 635d9824-2d31-4512-97e9-262a4cb920bf. Ordinary QSL producer adoption and matched control/candidate builds, active/compiled package and lock metrics, wall time, peak memory and preserved first failures remain required. No candidate measurement or saving is claimed. |
+
+## Disposition round 1 verification
+
+Rechecked frozen head 1f5cfa0ce6b6e889c1cf5835918ffc25a0e26389. The only contract edits since review consistently tighten the normal/build premise in FR-091 Behavior, AC-12 and ADR-0012. Existing feature selection, lift/CLI/API/model/enum/identity/refusal controls and measurement method remain unchanged. Eight other method conclusions remain applicable after this narrow context check; no new defects found. The ten initial artifacts in the frozen branch were byte-exact reviewer copies before these appended dispositions.
+
+Current full gap verdict: FAIL. All four findings have explicit scoped deferrals, rather than being fixed or covered. The exact inherited baseline is owned by FCD #296, and the three new obligations remain under open IR-640. Original matrix counts and findings are unchanged. Plan completion: not assessed.
+
+No full matrix or semantic-review repeat was warranted by this wording-only fix. No native command, implementation change, candidate measurement or savings claim occurred.

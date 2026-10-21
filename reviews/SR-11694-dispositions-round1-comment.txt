@@ -1,0 +1,42 @@
+<!-- reviewer-dispositions repo=agent-ix/filament-core-data visibility=public quoin=0.28.4 module=spec-artifacts-process@b82e42e893612b4b4ee94127714b4577ee893502 id=SR-11694 round=1 model=gpt-6.1-sol run=2376f0ed-7a5d-46cb-aecf-a389040a92b9 -->
+
+Frozen head 1f5cfa0ce6b6e889c1cf5835918ffc25a0e26389.
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-001 | deferred | Deferred outside PR295 to open agent-ix/filament-core-data#296 (https://github.com/agent-ix/filament-core-data/issues/296), assigned to kreneskyp under FCD program #3. Verified the issue inventory equals all 1546 original computed untagged criterion IDs exactly. Lead decision IR-640 comment 635d9824-2d31-4512-97e9-262a4cb920bf explicitly authorizes this scoped deferral; the full repository gap remains FAIL and no waiver, implementation completion or evidence execution is asserted. |
+| FND-002 | deferred | Deferred for this spec-only PR to the SAME open IR-640 implementation stage by lead decision 635d9824-2d31-4512-97e9-262a4cb920bf. Deliver the dependency-edge change and a real resolved normal/build graph positive check plus restored-default negative control; no existing tag or execution is claimed. |
+| FND-003 | deferred | Deferred for this spec-only PR to the SAME open IR-640 implementation stage by lead decision 635d9824-2d31-4512-97e9-262a4cb920bf. Deliver real public lift/CLI regression for selected features preserving canonical bytes, identities, model/enum extraction, typed outcomes and diagnostics and CLI exits; no success or runtime acceptance is claimed. |
+| FND-004 | deferred | Deferred for this spec-only PR to the SAME open IR-640 qualification stage by lead decision 635d9824-2d31-4512-97e9-262a4cb920bf. Ordinary QSL producer adoption and matched control/candidate builds, active/compiled package and lock metrics, wall time, peak memory and preserved first failures remain required. No candidate measurement or saving is claimed. |
+
+Full repository gap remains FAIL. Spec-only scoped readiness does not establish implementation or qualification.
+
++++ [reviewer data]
+
+```yaml
+dispositions:
+- fnd: FND-001
+  outcome: deferred
+  reason: 'Deferred outside PR295 to open agent-ix/filament-core-data#296 (https://github.com/agent-ix/filament-core-data/issues/296),
+    assigned to kreneskyp under FCD program #3. Verified the issue inventory equals all 1546 original computed untagged
+    criterion IDs exactly. Lead decision IR-640 comment 635d9824-2d31-4512-97e9-262a4cb920bf explicitly authorizes
+    this scoped deferral; the full repository gap remains FAIL and no waiver, implementation completion or evidence
+    execution is asserted.'
+- fnd: FND-002
+  outcome: deferred
+  reason: Deferred for this spec-only PR to the SAME open IR-640 implementation stage by lead decision 635d9824-2d31-4512-97e9-262a4cb920bf.
+    Deliver the dependency-edge change and a real resolved normal/build graph positive check plus restored-default
+    negative control; no existing tag or execution is claimed.
+- fnd: FND-003
+  outcome: deferred
+  reason: Deferred for this spec-only PR to the SAME open IR-640 implementation stage by lead decision 635d9824-2d31-4512-97e9-262a4cb920bf.
+    Deliver real public lift/CLI regression for selected features preserving canonical bytes, identities, model/enum
+    extraction, typed outcomes and diagnostics and CLI exits; no success or runtime acceptance is claimed.
+- fnd: FND-004
+  outcome: deferred
+  reason: Deferred for this spec-only PR to the SAME open IR-640 qualification stage by lead decision 635d9824-2d31-4512-97e9-262a4cb920bf.
+    Ordinary QSL producer adoption and matched control/candidate builds, active/compiled package and lock metrics,
+    wall time, peak memory and preserved first failures remain required. No candidate measurement or saving is claimed.
+```
+
++++
