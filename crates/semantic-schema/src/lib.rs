@@ -134,6 +134,10 @@ pub const SC_EDGE_CATEGORY: &str =
 pub const SC_ENUM_VALUE: &str =
     include_str!("../../../packages/semantic-core/generated/json-schema/EnumValue.json");
 
+/// `EnumValueName.json`.
+pub const SC_ENUM_VALUE_NAME: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/EnumValueName.json");
+
 /// `EnumValuesConstraint.json`.
 pub const SC_ENUM_VALUES_CONSTRAINT: &str =
     include_str!("../../../packages/semantic-core/generated/json-schema/EnumValuesConstraint.json");
@@ -223,7 +227,7 @@ pub const SC_UNIT_SYMBOL: &str =
 /// Every embedded semantic-core schema, keyed by its filename exactly as it
 /// appears under `packages/semantic-core/generated/json-schema/` — the same
 /// names `@agent-ix/semantic-core` publishes to npm. This is the cargo route
-/// those 30 documents previously had none of.
+/// those 31 documents previously had none of.
 pub const SEMANTIC_CORE_SCHEMAS: &[(&str, &str)] = &[
     ("ClauseLanguage.json", SC_CLAUSE_LANGUAGE),
     ("ClauseRef.json", SC_CLAUSE_REF),
@@ -234,6 +238,7 @@ pub const SEMANTIC_CORE_SCHEMAS: &[(&str, &str)] = &[
     ("DefaultKind.json", SC_DEFAULT_KIND),
     ("EdgeCategory.json", SC_EDGE_CATEGORY),
     ("EnumValue.json", SC_ENUM_VALUE),
+    ("EnumValueName.json", SC_ENUM_VALUE_NAME),
     ("EnumValuesConstraint.json", SC_ENUM_VALUES_CONSTRAINT),
     ("ExclusiveMaxConstraint.json", SC_EXCLUSIVE_MAX_CONSTRAINT),
     ("ExclusiveMinConstraint.json", SC_EXCLUSIVE_MIN_CONSTRAINT),
