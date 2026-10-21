@@ -45,10 +45,12 @@ Choose **A**. The frontend selects `quire-rs` with `default-features = false`
 and `features = ["resolve-file"]`, keeping `python` off, at the exact revision
 already governed by
 [NFR-033](../../../spec/non-functional/NFR-033-qualified-toolchain-and-licensed-dependencies.md).
-It excludes source-symbol parser activation from its own normal/build path.
-An unrelated consumer dependency may re-enable features through Cargo feature
-unification; this decision does not govern that edge or change upstream CLI
-defaults.
+For a consumer whose normal/build dependency paths to the pinned `quire-rs`
+package all pass through the frontend's lift dependency, the activated
+normal/build graph excludes source-symbol parser activation.
+An unrelated consumer normal or build dependency may re-enable features through
+Cargo feature unification; this decision does not govern that edge or change
+upstream CLI defaults.
 
 The real `lift(LiftRequest)` path, typed `body_extraction` for model and enum
 tables, canonical document bytes, package/node identities and typed diagnostics
