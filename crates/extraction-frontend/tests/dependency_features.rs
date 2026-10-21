@@ -47,7 +47,9 @@ fn consumer_graph(frontend: &Path, consumer: &Path, lock: &Path) -> Value {
     let bytes = checked(
         Command::new("cargo")
             .args(["metadata", "--format-version", "1", "--offline"])
-            .current_dir(consumer),
+            .arg("--manifest-path")
+            .arg(consumer.join("Cargo.toml"))
+            .current_dir(workspace_dir()),
     );
     serde_json::from_slice(&bytes).expect("resolved consumer graph")
 }
