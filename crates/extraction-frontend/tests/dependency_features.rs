@@ -27,8 +27,8 @@ fn checked(command: &mut Command) -> Vec<u8> {
 fn consumer_graph(frontend: &Path, consumer: &Path, lock: &Path) -> Value {
     fs::create_dir_all(consumer.join("src")).expect("consumer directories");
     // JSON string quoting is also TOML basic-string quoting for these paths.
-    let path = serde_json::to_string(frontend.to_str().expect("UTF-8 path"))
-        .expect("quote frontend path");
+    let path =
+        serde_json::to_string(frontend.to_str().expect("UTF-8 path")).expect("quote frontend path");
     fs::write(
         consumer.join("Cargo.toml"),
         format!(
@@ -61,7 +61,12 @@ fn parser_paths(graph: &Value) -> BTreeMap<String, Vec<String>> {
         .as_array()
         .expect("packages")
         .iter()
-        .map(|p| (p["id"].as_str().expect("id"), p["name"].as_str().expect("name")))
+        .map(|p| {
+            (
+                p["id"].as_str().expect("id"),
+                p["name"].as_str().expect("name"),
+            )
+        })
         .collect();
     let nodes: BTreeMap<&str, &Value> = graph["resolve"]["nodes"]
         .as_array()
@@ -82,12 +87,17 @@ fn parser_paths(graph: &Value) -> BTreeMap<String, Vec<String>> {
         let name = packages[id];
         frontend_seen |= name == "agent-ix-extraction-frontend";
         quire_seen |= name == "quire-rs";
-        if matches!(name, "quire-rust-extraction" | "quire-code-parse" | "tree-sitter")
-            || name.starts_with("tree-sitter-")
+        if matches!(
+            name,
+            "quire-rust-extraction" | "quire-code-parse" | "tree-sitter"
+        ) || name.starts_with("tree-sitter-")
         {
             forbidden.insert(name.to_string(), path.clone());
         }
-        for dep in nodes[id]["deps"].as_array().expect("activated dependencies") {
+        for dep in nodes[id]["deps"]
+            .as_array()
+            .expect("activated dependencies")
+        {
             if !dep["dep_kinds"]
                 .as_array()
                 .expect("dependency kinds")
@@ -117,7 +127,11 @@ fn tc_1841_lift_graph_excludes_parsers_and_restoring_defaults_at_its_edge_is_rej
         &temp.path().join("candidate-consumer"),
         &root.join("Cargo.lock"),
     );
-    assert!(parser_paths(&graph).is_empty(), "{:?}", parser_paths(&graph));
+    assert!(
+        parser_paths(&graph).is_empty(),
+        "{:?}",
+        parser_paths(&graph)
+    );
 
     // Archive the complete committed owner, including workspace dependencies.
     // Equality below prevents a stale committed edge from becoming the control.
@@ -132,7 +146,13 @@ fn tc_1841_lift_graph_excludes_parsers_and_restoring_defaults_at_its_edge_is_rej
     );
     let owner = temp.path().join("owner");
     fs::create_dir(&owner).expect("scratch owner");
-    checked(Command::new("tar").arg("-xf").arg(&archive).arg("-C").arg(&owner));
+    checked(
+        Command::new("tar")
+            .arg("-xf")
+            .arg(&archive)
+            .arg("-C")
+            .arg(&owner),
+    );
     let frontend = owner.join("crates/extraction-frontend");
     let manifest = frontend.join("Cargo.toml");
     let original = fs::read(&manifest).expect("scratch frontend manifest");
@@ -157,10 +177,15 @@ fn tc_1841_lift_graph_excludes_parsers_and_restoring_defaults_at_its_edge_is_rej
     );
     let rejected = parser_paths(&control);
     for parser in ["quire-rust-extraction", "quire-code-parse", "tree-sitter"] {
-        assert!(rejected.contains_key(parser), "control did not activate {parser}: {rejected:?}");
+        assert!(
+            rejected.contains_key(parser),
+            "control did not activate {parser}: {rejected:?}"
+        );
     }
     assert!(
-        rejected.keys().any(|name| name.starts_with("tree-sitter-") && name != "tree-sitter-language"),
+        rejected
+            .keys()
+            .any(|name| name.starts_with("tree-sitter-") && name != "tree-sitter-language"),
         "default control must activate a grammar: {rejected:?}"
     );
     fs::write(&manifest, &original).expect("restore scratch edge byte for byte");
