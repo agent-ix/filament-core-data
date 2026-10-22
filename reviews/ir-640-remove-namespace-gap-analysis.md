@@ -56,3 +56,38 @@ order — either supplied explicitly or excluded from the output.
 ## Narrow carryforward at corrected generated-model head
 
 At exact6705a003, existing source namespace removal, normative spec, catalog, task and all test trace bindings are unchanged from reviewedce7. Exactly3generated Population.symmetric field lines now conform to the already-owned schema and FR079AC4/CON2; no new reverse ownership gap or trace claim. The source-only computed criterion matrix inputs/binders remain unchanged:2169total/1548untagged/382method-without-symbol/235tagged/4ignored-only. No fresh matrix execution at6705 is claimed. FND001 remains DEFERRED exact1546FCD296; FND002 remains DEFERRED FR091AC12/13existingPR297/sameIR640. AC14downstream matchedconsumer qualification remainssameopenIR640. SR12012newFND002 records the inherited generated-code drift separately and FIXED by actualproducer; this does not repair repositorycoverage. Fullgap verdict remains FAIL. All seven prior spec lens PASS conclusions carry forward over byte-identical normative inputs; fullaggregate remainsrootpending.
+
+## New findings (disposition pass 3)
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-003 | high | Ten unchanged historical review artifacts fail structural validation under the installed Quire catalog, so the additional whole-history scan fails despite valid active specifications and all nine current PR298 reviews. | reviews/2026-09-04-plan-010-rust-serde-backend-gap-analysis.md; agent-ix/filament-core-data#300 |
+
+## Dispositions (round 3)
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-003 | deferred | Deferred outside PR298 to existing open agent-ix/filament-core-data#300, the FCD assurance/documentation baseline owner. All ten exact failing blobs match main6a9; no declared repository CI/Make gate or contributor policy requires this added whole-history scan. The repair must first establish intended catalog/module and archival status, preserve original findings/evidence and tracker copies, then perform any supported migration. This is not a validity waiver or a claim the broad scan passed; scoped298 acceptance still requires actual normal gates plus active-spec/current-SR validation. Existing FCD296 criterion debt and openIR640 feature/adoption qualification remain separate. |
+
+## Historical-review baseline and actual gate scope
+
+Independent static checks at hash-frozen5ce411dce97ee09bde2b7c2b5f8d12816f7b404d prove all ten diagnostic files byte-identical to main6a9ffdf676faf070427d76459a80c8743c3eb0ed. Examined actual failures: missing Summary/Findings or frontmatter, legacy table column/severity/Escape Cause values, and unregistered Evidence archetype. They are real current-catalog structural failures, not falsely passing documents. No migration is performed in PR298 and original review meaning is not rewritten.
+
+Gate-policy inspection: CONTRIBUTING only adds CLA; Makefile declares install/build/lint/test and test-all:test-node test-rust test-python sysml-pilot-check, with no make spec or historical Quire glob. Local build-test workflow delegates to nodejs-actions reusable workflow; its actual source invokes make install/test/lint and production-high pnpm audit, with no historical-review validator. Static search of local workflows/scripts/package.json/Makefile and active FR/NFR found no requirement for this extra broad history scan. Thus finding is nonblocking for this narrow delivery under existing scope once all declared normal gates actually pass; it does not waive a mandatory gate.
+
+Root05 evidence separately records active spec+plan validation exit0, current nine typedSR validation exit0, and extra broad spec+plan+historicalreviews scan exit3. The private operational bundle must retain a failed result if it incorporates that failed extra phase; no bundle-all-green/all8PASS claim. Current full Node/Rust/Python suite execution remains root-owned and pending; previous/current partial phase observations are not whole-suite acceptance. This reviewer performed only read-only source/API/evidence checks and operations-scratch review authoring, no Cargo/build/test/resolver/namespace/security operation.
+
+Existing SR12013 FND001 remains DEFERRED exact1546FCD296; FND002 remains DEFERRED FR091AC12/13 existingPR297/sameopenIR640. AC14matchedconsumer qualification is also still openIR640. Fullgap remains FAIL. Prior findings/dispositions and seven spec-lens/code conclusions are preserved; additional structural artifact debt does not become1546newfindings.
+
+Examined historical artifact paths:
+
+- reviews/2026-09-04-plan-010-rust-serde-backend-gap-analysis.md
+- reviews/2026-09-04-python-backend-gap-analysis.md
+- reviews/2026-09-04-rust-serde-backend-code-review.md
+- reviews/2026-09-04-typescript-backend-gap-analysis.md
+- reviews/2026-10-09-fcd-268-float32-boundary-design.md
+- reviews/age-2229-fr144-evidence.md
+- reviews/plat-990-e3bd0f72-code-review.disposition-1.comment.md
+- reviews/plat-990-e3bd0f72-gap-analysis.disposition-1.comment.md
+- reviews/plat-990-e3bd0f72-spec-review-dependency.disposition-1.comment.md
+- reviews/plat-990-e3bd0f72-spec-review-ears-conformance.disposition-1.comment.md
