@@ -174,10 +174,10 @@ frontend) is verbatim, as the paragraph below the table states:
 | Slot | Identity | Parts |
 |---|---|---|
 | `type` | `<Name>` | the type's name; a kernel scalar definition is `<KernelScalar>` (a kernel scalar name is alphanumeric, so its slug is itself) |
-| `field` | `<Name>/<field>` | owner type identity, `/`, field slug; an operation parameter is `<Name>/<operation>/<param>`, nested under its operation's identity (there is no `param/` slot) |
+| `field` | `<Name>/<field>` | owner type identity, `/`, field name verbatim; an operation parameter is `<Name>/<operation>/<param>`, its name verbatim, nested under its operation's identity (there is no `param/` slot) |
 | `variant` | `variant/<Name>-<member>` | owner enum or union, member |
 | `relationship` | `relationship/<Name>-<verb>-<TargetName>` | owner record, verb, target type name |
-| `operation` | `<Name>/<name>` | owner type identity, `/`, operation slug |
+| `operation` | `<Name>/<name>` | owner type identity, `/`, operation name verbatim |
 | `clause` | spec-bundle frontend: `<Name>/<clauseId>`; TypeSpec frontend: `clause/<Name>-<clauseId>` | owner type, clause id |
 | `state` | `<Name>/<state>` | owner state machine identity, `/`, state name |
 | `transition` | `<Name>/transition<i>` | owner state machine identity, `/`, `transition` and the zero-based row position (a transition row has no name) |
@@ -194,10 +194,12 @@ because an object id carries `_` and no `-` and `semanticIdentity` admits `_`
 inside a segment (`[A-Za-z0-9._~:/-]`), so slugging an id would rewrite a
 datum the pattern already accepts. An id carrying a character that pattern
 does not admit inside a segment, or no ASCII alphanumeric at all (`_`), mints
-no segment and is refused as `UNSLUGGABLE_NAME`. Every other part — a field,
-member, verb or keyword — is slugged on both sides; a spec-bundle clause id,
-state name or step name is the member name verbatim, and a name outside
-`^[A-Za-z][A-Za-z0-9_]*$` is refused as `UNSLUGGABLE_NAME`. The type's name is its `displayName`.
+no segment and is refused as `UNSLUGGABLE_NAME`. A field, operation or
+operation parameter name is the member name verbatim on both sides (`created_at`
+mints `<Name>/created_at`), and so is a spec-bundle clause id, state name or
+step name; a member name outside `^[A-Za-z][A-Za-z0-9_]*$` is refused as
+`UNSLUGGABLE_NAME`. Every other part — an enumeration member, verb, keyword or
+the `<Field>` of a constrained-field alias — is slugged on both sides. The type's name is its `displayName`.
 
 `slug(value)` replaces every run of characters outside `[A-Za-z0-9]` with one
 `-` and trims leading and trailing `-`; case is preserved (`Config Version` →
