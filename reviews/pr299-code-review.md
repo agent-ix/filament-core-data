@@ -55,8 +55,8 @@ scope:
 
 ## Dispositions
 
-| FND | outcome | sha |
+| FND | outcome | sha/reason |
 | --- | --- | --- |
-| FND-001 | fixed: root Cargo.toml patches agent-ix-semantic-schema to crates/semantic-schema and the lock is re-resolved; all test binaries pass under cargo test --locked | faae976f |
-| FND-002 | fixed: test every_semantic_core_ref_names_an_embedded_document | faae976f |
-| FND-003 | fixed: document count dropped from the doc comment | faae976f |
+| FND-001 | fixed | faae976f: the root `[patch."https://github.com/agent-ix/filament-core-data"]` points at `crates/semantic-schema`, and the lock now has a single path `agent-ix-semantic-schema` with no git 6a9ffdf6 entry. The reviewer re-measured at f567e813: `cargo metadata --locked` succeeds; `cargo test --locked --no-fail-fast -p agent-ix-extraction-frontend -p agent-ix-semantic-schema` passes in all binaries with no local change; `make extraction-frontend-check` exits 0. |
+| FND-002 | fixed | faae976f: `every_semantic_core_ref_names_an_embedded_document`. Mutation check: deleting the `EnumValueName.json` entry makes it fail with "EnumValue.json refs EnumValueName.json, which is not embedded". |
+| FND-003 | fixed | faae976f: the count is removed from the doc comment. |

@@ -29,9 +29,3 @@ Consumers. `SEMANTIC_CORE_SCHEMAS` is referenced only inside `crates/semantic-sc
 | FND-001 | low | No findings (placeholder) | - |
 
 Plan completion: not assessed
-
-## Dispositions
-
-| FND | outcome | sha |
-| --- | --- | --- |
-| FND-001 | no action: placeholder, no findings; the blocking defect is SR-11703 FND-001, fixed in faae976f | faae976f |
