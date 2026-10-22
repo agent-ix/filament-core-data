@@ -574,6 +574,7 @@ class Population(Struct):
     kind: ConstructKind
     members: list[common_schema.SemanticIdentity]
     origin: common_schema.Origin
+    symmetric: bool | UnsetType = UNSET
 
 
 class Relationship(Struct):
