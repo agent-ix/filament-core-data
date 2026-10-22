@@ -69,3 +69,24 @@ scope:
 - {id: QSpec FR-322, path: "agent-ix/quire-specification spec/objects/interfaces/FR-322-checked-package-artifact.md", role: context_only, excerpt: "the declaring unit of compilation supplies the unit, not the domain package"}
 - {id: QSL FR-230, path: "agent-ix/quire-spec-language spec/functional/FR-230-check-time-declarations-clocks-and-clock-constraints.md", role: context_only, excerpt: "together with those the admitted domain package supplies"}
 ```
+
+## New findings (disposition pass 1)
+
+Head edceaaac288b147eb40d37ba46ccbd2673dbd4d0.
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-007 | low | TC-1809 (JSON-Schema backend) and TC-1810 (rust-serde backend) now carry `Clock` in their `NATIVE_SCALARS` and trace to FR-146-AC-1, but FR-146's native-set statement and AC-1 constrain IR readers only. No FR-146 statement requires a backend's native list to name Clock (backends refuse clock members). Either bind the two rows to a backend statement or drop Clock and the FR-146-AC-1 tag from them. | spec/tests.md:1332-1333 |
+
+## Dispositions
+
+Round 1, head edceaaac288b147eb40d37ba46ccbd2673dbd4d0 (fix commit edceaaa).
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | - |
+| FND-002 | fixed | - |
+| FND-003 | fixed | - |
+| FND-004 | fixed | - |
+| FND-005 | fixed | - |
+| FND-006 | fixed | - |

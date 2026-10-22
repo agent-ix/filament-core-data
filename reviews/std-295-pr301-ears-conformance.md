@@ -34,3 +34,20 @@ scope:
 - {id: FR-146-CON-1, path: spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md, role: examined, excerpt: "Every IR reader SHALL return the same verdict, code and locus for each clock, dimension, unit and unit-reference case of this requirement."}
 - {id: FR-146-CON-2, path: spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md, role: examined, excerpt: "Adding this requirement's members SHALL change no byte and no fingerprint of a document that carries none of them."}
 ```
+
+## New findings (disposition pass 1)
+
+Head edceaaac288b147eb40d37ba46ccbd2673dbd4d0.
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-003 | low | Line 271, "The fingerprint form (FR-069) SHALL keep the same authored order", names no agent; name the canonicalizer or fingerprint function (`fingerprintIrForTarget`). | spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md:271-275 |
+
+## Dispositions
+
+Round 1, head edceaaac288b147eb40d37ba46ccbd2673dbd4d0 (fix commit edceaaa).
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | still-open | Most cited bullets are split (clock shape, dimensions, unit-typed member), but three compound statements remain: lines 177-178 ("A unit node SHALL carry ... and SHALL admit an optional `target`"), 181-182 ("`dimension` and `target` SHALL be semantic identities, and `scale` and `offset` SHALL be strings"), 183-184 ("A unit edge SHALL mean ..., and a unit with no `target` SHALL be its dimension's root"), plus 237-238 (SHALL NOT resolve ... and SHALL raise no diagnostic). Low severity; split, or the lead records accepted-no-change. |
+| FND-002 | fixed | - |
