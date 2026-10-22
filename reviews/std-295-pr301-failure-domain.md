@@ -66,6 +66,14 @@ Head e8a665fa1a51390042299eec82030b759d90185b.
 | --- | --- | --- | --- |
 | FND-012 | low | The round-2 result rule says a unit-typed operation result raises blocking UNDECLARED_LOSS "whatever `allowedOmissions` names". FR-058 lets `allowedOmissions` name any semantic identity, an operation's included, and dropping a named identity is a non-blocking DECLARED_LOSS. When the profile omits the owning operation, its result is dropped with it, and FR-146 then contradicts FR-058. State that omitting the owning operation omits its unit-typed result under that operation's DECLARED_LOSS, and keep UNDECLARED_LOSS for the case where the operation is generated. | spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md:316-319, 365 |
 
+## New findings (disposition pass 3)
+
+Head fbd12c7cb76ce201bae90a1c5a55dd458352ecf0.
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-013 | low | The round-3 result rule drops a unit-typed result with its omitted operation, but the omission bullets at lines 306-315 still key on the member's own identity. A unit-typed parameter of an operation that `allowedOmissions` names, or a clock or unit-typed field of an omitted type, is named by no `allowedOmissions` entry itself, so read literally it raises blocking UNDECLARED_LOSS although it is never generated. Apply the same rule: a member dropped with an omitted owner raises no loss of its own. | spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md:306-315 |
+
 ## Dispositions
 
 Round 1, head edceaaac288b147eb40d37ba46ccbd2673dbd4d0 (fix commit edceaaa).
@@ -83,3 +91,4 @@ Round 1, head edceaaac288b147eb40d37ba46ccbd2673dbd4d0 (fix commit edceaaa).
 | FND-009 | fixed | round 2, head e8a665f |
 | FND-010 | fixed | round 2, head e8a665f |
 | FND-011 | fixed | round 2, head e8a665f |
+| FND-012 | fixed | round 3, head fbd12c7 |

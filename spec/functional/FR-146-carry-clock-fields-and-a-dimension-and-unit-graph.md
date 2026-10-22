@@ -303,25 +303,30 @@ a field or operation parameter.
 
 ### Generation backends
 
-- If a document carries a clock field, or a unit-typed field or operation
-  parameter, whose identity the backend profile's `allowedOmissions` names
-  (FR-058), then each generation backend (Rust, TypeScript, Python, JSON Schema
-  and SysML v2) SHALL omit that member and raise the non-blocking
-  `DECLARED_LOSS` naming it.
-- If a document carries a clock field, or a unit-typed field or operation
-  parameter, that no `allowedOmissions` names, then each generation backend
-  SHALL raise the blocking `agent-ix.semantic-ir.UNDECLARED_LOSS` naming the
-  member and write no file, rather than map the member to a scalar of its
-  target language.
-- If a backend profile's `allowedOmissions` names an operation whose result is
-  unit-typed, then each generation backend SHALL drop the result with the
-  operation under that operation's non-blocking `DECLARED_LOSS` (FR-058),
-  raising no loss of its own for the result.
+In this section, "each generation backend" is the Rust, TypeScript, Python,
+JSON Schema and SysML v2 backend, and an affected member is a clock field, a
+unit-typed field, a unit-typed operation parameter or a unit-typed operation
+result. An affected member's owners are the type definition that declares a
+field, and the operation and its type definition for a parameter or a result.
+A result carries no identity of its own, so a backend profile's
+`allowedOmissions` (FR-058) names a result only through an owner.
+
+- If `allowedOmissions` names an affected field's or parameter's own identity,
+  then each generation backend SHALL omit that member and raise the
+  non-blocking `DECLARED_LOSS` naming it.
+- If `allowedOmissions` names an owner of an affected member, then each
+  generation backend SHALL drop the member with that owner and raise no loss of
+  its own for it, the owner's non-blocking `DECLARED_LOSS` covering it.
+- If a generated subtype inherits an affected field from a supertype that
+  `allowedOmissions` names, then each generation backend SHALL treat the field
+  as generated for that subtype, so only the field's own identity omits it
+  there.
+- If a backend generates an affected field or parameter, then it SHALL raise
+  the blocking `agent-ix.semantic-ir.UNDECLARED_LOSS` naming the member and
+  write no file, rather than map the member to a scalar of its target language.
 - If a backend generates an operation whose result is unit-typed, then it SHALL
   raise the blocking `agent-ix.semantic-ir.UNDECLARED_LOSS` naming the
-  operation's identity and `returns`, and write no file: a result carries no
-  identity of its own, so `allowedOmissions` names it only through its
-  operation.
+  operation's identity and `returns`, and write no file.
 - Each generation backend that carries its own native list (the JSON Schema and
   rust-serde backends) SHALL list `Clock` with no IR scalar beside the reader's
   native set.
@@ -367,7 +372,7 @@ a field or operation parameter.
 | FR-146-AC-5 | Scale spellings `"2/4"`, `"1/1"`, `"-0"`, `"0/5"`, `"01/3"` and `"1.5"` each refuse exactly `INVALID_OPERAND` at `/units/<j>/scale`; the JSON number `0.001` refuses exactly `SCHEMA_VIOLATION` there; a numerator of 2^127 refuses exactly `INTEGER_OUTSIDE_I128`; `"1/1000"`, `"-3/2"` and `"273"` are accepted; an exponent `"+1"` refuses exactly `INVALID_OPERAND` at its pointer. | Test (TC-1846) |
 | FR-146-AC-6 | A field, an operation parameter and an operation result typed `ix://quire/unit/ms` are accepted with no diagnostic, both in the AC-3 document and in a document that declares no units; `ix://quire/unit/ms` as an alias target or sequence `items` refuses exactly `UNRESOLVED_TYPE_REF` at that member, and so do the typeRefs `ix://quire/unit/` and `ix://quire/unit/3ms`; a unit-typed field carrying `unit: "ms"`, a `min` constraint, a `decimal` policy and a semantic default refuses exactly one `INVALID_QUANTITY_MEMBER` at each of `/unit`, `/constraints`, `/decimal`, `/defaultKind` and `/defaultValue` under the field, and no `UNIT_ON_NON_SCALAR`, `CONSTRAINT_NOT_APPLICABLE`, decimal-policy code, `INVALID_DEFAULT_VALUE`, `UNKNOWN_CONSTRAINT_KEYWORD` or `INVALID_PATTERN`. | Test (TC-1847) |
 | FR-146-AC-7 | Two documents differing only in the order of `units` have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; every committed positive fixture keeps its bytes and fingerprint; adding a unit classifies additive, and removing one, changing its `scale` or changing a dimension's `base` classifies breaking. | Test (TC-1848) |
-| FR-146-AC-8 | The AC-1 document and the AC-6 document each make every generation backend raise the blocking `UNDECLARED_LOSS` naming the clock or unit-typed member and write no file; with a profile whose `allowedOmissions` names the member, the backend omits it with a non-blocking `DECLARED_LOSS`; an operation with a unit-typed result raises the blocking `UNDECLARED_LOSS` naming the operation and `returns` when the backend generates the operation, and when `allowedOmissions` names the operation the backend drops it with one non-blocking `DECLARED_LOSS` and no loss for the result; a document carrying `dimensions` and `units` generates exactly what it generates without them; the JSON Schema and rust-serde backends' native lists carry `Clock` with no IR scalar. | Test (TC-1849) |
+| FR-146-AC-8 | The AC-1 document and the AC-6 document each make every generation backend raise the blocking `UNDECLARED_LOSS` naming the clock or unit-typed member and write no file. With `allowedOmissions` naming the member, the backend omits it with one non-blocking `DECLARED_LOSS` naming it. With `allowedOmissions` naming only the owner, each of these is dropped with the owner under the owner's single `DECLARED_LOSS` and raises no loss of its own: the clock field of an omitted `Call` type, a unit-typed parameter of an omitted operation, a unit-typed parameter of an operation of an omitted type, and a unit-typed result of an omitted operation. A generated operation with a unit-typed result raises the blocking `UNDECLARED_LOSS` naming the operation and `returns`. A generated subtype of an omitted `Call` that inherits its clock field raises the blocking `UNDECLARED_LOSS` naming the field, unless `allowedOmissions` names the field. A document carrying `dimensions` and `units` generates exactly what it generates without them, and the JSON Schema and rust-serde backends' native lists carry `Clock` with no IR scalar. | Test (TC-1849) |
 
 ## Dependencies
 
