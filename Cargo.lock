@@ -33,11 +33,6 @@ name = "agent-ix-semantic-schema"
 version = "0.3.0"
 
 [[package]]
-name = "agent-ix-semantic-schema"
-version = "0.3.0"
-source = "git+https://github.com/agent-ix/filament-core-data?branch=main#6a9ffdf676faf070427d76459a80c8743c3eb0ed"
-
-[[package]]
 name = "ahash"
 version = "0.8.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1002,7 +997,7 @@ name = "quire-rs"
 version = "0.50.3"
 source = "git+https://github.com/agent-ix/quire-rs?rev=fd1cdd9d302bfd870517cc2e009b8646757c12f1#fd1cdd9d302bfd870517cc2e009b8646757c12f1"
 dependencies = [
- "agent-ix-semantic-schema 0.3.0 (git+https://github.com/agent-ix/filament-core-data?branch=main)",
+ "agent-ix-semantic-schema",
  "globset",
  "ignore",
  "indexmap",
