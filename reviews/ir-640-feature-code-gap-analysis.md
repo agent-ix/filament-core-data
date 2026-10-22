@@ -82,3 +82,15 @@ Actual author controls were inspected: genuine TC1841 standalone activated-norma
 Current computed full matrix2169criteria:1546untagged/382method-without-symbol/237tagged/4ignored-only. Exact1546set equals established FCD296 owner inventory. Existing FND001DEFERRED to open assignedFCD296 and FND002DEFERRED to sameopenIR640 FR091AC14downstream adoption/matchedconsumerqualification remain unchanged. No measured savings, wholeIR640completion, or universalconsumer guarantee. MainFCD300tenhistorical invalid reviews remain separately owned inheriteddebt; newly added rawtranscriptFND003 is not covered by it.
 
 Explicit rawfile validation exit3/missingtypefrontmatter. Typed SRs remain valid separately. Independent actual liveLinear/OPS byte custody verified before proposed raw removal. No production/source edit or heavy/test/resolver/namespace/security operation by reviewer. Code/Rust SR12009 and spec/baseSR12011 have no new source finding; fullgapSR12010FAIL now additionally blocks merge on FND003 until fixed.
+
+## Dispositions (round 3)
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-003 | fixed | Verified at709f1342: only the untyped raw disposition transcript is deleted; its original actualLinear2ff91a0b body and preserved1888-byte operations copy remain byte-exact. Three typedSRs retained, original FND003 text and prior still-open row preserved, no product/test/index/lock changes. |
+
+## Final raw-artifact fix acceptance
+
+Exact published head709f13422e89924a9a8d97267268257974b4d9e8 changes only deletion of the invalid raw transcript and byte-exact custody of this reviewer gap artifact relative to87d62d6. Fixed-state Git evidence: `delete mode 100644 reviews/ir-640-feature-code-gap-analysis-dispositions-round1-linear-comment.md`. All product inputs remain unchanged from reviewed87d62d6; code/RustSR12009 and baseSR12011 PASS carry forward. The remaining three typedSRs and spec/tests validate successfully in author receipt; this updated typedSR is separately Quire-validated by reviewer before custody. No new code finding or weakened test.
+
+Fullgap remains FAIL solely on original FND001/FND002, both explicitly DEFERRED: exact1546untaggedcriterioninventory remainsopenassignedFCD296; FR091AC14downstreamQSLadoption/matchedcontrol-candidatequalification remainssameopenIR640. Introduced rawdocumentFND003 is FIXED, notdeferredtoFCD300. Existingmain FCD300tenhistoricalartifactdebt remains distinct and unchanged. WholeIR640completion/savings notclaimed. Fullroot no-filter make-j1test-rust on finalcustodyhead remains required, including ordinaryTC1306; no actualfullaggregate execution at709isclaimed. Reviewer performed no source edits, tests/builds/resolver or namespace/security operations.
