@@ -168,8 +168,10 @@ zero-based row position). Every other slot — `variant`, `relationship`,
 `ix://<package identity>/<slot>/<tail>`, so a relationship is
 `relationship/<Name>-<verb>-<TargetName>` and a TypeSpec clause is
 `clause/<Name>-<clauseId>`, never nested under their owner. Every name part of
-every slot is slugged; an artifact id part (`<Name>` in the spec-bundle
-frontend) is verbatim, as the paragraph below the table states:
+every slot is slugged except a member name (a field, operation or operation
+parameter, and in the spec-bundle frontend a clause, state, transition or
+step), which is verbatim; an artifact id part (`<Name>` in the spec-bundle
+frontend) is verbatim too, as the paragraph below the table states:
 
 | Slot | Identity | Parts |
 |---|---|---|
@@ -236,10 +238,12 @@ and they are checked in this order:
   are refused as `DUPLICATE_TYPE_NAME` at the later document, before any
   identity of either is minted. (The TypeSpec compiler refuses duplicate
   declarations itself, so the TypeSpec frontend never reaches this case.)
-- (b) **Distinct names, one slug.** Two distinct declaration names whose
-  slugs coincide (`created_at` beside `created__at`; two enumeration rows
-  `a_b` and `a__b`) are refused as `UNSLUGGABLE_NAME` at the later
-  declaration, FR-053's rule, which the spec-bundle frontend adopts.
+- (b) **Distinct names, one slug.** Two distinct slugged names whose slugs
+  coincide (two enumeration rows `a_b` and `a__b`) are refused as
+  `UNSLUGGABLE_NAME` at the later declaration, FR-053's rule, which the
+  spec-bundle frontend adopts. Two distinct member names never reach this
+  case, because each is its segment verbatim (`created_at` and `created__at`
+  mint two identities).
 - (c) **Any other two nodes minting one identity** — a minted alias beside an
   author-named type (`NoteRevision` beside `Note.revision`), a field beside
   an operation parameter of the same owner — are refused as
