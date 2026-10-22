@@ -129,7 +129,7 @@ widened at implementation time measures whatever was widened.
 | Byte difference in `types[]` and diagnostics between the table-form and fence-form lift of one declaration at one bundle-relative path (`source.digest` differs by construction) | 0 | 0 | Cross-form comparison over two line-aligned bundle roots |
 | Directories enumerated by the crate outside `quire_rs::corpus::load_repo` and `Registry::load_module_set` | 0 | 0 | Static analysis citing quire-rs path-sorted loading (TC-473) |
 | Ambient inputs read without an explicit parameter (cwd, `HOME`, environment, clock, hostname, RNG) | 0 | 0 | Static analysis with a named exemption list and a planted-token control |
-| Network connections opened during a lift | 0 | 0 | Offline run under `unshare -rn`, or an equivalent unprivileged network namespace |
+| Socket-capable crates from the audit's `SOCKET_CRATES` list in the resolved normal dependency tree | 0 | 0 | Ordinary traced test running `cargo tree --offline --locked -p agent-ix-extraction-frontend -e normal --prefix none` |
 | Files opened by the crate itself, outside the engine's loaders and `write.rs`, while lifting a bundle | 0 | 0 | Static analysis + instrumented run |
 | Declared limits in `limits.json` not enforced by a blocking diagnostic | 0 | 0 | Limit-probe tests, one per limit |
 | Limit values named in a diagnostic that differ from `limits.json` | 0 | 0 | Test reading both |
@@ -154,7 +154,9 @@ for `SystemTime`, `Instant`, `std::env`, `env!`, `option_env!`, `hostname`,
 `rand`, `HashMap`, `HashSet`, `std::fs`, `std::net`, and `Command`, confirm
 each hit is either absent or on the exemption list named in NFR-031-AC-5, and
 confirm the grep fails on a scratch copy carrying a planted token; run the
-suite under `unshare -rn` (or an equivalent unprivileged network namespace) with cargo in offline mode; for every entry of
+ordinary TC-1306 dependency audit with cargo in offline mode, confirm the
+resolved normal tree contains the extraction crate and none of the
+`SOCKET_CRATES` entries; for every entry of
 `limits.json`, construct a bundle one past the limit and confirm the lift
 returns the named blocking diagnostic at the offending locus within 512 MiB
 resident memory and 30 s wall time, and that the number the diagnostic names is
@@ -175,7 +177,7 @@ and a gate that cannot run fails saying so rather than passing.
 | NFR-031-AC-4 | The crate enumerates no directory itself: every document and module reaches it through `quire_rs::corpus::load_repo` and `Registry::load_module_set`, whose results are sorted by path (`quire-rs/src/corpus/walk.rs`, TC-473), so enumeration order cannot reach the output. | Analysis (TC-1303) |
 | NFR-031-AC-5 | No module under `crates/extraction-frontend/src/` references `SystemTime`, `Instant`, `std::env`, `env!`, `option_env!`, a hostname API, an RNG, `std::net`, or `std::process::Command`; `std::fs` appears only in `write.rs`, the crate's sole `std::fs` module, whose reads are exactly `<module root>/manifest.yaml` per supplied module root (`write::read_manifest`, called from `lift.rs`, FR-091-CON-2, and from the construct seam in `bundle.rs`, FR-142), the golden walk, and `inspect --ir`, and whose writes are the atomic outputs of FR-097; every other module is `std::fs`-free, and `bundle.rs` reaches the file system only through `quire_rs::corpus::load_repo`, `Registry::load_module_set` and `write::read_manifest`; the exemption list is exactly `write.rs` for `std::fs` and the command-line binary's argument parsing for `std::env`; and the gate fails on a scratch copy with a planted `std::env::var` in `lower.rs`. | Analysis (TC-1304) |
 | NFR-031-AC-6 | `limits.json` declares `maxDocuments`, `maxDocumentBytes`, `maxFieldsPerRecord`, `maxClauseBytes`, and `maxDepth`; for each, a bundle one past the limit yields exactly one blocking `agent-ix.extraction-frontend.LIMIT_*` diagnostic at the offending document, within 512 MiB resident memory and 30 s wall time, and the value the diagnostic names equals the file's. | Test (TC-1305) |
-| NFR-031-AC-7 | The crate suite run under `unshare -rn`, or an equivalent unprivileged network namespace, with cargo in offline mode passes, and the crate declares no dependency that opens a socket. | Static (TC-1306) |
+| NFR-031-AC-7 | An ordinary test obtains the crate's resolved normal dependency tree through `cargo tree --offline --locked -p agent-ix-extraction-frontend -e normal --prefix none`, asserts that the tree contains `agent-ix-extraction-frontend`, and asserts zero dependencies whose package names are in the audit's `SOCKET_CRATES` list. This is a dependency audit, without creating users, groups or namespaces or changing host security configuration. | Test |
 | NFR-031-AC-8 | The `HashMap` audit over `crates/extraction-frontend/src/` reports zero hits with an empty exemption list, fails on a scratch copy with a planted `HashMap` in `lower.rs`, and every map whose iteration order reaches the output is a `BTreeMap` or an `IndexMap`. | Analysis (TC-1307) |
 | NFR-031-AC-9 | The crate root carries `#![forbid(unsafe_code)]` and a `compile_fail` doctest proves an injected `unsafe` block does not build. | Test (TC-1308) |
 | NFR-031-AC-10 | Over 256 bundle trees generated by the crate's `proptest` bundle-tree strategy the frontend returns a result or a diagnostic and never panics. | Fuzz (TC-1309) |

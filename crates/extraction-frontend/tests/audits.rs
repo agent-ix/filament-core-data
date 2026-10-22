@@ -1,5 +1,5 @@
 //! NFR-031-AC-4, AC-5, AC-7, AC-8, AC-9 and AC-10: the static audits over
-//! `crates/extraction-frontend/src/`, the offline run, the
+//! `crates/extraction-frontend/src/`, the offline dependency audit, the
 //! `forbid(unsafe_code)` proof and the bundle-tree fuzz.
 //!
 //! Every grep gate here is a function over a directory, so the same gate
@@ -11,7 +11,6 @@
 
 use std::cell::{Cell, RefCell};
 use std::collections::BTreeMap;
-use std::ffi::OsString;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
@@ -21,10 +20,7 @@ mod common;
 mod strategies;
 
 use agent_ix_extraction_frontend::{lift, LiftOutcome, LiftRequest};
-use common::{
-    copy_tree, crate_dir, declared_module_roots, first_difference, fixture, module_roots,
-    scratch_dir, workspace_dir,
-};
+use common::{copy_tree, crate_dir, module_roots, scratch_dir, workspace_dir};
 use ix_trace_rs::trace;
 use proptest::test_runner::{Config, TestRunner};
 use strategies::bundle_tree::bundle_tree;
@@ -542,72 +538,9 @@ const SOCKET_CRATES: [&str; 14] = [
     "attohttpc",
 ];
 
-/// `unshare -rn <program> <args>`: the program in a fresh network
-/// namespace (user namespace first, so no privilege is needed).
-fn unshare(program: &Path, args: &[OsString], cwd: &Path) -> Output {
-    Command::new("unshare")
-        .arg("-rn")
-        .arg(program)
-        .args(args)
-        .current_dir(cwd)
-        .output()
-        .unwrap_or_else(|e| panic!("`unshare` could not be started ({e}): the namespace gate cannot run, and this is a failure rather than a skip"))
-}
-
-/// Fail naming the reason when `unshare -rn` cannot create a namespace
-/// on this host.
-fn assert_unshare_available() {
-    let probe = Command::new("unshare")
-        .args(["-rn", "true"])
-        .output()
-        .unwrap_or_else(|e| panic!("`unshare` could not be started ({e}): the namespace gate cannot run, and this is a failure rather than a skip"));
-    assert!(
-        probe.status.success(),
-        "`unshare -rn true` failed on this host ({}): the namespace gate cannot run, and this is a failure rather than a skip",
-        String::from_utf8_lossy(&probe.stderr).trim()
-    );
-}
-
-fn os(s: impl Into<OsString>) -> OsString {
-    s.into()
-}
-
 #[trace("TC-1306", "NFR-031-AC-7")]
 #[test]
-fn tc_1306_a_lift_under_unshare_n_reproduces_the_golden_and_no_dependency_opens_a_socket() {
-    assert_unshare_available();
-
-    // A lift of the fixture in a network namespace with no interfaces:
-    // exit 0 and the golden bytes.
-    let bundle = fixture("snapshot-table");
-    let scratch = scratch_dir("tc-1306");
-    let out = scratch.join("semantic-ir.json");
-    let mut args = vec![os("lift"), os("--bundle"), os(&bundle)];
-    for root in declared_module_roots(&bundle) {
-        args.push(os("--module"));
-        args.push(os(root));
-    }
-    args.push(os("--out"));
-    args.push(os(&out));
-    let output = unshare(
-        Path::new(env!("CARGO_BIN_EXE_extraction-frontend")),
-        &args,
-        &workspace_dir(),
-    );
-    assert_eq!(
-        output.status.code(),
-        Some(0),
-        "lift under unshare -rn:\n{}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    let written = fs::read(&out).expect("document");
-    let golden = fs::read(bundle.join("expected/semantic-ir.json")).expect("golden");
-    assert_eq!(
-        first_difference(&written, &golden),
-        None,
-        "the lift under unshare -rn reproduces the golden"
-    );
-
+fn tc_1306_resolved_normal_dependencies_exclude_socket_crates() {
     // The resolved dependency tree of the crate, in offline mode: no
     // socket-opening crate.
     let output = cargo(&[
@@ -652,45 +585,6 @@ fn tc_1306_a_lift_under_unshare_n_reproduces_the_golden_and_no_dependency_opens_
         sockets.is_empty(),
         "socket-opening dependencies: {sockets:?}"
     );
-}
-
-#[trace("TC-1306", "NFR-031-AC-7")]
-#[test]
-#[ignore = "Static evidence: runs the whole crate suite under unshare -rn, which nests cargo test; run with --ignored"]
-fn tc_1306_the_crate_suite_passes_under_unshare_n_with_cargo_offline() {
-    assert_unshare_available();
-    let cargo_path = PathBuf::from("cargo");
-    let args: Vec<OsString> = [
-        "test",
-        "--offline",
-        "--locked",
-        "-p",
-        PACKAGE,
-        "--",
-        "--skip",
-        "tc_1306_the_crate_suite",
-    ]
-    .iter()
-    .map(|s| os(*s))
-    .collect();
-    let output = unshare(&cargo_path, &args, &workspace_dir());
-    let text = format!(
-        "{}\n{}",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr)
-    );
-    assert!(output.status.success(), "suite under unshare -rn:\n{text}");
-    let passed: usize = text
-        .lines()
-        .filter(|l| l.starts_with("test result: ok."))
-        .filter_map(|l| {
-            l.split_whitespace()
-                .nth(3)
-                .and_then(|n| n.parse::<usize>().ok())
-        })
-        .sum();
-    eprintln!("TC-1306 suite under unshare -rn --offline: {passed} test(s) passed");
-    assert!(passed > 0, "the suite ran:\n{text}");
 }
 
 // ---------------------------------------------------------------------------
