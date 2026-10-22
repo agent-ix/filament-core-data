@@ -92,3 +92,4 @@ Round 1, head edceaaac288b147eb40d37ba46ccbd2673dbd4d0 (fix commit edceaaa).
 | FND-010 | fixed | round 2, head e8a665f |
 | FND-011 | fixed | round 2, head e8a665f |
 | FND-012 | fixed | round 3, head fbd12c7 |
+| FND-013 | fixed | round 4, head 5c26453 |
