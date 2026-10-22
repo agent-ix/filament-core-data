@@ -3,7 +3,7 @@ id: SR-12012
 title: IR-640 namespace removal code-review review
 type: SpecReview
 analysis: code-review
-scope: "agent-ix/filament-core-data PR298; IR-640; audits.rs, NFR-031, TC-1306 and Task-137"
+scope: "agent-ix/filament-core-data PR298; IR-640; audits.rs, NFR-031, TC-1306, Task-137 and three python_backend/generated Population classes"
 review_set: subset
 ---
 
@@ -39,3 +39,23 @@ for identical bundle, module, and limit inputs on the pinned toolchain, with
 every host-varying input — working directory, `HOME`, locale, clock, hostname,
 environment, network, cargo target directory, and file-system enumeration
 order — either supplied explicitly or excluded from the output.
+
+## New findings (disposition pass 2)
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-002 | high | Inherited committed Python Population models omit the schema-owned optional symmetric Boolean, so actual regeneration differs and the existing reproducibility gates fail. | FR-079-AC-4; python_backend/generated/msgspec_struct/semantic_ir_schema.py:571; python_backend/generated/pydantic_v2_basemodel/semantic_ir_schema.py:866; python_backend/generated/pydantic_v2_dataclass/semantic_ir_schema.py:672 |
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-002 | fixed | Actual producer at6705a003 adds exactly optional Population.symmetric in all three existing profiles. Fresh-process emitter/validator checks and the same three original reproducibility tests pass; no test or report weakening. |
+
+## Narrow final Python/code/Rust disposition
+
+At exact6705a003 the only source delta after ce7ec93 is three lines emitted by the existing actual producer: msgspec Population.symmetric uses bool|UnsetType=UNSET; both Pydantic profiles use bool|None=None, matching their existing profile conventions. Authoritative schema already declares optional Boolean symmetric with additionalProperties=false; this repair changes no schema, public contract decision, generator, dependencies, locks, tests, expectations, namespace/security behavior or old Rust/spec semantics. Existing generator owns all outputs, rather than a new handwritten/cross-owner implementation. No new path/input/state/concurrency/resource/security surface or test stub. Existing known family-level optional/null/coercion semantics remain measured limitations; this pass does not claim stronger validation semantics. Actual diagnosis demonstrates schema/generator/old committed outputs were byte-identical to main6a9 before repair, and identifies inherited PR293/QSL871 omission. I independently verified exactly the three one-line additions and all four original PR298 code/spec inputs unchanged.
+
+Inspected author terminal receipt: actual emission, fresh-process emit--check and validate--check succeed; the same three originally failed pytest checks now3PASS in19.61s; validation.json and report.json stay unchanged after correct models are emitted. Earlier scratch validation produced from stale imported committed models was diagnostic, not accepted corrected validation evidence. Original aggregate failure is retained: Node711PASS plus normal fullRustPASS including ordinary TC1306, Python555PASS/3FAIL at oldce7. Those are old-head phase observations, not a new-head full aggregate result. Repair scope16GiB/swap0 peak97161216B/events0, owned scope gone/guards empty, external IR954Cargo explicitly separate; no claim of globally empty process inventory. Reviewer ran no test/build/resolver/namespace/security command. Root owns final actual all-gate decision.
+
+Current code/Python/Rust verdict: PASS, newly surfaced inherited FND-002 FIXED; original review and placeholder preserved.
