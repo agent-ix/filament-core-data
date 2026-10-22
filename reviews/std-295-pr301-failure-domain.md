@@ -58,6 +58,14 @@ Head edceaaac288b147eb40d37ba46ccbd2673dbd4d0.
 | FND-010 | low | An operation result (`returns`) has no `identity` in the schema (`typeRef`, `decimal`, `multiplicity`, `nullable` only), so `allowedOmissions` cannot name a unit-typed result and it always raises UNDECLARED_LOSS. Say whether a result is omitted through its operation's identity, or only with the whole operation. | spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md:286-289 |
 | FND-011 | low | The exclusivity claim ("INVALID_CLOCK_FIELD is the one code each such member carries") lists the suppressed codes but not INVALID_MULTIPLICITY (a clock `{2,1}`), UNKNOWN_CONSTRAINT_KEYWORD or INVALID_PATTERN (inside a clock or unit-typed member's `constraints`). Read literally they still fire beside the FR-146 code, which is deterministic but contradicts the "one code" wording; list them or narrow the claim. | spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md:128-132 |
 
+## New findings (disposition pass 2)
+
+Head e8a665fa1a51390042299eec82030b759d90185b.
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-012 | low | The round-2 result rule says a unit-typed operation result raises blocking UNDECLARED_LOSS "whatever `allowedOmissions` names". FR-058 lets `allowedOmissions` name any semantic identity, an operation's included, and dropping a named identity is a non-blocking DECLARED_LOSS. When the profile omits the owning operation, its result is dropped with it, and FR-146 then contradicts FR-058. State that omitting the owning operation omits its unit-typed result under that operation's DECLARED_LOSS, and keep UNDECLARED_LOSS for the case where the operation is generated. | spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md:316-319, 365 |
+
 ## Dispositions
 
 Round 1, head edceaaac288b147eb40d37ba46ccbd2673dbd4d0 (fix commit edceaaa).
@@ -72,3 +80,6 @@ Round 1, head edceaaac288b147eb40d37ba46ccbd2673dbd4d0 (fix commit edceaaa).
 | FND-006 | fixed | - |
 | FND-007 | fixed | - |
 | FND-008 | fixed | - |
+| FND-009 | fixed | round 2, head e8a665f |
+| FND-010 | fixed | round 2, head e8a665f |
+| FND-011 | fixed | round 2, head e8a665f |

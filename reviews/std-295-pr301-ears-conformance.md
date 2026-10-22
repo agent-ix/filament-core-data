@@ -51,3 +51,5 @@ Round 1, head edceaaac288b147eb40d37ba46ccbd2673dbd4d0 (fix commit edceaaa).
 | --- | --- | --- |
 | FND-001 | still-open | Most cited bullets are split (clock shape, dimensions, unit-typed member), but three compound statements remain: lines 177-178 ("A unit node SHALL carry ... and SHALL admit an optional `target`"), 181-182 ("`dimension` and `target` SHALL be semantic identities, and `scale` and `offset` SHALL be strings"), 183-184 ("A unit edge SHALL mean ..., and a unit with no `target` SHALL be its dimension's root"), plus 237-238 (SHALL NOT resolve ... and SHALL raise no diagnostic). Low severity; split, or the lead records accepted-no-change. |
 | FND-002 | fixed | - |
+| FND-001 | fixed | round 2, head e8a665f |
+| FND-003 | fixed | round 2, head e8a665f |
