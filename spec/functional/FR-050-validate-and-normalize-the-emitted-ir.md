@@ -13,6 +13,8 @@ relationships:
     type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-048"
     type: "depends_on"
+  - target: "ix://agent-ix/filament-core-data/FR-146"
+    type: "references"
   - target: "ix://agent-ix/filament-core-data/NFR-019"
     type: "constrained_by"
   - target: "ix://agent-ix/filament-core-data/NFR-020"
@@ -84,7 +86,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | a constraint keyword is one of the closed eleven | `agent-ix.semantic-ir.UNKNOWN_CONSTRAINT_KEYWORD` |
 | a constraint keyword applies to its resolved subject | `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` |
 | a `pattern` regex compiles under ECMA-262 | `agent-ix.semantic-ir.INVALID_PATTERN` |
-| a bound operand or an `enumValues` item is spelled for its subject's scalar ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md): a canonical integer string on `integer`, a canonical decimal string within the decimal policy on `decimal`, a finite JSON number on `float64`, one exactly a binary32 value on `float32`) | `agent-ix.semantic-ir.INVALID_OPERAND` |
+| a bound operand or an `enumValues` item is spelled for its subject's scalar ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md): a canonical integer string on `integer`, a canonical decimal string within the decimal policy on `decimal`, a finite JSON number on `float64`, one exactly a binary32 value on `float32`), and a dimension term `exponent` is a canonical integer string and a unit `scale` and `offset` are canonical rational strings ([FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md)) | `agent-ix.semantic-ir.INVALID_OPERAND` |
 | a `defaultValue` on a numeric subject is spelled for its scalar by the same FR-144 rule | `agent-ix.semantic-ir.INVALID_DEFAULT_VALUE` |
 | an integer value lies in `i128::MIN..=i128::MAX` (FR-144) | `agent-ix.semantic-ir.INTEGER_OUTSIDE_I128` |
 | each resolution walk reaching a `decimal` scalar passes a node carrying a decimal policy (FR-144) | `agent-ix.semantic-ir.DECIMAL_POLICY_MISSING` |
@@ -102,6 +104,12 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | operation `pre` and `post` name a declared `clauseId` | `agent-ix.semantic-ir.DANGLING_CLAUSE_REF` |
 | operation parameter names are unique | `agent-ix.semantic-ir.DUPLICATE_PARAM` |
 | node identities are unique within each list; an extension `identity` is unique per node (within one node's `extensions[]` and within the document-level `extensions[]`) and is never entered into the declaration-identity set, so two definitions each carrying `ix://agent-ix/semantic-core/ext/kernel-scalar` are admissible | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` |
+| `ix://quire/native/Clock` is only a field's `typeRef` in a type definition's `fields` ([FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md)) | `agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD` |
+| a clock field has the FR-146 clock field shape, one diagnostic per breaking member | `agent-ix.semantic-ir.INVALID_CLOCK_FIELD` |
+| a dimension term and a unit `dimension` name a dimension of the document (FR-146) | `agent-ix.semantic-ir.UNRESOLVED_DIMENSION_REF` |
+| a unit `target` names a unit of the document (FR-146) | `agent-ix.semantic-ir.UNRESOLVED_UNIT_REF` |
+| dimension and unit identities are minted from their names, a base dimension has no terms, terms are strictly ascending with nonzero exponents, terms and unit targets form no cycle, every unit's scale is nonzero, a target shares its unit's dimension, and a dimension has one root, with scale `1` and offset `0` (FR-146) | `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` |
+| a unit-typed member has the FR-146 quantity member shape, one diagnostic per breaking member | `agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER` |
 | the document is an object | `agent-ix.semantic-ir.INVALID_DOCUMENT` |
 
 - Where `importedExports` is the marker `unknown`, `readContractIr` SHALL suppress `UNRESOLVED_RELATIONSHIP_TARGET` for a target absent from the document and SHALL report the suppression to its caller, rather than reporting a defect it cannot see or passing a target it cannot check.
