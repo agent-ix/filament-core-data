@@ -871,6 +871,7 @@ class Population(BaseModel):
     kind: ConstructKind
     members: list[common_schema.SemanticIdentity]
     origin: common_schema.Origin
+    symmetric: bool | None = None
 
 
 class Relationship(BaseModel):
