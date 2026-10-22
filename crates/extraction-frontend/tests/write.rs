@@ -213,6 +213,7 @@ fn request_in(out: &Path) -> LiftRequest {
     request("snapshot-table", out)
 }
 
+#[trace("TC-1281", "FR-091-AC-13")]
 #[trace("TC-1281", "FR-097-AC-9")]
 #[test]
 fn tc_1281_a_blocking_lift_leaves_a_pre_existing_document_byte_unchanged() {
@@ -254,6 +255,7 @@ fn tc_1281_a_blocking_lift_leaves_a_pre_existing_document_byte_unchanged() {
     );
 }
 
+#[trace("TC-1282", "FR-091-AC-13")]
 #[trace("TC-1282", "FR-097-AC-10")]
 #[test]
 fn tc_1282_a_lift_into_a_directory_that_does_not_exist_refuses_with_output_unwritable_naming_it() {
@@ -391,6 +393,7 @@ fn warning_only_bundle(dir: &Path) {
     );
 }
 
+#[trace("TC-1341", "FR-091-AC-13")]
 #[trace("TC-1341", "FR-097-AC-14")]
 #[test]
 fn tc_1341_a_warning_only_lift_writes_exactly_the_two_files() {
