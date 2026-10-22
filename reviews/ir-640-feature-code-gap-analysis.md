@@ -60,3 +60,25 @@ Current full gap verdict remains FAIL. No resource fit, matched consumer saving,
 ## Disposition round 1 verification
 
 Rechecked exact unchanged head da4e6ee55a799462128174da8528b4f53f60f44f and actual current lead decision 38b0a1c6-07cf-44fc-92ae-b812db417340. Re-read live FCD#296: open, assigned to kreneskyp, under program#3, and its fenced criterion inventory equals all1546 current computed untagged IDs as exact ID sets. Code and base PASS conclusions remain applicable; no source or spec change occurred. AC14 remains explicitly unrun, owned by the same open IR640 next qualification slice. Both findings are DEFERRED, not fixed. Full repository gap verdict remains FAIL. No new waiver, measured saving, full ticket closure, repository coherence or consumer qualification is asserted. No new defect identified during this narrow disposition. No heavy command or product edit ran. Final aggregate/current-head acceptance remains lead-owned.
+
+## New findings (disposition pass 2)
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-003 | high | PR297 introduces an untyped raw Linear disposition transcript under reviews/*.md; explicit Quire validation fails because required type frontmatter is absent. | reviews/ir-640-feature-code-gap-analysis-dispositions-round1-linear-comment.md:1 |
+
+## Dispositions (round 2)
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-003 | still-open | Still open at87d62d6: remove this raw transcript from the PR while retaining the three typed SR artifacts, original actual Linear comment2ff91a0b-9c67-469c-9db3-ddd7dffffdec and byte-exact operations copy. The raw body was independently verified against both before removal. This is a newly added invalid document, not one of FCD300 inherited ten historical files; no baseline deferral or validity waiver applies. |
+
+## Exact-head rebase review and introduced raw-artifact failure
+
+Exact published frozen head87d62d6aae5d74ae5b8eefc99a87b6e5b89a9a91, new based803425. Actual independent checks confirm nine previously reviewed code/test/SR blobs byte-identical, main299workspace schema patch/embedded-schema implementation retained, main298ordinaryTC1306audits.rs byte-identical and no namespace helpers restored. Owning dependency retains fd1cdd9 and adds only reviewed default-features=false/resolve-file. Normal lock contains no added/upgraded identities, removes8parser-related packages, and removes transitive serde_json indexmap activation. Full Rust semantic gate is required because feature-unification changed.
+
+Actual author controls were inspected: genuine TC1841 standalone activated-normal/build graph plus restoring defaults at same edge PASS1; CLI3/fixture4/blocking-write4(parent invokes existing ignored child)/warning1/construct1 PASS; format/clippy/index/matrix exit0. Actual resolver/focused scopes16GiB/swap0 peak41639936/1499590656B, zeroOOMevents, gone/hashclean. These are focused author executions, not full aggregate or compiled downstream consumer qualification. Root full no-filter make-j1test-rust remains pending; ordinaryTC1306must run, not be skipped.
+
+Current computed full matrix2169criteria:1546untagged/382method-without-symbol/237tagged/4ignored-only. Exact1546set equals established FCD296 owner inventory. Existing FND001DEFERRED to open assignedFCD296 and FND002DEFERRED to sameopenIR640 FR091AC14downstream adoption/matchedconsumerqualification remain unchanged. No measured savings, wholeIR640completion, or universalconsumer guarantee. MainFCD300tenhistorical invalid reviews remain separately owned inheriteddebt; newly added rawtranscriptFND003 is not covered by it.
+
+Explicit rawfile validation exit3/missingtypefrontmatter. Typed SRs remain valid separately. Independent actual liveLinear/OPS byte custody verified before proposed raw removal. No production/source edit or heavy/test/resolver/namespace/security operation by reviewer. Code/Rust SR12009 and spec/baseSR12011 have no new source finding; fullgapSR12010FAIL now additionally blocks merge on FND003 until fixed.
