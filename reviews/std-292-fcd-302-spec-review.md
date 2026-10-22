@@ -54,3 +54,16 @@ nested member segment.
 | FND-004 | low | The amended DUPLICATE_IDENTITY bullet opens "under distinct names with distinct slugs" but now gives the example "a field and an operation of the same owner sharing one name", which is one name, not distinct names. | spec/functional/FR-095-mint-package-identity-and-provenance.md:134 |
 | FND-005 | medium | The new field/operation/parameter refusal bullet says the frontend raises `UNSLUGGABLE_NAME` and mints no identity. It does not say what happens to the declaring artifact. The parallel clause/state/step bullet says the artifact "SHALL lift to no definition", and AC-23 asserts only the diagnostic, so whether the owner of `_tmp` still lifts is left open. | spec/functional/FR-095-mint-package-identity-and-provenance.md:123, spec/functional/FR-095-mint-package-identity-and-provenance.md:173 |
 | FND-006 | low | FR-095-AC-23 and TC-1850 say the alias "stays" `FR-001Created-at`. That is change-relative wording; the criterion should state the value. | spec/functional/FR-095-mint-package-identity-and-provenance.md:173, spec/tests.md:1372 |
+
+## Dispositions
+
+Round 1, against head a6a58f8addd4b1b4517e6358370b9988a671c014.
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | - |
+| FND-002 | fixed | - |
+| FND-003 | fixed | - |
+| FND-004 | fixed | - |
+| FND-005 | fixed | - |
+| FND-006 | fixed | - |
