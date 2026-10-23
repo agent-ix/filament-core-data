@@ -71,3 +71,22 @@ Round 1, fix head d5dc1c92. NON_CANONICAL_RATIONAL hand-derived: P tests shape o
 | FND-005 | still-open | New finding of this round; code not registered in FR-050. |
 
 Round 1 verdict: Not mergeable: FND-002 and FND-004 (high) are still-open.
+
+## New findings (disposition pass 2)
+
+| ID | Severity | Summary | Refs | Escape Cause |
+| --- | --- | --- | --- | --- |
+| FND-006 | high | the new FR-050 reader-rule row reads: a constraint whose appliesTo is Clock or an alias carries the keyword `min` or `max` -> CONSTRAINT_NOT_APPLICABLE. FR-146 and FR-146-AC-21 admit `min` and `max` on a clock constraint and refuse every OTHER keyword with CONSTRAINT_NOT_APPLICABLE. The FR-050 row refuses exactly the admitted keywords, and the table would make AC-21's accepted constraints fail. It must read "a keyword other than `min` or `max`". | spec/functional/FR-050-validate-and-normalize-the-emitted-ir.md:108 | wrong-requirement |
+
+### Dispositions, round 2
+
+Fix head 78884432. Hand derivation. Clock reference: a `reference` whose target is Clock or an alias resolves to no node and raises no UNRESOLVED_TYPE_REF; backends emit the identity-string reference form, no clock type. Clock constraint: `max "3"`, `max "3/2"`, `min "1"` are canonical non-negative rationals and accepted; `minLength` refuses CONSTRAINT_NOT_APPLICABLE at the keyword; `"-1"`, `"2/4"` and JSON `3` refuse INVALID_OPERAND at operands/value. Quantity constraint on ms: `"500"`, `"-3/2"`, `"5/2"` accepted; `pattern` refuses; `"2/4"`, `"1/1"`, `"1.5"`, `3` refuse. AC-24: max 500 accepts `500` and `1000/3` (333.3) and rejects `501` and `1001/2` (500.5); for `e` min 1/2 accepts `1/2` and rejects `1/3`; cross-multiplication with positive denominators preserves order. All hold. Names: final clock code in QSpec #410 is INVALID_CLOCK_MEMBER, matched by FCD; QSpec #407 (12296a48) and #408 (c8b026a1) heads still map the old names but are contained in #410, which renames them, so they must not land without it. The FR-154-AC-18 and QSL FR-230 "Clock references" citations exist. 306 contains the 305 fix commit and carries its red gate (SR-16292 FND-005).
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-002 | fixed | See after_excerpt in the Linear dispositions comment. |
+| FND-004 | fixed | See after_excerpt in the Linear dispositions comment. |
+| FND-005 | fixed | See after_excerpt in the Linear dispositions comment. |
+| FND-006 | still-open | New finding of this round; see the new-findings section. |
+
+Round 2 verdict: Not mergeable: FND-006 (high) is still-open, and the contained #305 head is red (SR-16292 FND-005).
