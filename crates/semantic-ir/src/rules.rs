@@ -9,7 +9,7 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use crate::diag::{child, index, locus_for, owner_for, Located, Severity};
 use crate::json::Json;
 use crate::regex262;
-use crate::schema::SCHEMA_VIOLATION;
+use crate::schema::{is_quantity_type_ref, SCHEMA_VIOLATION};
 use crate::vocabulary::Shape;
 
 /// The limits the cross-field rules run under, each used as the caller gives
@@ -36,6 +36,15 @@ pub const NATIVE_PREFIX: &str = "ix://quire/native/";
 
 /// A field-only native type reference: a clock is no IR scalar or document node.
 const CLOCK_TYPE_REF: &str = "ix://quire/native/Clock";
+const CLOCK_OUTSIDE_FIELD: &str = "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD";
+const INVALID_CLOCK_FIELD: &str = "agent-ix.semantic-ir.INVALID_CLOCK_FIELD";
+const INVALID_QUANTITY_MEMBER: &str = "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER";
+
+// These references have position-specific rules; ordinary identity members
+// continue to use their own resolution rules.
+fn special_type_ref(identity: &str) -> bool {
+    identity == CLOCK_TYPE_REF || identity.starts_with("ix://quire/unit/")
+}
 
 const INEXACT_INTEGER: &str = "agent-ix.semantic-ir.INEXACT_INTEGER";
 const INEXACT_NUMBER: &str = "agent-ix.semantic-ir.INEXACT_NUMBER";
@@ -618,8 +627,15 @@ impl<'a> Document<'a> {
                         pointer: field_at.clone(),
                     });
                 }
-                if let Some(constraints_items) = field.get("constraints").and_then(Json::as_array) {
-                    visit_constraints(constraints_items, &child(&field_at, "constraints"), visit);
+                let type_ref = field.get("typeRef").and_then(Json::as_str);
+                let special_member = type_ref.is_some_and(|identity| {
+                    (kind == TypePositionKind::FieldType && identity == CLOCK_TYPE_REF)
+                        || is_quantity_type_ref(identity)
+                });
+                if !special_member {
+                    if let Some(items) = field.get("constraints").and_then(Json::as_array) {
+                        visit_constraints(items, &child(&field_at, "constraints"), visit);
+                    }
                 }
             }
         }
@@ -627,7 +643,7 @@ impl<'a> Document<'a> {
         for (position, definition) in self.types.iter().enumerate() {
             let type_at = index("/ir/types", position);
             match definition.get("kind").and_then(Json::as_str) {
-                Some("alias") => {
+                _ if self.is_alias_definition(definition) => {
                     if let Some(identity) = definition.get("target").and_then(Json::as_str) {
                         visit(TypePosition {
                             kind: TypePositionKind::AliasTarget,
@@ -772,6 +788,9 @@ impl<'a> Document<'a> {
         // resolves to nothing, the same as a closed alias chain. `seen` is a
         // `BTreeSet`: membership is the only operation the walk needs.
         loop {
+            if identity == CLOCK_TYPE_REF {
+                return Cached::Nothing;
+            }
             if let Some(scalar) = native_scalar(identity) {
                 return Cached::Native(scalar);
             }
@@ -801,6 +820,9 @@ impl<'a> Document<'a> {
             let Some(target) = current.get("target").and_then(Json::as_str) else {
                 return Cached::Nothing;
             };
+            if target == CLOCK_TYPE_REF {
+                return Cached::Nothing;
+            }
             if let Some(scalar) = native_scalar(target) {
                 return Cached::Native(scalar);
             }
@@ -1171,6 +1193,26 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         .collect();
 
     document.type_positions(|position| {
+        let clock = position.identity == CLOCK_TYPE_REF;
+        let quantity = is_quantity_type_ref(position.identity);
+        let member = matches!(position.kind, TypePositionKind::FieldType | TypePositionKind::ParameterType | TypePositionKind::OperationReturn);
+        let clock_field = clock && position.kind == TypePositionKind::FieldType;
+        if special_type_ref(position.identity) {
+            let pointer = match position.kind {
+                TypePositionKind::FieldType | TypePositionKind::ParameterType | TypePositionKind::OperationReturn => child(&position.pointer, "typeRef"),
+                TypePositionKind::ConstraintSubject => child(&position.pointer, "appliesTo"),
+                _ => position.pointer.clone(),
+            };
+            if clock && !clock_field {
+                sink.emit(pointer, CLOCK_OUTSIDE_FIELD, "Clock is permitted only as a field type");
+            } else if !clock_field && !(quantity && member) {
+                sink.emit(pointer, UNRESOLVED_TYPE_REF, "a quantity type reference is permitted only on a field, parameter or result and must be well formed");
+            }
+            if clock_field || (quantity && member) {
+                special_member_shape(position.subject, &position.pointer, clock_field, sink);
+            }
+            return;
+        }
         document.check_decimal_position(
             position.kind,
             Some(position.identity),
@@ -1187,7 +1229,9 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         let is_alias = document.is_alias_definition(definition);
         if is_alias || kind == "reference" {
             if let Some(target) = definition.get("target").and_then(Json::as_str) {
-                if !resolves(&declared, target) {
+                if special_type_ref(target) {
+                    // The shared type-position traversal owns these refusals.
+                } else if !resolves(&declared, target) {
                     sink.emit(
                         child(&type_at, "target"),
                         UNRESOLVED_TYPE_REF,
@@ -1224,7 +1268,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
             for (member, variant) in variants.iter().enumerate() {
                 if let Some(payload) = variant.get("payloadType").and_then(Json::as_str) {
                     let variant_at = index(&variants_at, member);
-                    if !resolves(&declared, payload) {
+                    if !special_type_ref(payload) && !resolves(&declared, payload) {
                         sink.emit(
                             child(&variant_at, "payloadType"),
                             UNRESOLVED_VARIANT_PAYLOAD,
@@ -1350,7 +1394,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                 }
                 if let Some(returns) = operation.get("returns") {
                     if let Some(type_ref) = returns.get("typeRef").and_then(Json::as_str) {
-                        if !resolves(&declared, type_ref) {
+                        if !special_type_ref(type_ref) && !resolves(&declared, type_ref) {
                             sink.emit(
                                 child(&child(&operation_at, "returns"), "typeRef"),
                                 UNRESOLVED_TYPE_REF,
@@ -1390,7 +1434,7 @@ fn check_element(
     sink: &mut Sink<'_>,
 ) {
     if let Some(element) = definition.get(member).and_then(Json::as_str) {
-        if !resolves(declared, element) {
+        if !special_type_ref(element) && !resolves(declared, element) {
             let what = if member == "items" {
                 "sequence element"
             } else {
@@ -1523,6 +1567,63 @@ enum FieldContext {
     OperationParameter,
 }
 
+/// FR-146 special members carry no scalar value, policy, or constraints.
+fn special_member_shape(member: &Json, at: &str, clock: bool, sink: &mut Sink<'_>) {
+    let code = if clock {
+        INVALID_CLOCK_FIELD
+    } else {
+        INVALID_QUANTITY_MEMBER
+    };
+    let mut invalid = Vec::new();
+    if clock {
+        if let Some(multiplicity) = member.get("multiplicity") {
+            if multiplicity.get("lower").and_then(Json::as_i64) != Some(1)
+                || multiplicity.get("upper").and_then(Json::as_i64) != Some(1)
+                || multiplicity.get("ordered").and_then(Json::as_bool) != Some(false)
+                || multiplicity.get("unique").and_then(Json::as_bool) != Some(false)
+            {
+                invalid.push("multiplicity");
+            }
+        }
+        if member
+            .get("presence")
+            .and_then(Json::as_str)
+            .is_some_and(|presence| presence != "required")
+        {
+            invalid.push("presence");
+        }
+        if member.get("nullable").and_then(Json::as_bool) == Some(true) {
+            invalid.push("nullable");
+        }
+    }
+    if member
+        .get("defaultKind")
+        .and_then(Json::as_str)
+        .is_some_and(|kind| kind != "none")
+    {
+        invalid.push("defaultKind");
+    }
+    for forbidden in ["defaultValue", "unit", "decimal", "textProfile"] {
+        if member.has(forbidden) {
+            invalid.push(forbidden);
+        }
+    }
+    if member
+        .get("constraints")
+        .and_then(Json::as_array)
+        .is_some_and(|items| !items.is_empty())
+    {
+        invalid.push("constraints");
+    }
+    for name in invalid {
+        sink.emit(
+            child(at, name),
+            code,
+            "the member does not have the required Clock or quantity shape",
+        );
+    }
+}
+
 fn field_rules(
     document: &Document<'_>,
     declared: &HashSet<String>,
@@ -1535,9 +1636,7 @@ fn field_rules(
         let field_at = index(fields_at, member);
         let type_ref = field.get("typeRef").and_then(Json::as_str);
         if let Some(type_ref) = type_ref {
-            if !(context == FieldContext::DefinitionField && type_ref == CLOCK_TYPE_REF)
-                && !resolves(declared, type_ref)
-            {
+            if !special_type_ref(type_ref) && !resolves(declared, type_ref) {
                 sink.emit(
                     child(&field_at, "typeRef"),
                     UNRESOLVED_TYPE_REF,
@@ -1545,7 +1644,9 @@ fn field_rules(
                 );
             }
         }
-        if let Some(multiplicity) = field.get("multiplicity") {
+        let clock_field =
+            context == FieldContext::DefinitionField && type_ref == Some(CLOCK_TYPE_REF);
+        if let Some(multiplicity) = field.get("multiplicity").filter(|_| !clock_field) {
             let multiplicity_at = child(&field_at, "multiplicity");
             let lower = multiplicity.get("lower").and_then(Json::as_i64);
             let upper = multiplicity.get("upper").and_then(Json::as_i64);
@@ -1558,6 +1659,9 @@ fn field_rules(
                     );
                 }
             }
+        }
+        if clock_field || type_ref.is_some_and(is_quantity_type_ref) {
+            continue;
         }
         if field.has("unit") {
             let scalar = type_ref
@@ -1785,6 +1889,9 @@ fn constraint_rules(
         None => return,
     };
     let applies = constraint.get("appliesTo").and_then(Json::as_str);
+    if applies.is_some_and(special_type_ref) {
+        return;
+    }
     let resolved = applies.and_then(|identity| document.resolve(identity));
     if let Some(resolved) = resolved {
         // A construct kind decides as `enumeration` when its declared shape

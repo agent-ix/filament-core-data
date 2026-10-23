@@ -1,0 +1,65 @@
+{
+	"contractVersion": "2.0.0",
+	"canonicalization": {
+		"algorithm": "rfc8785-v1",
+		"digest": "sha256-jcs"
+	},
+	"source": {
+		"identity": "ix://test/orders/source",
+		"version": "1",
+		"dialect": "spec-bundle",
+		"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	},
+	"package": {
+		"identity": "acme/config",
+		"version": "1",
+		"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mappingVersions": ["1.0.0"],
+		"profileVersions": []
+	},
+	"constructs": [],
+	"types": [
+		{
+			"identity": "ix://acme/config/Config",
+			"displayName": "Config",
+			"kind": "record",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/config/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://acme/config/source"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://acme/config/Config/x",
+					"name": "x",
+					"typeRef": "ix://quire/native/Clock",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1,
+						"ordered": false,
+						"unique": false
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"occurrences": [],
+	"extensions": []
+}
