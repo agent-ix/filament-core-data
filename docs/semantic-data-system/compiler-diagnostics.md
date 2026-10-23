@@ -90,6 +90,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.UNSUPPORTED_VERSION_CONSTRAINT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNTRUSTED_MODULE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED` | info | no | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.COMPOSITE_CYCLE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DANGLING_CLAUSE_REF` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
@@ -99,13 +100,16 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.DUPLICATE_PARAM` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INTEGER_OUTSIDE_I128` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.INVALID_CLOCK_FIELD` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_DEFAULT_VALUE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_DOCUMENT` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_MULTIPLICITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_OPERAND` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_PATTERN` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_RELATIONSHIP_SOURCE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.INVALID_UNIT` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.MISSING_MULTIPLICITY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.MISSING_SOURCE_SPAN` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.NODES_ON_NON_RECORD` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
@@ -114,8 +118,10 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.semantic-ir.UNKNOWN_CLAUSE_LANGUAGE` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNKNOWN_CONSTRAINT_KEYWORD` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNKNOWN_EDGE_CATEGORY` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.UNRESOLVED_DIMENSION_REF` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
+| `agent-ix.semantic-ir.UNRESOLVED_UNIT_REF` | error | yes | `ix://agent-ix/filament-core-data/semantic-ir` |
 | `agent-ix.sysml-target.DECLARED_LOSS` | warning | no | `ix://agent-ix/filament-core-data/sysml-target` |
 | `agent-ix.sysml-target.UNSUPPORTED_CONSTRUCT` | error | yes | `ix://agent-ix/filament-core-data/sysml-target` |
 

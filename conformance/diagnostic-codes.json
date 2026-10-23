@@ -421,6 +421,72 @@
 			"rule": "A type named by the members of two types whose declarations select exclusive_membership.",
 			"citation": "a type named by two exclusive memberships raises",
 			"exercisedBy": "test:TC-1748"
+		},
+		{
+			"code": "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": [
+				"spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md"
+			],
+			"rule": "Clock is used as a type in a position other than a definition field.",
+			"citation": "then the reader SHALL refuse",
+			"exercisedBy": "test:TC-1843"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_CLOCK_FIELD",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": [
+				"spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md"
+			],
+			"rule": "A Clock field violates one of its required shape members.",
+			"citation": "once for each member that breaks",
+			"exercisedBy": "test:TC-1843"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": [
+				"spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md"
+			],
+			"rule": "A quantity-typed member carries forbidden policy, constraints or a default.",
+			"citation": "INVALID_QUANTITY_MEMBER",
+			"exercisedBy": "test:TC-1847"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": [
+				"spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md"
+			],
+			"rule": "A dimension or unit graph violates identity, root, nonzero, ordering, or acyclicity requirements.",
+			"citation": "INVALID_UNIT_GRAPH",
+			"exercisedBy": "test:TC-1845"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_DIMENSION_REF",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": [
+				"spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md"
+			],
+			"rule": "A dimension term or unit names a dimension not declared by the document.",
+			"citation": "UNRESOLVED_DIMENSION_REF",
+			"exercisedBy": "test:TC-1845"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_UNIT_REF",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": [
+				"spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md"
+			],
+			"rule": "A unit target names no unit declared by the document.",
+			"citation": "UNRESOLVED_UNIT_REF",
+			"exercisedBy": "test:TC-1845"
 		}
 	]
 }

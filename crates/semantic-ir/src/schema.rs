@@ -1633,6 +1633,43 @@ const FIELD_REQUIRED: &[&str] = &[
     "origin",
 ];
 
+/// Whether a member names a well-formed consumer-owned quantity type.
+pub(crate) fn is_quantity_type_ref(identity: &str) -> bool {
+    fn unit_name(name: &str) -> bool {
+        let mut bytes = name.bytes();
+        bytes
+            .next()
+            .is_some_and(|first| first.is_ascii_alphabetic())
+            && bytes.all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+    }
+    fn package_segment(name: &str) -> bool {
+        let mut bytes = name.bytes();
+        bytes
+            .next()
+            .is_some_and(|first| first.is_ascii_lowercase() || first.is_ascii_digit())
+            && bytes.all(|byte| {
+                byte.is_ascii_lowercase()
+                    || byte.is_ascii_digit()
+                    || matches!(byte, b'.' | b'_' | b'-')
+            })
+    }
+    let Some(name) = identity.strip_prefix("ix://quire/unit/") else {
+        return false;
+    };
+    let mut parts = name.rsplit('/');
+    parts.next().is_some_and(unit_name)
+        && parts.all(|part| unit_name(part) || package_segment(part))
+}
+
+fn special_member_shape(field: &Json) -> bool {
+    field
+        .get("typeRef")
+        .and_then(Json::as_str)
+        .is_some_and(|identity| {
+            identity == "ix://quire/native/Clock" || is_quantity_type_ref(identity)
+        })
+}
+
 fn field_schema(field: &Json, at: &str, f: &mut Findings) {
     if !expect_object(field, at, "a field", f) {
         return;
@@ -1687,7 +1724,7 @@ fn field_schema(field: &Json, at: &str, f: &mut Findings) {
         f,
     );
     let default_kind = field.get("defaultKind").and_then(Json::as_str);
-    match default_kind {
+    match default_kind.filter(|_| !special_member_shape(field)) {
         Some("none") if field.has("defaultValue") => f.push(
             at,
             "a field whose defaultKind is none carries no defaultValue",
@@ -1714,13 +1751,23 @@ fn field_schema(field: &Json, at: &str, f: &mut Findings) {
         "a unit is a non-empty run of printable ASCII",
         f,
     );
-    expect_enum(
-        field.get("textProfile"),
-        &child(at, "textProfile"),
-        TEXT_PROFILES,
-        "textProfile",
-        f,
-    );
+    if special_member_shape(field) {
+        expect_string(
+            field.get("textProfile"),
+            &child(at, "textProfile"),
+            0,
+            "a text profile string",
+            f,
+        );
+    } else {
+        expect_enum(
+            field.get("textProfile"),
+            &child(at, "textProfile"),
+            TEXT_PROFILES,
+            "textProfile",
+            f,
+        );
+    }
     if let Some(constraints) = field.get("constraints") {
         let constraints_at = child(at, "constraints");
         if expect_array(constraints, &constraints_at, "constraints", f) {

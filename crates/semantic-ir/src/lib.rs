@@ -32,6 +32,7 @@ pub mod patch;
 pub mod regex262;
 pub mod rules;
 pub mod schema;
+mod unit_graph;
 pub mod vocabulary;
 
 use crate::diag::{Located, Severity};
@@ -89,6 +90,7 @@ pub fn decide_with(bundle: &Json, limits: rules::RuleLimits) -> Verdict {
     let mut diagnostics = schema::decide(bundle);
     if diagnostics.is_empty() {
         diagnostics = rules::decide_with(bundle, limits);
+        diagnostics.extend(unit_graph::decide(bundle));
     }
     order(&mut diagnostics);
     // An `info` diagnostic is advisory: a document carrying only advisories is

@@ -1,3 +1,4 @@
+import { checkUnitGraph } from "./unit-graph.mjs";
 /**
  * The compiler's IR reader: the cross-field rules a JSON Schema cannot express
  * (FR-050).
@@ -320,6 +321,31 @@ export function readContractIr(document, options = {}) {
 		return Object.assign(diagnostics, { suppressions });
 	}
 
+	const unitNodes =
+		(Array.isArray(document.dimensions) ? document.dimensions.length : 0) +
+		(Array.isArray(document.units) ? document.units.length : 0);
+	if (unitNodes > limits.maxNodes - definitions.length) {
+		raise(
+			DIAGNOSTIC_CODES.LIMIT_MAX_NODES,
+			"dimension and unit graph exceeds the maxNodes limit",
+		);
+		return Object.assign(diagnostics, { suppressions });
+	}
+	if (
+		asArray(document.dimensions).some(
+			(dimension) =>
+				Array.isArray(dimension.terms) &&
+				dimension.terms.length > limits.maxCollectionItems,
+		)
+	) {
+		raise(
+			DIAGNOSTIC_CODES.LIMIT_MAX_COLLECTION_ITEMS,
+			"dimension terms exceed the maxCollectionItems limit",
+		);
+		return Object.assign(diagnostics, { suppressions });
+	}
+	checkUnitGraph(document, raise);
+
 	// Bind each construct-kind type to its declaration, so a type of the alias
 	// shape resolves through its target as a core alias does.
 	bindConstructs(document);
@@ -446,7 +472,81 @@ export function readContractIr(document, options = {}) {
 		return value;
 	};
 
-	const checkField = (field, fieldPointer = undefined) => {
+	const clockRef = "ix://quire/native/Clock";
+	const quantityPrefix = "ix://quire/unit/";
+	const quantityName = (ref) => {
+		if (typeof ref !== "string" || !ref.startsWith(quantityPrefix))
+			return false;
+		const parts = ref.slice(quantityPrefix.length).split("/");
+		return (
+			/^[A-Za-z][A-Za-z0-9_]*(?![\s\S])/.test(parts.at(-1)) &&
+			parts
+				.slice(0, -1)
+				.every(
+					(part) =>
+						/^[A-Za-z][A-Za-z0-9_]*(?![\s\S])/.test(part) ||
+						/^[a-z0-9][a-z0-9._-]*(?![\s\S])/.test(part),
+				)
+		);
+	};
+	const specialMember = (member, pointer, isField) => {
+		const clock = member.typeRef === clockRef;
+		const quantity = quantityName(member.typeRef);
+		const emit = (code, name) =>
+			raise(
+				DIAGNOSTIC_CODES[code],
+				`/ir${pointer}/${name}: invalid ${clock ? "Clock" : "quantity"} member`,
+				locusOf(member),
+			);
+		if (clock && !isField) {
+			emit("CLOCK_OUTSIDE_FIELD", "typeRef");
+			return true;
+		}
+		if (!clock && !quantity) {
+			if (
+				typeof member.typeRef === "string" &&
+				member.typeRef.startsWith(quantityPrefix)
+			) {
+				emit("UNRESOLVED_TYPE_REF", "typeRef");
+				return true;
+			}
+			return false;
+		}
+		const code = clock ? "INVALID_CLOCK_FIELD" : "INVALID_QUANTITY_MEMBER";
+		for (const name of ["unit", "decimal", "textProfile", "defaultValue"])
+			if (Object.hasOwn(member, name)) emit(code, name);
+		if (Object.hasOwn(member, "defaultKind") && member.defaultKind !== "none")
+			emit(code, "defaultKind");
+		if (Array.isArray(member.constraints) && member.constraints.length)
+			emit(code, "constraints");
+		if (clock) {
+			const m = member.multiplicity;
+			if (
+				isObject(m) &&
+				(m.lower !== 1 ||
+					m.upper !== 1 ||
+					m.ordered !== false ||
+					m.unique !== false)
+			)
+				emit(code, "multiplicity");
+			if (member.presence !== "required") emit(code, "presence");
+			if (member.nullable !== false) emit(code, "nullable");
+		}
+		return true;
+	};
+
+	const checkField = (field, fieldPointer = undefined, isField = false) => {
+		if (specialMember(field, fieldPointer, isField)) {
+			if (field.multiplicity === undefined)
+				raise(
+					DIAGNOSTIC_CODES.MISSING_MULTIPLICITY,
+					"a field declares its multiplicity",
+					locusOf(field),
+				);
+			else if (field.typeRef !== clockRef)
+				checkMultiplicity(field.multiplicity, field);
+			return;
+		}
 		const resolved = resolveKind(
 			types,
 			fields,
@@ -559,6 +659,14 @@ export function readContractIr(document, options = {}) {
 		owner,
 		constraintPointer = undefined,
 	) => {
+		if (constraint.appliesTo === clockRef) {
+			raise(
+				DIAGNOSTIC_CODES.CLOCK_OUTSIDE_FIELD,
+				`/ir${constraintPointer}/appliesTo: Clock is field-only`,
+				locusOf(constraint) ?? locusOf(owner),
+			);
+			return;
+		}
 		const keyword = String(constraint.keyword);
 		if (!isKeyword(keyword)) {
 			raise(
@@ -723,6 +831,40 @@ export function readContractIr(document, options = {}) {
 				);
 			}
 		}
+		for (const member of ["target", "items", "values"]) {
+			if (definition[member] === clockRef)
+				raise(
+					DIAGNOSTIC_CODES.CLOCK_OUTSIDE_FIELD,
+					`/ir${definitionPointer}/${member}: Clock is field-only`,
+					locusOf(definition),
+				);
+			else if (
+				typeof definition[member] === "string" &&
+				definition[member].startsWith(quantityPrefix)
+			)
+				raise(
+					DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
+					`/ir${definitionPointer}/${member}: quantity references are member-only`,
+					locusOf(definition),
+				);
+		}
+		asArray(definition.variants).forEach((variant, index) => {
+			if (variant.payloadType === clockRef)
+				raise(
+					DIAGNOSTIC_CODES.CLOCK_OUTSIDE_FIELD,
+					`/ir${definitionPointer}/variants/${index}/payloadType: Clock is field-only`,
+					locusOf(variant),
+				);
+			else if (
+				typeof variant.payloadType === "string" &&
+				variant.payloadType.startsWith(quantityPrefix)
+			)
+				raise(
+					DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
+					`/ir${definitionPointer}/variants/${index}/payloadType: quantity references are member-only`,
+					locusOf(variant),
+				);
+		});
 		if (definition.kind === "sequence")
 			checkCompositeDecimalRef(definition.items, definition);
 		if (definition.kind === "map")
@@ -759,7 +901,7 @@ export function readContractIr(document, options = {}) {
 			return;
 		}
 		for (const [fieldIndex, field] of ownFields.entries()) {
-			checkField(field, `${definitionPointer}/fields/${fieldIndex}`);
+			checkField(field, `${definitionPointer}/fields/${fieldIndex}`, true);
 		}
 		for (const [constraintIndex, constraint] of asArray(
 			definition.constraints,
@@ -888,7 +1030,13 @@ export function readContractIr(document, options = {}) {
 				);
 			}
 			if (isObject(operation.returns)) {
+				const special = specialMember(
+					operation.returns,
+					`${definitionPointer}/operations/${operationIndex}/returns`,
+					false,
+				);
 				if (
+					!special &&
 					!resolveKind(
 						types,
 						fields,

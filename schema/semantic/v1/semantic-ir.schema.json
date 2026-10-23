@@ -762,7 +762,7 @@
 					"$ref": "common.schema.json#/$defs/semanticIdentity"
 				},
 				"textProfile": {
-					"$ref": "common.schema.json#/$defs/textProfile"
+					"type": "string"
 				},
 				"constraints": {
 					"type": "array",
@@ -774,23 +774,68 @@
 			"allOf": [
 				{
 					"if": {
-						"type": "object",
 						"properties": {
-							"defaultKind": {
-								"const": "none"
+							"typeRef": {
+								"anyOf": [
+									{
+										"const": "ix://quire/native/Clock"
+									},
+									{
+										"type": "string",
+										"pattern": "^ix://quire/unit/(?:(?:[A-Za-z][A-Za-z0-9_]*|[a-z0-9][a-z0-9._-]*)/)*[A-Za-z][A-Za-z0-9_]*$"
+									}
+								]
 							}
+						},
+						"required": ["typeRef"]
+					},
+					"else": {
+						"properties": {
+							"textProfile": {
+								"$ref": "common.schema.json#/$defs/textProfile"
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"not": {
+							"properties": {
+								"typeRef": {
+									"anyOf": [
+										{
+											"const": "ix://quire/native/Clock"
+										},
+										{
+											"type": "string",
+											"pattern": "^ix://quire/unit/(?:(?:[A-Za-z][A-Za-z0-9_]*|[a-z0-9][a-z0-9._-]*)/)*[A-Za-z][A-Za-z0-9_]*$"
+										}
+									]
+								}
+							},
+							"required": ["typeRef"]
 						}
 					},
 					"then": {
-						"type": "object",
-						"not": {
+						"if": {
+							"type": "object",
+							"properties": {
+								"defaultKind": {
+									"const": "none"
+								}
+							}
+						},
+						"then": {
+							"type": "object",
+							"not": {
+								"type": "object",
+								"required": ["defaultValue"]
+							}
+						},
+						"else": {
 							"type": "object",
 							"required": ["defaultValue"]
 						}
-					},
-					"else": {
-						"type": "object",
-						"required": ["defaultValue"]
 					}
 				}
 			],
