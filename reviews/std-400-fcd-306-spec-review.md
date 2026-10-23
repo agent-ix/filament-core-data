@@ -50,3 +50,24 @@ Gate: vitest 606 passed, 53 failed (659 tests), identical to origin/main (same f
 Not mergeable: FND-001 (high) block the PR.
 
 Mergeable into origin/main (all three predecessors are ancestors, merge-tree clean). Same conflicts with open PRs 292 and 84 as PR 305.
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs | Escape Cause |
+| --- | --- | --- | --- | --- |
+| FND-004 | high | scope-narrowing: the reader refuses `ix://quire/native/Clock` as a `reference` `target` and as a constraint `appliesTo` with CLOCK_POSITION_INVALID. QSL PR 1360 FR-230 "Clock references" and QSpec PR 410 FR-154 admit `Reference<Clock>` and a clock constraint (keywords min and max), so a package with either is admitted by QSpec and QSL but its IR is refused here. This is a refusal that removes a capability the other two layers specify. | spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md:139-143; spec/functional/FR-050-validate-and-normalize-the-emitted-ir.md:107 | wrong-requirement |
+| FND-005 | low | NON_CANONICAL_RATIONAL is introduced in FR-146 only; FR-050 lists the other FR-146 codes (INVALID_UNIT_GRAPH and the clock codes) in its code table but not this one. Register it there with its locus (the instance member pointer). | spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md:465 | missing-requirement |
+
+## Dispositions
+
+Round 1, fix head d5dc1c92. NON_CANONICAL_RATIONAL hand-derived: P tests shape only and admits `2/4`; the separate check refuses a common factor above 1 (`2/4` gcd 2, `-6/9` gcd 3), and accepts `1/1000` and `-3/2` (gcd 1). The four shape-refused forms the text lists (negative denominator, denominator 1, `0/d`, `-0`) match P rejecting `1/-2`, `1/1`, `0/5`, `-0`. Rust, TypeScript and Python (after-validator) all name the check, so AC-11 and AC-12 are now realizable.
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-001 | fixed | See after_excerpt in the Linear dispositions comment. |
+| FND-002 | still-open | FCD is unchanged (CLOCK_POSITION_INVALID, INVALID_CLOCK_MEMBER). QSpec 407 (12296a48) and 408 (c8b026a1) FR-154 still map CLOCK_OUTSIDE_FIELD and INVALID_CLOCK_FIELD, and QSpec 410 (da80beca) now maps INVALID_CLOCK_MEMBER but no CLOCK_POSITION_INVALID at all. The three QSpec PRs and FCD still do not agree on the clock code names. |
+| FND-003 | accepted-no-change | Low and informational: the loss is stated (DECLARED_LOSS) and the fix round kept the mapping, adding the ScalarValues::Real library citation. I take the kept mapping as the intended one; the lead can overrule. |
+| FND-004 | still-open | New finding of this round; see the new-findings section. |
+| FND-005 | still-open | New finding of this round; code not registered in FR-050. |
+
+Round 1 verdict: Not mergeable: FND-002 and FND-004 (high) are still-open.

@@ -66,7 +66,7 @@ clocks and whose quantities are in units the domain package declares:
 
 | Construct | Where | Meaning |
 |---|---|---|
-| `ix://quire/native/Clock` | a field, parameter, result, alias `target` or variant `payloadType` | The member is a clock: a real-valued timer that the model checker owns, one per object and field, or one per element when the member is a collection (QSpec FR-415 "Clock collections"), read only inside clock constraints (QSpec FR-415). It carries no data value. |
+| `ix://quire/native/Clock` | a field, parameter, result, alias `target`, sequence `items`, map `values`, variant `payloadType`, `reference` `target` or constraint `appliesTo` | The member is a clock: a real-valued timer that the model checker owns, one per object and field, or one per element when the member is a collection (QSpec FR-415 "Clock collections"), read only inside clock constraints (QSpec FR-415). It carries no data value. |
 | `dimensions` | document | The dimension nodes of the package: base dimensions such as `Time`, and derived dimensions, each a product of dimensions of the package raised to integer exponents, the empty product being the dimensionless dimension (QSpec FR-142). |
 | `dimensionEquivalences` | document | The declared equivalences of the package: each relates two dimension nodes of the package that name one physical dimension, so a consumer that admits this package beside another that declares the same dimension can exchange quantities (QSpec FR-142 "Dimension equivalence"). |
 | `units` | document | The unit nodes of the package: each typed by one dimension, either the dimension's root or a unit with an exact scale and offset to a target unit of the same dimension (QSpec FR-142). |
@@ -136,11 +136,28 @@ a field or operation parameter.
   A clock member whose multiplicity has no upper bound or an upper bound above
   `1`, and a sequence or map over `Clock`, is a **clock collection**: it has one
   clock for each element it holds (QSpec FR-415 "Clock collections").
-- If `ix://quire/native/Clock`, or an alias that reaches it, is a `reference`
-  `target` or a constraint `appliesTo`, then the reader SHALL refuse
-  `agent-ix.semantic-ir.CLOCK_POSITION_INVALID` at that member's pointer
-  (`/types/<i>/target` or `…/constraints/<c>/appliesTo`), because a reference
-  names an object and no constraint keyword applies to a clock.
+- The reader SHALL admit `ix://quire/native/Clock`, or an alias that reaches it,
+  as a `reference` `target`. Such a reference is a **clock reference**: a data
+  value that names one clock place and holds no clock value (QSpec FR-415 "Clock
+  places"). The reader SHALL raise no `UNRESOLVED_TYPE_REF` for that `target`
+  and SHALL resolve it to no node of the document.
+- A **clock constraint** is a constraint whose `appliesTo` is
+  `ix://quire/native/Clock` or an alias that reaches it. The reader SHALL admit
+  the keywords `min` and `max` on a clock constraint, with `operands { value }`
+  where `value` is a canonical non-negative rational string (the `n` or `n/d`
+  form that "Units" defines, within `i128`), and SHALL apply no
+  `CONSTRAINT_NOT_APPLICABLE` to them. A `min` bound is admitted by the reader
+  and refused by the consumer that checks time invariants (QSpec FR-415
+  `time-invariant-shape`).
+- If a clock constraint carries a keyword of the closed eleven other than
+  `min` and `max`, then the reader SHALL refuse
+  `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` at
+  `…/constraints/<c>/keyword`, because no other keyword states a bound on a
+  clock.
+- If a clock constraint's `value` is not that form (a negative rational such as
+  `"-1"`, a non-canonical one such as `"2/4"`, or a JSON number), then the
+  reader SHALL refuse `agent-ix.semantic-ir.INVALID_OPERAND` at
+  `…/constraints/<c>/operands/value`.
 - In every other identity-valued member (`supertypes`, a relationship end,
   a population member, a frame entry and the like), the reader SHALL apply that
   member's own resolution rule to `ix://quire/native/Clock`, raising no FR-146
@@ -472,6 +489,27 @@ the member's type does, as the unit's `<name>`.
 | Python (FR-136) | `None`, from the JSON Schema `null` form (`x: None`, and `x: None = None` when optional) | `str`, from the JSON Schema `string` form with its pattern | `QUANTITY_UNITS`, keyed `<Class>.<member>` and `<Alias>`, in the generated package |
 | SysML v2 (FR-138) | `attribute def Clock;` once in the package, and `attribute x : Clock;` | `attribute w : ScalarValues::Real;` (`Real` of the SysML v2 Kernel Data Type Library package `ScalarValues`, the type [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) gives `decimal`, `float32` and `float64`) with the unit named in a `doc` comment on the attribute, and one non-blocking `agent-ix.sysml-target.DECLARED_LOSS` naming the member and the exact rational that `Real` does not carry | the `doc` comment on the attribute |
 
+- A **clock reference** SHALL map to the reference form of each backend over
+  the target identity `ix://quire/native/Clock`: JSON Schema a string schema with
+  `x-agent-ix-reference-target` (FR-100); Rust a newtype over `SemanticIdentity`
+  (FR-054); TypeScript the branded type over the identity string (FR-064); Python
+  `str` from the JSON Schema form; SysML v2 the backend's reference form
+  (FR-138). No backend writes a clock type for it, because the reference holds
+  no clock value.
+- A **clock constraint** SHALL map to a carried bound with no instance effect.
+  The JSON Schema backend SHALL write `x-agent-ix-clock-max` or
+  `x-agent-ix-clock-min` with the operand string beside `x-agent-ix-clock` on the
+  schema of each clock the constraint applies to: the alias schema where
+  `appliesTo` is an alias, and the schema of every clock member and every clock
+  alias of the document where `appliesTo` is `Clock` itself. The Rust, TypeScript
+  and Python backends SHALL write a module constant `CLOCK_BOUNDS` (Rust
+  `pub const CLOCK_BOUNDS: &[ClockBound]` in `identity.rs`) with one entry for each
+  carried bound, naming the member or alias path, the keyword and the operand.
+  The SysML v2 backend SHALL write a `doc` comment `clock constraint <keyword>
+  <operand>` on the attribute and one non-blocking
+  `agent-ix.sysml-target.DECLARED_LOSS` naming the member and the bound, because
+  the attribute states no bound. A generated validator SHALL accept `null` for a
+  constrained clock whatever the bound.
 - A **clock collection** SHALL map to the collection form that the same multiplicity,
   sequence `items` or map `values` takes over any other element in the backend
   (FR-054's collection axis, FR-064, FR-136, FR-100, FR-138), the element being the
@@ -562,6 +600,10 @@ unit-reference constructs of a spec bundle to the IR constructs above.
   `ix://quire/native/Clock`) as the `Clock` type in that position, and a clock
   field of an object type or a record as a clock place of it (QSL FR-230
   "Clock-typed positions", QSL FR-393's `TypeForm::Clock`).
+- QSL reads a `reference` whose `target` is `ix://quire/native/Clock`, or an
+  alias that reaches it, as `Reference<Clock>` (QSL FR-230 "Clock references"),
+  and a constraint whose `appliesTo` is that type as a clock constraint (QSpec
+  FR-154-AC-18, FR-415 "Clock places").
 - QSL reads `dimensions`, `units` and `dimensionEquivalences` into the unit graph
   of its checked package,
   beside the dimensions and units its own source declares (QSL FR-230). A
@@ -584,7 +626,7 @@ unit-reference constructs of a spec bundle to the IR constructs above.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-146-AC-1 | A document of package `acme/rpc` whose object type `Call` has a field `x` typed `ix://quire/native/Clock` with multiplicity `{1, 1, false, false}`, presence `required`, nullable `false` and defaultKind `none` is accepted by every reader with no diagnostic, and no `types[]` node is declared for the clock; every reader's native set is the `kernel-scalars.json` names plus `Text` and `Clock`, and `kernel-scalars.json` has no `Clock` entry. | Test (TC-1842) |
-| FR-146-AC-2 | `ix://quire/native/Clock` as an operation parameter, an operation result, an alias target, a sequence `items`, a map `values` and a variant `payloadType` is accepted with no diagnostic; as a field of an object type or a record, and as a parameter or field typed by an alias of it, it is a clock member. `ix://quire/native/Clock` as a reference target and a constraint `appliesTo` each refuse exactly `CLOCK_POSITION_INVALID` at that member's pointer. A clock field with presence `optional` is accepted. A clock field carrying `nullable: true`, `defaultKind: semantic` with `defaultValue: 0`, `unit: "ms"`, a `textProfile`, a `decimal` policy and a `min` constraint refuses exactly one `INVALID_CLOCK_MEMBER` at each of `/nullable`, `/defaultKind`, `/defaultValue`, `/unit`, `/textProfile`, `/decimal` and `/constraints` under the field, and no `UNIT_ON_NON_SCALAR`, `CONSTRAINT_NOT_APPLICABLE`, `SCHEMA_VIOLATION`, decimal-policy code, `INVALID_DEFAULT_VALUE`, `UNKNOWN_CONSTRAINT_KEYWORD` or `INVALID_PATTERN`; a clock parameter breaking the same members refuses at `<param>/…`, and a clock result with `nullable: true` refuses exactly one `INVALID_CLOCK_MEMBER` at `returns/nullable`. A clock field with multiplicity `{3, 1}` raises exactly `INVALID_MULTIPLICITY`, as a unit-typed field does, and no `INVALID_CLOCK_MEMBER`; clock fields with multiplicity `{0, 3, true, false}`, `{0, 3, false, true}`, `{0, 3, false, false}` and `{0}` with no upper bound are accepted, and so are a parameter and a result of multiplicity `{0, 2, true, false}`. | Test (TC-1843) |
+| FR-146-AC-2 | `ix://quire/native/Clock` as an operation parameter, an operation result, an alias target, a sequence `items`, a map `values` and a variant `payloadType` is accepted with no diagnostic; as a field of an object type or a record, and as a parameter or field typed by an alias of it, it is a clock member. `ix://quire/native/Clock` as a reference target and as a constraint `appliesTo` (with `max`) is accepted with no diagnostic (FR-146-AC-21). A clock field with presence `optional` is accepted. A clock field carrying `nullable: true`, `defaultKind: semantic` with `defaultValue: 0`, `unit: "ms"`, a `textProfile`, a `decimal` policy and a `min` constraint refuses exactly one `INVALID_CLOCK_MEMBER` at each of `/nullable`, `/defaultKind`, `/defaultValue`, `/unit`, `/textProfile`, `/decimal` and `/constraints` under the field, and no `UNIT_ON_NON_SCALAR`, `CONSTRAINT_NOT_APPLICABLE`, `SCHEMA_VIOLATION`, decimal-policy code, `INVALID_DEFAULT_VALUE`, `UNKNOWN_CONSTRAINT_KEYWORD` or `INVALID_PATTERN`; a clock parameter breaking the same members refuses at `<param>/…`, and a clock result with `nullable: true` refuses exactly one `INVALID_CLOCK_MEMBER` at `returns/nullable`. A clock field with multiplicity `{3, 1}` raises exactly `INVALID_MULTIPLICITY`, as a unit-typed field does, and no `INVALID_CLOCK_MEMBER`; clock fields with multiplicity `{0, 3, true, false}`, `{0, 3, false, true}`, `{0, 3, false, false}` and `{0}` with no upper bound are accepted, and so are a parameter and a result of multiplicity `{0, 2, true, false}`. | Test (TC-1843) |
 | FR-146-AC-3 | A document declaring base dimension `Time` (`ix://acme/rpc/dimension/Time`, `base: true`, no terms), derived dimension `Rate` (`base: false`, terms `[{Time, "-1"}]`), dimensionless dimension `Ratio` (`base: false`, no terms), root unit `s` (`scale` `"1"`, `offset` `"0"`) and unit `ms` (`target` `s`, `scale` `"1/1000"`, `offset` `"0"`) is accepted by every reader; the same document without `dimensions` and `units` serializes with neither member. | Test (TC-1844) |
 | FR-146-AC-4 | Each refuses exactly one diagnostic at the stated pointer: a term naming an undeclared dimension (`UNRESOLVED_DIMENSION_REF`, `…/terms/0/dimension`); a unit typed by an undeclared dimension (`UNRESOLVED_DIMENSION_REF`, `/units/<j>/dimension`); a unit targeting an undeclared unit (`UNRESOLVED_UNIT_REF`, `/units/<j>/target`); and, each `INVALID_UNIT_GRAPH`: scale `"0"` (`/scale`), a target in another dimension (`/target`), a second root of `Time` (`/units/<j>` of the second root), a root with scale `"2"` (`/scale`), a root with offset `"273"` (`/offset`), a two-unit target cycle (`/target` of the lower-index unit only), a self-target (`/target`), a two-dimension term cycle (the lower-index dimension's term only), a three-dimension component holding two cycles (one refusal, at the least-index dimension's first term into the component), a base dimension with a term (`/terms`), terms out of order and a repeated term (the later term), a term exponent `"0"` (`/exponent`), an identity `ix://acme/rpc/unit/msec` on unit `ms` and an identity `ix://acme/rpc/dimension/Duration` on dimension `Time` (`/identity`). A document carrying a zero scale and a cycle reports both. Two units named `ms` refuse `DUPLICATE_IDENTITY` at the later one's `/identity`. A dimension `Time` with no units is accepted. | Test (TC-1845) |
 | FR-146-AC-5 | Scale spellings `"2/4"`, `"1/1"`, `"-0"`, `"0/5"`, `"01/3"` and `"1.5"` each refuse exactly `INVALID_OPERAND` at `/units/<j>/scale`; the JSON number `0.001` refuses exactly `SCHEMA_VIOLATION` there; a numerator of 2^127 refuses exactly `INTEGER_OUTSIDE_I128`; `"1/1000"`, `"-3/2"` and `"273"` are accepted; an exponent `"+1"` refuses exactly `INVALID_OPERAND` at its pointer. | Test (TC-1846) |
@@ -603,6 +645,8 @@ unit-reference constructs of a spec bundle to the IR constructs above.
 | FR-146-AC-18 | A spec bundle whose entity has field rows `q | Clock | 0..3`, `o | Clock | *` and `p | Clock | 2..4`, an operation with a parameter `c | Clock | *`, a type alias artifact `Ticks` over a sequence of `Clock` and a sequence artifact `ClockList` over `Clock` lifts to fields with `lower` and `upper` `0`/`3`, `0`/absent and `2`/`4`, the parameter with `lower` 0 and no `upper`, the alias and the sequence type, typeRef `ix://quire/native/Clock` throughout and no node for `Clock`, and `decide` accepts the document; a `Clock` row with a `min` constraint still raises `CONSTRAINT_NOT_APPLICABLE` at the row. | Test (TC-1862) |
 | FR-146-AC-19 | Over the `acme/rpc` document of FR-146-AC-10 with further base dimensions `Length`, `Distance` and `Seconds`, derived dimensions `Speed` (terms `Length` 1, `Time` -1), `Velocity` (terms `Distance` 1, `Time` -1) and `Dur` (term `Time` 1), the equivalences `Dur`/`Time` and `Length`/`Time` are accepted (equal maps; two base dimensions), `Speed`/`Velocity` is refused `INVALID_UNIT_GRAPH` at `/dimensionEquivalences/<k>/dimensions` naming both dimensions when no `Distance`/`Length` pair is declared and accepted when one is, `Speed`/`Time` is refused `INVALID_UNIT_GRAPH` there, and the pairs `Duration`/`Seconds`, `Duration`/`Time` and `Seconds`/`Time` are accepted together. The identity `ix://acme/rpc/dimension-equivalence/Time-Duration` over `[Duration, Time]`, the pair `[Duration, Time]` spelled `[Time, Duration]`, and the pair `[Time, Time]` each refuse `INVALID_UNIT_GRAPH` (at `/identity`, at `/dimensions` and at `/dimensions` respectively); the entries `[Duration, ix://acme/rpc/dimension/Nothing]` and `[Duration, ix://acme/flow/dimension/Time]` each refuse `UNRESOLVED_DIMENSION_REF` at `/dimensionEquivalences/<k>/dimensions/1`; a second node relating the pair `Duration`/`Time` refuses `DUPLICATE_IDENTITY` at its `/identity`. | Test (TC-1865) |
 | FR-146-AC-20 | Two documents differing only in the order of two `dimensionEquivalences` nodes have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; a document with none serializes with no `dimensionEquivalences` member and every committed positive fixture keeps its bytes and fingerprint; adding an equivalence classifies additive, and removing one or changing an entry of its `dimensions` classifies breaking. A field typed `ix://quire/unit/acme/rpc/s`, a field typed `ix://quire/unit/acme/flow/s` and an operation whose parameter and result are typed by the two are accepted by every reader with no diagnostic, because a reader compares no two quantity types. | Test (TC-1865) |
+| FR-146-AC-21 | A `reference` type `CR` whose `target` is `ix://quire/native/Clock`, a `reference` type `CA` whose `target` is the alias `Stopwatch` of `Clock`, a constraint `max` with `operands.value` `"3"` and `appliesTo` `ix://quire/native/Clock`, `max` `"3/2"` and `min` `"1"` each with `appliesTo` the alias `Timeout` of `Clock` are accepted by every reader with no diagnostic and no node for the clock. The keyword `minLength` on a constraint with `appliesTo` `Clock` refuses exactly `CONSTRAINT_NOT_APPLICABLE` at `…/constraints/<c>/keyword`; the operand `"-1"`, the operand `"2/4"` and the JSON number `3` on `max` each refuse exactly `INVALID_OPERAND` at `…/constraints/<c>/operands/value`; a keyword outside the closed eleven refuses `UNKNOWN_CONSTRAINT_KEYWORD` as on any subject. | Test (TC-1866) |
+| FR-146-AC-22 | Over a document whose object type `Call` has a field `r` of the reference type `CR` of AC-21, an optional field `s` of `CA`, an alias `Timeout` of `Clock` carrying `max` `"3"` and a field `t` typed `Timeout`: the JSON Schema backend writes `r` and `s` as `{"type": "string", "x-agent-ix-reference-target": "ix://quire/native/Clock"}`, writes the schema of `Timeout` as `{"type": "null", "x-agent-ix-clock": true, "x-agent-ix-clock-max": "3"}` and the schema of a clock constrained by `min` `"1"` with `x-agent-ix-clock-min` `"1"`; the Rust backend writes the reference as a newtype over `SemanticIdentity`, `Timeout` as a newtype over `Clock`, and `pub const CLOCK_BOUNDS: &[ClockBound]` in `identity.rs` with the entry `Timeout` `max` `"3"`; the TypeScript backend writes the branded reference type over the identity string, `Timeout` as a type alias to `null`, and `export const CLOCK_BOUNDS` with the same entry; the Python backends write `r: str`, `t: None` and `CLOCK_BOUNDS` keyed `<Alias>`; the SysML v2 backend writes `attribute t : Clock;` with a `doc` comment `clock constraint max 3` and one non-blocking `agent-ix.sysml-target.DECLARED_LOSS` naming `Timeout` and the bound `3`. A constraint whose `appliesTo` is `Clock` itself writes its bound on every clock schema of the document. An instance validates `t` as `null` whatever the bound, since the IR holds no clock value, and an instance of `r` validates as any reference does. | Test (TC-1867) |
 
 ## Dependencies
 
