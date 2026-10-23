@@ -55,18 +55,7 @@ import {
 	variantName,
 } from "./names.mjs";
 
-const UNTAGGED_UNION_EXTENSION =
-	"ix://agent-ix/semantic-core/extension/untagged-union-wire-form";
-
-function wireFormOf(extensions) {
-	for (const extension of extensions ?? []) {
-		if (extension?.identity !== UNTAGGED_UNION_EXTENSION) continue;
-		if (extension?.payload?.wireForm === "untagged") return "untagged";
-	}
-	return undefined;
-}
-
-/** The v1.2 kernel scalars and their Rust bases; `bytes` is the one refusal. */
+/** The v1.2 kernel scalars and their Rust bases. */
 export const KERNEL_SCALARS = Object.freeze({
 	any: "crate::support::SemanticValue",
 	boolean: "bool",
@@ -76,15 +65,16 @@ export const KERNEL_SCALARS = Object.freeze({
 	float32: "f32",
 	float64: "f64",
 	string: "String",
-	bytes: null,
+	bytes: "crate::support::Bytes",
 	date: "crate::support::Date",
 	datetime: "crate::support::DateTime",
 	duration: "crate::support::Duration",
 	uuid: "crate::support::Uuid",
 });
 
-/** The scalar bases that are generated validated newtypes rather than primitives. */
+/** The scalar bases materialized as generated support newtypes. */
 export const GENERATED_SCALARS = Object.freeze([
+	"Bytes",
 	"Date",
 	"DateTime",
 	"Duration",
@@ -191,6 +181,7 @@ function supportTypeFor(definition, renderedName) {
  * than into a crate that does not compile.
  */
 export const RESERVED_CRATE_NAMES = Object.freeze([
+	"Bytes",
 	"Date",
 	"DateTime",
 	"Duration",
@@ -687,14 +678,6 @@ function mapType(definition, context) {
 				);
 				return undefined;
 			}
-			if (scalar === "bytes") {
-				raise(
-					RUST_BACKEND_CODES.UNDECLARED_WIRE_FORM,
-					`the type ${fragment(identity)} declares the kernel scalar \`bytes\`, whose JSON wire form no published artifact states`,
-					locus,
-				);
-				return undefined;
-			}
 			model.scalar = scalar;
 			if (scalar === "decimal") model.decimal = definition.decimal;
 			model.inner =
@@ -783,10 +766,6 @@ function mapType(definition, context) {
 		case "enum":
 		case "union": {
 			model.row = rowOf(declaration, kind);
-			model.wireForm =
-				definition.kind === "union"
-					? wireFormOf(definition.extensions)
-					: undefined;
 			model.variants = [];
 			for (const variant of definition.variants ?? []) {
 				if (definition.kind !== "union" && variant.payloadType !== undefined) {
@@ -980,14 +959,6 @@ function referenceTo(ref, edgeKey, position, owner, context) {
 	const { byIdentity, omitted, graph, raise } = context;
 	const scalar = nativeScalar(ref);
 	if (scalar !== undefined) {
-		if (scalar === "bytes") {
-			raise(
-				RUST_BACKEND_CODES.UNDECLARED_WIRE_FORM,
-				`the ${position} of ${fragment(owner.identity)} names the kernel scalar \`bytes\`, whose JSON wire form no published artifact states`,
-				owner.origin?.source,
-			);
-			return undefined;
-		}
 		return KERNEL_SCALARS[scalar];
 	}
 	const definition = byIdentity.get(ref);

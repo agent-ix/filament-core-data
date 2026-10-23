@@ -38,7 +38,7 @@ import { atom, constItem, slice, struct } from "./rust-format.mjs";
  * Everything the mapping depends on is here and nothing else is: `Nullable`,
  * `present_or_absent`, `SemanticValue` with its `NumberLexeme` and its ordered
  * `Object`, `UnknownMembers`, `Extension`, `SemanticIdentity`,
- * `SourceLocusPath` with both of its predicates, the four validated scalar
+ * `SourceLocusPath` with both of its predicates, `Bytes`, the validated scalar
  * newtypes, the generated matcher runtime, and `ValidationError`. The crate
  * depends on `serde` alone, so the matcher is generated rather than linked and
  * the instant arithmetic is written out rather than taken from a date library.

@@ -17,6 +17,7 @@ import { byCodePoint } from "./mapping.mjs";
 
 /** Scalar forms the table names that the crate materializes under `support`. */
 const SUPPORT_TYPES = Object.freeze([
+	"Bytes",
 	"Date",
 	"DateTime",
 	"Duration",

@@ -1252,7 +1252,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 * Branches: scalar:any, scalar:boolean, scalar:bytes, scalar:date, scalar:datetime,
 	 * scalar:decimal, scalar:duration, scalar:float32, scalar:float64,
 	 * scalar:integer, scalar:number, scalar:string,
-	 * scalar:uuid, support-type:date, support-type:datetime,
+	 * scalar:uuid, support-type:bytes, support-type:date, support-type:datetime,
 	 * support-type:duration, support-type:uuid;
 	 */
 	it("TC-725 every kernel scalar maps to the Rust base the mapping table states", async () => {
@@ -1371,7 +1371,6 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 * diagnostic:agent-ix.rust-backend.LIMIT_EXCEEDED,
 	 * diagnostic:agent-ix.rust-backend.NAME_COLLISION,
 	 * diagnostic:agent-ix.rust-backend.PAYLOAD_ON_ENUM_VARIANT,
-	 * diagnostic:agent-ix.rust-backend.UNDECLARED_WIRE_FORM,
 	 * diagnostic:agent-ix.rust-backend.UNKNOWN_FORMAT,
 	 * diagnostic:agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED,
 	 * diagnostic:agent-ix.rust-backend.UNORDERED_SUBJECT,
