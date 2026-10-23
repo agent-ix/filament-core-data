@@ -5,6 +5,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
 import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
+import { readSemanticIr } from "./semantic-ir-v1-1-reader.js";
 
 const configTime = () =>
 	JSON.parse(
@@ -322,6 +323,72 @@ describe("FR-146 shared raw graph verdicts", () => {
 			expect(actual.sort(order), testCase.name).toEqual(
 				testCase.expected.sort(order),
 			);
+			const independent = readSemanticIr(testCase.document).map((d) => ({
+				code: d.code,
+				pointer: `/ir/${d.path.split(".").join("/")}`,
+			}));
+			expect(independent.sort(order), testCase.name).toEqual(
+				testCase.expected.sort(order),
+			);
 		}
 	});
+});
+
+describe("FR-146 direct constraint type positions", () => {
+	it("TC-1843 and TC-1847 keep disallowed appliesTo positions independent of keyword validation", () => {
+		for (const [typeRef, code] of [
+			["ix://quire/native/Clock", "CLOCK_OUTSIDE_FIELD"],
+			["ix://quire/unit/ms", "UNRESOLVED_TYPE_REF"],
+		] as const) {
+			const document = clockDocument();
+			const node = document.types[0];
+			node.constraints = [
+				{
+					identity: `${node.identity}/constraint`,
+					keyword: "min",
+					operands: { value: "0" },
+					appliesTo: typeRef,
+					diagnosticCode: "ix://acme/config/MIN",
+					origin: node.origin,
+				},
+			];
+			const actual = [...readContractIr(document)];
+			expect(actual.map((d) => d.code)).toEqual([
+				`agent-ix.semantic-ir.${code}`,
+			]);
+			expect(actual[0].message).toContain(
+				"/ir/types/0/constraints/0/appliesTo:",
+			);
+		}
+	});
+	it("retains JSON member type failures for forbidden textProfile values", () => {
+		const document = clockDocument();
+		document.types[0].fields[0].textProfile = 1;
+		const actual = validateIrDocument(document);
+		expect(actual).toHaveLength(1);
+		expect(actual[0].message).toContain("/types/0/fields/0/textProfile");
+	});
+	it("refuses graph size limits before graph traversal and tolerates schema-invalid direct shapes", () => {
+		const document = configTime();
+		expect(
+			[...readContractIr(document, { limits: { maxNodes: 1 } })].map(
+				(d) => d.code,
+			),
+		).toEqual(["agent-ix.compiler.LIMIT_MAX_NODES"]);
+		document.dimensions = [null];
+		document.units = [null];
+		expect(() => readContractIr(document)).not.toThrow();
+		expect(validateIrDocument(document).length).toBeGreaterThan(0);
+	});
+});
+
+it("TC-1846 refuses an arbitrarily long canonical integer without widening the i128 domain", () => {
+	const document = configTime();
+	document.units[1].scale = "9".repeat(10_000);
+	expect([...readContractIr(document)].map((d) => d.code)).toEqual([
+		"agent-ix.semantic-ir.INTEGER_OUTSIDE_I128",
+	]);
+	expect(readSemanticIr(document).map((d) => d.code)).toEqual([
+		"agent-ix.semantic-ir.INTEGER_OUTSIDE_I128",
+	]);
 });

@@ -667,6 +667,17 @@ export function readContractIr(document, options = {}) {
 			);
 			return;
 		}
+		if (
+			typeof constraint.appliesTo === "string" &&
+			constraint.appliesTo.startsWith(quantityPrefix)
+		) {
+			raise(
+				DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
+				`/ir${constraintPointer}/appliesTo: quantity references are member-only`,
+				locusOf(constraint) ?? locusOf(owner),
+			);
+			return;
+		}
 		const keyword = String(constraint.keyword);
 		if (!isKeyword(keyword)) {
 			raise(

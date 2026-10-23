@@ -363,6 +363,7 @@ function checkSpecialMember(
 type ExactInteger = { value: bigint } | { error: "canonical" | "overflow" };
 function graphInteger(value: unknown): ExactInteger {
 	if (!canonicalInteger(value)) return { error: "canonical" };
+	if (value.length > 40) return { error: "overflow" };
 	if (!withinI128(value)) return { error: "overflow" };
 	return { value: BigInt(value) };
 }

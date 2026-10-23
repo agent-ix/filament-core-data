@@ -10,6 +10,8 @@ const I128_MAX = (1n << 127n) - 1n;
 function integer(text) {
 	if (typeof text !== "string" || !/^(0|-?[1-9][0-9]*)(?![\s\S])/.test(text))
 		return { invalid: true };
+	// An i128 has at most 39 digits and an optional sign.
+	if (text.length > 40) return { outside: true };
 	const value = BigInt(text);
 	return value < I128_MIN || value > I128_MAX ? { outside: true } : { value };
 }
