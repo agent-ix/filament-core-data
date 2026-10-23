@@ -77,6 +77,18 @@
 			},
 			"additionalProperties": false
 		},
+		"dimensions": {
+			"type": "array",
+			"items": {
+				"$ref": "#/$defs/dimension"
+			}
+		},
+		"units": {
+			"type": "array",
+			"items": {
+				"$ref": "#/$defs/unit"
+			}
+		},
 		"types": {
 			"type": "array",
 			"minItems": 1,
@@ -111,6 +123,78 @@
 	},
 	"additionalProperties": false,
 	"$defs": {
+		"dimension": {
+			"type": "object",
+			"required": ["identity", "name", "base", "terms", "origin"],
+			"properties": {
+				"identity": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"name": {
+					"type": "string",
+					"pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+				},
+				"base": {
+					"type": "boolean"
+				},
+				"terms": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"required": ["dimension", "exponent"],
+						"properties": {
+							"dimension": {
+								"$ref": "common.schema.json#/$defs/semanticIdentity"
+							},
+							"exponent": {
+								"type": "string"
+							}
+						},
+						"additionalProperties": false
+					}
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
+		},
+		"unit": {
+			"type": "object",
+			"required": [
+				"identity",
+				"name",
+				"dimension",
+				"scale",
+				"offset",
+				"origin"
+			],
+			"properties": {
+				"identity": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"name": {
+					"type": "string",
+					"pattern": "^[A-Za-z][A-Za-z0-9_]*$"
+				},
+				"dimension": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"target": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"scale": {
+					"type": "string"
+				},
+				"offset": {
+					"type": "string"
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
+		},
 		"constraint": {
 			"oneOf": [
 				{
