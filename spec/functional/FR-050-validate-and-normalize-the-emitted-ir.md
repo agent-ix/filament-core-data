@@ -104,7 +104,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 | operation `pre` and `post` name a declared `clauseId` | `agent-ix.semantic-ir.DANGLING_CLAUSE_REF` |
 | operation parameter names are unique | `agent-ix.semantic-ir.DUPLICATE_PARAM` |
 | node identities are unique within each list; an extension `identity` is unique per node (within one node's `extensions[]` and within the document-level `extensions[]`) and is never entered into the declaration-identity set, so two definitions each carrying `ix://agent-ix/semantic-core/ext/kernel-scalar` are admissible | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` |
-| `ix://quire/native/Clock` is not a `reference` `target`, a sequence `items`, a map `values` or a constraint `appliesTo` ([FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md)) | `agent-ix.semantic-ir.CLOCK_POSITION_INVALID` |
+| `ix://quire/native/Clock` is not a `reference` `target` or a constraint `appliesTo` ([FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md)) | `agent-ix.semantic-ir.CLOCK_POSITION_INVALID` |
 | a clock member has the FR-146 clock member shape, one diagnostic per breaking member | `agent-ix.semantic-ir.INVALID_CLOCK_MEMBER` |
 | a dimension term and a unit `dimension` name a dimension of the document (FR-146) | `agent-ix.semantic-ir.UNRESOLVED_DIMENSION_REF` |
 | a unit `target` names a unit of the document (FR-146) | `agent-ix.semantic-ir.UNRESOLVED_UNIT_REF` |
