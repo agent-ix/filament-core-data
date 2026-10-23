@@ -57,8 +57,8 @@
 		},
 		"Bytes": {
 			"irScalar": "bytes",
-			"bounds": "maxLength in octets",
-			"serialization": "base64 string (RFC 4648 section 4, padded)",
+			"bounds": "minLength and maxLength in octets",
+			"serialization": "canonical padded base64 string (RFC 4648 section 4; unused bits zero; FR-032 Bytes wire form)",
 			"unitAllowed": false
 		},
 		"JsonObject": {

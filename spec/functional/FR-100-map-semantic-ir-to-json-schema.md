@@ -132,8 +132,14 @@ frontend, a generated programming-language package, or an ambient registry.
 - A scalar definition SHALL render `boolean` for `boolean`, `integer` for a
   safe `integer` and `string` with an exact interval `pattern` for a wide one,
   `string` with a policy `pattern` for `decimal`, and `number` for `float32` and
-  `float64`, as [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) states, and `string` for `string`, `bytes`, `date`,
-  `datetime`, `duration`, and `uuid`.
+  `float64`, as [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) states, and `string` for `string`, `date`,
+  `datetime`, `duration`, and `uuid`, and `string` with
+  `contentEncoding: base64` and the ECMA-262 `pattern` of the Bytes wire form
+  ([FR-032](./FR-032-define-the-kernel-scalar-library.md)) for `bytes`. A
+  `minLength` or `maxLength` over a `bytes` subject bounds octets, not
+  characters, so the backend SHALL render it as a `pattern` that accepts
+  exactly the Bytes wire strings whose octet count lies within the bound, and
+  SHALL NOT render it as a character-count `minLength` or `maxLength`.
 - The backend SHALL attach `format: date`, `date-time`, `duration`, or `uuid`
   to the corresponding scalar schemas.
 
@@ -227,6 +233,7 @@ that decision requires.
 | FR-100-AC-13 | A field with `multiplicity.unique: true` and a `float32` item subject, and a sequence with a `unique` constraint over that subject, each produce blocking `agent-ix.semantic-ir.UNDECLARED_LOSS` naming the field or constraint and zero files. Direct scalar, alias-chain and native `ix://quire/native/Float32` references have the same result. | Test |
 | FR-100-AC-14 | Removing uniqueness from each Float32 case in AC-13 permits generation when the input has no other unrepresentable member. Replacing its item subject with `float64` retains `uniqueItems: true`; the emitted schema accepts `[0.1, 0.10000000149011612]` and rejects `[0.1, 0.1]` and `[0, -0]`. | Test |
 | FR-100-AC-15 | Generating the contract `2.0.0` constructs fixture renders `OrderLineKind.json` as `type: string` with `enum: ["physical", "digital"]` and no `allOf`; an alias of that alias carrying `maxLength` renders `type: string`, the same `enum` and the `maxLength`; an alias of `integer` or `decimal` renders as before. | Test |
+| FR-100-AC-16 | A `bytes` scalar renders `type: string`, `contentEncoding: base64` and the Bytes `pattern`; with `maxLength` 3 the rendered schema accepts `""`, `"AA=="`, `"AP8="` and `"AQID"`, rejects `"AQIDBA=="`, `"AP8"` and `"AP9="`, and carries no `maxLength` keyword; with `minLength` 2 it rejects `""` and `"AA=="` and accepts `"AP8="`. | Test (TC-1863) |
 
 ## Dependencies
 
