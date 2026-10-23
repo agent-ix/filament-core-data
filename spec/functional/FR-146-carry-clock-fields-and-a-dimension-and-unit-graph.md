@@ -247,7 +247,17 @@ a field or operation parameter.
 
 - Every IR reader SHALL admit `ix://quire/unit/<name>` as the `typeRef` of a
   field, of an operation parameter and of an operation result, where `<name>`
-  is one or more segments matching `^[A-Za-z][A-Za-z0-9_]*$` joined by `/`.
+  is one or more segments joined by `/`. The last segment is the unit name and
+  matches `^[A-Za-z][A-Za-z0-9_]*$`, the unit `name` pattern. Each earlier
+  segment matches that pattern or `^[a-z0-9][a-z0-9._-]*$`, the pattern of
+  each `/`-separated segment of `common.schema.json#/$defs/packageIdentity`,
+  so that a package unit qualified by its package identity, such as
+  `ix://quire/unit/agent-ix/time-units/ms`, is well formed (QSpec FR-322
+  "Model-owned members" step 4 qualifies a package unit as
+  `<package identity>/<name>`). The reader checks the form of each segment
+  only: it does not check that the earlier segments make up one package
+  identity or how many there are, so `ix://quire/unit/a-b/c.d/e-f/ms` is
+  also well formed, and the consumer's checked package resolves the name.
 - The reader SHALL NOT resolve `<name>` against the document's `units`: the
   name names a unit of the consumer's checked package, whose unit graph holds
   the document's units and the units the consumer's own source declares (QSpec
@@ -373,6 +383,7 @@ A result carries no identity of its own, so a backend profile's
 | FR-146-AC-6 | A field, an operation parameter and an operation result typed `ix://quire/unit/ms` are accepted with no diagnostic, both in the AC-3 document and in a document that declares no units; `ix://quire/unit/ms` as an alias target or sequence `items` refuses exactly `UNRESOLVED_TYPE_REF` at that member, and so do the typeRefs `ix://quire/unit/` and `ix://quire/unit/3ms`; a unit-typed field carrying `unit: "ms"`, a `min` constraint, a `decimal` policy and a semantic default refuses exactly one `INVALID_QUANTITY_MEMBER` at each of `/unit`, `/constraints`, `/decimal`, `/defaultKind` and `/defaultValue` under the field, and no `UNIT_ON_NON_SCALAR`, `CONSTRAINT_NOT_APPLICABLE`, decimal-policy code, `INVALID_DEFAULT_VALUE`, `UNKNOWN_CONSTRAINT_KEYWORD` or `INVALID_PATTERN`. | Test (TC-1847) |
 | FR-146-AC-7 | Two documents differing only in the order of `units` have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; every committed positive fixture keeps its bytes and fingerprint; adding a unit classifies additive, and removing one, changing its `scale` or changing a dimension's `base` classifies breaking. | Test (TC-1848) |
 | FR-146-AC-8 | The AC-1 document and the AC-6 document each make every generation backend raise the blocking `UNDECLARED_LOSS` naming the clock or unit-typed member and write no file. With `allowedOmissions` naming the member, the backend omits it with one non-blocking `DECLARED_LOSS` naming it. With `allowedOmissions` naming only the owner, each of these is dropped with the owner under the owner's single `DECLARED_LOSS` and raises no loss of its own: the clock field of an omitted `Call` type, a unit-typed parameter of an omitted operation, a unit-typed parameter of an operation of an omitted type, and a unit-typed result of an omitted operation. A generated operation with a unit-typed result raises the blocking `UNDECLARED_LOSS` naming the operation and `returns`. A generated subtype of an omitted `Call` that inherits its clock field raises the blocking `UNDECLARED_LOSS` naming the field, unless `allowedOmissions` names the field. A document carrying `dimensions` and `units` generates exactly what it generates without them, and the JSON Schema and rust-serde backends' native lists carry `Clock` with no IR scalar. | Test (TC-1849) |
+| FR-146-AC-9 | A field, an operation parameter and an operation result typed `ix://quire/unit/agent-ix/time-units/ms`, `ix://quire/unit/acme/rpc.v2/ms` and `ix://quire/unit/acme/rpc/ms` are accepted with no diagnostic; the typeRefs `ix://quire/unit/agent-ix/time-units/m-s` and `ix://quire/unit/agent-ix/time-units/3ms` (the unit-name segment outside its pattern), `ix://quire/unit/-acme/rpc/ms` and `ix://quire/unit/.acme/rpc/ms` (an earlier segment outside both patterns) and `ix://quire/unit/agent-ix//ms` (an empty segment) each refuse exactly `UNRESOLVED_TYPE_REF` at that `typeRef`. | Test (TC-1852) |
 
 ## Dependencies
 
