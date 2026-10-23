@@ -34,3 +34,11 @@ Independent review of the exact PR head, restricted to the diff against FCD main
 ## Verdict
 
 PASS for the diff-scoped code/Rust/TypeScript review at the exact head. The separate gap-analysis artifact records missing matrix trace bindings.
+
+## Incremental review after native gate
+
+The original code-review PASS was too broad: the subsequent aggregate Node gate on custody head `faa5633498bb9cb3a9ca3b37572db24fbcb9a006` reported six failing cases. The newly introduced `specialMember` and `checkUnitGraph` paths had passed code-name strings through `DIAGNOSTIC_CODES[code]`, while `raise` expects a registry entry; these paths could emit no valid diagnostic. That defect was missed in the original inspection and is recorded here, rather than treating the earlier PASS as gate evidence.
+
+At exact head `2a7aa38ac9d708e1abcf1760b7732ea33a34ebc7`, the narrow fix replaces string names with explicit `DIAGNOSTIC_CODES.<NAME>` entries at every new `emit` call. `emit` passes those entries directly to `raise`, matching `diagnostic(entry, ...)` and the registry's frozen entry shape. The added `test/compiler-core.test.ts` cases feed actual raw `graph-cases.json` and `clock-cases.json` through `readContractIr`, compare emitted code sets to each fixture's expected codes, then separately require `UNRESOLVED_UNIT_REF` and `INVALID_QUANTITY_MEMBER` from mutated valid documents. This makes the new registry members observable in the existing closing census. The one-commit delta against `faa56334` changes only `src/compiler/ir/reader.mjs`, `src/compiler/ir/unit-graph.mjs` and `test/compiler-core.test.ts`; no Rust, schema, spec, lock, fixture or gate file changed. `git diff --check` passes. The author's focused pass counts were inspected as claims; this reviewer did not rerun tests or the aggregate gate.
+
+Current disposition: the gate-discovered code defect is fixed by inspection at this exact head. No new finding remains from the narrow fix. The final aggregate gate still belongs to the author, and SR-16456's six trace findings remain fixed.
