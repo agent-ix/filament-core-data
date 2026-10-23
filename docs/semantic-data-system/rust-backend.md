@@ -23,7 +23,7 @@ construction, not by claim.
 | `scalar` | `pub struct N(B);` | `transparent` | newtype over the kernel base with try_new and a validating Deserialize | — |
 | `record` | `pub struct N { .. }` | — | derived Serialize, member attributes per the field axes, Deserialize routed through try_new | — |
 | `enum` | `pub enum N { .. } (fieldless)` | `rename = "<variant name>"` | derived Serialize and Deserialize; the rename is emitted only where the derived identifier differs from the variant name | — |
-| `union` | `pub enum N { .. } (unit variant without payloadType, one-field variant with)` | `rename = "<variant name>"` | adjacently tagged, #[serde(tag = "kind", content = "value")]; the same conditional rename | — |
+| `union` | `pub enum N { .. } (unit variant without payloadType, one-field variant with)` | `rename = "<variant name>"` | externally tagged, serde's default; the same conditional rename | — |
 | `alias` | `pub struct N(T);` | `transparent` | newtype over the target's Rust type with try_new | — |
 | `sequence` | `pub struct N(Vec<I>);` | `transparent` | newtype over the items type with try_new | — |
 | `map` | `pub struct N(BTreeMap<String, V>);` | `transparent` | newtype over the values type with try_new; BTreeMap and the fixed String key serialize in one order | — |
@@ -72,7 +72,7 @@ construction, not by claim.
 | `float32` | `f32` | — | finite JSON number | — |
 | `float64` | `f64` | — | finite JSON number | — |
 | `string` | `String` | — | JSON string | — |
-| `bytes` | `Bytes` | — | generated octet-sequence newtype; JSON string in the Bytes wire form of FR-032 (canonical padded standard base64) | — |
+| `bytes` | `null` | — | refused: no published artifact states the JSON wire form of bytes (issue #58) | `agent-ix.rust-backend.UNDECLARED_WIRE_FORM` |
 | `date` | `Date` | — | generated RFC 3339 full-date newtype over String; JSON string | — |
 | `datetime` | `DateTime` | — | generated RFC 3339 date-time newtype over String; JSON string | — |
 | `duration` | `Duration` | — | generated ISO 8601 duration newtype over String; JSON string | — |
@@ -155,6 +155,8 @@ cross-language gate.
 
 | Decision | What the contract says | What this backend does | Filed as |
 |---|---|---|---|
+| Union wire form | `contracts-v1.md` calls the construct a discriminated union and the published `rust` target contract's `nativeApi` says "tagged union"; neither names a discriminator member, and the IR carries none | Serde's external tagging, `{"VariantName": payload}`, which is the only form that needs no invented name | [#58](https://github.com/agent-ix/filament-core-data/issues/58) |
+| `bytes` wire form | Nothing. `semantic-ir.schema.json` lists `bytes` as a kernel scalar; no `contentEncoding`, no fixture, no corpus case, no `target-verdicts.json` row | Refuses with a blocking `UNDECLARED_WIRE_FORM` and emits no file, rather than pick base64 or an integer array | [#58](https://github.com/agent-ix/filament-core-data/issues/58) |
 | `format` names | `agent-ix:plain-text` is the only published format name, and no artifact states its language | Refuses with `UNKNOWN_FORMAT`. Registering a check would be inventing a cross-language rule | [#58](https://github.com/agent-ix/filament-core-data/issues/58) |
 | Source licence expression | `target-contract.schema.json` fixes `customSourceLicense` as a `const` of `AGPL-3.0-or-later`; since the relicensing of #140 the program's licence clause and `package.json` agree | Emits `AGPL-3.0-or-later`, so the contract and the emitted crate no longer diverge | [#57](https://github.com/agent-ix/filament-core-data/issues/57), [#140](https://github.com/agent-ix/filament-core-data/issues/140) |
 

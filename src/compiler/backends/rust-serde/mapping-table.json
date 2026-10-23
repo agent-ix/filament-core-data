@@ -36,7 +36,7 @@
 			"selector": "union",
 			"rustForm": "pub enum N { .. } (unit variant without payloadType, one-field variant with)",
 			"serdeAttributes": ["rename = \"<variant name>\""],
-			"mechanism": "adjacently tagged, #[serde(tag = \"kind\", content = \"value\")]; the same conditional rename",
+			"mechanism": "externally tagged, serde's default; the same conditional rename",
 			"diagnosticCode": null
 		},
 		{
@@ -295,11 +295,10 @@
 			"rowKey": "scalar:bytes",
 			"axis": "scalar",
 			"selector": "bytes",
-			"rustForm": "Bytes",
-			"supportType": "Bytes",
+			"rustForm": null,
 			"serdeAttributes": [],
-			"mechanism": "generated octet-sequence newtype; JSON string in the Bytes wire form of FR-032 (canonical padded standard base64)",
-			"diagnosticCode": null
+			"mechanism": "refused: no published artifact states the JSON wire form of bytes (issue #58)",
+			"diagnosticCode": "agent-ix.rust-backend.UNDECLARED_WIRE_FORM"
 		},
 		{
 			"rowKey": "scalar:date",
