@@ -92,7 +92,6 @@ visible in the run rather than invisible in the generated source.
 | `UNSUPPORTED_CONSTRUCT` | error | yes | a construct selects no mapping row and no named refusal |
 | `UNSUPPORTED_PATTERN` | error | yes | an ECMA-262 pattern is neither expressible nor proved |
 | `UNSUPPORTED_SCALAR` | error | yes | a `kind: "scalar"` names a value outside the nine kernel scalars |
-| `UNDECLARED_WIRE_FORM` | error | yes | a construct's wire form is declared by no published artifact — `bytes` at this revision |
 | `UNSUPPORTED_MULTIPLICITY` | error | yes | a field's `multiplicity.upper` is `0` |
 | `PAYLOAD_ON_ENUM_VARIANT` | error | yes | a `kind: "enum"` variant carries a `payloadType` |
 | `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` | error | yes | a constraint keyword does not apply to its resolved subject |
