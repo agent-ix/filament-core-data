@@ -2,7 +2,10 @@
 	"model": "TypeRef",
 	"reason": "unknown property",
 	"value": {
-		"target": "String",
+		"target": {
+			"kind": "KernelScalar",
+			"value": "String"
+		},
 		"extra": 1
 	}
 }

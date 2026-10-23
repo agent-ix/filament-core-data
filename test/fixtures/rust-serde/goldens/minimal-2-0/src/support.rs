@@ -2,7 +2,7 @@
 //!
 //! Every named type the mapping table refers to lives here: the nullability
 //! wrapper, the dynamic value the unknown-member policies retain, the validated
-//! identity and locus-path newtypes, the four validated scalar newtypes, the
+//! identity and locus-path newtypes, the validated scalar newtypes and Bytes, the
 //! generated pattern matcher, and the validation error every fallible
 //! constructor returns.
 //!
@@ -15,7 +15,7 @@ use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::fmt;
 
-use serde::de::{self, Deserializer, MapAccess, SeqAccess, Visitor};
+use serde::de::{self, Deserializer, IntoDeserializer, MapAccess, SeqAccess, Visitor};
 use serde::ser::{SerializeMap, SerializeSeq, Serializer};
 use serde::{Deserialize, Serialize};
 
@@ -902,6 +902,85 @@ impl<'de> Deserialize<'de> for SemanticValue {
     }
 }
 
+/// Replays a buffered JSON value to a declared payload type when `value`
+/// precedes `kind` in an adjacent union object.
+pub fn deserialize_semantic<'de, T: Deserialize<'de>>(
+    value: SemanticValue,
+) -> Result<T, serde::de::value::Error> {
+    T::deserialize(value)
+}
+
+impl<'de> IntoDeserializer<'de, de::value::Error> for SemanticValue {
+    type Deserializer = Self;
+
+    fn into_deserializer(self) -> Self::Deserializer {
+        self
+    }
+}
+
+impl<'de> Deserializer<'de> for SemanticValue {
+    type Error = serde::de::value::Error;
+
+    fn deserialize_any<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Self::Error> {
+        match self {
+            SemanticValue::Null => visitor.visit_unit(),
+            SemanticValue::Bool(value) => visitor.visit_bool(value),
+            SemanticValue::Number(value) => {
+                if let Ok(number) = value.text().parse::<i64>() {
+                    visitor.visit_i64(number)
+                } else if let Ok(number) = value.text().parse::<u64>() {
+                    visitor.visit_u64(number)
+                } else {
+                    let number = value.text().parse::<f64>().map_err(de::Error::custom)?;
+                    visitor.visit_f64(number)
+                }
+            }
+            SemanticValue::String(value) => visitor.visit_string(value),
+            SemanticValue::Array(values) => {
+                visitor.visit_seq(de::value::SeqDeserializer::new(values.into_iter()))
+            }
+            SemanticValue::Object(members) => {
+                visitor.visit_map(de::value::MapDeserializer::new(members.into_iter()))
+            }
+        }
+    }
+
+    fn deserialize_option<V: Visitor<'de>>(self, visitor: V) -> Result<V::Value, Self::Error> {
+        match self {
+            SemanticValue::Null => visitor.visit_none(),
+            value => visitor.visit_some(value),
+        }
+    }
+
+    fn deserialize_newtype_struct<V: Visitor<'de>>(
+        self,
+        _name: &'static str,
+        visitor: V,
+    ) -> Result<V::Value, Self::Error> {
+        visitor.visit_newtype_struct(self)
+    }
+
+    fn deserialize_enum<V: Visitor<'de>>(
+        self,
+        name: &'static str,
+        _variants: &'static [&'static str],
+        visitor: V,
+    ) -> Result<V::Value, Self::Error> {
+        match self {
+            SemanticValue::String(value) => visitor.visit_enum(value.into_deserializer()),
+            _ => Err(de::Error::invalid_type(
+                de::Unexpected::Other("non-string enum"),
+                &name,
+            )),
+        }
+    }
+
+    serde::forward_to_deserialize_any! {
+        bool i8 i16 i32 i64 u8 u16 u32 u64 f32 f64 char str string bytes byte_buf
+        unit unit_struct seq tuple tuple_struct map struct identifier ignored_any
+    }
+}
+
 /// Renders an `f64` the way ECMAScript's `Number::toString` does for the values
 /// a JSON document can carry.
 ///
@@ -957,16 +1036,14 @@ impl UnknownMembers {
 /// `surface` an unrecognised tag is kept here instead of failing
 /// deserialization.
 ///
-/// The two wire forms are kept apart because the round trip has to be
-/// unchanged. An externally tagged variant reaches the wire either as a bare
-/// tag string, which is how a variant with no payload is written, or as a
-/// one-member object. Collapsing them onto one constructor would re-serialize
-/// a value in the form it did not arrive in.
+/// The two adjacent wire forms are kept apart because the round trip has to be
+/// unchanged. A unit variant has only `kind`; a variant with a payload also
+/// has `value`, even when that value is JSON `null`.
 #[derive(Clone, Debug, PartialEq)]
 pub enum UnknownVariant {
-    /// The wire form was a bare tag string.
+    /// The wire form had a `kind` and no `value`.
     Tag(String),
-    /// The wire form was a one-member object: a tag and its payload.
+    /// The wire form had both `kind` and `value`.
     Tagged(String, SemanticValue),
 }
 
@@ -991,14 +1068,44 @@ impl UnknownVariant {
 impl Serialize for UnknownVariant {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self {
-            UnknownVariant::Tag(tag) => serializer.serialize_str(tag),
+            UnknownVariant::Tag(tag) => serialize_adjacent_unit(serializer, tag),
             UnknownVariant::Tagged(tag, payload) => {
-                let mut map = serializer.serialize_map(Some(1))?;
-                map.serialize_entry(tag, payload)?;
-                map.end()
+                serialize_adjacent_payload(serializer, tag, payload)
             }
         }
     }
+}
+
+/// Serializes a payload-free variant as an adjacent `kind` object.
+pub fn serialize_adjacent_unit<S: Serializer>(serializer: S, tag: &str) -> Result<S::Ok, S::Error> {
+    let mut map = serializer.serialize_map(Some(1))?;
+    map.serialize_entry("kind", tag)?;
+    map.end()
+}
+
+/// Serializes a payload-carrying variant as an adjacent `kind` and `value` object.
+pub fn serialize_adjacent_payload<S: Serializer, T: Serialize>(
+    serializer: S,
+    tag: &str,
+    payload: &T,
+) -> Result<S::Ok, S::Error> {
+    let mut map = serializer.serialize_map(Some(2))?;
+    map.serialize_entry("kind", tag)?;
+    map.serialize_entry("value", payload)?;
+    map.end()
+}
+
+/// Reads a declared variant's required adjacent `value` member.
+pub fn read_adjacent_payload<'de, A: MapAccess<'de>, T: Deserialize<'de>>(
+    access: &mut A,
+) -> Result<T, A::Error> {
+    let Some(member) = access.next_key::<String>()? else {
+        return Err(de::Error::missing_field("value"));
+    };
+    if member != "value" {
+        return Err(de::Error::unknown_field(&member, &["value"]));
+    }
+    access.next_value()
 }
 
 /// A declared extension carried beside a contract node.
@@ -1459,6 +1566,137 @@ validated_scalar!(
     is_iso8601_duration
 );
 validated_scalar!(Uuid, "format", "an 8-4-4-4-12 UUID", is_uuid);
+
+/// An octet sequence whose JSON form is canonical padded standard base64.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Bytes(Vec<u8>);
+
+impl Bytes {
+    /// Builds a value from its octets.
+    pub fn new(octets: Vec<u8>) -> Self {
+        Self(octets)
+    }
+
+    /// The octets of this value.
+    pub fn as_slice(&self) -> &[u8] {
+        &self.0
+    }
+
+    /// True when the octet sequence has no members.
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    /// Renders the canonical padded standard base64 wire value.
+    pub fn to_base64(&self) -> String {
+        encode_bytes_wire(&self.0)
+    }
+
+    /// Consumes the wrapper and returns its octets.
+    pub fn into_inner(self) -> Vec<u8> {
+        self.0
+    }
+}
+
+const BASE64_ALPHABET: &[u8; 64] =
+    b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+fn base64_digit(byte: u8) -> Option<u8> {
+    match byte {
+        b'A'..=b'Z' => Some(byte - b'A'),
+        b'a'..=b'z' => Some(byte - b'a' + 26),
+        b'0'..=b'9' => Some(byte - b'0' + 52),
+        b'+' => Some(62),
+        b'/' => Some(63),
+        _ => None,
+    }
+}
+
+fn decode_bytes_wire(text: &str) -> Option<Vec<u8>> {
+    let bytes = text.as_bytes();
+    if bytes.len() % 4 != 0 {
+        return None;
+    }
+    let mut octets = Vec::new();
+    for (index, group) in bytes.chunks_exact(4).enumerate() {
+        let last = index + 1 == bytes.len() / 4;
+        let first = base64_digit(group[0])?;
+        let second = base64_digit(group[1])?;
+        octets.push((first << 2) | (second >> 4));
+        if group[2] == b'=' {
+            if !last || group[3] != b'=' || second & 0x0f != 0 {
+                return None;
+            }
+            continue;
+        }
+        let third = base64_digit(group[2])?;
+        octets.push((second << 4) | (third >> 2));
+        if group[3] == b'=' {
+            if !last || third & 0x03 != 0 {
+                return None;
+            }
+            continue;
+        }
+        let fourth = base64_digit(group[3])?;
+        octets.push((third << 6) | fourth);
+    }
+    Some(octets)
+}
+
+fn encode_bytes_wire(octets: &[u8]) -> String {
+    let mut text = String::new();
+    for group in octets.chunks(3) {
+        text.push(BASE64_ALPHABET[(group[0] >> 2) as usize] as char);
+        text.push(
+            BASE64_ALPHABET
+                [(((group[0] & 0x03) << 4) | (group.get(1).copied().unwrap_or(0) >> 4)) as usize]
+                as char,
+        );
+        if let Some(second) = group.get(1) {
+            text.push(
+                BASE64_ALPHABET
+                    [(((second & 0x0f) << 2) | (group.get(2).copied().unwrap_or(0) >> 6)) as usize]
+                    as char,
+            );
+        } else {
+            text.push('=');
+        }
+        if let Some(third) = group.get(2) {
+            text.push(BASE64_ALPHABET[(third & 0x3f) as usize] as char);
+        } else {
+            text.push('=');
+        }
+    }
+    text
+}
+
+impl Serialize for Bytes {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_base64())
+    }
+}
+
+impl<'de> Deserialize<'de> for Bytes {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let text = String::deserialize(deserializer)?;
+        decode_bytes_wire(&text)
+            .map(Self)
+            .ok_or_else(|| de::Error::custom("not canonical padded standard base64"))
+    }
+}
+
+/// Refuses a `value` member on a payload-free adjacent union variant.
+///
+/// Serde otherwise accepts `{"kind":"b","value":null}` for a unit variant.
+/// The variant attribute calls this helper only when the member is present;
+/// omitting `value` still deserializes to the unit variant.
+pub fn reject_unit_variant_value<'de, D: Deserializer<'de>>(
+    _deserializer: D,
+) -> Result<(), D::Error> {
+    Err(de::Error::custom(
+        "a payload-free variant must omit its value member",
+    ))
+}
 
 /// True where the civil date exists in the proleptic Gregorian calendar.
 fn is_valid_civil(year: i64, month: i64, day: i64) -> bool {

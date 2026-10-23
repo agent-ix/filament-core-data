@@ -96,7 +96,7 @@ export function lower(instance: Instance, sourceBytes: string): JsonObject {
 		unit?: string;
 		decimal?: JsonObject;
 	} => {
-		const target = String(ref.target);
+		const target = isObject(ref.target) ? String(ref.target.value) : "";
 		const typeRef = target in KERNEL ? kernelIdentity(target) : target;
 		const multiplicity = isObject(ref.multiplicity)
 			? { ordered: false, unique: false, ...ref.multiplicity }
@@ -115,7 +115,9 @@ export function lower(instance: Instance, sourceBytes: string): JsonObject {
 		locus: Locus | undefined,
 	): JsonObject => {
 		const name = String(field.name);
-		const type = isObject(field.type) ? field.type : { target: "String" };
+		const type = isObject(field.type)
+			? field.type
+			: { target: { kind: "KernelScalar", value: "String" } };
 		const lowered = lowerTypeRef(type);
 		const extensions: JsonObject[] = [];
 		let typeRef = lowered.typeRef;
@@ -132,8 +134,15 @@ export function lower(instance: Instance, sourceBytes: string): JsonObject {
 				roles: [],
 				origin: origin(locus),
 				constraints: constraints.map((constraint) => {
-					const keyword = String(constraint.keyword);
-					const { keyword: _keyword, ...operands } = constraint;
+					const record = isObject(constraint.value) ? constraint.value : {};
+					const keyword = String(record.keyword);
+					const { keyword: _keyword, ...rawOperands } = record;
+					const operands = {
+						...rawOperands,
+						...(isObject(rawOperands.value)
+							? { value: rawOperands.value.value }
+							: {}),
+					};
 					return {
 						identity: `${base}/constraint/${owner}-${name}-${keyword}`,
 						keyword,

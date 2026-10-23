@@ -8,7 +8,10 @@
 	"instance": {
 		"name": "1nvalid",
 		"type": {
-			"target": "String"
+			"target": {
+				"kind": "KernelScalar",
+				"value": "String"
+			}
 		}
 	},
 	"expected": {

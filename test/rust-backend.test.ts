@@ -698,7 +698,7 @@ describe("TC-713 the emitted call rendering is a formatter fixed point", () => {
 		// line, which `rustfmt` rewrites three different ways depending on
 		// which of the arm, the block body, or the nested call fits. This
 		// fixture reaches all three shapes: the `SemanticType::identity` arms,
-		// a string enum's tag arms in both directions, and an externally tagged
+		// a string enum's tag arms in both directions, and an adjacently tagged
 		// union's serializer, visitor and catch-all.
 		const { emitCrate } = await import(modulePathOf("crate.mjs"));
 		const bundle = readJson(
@@ -743,9 +743,11 @@ describe("TC-713 the emitted call rendering is a formatter fixed point", () => {
 			expect(bodies).toMatch(
 				/SemanticType::LongIdentityScalarForMatchArmWidth => \{\n/,
 			);
-			expect(bodies).toMatch(/=> \{\n\s+serializer\.serialize_str\(/);
 			expect(bodies).toMatch(
-				/::Unknown\(\n\s+crate::support::UnknownVariant::/,
+				/::Payload\(payload\) => \{\n\s+crate::support::serialize_adjacent_payload\(/,
+			);
+			expect(bodies).toMatch(
+				/::Unknown\(unknown\) => \{\n\s+unknown\.serialize\(serializer\)/,
 			);
 
 			execFileSync("rustfmt", ["--check", ...sources], {
@@ -1252,7 +1254,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 * Branches: scalar:any, scalar:boolean, scalar:bytes, scalar:date, scalar:datetime,
 	 * scalar:decimal, scalar:duration, scalar:float32, scalar:float64,
 	 * scalar:integer, scalar:number, scalar:string,
-	 * scalar:uuid, support-type:date, support-type:datetime,
+	 * scalar:uuid, support-type:bytes, support-type:date, support-type:datetime,
 	 * support-type:duration, support-type:uuid;
 	 */
 	it("TC-725 every kernel scalar maps to the Rust base the mapping table states", async () => {
@@ -1371,7 +1373,6 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 * diagnostic:agent-ix.rust-backend.LIMIT_EXCEEDED,
 	 * diagnostic:agent-ix.rust-backend.NAME_COLLISION,
 	 * diagnostic:agent-ix.rust-backend.PAYLOAD_ON_ENUM_VARIANT,
-	 * diagnostic:agent-ix.rust-backend.UNDECLARED_WIRE_FORM,
 	 * diagnostic:agent-ix.rust-backend.UNKNOWN_FORMAT,
 	 * diagnostic:agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED,
 	 * diagnostic:agent-ix.rust-backend.UNORDERED_SUBJECT,

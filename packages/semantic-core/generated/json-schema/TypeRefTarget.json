@@ -1,0 +1,40 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.3.3/TypeRefTarget.json",
+	"oneOf": [
+		{
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "SemanticId"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/SemanticId.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
+		},
+		{
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "KernelScalar"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/KernelScalar.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
+		}
+	],
+	"description": "A reference to a kernel scalar or a semantic type. Reader: `decimal` iff target is Decimal; `unit` only on unit-allowed scalars.",
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/TypeRefTarget"
+}

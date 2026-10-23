@@ -11,12 +11,18 @@
 			{
 				"name": "amount",
 				"type": {
-					"target": "Decimal"
+					"target": {
+						"kind": "KernelScalar",
+						"value": "Decimal"
+					}
 				}
 			}
 		],
 		"returns": {
-			"target": "Boolean"
+			"target": {
+				"kind": "KernelScalar",
+				"value": "Boolean"
+			}
 		},
 		"pre": [
 			{
@@ -39,12 +45,18 @@
 				{
 					"name": "amount",
 					"type": {
-						"target": "Decimal"
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Decimal"
+						}
 					}
 				}
 			],
 			"returns": {
-				"target": "Boolean"
+				"target": {
+					"kind": "KernelScalar",
+					"value": "Boolean"
+				}
 			},
 			"pre": [
 				{

@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 ///
 /// Semantic identity: ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[serde(untagged)]
+#[serde(tag = "kind", content = "value", deny_unknown_fields)]
 pub enum ExclusiveMaxConstraintValue {
     /// number
     ///

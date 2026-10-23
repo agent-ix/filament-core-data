@@ -10,17 +10,7 @@
 		"values": {
 			"type": "array",
 			"items": {
-				"anyOf": [
-					{
-						"type": "string"
-					},
-					{
-						"type": "number"
-					},
-					{
-						"type": "boolean"
-					}
-				]
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/EnumValuesConstraintValues.json"
 			},
 			"minItems": 1
 		}

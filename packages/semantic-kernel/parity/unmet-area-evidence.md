@@ -15,7 +15,7 @@ area is the corpus owner's act.
 
 ## What was measured
 
-One golden corpus of 113 kernel instance documents under
+One golden corpus of 114 kernel instance documents under
 `packages/semantic-kernel/parity/golden/`, covering all 31 semantic declarations
 (21 models, 1 union, 4 enums, 5 scalars; `EnumValueName` is exercised through
 `EnumValue.value`) in the `positive` / `negative` /
@@ -43,34 +43,34 @@ node --experimental-strip-types \
 ## The measured agreement
 
 ```
-90/113 documents agree; 47 divergence rows, 0 unadjudicated
+92/114 documents agree; 45 divergence rows, 0 unadjudicated
 ```
 
 | Property | Agreeing | Documents |
 | --- | --- | --- |
-| serialized-member-names | 76 | 95 |
+| serialized-member-names | 77 | 95 |
 | round-trip | 65 | 70 |
 | presence-versus-null | 8 | 11 |
-| unknown-member-states | 5 | 5 |
+| unknown-member-states | 6 | 6 |
 | defaults | 3 | 8 |
 | relation-semantics | 10 | 11 |
 
 | Package | Agreeing with the contract | Documents |
 | --- | --- | --- |
-| json-schema | 113 | 113 |
-| typescript | 91 | 113 |
-| python | 111 | 113 |
-| rust | 90 | 113 |
+| json-schema | 114 | 114 |
+| typescript | 93 | 114 |
+| python | 112 | 114 |
+| rust | 92 | 114 |
 
 ## Every divergence, and who owns it
 
-All 47 rows are adjudicated. No row is closed by editing a golden
+All 45 rows are adjudicated. No row is closed by editing a golden
 document, an expectation, a base, the oracle, or this register.
 
 | Cause | Wrong side | Property | Rows | Adjudicated by |
 | --- | --- | --- | --- | --- |
-| `ir-drops-string-scalar-constraints` | rust | decision | 16 | agent-ix/filament-core-data#127 |
-| `ir-drops-string-scalar-constraints` | typescript | decision | 16 | agent-ix/filament-core-data#127 |
+| `ir-drops-string-scalar-constraints` | rust | decision | 15 | agent-ix/filament-core-data#127 |
+| `ir-drops-string-scalar-constraints` | typescript | decision | 15 | agent-ix/filament-core-data#127 |
 | `ir-unconstrained-value` | rust | decision | 4 | agent-ix/filament-core-data#78 |
 | `ir-unconstrained-value` | typescript | decision | 5 | agent-ix/filament-core-data#78 |
 | `ir-required-collection-presence` | rust | decision | 1 | agent-ix/filament-core-data#78 |
@@ -97,10 +97,10 @@ measurement the unmet area names; it does not claim the named defects are fixed.
 
 | Owning issue | Status against `UA-serialization-parity` |
 | --- | --- |
-| `#21` Rust/Serde backend | **Discharged as measured.** The crate decides all 113 documents and agrees on 90. Of its 23 divergence rows, 21 are rendered-from-IR (`#127`, `#78`) and 2 are its own (`#129`). |
-| `#22` TypeScript backend | **Discharged as measured.** The package decides all 113 documents and agrees on 90. All 22 of its divergence rows are rendered-from-IR (`#127`, `#78`); no divergence is owned by `#22` itself. |
-| `#23` Python backend | **Discharged as measured.** The package decides all 113 documents and agrees on 110, the highest of the three IR-independent paths. Both of its divergence rows are its own (`#129`). |
-| `#11` semantic-core packages | **Not discharged.** `#11` owns the JSON Schema package, which agrees on 113 of 113 — but that figure is not independent evidence: the golden expectations are derived from the same published schemas ajv validates against, so the JSON Schema package is the contract's own voice in this measurement, not a fourth witness to it. `#11` also owns the IR lowering, and 43 of the 47 divergence rows are lowering defects (`#127` 32 rows plus the `#78` expressiveness losses). |
+| `#21` Rust/Serde backend | **Discharged as measured.** The crate decides all 114 documents and agrees on 92. Of its 22 divergence rows, 20 are rendered-from-IR (`#127`, `#78`) and 2 are its own (`#129`). |
+| `#22` TypeScript backend | **Discharged as measured.** The package decides all 114 documents and agrees on 93. All 21 of its divergence rows are rendered-from-IR (`#127`, `#78`); no divergence is owned by `#22` itself. |
+| `#23` Python backend | **Discharged as measured.** The package decides all 114 documents and agrees on 112, the highest of the three IR-independent paths. Both of its divergence rows are its own (`#129`). |
+| `#11` semantic-core packages | **Not discharged.** `#11` owns the JSON Schema package, which agrees on 114 of 114 — but that figure is not independent evidence: the golden expectations are derived from the same published schemas ajv validates against, so the JSON Schema package is the contract's own voice in this measurement, not a fourth witness to it. `#11` also owns the IR lowering, and 41 of the 45 divergence rows are lowering defects (`#127` 30 rows plus the `#78` expressiveness losses). |
 
 What remains is therefore not an absence of measurement but three named, owned
 defects. That is what the issue register records; it is not what an unmet-area
