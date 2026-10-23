@@ -173,7 +173,6 @@ fn a_clock_field_is_admitted_without_a_declared_type() {
     assert_eq!(diagnostics("", &[record]), vec![]);
 }
 
-/// Trace: FR-146-AC-2
 /// Provenance: IR-990 field-only admission; IR-991 exact refusal.
 #[test]
 fn a_clock_operation_parameter_remains_refused_at_its_type_ref() {
@@ -310,7 +309,6 @@ fn operation_result(type_ref: &str, extra: &str) -> String {
     )
 }
 
-/// Trace: FR-146-AC-2, FR-146-AC-6
 #[test]
 fn clock_and_quantity_nonmember_type_positions_refuse_at_exact_reference() {
     for (reference, code) in [
@@ -366,7 +364,6 @@ fn clock_and_quantity_nonmember_type_positions_refuse_at_exact_reference() {
     );
 }
 
-/// Trace: FR-146-AC-6, FR-146-AC-9
 #[test]
 fn quantity_members_check_uri_form_without_resolving_local_units() {
     for (name, accepted) in [
@@ -416,7 +413,6 @@ fn quantity_members_check_uri_form_without_resolving_local_units() {
     }
 }
 
-/// Trace: FR-146-AC-2, FR-146-AC-6
 #[test]
 fn special_member_shape_owns_nested_constraints_and_scalar_policy_diagnostics() {
     for (reference, code) in [

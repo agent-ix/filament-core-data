@@ -392,3 +392,36 @@ it("TC-1846 refuses an arbitrarily long canonical integer without widening the i
 		"agent-ix.semantic-ir.INTEGER_OUTSIDE_I128",
 	]);
 });
+
+it("TC-1842/1843/1847/1852 keeps both TS readers on exact Clock and quantity located verdicts", () => {
+	const cases = JSON.parse(
+		readFileSync(
+			new URL(
+				"../fixtures/semantic/v1/clock-units/clock-cases.json",
+				import.meta.url,
+			),
+			"utf8",
+		),
+	) as {
+		name: string;
+		document: ReturnType<typeof configTime>;
+		expected: { code: string; pointer: string }[];
+	}[];
+	const order = (
+		a: { code: string; pointer: string },
+		b: { code: string; pointer: string },
+	) => `${a.code}${a.pointer}`.localeCompare(`${b.code}${b.pointer}`);
+	for (const c of cases) {
+		expect(validateIrDocument(c.document), c.name).toEqual([]);
+		const actual = [...readContractIr(c.document)].map((d) => ({
+			code: d.code,
+			pointer: d.message.split(": ")[0],
+		}));
+		expect(actual.sort(order), c.name).toEqual(c.expected.sort(order));
+		const independent = readSemanticIr(c.document).map((d) => ({
+			code: d.code,
+			pointer: `/ir/${d.path.split(".").join("/")}`,
+		}));
+		expect(independent.sort(order), c.name).toEqual(c.expected.sort(order));
+	}
+});
