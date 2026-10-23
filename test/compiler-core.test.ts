@@ -6922,6 +6922,67 @@ describe("diagnostic coverage (FR-049 closing gate)", () => {
 		).toBe(true);
 	});
 
+	/** FR-146-AC-4: real reader fixtures contribute to the closing registry census. */
+	it("observes the Clock and unit graph diagnostics from their authored fixtures", () => {
+		for (const filename of ["graph-cases.json", "clock-cases.json"]) {
+			const cases = JSON.parse(
+				readFileSync(
+					new URL(
+						`../fixtures/semantic/v1/clock-units/${filename}`,
+						import.meta.url,
+					),
+					"utf8",
+				),
+			) as {
+				name: string;
+				document: Json;
+				expected: { code: string; pointer: string }[];
+			}[];
+			for (const fixture of cases) {
+				const diagnostics = note(
+					readContractIr(fixture.document as never) as never,
+				);
+				expect(
+					diagnostics.map((entry) => entry.code).sort(),
+					fixture.name,
+				).toEqual(fixture.expected.map((entry) => entry.code).sort());
+			}
+		}
+	});
+
+	it("observes unresolved unit targets and invalid quantity members", () => {
+		const unitDocument = JSON.parse(
+			readFileSync(
+				new URL(
+					"../fixtures/semantic/v1/clock-units/config-time.json",
+					import.meta.url,
+				),
+				"utf8",
+			),
+		);
+		unitDocument.units[1].target = "ix://acme/config/unit/Unknown";
+		expect(
+			note(readContractIr(unitDocument) as never).map((entry) => entry.code),
+		).toEqual([DIAGNOSTIC_CODES.UNRESOLVED_UNIT_REF.code]);
+		const quantityDocument = JSON.parse(
+			readFileSync(
+				new URL(
+					"../fixtures/semantic/v1/clock-units/config-clock.json",
+					import.meta.url,
+				),
+				"utf8",
+			),
+		);
+		const field = quantityDocument.types[0].fields[0];
+		field.typeRef = "ix://quire/unit/ms";
+		field.unit = "ms";
+		expect(
+			note(readContractIr(quantityDocument) as never).map(
+				(entry) => entry.code,
+			),
+		).toEqual([DIAGNOSTIC_CODES.INVALID_QUANTITY_MEMBER.code]);
+	});
+
 	/** Traces: TC-494, TC-609; FR-049-AC-3. */
 	it("fires every registry code at least once across the fixture corpus", () => {
 		const declared = (

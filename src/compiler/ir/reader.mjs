@@ -494,12 +494,12 @@ export function readContractIr(document, options = {}) {
 		const quantity = quantityName(member.typeRef);
 		const emit = (code, name) =>
 			raise(
-				DIAGNOSTIC_CODES[code],
+				code,
 				`/ir${pointer}/${name}: invalid ${clock ? "Clock" : "quantity"} member`,
 				locusOf(member),
 			);
 		if (clock && !isField) {
-			emit("CLOCK_OUTSIDE_FIELD", "typeRef");
+			emit(DIAGNOSTIC_CODES.CLOCK_OUTSIDE_FIELD, "typeRef");
 			return true;
 		}
 		if (!clock && !quantity) {
@@ -507,12 +507,14 @@ export function readContractIr(document, options = {}) {
 				typeof member.typeRef === "string" &&
 				member.typeRef.startsWith(quantityPrefix)
 			) {
-				emit("UNRESOLVED_TYPE_REF", "typeRef");
+				emit(DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF, "typeRef");
 				return true;
 			}
 			return false;
 		}
-		const code = clock ? "INVALID_CLOCK_FIELD" : "INVALID_QUANTITY_MEMBER";
+		const code = clock
+			? DIAGNOSTIC_CODES.INVALID_CLOCK_FIELD
+			: DIAGNOSTIC_CODES.INVALID_QUANTITY_MEMBER;
 		for (const name of ["unit", "decimal", "textProfile", "defaultValue"])
 			if (Object.hasOwn(member, name)) emit(code, name);
 		if (Object.hasOwn(member, "defaultKind") && member.defaultKind !== "none")

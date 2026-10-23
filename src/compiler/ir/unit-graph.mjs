@@ -88,18 +88,14 @@ export function checkUnitGraph(document, raise) {
 		: [];
 	const units = Array.isArray(document.units) ? document.units : [];
 	const emit = (code, pointer, message, node) =>
-		raise(
-			DIAGNOSTIC_CODES[code],
-			`${pointer}: ${message}`,
-			node?.origin?.source,
-		);
+		raise(code, `${pointer}: ${message}`, node?.origin?.source);
 	const index = (nodes, label) => {
 		const found = new Map();
 		nodes.forEach((node, position) => {
 			if (!isObject(node)) return;
 			if (found.has(node.identity))
 				emit(
-					"DUPLICATE_IDENTITY",
+					DIAGNOSTIC_CODES.DUPLICATE_IDENTITY,
 					`/ir/${label}/${position}/identity`,
 					"the identity is already declared",
 					node,
@@ -110,7 +106,7 @@ export function checkUnitGraph(document, raise) {
 				`ix://${document.package?.identity}/${label === "units" ? "unit" : "dimension"}/${node.name}`
 			)
 				emit(
-					"INVALID_UNIT_GRAPH",
+					DIAGNOSTIC_CODES.INVALID_UNIT_GRAPH,
 					`/ir/${label}/${position}/identity`,
 					"identity must name the package and declaration",
 					node,
@@ -127,7 +123,7 @@ export function checkUnitGraph(document, raise) {
 		const terms = Array.isArray(node.terms) ? node.terms : [];
 		if (node.base && terms.length)
 			emit(
-				"INVALID_UNIT_GRAPH",
+				DIAGNOSTIC_CODES.INVALID_UNIT_GRAPH,
 				`${at}/terms`,
 				"a base dimension has no terms",
 				node,
@@ -138,7 +134,7 @@ export function checkUnitGraph(document, raise) {
 			const target = dimensionIds.get(term.dimension);
 			if (target === undefined)
 				emit(
-					"UNRESOLVED_DIMENSION_REF",
+					DIAGNOSTIC_CODES.UNRESOLVED_DIMENSION_REF,
 					`${termAt}/dimension`,
 					"no dimension has this identity",
 					node,
@@ -147,21 +143,23 @@ export function checkUnitGraph(document, raise) {
 			const parsed = integer(term.exponent);
 			if (parsed.outside || parsed.invalid)
 				emit(
-					parsed.outside ? "INTEGER_OUTSIDE_I128" : "INVALID_OPERAND",
+					parsed.outside
+						? DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128
+						: DIAGNOSTIC_CODES.INVALID_OPERAND,
 					`${termAt}/exponent`,
 					"expected a canonical i128 integer",
 					node,
 				);
 			else if (parsed.value === 0n)
 				emit(
-					"INVALID_UNIT_GRAPH",
+					DIAGNOSTIC_CODES.INVALID_UNIT_GRAPH,
 					`${termAt}/exponent`,
 					"dimension exponents are nonzero",
 					node,
 				);
 			if (offset && terms[offset - 1]?.dimension >= term.dimension)
 				emit(
-					"INVALID_UNIT_GRAPH",
+					DIAGNOSTIC_CODES.INVALID_UNIT_GRAPH,
 					termAt,
 					"dimension terms must be strictly ordered",
 					node,
@@ -175,7 +173,7 @@ export function checkUnitGraph(document, raise) {
 			members.has(dimensionIds.get(term?.dimension)),
 		);
 		emit(
-			"INVALID_UNIT_GRAPH",
+			DIAGNOSTIC_CODES.INVALID_UNIT_GRAPH,
 			`/ir/dimensions/${first}/terms/${offset}`,
 			`dimension cycle: ${group.map((i) => dimensions[i].name).join(", ")}`,
 			dimensions[first],
@@ -188,7 +186,7 @@ export function checkUnitGraph(document, raise) {
 		const at = `/ir/units/${position}`;
 		if (!dimensionIds.has(node.dimension))
 			emit(
-				"UNRESOLVED_DIMENSION_REF",
+				DIAGNOSTIC_CODES.UNRESOLVED_DIMENSION_REF,
 				`${at}/dimension`,
 				"no dimension has this identity",
 				node,
@@ -197,7 +195,9 @@ export function checkUnitGraph(document, raise) {
 			const parsed = rational(node[name]);
 			if (parsed.outside || parsed.invalid)
 				emit(
-					parsed.outside ? "INTEGER_OUTSIDE_I128" : "INVALID_OPERAND",
+					parsed.outside
+						? DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128
+						: DIAGNOSTIC_CODES.INVALID_OPERAND,
 					`${at}/${name}`,
 					"expected a canonical i128 rational",
 					node,
@@ -205,7 +205,7 @@ export function checkUnitGraph(document, raise) {
 		}
 		if (node.scale === "0")
 			emit(
-				"INVALID_UNIT_GRAPH",
+				DIAGNOSTIC_CODES.INVALID_UNIT_GRAPH,
 				`${at}/scale`,
 				"a unit scale is nonzero",
 				node,
@@ -214,7 +214,7 @@ export function checkUnitGraph(document, raise) {
 			const target = unitIds.get(node.target);
 			if (target === undefined)
 				emit(
-					"UNRESOLVED_UNIT_REF",
+					DIAGNOSTIC_CODES.UNRESOLVED_UNIT_REF,
 					`${at}/target`,
 					"no unit has this identity",
 					node,
@@ -227,7 +227,7 @@ export function checkUnitGraph(document, raise) {
 					units[target].dimension !== node.dimension
 				)
 					emit(
-						"INVALID_UNIT_GRAPH",
+						DIAGNOSTIC_CODES.INVALID_UNIT_GRAPH,
 						`${at}/target`,
 						`unit dimensions differ: ${node.dimension}, ${units[target].dimension}`,
 						node,
@@ -236,7 +236,7 @@ export function checkUnitGraph(document, raise) {
 		} else {
 			if (roots.has(node.dimension))
 				emit(
-					"INVALID_UNIT_GRAPH",
+					DIAGNOSTIC_CODES.INVALID_UNIT_GRAPH,
 					at,
 					`dimension ${node.dimension} already has root ${units[roots.get(node.dimension)].name}`,
 					node,
@@ -248,14 +248,14 @@ export function checkUnitGraph(document, raise) {
 				rational(node.scale).value !== undefined
 			)
 				emit(
-					"INVALID_UNIT_GRAPH",
+					DIAGNOSTIC_CODES.INVALID_UNIT_GRAPH,
 					`${at}/scale`,
 					"a root unit has scale 1",
 					node,
 				);
 			if (node.offset !== "0" && rational(node.offset).value !== undefined)
 				emit(
-					"INVALID_UNIT_GRAPH",
+					DIAGNOSTIC_CODES.INVALID_UNIT_GRAPH,
 					`${at}/offset`,
 					"a root unit has offset 0",
 					node,
@@ -271,7 +271,7 @@ export function checkUnitGraph(document, raise) {
 			cursor = unitEdges[cursor][0];
 		} while (cursor !== first);
 		emit(
-			"INVALID_UNIT_GRAPH",
+			DIAGNOSTIC_CODES.INVALID_UNIT_GRAPH,
 			`/ir/units/${first}/target`,
 			`unit cycle: ${names.join(", ")}`,
 			units[first],
