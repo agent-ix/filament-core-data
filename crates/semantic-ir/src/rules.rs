@@ -34,6 +34,9 @@ pub struct RuleLimits {
 /// naming one resolves against this closed set instead of `document.types`.
 pub const NATIVE_PREFIX: &str = "ix://quire/native/";
 
+/// A field-only native type reference: a clock is no IR scalar or document node.
+const CLOCK_TYPE_REF: &str = "ix://quire/native/Clock";
+
 const INEXACT_INTEGER: &str = "agent-ix.semantic-ir.INEXACT_INTEGER";
 const INEXACT_NUMBER: &str = "agent-ix.semantic-ir.INEXACT_NUMBER";
 const INTEGER_OUTSIDE_I128: &str = "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128";
@@ -1239,7 +1242,14 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         }
         if let Some(fields) = definition.get("fields").and_then(Json::as_array) {
             let fields_at = child(&type_at, "fields");
-            field_rules(document, &declared, fields, &fields_at, sink);
+            field_rules(
+                document,
+                &declared,
+                fields,
+                &fields_at,
+                FieldContext::DefinitionField,
+                sink,
+            );
             duplicate_names(fields, &fields_at, DUPLICATE_FIELD_NAME, sink);
         }
         if let Some(relationships) = definition.get("relationships").and_then(Json::as_array) {
@@ -1328,7 +1338,14 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                 let operation_at = index(&operations_at, member);
                 if let Some(params) = operation.get("params").and_then(Json::as_array) {
                     let params_at = child(&operation_at, "params");
-                    field_rules(document, &declared, params, &params_at, sink);
+                    field_rules(
+                        document,
+                        &declared,
+                        params,
+                        &params_at,
+                        FieldContext::OperationParameter,
+                        sink,
+                    );
                     duplicate_names(params, &params_at, DUPLICATE_PARAM, sink);
                 }
                 if let Some(returns) = operation.get("returns") {
@@ -1500,18 +1517,27 @@ fn duplicate_names(items: &[Json], items_at: &str, code: &'static str, sink: &mu
     }
 }
 
+#[derive(Clone, Copy, Eq, PartialEq)]
+enum FieldContext {
+    DefinitionField,
+    OperationParameter,
+}
+
 fn field_rules(
     document: &Document<'_>,
     declared: &HashSet<String>,
     fields: &[Json],
     fields_at: &str,
+    context: FieldContext,
     sink: &mut Sink<'_>,
 ) {
     for (member, field) in fields.iter().enumerate() {
         let field_at = index(fields_at, member);
         let type_ref = field.get("typeRef").and_then(Json::as_str);
         if let Some(type_ref) = type_ref {
-            if !resolves(declared, type_ref) {
+            if !(context == FieldContext::DefinitionField && type_ref == CLOCK_TYPE_REF)
+                && !resolves(declared, type_ref)
+            {
                 sink.emit(
                     child(&field_at, "typeRef"),
                     UNRESOLVED_TYPE_REF,
