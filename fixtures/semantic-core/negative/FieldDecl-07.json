@@ -4,7 +4,10 @@
 	"value": {
 		"name": "1x",
 		"type": {
-			"target": "String"
+			"target": {
+				"kind": "KernelScalar",
+				"value": "String"
+			}
 		}
 	}
 }

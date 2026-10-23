@@ -1,0 +1,29 @@
+{
+	"id": "PAR-0114",
+	"title": "An adjacent TypeRef target rejects an undeclared sibling",
+	"declaration": "TypeRef",
+	"class": "negative",
+	"properties": ["unknown-member-states"],
+	"unknownPolicy": "reject",
+	"instance": {
+		"target": {
+			"kind": "KernelScalar",
+			"value": "String",
+			"extra": 1
+		}
+	},
+	"expected": {
+		"resultState": "invalid"
+	},
+	"derivedFrom": [
+		{
+			"artifact": "packages/semantic-core/generated/json-schema/TypeRefTarget.json",
+			"locator": "#/oneOf/1/unevaluatedProperties",
+			"quote": "\"unevaluatedProperties\": {"
+		}
+	],
+	"provenance": {
+		"authoredFor": "IR-994",
+		"blessedFromRun": false
+	}
+}

@@ -38,12 +38,6 @@ No document of this bundle uses `uniqueItems`, so the `constraints-array-unique`
 
 Affected types: `ConstraintKeyword`.
 
-### F2 — `agent-ix/filament-core-data#125`
-
-`msgspec` cannot construct a decoder for four of the thirty kernel types. `TypeRef.target` is a union of a pattern-constrained string and a string enum, which `msgspec` refuses as two str-like members; `FieldDecl` and `OperationDecl` reach it; and `ConstraintDecl` is eleven untagged structs, because the generator does not carry the schema's stated `keyword` discriminator into a `tag_field`.
-
-Affected types: `ConstraintDecl`, `FieldDecl`, `OperationDecl`, `TypeRef`.
-
 These are recorded, not repaired. Each names the issue that owns the
 decision; none is silenced by a checker override, a generator option, a
 profile revision, or an edit to the qualification register.

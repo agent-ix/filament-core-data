@@ -6,7 +6,10 @@
 	"properties": ["serialized-member-names"],
 	"unknownPolicy": "reject",
 	"instance": {
-		"target": "not a target"
+		"target": {
+			"kind": "KernelScalar",
+			"value": "not a target"
+		}
 	},
 	"expected": {
 		"resultState": "invalid"

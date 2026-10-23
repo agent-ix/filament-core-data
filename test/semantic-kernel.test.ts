@@ -18,7 +18,31 @@ import {
 	validateClauseRef,
 	validateFieldDecl,
 	validateMultiplicity,
+	validateTypeRefTarget,
 } from "../packages/semantic-kernel/typescript/validators.js";
+
+/** Traces: IR-994; FR-054-AC-5, FR-100-AC-17. */
+it("rejects undeclared members on generated adjacent union branches", () => {
+	expect(
+		validateTypeRefTarget({ kind: "KernelScalar", value: "String" }).ok,
+	).toBe(true);
+	const extra = validateTypeRefTarget({
+		kind: "KernelScalar",
+		value: "String",
+		extra: 1,
+	});
+	expect(extra.ok).toBe(false);
+	if (!extra.ok) {
+		expect(extra.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					pointer: "/extra",
+					code: "agent-ix.typescript-backend.UNKNOWN_MEMBER",
+				}),
+			]),
+		);
+	}
+});
 
 import {
 	BACKEND as RUST_BACKEND,
@@ -124,9 +148,7 @@ describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
 	it("rejects a document set that has drifted from the inventory's", () => {
 		const drifted = {
 			...bundle,
-			documents: (bundle.documents as string[])
-				.slice(0, 29)
-				.concat(["Bogus.json"]),
+			documents: (bundle.documents as string[]).slice(1).concat(["Bogus.json"]),
 		};
 		const found = checkKernelBundle(drifted, inventory);
 		expect(found).toHaveLength(1);
@@ -182,24 +204,20 @@ describe("TC-1009..1030 minted names and the closed keyword set (FR-082, FR-083)
 	});
 
 	// TC-1013
-	it("declares exactly the nineteen recognised keywords", () => {
-		expect(RECOGNISED_KEYWORDS.size).toBe(19);
+	it("declares exactly the twenty recognised keywords", () => {
+		expect(RECOGNISED_KEYWORDS.size).toBe(20);
 		for (const k of [
 			"$schema",
 			"$id",
 			"$ref",
 			"unevaluatedProperties",
 			"maximum",
+			"oneOf",
 			"x-agent-ix-semantic-id",
 		]) {
 			expect(RECOGNISED_KEYWORDS.has(k)).toBe(true);
 		}
-		for (const k of [
-			"oneOf",
-			"allOf",
-			"additionalProperties",
-			"patternProperties",
-		]) {
+		for (const k of ["allOf", "additionalProperties", "patternProperties"]) {
 			expect(RECOGNISED_KEYWORDS.has(k)).toBe(false);
 		}
 	});
@@ -221,10 +239,10 @@ describe("TC-1009..1030 minted names and the closed keyword set (FR-082, FR-083)
 	it("flags an unrecognised keyword but not an author-chosen field of that name", () => {
 		const found = unrecognisedKeywords({
 			type: "object",
-			oneOf: [{ additionalProperties: false }],
-			properties: { oneOf: { type: "string" } },
+			contains: { type: "string" },
+			properties: { contains: { type: "string" } },
 		});
-		expect(found).toEqual([{ keyword: "oneOf", pointer: "/oneOf" }]);
+		expect(found).toEqual([{ keyword: "contains", pointer: "/contains" }]);
 		// `properties` introduces author-chosen names; checking them would report
 		// every field in the grammar.
 	});
@@ -1325,6 +1343,7 @@ describe("TC-1086..1097 the kernel parity measurement and its gates (FR-090)", (
 		const kernel = inventory as {
 			models: string[];
 			unions: string[];
+			wireUnions: string[];
 			enums: string[];
 			scalars: string[];
 		};

@@ -8,8 +8,10 @@ from typing import Annotated, Literal
 from pydantic import ConfigDict, Field
 from pydantic.dataclasses import dataclass
 
+from .EnumValuesConstraintValues import EnumValuesConstraintValues
+
 
 @dataclass(config=ConfigDict(extra='forbid'))
 class EnumValuesConstraint:
     keyword: Literal['enumValues']
-    values: Annotated[list[str | float | bool], Field(min_length=1)]
+    values: Annotated[list[EnumValuesConstraintValues], Field(min_length=1)]

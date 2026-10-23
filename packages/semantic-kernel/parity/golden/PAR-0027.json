@@ -7,13 +7,19 @@
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "min",
-		"value": 0
+		"value": {
+			"kind": "number",
+			"value": 0
+		}
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
 			"keyword": "min",
-			"value": 0
+			"value": {
+				"kind": "number",
+				"value": 0
+			}
 		}
 	},
 	"derivedFrom": [

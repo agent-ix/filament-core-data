@@ -20,7 +20,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -34,7 +37,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 0,
@@ -44,15 +50,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -65,7 +80,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -78,7 +96,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -90,7 +111,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -237,7 +261,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -251,7 +278,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Decimal",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Decimal"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -261,15 +291,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -282,7 +321,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -295,7 +337,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -307,7 +352,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -454,7 +502,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -468,7 +519,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -478,15 +532,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -499,7 +562,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -516,7 +582,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -528,7 +597,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -675,7 +747,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -689,7 +764,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -699,15 +777,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -720,7 +807,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -734,7 +824,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -746,7 +839,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -893,7 +989,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -907,7 +1006,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -917,15 +1019,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -938,7 +1049,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "ix://agent-ix/config-service/type/Other",
+						"target": {
+							"kind": "SemanticId",
+							"value": "ix://agent-ix/config-service/type/Other"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -952,7 +1066,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -964,7 +1081,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1111,7 +1231,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1125,7 +1248,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1135,15 +1261,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1156,7 +1291,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1169,7 +1307,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1181,7 +1322,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1223,7 +1367,10 @@
 					"name": "age",
 					"params": [],
 					"returns": {
-						"target": "Duration",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Duration"
+						},
 						"unit": "s"
 					}
 				}
@@ -1337,7 +1484,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1351,7 +1501,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1361,15 +1514,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "hash",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1382,7 +1544,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1395,7 +1560,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1407,7 +1575,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1554,7 +1725,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1568,7 +1742,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1578,15 +1755,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1599,7 +1785,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1612,7 +1801,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1624,7 +1816,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1783,7 +1978,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1797,7 +1995,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1807,15 +2008,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1828,7 +2038,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1841,7 +2054,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -1853,7 +2069,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2004,7 +2223,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2018,7 +2240,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2028,15 +2253,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2049,7 +2283,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2062,7 +2299,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2074,7 +2314,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2118,13 +2361,19 @@
 						{
 							"name": "x",
 							"type": {
-								"target": "String"
+								"target": {
+									"kind": "KernelScalar",
+									"value": "String"
+								}
 							}
 						},
 						{
 							"name": "x",
 							"type": {
-								"target": "String"
+								"target": {
+									"kind": "KernelScalar",
+									"value": "String"
+								}
 							}
 						}
 					]
@@ -2239,7 +2488,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2253,7 +2505,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2263,15 +2518,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2284,7 +2548,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2297,7 +2564,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2309,7 +2579,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2463,7 +2736,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 0,
 							"upper": 1,
@@ -2477,7 +2753,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2487,15 +2766,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2508,7 +2796,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2521,7 +2812,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2533,7 +2827,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2680,7 +2977,10 @@
 				{
 					"name": "id",
 					"type": {
-						"target": "UUID",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "UUID"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2694,7 +2994,10 @@
 				{
 					"name": "versionNumber",
 					"type": {
-						"target": "Integer",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Integer"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2704,15 +3007,24 @@
 					},
 					"constraints": [
 						{
-							"keyword": "min",
-							"value": 1
+							"kind": "MinConstraint",
+							"value": {
+								"keyword": "min",
+								"value": {
+									"kind": "number",
+									"value": 1
+								}
+							}
 						}
 					]
 				},
 				{
 					"name": "data",
 					"type": {
-						"target": "JsonObject",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "JsonObject"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2726,7 +3038,10 @@
 				{
 					"name": "hash",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2739,7 +3054,10 @@
 				{
 					"name": "createdAt",
 					"type": {
-						"target": "Timestamp",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "Timestamp"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,
@@ -2751,7 +3069,10 @@
 				{
 					"name": "createdBy",
 					"type": {
-						"target": "String",
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						},
 						"multiplicity": {
 							"lower": 1,
 							"upper": 1,

@@ -32,12 +32,12 @@ grammar that four codebases would each transcribe differently.
 ## Context
 
 Issue [#35](https://github.com/agent-ix/filament-core-data/issues/35) authored
-the kernel: `packages/semantic-core/main.tsp` declares twenty-one models, one
-union, four enums, and four scalars — the exact set
-`packages/semantic-core/inventory.json` enumerates — and nothing else, because
+the kernel: `packages/semantic-core/main.tsp` declares the models, public
+unions, adjacent-envelope `wireUnions`, enums, and scalars recorded in
+`packages/semantic-core/inventory.json`, and nothing else, because
 [NFR-014](../non-functional/NFR-014-small-kernel-discipline.md) holds it to a
 small kernel with no domain vocabulary. `make semantic-core-check` regenerates
-its thirty JSON Schema documents through the pinned official
+its inventory-derived JSON Schema documents through the pinned official
 `@typespec/json-schema` emitter and fails on a single changed byte, so the
 projection is already a governed artifact rather than a convenience.
 
@@ -144,7 +144,7 @@ The functional requirements settle each.
 
 Nothing here publishes to any registry, tags any release, or moves any
 downstream consumer: publication is gated on `agent-ix/quoin#290`. The kernel's
-authored source, `packages/semantic-core/main.tsp`, and its thirty projected
+authored source, `packages/semantic-core/main.tsp`, and its inventory-derived projected
 schema documents are read and not edited — a grammar changed to make a generator
 comfortable is no longer the grammar. The published contract schemas under
 `schema/**` are likewise read-only here; where the intermediate representation

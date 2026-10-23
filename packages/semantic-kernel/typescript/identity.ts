@@ -659,17 +659,7 @@ export const TYPE_IDENTITY_FIELDS = {} as const satisfies Partial<
 export const TYPE_EXTENSIONS = {
 	ClauseLanguage: [],
 	ClauseRef: [],
-	ConstraintDecl: [
-		{
-			identity:
-				"ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-			version: "1.0.0",
-			required: false,
-			payload: {
-				wireForm: "untagged",
-			},
-		},
-	],
+	ConstraintDecl: [],
 	ConstraintKeyword: [],
 	DecimalPolicy: [],
 	DecimalPolicyPrecision: [],
@@ -683,48 +673,18 @@ export const TYPE_EXTENSIONS = {
 	EnumValueName: [],
 	EnumValuesConstraint: [],
 	EnumValuesConstraintKeyword: [],
-	EnumValuesConstraintValues: [
-		{
-			identity:
-				"ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-			version: "1.0.0",
-			required: false,
-			payload: {
-				wireForm: "untagged",
-			},
-		},
-	],
+	EnumValuesConstraintValues: [],
 	EnumValuesConstraintValuesBoolean: [],
 	EnumValuesConstraintValuesNumber: [],
 	EnumValuesConstraintValuesString: [],
 	ExclusiveMaxConstraint: [],
 	ExclusiveMaxConstraintKeyword: [],
-	ExclusiveMaxConstraintValue: [
-		{
-			identity:
-				"ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-			version: "1.0.0",
-			required: false,
-			payload: {
-				wireForm: "untagged",
-			},
-		},
-	],
+	ExclusiveMaxConstraintValue: [],
 	ExclusiveMaxConstraintValueNumber: [],
 	ExclusiveMaxConstraintValueString: [],
 	ExclusiveMinConstraint: [],
 	ExclusiveMinConstraintKeyword: [],
-	ExclusiveMinConstraintValue: [
-		{
-			identity:
-				"ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-			version: "1.0.0",
-			required: false,
-			payload: {
-				wireForm: "untagged",
-			},
-		},
-	],
+	ExclusiveMinConstraintValue: [],
 	ExclusiveMinConstraintValueNumber: [],
 	ExclusiveMinConstraintValueString: [],
 	FieldDecl: [],
@@ -738,17 +698,7 @@ export const TYPE_EXTENSIONS = {
 	KernelScalar: [],
 	MaxConstraint: [],
 	MaxConstraintKeyword: [],
-	MaxConstraintValue: [
-		{
-			identity:
-				"ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-			version: "1.0.0",
-			required: false,
-			payload: {
-				wireForm: "untagged",
-			},
-		},
-	],
+	MaxConstraintValue: [],
 	MaxConstraintValueNumber: [],
 	MaxConstraintValueString: [],
 	MaxLengthConstraint: [],
@@ -756,17 +706,7 @@ export const TYPE_EXTENSIONS = {
 	MaxLengthConstraintValue: [],
 	MinConstraint: [],
 	MinConstraintKeyword: [],
-	MinConstraintValue: [
-		{
-			identity:
-				"ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-			version: "1.0.0",
-			required: false,
-			payload: {
-				wireForm: "untagged",
-			},
-		},
-	],
+	MinConstraintValue: [],
 	MinConstraintValueNumber: [],
 	MinConstraintValueString: [],
 	MinLengthConstraint: [],
@@ -794,17 +734,7 @@ export const TYPE_EXTENSIONS = {
 	SourceLocusStartColumn: [],
 	SourceLocusStartLine: [],
 	TypeRef: [],
-	TypeRefTarget: [
-		{
-			identity:
-				"ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-			version: "1.0.0",
-			required: false,
-			payload: {
-				wireForm: "untagged",
-			},
-		},
-	],
+	TypeRefTarget: [],
 	UniqueConstraint: [],
 	UniqueConstraintKeyword: [],
 	UnitSymbol: [],

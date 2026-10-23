@@ -3,7 +3,10 @@
 	"reason": "missing name",
 	"value": {
 		"type": {
-			"target": "String"
+			"target": {
+				"kind": "KernelScalar",
+				"value": "String"
+			}
 		}
 	}
 }

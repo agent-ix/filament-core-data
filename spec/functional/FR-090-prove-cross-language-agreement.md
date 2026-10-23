@@ -80,7 +80,7 @@ performs a publication or contacts a registry.
   package-lock fingerprint form.
 - `conformance/contract-gaps.json` and `conformance/divergences.json`, read as
   the record of what is already known to disagree and with whom
-- The thirty JSON Schema 2020-12 documents under
+- Every inventory-derived JSON Schema 2020-12 document under
   `packages/semantic-core/generated/json-schema/`, the declaration inventory
   `packages/semantic-core/inventory.json`, and
   `docs/semantic-data-system/contracts-v1.md`, from which the golden kernel
@@ -129,8 +129,8 @@ performs a publication or contacts a registry.
   so that agreement is measured on acceptance, on refusal, and at the edge where
   the two meet, rather than on acceptance alone.
 - The corpus SHALL cover every kernel declaration named in
-  `packages/semantic-core/inventory.json` — the twenty-one models, the
-  `ConstraintDecl` union, the four enums, and the four scalars — because a
+  `packages/semantic-core/inventory.json`, including model, public union,
+  adjacent-envelope `wireUnion`, enum, and scalar declarations, because a
   declaration no document exercises is a declaration whose cross-language
   behaviour is unmeasured, and an unmeasured declaration must not be reported as
   agreeing.
@@ -141,7 +141,7 @@ performs a publication or contacts a registry.
 - Every golden document SHALL carry `provenance.blessedFromRun: false`. No
   expectation SHALL be copied out of any package's output: an expectation taken
   from an implementation is that implementation agreeing with itself.
-- The corpus SHALL be authored from the thirty published documents under
+- The corpus SHALL be authored from every published document under
   `packages/semantic-core/generated/json-schema/` and from
   `docs/semantic-data-system/contracts-v1.md`, and from no package's emitted
   output.
@@ -312,7 +312,7 @@ following, and a disagreement on any one is a disagreement:
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-090-AC-1 | The golden corpus under `packages/semantic-kernel/parity/golden/` carries positive, negative, and boundary kernel instance documents, and every declaration in `packages/semantic-core/inventory.json` — the twenty-one models, the `ConstraintDecl` union, the four enums, and the four scalars — is exercised by at least one document; a declaration with no document fails the gate naming it. | Test |
+| FR-090-AC-1 | The golden corpus under `packages/semantic-kernel/parity/golden/` carries positive, negative, and boundary kernel instance documents, and every declaration in `packages/semantic-core/inventory.json` — models, public unions, adjacent-envelope `wireUnions`, enums, and scalars — is exercised by at least one document; a declaration with no document fails the gate naming it. | Test |
 | FR-090-AC-2 | Every golden document carries `derivedFrom` with an artifact, a locator, and a verbatim quote that still occurs in that artifact, and `provenance.blessedFromRun: false`; a document whose quote no longer occurs fails the gate. | Test |
 | FR-090-AC-3 | All four kernel packages return a decision for every golden document, and the decided count equals the document count for each of the four; an undecided document is reported unmet and counted as no pass. | Integration |
 | FR-090-AC-4 | For every golden document, the serialized member name of every declared member is identical across the four packages; renaming one member in one package's emitted output makes the run fail naming the document, the member, and the two packages that differ. | Test |

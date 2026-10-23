@@ -27,17 +27,12 @@ impl Serialize for Payload {
     where
         S: serde::Serializer,
     {
-        use serde::ser::SerializeMap;
         match self {
             Payload::Text(payload) => {
-                let mut map = serializer.serialize_map(Some(1))?;
-                map.serialize_entry("text", payload)?;
-                map.end()
+                crate::support::serialize_adjacent_payload(serializer, "text", payload)
             }
             Payload::Count(payload) => {
-                let mut map = serializer.serialize_map(Some(1))?;
-                map.serialize_entry("count", payload)?;
-                map.end()
+                crate::support::serialize_adjacent_payload(serializer, "count", payload)
             }
             Payload::Unknown(unknown) => unknown.serialize(serializer),
         }
@@ -49,7 +44,7 @@ impl<'de> Deserialize<'de> for Payload {
     where
         D: serde::Deserializer<'de>,
     {
-        deserializer.deserialize_any(PayloadVisitor)
+        deserializer.deserialize_map(PayloadVisitor)
     }
 }
 
@@ -59,35 +54,68 @@ impl<'de> serde::de::Visitor<'de> for PayloadVisitor {
     type Value = Payload;
 
     fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        formatter.write_str("an externally tagged Payload")
-    }
-
-    fn visit_str<E>(self, tag: &str) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        Ok(match tag {
-            _ => Payload::Unknown(crate::support::UnknownVariant::Tag(tag.to_owned())),
-        })
+        formatter.write_str("an adjacently tagged Payload")
     }
 
     fn visit_map<A>(self, mut access: A) -> Result<Self::Value, A::Error>
     where
         A: serde::de::MapAccess<'de>,
     {
-        let Some(tag) = access.next_key::<String>()? else {
+        let Some(member) = access.next_key::<String>()? else {
             return Err(serde::de::Error::custom(
-                "an externally tagged Payload carries one member",
+                "an adjacently tagged Payload requires kind",
             ));
         };
-        let value = match tag.as_str() {
-            "text" => Payload::Text(access.next_value()?),
-            "count" => Payload::Count(access.next_value()?),
-            _ => Payload::Unknown(crate::support::UnknownVariant::Tagged(
-                tag,
-                access.next_value()?,
-            )),
+        let (tag, mut buffered) = match member.as_str() {
+            "kind" => (access.next_value::<String>()?, None),
+            "value" => {
+                let value = access.next_value::<crate::support::SemanticValue>()?;
+                let Some(member) = access.next_key::<String>()? else {
+                    return Err(serde::de::Error::missing_field("kind"));
+                };
+                if member != "kind" {
+                    return Err(serde::de::Error::unknown_field(&member, &["kind"]));
+                }
+                (access.next_value::<String>()?, Some(value))
+            }
+            _ => return Err(serde::de::Error::unknown_field(&member, &["kind", "value"])),
         };
+        let value = match tag.as_str() {
+            "text" => {
+                let payload = match buffered.take() {
+                    Some(value) => crate::support::deserialize_semantic(value)
+                        .map_err(serde::de::Error::custom)?,
+                    None => crate::support::read_adjacent_payload(&mut access)?,
+                };
+                Payload::Text(payload)
+            }
+            "count" => {
+                let payload = match buffered.take() {
+                    Some(value) => crate::support::deserialize_semantic(value)
+                        .map_err(serde::de::Error::custom)?,
+                    None => crate::support::read_adjacent_payload(&mut access)?,
+                };
+                Payload::Count(payload)
+            }
+            _ => {
+                let unknown = match buffered.take() {
+                    Some(value) => crate::support::UnknownVariant::Tagged(tag, value),
+                    None => match access.next_key::<String>()? {
+                        None => crate::support::UnknownVariant::Tag(tag),
+                        Some(member) if member == "value" => {
+                            crate::support::UnknownVariant::Tagged(tag, access.next_value()?)
+                        }
+                        Some(member) => {
+                            return Err(serde::de::Error::unknown_field(&member, &["value"]));
+                        }
+                    },
+                };
+                Payload::Unknown(unknown)
+            }
+        };
+        if let Some(member) = access.next_key::<String>()? {
+            return Err(serde::de::Error::unknown_field(&member, &[]));
+        }
         Ok(value)
     }
 }

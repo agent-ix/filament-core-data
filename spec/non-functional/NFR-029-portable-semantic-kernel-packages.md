@@ -46,9 +46,9 @@ without inheriting a stack.
 
 ## Rationale
 
-`packages/semantic-core/main.tsp` declares a grammar and a scalar library:
-twenty-one models, one union, four enums, four scalars, and no domain
-vocabulary, which is what
+`packages/semantic-core/main.tsp` declares a grammar and a scalar library,
+including the public and adjacent-envelope unions listed in
+`packages/semantic-core/inventory.json`, and no domain vocabulary, which is what
 [NFR-014](./NFR-014-small-kernel-discipline.md) already requires of the source.
 A generated package that widens that is no longer the kernel — it is the kernel
 plus whatever the generator's ecosystem considered normal, and the next consumer
