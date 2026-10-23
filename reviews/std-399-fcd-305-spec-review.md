@@ -53,3 +53,23 @@ Gate: vitest 605 passed, 54 failed (659 tests). origin/main in the same environm
 Not mergeable: FND-001 (high) block the PR.
 
 Mergeable into origin/main (main is an ancestor, merge-tree clean). Conflicts with open PR 292 (FR-091, spec/tests.md, extraction fixtures) and PR 84 (FR-050, FR-066, spec/tests.md, kernel validators); whoever merges second resolves them.
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs | Escape Cause |
+| --- | --- | --- | --- | --- |
+| FND-003 | low | the Rust backend mapping table and rust-backend.md still say a union is externally tagged and a `bytes` scalar is refused with UNDECLARED_WIRE_FORM (issue #58), contradicting FR-054 as rewritten. Update them with the spec, or the implementation ticket must name them. | docs/semantic-data-system/rust-backend.md:26,75,158-159; src/compiler/backends/rust-serde/mapping-table.json:39,300 | wrong-requirement |
+| FND-004 | low | TC-1864 says the TypeScript validator, the JSON Schema oneOf and the Rust adjacently tagged enum refuse identically, but no vector covers `{"kind":"b","value":null}` for a payload-free variant: the schema and FR-066 refuse the extra `value`, while serde reads the content of an adjacently tagged unit variant as unit and accepts null. Add the vector and state the Rust rule. | spec/functional/FR-054-map-the-semantic-ir-to-rust-serde-declarations.md:360; spec/tests.md TC-1864 | missing-requirement |
+
+## Dispositions
+
+Round 1, fix head c42cd244. Union wire form hand-derived: `{"kind":"a","value":"x"}` and `{"kind":"b"}` match exactly one branch of the closed oneOf and the adjacently tagged serde form; `{}`, `{"kind":"c"}`, `{"kind":"a"}`, `{"kind":"a","value":1}`, `{"kind":"b","value":"x"}`, `{"a":"x"}` and `{"kind":"b","extra":1}` each fail on a missing tag, an unknown variant, a missing or ill-typed value, or an extra member. All hold. FR-066-CON-9 and FR-066-AC-29 no longer name #58 and no pending wording remains in spec/functional.
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-001 | fixed | See after_excerpt in the Linear dispositions comment. |
+| FND-002 | fixed | See after_excerpt in the Linear dispositions comment. |
+| FND-003 | still-open | New finding of this round; docs and mapping table still describe the old wire forms. |
+| FND-004 | still-open | New finding of this round; no vector for a null `value` on a unit variant. |
+
+Round 1 verdict: Mergeable after the two low findings are fixed or dispositioned by the lead; neither is blocking by rubric, but both are still-open.
