@@ -73,3 +73,21 @@ Round 1, fix head c42cd244. Union wire form hand-derived: `{"kind":"a","value":"
 | FND-004 | still-open | New finding of this round; no vector for a null `value` on a unit variant. |
 
 Round 1 verdict: Mergeable after the two low findings are fixed or dispositioned by the lead; neither is blocking by rubric, but both are still-open.
+
+## New findings (disposition pass 2)
+
+| ID | Severity | Summary | Refs | Escape Cause |
+| --- | --- | --- | --- | --- |
+| FND-005 | high | the fix commit edits the implementation data file to the new `bytes` mapping (`rustForm: Bytes`, `supportType: Bytes`, no diagnostic) but not the backend that reads it, so the local suite goes red. test/rust-backend.test.ts goes red: 7 failed in the file (6 new against origin/main), because src/compiler/backends/rust-serde/mapping-table.json now says `bytes` maps to a generated `Bytes` support type while the backend still refuses `bytes`. Full run at the 306 tip: 600 passed, 59 failed against the 606/53 baseline; the six extra are the TC-725, TC-727 and TC-730 cases of that file. Run alone on the 305 head, the same file fails 7. The previous heads (306b) were 606/53, so commit 37e7644 introduced it. Either revert the data file edit until the backend change lands in the same PR, or land the backend change; the local suite is the only gate. | src/compiler/backends/rust-serde/mapping-table.json:296-303 | implementation-bug-despite-evidence |
+
+### Dispositions, round 2
+
+Fix head 37e7644c. Hand check: `{"kind":"b","value":null}` is now refused in FR-054 (explicit check, since serde reads the content of a unit variant as the unit value), FR-066-AC-29, FR-100-AC-17 and TC-1864 alike. FND-003 is closed for the spec, docs rows and mapping table; implementation code (crate.mjs, branch-register.json, rust-backend-diagnostics.md, kernel TS comments) still names the old forms, which is implementation work and not scored.
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-003 | fixed | See after_excerpt in the Linear dispositions comment. |
+| FND-004 | fixed | See after_excerpt in the Linear dispositions comment. |
+| FND-005 | still-open | New finding of this round: the gate is red (see new-findings section). |
+
+Round 2 verdict: Not mergeable: FND-005 (high) is still-open.

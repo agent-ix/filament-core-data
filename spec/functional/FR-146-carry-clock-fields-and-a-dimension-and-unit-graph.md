@@ -68,7 +68,7 @@ clocks and whose quantities are in units the domain package declares:
 |---|---|---|
 | `ix://quire/native/Clock` | a field, parameter, result, alias `target`, sequence `items`, map `values`, variant `payloadType`, `reference` `target` or constraint `appliesTo` | The member is a clock: a real-valued timer that the model checker owns, one per object and field, or one per element when the member is a collection (QSpec FR-415 "Clock collections"), read only inside clock constraints (QSpec FR-415). It carries no data value. |
 | `dimensions` | document | The dimension nodes of the package: base dimensions such as `Time`, and derived dimensions, each a product of dimensions of the package raised to integer exponents, the empty product being the dimensionless dimension (QSpec FR-142). |
-| `dimensionEquivalences` | document | The declared equivalences of the package: each relates two dimension nodes of the package that name one physical dimension, so a consumer that admits this package beside another that declares the same dimension can exchange quantities (QSpec FR-142 "Dimension equivalence"). |
+| `dimensionEquivalences` | document | The declared equivalences of the package: each relates two dimension nodes of the package that name one physical dimension and states the ratio between their canonical roots (`rootScale`), so a consumer that admits this package beside another that declares the same dimension can exchange quantities (QSpec FR-142 "Dimension equivalence"). |
 | `units` | document | The unit nodes of the package: each typed by one dimension, either the dimension's root or a unit with an exact scale and offset to a target unit of the same dimension (QSpec FR-142). |
 | `ix://quire/unit/<name>` | a field, parameter, result, alias `target`, sequence `items`, map `values`, variant `payloadType` or constraint `appliesTo` | The position holds a quantity in unit `<name>`: QSpec's `Quantity<u>` (QSpec FR-142, FR-322 "Model-owned members" step 4). |
 
@@ -260,16 +260,33 @@ A dimension equivalence says that two dimension nodes name one physical
 dimension. A package that declares both `Time` and `Duration` as base dimensions
 relates them with one, and a consumer that admits that package beside another
 declaring `Time` relates its own `Time` to either with a source equivalence
-(QSpec FR-142 "Dimension equivalence", `dimension R::Time ~ F::Time;`). A
-document declares an equivalence only between two of its own dimensions: the
-equivalence between a dimension of this package and a dimension of another
-package is the consumer's declaration.
+(QSpec FR-142 "Dimension equivalence", `dimension R::Time ~ F::Time by 1 R::s = 1000 F::ms;`).
+An equivalence also says how large the canonical root unit of one dimension is
+against the canonical root unit of the other: two roots of unequal size (`s`
+and `ms`) are never identified at scale 1 by being related. A document declares
+an equivalence only between two of its own dimensions: the equivalence between a
+dimension of this package and a dimension of another package is the consumer's
+declaration, with its own `by` clause.
 
 - The schema SHALL admit an optional top-level `dimensionEquivalences` array of
   equivalence nodes.
-- An equivalence node SHALL carry exactly `identity`, `dimensions` and
-  `origin`.
+- An equivalence node SHALL carry exactly `identity`, `dimensions`, `rootScale`
+  and `origin`.
 - `dimensions` SHALL be an array of exactly two semantic identities.
+- `rootScale` SHALL be a string. It SHALL mean that one canonical root unit of
+  the first dimension of `dimensions` equals `rootScale` canonical root units
+  of the second (QSpec FR-322 `dimension_equivalence` `root_scale`, the ratio
+  QSpec FR-142 "Dimension equivalence" reduces the `by` clause to), so an
+  identification edge from the first dimension's root to the second's carries
+  it as `scale` and offset `0`.
+- If an equivalence's `rootScale` is not a canonical rational string (as under
+  "Units"), then the reader SHALL refuse
+  `agent-ix.semantic-ir.INVALID_OPERAND` at `/dimensionEquivalences/<k>/rootScale`,
+  and instead `agent-ix.semantic-ir.INTEGER_OUTSIDE_I128` at that member when its `n`
+  or `d` is outside `i128::MIN..=i128::MAX`.
+- If an equivalence's `rootScale` is not positive (`0` or a negative rational),
+  then the reader SHALL refuse `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` at
+  `/dimensionEquivalences/<k>/rootScale`.
 - An equivalence `identity` SHALL equal
   `ix://<package.identity>/dimension-equivalence/<A>-<B>`, where `<A>` and `<B>`
   are the `name` of the first and second dimension of `dimensions`.
@@ -293,8 +310,18 @@ package is the consumer's declaration.
   `agent-ix.semantic-ir.DUPLICATE_IDENTITY` at the later node's `/identity`.
 - The relation SHALL be symmetric and transitive: the declared pairs `A`/`B`,
   `B`/`C` and `A`/`C` are admitted together, and the equivalence classes are the
-  connected components of the declared pairs. The base classes are the
+  connected components of the declared pairs, admitted together exactly when
+  the `rootScale` values agree (next bullet). The base classes are the
   components of the pairs whose two dimensions are both base dimensions.
+- The `rootScale` values of the base pairs SHALL multiply to exactly one around
+  every cycle of base pairs, a pair read against its `dimensions` order counting
+  as the reciprocal of its `rootScale`. If the pairs `A`/`B`, `B`/`C` and
+  `A`/`C` of three base dimensions carry `rootScale` values whose product so
+  taken is not one, then the reader SHALL refuse
+  `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` at `/dimensionEquivalences/<k>/rootScale`
+  of the last node, in array order, of the cycle, naming the cycle's
+  dimensions in array order. The reader SHALL decide the check in exact
+  rational arithmetic.
 - The normalized dimension map of a base dimension SHALL be its base class's
   representative with exponent `1`, the representative being the member of the
   class with the least `identity` by code point, and the map of a derived
@@ -306,10 +333,21 @@ package is the consumer's declaration.
   `/dimensionEquivalences/<k>/dimensions`, naming both dimensions. The reader
   SHALL form the maps only over dimensions that reach no term cycle, and SHALL
   raise this refusal for no pair that reaches one.
+- The canonical root of a derived dimension is the product of its base
+  dimensions' canonical roots at the exponents of its `terms`, so a pair that is
+  not two base dimensions has the `rootScale` its base roots fix: the size of a
+  base dimension's root against its base class's representative is fixed by the
+  base pairs (one for a base dimension in no pair), and the size of a derived
+  dimension's root is the product of those sizes at its exponents. If such a
+  pair's `rootScale` differs from the size of its first dimension's root over
+  the size of its second's, then the reader SHALL refuse
+  `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` at
+  `/dimensionEquivalences/<k>/rootScale`, naming both dimensions.
 - The reader SHALL NOT merge unit graphs, rewrite a dimension or apply the
   equivalence to a conversion: the consumer's checked package derives the
-  classes, the class root and the conversion edges from the pairs (QSpec FR-142
-  "Dimension equivalence", FR-322 `dimension_equivalence` node).
+  classes, the class root and the conversion edges, each identification edge
+  carrying the `rootScale` ratio, from the pairs (QSpec FR-142 "Dimension
+  equivalence", FR-322 `dimension_equivalence` node).
 - The reader SHALL NOT require a dimension to have an equivalence, and two units
   of dimensions that one equivalence relates SHALL remain two units: each keeps
   its own dimension and its own root.
@@ -406,7 +444,8 @@ package is the consumer's declaration.
   by the root units `ix://quire/unit/acme/rpc/s` and
   `ix://quire/unit/acme/flow/s` have two quantity types, a dimension
   equivalence relating the two dimensions makes the types convertible by
-  explicit conversion and never substitutable, and a member typed by a unit of a
+  explicit conversion, scaled by the equivalence's `rootScale` when the two
+  roots differ in size, and never substitutable, and a member typed by a unit of a
   dimension with no equivalence to another is convertible to no member of the
   other (QSpec FR-142 "Dimensions of different owners"). The reader compares no
   two quantity types.
@@ -469,7 +508,7 @@ package is the consumer's declaration.
   dimension, unit or dimension equivalence as additive.
 - The compatibility classifier SHALL classify a removed dimension, unit or dimension equivalence, or a
   changed `base`, `terms`, `dimension`, `target`, `scale`, `offset` or equivalence
-  `dimensions`, as breaking.
+  `dimensions` or `rootScale`, as breaking.
 
 ### Generation backends
 
@@ -636,8 +675,8 @@ unit-reference constructs of a spec bundle to the IR constructs above.
   and a constraint whose `appliesTo` is that type as a clock constraint (QSpec
   FR-154-AC-18, FR-415 "Clock places"), and a constraint whose `appliesTo` is
   a unit reference as a bound `min` or `max` in that unit (QSpec FR-154-AC-18).
-- QSL reads `dimensions`, `units` and `dimensionEquivalences` into the unit graph
-  of its checked package,
+- QSL reads `dimensions`, `units` and `dimensionEquivalences` (with each
+  `rootScale`) into the unit graph of its checked package,
   beside the dimensions and units its own source declares (QSL FR-230). A
   domain package that supplies time units declares a base dimension named
   `Time`, a root unit such as `s` and scaled units such as `ms` with `scale`
@@ -666,7 +705,7 @@ unit-reference constructs of a spec bundle to the IR constructs above.
 | FR-146-AC-7 | Two documents differing only in the order of `units` have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; every committed positive fixture keeps its bytes and fingerprint; adding a unit classifies additive, and removing one, changing its `scale` or changing a dimension's `base` classifies breaking. | Test (TC-1848) |
 | FR-146-AC-8 | The AC-1 document, the AC-2 document and the AC-6 document each generate on every generation backend with no `UNDECLARED_LOSS` and with every file written. With `allowedOmissions` naming a clock or unit-typed member, the backend omits it with one non-blocking `DECLARED_LOSS` naming it. With `allowedOmissions` naming only the owner, each of these is dropped with the owner under the owner's single `DECLARED_LOSS` and raises no loss of its own: the clock field of an omitted `Call` type, a clock or unit-typed parameter of an omitted operation, a unit-typed parameter of an operation of an omitted type, and a clock or unit-typed result of an omitted operation. A generated subtype of an omitted `Call` that inherits its clock field generates the field unless `allowedOmissions` names it. A document carrying `dimensions`, `units` and `dimensionEquivalences` generates exactly what it generates without them, and the JSON Schema and rust-serde backends' native lists carry `Clock` with no IR scalar. | Test (TC-1849) |
 | FR-146-AC-9 | A field, an operation parameter and an operation result typed `ix://quire/unit/agent-ix/time-units/ms`, `ix://quire/unit/acme/rpc.v2/ms` and `ix://quire/unit/acme/rpc/ms` are accepted with no diagnostic; the typeRefs `ix://quire/unit/agent-ix/time-units/m-s` and `ix://quire/unit/agent-ix/time-units/3ms` (the unit-name segment outside its pattern), `ix://quire/unit/-acme/rpc/ms` and `ix://quire/unit/.acme/rpc/ms` (an earlier segment outside both patterns) and `ix://quire/unit/agent-ix//ms` (an empty segment) each refuse exactly `UNRESOLVED_TYPE_REF` at that `typeRef`. | Test (TC-1852) |
-| FR-146-AC-10 | A document of package `acme/rpc` declaring base dimensions `Time` and `Duration`, root units `s` of `Time` and `sec` of `Duration`, and a `dimensionEquivalences` node with `identity` `ix://acme/rpc/dimension-equivalence/Duration-Time` and `dimensions` `["ix://acme/rpc/dimension/Duration", "ix://acme/rpc/dimension/Time"]`, is accepted by every reader with no diagnostic, the two roots staying two units of two dimensions. A document of package `acme/flow` declaring base dimension `Time` (`ix://acme/flow/dimension/Time`) and root unit `s`, read after the `acme/rpc` document by the same reader, is accepted with no diagnostic, and the two `Time` identities are two dimensions. | Test (TC-1855) |
+| FR-146-AC-10 | A document of package `acme/rpc` declaring base dimensions `Time` and `Duration`, root units `s` of `Time` and `sec` of `Duration`, and a `dimensionEquivalences` node with `identity` `ix://acme/rpc/dimension-equivalence/Duration-Time`, `dimensions` `["ix://acme/rpc/dimension/Duration", "ix://acme/rpc/dimension/Time"]` and `rootScale` `"1"`, is accepted by every reader with no diagnostic, the two roots staying two units of two dimensions. A document of package `acme/flow` declaring base dimension `Time` (`ix://acme/flow/dimension/Time`) and root unit `s`, read after the `acme/rpc` document by the same reader, is accepted with no diagnostic, and the two `Time` identities are two dimensions. | Test (TC-1855) |
 | FR-146-AC-11 | Over a document whose object type `Call` has a required clock field `x`, an optional clock field `w`, a field `d` typed `ix://quire/unit/ms`, an operation with a clock parameter `c`, a unit-typed parameter `b` and a unit-typed result, an alias `Stopwatch` of `Clock` and an alias `Span` of `ix://quire/unit/ms`, the JSON Schema backend writes `x` and `w` as `{"type": "null", "x-agent-ix-clock": true}` with `x` in `required` and `w` not, `d` and `Span` as `{"type": "string", "pattern": P, "x-agent-ix-unit": "ms"}`, the operation's parameters and result in `x-agent-ix-operations` by the same schemas, and `Stopwatch` as the clock schema; `P` admits `"0"`, `"-3"`, `"1/1000"`, `"-3/2"` and, by shape, `"2/4"`, and rejects `"1/1"`, `"-0"`, `"0/5"`, `"01/3"`, `"1.5"` and `"1/-2"`; the normalization check refuses `"2/4"` and `"-6/9"` with `NON_CANONICAL_RATIONAL` and accepts `"1/1000"` and `"-3/2"`. The Python backends generate from that schema the attributes `x: None`, `w: None = None`, `d: str` constrained by `P` and by `check_canonical_rational`, which refuses `"2/4"` with a message beginning `NON_CANONICAL_RATIONAL`, the module constant `QUANTITY_UNITS` with `Call.d`, `Call.reset.b` and `Span` mapped to `ms`, and no `Any`. | Test (TC-1856) |
 | FR-146-AC-12 | Over AC-11's document the Rust backend writes `x: crate::support::Clock`, `w: Option<Clock>` (`default`, `skip_serializing_if`), `d: crate::support::Rational`, newtypes over each for the aliases, trait methods taking and returning them, and `QUANTITY_UNITS` entries for `Call.d`, the operation's parameter and result and `Span`; an instance serializes `x` as `null`, omits an absent `w`, and writes `d` as `"1/1000"`; deserializing `"2/4"` is rejected with `NON_CANONICAL_RATIONAL` and a numerator of 2^127 is rejected. The TypeScript backend writes `readonly x: null`, `readonly w?: null`, `d: string`, the aliases as type aliases to `null` and `string`, and a validator that accepts `null` for `x`, rejects `0` for `x`, accepts `"1/1000"` for `d` and rejects `"2/4"` with `NON_CANONICAL_RATIONAL` and `"1/1"`; the resolved type model keeps `typeRef` `ix://quire/unit/ms` on `d`. | Test (TC-1857) |
 | FR-146-AC-13 | Over AC-11's document the SysML v2 backend writes `attribute def Clock;` once, `attribute x : Clock;` and `attribute w : Clock;` on `Call`, `attribute d : ScalarValues::Real;` (the `Real` of the Kernel Data Type Library `ScalarValues` package) with a `doc` comment naming `ms`, one non-blocking `agent-ix.sysml-target.DECLARED_LOSS` for each of `d`, the operation's unit-typed parameter and result, and `Span`, naming the member and the exact rational, and no blocking diagnostic; two runs are byte-identical. | Test (TC-1858) |
@@ -675,12 +714,13 @@ unit-reference constructs of a spec bundle to the IR constructs above.
 | FR-146-AC-16 | A document whose object type `Call` has clock fields `q` with multiplicity `{0, 3, true, false}`, `u` with `{0, 3, false, true}`, `b` with `{0, 3, false, false}`, `o` with `{0}` and no upper bound (ordered, not unique), an operation parameter and result of multiplicity `{0, 2, true, false}`, a sequence type `CS` whose `items` is `ix://quire/native/Clock` and a map type `CM` whose `values` is `ix://quire/native/Clock`, a field typed `CS` with multiplicity `{0, 2, true, false}`, and a record `Timer` with a clock field `x` held by a field with `{0, 2, true, false}` is accepted by every reader with no diagnostic and no `types[]` node for any clock; a clock field with multiplicity `{3, 1}` raises exactly `INVALID_MULTIPLICITY`. | Test (TC-1860) |
 | FR-146-AC-17 | Over AC-16's document the JSON Schema backend writes `q` as `{"type": "array", "items": {"type": "null", "x-agent-ix-clock": true}, "minItems": 0, "maxItems": 3}`, `u` with `"uniqueItems": true`, `CM` as an object with the clock schema as `additionalProperties`; the Rust backend writes `Vec<Clock>` for `q`, `u`, `b` and `o` with `ordered` and `unique` in the member metadata and `BTreeMap<String, Clock>` for `CM`, and an instance with two elements serializes `q` as `[null, null]`; the TypeScript backend writes `readonly q: readonly null[]` and a validator that accepts `[null, null]`, rejects `[null, null, null, null]` for `q` and rejects `[1]`; the Python backends write `list[None]` and `dict[str, None]`; the SysML v2 backend writes `attribute q : Clock[0..3] ordered;`; none raises `UNDECLARED_LOSS`, every file is written, and two runs are byte-identical. | Test (TC-1861) |
 | FR-146-AC-18 | A spec bundle whose entity has field rows `q | Clock | 0..3`, `o | Clock | *` and `p | Clock | 2..4`, an operation with a parameter `c | Clock | *`, a type alias artifact `Ticks` over a sequence of `Clock` and a sequence artifact `ClockList` over `Clock` lifts to fields with `lower` and `upper` `0`/`3`, `0`/absent and `2`/`4`, the parameter with `lower` 0 and no `upper`, the alias and the sequence type, typeRef `ix://quire/native/Clock` throughout and no node for `Clock`, and `decide` accepts the document; a `Clock` row with a `min` constraint still raises `CONSTRAINT_NOT_APPLICABLE` at the row. | Test (TC-1862) |
-| FR-146-AC-19 | Over the `acme/rpc` document of FR-146-AC-10 with further base dimensions `Length`, `Distance` and `Seconds`, derived dimensions `Speed` (terms `Length` 1, `Time` -1), `Velocity` (terms `Distance` 1, `Time` -1) and `Dur` (term `Time` 1), the equivalences `Dur`/`Time` and `Length`/`Time` are accepted (equal maps; two base dimensions), `Speed`/`Velocity` is refused `INVALID_UNIT_GRAPH` at `/dimensionEquivalences/<k>/dimensions` naming both dimensions when no `Distance`/`Length` pair is declared and accepted when one is, `Speed`/`Time` is refused `INVALID_UNIT_GRAPH` there, and the pairs `Duration`/`Seconds`, `Duration`/`Time` and `Seconds`/`Time` are accepted together. The identity `ix://acme/rpc/dimension-equivalence/Time-Duration` over `[Duration, Time]`, the descending pair `[Time, Duration]` under the identity `ix://acme/rpc/dimension-equivalence/Time-Duration` (which satisfies the identity rule for that spelling), and the equal pair `[Time, Time]` under the identity `ix://acme/rpc/dimension-equivalence/Time-Time` (which satisfies the identity rule for that spelling) each refuse `INVALID_UNIT_GRAPH` (at `/identity`, at `/dimensions` and at `/dimensions` respectively, so each of the three refuses exactly one pointer); the entries `[Duration, ix://acme/rpc/dimension/Nothing]` and `[Duration, ix://acme/flow/dimension/Time]` each refuse `UNRESOLVED_DIMENSION_REF` at `/dimensionEquivalences/<k>/dimensions/1`; a second node relating the pair `Duration`/`Time` refuses `DUPLICATE_IDENTITY` at its `/identity`. | Test (TC-1865) |
+| FR-146-AC-19 | Over the `acme/rpc` document of FR-146-AC-10 with further base dimensions `Length`, `Distance` and `Seconds`, derived dimensions `Speed` (terms `Length` 1, `Time` -1), `Velocity` (terms `Distance` 1, `Time` -1) and `Dur` (term `Time` 1), the equivalences `Dur`/`Time` and `Length`/`Time` are accepted (equal maps; two base dimensions; each `rootScale` `"1"`), `Speed`/`Velocity` (`rootScale` `"1"`) is refused `INVALID_UNIT_GRAPH` at `/dimensionEquivalences/<k>/dimensions` naming both dimensions when no `Distance`/`Length` pair is declared and accepted when a `Distance`/`Length` pair of `rootScale` `"1"` is, `Speed`/`Time` is refused `INVALID_UNIT_GRAPH` there, and the pairs `Duration`/`Seconds` (`"1"`), `Duration`/`Time` (`"1"`) and `Seconds`/`Time` (`"1"`) are accepted together. The identity `ix://acme/rpc/dimension-equivalence/Time-Duration` over `[Duration, Time]`, the descending pair `[Time, Duration]` under the identity `ix://acme/rpc/dimension-equivalence/Time-Duration` (which satisfies the identity rule for that spelling), and the equal pair `[Time, Time]` under the identity `ix://acme/rpc/dimension-equivalence/Time-Time` (which satisfies the identity rule for that spelling) each refuse `INVALID_UNIT_GRAPH` (at `/identity`, at `/dimensions` and at `/dimensions` respectively, so each of the three refuses exactly one pointer, each node carrying `rootScale` `"1"`); the entries `[Duration, ix://acme/rpc/dimension/Nothing]` and `[Duration, ix://acme/flow/dimension/Time]` each refuse `UNRESOLVED_DIMENSION_REF` at `/dimensionEquivalences/<k>/dimensions/1`; a second node relating the pair `Duration`/`Time` refuses `DUPLICATE_IDENTITY` at its `/identity`. | Test (TC-1865) |
 | FR-146-AC-20 | Two documents differing only in the order of two `dimensionEquivalences` nodes have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; a document with none serializes with no `dimensionEquivalences` member and every committed positive fixture keeps its bytes and fingerprint; adding an equivalence classifies additive, and removing one or changing an entry of its `dimensions` classifies breaking. A field typed `ix://quire/unit/acme/rpc/s`, a field typed `ix://quire/unit/acme/flow/s` and an operation whose parameter and result are typed by the two are accepted by every reader with no diagnostic, because a reader compares no two quantity types. | Test (TC-1865) |
 | FR-146-AC-21 | A `reference` type `CR` whose `target` is `ix://quire/native/Clock`, a `reference` type `CA` whose `target` is the alias `Stopwatch` of `Clock`, a constraint `max` with `operands.value` `"3"` and `appliesTo` `ix://quire/native/Clock`, `max` `"3/2"` and `min` `"1"` each with `appliesTo` the alias `Timeout` of `Clock` are accepted by every reader with no diagnostic and no node for the clock. The keyword `minLength` on a constraint with `appliesTo` `Clock` refuses exactly `CONSTRAINT_NOT_APPLICABLE` at `…/constraints/<c>/keyword`; the operand `"-1"`, the operand `"2/4"` and the JSON number `3` on `max` each refuse exactly `INVALID_OPERAND` at `…/constraints/<c>/operands/value`; a keyword outside the closed eleven refuses `UNKNOWN_CONSTRAINT_KEYWORD` as on any subject. | Test (TC-1866) |
 | FR-146-AC-22 | Over a document whose object type `Call` has a field `r` of the reference type `CR` of AC-21, an optional field `s` of `CA`, an alias `Timeout` of `Clock` carrying `max` `"3"` and a field `t` typed `Timeout`: the JSON Schema backend writes `r` and `s` as `{"type": "string", "x-agent-ix-reference-target": "ix://quire/native/Clock"}`, writes the schema of `Timeout` as `{"type": "null", "x-agent-ix-clock": true, "x-agent-ix-clock-max": "3"}` and the schema of a clock constrained by `min` `"1"` with `x-agent-ix-clock-min` `"1"`; the Rust backend writes the reference as a newtype over `SemanticIdentity`, `Timeout` as a newtype over `Clock`, and `pub const CLOCK_BOUNDS: &[ClockBound]` in `identity.rs` with the entry `Timeout` `max` `"3"`; the TypeScript backend writes the branded reference type over the identity string, `Timeout` as a type alias to `null`, and `export const CLOCK_BOUNDS` with the same entry; the Python backends write `r: str`, `t: None` and `CLOCK_BOUNDS` keyed `<Alias>`; the SysML v2 backend writes `attribute t : Clock;` with a `doc` comment `clock constraint max 3` and one non-blocking `agent-ix.sysml-target.DECLARED_LOSS` naming `Timeout` and the bound `3`. A constraint whose `appliesTo` is `Clock` itself writes its bound on every clock schema of the document. An instance validates `t` as `null` whatever the bound, since the IR holds no clock value, and an instance of `r` validates as any reference does. | Test (TC-1867) |
 | FR-146-AC-23 | An alias `Delay` of `ix://quire/unit/ms` and constraints `max` `"500"` and `min` `"-3/2"` with `appliesTo` `ix://quire/unit/ms`, and `max` `"5/2"` with `appliesTo` `Delay`, are accepted by every reader with no diagnostic. The keyword `pattern` on a constraint with `appliesTo` `ix://quire/unit/ms` refuses exactly `CONSTRAINT_NOT_APPLICABLE` at `…/constraints/<c>/keyword`; the operands `"2/4"`, `"1/1"`, `"1.5"` and the JSON number `3` on `max` each refuse exactly `INVALID_OPERAND` at `…/constraints/<c>/operands/value`; `ix://quire/unit/ms` as a `reference` `target` still refuses `UNRESOLVED_TYPE_REF`, because a quantity has no identity. | Test (TC-1868) |
 | FR-146-AC-24 | Over a document whose object type `Call` has a field `d` typed `ix://quire/unit/ms` and a field `e` typed `Delay`, with `max` `"500"` on `ix://quire/unit/ms` and `min` `"1/2"` on `Delay`: the JSON Schema backend writes `d` as `{"type": "string", "pattern": P, "x-agent-ix-unit": "ms", "x-agent-ix-quantity-max": "500"}` and `e` with both `x-agent-ix-quantity-max` `"500"` and `x-agent-ix-quantity-min` `"1/2"`; the TypeScript validator accepts `"500"` and `"1000/3"` for `d` and rejects `"501"` and `"1001/2"` with the constraint's `diagnosticCode`, accepts `"1/2"` and rejects `"1/3"` for `e`; the Rust `Deserialize` of `d` and `e` and the Python generated check decide the same four values the same way, the Python message beginning with the `diagnosticCode`; the SysML v2 backend writes the `doc` comment `quantity constraint max 500` and one non-blocking `DECLARED_LOSS` naming `d` and the bound `500`, and two runs are byte-identical. | Test (TC-1869) |
+| FR-146-AC-25 | The root ratio is checked (TC-1865). Over the `acme/rpc` document with base dimensions `Time` (root `s`), `Millis` (root `ms`), `Seconds` (root `sec`), `Length` and `Distance` (roots `m` and `d`) and derived `Speed` (`Length` 1, `Time` -1) and `Velocity` (`Distance` 1, `Time` -1): the pair `["…/Millis", "…/Time"]` with `rootScale` `"1/1000"` (one `ms` is a thousandth of an `s`) is accepted and the same pair with `"1000"` is accepted too, being a different claim the reader does not compare with the units; `"0"`, `"-1"`, `"1.5"`, `"2/4"` and `""` are refused, the first two `INVALID_UNIT_GRAPH` and the last three `INVALID_OPERAND`, each at `/dimensionEquivalences/<k>/rootScale`, and `"170141183460469231731687303715884105728"` is refused `INTEGER_OUTSIDE_I128` there; a node with no `rootScale` or with a further member is refused as an equivalence node of another shape (exactly `identity`, `dimensions`, `rootScale`, `origin`). The three pairs `Millis`/`Seconds` (`"1/1000"`), `Millis`/`Time` (`"1/1000"`) and `Seconds`/`Time` (`"1"`) are accepted together: the product around the cycle `Millis` to `Seconds` to `Time` and back to `Millis` is `(1/1000) * 1 * 1000 = 1`; with `Seconds`/`Time` carrying `"2"` the document is refused `INVALID_UNIT_GRAPH` at `/dimensionEquivalences/<k>/rootScale` of the last of the three nodes in array order, naming the three dimensions in array order. With the base pair `Distance`/`Length` carrying `"1000"` (one `d` is a thousand `m`) and `Length`/`Time` unrelated, `Speed`/`Velocity` is accepted with `rootScale` `"1/1000"` and refused `INVALID_UNIT_GRAPH` at `/dimensionEquivalences/<k>/rootScale`, naming both dimensions, with `"1"`. Two documents differing only in one `rootScale` have different normalized bytes and fingerprints, and changing a `rootScale` classifies breaking. | Test (TC-1865) |
 
 ## Dependencies
 
