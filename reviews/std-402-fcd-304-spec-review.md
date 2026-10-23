@@ -56,3 +56,29 @@ Round 1, fix head 73e9dd5e. Cross-package vectors hand-derived. Equivalence clas
 | FND-003 | still-open | New finding of this round; the identities of the descending and equal-pair vectors are unstated. |
 
 Round 1 verdict: Mergeable after FND-003 (low) is fixed or dispositioned.
+
+### Dispositions, round 2
+
+Fix head 6aa0c60a. Hand check: [Time, Duration] with identity Time-Duration passes the identity rule and fails the strictly-ascending rule at /dimensions only; [Time, Time] with identity Time-Time passes the identity rule and fails the equal-entries rule (and the ascending rule at the same pointer). Each refuses at one pointer, as stated. 304 contains the 305 fix commit, so it carries the 305 red gate (SR-16292 FND-005) and is not mergeable until that is fixed; it adds no defect of its own.
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-003 | fixed | See after_excerpt in the Linear dispositions comment. |
+
+Round 2 verdict: Not mergeable only because it contains #305 head 37e7644c (SR-16292 FND-005, high); no open finding of its own.
+
+## New findings (disposition pass 3)
+
+| ID | Severity | Summary | Refs | Escape Cause |
+| --- | --- | --- | --- | --- |
+| FND-004 | low | AC-25 says a node with no `rootScale` or with a further member is "refused as an equivalence node of another shape" and names no diagnostic code or pointer, while every other vector in the AC names both. State the code (the schema refusal the reader uses for a node of the wrong shape) and the pointer. | spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md (FR-146-AC-25) | missing-requirement |
+
+### Dispositions, round 3
+
+Fix head 44d745ea. The `by <ratio>` form, hand-derived. rootScale means one canonical root of the first (ascending) dimension equals rootScale roots of the second. Millis/Time "1/1000": one ms root is 1/1000 of an s root, correct. Cycle Millis, Seconds, Time with 1/1000, 1 and the reciprocal of Millis/Time (1000) multiplies to 1 and is accepted; with Seconds/Time "2" the product is 2 and it is refused at the last node. Distance/Length "1000" gives a Length root of 1/1000 of a Distance root, so Speed (Length/Time) over Velocity (Distance/Time) is 1/1000: accepted with "1/1000", refused with "1". "0" and "-1" give INVALID_UNIT_GRAPH, "1.5", "2/4" and "" give INVALID_OPERAND, 2^127 gives INTEGER_OUTSIDE_I128. All hold. Names match QSpec #407 head 29ad1f24: the `by 1 R::s = 1000 F::ms` form, the `root ratio` wording and `dimension_equivalence` `root_scale` in FR-322 (and #410 head c5d06d4b). #305 is green again.
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-004 | still-open | New finding of this round; low, AC-25 gives no code for the wrong-shape equivalence node. |
+
+Round 3 verdict: Mergeable after FND-004 (low) is fixed or dispositioned.
