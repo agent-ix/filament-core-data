@@ -46,7 +46,7 @@ artefacts rather than asserted in a pull-request description.
 - Where a change has no owning node identity — a contract-version change, a constraint-vocabulary change, a kernel-scalar change — the diff SHALL use the new document's `source.identity` as the change identity, because the report schema requires one.
 - The diff SHALL rank dispositions `patch` < `additive` < `conditional` < `unknown` < `breaking` < `invalid`, matching the ranking the issue #9 contract tests already assert.
 - The diff SHALL set `aggregateDisposition` to the most restrictive entry disposition, and each entry's disposition to the most restrictive of its `targetResults` where any are supplied.
-- The diff SHALL classify by this closed table, whose observed-change families are those of `fixtures/semantic/v1/compatibility/cases.json` and whose report families are those of `compatibility-report.schema.json`:
+- The diff SHALL classify by this closed table, whose observed-change families include those of `fixtures/semantic/v1/compatibility/cases.json` and the FR-146 dimension and unit graph observations, and whose report families are those of `compatibility-report.schema.json`:
 
 | Observed change | Report `family` | `surface` | Disposition |
 |---|---|---|---|
@@ -66,6 +66,9 @@ artefacts rather than asserted in a pull-request description.
 | `unknownPolicy` tightened toward `reject` | `unknown-policy` | `semantic` | `breaking` |
 | Multiplicity widened; narrowed; `ordered` or `unique` flipped | `field` | `semantic` | `additive`; `breaking`; `breaking` |
 | `unit` changed | `field` | `semantic` | `breaking` |
+| Dimension added; removed or renamed; `base` or `terms` changed | `type` | `semantic` | `additive`; `breaking`; `breaking` |
+| Unit definition added; removed or renamed; `dimension`, `target`, `scale` or `offset` changed | `type` | `semantic` | `additive`; `breaking`; `breaking` |
+| Dimension equivalence added; removed; dimension pair or `rootScale` changed | `type` | `semantic` | `additive`; `breaking`; `breaking` |
 | Relationship added; removed; retargeted; `composite` flipped | `type` | `semantic` | `additive`; `breaking`; `breaking`; `breaking` |
 | Operation added; `returns` changed | `type` | `semantic` | `additive`; `breaking` |
 | Clause added; removed; `language` changed | `type` | `semantic` | `additive`; `breaking`; `breaking` |
@@ -106,7 +109,7 @@ artefacts rather than asserted in a pull-request description.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-051-AC-1 | Every case in `fixtures/semantic/v1/compatibility/cases.json` is reproduced by a constructed input pair whose diff yields the case's `expected` disposition. | Test |
-| FR-051-AC-2 | Every family the report schema declares is produced by at least one such case, and every observed family in the case index maps to a declared report family through `family-map.json`, which the implementation reads. | Test |
+| FR-051-AC-2 | Every family the report schema declares is produced by at least one such case, every observed family in the case index maps to a declared report family through `family-map.json`, and FR-146's `dimension`, `unit-definition` and `dimension-equivalence` graph observations map to report family `type` on surface `semantic` through that implementation-read map. | Test |
 | FR-051-AC-3 | The `target-disagreement` case yields the most restrictive of its `targetResults`. | Test |
 | FR-051-AC-4 | A diff run with no profile, mapping, reservation, or target-result inputs omits the `profile`, `authority`, `mapping`, `protobuf-reservation`, and `generated-api` families and names them in `requiredGates`. | Test |
 | FR-051-AC-5 | Every produced report validates against `compatibility-report.schema.json`. | Test |
