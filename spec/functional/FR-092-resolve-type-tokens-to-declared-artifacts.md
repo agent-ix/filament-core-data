@@ -35,7 +35,7 @@ is one diagnostic at the token's source locus.
 
 ## Outputs
 
-- `crates/extraction-frontend/src/resolve.rs`: `enum Resolution { KernelScalar(KernelScalar), Object(ArtifactRef), Enumeration(ArtifactRef), Unresolved(Unresolved) }` and `enum Unresolved { UnknownToken, NoBundleIndex, ImportUnresolved, ImportUnsupported(String), Stale(ArtifactRef) }`
+- `crates/extraction-frontend/src/resolve.rs`: `enum Resolution { KernelScalar(KernelScalar), Clock, Unit(ArtifactRef), Object(ArtifactRef), Enumeration(ArtifactRef), Unresolved(Unresolved) }` and `enum Unresolved { UnknownToken, NoBundleIndex, ImportUnresolved, ImportUnsupported(String), Stale(ArtifactRef) }`
 - One IR `typeRef` identity per resolved token, minted under FR-095
 - One `typeRef` value `ix://quire/native/<KernelScalar>` per kernel scalar token the bundle resolves (`scalars.rs::KernelScalar::native_type_ref`), naming no node in the emitted document; the frontend mints no package-local scalar or record definition for any kernel scalar, `JsonObject` included (gap 1 of FCD #199/#200)
 
@@ -51,6 +51,7 @@ is one diagnostic at the token's source locus.
 - The frontend SHALL classify each `target` from the form the engine returned and, for a placeholder, the companion diagnostic's `reason`.
 - The frontend SHALL NOT re-derive a classification from the token's spelling, casing, pluralisation, or from any name the index does not carry.
 - If `target` is a kernel scalar name of FR-032, then the frontend SHALL return `KernelScalar`.
+- If `target` is the engine's native name `Clock`, then the frontend SHALL return `Clock`, and if it is the bundle identity of a unit artifact (frontmatter `object` `unit`) named by a `Quantity<u>` token, then the frontend SHALL return `Unit` naming that artifact; each resolves to `ix://quire/native/Clock` or `ix://quire/unit/<u>` and mints no node ([FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md) "Spec-bundle extraction").
 - If `target` is `ix://<org>/<name>/type/<Name>` under the bundle package and the resolved artifact's frontmatter `object` is `enumeration`, then the frontend SHALL return `Enumeration` naming that artifact.
 - If `target` is `ix://<org>/<name>/type/<Name>` under the bundle package and the resolved artifact's frontmatter `object` is any other declared object type, then the frontend SHALL return `Object` naming that artifact.
 - If the resolved artifact's lowering outcome from pass one is anything other than a definition, then the frontend SHALL return `Unresolved::Stale` naming that artifact.
