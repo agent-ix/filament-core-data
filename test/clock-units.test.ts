@@ -293,3 +293,35 @@ describe("FR-146 Clock placement and quantity member adverse cases", () => {
 		).toBe(true);
 	});
 });
+
+describe("FR-146 shared raw graph verdicts", () => {
+	it("TC-1844 through TC-1846 matches the complete located set for every authored raw document", () => {
+		const cases = JSON.parse(
+			readFileSync(
+				new URL(
+					"../fixtures/semantic/v1/clock-units/graph-cases.json",
+					import.meta.url,
+				),
+				"utf8",
+			),
+		) as {
+			name: string;
+			document: ReturnType<typeof configTime>;
+			expected: { code: string; pointer: string }[];
+		}[];
+		for (const testCase of cases) {
+			expect(validateIrDocument(testCase.document), testCase.name).toEqual([]);
+			const actual = [...readContractIr(testCase.document)].map((d) => ({
+				code: d.code,
+				pointer: d.message.split(": ")[0],
+			}));
+			const order = (
+				a: { code: string; pointer: string },
+				b: { code: string; pointer: string },
+			) => `${a.code}${a.pointer}`.localeCompare(`${b.code}${b.pointer}`);
+			expect(actual.sort(order), testCase.name).toEqual(
+				testCase.expected.sort(order),
+			);
+		}
+	});
+});

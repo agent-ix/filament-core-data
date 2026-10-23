@@ -134,3 +134,45 @@ fn tc_1843_clock_shape_refuses_each_forbidden_member_once() {
         );
     }
 }
+
+#[test]
+fn tc_1844_through_1846_public_reader_has_exact_shared_graph_verdicts() {
+    let cases = parse(include_str!(
+        "../../../fixtures/semantic/v1/clock-units/graph-cases.json"
+    ))
+    .expect("authored raw graph cases");
+    for case in cases.as_array().expect("case array") {
+        let name = case
+            .get("name")
+            .and_then(agent_ix_semantic_ir::json::Json::as_str)
+            .expect("case name");
+        let document = case.get("document").expect("raw semantic document").clone();
+        let bundle = agent_ix_semantic_ir::json::Json::Object(vec![("ir".to_owned(), document)]);
+        let mut observed: Vec<_> = decide(&bundle)
+            .diagnostics
+            .into_iter()
+            .map(|d| (d.code.to_owned(), d.pointer))
+            .collect();
+        let mut expected: Vec<_> = case
+            .get("expected")
+            .and_then(agent_ix_semantic_ir::json::Json::as_array)
+            .expect("expected set")
+            .iter()
+            .map(|d| {
+                (
+                    d.get("code")
+                        .and_then(agent_ix_semantic_ir::json::Json::as_str)
+                        .expect("code")
+                        .to_owned(),
+                    d.get("pointer")
+                        .and_then(agent_ix_semantic_ir::json::Json::as_str)
+                        .expect("pointer")
+                        .to_owned(),
+                )
+            })
+            .collect();
+        observed.sort();
+        expected.sort();
+        assert_eq!(observed, expected, "{name}");
+    }
+}
