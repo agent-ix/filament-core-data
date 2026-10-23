@@ -116,15 +116,7 @@ contract itself rather than against an erased TypeScript type.
 
 ### The scalar value domain
 
-- The shape of a discriminated union's tag on the wire is unspecified in the
-  published contract and is recorded as `agent-ix/filament-core-data#58`, where
-  issue #21 has already entered its own reading. The union reading below is
-  therefore a **declared backend decision pending #58** rather than settled
-  contract, and this requirement SHALL say so where it states it.
-  `conformance/thresholds.json` permits the `typescript-backend` slot zero
-  divergences, so if #58 settles against that reading the consequence is a
-  reported failure for the owner to disposition, and this work SHALL NOT
-  suppress it as a registered divergence.
+- The generated validator SHALL accept a `union` value only when it is an object whose `kind` member is the `name` of one declared variant, whose `value` member is present and valid against that variant's `payloadType` exactly when the variant carries one, and which carries no other member; it SHALL report a missing `kind`, a `kind` naming no variant, a missing or extra `value` and any other member each at its own locus. The wire form is the one [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md) states.
 - The backend SHALL render a `bytes` subject as a `string` carrying the Bytes
   wire form of [FR-032](./FR-032-define-the-kernel-scalar-library.md), and the
   generated validator SHALL reject a value outside that instance domain:
@@ -211,7 +203,7 @@ contract itself rather than against an erased TypeScript type.
 | FR-066-CON-6 | A generated validator SHALL be a pure function of its argument, reading no clock, no environment variable, no file, and no socket. | Determinism | Purity test |
 | FR-066-CON-7 | The instance corpus SHALL be authored from the contract and never recorded from a run of the generated validator; a case whose expectation was produced by the implementation under test is not evidence and is refused. | Integrity | Branch diff |
 | FR-066-CON-8 | The differential check SHALL add no dependency to either lockfile; `ajv@8.20.0` and `ajv-formats@3.0.1` are already pinned devDependencies and are the only second decider used. | Non-disruption | Lockfile comparison |
-| FR-066-CON-9 | The backend SHALL record the wire shape of a union's discriminator as a declared decision pending `agent-ix/filament-core-data#58`, in one named place, so that settling #58 is one edit rather than a search. This ticket decides #58 for nobody, and a divergence arising from it is reported for the owner rather than suppressed. | Integrity | Static analysis |
+| FR-066-CON-9 | The backend SHALL spell the union discriminator member as the single exported constant `kind` of FR-064 and read it nowhere else in generated code, so that every validator branch over a union keys on one declaration. | Integrity | Static analysis |
 
 ## Acceptance Criteria
 
@@ -245,7 +237,7 @@ contract itself rather than against an erased TypeScript type.
 | FR-066-AC-26 | A `record` declaring `preserve` renders its undeclared members in one separately named readonly member rather than an index signature, and the four presence and nullability forms still typecheck distinctly under `exactOptionalPropertyTypes`. | Compile |
 | FR-066-AC-27 | `unknownPolicy` declared on a `union` and on a `map` produces no validation effect, and the declared value appears in the FR-067 metadata for both. | Unit |
 | FR-066-AC-28 | A document whose admissibility result is `lossy` generates validators; a document carrying a representability loss generates none. | Unit |
-| FR-066-AC-29 | The union discriminator's wire shape appears as a single named declared decision citing `agent-ix/filament-core-data#58`, and `conformance/divergences.json` carries no entry attributed to that question. | Static |
+| FR-066-AC-29 | A union with variants `a` over `String` and `b` with no payload accepts `{"kind":"a","value":"x"}` and `{"kind":"b"}`, and refuses `{}`, `{"kind":"c"}`, `{"kind":"a"}`, `{"kind":"a","value":1}`, `{"kind":"b","value":"x"}` and `{"kind":"b","extra":1}`, each at the locus of the offending member. | Test |
 | FR-066-AC-30 | A safe `integer` field with semantic `defaultValue` `"42"` returns the JSON number `42` for an absent member and reports no defect; a `decimal(5, 2)` field with `defaultValue` `"1.5"` returns `"1.50"`; a `decimal(5, 2)` subject with `enumValues` `["1.1"]` accepts `"1.10"`; a `unique` collection of that subject holding `"1.1"` and `"1.10"` is rejected. | Unit |
 | FR-066-AC-31 | A Float32 unique field and a Float32 sequence with a `unique` constraint each pass the differential check only when JSON Schema generation returns the FR-100 blocking refusal with zero files and the TypeScript validator rejects `[0.1, 0.10000000149011612]` and `[0, -0]` while accepting `[0.1, 0.2]`. Seeding a weaker emitted schema or suppressing an instance disagreement outside this refusal class makes the check fail. | Test |
 
