@@ -20,6 +20,7 @@ const configTime = () =>
 
 describe("FR-146 dimensions and units", () => {
 	it("TC-1844 admits Config Time with s and ms at both schema and reader layers", () => {
+		// FR-146-AC-3: exact reader assertions below.
 		const document = configTime();
 		expect(validateIrDocument(document)).toEqual([]);
 		expect([...readContractIr(document)]).toEqual([]);
@@ -46,6 +47,7 @@ describe("FR-146 located graph diagnostics", () => {
 		expect(actual[0].message).toContain(pointer);
 	};
 	it("TC-1845 refuses unresolved dimensions and targets at their exact members", () => {
+		// FR-146-AC-4: exact reader assertions below.
 		const dimension = configTime();
 		dimension.units[1].dimension = "ix://acme/config/dimension/Unknown";
 		refuse(dimension, "UNRESOLVED_DIMENSION_REF", "/ir/units/1/dimension");
@@ -54,6 +56,7 @@ describe("FR-146 located graph diagnostics", () => {
 		refuse(target, "UNRESOLVED_UNIT_REF", "/ir/units/1/target");
 	});
 	it("TC-1846 distinguishes noncanonical rationals from exact i128 overflow", () => {
+		// FR-146-AC-5: exact reader assertions below.
 		for (const scale of [
 			"2/4",
 			"1/1",
@@ -73,6 +76,7 @@ describe("FR-146 located graph diagnostics", () => {
 		refuse(overflow, "INTEGER_OUTSIDE_I128", "/ir/units/1/scale");
 	});
 	it("TC-1845 refuses zero scales and root policy violations", () => {
+		// FR-146-AC-4: exact reader assertions below.
 		for (const [index, member, value] of [
 			[1, "scale", "0"],
 			[0, "scale", "2"],
@@ -84,11 +88,13 @@ describe("FR-146 located graph diagnostics", () => {
 		}
 	});
 	it("TC-1845 emits one ordered diagnostic for a unit cycle", () => {
+		// FR-146-AC-4: exact reader assertions below.
 		const document = configTime();
 		document.units[0].target = document.units[1].identity;
 		refuse(document, "INVALID_UNIT_GRAPH", "/ir/units/0/target");
 	});
 	it("TC-1845 detects duplicate unit identities", () => {
+		// FR-146-AC-4: exact reader assertions below.
 		const document = configTime();
 		document.units.push(structuredClone(document.units[1]));
 		refuse(document, "DUPLICATE_IDENTITY", "/ir/units/2/identity");
@@ -133,6 +139,7 @@ describe("FR-146 Clock and quantity positions", () => {
 		expect([...readContractIr(document)]).toEqual([]);
 	});
 	it("TC-1843 emits exact shape diagnostics and suppresses generic field rules", () => {
+		// FR-146-AC-2: exact reader assertions below.
 		const document = clockDocument();
 		const field = document.types[0].fields[0];
 		field.multiplicity = { lower: 3, upper: 1, ordered: false, unique: false };
@@ -179,6 +186,7 @@ describe("FR-146 Clock and quantity positions", () => {
 			).toHaveLength(1);
 	});
 	it("TC-1847 admits well-formed quantities without locally declared units", () => {
+		// FR-146-AC-6: exact reader assertions below.
 		for (const name of ["ms", "agent-ix/time-units/ms", "acme/rpc.v2/ms"]) {
 			const document = clockDocument();
 			document.types[0].fields[0].typeRef = `ix://quire/unit/${name}`;
@@ -187,6 +195,7 @@ describe("FR-146 Clock and quantity positions", () => {
 		}
 	});
 	it("TC-1852 refuses malformed quantity URI segments instead of suppressing a foreign reference", () => {
+		// FR-146-AC-9: exact reader assertions below.
 		for (const name of [
 			"",
 			"3ms",
@@ -205,6 +214,7 @@ describe("FR-146 Clock and quantity positions", () => {
 
 describe("FR-146 Clock placement and quantity member adverse cases", () => {
 	it("TC-1843 refuses Clock at each non-field type position", () => {
+		// FR-146-AC-2: exact reader assertions below.
 		for (const [kind, member] of [
 			["alias", "target"],
 			["reference", "target"],
@@ -257,6 +267,7 @@ describe("FR-146 Clock placement and quantity member adverse cases", () => {
 		]);
 	});
 	it("TC-1847 retains ordinary multiplicity validation for a quantity field", () => {
+		// FR-146-AC-6: exact reader assertions below.
 		const document = clockDocument();
 		const field = document.types[0].fields[0];
 		field.typeRef = "ix://quire/unit/ms";
@@ -266,6 +277,7 @@ describe("FR-146 Clock placement and quantity member adverse cases", () => {
 		]);
 	});
 	it("TC-1847 emits one quantity shape refusal for each forbidden member", () => {
+		// FR-146-AC-6: exact reader assertions below.
 		const document = clockDocument();
 		const field = document.types[0].fields[0];
 		field.typeRef = "ix://quire/unit/ms";
@@ -297,6 +309,7 @@ describe("FR-146 Clock placement and quantity member adverse cases", () => {
 
 describe("FR-146 shared raw graph verdicts", () => {
 	it("TC-1844 through TC-1846 matches the complete located set for every authored raw document", () => {
+		// FR-146-AC-3, FR-146-AC-4, FR-146-AC-5: exact reader assertions below.
 		const cases = JSON.parse(
 			readFileSync(
 				new URL(
@@ -336,6 +349,7 @@ describe("FR-146 shared raw graph verdicts", () => {
 
 describe("FR-146 direct constraint type positions", () => {
 	it("TC-1843 and TC-1847 keep disallowed appliesTo positions independent of keyword validation", () => {
+		// FR-146-AC-2, FR-146-AC-6: exact reader assertions below.
 		for (const [typeRef, code] of [
 			["ix://quire/native/Clock", "CLOCK_OUTSIDE_FIELD"],
 			["ix://quire/unit/ms", "UNRESOLVED_TYPE_REF"],
@@ -383,6 +397,7 @@ describe("FR-146 direct constraint type positions", () => {
 });
 
 it("TC-1846 refuses an arbitrarily long canonical integer without widening the i128 domain", () => {
+	// FR-146-AC-5: exact reader assertions below.
 	const document = configTime();
 	document.units[1].scale = "9".repeat(10_000);
 	expect([...readContractIr(document)].map((d) => d.code)).toEqual([
@@ -394,6 +409,7 @@ it("TC-1846 refuses an arbitrarily long canonical integer without widening the i
 });
 
 it("TC-1842/1843/1847/1852 keeps both TS readers on exact Clock and quantity located verdicts", () => {
+	// FR-146-AC-2, FR-146-AC-6, FR-146-AC-9: exact reader assertions below.
 	const cases = JSON.parse(
 		readFileSync(
 			new URL(

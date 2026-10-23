@@ -311,6 +311,7 @@ fn operation_result(type_ref: &str, extra: &str) -> String {
 
 #[test]
 fn clock_and_quantity_nonmember_type_positions_refuse_at_exact_reference() {
+    // FR-146-AC-2, FR-146-AC-6: exact reader assertions below.
     for (reference, code) in [
         (
             "ix://quire/native/Clock",
@@ -366,6 +367,7 @@ fn clock_and_quantity_nonmember_type_positions_refuse_at_exact_reference() {
 
 #[test]
 fn quantity_members_check_uri_form_without_resolving_local_units() {
+    // FR-146-AC-6, FR-146-AC-9: exact reader assertions below.
     for (name, accepted) in [
         ("ms", true),
         ("agent-ix/time-units/ms", true),
@@ -415,6 +417,7 @@ fn quantity_members_check_uri_form_without_resolving_local_units() {
 
 #[test]
 fn special_member_shape_owns_nested_constraints_and_scalar_policy_diagnostics() {
+    // FR-146-AC-2, FR-146-AC-6: exact reader assertions below.
     for (reference, code) in [
         (
             "ix://quire/native/Clock",

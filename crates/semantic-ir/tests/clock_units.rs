@@ -8,6 +8,7 @@ const CONFIG_TIME: &str =
 
 #[test]
 fn tc_1844_config_time_and_scaled_units_are_admitted() {
+    // FR-146-AC-3: exact reader assertions below.
     let bundle = parse(&format!(r#"{{"ir":{CONFIG_TIME}}}"#)).expect("authored fixture is JSON");
     let verdict = decide(&bundle);
     let diagnostics: Vec<_> = verdict
@@ -37,6 +38,7 @@ fn config_without_dimension_unit_members_preserves_reader_admission() {
 
 #[test]
 fn tc_1845_units_refuse_unresolved_references_and_invalid_scales() {
+    // FR-146-AC-4, FR-146-AC-5: exact reader assertions below.
     for (before, after, code, pointer) in [
         (
             "\"target\": \"ix://acme/config/unit/s\"",
@@ -92,6 +94,7 @@ fn tc_1842_clock_field_has_no_declared_scalar_node() {
 
 #[test]
 fn tc_1843_clock_shape_refuses_each_forbidden_member_once() {
+    // FR-146-AC-2: exact reader assertions below.
     for (before, after, member) in [
         ("\"lower\": 1", "\"lower\": 3", "multiplicity"),
         (
@@ -140,6 +143,7 @@ fn tc_1843_clock_shape_refuses_each_forbidden_member_once() {
 
 #[test]
 fn tc_1844_through_1846_public_reader_has_exact_shared_graph_verdicts() {
+    // FR-146-AC-3, FR-146-AC-4, FR-146-AC-5: exact reader assertions below.
     let cases = parse(include_str!(
         "../../../fixtures/semantic/v1/clock-units/graph-cases.json"
     ))
@@ -197,6 +201,7 @@ fn set_member(
 
 #[test]
 fn tc_1843_clock_nonfield_positions_have_their_own_exact_code() {
+    // FR-146-AC-2: exact reader assertions below.
     use agent_ix_semantic_ir::json::Json;
     for (kind, member) in [
         ("alias", "target"),
@@ -240,6 +245,7 @@ fn tc_1843_clock_nonfield_positions_have_their_own_exact_code() {
 
 #[test]
 fn tc_1842_through_1852_public_reader_has_exact_clock_quantity_verdicts() {
+    // FR-146-AC-2, FR-146-AC-6, FR-146-AC-9: exact reader assertions below.
     let cases = parse(include_str!(
         "../../../fixtures/semantic/v1/clock-units/clock-cases.json"
     ))

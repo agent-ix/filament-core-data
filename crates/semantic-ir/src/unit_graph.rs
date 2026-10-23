@@ -494,6 +494,7 @@ mod tests {
 
     #[test]
     fn tc_1844_accepts_authored_base_derived_dimensionless_and_scaled_units() {
+        // FR-146-AC-3: exact reader assertions below.
         let dimensions = [
             time(),
             dimension("Rate", false, &format!("[{}]", term("Time", "-1"))),
@@ -509,6 +510,7 @@ mod tests {
 
     #[test]
     fn tc_1845_reports_unknown_dimension_and_unit_references_at_members() {
+        // FR-146-AC-4: exact reader assertions below.
         let dimensions = [
             time(),
             dimension("Rate", false, &format!("[{}]", term("Unknown", "1"))),
@@ -532,6 +534,7 @@ mod tests {
 
     #[test]
     fn tc_1845_reports_root_and_nonzero_scale_defects_once_at_each_member() {
+        // FR-146-AC-4: exact reader assertions below.
         for (units, expected) in [
             (
                 vec![unit("s", "Time", None, "0", "0")],
@@ -558,6 +561,7 @@ mod tests {
 
     #[test]
     fn tc_1845_preserves_cross_dimension_and_identity_diagnostics() {
+        // FR-146-AC-4: exact reader assertions below.
         let dimensions = [time(), dimension("Length", true, "[]")];
         let units = [
             unit("s", "Time", None, "1", "0"),
@@ -594,6 +598,7 @@ mod tests {
 
     #[test]
     fn tc_1845_one_dimension_scc_can_hold_two_cycles() {
+        // FR-146-AC-4: exact reader assertions below.
         let dimensions = [
             dimension("A", false, &format!("[{}]", term("B", "1"))),
             dimension(
@@ -611,6 +616,7 @@ mod tests {
 
     #[test]
     fn tc_1845_unit_cycle_names_follow_edges_from_least_authored_index() {
+        // FR-146-AC-4: exact reader assertions below.
         let units = [
             unit("a", "Time", Some("c"), "0", "0"),
             unit("b", "Time", Some("a"), "1", "0"),
@@ -635,6 +641,7 @@ mod tests {
 
     #[test]
     fn tc_1845_dimension_rules_report_base_zero_order_and_duplicate_terms() {
+        // FR-146-AC-4: exact reader assertions below.
         let dimensions = [
             time(),
             dimension(
@@ -664,6 +671,7 @@ mod tests {
 
     #[test]
     fn tc_1845_duplicate_unit_and_dimension_identities_point_at_later_entries() {
+        // FR-146-AC-4: exact reader assertions below.
         let units = [
             unit("s", "Time", None, "1", "0"),
             unit("ms", "Time", Some("s"), "1/1000", "0"),
@@ -680,6 +688,7 @@ mod tests {
 
     #[test]
     fn tc_1846_rational_strings_are_canonical_and_i128_bounded() {
+        // FR-146-AC-5: exact reader assertions below.
         for scale in [
             "2/4", "1/1", "-0", "0/5", "01/3", "1.5", "1/-2", "1/2/3", "1\n", "+1",
         ] {
@@ -734,6 +743,7 @@ mod tests {
 
     #[test]
     fn tc_1846_exponents_have_the_same_full_canonical_integer_boundary() {
+        // FR-146-AC-5: exact reader assertions below.
         for (value, code) in [
             ("+1", INVALID_OPERAND),
             ("1\\n", INVALID_OPERAND),

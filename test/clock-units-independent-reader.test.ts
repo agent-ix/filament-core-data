@@ -79,6 +79,7 @@ const clock = () => {
 
 describe("FR-146 independent reader dimensions and units", () => {
 	it("TC-1844 accepts base, derived, dimensionless and scaled declarations", () => {
+		// FR-146-AC-3: exact reader assertions below.
 		const document = fixture();
 		document.dimensions.push(
 			dimension("Rate", false, [
@@ -91,6 +92,7 @@ describe("FR-146 independent reader dimensions and units", () => {
 		expect(observed(document)).toEqual([]);
 	});
 	it("TC-1845 diagnoses every unresolved graph edge at its own member", () => {
+		// FR-146-AC-4: exact reader assertions below.
 		const document = fixture();
 		document.dimensions.push(
 			dimension("Rate", false, [
@@ -106,6 +108,7 @@ describe("FR-146 independent reader dimensions and units", () => {
 		]);
 	});
 	it("TC-1845 refuses root and zero-scale defects once per pointer", () => {
+		// FR-146-AC-4: exact reader assertions below.
 		const zero = fixture();
 		zero.units = [unit("s", "Time", undefined, "0")];
 		expect(observed(zero)).toEqual([["INVALID_UNIT_GRAPH", "units.0.scale"]]);
@@ -114,6 +117,7 @@ describe("FR-146 independent reader dimensions and units", () => {
 		expect(observed(roots)).toEqual([["INVALID_UNIT_GRAPH", "units.1"]]);
 	});
 	it("TC-1845 reports one dimension SCC even when it contains two cycles", () => {
+		// FR-146-AC-4: exact reader assertions below.
 		const document = fixture();
 		document.dimensions = [
 			dimension("Time", false, [
@@ -133,6 +137,7 @@ describe("FR-146 independent reader dimensions and units", () => {
 		expect(readSemanticIr(document)[0].message).toContain("Time, Rate, Ratio");
 	});
 	it("TC-1845 reports unit-cycle names in target order from the least array index", () => {
+		// FR-146-AC-4: exact reader assertions below.
 		const document = fixture();
 		document.units = [
 			unit("a", "Time", "c"),
@@ -145,6 +150,7 @@ describe("FR-146 independent reader dimensions and units", () => {
 		expect(readSemanticIr(document)[0].message).toContain("a, c, b");
 	});
 	it("TC-1845 retains duplicate declaration diagnostics and separate namespaces", () => {
+		// FR-146-AC-4: exact reader assertions below.
 		const document = fixture();
 		document.dimensions.push(structuredClone(document.dimensions[0]));
 		document.units.push(structuredClone(document.units[1]));
@@ -157,6 +163,7 @@ describe("FR-146 independent reader dimensions and units", () => {
 		expect(observed(shared)).toEqual([]);
 	});
 	it("TC-1846 distinguishes canonicality and exact component overflow", () => {
+		// FR-146-AC-5: exact reader assertions below.
 		for (const value of [
 			"2/4",
 			"1/1",
@@ -205,6 +212,7 @@ describe("FR-146 independent reader special member policy", () => {
 		expect(observed(document)).toEqual([]);
 	});
 	it("TC-1843 emits only the nine exact Clock shape diagnostics", () => {
+		// FR-146-AC-2: exact reader assertions below.
 		const document = clock();
 		const field = document.types[0].fields[0];
 		field.multiplicity.lower = 3;
@@ -233,6 +241,7 @@ describe("FR-146 independent reader special member policy", () => {
 		);
 	});
 	it("TC-1843 applies Clock's own outside-field code to every type position", () => {
+		// FR-146-AC-2: exact reader assertions below.
 		for (const [kind, member] of [
 			["alias", "target"],
 			["reference", "target"],
@@ -282,6 +291,7 @@ describe("FR-146 independent reader special member policy", () => {
 		]);
 	});
 	it("TC-1847 retains missing multiplicity and other reference roles", () => {
+		// FR-146-AC-6: exact reader assertions below.
 		const document = clock();
 		delete document.types[0].fields[0].multiplicity;
 		expect(observed(document)).toEqual([
@@ -304,6 +314,7 @@ describe("FR-146 independent reader special member policy", () => {
 		]);
 	});
 	it("TC-1847 and TC-1852 admit quantity URIs without resolving local units", () => {
+		// FR-146-AC-6, FR-146-AC-9: exact reader assertions below.
 		for (const name of [
 			"ms",
 			"agent-ix/time-units/ms",
@@ -332,6 +343,7 @@ describe("FR-146 independent reader special member policy", () => {
 		}
 	});
 	it("TC-1847 emits quantity shape diagnostics without suppressing multiplicity", () => {
+		// FR-146-AC-6: exact reader assertions below.
 		const document = clock();
 		const field = document.types[0].fields[0];
 		field.typeRef = "ix://quire/unit/ms";
@@ -351,6 +363,7 @@ describe("FR-146 independent reader special member policy", () => {
 		]);
 	});
 	it("TC-1847 refuses a quantity constraint subject before interpreting its keyword", () => {
+		// FR-146-AC-6: exact reader assertions below.
 		const document = clock();
 		document.types[0].constraints = [
 			{ keyword: "notAKeyword", appliesTo: "ix://quire/unit/ms" },
