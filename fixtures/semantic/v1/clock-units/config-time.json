@@ -1,0 +1,89 @@
+{
+	"contractVersion": "2.0.0",
+	"canonicalization": {
+		"algorithm": "rfc8785-v1",
+		"digest": "sha256-jcs"
+	},
+	"source": {
+		"identity": "ix://test/orders/source",
+		"version": "1",
+		"dialect": "spec-bundle",
+		"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+	},
+	"package": {
+		"identity": "acme/config",
+		"version": "1",
+		"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		"mappingVersions": ["1.0.0"],
+		"profileVersions": []
+	},
+	"constructs": [],
+	"types": [
+		{
+			"identity": "ix://acme/config/Integer",
+			"displayName": "Integer",
+			"kind": "scalar",
+			"scalar": "integer",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/config/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://acme/config/source"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject"
+		}
+	],
+	"occurrences": [],
+	"extensions": [],
+	"dimensions": [
+		{
+			"identity": "ix://acme/config/dimension/Time",
+			"name": "Time",
+			"base": true,
+			"terms": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/config/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://acme/config/source"]
+				}
+			}
+		}
+	],
+	"units": [
+		{
+			"identity": "ix://acme/config/unit/s",
+			"name": "s",
+			"dimension": "ix://acme/config/dimension/Time",
+			"scale": "1",
+			"offset": "0",
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/config/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://acme/config/source"]
+				}
+			}
+		},
+		{
+			"identity": "ix://acme/config/unit/ms",
+			"name": "ms",
+			"dimension": "ix://acme/config/dimension/Time",
+			"target": "ix://acme/config/unit/s",
+			"scale": "1/1000",
+			"offset": "0",
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/config/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://acme/config/source"]
+				}
+			}
+		}
+	]
+}
