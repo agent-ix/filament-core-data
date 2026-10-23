@@ -267,7 +267,7 @@ computed by `quire matrix` from those trace tags.
 | TC-245 | A `pattern` whose `regex` does not compile under `ecma-262` fails validation | Unit | P0 | FR-029-AC-8 |
 | TC-246 | `contractVersion: "1.3.0"` fails before emission; `2.0.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 |
 | TC-248 | `tsp compile packages/semantic-core` exits 0 with zero diagnostics under the pinned compiler | Compile | P0 | FR-031-AC-1 |
-| TC-249 | The compiled program's declaration set equals `inventory.json`; adding `Entity` or `Any` to the source makes the scope test fail naming the declaration | Unit | P0 | FR-031-AC-2, NFR-014-AC-1 |
+| TC-249 | Compiled models, public unions, wireUnions, enums and scalars exactly equal inventory.json; all six named adjacent-envelope helpers have their specified purpose, and adding Entity, Any or another helper fails naming the undeclared declaration | Unit | P0 | FR-031-AC-2, NFR-014-AC-1 |
 | TC-250 | `ConstraintKeyword` and the eleven constraint models match the FR-029 keyword set and operand shapes; the emitted schema rejects a twelfth | Unit | P0 | FR-031-AC-3 |
 | TC-251 | `EdgeCategory`, `ConstraintKeyword`, and `ClauseLanguage` equal the IR schema enumerations in a contract test | Unit | P0 | FR-031-AC-4 |
 | TC-252 | No property in the compiled program resolves to `unknown` or an untyped record except `DefaultDecl.value` | Static | P0 | FR-031-AC-5, FR-031-CON-2 |
@@ -911,7 +911,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1009 | Leave byte-unchanged every file under schema/**, packages/semantic-core/**, fixtures/**, and conformance/**, together with src/compiler/cli.mjs, src/c | Static | P0 | FR-082-CON-1, FR-082-CON-2, FR-082-CON-3 |
 | TC-1010 | The lowering compute presence from multiplicity.lower at exactly one call site and at no other, assigning presence from no other module. Two independe | Static | P0 | FR-082-CON-4, FR-082-CON-5, FR-082-CON-6 |
 | TC-1011 | The two declared representability losses | Unit | P0 | FR-082-CON-7, FR-082-AC-1, FR-082-AC-2 |
-| TC-1012 | A document carrying additionalProperties, oneOf, allOf, $defs, format, or maxLength produces one blocking UNSUPPORTED_SCHEMA_KEYWORD diagnostic naming | Property | P0 | FR-082-AC-3, FR-082-AC-4, FR-082-AC-5 |
+| TC-1012 | FR-054 adjacent oneOf envelopes are accepted at top-level, property and array-item positions; malformed branches (too few or duplicate tags, non-object branch, missing/non-string/non-constant kind, extra property, mismatched required list, non-exact closure, unsupported payload or extra keyword) and oneOf elsewhere each refuse with one UNSUPPORTED_SCHEMA_SHAPE at its pointer; additionalProperties, allOf, $defs, format and maxLength each refuse with UNSUPPORTED_SCHEMA_KEYWORD | Property | P0 | FR-082-AC-3, FR-082-AC-4, FR-082-AC-5 |
 | TC-1013 | Every lowered type from a document carrying unevaluatedProperties: {"not": {}} has unknownPolicy: "reject" | Property | P0 | FR-082-AC-6, FR-082-AC-7, FR-082-AC-8 |
 | TC-1014 | Every fields[] member and every operation parameter of the emitted document carries multiplicity | Property | P0 | FR-082-AC-9, FR-082-AC-10, FR-082-AC-11 |
 | TC-1015 | The emitted document declares source.dialect of spec-bundle and the bundle's own version | Snapshot | P0 | FR-082-AC-12, FR-082-AC-13, FR-082-AC-14 |
