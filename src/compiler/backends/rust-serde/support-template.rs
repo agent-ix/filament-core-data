@@ -1582,6 +1582,16 @@ impl Bytes {
         &self.0
     }
 
+    /// True when the octet sequence has no members.
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
+    /// Renders the canonical padded standard base64 wire value.
+    pub fn to_base64(&self) -> String {
+        encode_bytes_wire(&self.0)
+    }
+
     /// Consumes the wrapper and returns its octets.
     pub fn into_inner(self) -> Vec<u8> {
         self.0
@@ -1662,7 +1672,7 @@ fn encode_bytes_wire(octets: &[u8]) -> String {
 
 impl Serialize for Bytes {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&encode_bytes_wire(&self.0))
+        serializer.serialize_str(&self.to_base64())
     }
 }
 

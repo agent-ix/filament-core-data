@@ -1477,9 +1477,16 @@ function renderCheck(
 	switch (check.form) {
 		case "length": {
 			const comparison = check.keyword === "minLength" ? "<" : ">";
+			const length =
+				subjectScalar === "bytes"
+					? `${subject}.as_slice().len()`
+					: `${subject}.chars().count()`;
 			lines.push(
-				`            if ${subject}.chars().count() ${comparison} ${check.value}usize {`,
-				...fail(rustString(String(check.value)), `${subject}.as_str()`),
+				`            if ${length} ${comparison} ${check.value}usize {`,
+				...fail(
+					rustString(String(check.value)),
+					subjectScalar === "bytes" ? undefined : `${subject}.as_str()`,
+				),
 				"            }",
 			);
 			break;
@@ -1592,7 +1599,11 @@ function renderCheck(
 					"            }",
 				);
 			} else {
-				const value = numeric ? owned : `${subject}.as_str()`;
+				const value = numeric
+					? owned
+					: check.scalar === "bytes"
+						? `${subject}.to_base64().as_str()`
+						: `${subject}.as_str()`;
 				lines.push(
 					`            if !${constant}.contains(&${value}) {`,
 					...fail(rustString(canonicalJson(check.values))),
