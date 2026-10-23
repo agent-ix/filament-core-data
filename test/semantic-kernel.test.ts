@@ -148,9 +148,7 @@ describe("TC-1000..1008 the kernel bundle declaration (FR-081)", () => {
 	it("rejects a document set that has drifted from the inventory's", () => {
 		const drifted = {
 			...bundle,
-			documents: (bundle.documents as string[])
-				.slice(0, 29)
-				.concat(["Bogus.json"]),
+			documents: (bundle.documents as string[]).slice(1).concat(["Bogus.json"]),
 		};
 		const found = checkKernelBundle(drifted, inventory);
 		expect(found).toHaveLength(1);

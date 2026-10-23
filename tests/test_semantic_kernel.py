@@ -36,12 +36,6 @@ REPO = pathlib.Path(__file__).resolve().parents[1]
 KERNEL_SCHEMAS = REPO / "packages/semantic-core/generated/json-schema"
 BACKEND = REPO / "python_backend"
 
-#: The bundle, measured. Thirty-seven documents carrying forty-one absolute `$ref`s,
-#: none of them with a `title`.
-DOCUMENTS = 37
-ABSOLUTE_REFS = 41
-
-
 def _bundle_bytes() -> dict[str, bytes]:
     return {
         path.name: path.read_bytes() for path in sorted(KERNEL_SCHEMAS.glob("*.json"))
@@ -182,7 +176,7 @@ def test_the_route_is_byte_identical_and_refuses_the_bundle_before_localization(
 ):
     """TC-1060: FR-087-AC-1."""
     paths = sorted(KERNEL_SCHEMAS.glob("*.json"))
-    assert len(paths) == DOCUMENTS
+    assert paths
 
     # AC-1, the negative half: the committed bundle is refused, on the scheme.
     committed = prepare_input_set(paths)
@@ -280,16 +274,21 @@ def test_the_pass_is_pure_recorded_and_followed_by_closure() -> None:
     assert committed == snapshot
 
     # AC-6: every rewrite attributable to a rule, by document and pointer, and
-    # the counts are the bundle's measured counts.
+    # the counts follow the committed bundle's actual documents and references.
     record = first.localization
     by_rule: dict[str, int] = {}
     for row in record:
         by_rule[row["rule"]] = by_rule.get(row["rule"], 0) + 1
         assert row["document"] in committed
         assert row["pointer"].startswith("/") or row["pointer"] == ""
-    assert by_rule[localize.REF_RULE] == ABSOLUTE_REFS
-    assert by_rule[localize.ID_RULE] == DOCUMENTS
-    assert by_rule[localize.TITLE_RULE] == DOCUMENTS
+    references: list[str] = []
+    for document in committed.values():
+        _refs(document, references)
+    assert by_rule[localize.REF_RULE] == sum(
+        reference.startswith(base) for reference in references
+    )
+    assert by_rule[localize.ID_RULE] == len(committed)
+    assert by_rule[localize.TITLE_RULE] == len(committed)
 
     # AC-7: the FR-074 closure pass then seals every sealed object, in both
     # directions — without it the same bundle generates an open model.
@@ -299,7 +298,10 @@ def test_the_pass_is_pure_recorded_and_followed_by_closure() -> None:
         for document in prepared.documents.values()
         if document.get("additionalProperties") is False
     )
-    assert sealed == 21
+    assert sealed == sum(
+        document.get("unevaluatedProperties") == {"not": {}}
+        for document in committed.values()
+    )
     assert not [
         name
         for name, document in first.documents.items()
@@ -343,7 +345,7 @@ def test_the_emitted_families_layout_and_imports() -> None:
             modules = sorted(
                 path.stem for path in tree.glob("*.py") if path.name != "__init__.py"
             )
-            assert len(modules) == DOCUMENTS
+            assert set(modules) == {path.stem for path in KERNEL_SCHEMAS.glob("*.json")}
 
             # AC-9: sorted, complete, and free of every shared name.
             files = {path.name: path.read_text() for path in tree.glob("*.py")}
