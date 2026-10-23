@@ -79,7 +79,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | `scalar` | `pub struct N(B);` newtype over the kernel base `B`, with `try_new` | `#[serde(transparent)]` plus a validating `Deserialize` |
 | `record` | `pub struct N { .. }` | derived, member attributes per the field rules below |
 | `enum` | fieldless `pub enum N { .. }` | `#[serde(rename = "<variant name>")]` per variant, emitted only where the derived identifier differs from the variant `name` |
-| `union` | `pub enum N { .. }`, unit variant where `payloadType` is absent, one-field variant where it is present | externally tagged, serde's default, with the same conditional `rename` |
+| `union` | `pub enum N { .. }`, unit variant where `payloadType` is absent, one-field variant where it is present | adjacently tagged, `#[serde(tag = "kind", content = "value")]`, with the same conditional `rename` |
 | `alias` | `pub struct N(T);` newtype over the target's Rust type, with `try_new`; for an alias whose walk reaches `integer` or `decimal`, a newtype over the Rust base [FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md) gives the alias's own subject (`i64`, `u64` or `i128` over its effective range, or `Decimal` at its scale), never over the target's type | `#[serde(transparent)]` |
 | `sequence` | `pub struct N(Vec<I>);` newtype over the `items` type, with `try_new` | `#[serde(transparent)]` |
 | `map` | `pub struct N(BTreeMap<String, V>);` newtype over the `values` type, with `try_new` | `#[serde(transparent)]` |
@@ -202,13 +202,7 @@ construct's disposition is written down rather than decided at the keyboard.
   `minLength` or `maxLength` over a `bytes` subject bounds the octet count.
 - `BTreeMap` and the fixed key type `String` SHALL be used for every `map`,
   because the IR declares no key type and `BTreeMap` serializes in one order.
-- A `union` SHALL be externally tagged. The IR declares no discriminator
-  member, so a `tag`/`content` pair would be a name this backend invented;
-  external tagging needs none and is a tagged union in serde's own vocabulary,
-  which is what the published `rust` target contract's `nativeApi` names. The
-  decision is recorded in `docs/semantic-data-system/rust-backend.md` as this
-  backend's reading, and filed as issue #58, because issues #22 and #23 must
-  reach the same wire form for the issue #7 parity gate.
+- A `union` SHALL be adjacently tagged with `#[serde(tag = "kind", content = "value")]`, so that a payload-carrying variant serializes as `{"kind":"<name>","value":<payload>}` and a unit variant as `{"kind":"<name>"}`. This is the union wire form of [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md), shared by every backend, and it is a tagged union in serde's own vocabulary, which is what the published `rust` target contract's `nativeApi` names.
 
 ### Fields
 
@@ -363,7 +357,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-2 | Each of the twelve kernel scalars maps to its declared Rust base. | Test (TC-646) |
 | FR-054-AC-3 | Each of the eight combinations of collection × nullable × presence produces exactly the Rust member type and serde attribute set the composition table states, the eight are pairwise distinct, and boundedness changes none of them. | Test (TC-647) |
 | FR-054-AC-4 | For a field that is both `optional` and `nullable`, an absent member deserializes to `None`, a present `null` deserializes to `Some(Nullable::Null)`, the two are distinguishable, and each re-serializes to the bytes it came from. | Test (TC-648) |
-| FR-054-AC-5 | A `union` whose variants carry payloads round-trips externally tagged, a variant with no `payloadType` round-trips as a unit variant, and a `payloadType` on an `enum` variant raises `PAYLOAD_ON_ENUM_VARIANT`. | Test (TC-649) |
+| FR-054-AC-5 | A `union` whose variants carry payloads round-trips as `{"kind":"a","value":"x"}`, a variant with no `payloadType` round-trips as the unit variant `{"kind":"b"}`, the externally tagged form `{"a":"x"}` is refused, and a `payloadType` on an `enum` variant raises `PAYLOAD_ON_ENUM_VARIANT`. | Test (TC-649) |
 | FR-054-AC-6 | A record whose `unknownPolicy` is `reject` fails to deserialize an unknown member; `preserve` retains it with no diagnostic; `surface` retains it and reports one `UNKNOWN_MEMBER_SURFACED`; an `enum` or `union` under `preserve` or `surface` deserializes an unrecognised variant into the catch-all and re-serializes it unchanged, and under `reject` refuses it; the declared policy of each of the five inert kinds appears verbatim in its metadata constant; and no unknown member ever becomes a default value of a known field. | Test (TC-650) |
 | FR-054-AC-7 | A direct self-reference, a two-record cycle, a cycle closing through an `alias` target, a cycle closing through a `union` variant `payloadType`, and a cycle through a `sequence` each generate a crate that compiles, and the boxed edge set is identical across two runs. | Test (TC-651) |
 | FR-054-AC-8 | `relationships`, `operations`, `clauses`, `roles`, `origin`, and `occurrences` survive generation into metadata with every member the IR carried, checked by reading the metadata back and comparing to the input document. | Test (TC-652) |

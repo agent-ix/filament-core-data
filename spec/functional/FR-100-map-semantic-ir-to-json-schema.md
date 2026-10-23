@@ -110,9 +110,12 @@ frontend, a generated programming-language package, or an ambient registry.
   effective fields of a subtype carry one name, then the backend SHALL return a
   blocking diagnostic at the type's `fields` and emit no file.
 - An `enum` definition SHALL render an `enum` array of its variant wire names.
-- A `union` definition SHALL render a `oneOf` with one branch per variant; a
-  payload-free variant SHALL constrain its tag alone and a payload-carrying
-  variant SHALL constrain its tag and payload.
+- A `union` definition SHALL render a `oneOf` with one branch per variant, each
+  branch an object schema with `additionalProperties: false`; a payload-free
+  variant SHALL constrain `kind` to `const` of the variant `name` and require
+  `kind` alone, and a payload-carrying variant SHALL additionally constrain
+  `value` to the schema of its `payloadType` and require both members. This is
+  the union wire form of [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md).
 - An `alias` definition (a core alias, or a construct of the alias shape) whose
   resolution walk reaches a document scalar other than `integer` or `decimal`
   SHALL render that scalar's schema inline, carrying the constraints of every
@@ -234,6 +237,7 @@ that decision requires.
 | FR-100-AC-14 | Removing uniqueness from each Float32 case in AC-13 permits generation when the input has no other unrepresentable member. Replacing its item subject with `float64` retains `uniqueItems: true`; the emitted schema accepts `[0.1, 0.10000000149011612]` and rejects `[0.1, 0.1]` and `[0, -0]`. | Test |
 | FR-100-AC-15 | Generating the contract `2.0.0` constructs fixture renders `OrderLineKind.json` as `type: string` with `enum: ["physical", "digital"]` and no `allOf`; an alias of that alias carrying `maxLength` renders `type: string`, the same `enum` and the `maxLength`; an alias of `integer` or `decimal` renders as before. | Test |
 | FR-100-AC-16 | A `bytes` scalar renders `type: string`, `contentEncoding: base64` and the Bytes `pattern`; with `maxLength` 3 the rendered schema accepts `""`, `"AA=="`, `"AP8="` and `"AQID"`, rejects `"AQIDBA=="`, `"AP8"` and `"AP9="`, and carries no `maxLength` keyword; with `minLength` 2 it rejects `""` and `"AA=="` and accepts `"AP8="`. | Test (TC-1863) |
+| FR-100-AC-17 | A union with variants `a` over `String` and `b` with no payload renders a `oneOf` of two closed object branches; the schema accepts `{"kind":"a","value":"x"}` and `{"kind":"b"}` and rejects `{}`, `{"kind":"c"}`, `{"kind":"a"}`, `{"kind":"a","value":1}`, `{"kind":"b","value":"x"}`, `{"a":"x"}` and `{"kind":"b","extra":1}`. | Test (TC-1864) |
 
 ## Dependencies
 

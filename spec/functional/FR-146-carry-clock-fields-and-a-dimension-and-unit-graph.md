@@ -68,6 +68,7 @@ clocks and whose quantities are in units the domain package declares:
 |---|---|---|
 | `ix://quire/native/Clock` | a field, parameter, result, alias `target` or variant `payloadType` | The member is a clock: a real-valued timer that the model checker owns, one per object and field, or one per element when the member is a collection (QSpec FR-415 "Clock collections"), read only inside clock constraints (QSpec FR-415). It carries no data value. |
 | `dimensions` | document | The dimension nodes of the package: base dimensions such as `Time`, and derived dimensions, each a product of dimensions of the package raised to integer exponents, the empty product being the dimensionless dimension (QSpec FR-142). |
+| `dimensionEquivalences` | document | The declared equivalences of the package: each relates two dimension nodes of the package that name one physical dimension, so a consumer that admits this package beside another that declares the same dimension can exchange quantities (QSpec FR-142 "Dimension equivalence"). |
 | `units` | document | The unit nodes of the package: each typed by one dimension, either the dimension's root or a unit with an exact scale and offset to a target unit of the same dimension (QSpec FR-142). |
 | `ix://quire/unit/<name>` | a field, parameter, result, alias `target`, sequence `items`, map `values` or variant `payloadType` | The position holds a quantity in unit `<name>`: QSpec's `Quantity<u>` (QSpec FR-142, FR-322 "Model-owned members" step 4). |
 
@@ -94,7 +95,8 @@ unit graph.
   results, alias targets and variant payloads may name `ix://quire/native/Clock`,
   whose fields, operation parameters, operation results, alias targets, sequence
   items, map values and variant payloads may name `ix://quire/unit/<name>`, and
-  which may carry top-level `dimensions` and `units` arrays
+  which may carry top-level `dimensions`, `units` and `dimensionEquivalences`
+  arrays
 - A spec bundle whose artifacts declare dimensions and units and whose `Type`
   cells name `Clock` or `Quantity<unit>` (the extraction frontend, below)
 
@@ -191,11 +193,28 @@ a field or operation parameter.
 - If a base dimension's `terms` is not empty, then the reader SHALL refuse
   `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` at `/dimensions/<i>/terms`.
 - A dimension's identity SHALL carry the package identity, so dimensions of one
-  `name` in documents of different packages are different dimensions. The
-  reader SHALL compare a document's dimensions only with that document's own,
-  and SHALL raise no diagnostic for a `name` that a dimension of another
-  package also carries; a consumer that admits several packages names a package
-  dimension through its model alias (QSpec FR-142 "Namespaces").
+  `name` in documents of different packages are different dimensions: the
+  identity `ix://acme/rpc/dimension/Time` and the identity
+  `ix://acme/flow/dimension/Time` are two dimensions, whatever their `name`,
+  `base`, `terms` or units. Two dimensions are the same dimension only when
+  their identities are equal byte for byte; no case folding, suffix match or
+  match on `name` alone relates them.
+- A document names only its own dimensions: a dimension `terms` entry, a unit
+  `dimension` and a dimension equivalence each name a dimension node of the
+  document, and the reader SHALL raise no diagnostic for a `name` that a
+  dimension of another package also carries. A consumer that admits several
+  packages resolves a package dimension by the identity
+  `ix://<package identity>/dimension/<name>`, which the consumer's own source
+  spells `M::<name>` through the model alias `M` of that package, so the
+  package dimensions of two owners are two nodes of one checked package (QSpec
+  FR-142 "Namespaces" and "Dimensions of different owners", FR-322 "Model-owned
+  members").
+- Two dimensions of different packages SHALL compose in the consumer's checked
+  package: a unit of one package is typed by that package's dimension, a
+  product, quotient or power forms its normalized dimension map over the
+  identities of both packages, and the base dimensions of two owners are two
+  entries until a dimension equivalence relates them (QSpec FR-142 "Dimensions
+  of different owners").
 - If a term's `dimension` names no dimension node of the document, then the
   reader SHALL refuse `agent-ix.semantic-ir.UNRESOLVED_DIMENSION_REF` at
   `/dimensions/<i>/terms/<t>/dimension`.
@@ -217,6 +236,66 @@ a field or operation parameter.
   component.
 - The message of a term-cycle refusal SHALL name the component's dimensions in
   array order.
+
+### Dimension equivalences
+
+A dimension equivalence says that two dimension nodes name one physical
+dimension. A package that declares both `Time` and `Duration` as base dimensions
+relates them with one, and a consumer that admits that package beside another
+declaring `Time` relates its own `Time` to either with a source equivalence
+(QSpec FR-142 "Dimension equivalence", `dimension R::Time ~ F::Time;`). A
+document declares an equivalence only between two of its own dimensions: the
+equivalence between a dimension of this package and a dimension of another
+package is the consumer's declaration.
+
+- The schema SHALL admit an optional top-level `dimensionEquivalences` array of
+  equivalence nodes.
+- An equivalence node SHALL carry exactly `identity`, `dimensions` and
+  `origin`.
+- `dimensions` SHALL be an array of exactly two semantic identities.
+- An equivalence `identity` SHALL equal
+  `ix://<package.identity>/dimension-equivalence/<A>-<B>`, where `<A>` and `<B>`
+  are the `name` of the first and second dimension of `dimensions`.
+- If an equivalence's `identity` does not equal that form, then the reader SHALL
+  refuse `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` at
+  `/dimensionEquivalences/<k>/identity`.
+- If an entry of `dimensions` names no dimension node of the document, then the
+  reader SHALL refuse `agent-ix.semantic-ir.UNRESOLVED_DIMENSION_REF` at
+  `/dimensionEquivalences/<k>/dimensions/<m>`, and SHALL not apply the identity
+  check to that node.
+- If the two entries of `dimensions` are equal, then the reader SHALL refuse
+  `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` at
+  `/dimensionEquivalences/<k>/dimensions`, because a dimension is equivalent to
+  itself without a declaration.
+- If the first entry of `dimensions` is not strictly less, by code point, than
+  the second, then the reader SHALL refuse
+  `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` at
+  `/dimensionEquivalences/<k>/dimensions`, so that a pair has one spelling.
+- If two equivalence nodes carry one `identity`, which is two nodes relating
+  one pair, then the reader SHALL refuse
+  `agent-ix.semantic-ir.DUPLICATE_IDENTITY` at the later node's `/identity`.
+- The relation SHALL be symmetric and transitive: the declared pairs `A`/`B`,
+  `B`/`C` and `A`/`C` are admitted together, and the equivalence classes are the
+  connected components of the declared pairs. The base classes are the
+  components of the pairs whose two dimensions are both base dimensions.
+- The normalized dimension map of a base dimension SHALL be its base class's
+  representative with exponent `1`, the representative being the member of the
+  class with the least `identity` by code point, and the map of a derived
+  dimension SHALL be the sum over its `terms` of each exponent times the term's
+  map, an entry whose exponent is `0` being dropped.
+- If a pair does not consist of two base dimensions and the normalized maps of
+  its two dimensions differ, then the reader SHALL refuse
+  `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` at
+  `/dimensionEquivalences/<k>/dimensions`, naming both dimensions. The reader
+  SHALL form the maps only over dimensions that reach no term cycle, and SHALL
+  raise this refusal for no pair that reaches one.
+- The reader SHALL NOT merge unit graphs, rewrite a dimension or apply the
+  equivalence to a conversion: the consumer's checked package derives the
+  classes, the class root and the conversion edges from the pairs (QSpec FR-142
+  "Dimension equivalence", FR-322 `dimension_equivalence` node).
+- The reader SHALL NOT require a dimension to have an equivalence, and two units
+  of dimensions that one equivalence relates SHALL remain two units: each keeps
+  its own dimension and its own root.
 
 ### Units
 
@@ -302,6 +381,18 @@ a field or operation parameter.
   FR-322 "Model-owned members" step 4).
 - The reader SHALL raise no diagnostic for a well-formed `<name>` that the
   document does not declare.
+- A unit-typed member's quantity type SHALL be the dimension identity of the
+  unit its `typeRef` names, which a consumer reads from the unit node of
+  identity `ix://<package identity>/unit/<name>` when `<name>` is qualified by
+  that package identity and from its own source otherwise. Two members have one
+  quantity type only when those dimension identities are equal, so members typed
+  by the root units `ix://quire/unit/acme/rpc/s` and
+  `ix://quire/unit/acme/flow/s` have two quantity types, a dimension
+  equivalence relating the two dimensions makes the types convertible by
+  explicit conversion and never substitutable, and a member typed by a unit of a
+  dimension with no equivalence to another is convertible to no member of the
+  other (QSpec FR-142 "Dimensions of different owners"). The reader compares no
+  two quantity types.
 - If `ix://quire/unit/<name>` is a `reference` `target` or a constraint
   `appliesTo`, then the reader SHALL refuse
   `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` at that member's pointer, because a
@@ -336,20 +427,20 @@ a field or operation parameter.
 
 ### Normalization and compatibility
 
-- The normalizer (FR-145) SHALL keep `dimensions`, `units` and each `terms`
+- The normalizer (FR-145) SHALL keep `dimensions`, `units`, `dimensionEquivalences` and each `terms`
   array in authored order in the normalized form.
 - The fingerprinter (`fingerprintIrForTarget`, FR-069) SHALL keep the same
-  authored order: `/dimensions`, `/units` and `/dimensions/*/terms` are not
+  authored order: `/dimensions`, `/units`, `/dimensionEquivalences` and `/dimensions/*/terms` are not
   identity-sorted sets, and `IDENTITY_SET_PATHS` is unchanged. The order of `dimensions` and `units` is
   the source order QSpec FR-142's first-defect rule reads, and `terms` has one
   admitted order.
-- The normalizer SHALL serialize a document with no `dimensions` and no `units`
-  with neither member.
+- The normalizer SHALL serialize a document with no `dimensions`, no `units` and no `dimensionEquivalences`
+  with none of the three members.
 - The compatibility classifier (FR-025, FR-051) SHALL classify an added
-  dimension or unit as additive.
-- The compatibility classifier SHALL classify a removed dimension or unit, or a
-  changed `base`, `terms`, `dimension`, `target`, `scale` or `offset`, as
-  breaking.
+  dimension, unit or dimension equivalence as additive.
+- The compatibility classifier SHALL classify a removed dimension, unit or dimension equivalence, or a
+  changed `base`, `terms`, `dimension`, `target`, `scale`, `offset` or equivalence
+  `dimensions`, as breaking.
 
 ### Generation backends
 
@@ -409,7 +500,8 @@ the member's type does, as the unit's `<name>`.
   to any other member: a named member is omitted with the non-blocking
   `DECLARED_LOSS`, and a named owner drops its affected members with it under
   the owner's `DECLARED_LOSS`.
-- Each backend SHALL generate no output from `dimensions` and `units`: the unit
+- Each backend SHALL generate no output from `dimensions`, `units` and
+  `dimensionEquivalences`: the unit
   graph is a checked-package input, and a quantity's wire form needs no
   conversion.
 
@@ -470,7 +562,8 @@ unit-reference constructs of a spec bundle to the IR constructs above.
   `ix://quire/native/Clock`) as the `Clock` type in that position, and a clock
   field of an object type or a record as a clock place of it (QSL FR-230
   "Clock-typed positions", QSL FR-393's `TypeForm::Clock`).
-- QSL reads `dimensions` and `units` into the unit graph of its checked package,
+- QSL reads `dimensions`, `units` and `dimensionEquivalences` into the unit graph
+  of its checked package,
   beside the dimensions and units its own source declares (QSL FR-230). A
   domain package that supplies time units declares a base dimension named
   `Time`, a root unit such as `s` and scaled units such as `ms` with `scale`
@@ -497,9 +590,9 @@ unit-reference constructs of a spec bundle to the IR constructs above.
 | FR-146-AC-5 | Scale spellings `"2/4"`, `"1/1"`, `"-0"`, `"0/5"`, `"01/3"` and `"1.5"` each refuse exactly `INVALID_OPERAND` at `/units/<j>/scale`; the JSON number `0.001` refuses exactly `SCHEMA_VIOLATION` there; a numerator of 2^127 refuses exactly `INTEGER_OUTSIDE_I128`; `"1/1000"`, `"-3/2"` and `"273"` are accepted; an exponent `"+1"` refuses exactly `INVALID_OPERAND` at its pointer. | Test (TC-1846) |
 | FR-146-AC-6 | A field, an operation parameter, an operation result, an alias target, a sequence `items`, a map `values` and a variant `payloadType` typed `ix://quire/unit/ms` are accepted with no diagnostic, both in the AC-3 document and in a document that declares no units; `ix://quire/unit/ms` as a reference target or a constraint `appliesTo` refuses exactly `UNRESOLVED_TYPE_REF` at that member, and so do the typeRefs `ix://quire/unit/` and `ix://quire/unit/3ms`; a unit-typed field carrying `unit: "ms"`, a `min` constraint, a `decimal` policy and a semantic default refuses exactly one `INVALID_QUANTITY_MEMBER` at each of `/unit`, `/constraints`, `/decimal`, `/defaultKind` and `/defaultValue` under the field, and no `UNIT_ON_NON_SCALAR`, `CONSTRAINT_NOT_APPLICABLE`, decimal-policy code, `INVALID_DEFAULT_VALUE`, `UNKNOWN_CONSTRAINT_KEYWORD` or `INVALID_PATTERN`. | Test (TC-1847) |
 | FR-146-AC-7 | Two documents differing only in the order of `units` have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; every committed positive fixture keeps its bytes and fingerprint; adding a unit classifies additive, and removing one, changing its `scale` or changing a dimension's `base` classifies breaking. | Test (TC-1848) |
-| FR-146-AC-8 | The AC-1 document, the AC-2 document and the AC-6 document each generate on every generation backend with no `UNDECLARED_LOSS` and with every file written. With `allowedOmissions` naming a clock or unit-typed member, the backend omits it with one non-blocking `DECLARED_LOSS` naming it. With `allowedOmissions` naming only the owner, each of these is dropped with the owner under the owner's single `DECLARED_LOSS` and raises no loss of its own: the clock field of an omitted `Call` type, a clock or unit-typed parameter of an omitted operation, a unit-typed parameter of an operation of an omitted type, and a clock or unit-typed result of an omitted operation. A generated subtype of an omitted `Call` that inherits its clock field generates the field unless `allowedOmissions` names it. A document carrying `dimensions` and `units` generates exactly what it generates without them, and the JSON Schema and rust-serde backends' native lists carry `Clock` with no IR scalar. | Test (TC-1849) |
+| FR-146-AC-8 | The AC-1 document, the AC-2 document and the AC-6 document each generate on every generation backend with no `UNDECLARED_LOSS` and with every file written. With `allowedOmissions` naming a clock or unit-typed member, the backend omits it with one non-blocking `DECLARED_LOSS` naming it. With `allowedOmissions` naming only the owner, each of these is dropped with the owner under the owner's single `DECLARED_LOSS` and raises no loss of its own: the clock field of an omitted `Call` type, a clock or unit-typed parameter of an omitted operation, a unit-typed parameter of an operation of an omitted type, and a clock or unit-typed result of an omitted operation. A generated subtype of an omitted `Call` that inherits its clock field generates the field unless `allowedOmissions` names it. A document carrying `dimensions`, `units` and `dimensionEquivalences` generates exactly what it generates without them, and the JSON Schema and rust-serde backends' native lists carry `Clock` with no IR scalar. | Test (TC-1849) |
 | FR-146-AC-9 | A field, an operation parameter and an operation result typed `ix://quire/unit/agent-ix/time-units/ms`, `ix://quire/unit/acme/rpc.v2/ms` and `ix://quire/unit/acme/rpc/ms` are accepted with no diagnostic; the typeRefs `ix://quire/unit/agent-ix/time-units/m-s` and `ix://quire/unit/agent-ix/time-units/3ms` (the unit-name segment outside its pattern), `ix://quire/unit/-acme/rpc/ms` and `ix://quire/unit/.acme/rpc/ms` (an earlier segment outside both patterns) and `ix://quire/unit/agent-ix//ms` (an empty segment) each refuse exactly `UNRESOLVED_TYPE_REF` at that `typeRef`. | Test (TC-1852) |
-| FR-146-AC-10 | The documents of packages `acme/rpc` and `acme/flow`, each declaring base dimension `Time` (`ix://acme/rpc/dimension/Time`, `ix://acme/flow/dimension/Time`), root unit `s` and unit `ms` of `1/1000` of `s`, are each accepted by every reader with no diagnostic, and the two `Time` dimensions are two dimensions: a reader given one document raises no diagnostic for the other's `Time`. | Test (TC-1855) |
+| FR-146-AC-10 | A document of package `acme/rpc` declaring base dimensions `Time` and `Duration`, root units `s` of `Time` and `sec` of `Duration`, and a `dimensionEquivalences` node with `identity` `ix://acme/rpc/dimension-equivalence/Duration-Time` and `dimensions` `["ix://acme/rpc/dimension/Duration", "ix://acme/rpc/dimension/Time"]`, is accepted by every reader with no diagnostic, the two roots staying two units of two dimensions. A document of package `acme/flow` declaring base dimension `Time` (`ix://acme/flow/dimension/Time`) and root unit `s`, read after the `acme/rpc` document by the same reader, is accepted with no diagnostic, and the two `Time` identities are two dimensions. | Test (TC-1855) |
 | FR-146-AC-11 | Over a document whose object type `Call` has a required clock field `x`, an optional clock field `w`, a field `d` typed `ix://quire/unit/ms`, an operation with a clock parameter `c`, a unit-typed parameter `b` and a unit-typed result, an alias `Stopwatch` of `Clock` and an alias `Span` of `ix://quire/unit/ms`, the JSON Schema backend writes `x` and `w` as `{"type": "null", "x-agent-ix-clock": true}` with `x` in `required` and `w` not, `d` and `Span` as `{"type": "string", "pattern": P, "x-agent-ix-unit": "ms"}`, the operation's parameters and result in `x-agent-ix-operations` by the same schemas, and `Stopwatch` as the clock schema; `P` admits `"0"`, `"-3"`, `"1/1000"`, `"-3/2"` and, by shape, `"2/4"`, and rejects `"1/1"`, `"-0"`, `"0/5"`, `"01/3"`, `"1.5"` and `"1/-2"`; the normalization check refuses `"2/4"` and `"-6/9"` with `NON_CANONICAL_RATIONAL` and accepts `"1/1000"` and `"-3/2"`. The Python backends generate from that schema the attributes `x: None`, `w: None = None`, `d: str` constrained by `P` and by `check_canonical_rational`, which refuses `"2/4"` with a message beginning `NON_CANONICAL_RATIONAL`, the module constant `QUANTITY_UNITS` with `Call.d`, `Call.reset.b` and `Span` mapped to `ms`, and no `Any`. | Test (TC-1856) |
 | FR-146-AC-12 | Over AC-11's document the Rust backend writes `x: crate::support::Clock`, `w: Option<Clock>` (`default`, `skip_serializing_if`), `d: crate::support::Rational`, newtypes over each for the aliases, trait methods taking and returning them, and `QUANTITY_UNITS` entries for `Call.d`, the operation's parameter and result and `Span`; an instance serializes `x` as `null`, omits an absent `w`, and writes `d` as `"1/1000"`; deserializing `"2/4"` is rejected with `NON_CANONICAL_RATIONAL` and a numerator of 2^127 is rejected. The TypeScript backend writes `readonly x: null`, `readonly w?: null`, `d: string`, the aliases as type aliases to `null` and `string`, and a validator that accepts `null` for `x`, rejects `0` for `x`, accepts `"1/1000"` for `d` and rejects `"2/4"` with `NON_CANONICAL_RATIONAL` and `"1/1"`; the resolved type model keeps `typeRef` `ix://quire/unit/ms` on `d`. | Test (TC-1857) |
 | FR-146-AC-13 | Over AC-11's document the SysML v2 backend writes `attribute def Clock;` once, `attribute x : Clock;` and `attribute w : Clock;` on `Call`, `attribute d : ScalarValues::Real;` (the `Real` of the Kernel Data Type Library `ScalarValues` package) with a `doc` comment naming `ms`, one non-blocking `agent-ix.sysml-target.DECLARED_LOSS` for each of `d`, the operation's unit-typed parameter and result, and `Span`, naming the member and the exact rational, and no blocking diagnostic; two runs are byte-identical. | Test (TC-1858) |
@@ -508,6 +601,8 @@ unit-reference constructs of a spec bundle to the IR constructs above.
 | FR-146-AC-16 | A document whose object type `Call` has clock fields `q` with multiplicity `{0, 3, true, false}`, `u` with `{0, 3, false, true}`, `b` with `{0, 3, false, false}`, `o` with `{0}` and no upper bound (ordered, not unique), an operation parameter and result of multiplicity `{0, 2, true, false}`, a sequence type `CS` whose `items` is `ix://quire/native/Clock` and a map type `CM` whose `values` is `ix://quire/native/Clock`, a field typed `CS` with multiplicity `{0, 2, true, false}`, and a record `Timer` with a clock field `x` held by a field with `{0, 2, true, false}` is accepted by every reader with no diagnostic and no `types[]` node for any clock; a clock field with multiplicity `{3, 1}` raises exactly `INVALID_MULTIPLICITY`. | Test (TC-1860) |
 | FR-146-AC-17 | Over AC-16's document the JSON Schema backend writes `q` as `{"type": "array", "items": {"type": "null", "x-agent-ix-clock": true}, "minItems": 0, "maxItems": 3}`, `u` with `"uniqueItems": true`, `CM` as an object with the clock schema as `additionalProperties`; the Rust backend writes `Vec<Clock>` for `q`, `u`, `b` and `o` with `ordered` and `unique` in the member metadata and `BTreeMap<String, Clock>` for `CM`, and an instance with two elements serializes `q` as `[null, null]`; the TypeScript backend writes `readonly q: readonly null[]` and a validator that accepts `[null, null]`, rejects `[null, null, null, null]` for `q` and rejects `[1]`; the Python backends write `list[None]` and `dict[str, None]`; the SysML v2 backend writes `attribute q : Clock[0..3] ordered;`; none raises `UNDECLARED_LOSS`, every file is written, and two runs are byte-identical. | Test (TC-1861) |
 | FR-146-AC-18 | A spec bundle whose entity has field rows `q | Clock | 0..3`, `o | Clock | *` and `p | Clock | 2..4`, an operation with a parameter `c | Clock | *`, a type alias artifact `Ticks` over a sequence of `Clock` and a sequence artifact `ClockList` over `Clock` lifts to fields with `lower` and `upper` `0`/`3`, `0`/absent and `2`/`4`, the parameter with `lower` 0 and no `upper`, the alias and the sequence type, typeRef `ix://quire/native/Clock` throughout and no node for `Clock`, and `decide` accepts the document; a `Clock` row with a `min` constraint still raises `CONSTRAINT_NOT_APPLICABLE` at the row. | Test (TC-1862) |
+| FR-146-AC-19 | Over the `acme/rpc` document of FR-146-AC-10 with further base dimensions `Length`, `Distance` and `Seconds`, derived dimensions `Speed` (terms `Length` 1, `Time` -1), `Velocity` (terms `Distance` 1, `Time` -1) and `Dur` (term `Time` 1), the equivalences `Dur`/`Time` and `Length`/`Time` are accepted (equal maps; two base dimensions), `Speed`/`Velocity` is refused `INVALID_UNIT_GRAPH` at `/dimensionEquivalences/<k>/dimensions` naming both dimensions when no `Distance`/`Length` pair is declared and accepted when one is, `Speed`/`Time` is refused `INVALID_UNIT_GRAPH` there, and the pairs `Duration`/`Seconds`, `Duration`/`Time` and `Seconds`/`Time` are accepted together. The identity `ix://acme/rpc/dimension-equivalence/Time-Duration` over `[Duration, Time]`, the pair `[Duration, Time]` spelled `[Time, Duration]`, and the pair `[Time, Time]` each refuse `INVALID_UNIT_GRAPH` (at `/identity`, at `/dimensions` and at `/dimensions` respectively); the entries `[Duration, ix://acme/rpc/dimension/Nothing]` and `[Duration, ix://acme/flow/dimension/Time]` each refuse `UNRESOLVED_DIMENSION_REF` at `/dimensionEquivalences/<k>/dimensions/1`; a second node relating the pair `Duration`/`Time` refuses `DUPLICATE_IDENTITY` at its `/identity`. | Test (TC-1865) |
+| FR-146-AC-20 | Two documents differing only in the order of two `dimensionEquivalences` nodes have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; a document with none serializes with no `dimensionEquivalences` member and every committed positive fixture keeps its bytes and fingerprint; adding an equivalence classifies additive, and removing one or changing an entry of its `dimensions` classifies breaking. A field typed `ix://quire/unit/acme/rpc/s`, a field typed `ix://quire/unit/acme/flow/s` and an operation whose parameter and result are typed by the two are accepted by every reader with no diagnostic, because a reader compares no two quantity types. | Test (TC-1865) |
 
 ## Dependencies
 
