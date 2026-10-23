@@ -178,13 +178,13 @@ construct's disposition is written down rather than decided at the keyboard.
 | `float32` | `f32` | finite JSON number |
 | `float64` | `f64` | finite JSON number |
 | `string` | `String` | JSON string |
-| `bytes` | refused — see below | — |
+| `bytes` | `Bytes`, the generated octet-sequence newtype | JSON string, the Bytes wire form of [FR-032](./FR-032-define-the-kernel-scalar-library.md): canonical padded standard base64 |
 | `date` | `Date`, the generated RFC 3339 full-date newtype | JSON string |
 | `datetime` | `DateTime`, the generated RFC 3339 date-time newtype | JSON string |
 | `duration` | `Duration`, the generated ISO 8601 duration newtype | JSON string |
 | `uuid` | `Uuid`, the generated 8-4-4-4-12 newtype | JSON string |
 
-- The `date`, `datetime`, `duration`, and `uuid` scalar rows SHALL each declare
+- The `bytes`, `date`, `datetime`, `duration`, and `uuid` scalar rows SHALL each declare
   their generated support type in `mapping-table.json`. When a `kind: scalar`
   definition derives that same support-type identifier, the backend SHALL map
   the definition onto the existing `crate::support::<Support>` type rather than
@@ -193,16 +193,13 @@ construct's disposition is written down rather than decided at the keyboard.
   insertion. A scalar whose derived name or scalar selector does not match the
   row remains a user declaration and is governed by FR-055's collision rule.
 
-- If a type definition declares `scalar: "bytes"`, then the backend SHALL raise
-  a blocking `agent-ix.rust-backend.UNDECLARED_WIRE_FORM` and SHALL emit no
-  file. No published artifact states the JSON representation of `bytes`:
-  `semantic-ir.schema.json` names it only as a kernel scalar, `common.schema.json`
-  declares no `contentEncoding`, `contracts-v1.md` does not mention it, and no
-  fixture or corpus case carries a `bytes` value. Choosing base64 or an integer
-  array here would be this backend deciding a cross-language wire form that
-  belongs to the representation and wire projections and to the issue #7 parity
-  gate. The refusal is recorded, and the decision is filed as issue #58 rather than
-  taken here.
+- The `Bytes` support type SHALL hold the octet sequence, SHALL serialize as
+  the Bytes wire form of FR-032 and SHALL refuse on deserialization every
+  string outside that instance domain (a character outside the alphabet,
+  whitespace, missing or surplus padding, a length that is not a multiple of
+  four, non-zero unused bits). The encoding and decoding are generated into
+  `src/support.rs`, so `serde` remains the only runtime dependency. A
+  `minLength` or `maxLength` over a `bytes` subject bounds the octet count.
 - `BTreeMap` and the fixed key type `String` SHALL be used for every `map`,
   because the IR declares no key type and `BTreeMap` serializes in one order.
 - A `union` SHALL be externally tagged. The IR declares no discriminator
@@ -363,7 +360,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-054-AC-1 | Every one of the eight `kind` values selects its table row, keyed on `kind` alone, verified by generating from a document declaring one type of each kind and matching the emitted declaration form. | Test (TC-645) |
-| FR-054-AC-2 | Each of the eleven supported kernel scalars maps to its declared Rust base, and a `bytes` scalar raises `UNDECLARED_WIRE_FORM` and writes no file. | Test (TC-646) |
+| FR-054-AC-2 | Each of the twelve kernel scalars maps to its declared Rust base. | Test (TC-646) |
 | FR-054-AC-3 | Each of the eight combinations of collection × nullable × presence produces exactly the Rust member type and serde attribute set the composition table states, the eight are pairwise distinct, and boundedness changes none of them. | Test (TC-647) |
 | FR-054-AC-4 | For a field that is both `optional` and `nullable`, an absent member deserializes to `None`, a present `null` deserializes to `Some(Nullable::Null)`, the two are distinguishable, and each re-serializes to the bytes it came from. | Test (TC-648) |
 | FR-054-AC-5 | A `union` whose variants carry payloads round-trips externally tagged, a variant with no `payloadType` round-trips as a unit variant, and a `payloadType` on an `enum` variant raises `PAYLOAD_ON_ENUM_VARIANT`. | Test (TC-649) |
@@ -383,6 +380,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | FR-054-AC-19 | Generating the constructs fixture renders the abstract `Party` as a trait of accessors with no struct or constructor and `Order` implementing it; a `reference` type targeting `Party` generates; a field naming `Party`, and an `Order` field redefining an inherited field with another Rust type, are each refused with `UNSUPPORTED_CONSTRUCT` and no file. | Test (TC-1778) |
 | FR-054-AC-20 | A repository operation whose frame is empty renders a method taking `&self`, and an operation with no frame renders a method taking `&mut self`. | Test (TC-1780) |
 | FR-054-AC-21 | An alias carrying `min` `"0"` and `max` `"18446744073709551615"` over an unbounded `integer` definition renders as a newtype over `u64` while its target renders over `i64`; a safe `integer` field with semantic `defaultValue` `"42"` deserializes an absent member as `42` and raises no `UNREPRESENTABLE_DEFAULT_VALUE`, and a `decimal(5, 2)` field with `defaultValue` `"1.5"` serializes the default as `"1.50"`. | Test |
+| FR-054-AC-22 | A `scalar: "bytes"` definition and a field of that type generate the `Bytes` support type; the values with the octets `00 ff` and `01 02 03 04` serialize as `"AP8="` and `"AQIDBA=="`, the empty sequence as `""`, and `"AP8="`, `"AQIDBA=="` and `""` deserialize to them; `"AP8"`, `"AP9="`, `"A P8="` and `"-_8="` each fail to deserialize with a serde error and build no value; the generated crate's `Cargo.toml` still names `serde` as its only dependency. | Test (TC-646) |
 
 ## Dependencies
 
