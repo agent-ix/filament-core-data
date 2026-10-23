@@ -2187,14 +2187,28 @@ function unionImpls(type) {
 	);
 	for (const variant of type.variants) {
 		if (variant.payload === undefined) {
+			const pattern = `${type.typeName}::${variant.ident}`;
+			const args = ["serializer", rustString(variant.name)];
+			const arm = callArm(
+				"            ",
+				pattern,
+				"crate::support::serialize_adjacent_unit",
+				args,
+				",",
+			);
 			lines.push(
-				...callArm(
-					"            ",
-					`${type.typeName}::${variant.ident}`,
-					"crate::support::serialize_adjacent_unit",
-					["serializer", rustString(variant.name)],
-					",",
-				),
+				...(arm.length === 1
+					? arm
+					: [
+							`            ${pattern} => {`,
+							...callLines(
+								"                ",
+								"crate::support::serialize_adjacent_unit",
+								args,
+								"",
+							),
+							"            }",
+						]),
 			);
 			continue;
 		}
@@ -2269,21 +2283,27 @@ function unionImpls(type) {
 			lines.push(
 				`            ${rustString(variant.name)} => {`,
 				"                if buffered.is_some() {",
-				'                    return Err(serde::de::Error::custom("a payload-free variant must omit its value member"));',
+				...callLines(
+					"                    ",
+					"return Err(serde::de::Error::custom",
+					[rustString("a payload-free variant must omit its value member")],
+					");",
+				),
 				"                }",
 				`                ${type.typeName}::${variant.ident}`,
-				"            },",
+				"            }",
 			);
 			continue;
 		}
 		lines.push(
 			`            ${rustString(variant.name)} => {`,
 			"                let payload = match buffered.take() {",
-			"                    Some(value) => crate::support::deserialize_semantic(value).map_err(serde::de::Error::custom)?,",
+			"                    Some(value) => crate::support::deserialize_semantic(value)",
+			"                        .map_err(serde::de::Error::custom)?,",
 			"                    None => crate::support::read_adjacent_payload(&mut access)?,",
 			"                };",
 			`                ${type.typeName}::${variant.ident}(payload)`,
-			"            },",
+			"            }",
 		);
 	}
 	lines.push(

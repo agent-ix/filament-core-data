@@ -698,7 +698,7 @@ describe("TC-713 the emitted call rendering is a formatter fixed point", () => {
 		// line, which `rustfmt` rewrites three different ways depending on
 		// which of the arm, the block body, or the nested call fits. This
 		// fixture reaches all three shapes: the `SemanticType::identity` arms,
-		// a string enum's tag arms in both directions, and an externally tagged
+		// a string enum's tag arms in both directions, and an adjacently tagged
 		// union's serializer, visitor and catch-all.
 		const { emitCrate } = await import(modulePathOf("crate.mjs"));
 		const bundle = readJson(
@@ -743,9 +743,11 @@ describe("TC-713 the emitted call rendering is a formatter fixed point", () => {
 			expect(bodies).toMatch(
 				/SemanticType::LongIdentityScalarForMatchArmWidth => \{\n/,
 			);
-			expect(bodies).toMatch(/=> \{\n\s+serializer\.serialize_str\(/);
 			expect(bodies).toMatch(
-				/::Unknown\(\n\s+crate::support::UnknownVariant::/,
+				/::Payload\(payload\) => \{\n\s+crate::support::serialize_adjacent_payload\(/,
+			);
+			expect(bodies).toMatch(
+				/::Unknown\(unknown\) => \{\n\s+unknown\.serialize\(serializer\)/,
 			);
 
 			execFileSync("rustfmt", ["--check", ...sources], {
