@@ -507,6 +507,8 @@ const IR_OPTIONAL_MEMBERS: &[&str] = &[
     "extensions",
     "constructs",
     "populations",
+    "dimensions",
+    "units",
 ];
 const NORMALIZED_CANONICALIZATION_MEMBERS: &[&str] = &["algorithm", "digest"];
 /// The members of one `constructs` entry.
@@ -685,6 +687,100 @@ fn identity_entries<'a>(
     Some(items)
 }
 
+fn dimension_unit_schema(ir: &Json, at: &str, f: &mut Findings) {
+    for (name, is_dimension) in [("dimensions", true), ("units", false)] {
+        let Some(value) = ir.get(name) else { continue };
+        let list_at = child(at, name);
+        if !expect_array(value, &list_at, name, f) {
+            continue;
+        }
+        for (position, node) in value.as_array().unwrap_or(&[]).iter().enumerate() {
+            let node_at = index(&list_at, position);
+            if !expect_object(node, &node_at, name, f) {
+                continue;
+            }
+            let required: &[&str] = if is_dimension {
+                &["identity", "name", "base", "terms", "origin"]
+            } else {
+                &["identity", "name", "dimension", "scale", "offset", "origin"]
+            };
+            require_members(node, &node_at, required, f);
+            let mut allowed = required.to_vec();
+            if !is_dimension {
+                allowed.push("target");
+            }
+            forbid_extra(node, &node_at, &allowed, f);
+            for member in ["identity", "dimension", "target"] {
+                if node.has(member) {
+                    expect_shape(
+                        node.get(member),
+                        &child(&node_at, member),
+                        is_semantic_identity,
+                        "a semantic identity",
+                        f,
+                    );
+                }
+            }
+            expect_shape(
+                node.get("name"),
+                &child(&node_at, "name"),
+                |name| {
+                    let mut bytes = name.bytes();
+                    bytes
+                        .next()
+                        .is_some_and(|first| first.is_ascii_alphabetic())
+                        && bytes.all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+                },
+                "a dimension or unit name",
+                f,
+            );
+            if let Some(origin) = node.get("origin") {
+                origin_schema(origin, &child(&node_at, "origin"), f);
+            }
+            if is_dimension {
+                expect_bool(node.get("base"), &child(&node_at, "base"), "base", f);
+                if let Some(terms) = node.get("terms") {
+                    let terms_at = child(&node_at, "terms");
+                    if expect_array(terms, &terms_at, "terms", f) {
+                        for (offset, term) in terms.as_array().unwrap_or(&[]).iter().enumerate() {
+                            let term_at = index(&terms_at, offset);
+                            if !expect_object(term, &term_at, "a dimension term", f) {
+                                continue;
+                            }
+                            require_members(term, &term_at, &["dimension", "exponent"], f);
+                            forbid_extra(term, &term_at, &["dimension", "exponent"], f);
+                            expect_shape(
+                                term.get("dimension"),
+                                &child(&term_at, "dimension"),
+                                is_semantic_identity,
+                                "a dimension identity",
+                                f,
+                            );
+                            expect_string(
+                                term.get("exponent"),
+                                &child(&term_at, "exponent"),
+                                0,
+                                "an exponent string",
+                                f,
+                            );
+                        }
+                    }
+                }
+            } else {
+                for member in ["scale", "offset"] {
+                    expect_string(
+                        node.get(member),
+                        &child(&node_at, member),
+                        0,
+                        "a rational string",
+                        f,
+                    );
+                }
+            }
+        }
+    }
+}
+
 fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
     if !expect_object(ir, at, "a semantic IR document", f) {
         return;
@@ -766,6 +862,7 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
             }
         }
     }
+    dimension_unit_schema(ir, at, f);
     if let Some(populations) = ir.get("populations") {
         let populations_at = child(at, "populations");
         if expect_array(populations, &populations_at, "populations", f) {
@@ -1536,6 +1633,43 @@ const FIELD_REQUIRED: &[&str] = &[
     "origin",
 ];
 
+/// Whether a member names a well-formed consumer-owned quantity type.
+pub(crate) fn is_quantity_type_ref(identity: &str) -> bool {
+    fn unit_name(name: &str) -> bool {
+        let mut bytes = name.bytes();
+        bytes
+            .next()
+            .is_some_and(|first| first.is_ascii_alphabetic())
+            && bytes.all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+    }
+    fn package_segment(name: &str) -> bool {
+        let mut bytes = name.bytes();
+        bytes
+            .next()
+            .is_some_and(|first| first.is_ascii_lowercase() || first.is_ascii_digit())
+            && bytes.all(|byte| {
+                byte.is_ascii_lowercase()
+                    || byte.is_ascii_digit()
+                    || matches!(byte, b'.' | b'_' | b'-')
+            })
+    }
+    let Some(name) = identity.strip_prefix("ix://quire/unit/") else {
+        return false;
+    };
+    let mut parts = name.rsplit('/');
+    parts.next().is_some_and(unit_name)
+        && parts.all(|part| unit_name(part) || package_segment(part))
+}
+
+fn special_member_shape(field: &Json) -> bool {
+    field
+        .get("typeRef")
+        .and_then(Json::as_str)
+        .is_some_and(|identity| {
+            identity == "ix://quire/native/Clock" || is_quantity_type_ref(identity)
+        })
+}
+
 fn field_schema(field: &Json, at: &str, f: &mut Findings) {
     if !expect_object(field, at, "a field", f) {
         return;
@@ -1590,7 +1724,7 @@ fn field_schema(field: &Json, at: &str, f: &mut Findings) {
         f,
     );
     let default_kind = field.get("defaultKind").and_then(Json::as_str);
-    match default_kind {
+    match default_kind.filter(|_| !special_member_shape(field)) {
         Some("none") if field.has("defaultValue") => f.push(
             at,
             "a field whose defaultKind is none carries no defaultValue",
@@ -1617,13 +1751,23 @@ fn field_schema(field: &Json, at: &str, f: &mut Findings) {
         "a unit is a non-empty run of printable ASCII",
         f,
     );
-    expect_enum(
-        field.get("textProfile"),
-        &child(at, "textProfile"),
-        TEXT_PROFILES,
-        "textProfile",
-        f,
-    );
+    if special_member_shape(field) {
+        expect_string(
+            field.get("textProfile"),
+            &child(at, "textProfile"),
+            0,
+            "a text profile string",
+            f,
+        );
+    } else {
+        expect_enum(
+            field.get("textProfile"),
+            &child(at, "textProfile"),
+            TEXT_PROFILES,
+            "textProfile",
+            f,
+        );
+    }
     if let Some(constraints) = field.get("constraints") {
         let constraints_at = child(at, "constraints");
         if expect_array(constraints, &constraints_at, "constraints", f) {
