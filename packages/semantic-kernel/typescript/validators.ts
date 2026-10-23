@@ -443,6 +443,16 @@ function checkConstraintDecl(
 	}
 	switch (tag.value) {
 		case "EnumValuesConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -463,6 +473,16 @@ function checkConstraintDecl(
 			break;
 		}
 		case "ExclusiveMaxConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -483,6 +503,16 @@ function checkConstraintDecl(
 			break;
 		}
 		case "ExclusiveMinConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -503,6 +533,16 @@ function checkConstraintDecl(
 			break;
 		}
 		case "FormatConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -523,6 +563,16 @@ function checkConstraintDecl(
 			break;
 		}
 		case "MaxConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -543,6 +593,16 @@ function checkConstraintDecl(
 			break;
 		}
 		case "MaxLengthConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -563,6 +623,16 @@ function checkConstraintDecl(
 			break;
 		}
 		case "MinConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -583,6 +653,16 @@ function checkConstraintDecl(
 			break;
 		}
 		case "MinLengthConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -603,6 +683,16 @@ function checkConstraintDecl(
 			break;
 		}
 		case "NonEmptyConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -623,6 +713,16 @@ function checkConstraintDecl(
 			break;
 		}
 		case "PatternConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -643,6 +743,16 @@ function checkConstraintDecl(
 			break;
 		}
 		case "UniqueConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -1910,6 +2020,16 @@ function checkEnumValuesConstraintValues(
 	}
 	switch (tag.value) {
 		case "boolean": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -1930,6 +2050,16 @@ function checkEnumValuesConstraintValues(
 			break;
 		}
 		case "number": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -1950,6 +2080,16 @@ function checkEnumValuesConstraintValues(
 			break;
 		}
 		case "string": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -2420,6 +2560,16 @@ function checkExclusiveMaxConstraintValue(
 	}
 	switch (tag.value) {
 		case "number": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -2440,6 +2590,16 @@ function checkExclusiveMaxConstraintValue(
 			break;
 		}
 		case "string": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -2860,6 +3020,16 @@ function checkExclusiveMinConstraintValue(
 	}
 	switch (tag.value) {
 		case "number": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -2880,6 +3050,16 @@ function checkExclusiveMinConstraintValue(
 			break;
 		}
 		case "string": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -4148,6 +4328,16 @@ function checkMaxConstraintValue(
 	}
 	switch (tag.value) {
 		case "number": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -4168,6 +4358,16 @@ function checkMaxConstraintValue(
 			break;
 		}
 		case "string": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -4859,6 +5059,16 @@ function checkMinConstraintValue(
 	}
 	switch (tag.value) {
 		case "number": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -4879,6 +5089,16 @@ function checkMinConstraintValue(
 			break;
 		}
 		case "string": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -7991,6 +8211,16 @@ function checkTypeRefTarget(
 	}
 	switch (tag.value) {
 		case "KernelScalar": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(
@@ -8011,6 +8241,16 @@ function checkTypeRefTarget(
 			break;
 		}
 		case "SemanticId": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
 			const payload = ownMember(candidate, "value");
 			if (payload.state !== "value") {
 				fail(

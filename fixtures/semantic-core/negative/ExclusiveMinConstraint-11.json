@@ -3,6 +3,11 @@
 	"reason": "array operand",
 	"value": {
 		"keyword": "exclusiveMin",
-		"value": [1]
+		"value": {
+			"kind": "number",
+			"value": [
+				1
+			]
+		}
 	}
 }

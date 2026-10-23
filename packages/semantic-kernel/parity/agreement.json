@@ -8,8 +8,8 @@
 		"An undecided answer is counted unmet, never as a pass."
 	],
 	"packages": ["json-schema", "typescript", "python", "rust"],
-	"documents": 113,
-	"agreeing": 91,
+	"documents": 114,
+	"agreeing": 92,
 	"byProperty": {
 		"serialized-member-names": {
 			"documents": 95,
@@ -24,8 +24,8 @@
 			"agreeing": 8
 		},
 		"unknown-member-states": {
-			"documents": 5,
-			"agreeing": 5
+			"documents": 6,
+			"agreeing": 6
 		},
 		"defaults": {
 			"documents": 8,
@@ -3465,6 +3465,36 @@
 					"resultState": "success",
 					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
+				}
+			}
+		},
+		{
+			"document": "PAR-0114",
+			"declaration": "TypeRef",
+			"class": "negative",
+			"properties": ["unknown-member-states"],
+			"decidedBy": 4,
+			"agreement": true,
+			"decisions": {
+				"json-schema": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"typescript": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"python": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
+				},
+				"rust": {
+					"resultState": "invalid",
+					"agreesWithContract": true,
+					"unknownFate": "rejected"
 				}
 			}
 		}

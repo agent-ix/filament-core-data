@@ -18,7 +18,31 @@ import {
 	validateClauseRef,
 	validateFieldDecl,
 	validateMultiplicity,
+	validateTypeRefTarget,
 } from "../packages/semantic-kernel/typescript/validators.js";
+
+/** Traces: IR-994; FR-054-AC-5, FR-100-AC-17. */
+it("rejects undeclared members on generated adjacent union branches", () => {
+	expect(
+		validateTypeRefTarget({ kind: "KernelScalar", value: "String" }).ok,
+	).toBe(true);
+	const extra = validateTypeRefTarget({
+		kind: "KernelScalar",
+		value: "String",
+		extra: 1,
+	});
+	expect(extra.ok).toBe(false);
+	if (!extra.ok) {
+		expect(extra.errors).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({
+					pointer: "/extra",
+					code: "agent-ix.typescript-backend.UNKNOWN_MEMBER",
+				}),
+			]),
+		);
+	}
+});
 
 import {
 	BACKEND as RUST_BACKEND,
@@ -1321,6 +1345,7 @@ describe("TC-1086..1097 the kernel parity measurement and its gates (FR-090)", (
 		const kernel = inventory as {
 			models: string[];
 			unions: string[];
+			wireUnions: string[];
 			enums: string[];
 			scalars: string[];
 		};

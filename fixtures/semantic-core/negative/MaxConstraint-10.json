@@ -3,6 +3,9 @@
 	"reason": "boolean operand",
 	"value": {
 		"keyword": "max",
-		"value": true
+		"value": {
+			"kind": "number",
+			"value": true
+		}
 	}
 }

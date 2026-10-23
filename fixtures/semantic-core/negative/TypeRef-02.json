@@ -2,6 +2,9 @@
 	"model": "TypeRef",
 	"reason": "target is neither SemanticId nor KernelScalar",
 	"value": {
-		"target": "Whatever"
+		"target": {
+			"kind": "KernelScalar",
+			"value": "Whatever"
+		}
 	}
 }

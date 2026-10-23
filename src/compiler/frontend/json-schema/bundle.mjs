@@ -27,8 +27,8 @@ function diagnostic(entry, message, locus) {
  * Checks a bundle declaration against the grammar it claims to package.
  *
  * The expected document set is derived from the authored inventory, one
- * `<name>.json` per model, union, internal wire union, enum and scalar, and compared with the
- * enumeration the bundle declares. Returns diagnostics rather than throwing, so
+ * `<name>.json` per model, public union, internal wire union, enum and scalar,
+ * and compared with the enumeration the bundle declares. Returns diagnostics rather than throwing, so
  * one run reports every disagreement instead of the first.
  *
  * @param {Record<string, unknown>} declaration

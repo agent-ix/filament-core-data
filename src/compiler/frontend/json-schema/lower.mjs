@@ -116,7 +116,13 @@ function adjacentBranch(branch) {
 		payload !== undefined &&
 		(!payload ||
 			typeof payload !== "object" ||
-			!("$ref" in payload || barePrimitive(payload)))
+			!(
+				(typeof payload.$ref === "string" &&
+					Object.keys(payload).every(
+						(key) => key === "$ref" || key === "x-agent-ix-semantic-id",
+					)) ||
+				barePrimitive(payload)
+			))
 	)
 		return null;
 	return { name: tag.const, payload };
@@ -145,6 +151,46 @@ function adjacentVariants(branches, owner, file, minted) {
 		}
 		return completeVariant(owner, { name: branch.name, payloadType }, file);
 	});
+}
+
+/** Find `oneOf` keywords outside the three adjacent-union positions. */
+function misplacedOneOf(schema) {
+	const pointers = [];
+	const walk = (node, at, position) => {
+		if (!node || typeof node !== "object") return;
+		if (Array.isArray(node)) {
+			node.forEach((item, index) => {
+				walk(item, `${at}/${index}`, "other");
+			});
+			return;
+		}
+		for (const [key, child] of Object.entries(node)) {
+			const pointer = `${at}/${key}`;
+			if (key === "oneOf") {
+				if (!["top", "property", "item"].includes(position))
+					pointers.push(pointer);
+				walk(child, pointer, "other");
+			} else if (
+				key === "properties" &&
+				position === "top" &&
+				child &&
+				typeof child === "object"
+			) {
+				for (const [name, property] of Object.entries(child))
+					walk(property, `${pointer}/${name}`, "property");
+			} else if (
+				key === "items" &&
+				position === "property" &&
+				node.type === "array"
+			) {
+				walk(child, pointer, "item");
+			} else {
+				walk(child, pointer, "other");
+			}
+		}
+	};
+	walk(schema, "", "top");
+	return pointers;
 }
 
 /**
@@ -295,6 +341,23 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 
 	/** @type {string | null} */
 	let typeRef = null;
+	if (
+		schema &&
+		Object.hasOwn(schema, "oneOf") &&
+		(!Array.isArray(schema.oneOf) ||
+			Object.keys(schema).some(
+				(key) => key !== "oneOf" && key !== "x-agent-ix-semantic-id",
+			))
+	) {
+		out.push(
+			diag(
+				DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+				`oneOf at ${at} is not an adjacent union position`,
+				`${at}/oneOf`,
+			),
+		);
+		return null;
+	}
 
 	if (schema && typeof schema === "object" && "$ref" in schema) {
 		typeRef = identityOf(nameFromUrl(schema.$ref));
@@ -306,7 +369,7 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 				diag(
 					DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
 					`oneOf branches at ${at} are not closed adjacent variants`,
-					at,
+					`${at}/oneOf`,
 				),
 			);
 			return null;
@@ -376,6 +439,23 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 		typeRef = mint({ kind: "scalar", scalar: "integer", constraints });
 	} else if (schema && schema.type === "array") {
 		const items = schema.items;
+		if (
+			items &&
+			Object.hasOwn(items, "oneOf") &&
+			(!Array.isArray(items.oneOf) ||
+				Object.keys(items).some(
+					(key) => key !== "oneOf" && key !== "x-agent-ix-semantic-id",
+				))
+		) {
+			out.push(
+				diag(
+					DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+					`oneOf at ${at}/items is not an adjacent array item`,
+					`${at}/items/oneOf`,
+				),
+			);
+			return null;
+		}
 		if (items && typeof items === "object" && "$ref" in items) {
 			typeRef = identityOf(nameFromUrl(items.$ref));
 		} else if (items && Array.isArray(items.oneOf)) {
@@ -386,7 +466,7 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 					diag(
 						DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
 						`array items at ${at} are not closed adjacent oneOf variants`,
-						at,
+						`${at}/items/oneOf`,
 					),
 				);
 				return null;
@@ -534,6 +614,15 @@ export function lowerBundle(documents, options = {}) {
 				),
 			);
 		}
+		for (const pointer of misplacedOneOf(schema)) {
+			out.push(
+				diag(
+					DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+					`oneOf at ${file}${pointer} is outside an adjacent union position`,
+					`${file}${pointer}`,
+				),
+			);
+		}
 	}
 	if (out.length > 0) return { diagnostics: Object.freeze(out) };
 
@@ -553,6 +642,29 @@ export function lowerBundle(documents, options = {}) {
 		}
 		/** @type {Record<string, unknown>[]} */
 		const minted = [];
+		if (
+			Object.hasOwn(schema, "oneOf") &&
+			(!Array.isArray(schema.oneOf) ||
+				Object.keys(schema).some(
+					(key) =>
+						![
+							"$schema",
+							"$id",
+							"description",
+							"oneOf",
+							"x-agent-ix-semantic-id",
+						].includes(key),
+				))
+		) {
+			out.push(
+				diag(
+					DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+					`${file} oneOf is not a top-level adjacent union`,
+					`${file}/oneOf`,
+				),
+			);
+			continue;
+		}
 
 		if (schema.type === "object") {
 			// A sealed object admits no member it did not evaluate. Defaulting a

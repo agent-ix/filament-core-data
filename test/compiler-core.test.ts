@@ -6681,6 +6681,139 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 		).toContain("agent-ix.compiler.UNSUPPORTED_SCHEMA_SHAPE");
 	});
 
+	/** Traces: IR-994; FR-082-AC-3. */
+	it("refuses non-adjacent oneOf shapes at their oneOf pointer", async () => {
+		const { lowerBundle } = await import(
+			"../src/compiler/frontend/json-schema/lower.mjs"
+		);
+		const valid = (kind: string) => ({
+			type: "object",
+			properties: {
+				kind: { type: "string", const: kind },
+				value: { type: "string" },
+			},
+			required: ["kind", "value"],
+			unevaluatedProperties: { not: {} },
+		});
+		const cases: [string, object, string][] = [
+			["one branch", { oneOf: [valid("A")] }, "Choice.json/oneOf"],
+			[
+				"duplicate tags",
+				{ oneOf: [valid("A"), valid("A")] },
+				"Choice.json/oneOf",
+			],
+			[
+				"non-object",
+				{ oneOf: [{ type: "string" }, valid("B")] },
+				"Choice.json/oneOf",
+			],
+			[
+				"missing kind",
+				{
+					oneOf: [
+						{ ...valid("A"), properties: { value: { type: "string" } } },
+						valid("B"),
+					],
+				},
+				"Choice.json/oneOf",
+			],
+			[
+				"extra property",
+				{
+					oneOf: [
+						{
+							...valid("A"),
+							properties: {
+								...valid("A").properties,
+								extra: { type: "string" },
+							},
+						},
+						valid("B"),
+					],
+				},
+				"Choice.json/oneOf",
+			],
+			[
+				"mismatched required",
+				{ oneOf: [{ ...valid("A"), required: ["kind"] }, valid("B")] },
+				"Choice.json/oneOf",
+			],
+			[
+				"missing closure",
+				{
+					oneOf: [
+						{ ...valid("A"), unevaluatedProperties: undefined },
+						valid("B"),
+					],
+				},
+				"Choice.json/oneOf",
+			],
+			[
+				"extra branch keyword",
+				{ oneOf: [{ ...valid("A"), minLength: 1 }, valid("B")] },
+				"Choice.json/oneOf",
+			],
+			[
+				"unsupported payload",
+				{
+					oneOf: [
+						{
+							...valid("A"),
+							properties: { kind: { const: "A" }, value: { type: "array" } },
+						},
+						valid("B"),
+					],
+				},
+				"Choice.json/oneOf",
+			],
+			[
+				"oneOf on record",
+				{
+					type: "object",
+					properties: {},
+					required: [],
+					unevaluatedProperties: { not: {} },
+					oneOf: [valid("A"), valid("B")],
+				},
+				"Choice.json/oneOf",
+			],
+			[
+				"nested oneOf",
+				{
+					type: "object",
+					properties: {
+						nested: {
+							type: "string",
+							items: { oneOf: [valid("A"), valid("B")] },
+						},
+					},
+					required: [],
+					unevaluatedProperties: { not: {} },
+				},
+				"Choice.json/properties/nested/items/oneOf",
+			],
+		];
+		for (const [label, body, pointer] of cases) {
+			const result = lowerBundle([
+				[
+					"Choice.json",
+					{
+						$id: "https://schemas.example.test/Choice.json",
+						"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Choice",
+						...body,
+					},
+				],
+			]);
+			expect(result.document, label).toBeUndefined();
+			expect(result.diagnostics, label).toEqual([
+				expect.objectContaining({
+					code: "agent-ix.compiler.UNSUPPORTED_SCHEMA_SHAPE",
+					locus: pointer,
+				}),
+			]);
+		}
+	});
+
 	/** Traces: TC-1543; FR-082. */
 	it("preserves an all-reference JSON Schema anyOf as an untagged union", async () => {
 		const lower = await import(
