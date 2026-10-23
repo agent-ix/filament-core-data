@@ -163,6 +163,28 @@ fn a_field_typed_by_the_native_text_name_resolves() {
     assert_eq!(diagnostics("", &[text_field_type()]), vec![]);
 }
 
+/// Trace: FR-146-AC-1
+#[test]
+fn a_clock_field_is_admitted_without_a_declared_type() {
+    let record = format!(
+        r#"{{"identity":"ix://acme/pkg/Call","displayName":"Call","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{}]}}"#,
+        field("ix://acme/pkg/Call/x", "x", "ix://quire/native/Clock")
+    );
+    assert_eq!(diagnostics("", &[record]), vec![]);
+}
+
+/// Provenance: IR-990 keeps the field-only admission boundary. IR-991 owns
+/// the exact FR-146-AC-2 diagnostic for this refusal.
+#[test]
+fn a_clock_operation_parameter_remains_refused_at_its_type_ref() {
+    let parameter = field("ix://acme/pkg/T/op/x", "x", "ix://quire/native/Clock");
+    let record = framed(r#"{"modifies":[],"creates":[],"deletes":[]}"#)
+        .replace(r#""params":[]"#, &format!(r#""params":[{parameter}]"#));
+    let observed = diagnostics("", &[record]);
+    assert_eq!(observed.len(), 1);
+    assert_eq!(observed[0].0, "/ir/types/0/operations/0/params/0/typeRef");
+}
+
 /// Trace: FR-141
 #[test]
 fn the_native_text_name_is_the_string_scalar() {
