@@ -648,15 +648,18 @@ mod tests {
                 ),
             ),
         ];
-        let diagnostics = codes(&bundle(&dimensions, &[]));
-        assert!(diagnostics.contains(&(INVALID_GRAPH, "/ir/dimensions/1/terms".to_owned())));
-        assert!(diagnostics.contains(&(
-            INVALID_GRAPH,
-            "/ir/dimensions/1/terms/0/exponent".to_owned()
-        )));
-        assert!(diagnostics.contains(&(INVALID_GRAPH, "/ir/dimensions/1/terms/1".to_owned())));
-        assert!(diagnostics.contains(&(INVALID_GRAPH, "/ir/dimensions/1/terms/2".to_owned())));
-        assert!(diagnostics.contains(&(INVALID_GRAPH, "/ir/dimensions/1/terms/1".to_owned())));
+        assert_eq!(
+            codes(&bundle(&dimensions, &[])),
+            vec![
+                (INVALID_GRAPH, "/ir/dimensions/1/terms".to_owned()),
+                (
+                    INVALID_GRAPH,
+                    "/ir/dimensions/1/terms/0/exponent".to_owned()
+                ),
+                (INVALID_GRAPH, "/ir/dimensions/1/terms/1".to_owned()),
+                (INVALID_GRAPH, "/ir/dimensions/1/terms/2".to_owned()),
+            ]
+        );
     }
 
     #[test]
