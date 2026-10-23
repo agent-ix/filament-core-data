@@ -249,12 +249,15 @@ a field or operation parameter.
   field, of an operation parameter and of an operation result, where `<name>`
   is one or more segments joined by `/`. The last segment is the unit name and
   matches `^[A-Za-z][A-Za-z0-9_]*$`, the unit `name` pattern. Each earlier
-  segment matches that pattern or the package-identity segment pattern
-  `^[a-z0-9][a-z0-9._-]*$` of `common.schema.json#/$defs/packageIdentity`, so
-  that a package unit qualified by its package identity, such as
+  segment matches that pattern or `^[a-z0-9][a-z0-9._-]*$`, the pattern of
+  each `/`-separated segment of `common.schema.json#/$defs/packageIdentity`,
+  so that a package unit qualified by its package identity, such as
   `ix://quire/unit/agent-ix/time-units/ms`, is well formed (QSpec FR-322
   "Model-owned members" step 4 qualifies a package unit as
-  `<package identity>/<name>`).
+  `<package identity>/<name>`). The reader checks the form of each segment
+  only: it does not check that the earlier segments make up one package
+  identity or how many there are, so `ix://quire/unit/a-b/c.d/e-f/ms` is
+  also well formed, and the consumer's checked package resolves the name.
 - The reader SHALL NOT resolve `<name>` against the document's `units`: the
   name names a unit of the consumer's checked package, whose unit graph holds
   the document's units and the units the consumer's own source declares (QSpec
