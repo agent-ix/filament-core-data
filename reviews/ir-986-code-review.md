@@ -38,3 +38,11 @@ FAIL: valid constrained Bytes output does not compile. The focused generated-cra
 - Generated valid Bytes `maxLength: 3` crate: emitter state `success`, zero diagnostics; focused offline `cargo check` failed with E0599 on `chars()` and `as_str()`.
 - Reviewed Rust support template decoding, adjacent union generation, mapping/register/docs changes, and changed test assertions. No other independently verified major defect found.
 - No full aggregate gate run; focused failure is sufficient to establish this finding.
+
+## Dispositions
+
+Round 1, fix head f47fce599327016583436f235437c8ebe8a8c9a0. Focused `test/rust-bytes-union.test.ts` passed (1 Vitest test; generated Rust wire tests executed under the locked build wrapper). The changed generator uses octet lengths for Bytes; new tests exercise both length boundaries, nonEmpty and enumValues, and a generated record field.
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | Verified at the fix head by source inspection and the focused generated-crate Rust wire test. |

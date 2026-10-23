@@ -39,3 +39,12 @@ FAIL for the changed Bytes evidence: two stated acceptance paths have no falsify
 - `quoin matrix --repo /home/peter/dev/worktrees/fcd-ir986 --json` completed; targeted FR-032-AC-9 and FR-054-AC-22 have no recognized binders. Existing matrix has broad inherited untagged status, which is not scored as a new PR defect.
 - The new test contains a freeform `Traces:` comment and direct `support::Bytes` checks, but no constrained Blob nor record field typed Blob.
 - Plan completion: not assessed.
+
+## Dispositions
+
+Round 1, fix head f47fce599327016583436f235437c8ebe8a8c9a0. Focused `test/rust-bytes-union.test.ts` passed (1 Vitest test; generated Rust wire tests executed under the locked build wrapper). The changed generator uses octet lengths for Bytes; new tests exercise both length boundaries, nonEmpty and enumValues, and a generated record field.
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | Verified at the fix head by source inspection and the focused generated-crate Rust wire test. |
+| FND-002 | fixed | Verified at the fix head by source inspection and the focused generated-crate Rust wire test. |
