@@ -267,11 +267,11 @@ computed by `quire matrix` from those trace tags.
 | TC-245 | A `pattern` whose `regex` does not compile under `ecma-262` fails validation | Unit | P0 | FR-029-AC-8 |
 | TC-246 | `contractVersion: "1.3.0"` fails before emission; `2.0.0` with `source.dialect: avro` fails at `source.dialect` | Unit | P0 | FR-030-AC-5, FR-030-AC-6 |
 | TC-248 | `tsp compile packages/semantic-core` exits 0 with zero diagnostics under the pinned compiler | Compile | P0 | FR-031-AC-1 |
-| TC-249 | Compiled models, public unions, wireUnions, enums and scalars exactly equal inventory.json; all six named adjacent-envelope helpers have their specified purpose, and adding Entity, Any or another helper fails naming the undeclared declaration | Unit | P0 | FR-031-AC-2, NFR-014-AC-1 |
+| TC-249 | Compiled models, unions, enums and scalars exactly equal inventory.json; ConstraintDecl is reported under unions and each of the six named adjacent-envelope helpers under wireUnions, nowhere under unions; each helper has its specified purpose, and adding Entity, Any or another helper fails naming the undeclared declaration | Unit | P0 | FR-031-AC-2, NFR-014-AC-1 |
 | TC-250 | `ConstraintKeyword` and the eleven constraint models match the FR-029 keyword set and operand shapes; the emitted schema rejects a twelfth | Unit | P0 | FR-031-AC-3 |
 | TC-251 | `EdgeCategory`, `ConstraintKeyword`, and `ClauseLanguage` equal the IR schema enumerations in a contract test | Unit | P0 | FR-031-AC-4 |
 | TC-252 | No property in the compiled program resolves to `unknown` or an untyped record except `DefaultDecl.value` | Static | P0 | FR-031-AC-5, FR-031-CON-2 |
-| TC-253 | Adding one model at a new minor version changes only its emitted file and the bundle index; every prior file is byte-identical | Snapshot | P0 | FR-031-AC-6 |
+| TC-253 | Adding one independent model at a new minor changes only its schema and the bundle index; a deliberate wire-form change may change the owning model and referenced helper-union schemas, while unrelated prior schemas remain byte-identical | Snapshot | P0 | FR-031-AC-6 |
 | TC-254 | The grammar lives under `packages/semantic-core/` (every shipped path resolves inside it), is compiled by the root-installed toolchain, is published rather than `private`, and no `spikes/` file imports it | Static | P0 | FR-031-CON-1 |
 | TC-255 | `kernel-scalars.json` has exactly one entry per `KernelScalar` member and only `JsonObject` names `any` | Static | P0 | FR-032-AC-1 |
 | TC-256 | The semantic-core reader rejects `Decimal` without `decimal` and `String` with `decimal` | Unit | P0 | FR-032-AC-2 |
@@ -279,14 +279,14 @@ computed by `quire matrix` from those trace tags.
 | TC-258 | A twelfth enum member `Any` added to the source fails the inventory test | Unit | P0 | FR-032-AC-4, US-007-EX-3 |
 | TC-259 | Every `type.target` in the committed FR-006 `FieldDecl[]` fixture is `UUID`, `Integer`, `String`, `Timestamp`, `JsonObject`, or a `SemanticId` | Unit | P1 | FR-032-AC-5 |
 | TC-260 | A `KernelScalar` addition classifies additive; removal or re-representation classifies breaking, keyed on member name | Unit | P0 | FR-032-CON-1 |
-| TC-261 | One schema file exists per inventory model and enum with an absolute `$id` under the package base | Static | P0 | FR-033-AC-1 |
-| TC-262 | Every element of the FR-006 `FieldDecl[]` fixture validates against `FieldDecl.json` under Ajv strict mode with no alias | Unit | P0 | FR-033-AC-2, US-007-EX-1 |
-| TC-263 | Each negative shape fixture fails against its named model schema; at least one exists per grammar model | Unit | P0 | FR-033-AC-3 |
+| TC-261 | One schema file exists per inventory model, public union, wireUnion and enum with an absolute `$id` under the package base | Static | P0 | FR-033-AC-1 |
+| TC-262 | Every element of the FR-006 `FieldDecl[]` fixture validates against `FieldDecl.json` under Ajv strict mode with no alias; TypeRef.target and constraint values use their adjacent {kind, value} forms | Unit | P0 | FR-033-AC-2, US-007-EX-1 |
+| TC-263 | Each negative fixture fails against its named model or union schema; every model and union has a negative fixture, including malformed and untagged adjacent-union forms | Unit | P0 | FR-033-AC-3 |
 | TC-264 | Regenerating twice yields byte-identical output; a mutated byte makes the `check` script fail naming the file | Snapshot | P0 | FR-033-AC-4, FR-033-CON-1 |
 | TC-266 | The normalization step is isolated (one function, one call site) | Analysis | P1 | FR-033-CON-2 |
-| TC-267 | `lowering.json` has one row per grammar-model property, every `loss` is `none`, and a `loss` row fails the gate | Unit | P0 | FR-034-AC-1, FR-034-CON-1 |
+| TC-267 | `lowering.json` has one row per grammar-model property, including helper-union branch selection and payload unwrapping; every `loss` is `none`, no helper creates an IR node, and a `loss` row fails the gate | Unit | P0 | FR-034-AC-1, FR-034-CON-1 |
 | TC-268 | Reference lowerer mints identities, origins, kernel definitions, alias-per-constrained-field, and clause text per the FR-034 rules on the FR-006 set | Unit | P0 | FR-034-AC-2 |
-| TC-269 | The lowered FR-006 document equals `config-version-v2.json` in the structural comparison ignoring minted identities and semantic-core extensions | Unit | P0 | FR-034-AC-3 |
+| TC-269 | After adjacent helper-union envelopes are unwrapped, the lowered FR-006 document equals `config-version-v2.json` in the structural comparison ignoring minted identities and semantic-core extensions | Unit | P0 | FR-034-AC-3 |
 | TC-270 | `UnitSymbol` rejects ``, `k g`, `kg²` and accepts `kg`, `m/s`, `ms`, `10*3.m` | Unit | P0 | FR-034-AC-4 |
 | TC-271 | A `Decimal` field lowers with the `decimal` extension carrying `precision` and `scale`; the table records no loss for `TypeRef.decimal` | Unit | P0 | FR-034-AC-5, US-007-EX-2 |
 | TC-272 | A lowering row recording `loss` fails the fixture gate | Unit | P0 | FR-034-AC-1 |
@@ -1410,7 +1410,7 @@ computed by `quire matrix` from those trace tags.
 | TC-256, TC-271 | `TypeRef.target` | `KernelScalar` member / `SemanticId` | with or without `decimal` policy | `Decimal` requires `decimal`; any other target forbids it; both lower without loss |
 | TC-277 | `TypeRef.unit` | unit-allowed scalar / other scalar / `SemanticId` / `returns` | present or absent | Allowed only on `Integer`, `Decimal`, `Timestamp`, `Duration` fields |
 | TC-250, TC-251 | closed enumerations | eleven keywords / seven categories | member vs non-member | Members accepted, non-members rejected by the emitted schema |
-| TC-253, TC-264 | package version | `v1` / `v1` + addition | regenerate | Prior version bytes unchanged; new version additive |
+| TC-253, TC-264 | package version | `v1` / `v1` + independent addition or deliberate wire-form amendment | regenerate | Independent addition preserves all prior schemas; a wire-form amendment changes only owning and referenced helper schemas |
 | TC-316 | field presence and nullability | `required` / `optional` | `nullable: true` / `nullable: false` | All four combinations are distinct normalized forms; neither is inferable from the other |
 | TC-305, TC-309 | adapter answer | `supported` / `unsupported` / `unavailable` | declared in the case or the registry, or undeclared | Declared `unsupported` and registry-declared `unavailable` are recorded; every undeclared answer fails |
 | TC-296 | compatibility change | optional addition / required addition / removal | consumer policy preserving, rejecting, or absent | Most restrictive classification wins, an optional addition is additive only under a preserving policy, and every contributing change is named |
