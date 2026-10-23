@@ -28,7 +28,7 @@
 /** The declared seed. A run that cannot resolve a seed fails; it never guesses. */
 export const DEFAULT_SEED = 0x5eed0062;
 
-/** The kernel scalars a document may declare — `bytes` is the refusal row. */
+/** The kernel scalars a document may declare. */
 export const GENERATED_KERNEL_SCALARS = Object.freeze([
 	"any",
 	"boolean",
@@ -37,6 +37,7 @@ export const GENERATED_KERNEL_SCALARS = Object.freeze([
 	"float32",
 	"float64",
 	"string",
+	"bytes",
 	"date",
 	"datetime",
 	"duration",

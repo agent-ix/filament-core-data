@@ -33,9 +33,9 @@ of the issue #21 crate.
 
 An example that builds and asserts nothing is a vacuous pass. It is the failure
 this requirement exists to prevent, because a package that compiles is not a
-package that carries the kernel: a generator can emit thirty syntactically valid
-modules whose member names, presence rules, and identity metadata are all wrong,
-and every one of them will compile.
+package that carries the kernel: a generator can emit syntactically valid
+modules for every inventory declaration while getting member names, presence
+rules, and identity metadata wrong, and every one of them will compile.
 
 ## Inputs
 
@@ -46,10 +46,9 @@ and every one of them will compile.
 - The generated kernel Python package of [FR-087](./FR-087-generate-the-kernel-python-package.md)
   at `packages/semantic-kernel/python/`
 - `packages/semantic-core/inventory.json`, the exact declaration inventory of
-  `AgentIx.Semantic.Core`: twenty-one models, one union (`ConstraintDecl`), four
-  enums (`KernelScalar`, `EdgeCategory`, `ConstraintKeyword`, `DefaultKind`),
-  and four scalars — the thirty declarations each package must have carried
-- The thirty JSON Schema 2020-12 documents under
+  `AgentIx.Semantic.Core`: models, public unions, adjacent-envelope `wireUnions`,
+  enums, and scalars — every declaration each package must carry
+- Every JSON Schema 2020-12 document under
   `packages/semantic-core/generated/json-schema/`, from which the golden kernel
   instance documents this requirement deserializes are authored
 - The shared golden corpus of kernel instance documents that

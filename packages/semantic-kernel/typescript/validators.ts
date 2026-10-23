@@ -345,29 +345,69 @@ export function validateClauseRef(input: unknown): ValidationResult<ClauseRef> {
 
 function prepareConstraintDecl(value: unknown, depth: number): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
-	if (checkEnumValuesConstraint(value, "", [], [], depth + 1))
-		return prepareEnumValuesConstraint(value, depth + 1);
-	if (checkExclusiveMaxConstraint(value, "", [], [], depth + 1))
-		return prepareExclusiveMaxConstraint(value, depth + 1);
-	if (checkExclusiveMinConstraint(value, "", [], [], depth + 1))
-		return prepareExclusiveMinConstraint(value, depth + 1);
-	if (checkFormatConstraint(value, "", [], [], depth + 1))
-		return prepareFormatConstraint(value, depth + 1);
-	if (checkMaxConstraint(value, "", [], [], depth + 1))
-		return prepareMaxConstraint(value, depth + 1);
-	if (checkMaxLengthConstraint(value, "", [], [], depth + 1))
-		return prepareMaxLengthConstraint(value, depth + 1);
-	if (checkMinConstraint(value, "", [], [], depth + 1))
-		return prepareMinConstraint(value, depth + 1);
-	if (checkMinLengthConstraint(value, "", [], [], depth + 1))
-		return prepareMinLengthConstraint(value, depth + 1);
-	if (checkNonEmptyConstraint(value, "", [], [], depth + 1))
-		return prepareNonEmptyConstraint(value, depth + 1);
-	if (checkPatternConstraint(value, "", [], [], depth + 1))
-		return preparePatternConstraint(value, depth + 1);
-	if (checkUniqueConstraint(value, "", [], [], depth + 1))
-		return prepareUniqueConstraint(value, depth + 1);
-	return value;
+	if (!isPlainObject(value)) return value;
+	const tag = ownMember(value, "kind");
+	const payload = ownMember(value, "value");
+	if (tag.state !== "value" || payload.state !== "value") return value;
+	switch (tag.value) {
+		case "EnumValuesConstraint":
+			return {
+				...value,
+				value: prepareEnumValuesConstraint(payload.value, depth + 1),
+			};
+		case "ExclusiveMaxConstraint":
+			return {
+				...value,
+				value: prepareExclusiveMaxConstraint(payload.value, depth + 1),
+			};
+		case "ExclusiveMinConstraint":
+			return {
+				...value,
+				value: prepareExclusiveMinConstraint(payload.value, depth + 1),
+			};
+		case "FormatConstraint":
+			return {
+				...value,
+				value: prepareFormatConstraint(payload.value, depth + 1),
+			};
+		case "MaxConstraint":
+			return {
+				...value,
+				value: prepareMaxConstraint(payload.value, depth + 1),
+			};
+		case "MaxLengthConstraint":
+			return {
+				...value,
+				value: prepareMaxLengthConstraint(payload.value, depth + 1),
+			};
+		case "MinConstraint":
+			return {
+				...value,
+				value: prepareMinConstraint(payload.value, depth + 1),
+			};
+		case "MinLengthConstraint":
+			return {
+				...value,
+				value: prepareMinLengthConstraint(payload.value, depth + 1),
+			};
+		case "NonEmptyConstraint":
+			return {
+				...value,
+				value: prepareNonEmptyConstraint(payload.value, depth + 1),
+			};
+		case "PatternConstraint":
+			return {
+				...value,
+				value: preparePatternConstraint(payload.value, depth + 1),
+			};
+		case "UniqueConstraint":
+			return {
+				...value,
+				value: prepareUniqueConstraint(payload.value, depth + 1),
+			};
+		default:
+			return value;
+	}
 }
 
 function checkConstraintDecl(
@@ -377,6 +417,7 @@ function checkConstraintDecl(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is ConstraintDecl {
+	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -386,107 +427,362 @@ function checkConstraintDecl(
 		);
 		return false;
 	}
-	const branchErrors: ValidationError[] = [];
-	branchErrors.length = 0;
-	if (
-		checkEnumValuesConstraint(
-			candidate,
+	if (!isPlainObject(candidate)) {
+		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
+		return false;
+	}
+	const tag = ownMember(candidate, "kind");
+	if (tag.state !== "value" || typeof tag.value !== "string") {
+		fail(
+			errors,
 			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkExclusiveMaxConstraint(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkExclusiveMinConstraint(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkFormatConstraint(candidate, pointer, branchErrors, surfaced, depth + 1)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (checkMaxConstraint(candidate, pointer, branchErrors, surfaced, depth + 1))
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkMaxLengthConstraint(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (checkMinConstraint(candidate, pointer, branchErrors, surfaced, depth + 1))
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkMinLengthConstraint(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkNonEmptyConstraint(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkPatternConstraint(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkUniqueConstraint(candidate, pointer, branchErrors, surfaced, depth + 1)
-	)
-		return true;
-	fail(
-		errors,
-		pointer,
-		CODES.SHAPE_MISMATCH,
-		"the value matches no declared union branch",
-	);
-	return false;
+			CODES.MISSING_DISCRIMINANT,
+			"the discriminant is absent or is not a string",
+		);
+		return false;
+	}
+	switch (tag.value) {
+		case "EnumValuesConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkEnumValuesConstraint(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "ExclusiveMaxConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkExclusiveMaxConstraint(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "ExclusiveMinConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkExclusiveMinConstraint(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "FormatConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkFormatConstraint(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "MaxConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkMaxConstraint(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "MaxLengthConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkMaxLengthConstraint(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "MinConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkMinConstraint(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "MinLengthConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkMinLengthConstraint(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "NonEmptyConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkNonEmptyConstraint(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "PatternConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkPatternConstraint(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "UniqueConstraint": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkUniqueConstraint(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		default: {
+			fail(
+				errors,
+				pointer,
+				CODES.NOT_A_DECLARED_VARIANT,
+				"the discriminant names no declared variant",
+			);
+			break;
+		}
+	}
+	return errors.length === before;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/ConstraintDecl`. */
@@ -1657,13 +1953,38 @@ function prepareEnumValuesConstraintValues(
 	depth: number,
 ): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
-	if (checkEnumValuesConstraintValuesBoolean(value, "", [], [], depth + 1))
-		return prepareEnumValuesConstraintValuesBoolean(value, depth + 1);
-	if (checkEnumValuesConstraintValuesNumber(value, "", [], [], depth + 1))
-		return prepareEnumValuesConstraintValuesNumber(value, depth + 1);
-	if (checkEnumValuesConstraintValuesString(value, "", [], [], depth + 1))
-		return prepareEnumValuesConstraintValuesString(value, depth + 1);
-	return value;
+	if (!isPlainObject(value)) return value;
+	const tag = ownMember(value, "kind");
+	const payload = ownMember(value, "value");
+	if (tag.state !== "value" || payload.state !== "value") return value;
+	switch (tag.value) {
+		case "boolean":
+			return {
+				...value,
+				value: prepareEnumValuesConstraintValuesBoolean(
+					payload.value,
+					depth + 1,
+				),
+			};
+		case "number":
+			return {
+				...value,
+				value: prepareEnumValuesConstraintValuesNumber(
+					payload.value,
+					depth + 1,
+				),
+			};
+		case "string":
+			return {
+				...value,
+				value: prepareEnumValuesConstraintValuesString(
+					payload.value,
+					depth + 1,
+				),
+			};
+		default:
+			return value;
+	}
 }
 
 function checkEnumValuesConstraintValues(
@@ -1673,6 +1994,7 @@ function checkEnumValuesConstraintValues(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is EnumValuesConstraintValues {
+	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -1682,47 +2004,122 @@ function checkEnumValuesConstraintValues(
 		);
 		return false;
 	}
-	const branchErrors: ValidationError[] = [];
-	branchErrors.length = 0;
-	if (
-		checkEnumValuesConstraintValuesBoolean(
-			candidate,
+	if (!isPlainObject(candidate)) {
+		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
+		return false;
+	}
+	const tag = ownMember(candidate, "kind");
+	if (tag.state !== "value" || typeof tag.value !== "string") {
+		fail(
+			errors,
 			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkEnumValuesConstraintValuesNumber(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkEnumValuesConstraintValuesString(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	fail(
-		errors,
-		pointer,
-		CODES.SHAPE_MISMATCH,
-		"the value matches no declared union branch",
-	);
-	return false;
+			CODES.MISSING_DISCRIMINANT,
+			"the discriminant is absent or is not a string",
+		);
+		return false;
+	}
+	switch (tag.value) {
+		case "boolean": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkEnumValuesConstraintValuesBoolean(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "number": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkEnumValuesConstraintValuesNumber(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "string": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkEnumValuesConstraintValuesString(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		default: {
+			fail(
+				errors,
+				pointer,
+				CODES.NOT_A_DECLARED_VARIANT,
+				"the discriminant names no declared variant",
+			);
+			break;
+		}
+	}
+	return errors.length === before;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/EnumValuesConstraintValues`. */
@@ -2104,11 +2501,30 @@ function prepareExclusiveMaxConstraintValue(
 	depth: number,
 ): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
-	if (checkExclusiveMaxConstraintValueNumber(value, "", [], [], depth + 1))
-		return prepareExclusiveMaxConstraintValueNumber(value, depth + 1);
-	if (checkExclusiveMaxConstraintValueString(value, "", [], [], depth + 1))
-		return prepareExclusiveMaxConstraintValueString(value, depth + 1);
-	return value;
+	if (!isPlainObject(value)) return value;
+	const tag = ownMember(value, "kind");
+	const payload = ownMember(value, "value");
+	if (tag.state !== "value" || payload.state !== "value") return value;
+	switch (tag.value) {
+		case "number":
+			return {
+				...value,
+				value: prepareExclusiveMaxConstraintValueNumber(
+					payload.value,
+					depth + 1,
+				),
+			};
+		case "string":
+			return {
+				...value,
+				value: prepareExclusiveMaxConstraintValueString(
+					payload.value,
+					depth + 1,
+				),
+			};
+		default:
+			return value;
+	}
 }
 
 function checkExclusiveMaxConstraintValue(
@@ -2118,6 +2534,7 @@ function checkExclusiveMaxConstraintValue(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is ExclusiveMaxConstraintValue {
+	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -2127,36 +2544,92 @@ function checkExclusiveMaxConstraintValue(
 		);
 		return false;
 	}
-	const branchErrors: ValidationError[] = [];
-	branchErrors.length = 0;
-	if (
-		checkExclusiveMaxConstraintValueNumber(
-			candidate,
+	if (!isPlainObject(candidate)) {
+		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
+		return false;
+	}
+	const tag = ownMember(candidate, "kind");
+	if (tag.state !== "value" || typeof tag.value !== "string") {
+		fail(
+			errors,
 			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkExclusiveMaxConstraintValueString(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	fail(
-		errors,
-		pointer,
-		CODES.SHAPE_MISMATCH,
-		"the value matches no declared union branch",
-	);
-	return false;
+			CODES.MISSING_DISCRIMINANT,
+			"the discriminant is absent or is not a string",
+		);
+		return false;
+	}
+	switch (tag.value) {
+		case "number": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkExclusiveMaxConstraintValueNumber(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "string": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkExclusiveMaxConstraintValueString(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		default: {
+			fail(
+				errors,
+				pointer,
+				CODES.NOT_A_DECLARED_VARIANT,
+				"the discriminant names no declared variant",
+			);
+			break;
+		}
+	}
+	return errors.length === before;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue`. */
@@ -2488,11 +2961,30 @@ function prepareExclusiveMinConstraintValue(
 	depth: number,
 ): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
-	if (checkExclusiveMinConstraintValueNumber(value, "", [], [], depth + 1))
-		return prepareExclusiveMinConstraintValueNumber(value, depth + 1);
-	if (checkExclusiveMinConstraintValueString(value, "", [], [], depth + 1))
-		return prepareExclusiveMinConstraintValueString(value, depth + 1);
-	return value;
+	if (!isPlainObject(value)) return value;
+	const tag = ownMember(value, "kind");
+	const payload = ownMember(value, "value");
+	if (tag.state !== "value" || payload.state !== "value") return value;
+	switch (tag.value) {
+		case "number":
+			return {
+				...value,
+				value: prepareExclusiveMinConstraintValueNumber(
+					payload.value,
+					depth + 1,
+				),
+			};
+		case "string":
+			return {
+				...value,
+				value: prepareExclusiveMinConstraintValueString(
+					payload.value,
+					depth + 1,
+				),
+			};
+		default:
+			return value;
+	}
 }
 
 function checkExclusiveMinConstraintValue(
@@ -2502,6 +2994,7 @@ function checkExclusiveMinConstraintValue(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is ExclusiveMinConstraintValue {
+	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -2511,36 +3004,92 @@ function checkExclusiveMinConstraintValue(
 		);
 		return false;
 	}
-	const branchErrors: ValidationError[] = [];
-	branchErrors.length = 0;
-	if (
-		checkExclusiveMinConstraintValueNumber(
-			candidate,
+	if (!isPlainObject(candidate)) {
+		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
+		return false;
+	}
+	const tag = ownMember(candidate, "kind");
+	if (tag.state !== "value" || typeof tag.value !== "string") {
+		fail(
+			errors,
 			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkExclusiveMinConstraintValueString(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	fail(
-		errors,
-		pointer,
-		CODES.SHAPE_MISMATCH,
-		"the value matches no declared union branch",
-	);
-	return false;
+			CODES.MISSING_DISCRIMINANT,
+			"the discriminant is absent or is not a string",
+		);
+		return false;
+	}
+	switch (tag.value) {
+		case "number": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkExclusiveMinConstraintValueNumber(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "string": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkExclusiveMinConstraintValueString(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		default: {
+			fail(
+				errors,
+				pointer,
+				CODES.NOT_A_DECLARED_VARIANT,
+				"the discriminant names no declared variant",
+			);
+			break;
+		}
+	}
+	return errors.length === before;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/ExclusiveMinConstraintValue`. */
@@ -3726,11 +4275,24 @@ export function validateMaxConstraintKeyword(
 
 function prepareMaxConstraintValue(value: unknown, depth: number): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
-	if (checkMaxConstraintValueNumber(value, "", [], [], depth + 1))
-		return prepareMaxConstraintValueNumber(value, depth + 1);
-	if (checkMaxConstraintValueString(value, "", [], [], depth + 1))
-		return prepareMaxConstraintValueString(value, depth + 1);
-	return value;
+	if (!isPlainObject(value)) return value;
+	const tag = ownMember(value, "kind");
+	const payload = ownMember(value, "value");
+	if (tag.state !== "value" || payload.state !== "value") return value;
+	switch (tag.value) {
+		case "number":
+			return {
+				...value,
+				value: prepareMaxConstraintValueNumber(payload.value, depth + 1),
+			};
+		case "string":
+			return {
+				...value,
+				value: prepareMaxConstraintValueString(payload.value, depth + 1),
+			};
+		default:
+			return value;
+	}
 }
 
 function checkMaxConstraintValue(
@@ -3740,6 +4302,7 @@ function checkMaxConstraintValue(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is MaxConstraintValue {
+	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -3749,36 +4312,92 @@ function checkMaxConstraintValue(
 		);
 		return false;
 	}
-	const branchErrors: ValidationError[] = [];
-	branchErrors.length = 0;
-	if (
-		checkMaxConstraintValueNumber(
-			candidate,
+	if (!isPlainObject(candidate)) {
+		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
+		return false;
+	}
+	const tag = ownMember(candidate, "kind");
+	if (tag.state !== "value" || typeof tag.value !== "string") {
+		fail(
+			errors,
 			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkMaxConstraintValueString(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	fail(
-		errors,
-		pointer,
-		CODES.SHAPE_MISMATCH,
-		"the value matches no declared union branch",
-	);
-	return false;
+			CODES.MISSING_DISCRIMINANT,
+			"the discriminant is absent or is not a string",
+		);
+		return false;
+	}
+	switch (tag.value) {
+		case "number": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkMaxConstraintValueNumber(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "string": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkMaxConstraintValueString(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		default: {
+			fail(
+				errors,
+				pointer,
+				CODES.NOT_A_DECLARED_VARIANT,
+				"the discriminant names no declared variant",
+			);
+			break;
+		}
+	}
+	return errors.length === before;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/MaxConstraintValue`. */
@@ -4387,11 +5006,24 @@ export function validateMinConstraintKeyword(
 
 function prepareMinConstraintValue(value: unknown, depth: number): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
-	if (checkMinConstraintValueNumber(value, "", [], [], depth + 1))
-		return prepareMinConstraintValueNumber(value, depth + 1);
-	if (checkMinConstraintValueString(value, "", [], [], depth + 1))
-		return prepareMinConstraintValueString(value, depth + 1);
-	return value;
+	if (!isPlainObject(value)) return value;
+	const tag = ownMember(value, "kind");
+	const payload = ownMember(value, "value");
+	if (tag.state !== "value" || payload.state !== "value") return value;
+	switch (tag.value) {
+		case "number":
+			return {
+				...value,
+				value: prepareMinConstraintValueNumber(payload.value, depth + 1),
+			};
+		case "string":
+			return {
+				...value,
+				value: prepareMinConstraintValueString(payload.value, depth + 1),
+			};
+		default:
+			return value;
+	}
 }
 
 function checkMinConstraintValue(
@@ -4401,6 +5033,7 @@ function checkMinConstraintValue(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is MinConstraintValue {
+	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -4410,36 +5043,92 @@ function checkMinConstraintValue(
 		);
 		return false;
 	}
-	const branchErrors: ValidationError[] = [];
-	branchErrors.length = 0;
-	if (
-		checkMinConstraintValueNumber(
-			candidate,
+	if (!isPlainObject(candidate)) {
+		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
+		return false;
+	}
+	const tag = ownMember(candidate, "kind");
+	if (tag.state !== "value" || typeof tag.value !== "string") {
+		fail(
+			errors,
 			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	branchErrors.length = 0;
-	if (
-		checkMinConstraintValueString(
-			candidate,
-			pointer,
-			branchErrors,
-			surfaced,
-			depth + 1,
-		)
-	)
-		return true;
-	fail(
-		errors,
-		pointer,
-		CODES.SHAPE_MISMATCH,
-		"the value matches no declared union branch",
-	);
-	return false;
+			CODES.MISSING_DISCRIMINANT,
+			"the discriminant is absent or is not a string",
+		);
+		return false;
+	}
+	switch (tag.value) {
+		case "number": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkMinConstraintValueNumber(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "string": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkMinConstraintValueString(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		default: {
+			fail(
+				errors,
+				pointer,
+				CODES.NOT_A_DECLARED_VARIANT,
+				"the discriminant names no declared variant",
+			);
+			break;
+		}
+	}
+	return errors.length === before;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/MinConstraintValue`. */
@@ -7475,11 +8164,18 @@ export function validateTypeRef(input: unknown): ValidationResult<TypeRef> {
 
 function prepareTypeRefTarget(value: unknown, depth: number): unknown {
 	if (depth > MAX_VALIDATION_DEPTH) return value;
-	if (checkKernelScalar(value, "", [], [], depth + 1))
-		return prepareKernelScalar(value, depth + 1);
-	if (checkSemanticId(value, "", [], [], depth + 1))
-		return prepareSemanticId(value, depth + 1);
-	return value;
+	if (!isPlainObject(value)) return value;
+	const tag = ownMember(value, "kind");
+	const payload = ownMember(value, "value");
+	if (tag.state !== "value" || payload.state !== "value") return value;
+	switch (tag.value) {
+		case "KernelScalar":
+			return { ...value, value: prepareKernelScalar(payload.value, depth + 1) };
+		case "SemanticId":
+			return { ...value, value: prepareSemanticId(payload.value, depth + 1) };
+		default:
+			return value;
+	}
 }
 
 function checkTypeRefTarget(
@@ -7489,6 +8185,7 @@ function checkTypeRefTarget(
 	surfaced: ValidationError[],
 	depth: number,
 ): candidate is TypeRefTarget {
+	const before = errors.length;
 	if (depth > MAX_VALIDATION_DEPTH) {
 		fail(
 			errors,
@@ -7498,20 +8195,92 @@ function checkTypeRefTarget(
 		);
 		return false;
 	}
-	const branchErrors: ValidationError[] = [];
-	branchErrors.length = 0;
-	if (checkKernelScalar(candidate, pointer, branchErrors, surfaced, depth + 1))
-		return true;
-	branchErrors.length = 0;
-	if (checkSemanticId(candidate, pointer, branchErrors, surfaced, depth + 1))
-		return true;
-	fail(
-		errors,
-		pointer,
-		CODES.SHAPE_MISMATCH,
-		"the value matches no declared union branch",
-	);
-	return false;
+	if (!isPlainObject(candidate)) {
+		fail(errors, pointer, CODES.NOT_AN_OBJECT, "the value is not an object");
+		return false;
+	}
+	const tag = ownMember(candidate, "kind");
+	if (tag.state !== "value" || typeof tag.value !== "string") {
+		fail(
+			errors,
+			pointer,
+			CODES.MISSING_DISCRIMINANT,
+			"the discriminant is absent or is not a string",
+		);
+		return false;
+	}
+	switch (tag.value) {
+		case "KernelScalar": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkKernelScalar(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		case "SemanticId": {
+			const declared: readonly string[] = ["kind", "value"];
+			for (const key of ownKeys(candidate)) {
+				if (declared.includes(key)) continue;
+				fail(
+					errors,
+					join(pointer, key),
+					CODES.UNKNOWN_MEMBER,
+					"the member is not declared by this union variant",
+				);
+			}
+			const payload = ownMember(candidate, "value");
+			if (payload.state !== "value") {
+				fail(
+					errors,
+					join(pointer, "value"),
+					CODES.MISSING_REQUIRED,
+					"the variant payload is absent",
+				);
+				break;
+			}
+			checkSemanticId(
+				payload.value,
+				join(pointer, "value"),
+				errors,
+				surfaced,
+				depth + 1,
+			);
+			break;
+		}
+		default: {
+			fail(
+				errors,
+				pointer,
+				CODES.NOT_A_DECLARED_VARIANT,
+				"the discriminant names no declared variant",
+			);
+			break;
+		}
+	}
+	return errors.length === before;
 }
 
 /** Decide an untrusted value against `ix://agent-ix/semantic-core/TypeRefTarget`. */

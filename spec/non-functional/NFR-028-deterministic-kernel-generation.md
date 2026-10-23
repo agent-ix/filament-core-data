@@ -44,7 +44,7 @@ always a difference in the contract and never a difference in the machine.
   lowering, the minting of names for anonymous constructs, the kernel IR
   document, and the four generated trees — TypeScript, Rust, Python, and the
   modular JSON Schema index.
-- Declared inputs: the thirty documents under
+- Declared inputs: every inventory-derived document under
   `packages/semantic-core/generated/json-schema/`,
   `packages/semantic-core/inventory.json`,
   `packages/semantic-core/kernel-scalars.json`,

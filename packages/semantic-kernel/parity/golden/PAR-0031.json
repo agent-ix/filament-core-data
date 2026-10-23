@@ -7,20 +7,26 @@
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "max",
-		"value": "2026-12-31T23:59:59Z"
+		"value": {
+			"kind": "string",
+			"value": "2026-12-31T23:59:59Z"
+		}
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
 			"keyword": "max",
-			"value": "2026-12-31T23:59:59Z"
+			"value": {
+				"kind": "string",
+				"value": "2026-12-31T23:59:59Z"
+			}
 		}
 	},
 	"derivedFrom": [
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/MaxConstraint.json",
-			"locator": "#/properties/value/anyOf",
-			"quote": "\"anyOf\": ["
+			"locator": "#/properties/value/$ref",
+			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.3.3/MaxConstraintValue.json\""
 		}
 	],
 	"provenance": {

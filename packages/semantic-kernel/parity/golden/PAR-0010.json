@@ -6,7 +6,10 @@
 	"properties": ["unknown-member-states"],
 	"unknownPolicy": "reject",
 	"instance": {
-		"target": "String",
+		"target": {
+			"kind": "KernelScalar",
+			"value": "String"
+		},
 		"extra": true
 	},
 	"expected": {

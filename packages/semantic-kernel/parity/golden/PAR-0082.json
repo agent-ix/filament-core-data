@@ -6,8 +6,11 @@
 	"properties": ["serialized-member-names"],
 	"unknownPolicy": "reject",
 	"instance": {
-		"keyword": "between",
-		"value": 1
+		"kind": "between",
+		"value": {
+			"keyword": "between",
+			"value": 1
+		}
 	},
 	"expected": {
 		"resultState": "invalid"
@@ -16,7 +19,7 @@
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/ConstraintDecl.json",
 			"locator": "#/description",
-			"quote": "\"description\": \"FR-029 constraint declaration, discriminated on `keyword`.\""
+			"quote": "\"description\": \"FR-029 constraint declaration, tagged by `kind` with its record in `value`.\""
 		}
 	],
 	"provenance": {

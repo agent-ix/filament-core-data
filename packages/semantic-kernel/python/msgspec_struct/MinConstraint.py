@@ -7,7 +7,9 @@ from typing import Literal
 
 from msgspec import Struct
 
+from .MinConstraintValue import MinConstraintValue
+
 
 class MinConstraint(Struct):
     keyword: Literal['min']
-    value: float | str
+    value: MinConstraintValue

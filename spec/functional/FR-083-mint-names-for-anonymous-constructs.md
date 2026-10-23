@@ -50,8 +50,8 @@ rather than sequential.
 
 ## Inputs
 
-- The 30 JSON Schema 2020-12 documents of `packages/semantic-core/generated/json-schema/`, whose byte-for-byte content `make semantic-core-check` gates
-- The declared kernel type names, which are the `$id` basenames of those 30 documents — `TypeRef`, `Multiplicity`, `DecimalPolicy`, `ConstraintDecl`, `MinConstraint`, `EnumValuesConstraint`, `DefaultDecl`, `OperationDecl`, and the rest
+- Every JSON Schema 2020-12 document in `packages/semantic-core/generated/json-schema/` named by the FR-031 inventory, whose byte-for-byte content `make semantic-core-check` gates
+- The declared kernel type names, which are the `$id` basenames of those inventory documents — `TypeRef`, `Multiplicity`, `DecimalPolicy`, `ConstraintDecl`, `MinConstraint`, `EnumValuesConstraint`, `DefaultDecl`, `OperationDecl`, and the rest
 - `packages/semantic-core/kernel-scalars.json`, whose nine entries fix the IR scalar each kernel scalar lowers to and whose `JsonObject` row prescribes `kind: record`, `fields: []`, `unknownPolicy: preserve`
 - The closed keyword set FR-082 admits: `type`, `$ref`, `$id`, `$schema`, `properties`, `required`, `unevaluatedProperties`+`not`, `description`, `const`, `enum`, `anyOf`, `items`, `minItems`, `pattern`, `minLength`, `minimum`, `maximum`
 - `schema/semantic/v1/semantic-ir.schema.json#/$defs/field`, `#/$defs/variant`, `#/$defs/typeDefinition`, and `#/$defs/constraint`
@@ -165,4 +165,4 @@ rather than sequential.
 - **Downstream**: FR-084, FR-085, FR-086, FR-087, FR-088, FR-089, FR-090 — each of the four target packages exports the names this requirement computes, and the cross-language corpus compares instances keyed on them
 - **Constrained by**: NFR-028, NFR-029, NFR-030
 - **Verified by**: `test/semantic-kernel.test.ts`, driven through `scripts/build-semantic-kernel.mjs` and its `--check` verb
-- **Read and never edited**: `packages/semantic-core/**` — including the 30 bundle documents and `kernel-scalars.json` — every document under `schema/semantic/v1/`, and everything under `fixtures/**` and `conformance/**`
+- **Read and never edited**: `packages/semantic-core/**` — including every inventory-derived bundle document and `kernel-scalars.json` — every document under `schema/semantic/v1/`, and everything under `fixtures/**` and `conformance/**`

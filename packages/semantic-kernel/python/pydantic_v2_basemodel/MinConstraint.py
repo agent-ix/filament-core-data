@@ -7,10 +7,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from .MinConstraintValue import MinConstraintValue
+
 
 class MinConstraint(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     keyword: Literal['min']
-    value: float | str
+    value: MinConstraintValue

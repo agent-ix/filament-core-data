@@ -206,3 +206,24 @@ answered by reading `conformance/oracle/` or `src/compiler/ir/`; every rule
 above resolves to a clause in `contracts-v1.md`, a locator in
 `schema/semantic/v1/`, a row of `conformance/diagnostic-codes.json`, or a
 requirement under `spec/`.
+
+## Clock, dimensions and units (FR-146 / IR-991)
+
+The dimension/unit schema and `unit_graph` rules derive from the published
+FR-146 and its diagnostic registry rows. They introduce no dependency on a
+compiler or another reader. Native agreement tests compare public reader
+outcomes against the authored raw-document cases, rather than sharing an
+implementation of the rules.
+
+| Rule | Derived from |
+|---|---|
+| Optional dimensions and units have closed node shapes, typed origin, identity references and string operands. | FR-146, "Dimensions" and "Units"; semantic-ir.schema.json dimension/unit definitions. |
+| Dimensions and units use separate declaration indexes with the first identity retained, and later duplicates refuse at their identity. | FR-146, "Units", duplicate identity rule; FR-050 identity rule. |
+| Exact integer and rational strings consume the full spelling, fit i128, and preserve canonical zero and reduced fractions. | FR-146, "Dimensions" and "Units"; FR-144 canonical integer encoding. |
+| Graph defects accumulate once at their located member; cyclic dimension components and unit cycles use authored index and traversal order for their one diagnostic. | FR-146, "Dimensions" and "Units" cycle and all-defect rules. |
+| Quantity names follow the closed unit-name/package-segment patterns, without resolving a member type reference against the local unit graph. | FR-146, "Quantity type references" and AC-9. |
+| A forbidden textProfile string or default shape on a Clock/quantity member reaches its own semantic diagnostic; JSON member type errors remain schema errors. | FR-146, "Clock fields" and "Quantity type references", suppression and preservation rules. |
+
+Compatibility classification (AC-7) is tracked separately as IR-993; generation
+backend behavior (AC-8) is outside this reader slice. No classifier or backend
+acceptance follows from the reader tests.

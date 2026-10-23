@@ -47,12 +47,24 @@
 			"path": "../../semantic-core/generated/json-schema/EnumValuesConstraint.json"
 		},
 		{
+			"name": "EnumValuesConstraintValues.json",
+			"path": "../../semantic-core/generated/json-schema/EnumValuesConstraintValues.json"
+		},
+		{
 			"name": "ExclusiveMaxConstraint.json",
 			"path": "../../semantic-core/generated/json-schema/ExclusiveMaxConstraint.json"
 		},
 		{
+			"name": "ExclusiveMaxConstraintValue.json",
+			"path": "../../semantic-core/generated/json-schema/ExclusiveMaxConstraintValue.json"
+		},
+		{
 			"name": "ExclusiveMinConstraint.json",
 			"path": "../../semantic-core/generated/json-schema/ExclusiveMinConstraint.json"
+		},
+		{
+			"name": "ExclusiveMinConstraintValue.json",
+			"path": "../../semantic-core/generated/json-schema/ExclusiveMinConstraintValue.json"
 		},
 		{
 			"name": "FieldDecl.json",
@@ -75,12 +87,20 @@
 			"path": "../../semantic-core/generated/json-schema/MaxConstraint.json"
 		},
 		{
+			"name": "MaxConstraintValue.json",
+			"path": "../../semantic-core/generated/json-schema/MaxConstraintValue.json"
+		},
+		{
 			"name": "MaxLengthConstraint.json",
 			"path": "../../semantic-core/generated/json-schema/MaxLengthConstraint.json"
 		},
 		{
 			"name": "MinConstraint.json",
 			"path": "../../semantic-core/generated/json-schema/MinConstraint.json"
+		},
+		{
+			"name": "MinConstraintValue.json",
+			"path": "../../semantic-core/generated/json-schema/MinConstraintValue.json"
 		},
 		{
 			"name": "MinLengthConstraint.json",
@@ -117,6 +137,10 @@
 		{
 			"name": "TypeRef.json",
 			"path": "../../semantic-core/generated/json-schema/TypeRef.json"
+		},
+		{
+			"name": "TypeRefTarget.json",
+			"path": "../../semantic-core/generated/json-schema/TypeRefTarget.json"
 		},
 		{
 			"name": "UniqueConstraint.json",

@@ -8,7 +8,10 @@
 	"instance": {
 		"name": "title",
 		"type": {
-			"target": "String"
+			"target": {
+				"kind": "KernelScalar",
+				"value": "String"
+			}
 		},
 		"doc": null
 	},

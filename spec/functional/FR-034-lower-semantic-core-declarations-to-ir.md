@@ -49,11 +49,13 @@ the two implementations of that statement.
 
 ## Behavior
 
+- FR-031 helper unions are source representation envelopes, not IR nodes. The lowerer SHALL select the union branch by `kind`, unwrap its `value`, and apply the owning model-property row; a helper envelope SHALL not mint a type, field, constraint, or extension of its own, and unwrapping SHALL record no loss.
 - The lowerer SHALL mint identities as `ix://<org>/<repo>/type/<Name>`, `.../field/<Name>-<field>`, `.../relationship/<Name>-<verb>-<TargetName>`, `.../operation/<Name>-<name>`, `.../clause/<Name>-<clauseId>`, `.../constraint/<Name>-<field>-<keyword>`, and `.../type/<KernelScalar>` for kernel scalar definitions.
 - The lowerer SHALL emit one kernel scalar type definition per `KernelScalar` member the instance uses, package-local, carrying the extension `ix://agent-ix/semantic-core/ext/kernel-scalar` (version `1.0.0`, `required: false`, payload `{ name }`) so cross-package equivalence is by kernel name.
 - The lowerer SHALL set every node's `origin` from the declaration's `SourceLocus`.
 - `Multiplicity` SHALL lower property-for-property to `field.multiplicity`, `relationship.multiplicity`, and `returns.multiplicity`, where an absent `TypeRef.multiplicity` lowers to `1..1`, an absent `RelationDecl.multiplicity` to `0..1`, and an absent `composite` to `false`.
-- `TypeRef.target` SHALL lower to `field.typeRef`: a `SemanticId` verbatim, a `KernelScalar` to that package-local kernel definition's identity.
+- `TypeRef.target` SHALL lower to `field.typeRef` after unwrapping `TypeRefTarget`: the `SemanticId` branch's `value` verbatim, or the `KernelScalar` branch's `value` to that package-local kernel definition's identity.
+- `ConstraintDecl` SHALL select its constraint model from the adjacent `kind` tag and unwrap its `value`; `MinConstraintValue`, `MaxConstraintValue`, `ExclusiveMinConstraintValue`, and `ExclusiveMaxConstraintValue` SHALL unwrap their tagged numeric or string operand; `EnumValuesConstraintValues` SHALL unwrap its tagged string, number, or boolean member. The resulting constraint keyword and operands SHALL match the unwrapped declarations.
 - `TypeRef.unit` SHALL lower to `field.unit` verbatim.
 - `TypeRef.decimal` SHALL lower to the `decimal` member `{ precision, scale }` ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)) of the alias a constrained field mints, or of the field itself when it carries no constraint; the package-local `Decimal` kernel definition carries no policy, and no decimal extension is emitted.
 - `FieldDecl.nullable` SHALL lower to `field.nullable` (default `false`).
@@ -75,15 +77,15 @@ the two implementations of that statement.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-034-CON-1 | The lowering table SHALL cover every property of every grammar model in `inventory.json`; an uncovered property fails the completeness check. | Integrity | Table-vs-program comparison |
+| FR-034-CON-1 | The lowering table SHALL cover every property of every grammar model in `inventory.json`; an uncovered property fails the completeness check. Each property typed by a `wireUnion` SHALL specify its branch selection and payload unwrapping in that row, and no helper union shall create an IR node. | Integrity | Table-vs-program comparison |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-034-AC-1 | `lowering.json` has one row per grammar-model property, every row's `loss` is `none`, and a row recording `loss` fails the gate. | Test |
-| FR-034-AC-2 | The lowered FR-006 document validates against `semantic-ir.schema.json` as `2.0.0` and both IR readers return zero diagnostics. | Test |
-| FR-034-AC-3 | The lowered FR-006 document's fields (name, multiplicity, unit, nullable), relationships (verb, category, target, multiplicity), constraints (keyword, operands), and clauses (language, clauseId, text) equal those of `fixtures/semantic/v1/positive/config-version-v2.json` in a structural comparison that ignores minted identities and semantic-core extensions. | Test |
+| FR-034-AC-1 | `lowering.json` has one row per grammar-model property, including the `kind` branch and `value` unwrapping for properties typed by a `wireUnion`; every row's `loss` is `none`, no helper union creates an IR node, and a row recording `loss` fails the gate. | Test |
+| FR-034-AC-2 | The lowered FR-006 document, produced from adjacent `{ kind, value }` source envelopes, validates against `semantic-ir.schema.json` as `2.0.0` and both IR readers return zero diagnostics. | Test |
+| FR-034-AC-3 | After helper-union tags and envelopes are unwrapped, the lowered FR-006 document's fields (name, multiplicity, unit, nullable), relationships (verb, category, target, multiplicity), constraints (keyword, operands), and clauses (language, clauseId, text) equal those of `fixtures/semantic/v1/positive/config-version-v2.json` in a structural comparison that ignores minted identities and semantic-core extensions. | Test |
 | FR-034-AC-4 | `UnitSymbol` rejects the empty string, `k g`, and `kg²` and accepts `kg`, `m/s`, `ms`, `10*3.m`; UCUM membership beyond the charset is a consumer concern and is not claimed. | Test |
 | FR-034-AC-5 | An unconstrained `Decimal` field lowers with a `decimal` member carrying `precision` and `scale` on the field, a constrained one with that member on its minted alias and none on the field, no node carries an `ext/decimal` extension, the lowered document raises no `DECIMAL_POLICY_MISSING` or `DECIMAL_POLICY_CONFLICT`, and the lowering table records no loss for `TypeRef.decimal`. | Test |
 

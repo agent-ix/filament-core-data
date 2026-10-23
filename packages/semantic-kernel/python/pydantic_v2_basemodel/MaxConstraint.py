@@ -7,10 +7,12 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from .MaxConstraintValue import MaxConstraintValue
+
 
 class MaxConstraint(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     keyword: Literal['max']
-    value: float | str
+    value: MaxConstraintValue

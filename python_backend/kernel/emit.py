@@ -87,31 +87,12 @@ STRENUM_SHADOW = {
     "types": ["ConstraintKeyword"],
 }
 
-#: FR-087 finding F2, `agent-ix/filament-core-data#125`. `msgspec` refuses four
-#: kernel types at decoder-construction time. Neither union shape occurs in the
-#: thirteen published documents the issue #23 qualification probed, so neither
-#: is a `python_backend/qualification/gaps.json` row and neither may be made
-#: into one from here (FR-087-CON-4).
-MSGSPEC_UNION_LOSS = {
-    "id": "F2",
-    "issue": "agent-ix/filament-core-data#125",
-    "summary": (
-        "`msgspec` cannot construct a decoder for four of the thirty kernel "
-        "types. `TypeRef.target` is a union of a pattern-constrained string and "
-        "a string enum, which `msgspec` refuses as two str-like members; "
-        "`FieldDecl` and `OperationDecl` reach it; and `ConstraintDecl` is "
-        "eleven untagged structs, because the generator does not carry the "
-        "schema's stated `keyword` discriminator into a `tag_field`."
-    ),
-    "types": ["ConstraintDecl", "FieldDecl", "OperationDecl", "TypeRef"],
-}
-
 #: Measured findings by family. A family's list is what its README and its
 #: package tree both state; nothing here is derived from a clock or a host.
 FINDINGS: dict[str, list[dict[str, Any]]] = {
     "pydantic_v2_basemodel": [STRENUM_SHADOW],
     "pydantic_v2_dataclass": [STRENUM_SHADOW],
-    "msgspec_struct": [STRENUM_SHADOW, MSGSPEC_UNION_LOSS],
+    "msgspec_struct": [STRENUM_SHADOW],
 }
 
 

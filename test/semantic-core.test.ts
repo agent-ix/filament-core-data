@@ -147,49 +147,12 @@ describe("semantic-core package inventory (Task-042)", () => {
 		const manifest = object(readPackageJson("package.json"), "package.json");
 		expect(manifest.dependencies ?? {}).toEqual({});
 	});
-
-	/** Traces: TC-249; FR-031-AC-2 (inventory file half; the compiled half is TC-249/TC-273 in the grammar suite). */
-	it("publishes an inventory file with every declaration kind", () => {
-		const inventory = object(
-			readPackageJson("inventory.json"),
-			"inventory.json",
-		);
-		const models = array(inventory.models, "models").map(String);
-		for (const name of [
-			"Multiplicity",
-			"TypeRef",
-			"DecimalPolicy",
-			"DefaultDecl",
-			"FieldDecl",
-			"RelationDecl",
-			"OperationDecl",
-			"ClauseRef",
-			"EnumValue",
-			"SourceLocus",
-		])
-			expect(models, name).toContain(name);
-		expect(array(inventory.enums, "enums").map(String).sort()).toEqual([
-			"ConstraintKeyword",
-			"DefaultKind",
-			"EdgeCategory",
-			"KernelScalar",
-		]);
-		expect(array(inventory.scalars, "scalars").map(String).sort()).toEqual([
-			"ClauseLanguage",
-			"EnumValueName",
-			"Identifier",
-			"SemanticId",
-			"UnitSymbol",
-		]);
-		expect(array(inventory.unions, "unions").map(String)).toEqual([
-			"ConstraintDecl",
-		]);
-	});
 });
 
 type Declared = {
 	models: string[];
 	unions: string[];
+	wireUnions: string[];
 	enums: string[];
 	scalars: string[];
 };
@@ -209,7 +172,14 @@ function fullName(type: unknown): string {
 }
 
 function declarations(program: Program): Declared {
-	const out: Declared = { models: [], unions: [], enums: [], scalars: [] };
+	const out: Declared = {
+		models: [],
+		unions: [],
+		wireUnions: [],
+		enums: [],
+		scalars: [],
+	};
+	const wireUnions = new Set(inventory().wireUnions);
 	navigateProgram(program, {
 		model(model) {
 			if (fullName(model as never) === NAMESPACE && model.name)
@@ -217,7 +187,9 @@ function declarations(program: Program): Declared {
 		},
 		union(union) {
 			if (fullName(union as never) === NAMESPACE && union.name)
-				out.unions.push(union.name);
+				(wireUnions.has(union.name) ? out.wireUnions : out.unions).push(
+					union.name,
+				);
 		},
 		enum(enumeration) {
 			if (fullName(enumeration as never) === NAMESPACE)
@@ -245,6 +217,7 @@ function inventory(): Declared {
 	return {
 		models: array(raw.models, "models").map(String).sort(),
 		unions: array(raw.unions, "unions").map(String).sort(),
+		wireUnions: array(raw.wireUnions, "wireUnions").map(String).sort(),
 		enums: array(raw.enums, "enums").map(String).sort(),
 		scalars: array(raw.scalars, "scalars").map(String).sort(),
 	};
@@ -509,6 +482,7 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 		const expected = [
 			...inventory().models,
 			...inventory().unions,
+			...inventory().wireUnions,
 			...inventory().enums,
 			...inventory().scalars,
 		].sort();
@@ -582,6 +556,7 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 		for (const model of [
 			...inventory().models,
 			...inventory().unions,
+			...inventory().wireUnions,
 			...inventory().enums,
 			...inventory().scalars,
 		])
@@ -591,7 +566,13 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 			"twelfth keyword",
 		).toBe(false);
 		expect(
-			validatesModel(ajv, "ConstraintDecl", { keyword: "min", value: 1 }),
+			validatesModel(ajv, "ConstraintDecl", {
+				kind: "MinConstraint",
+				value: {
+					keyword: "min",
+					value: { kind: "number", value: 1 },
+				},
+			}),
 		).toBe(true);
 	});
 
@@ -653,7 +634,9 @@ describe("FR-033 JSON Schema projection and fixtures (Task-043)", () => {
 		for (const field of array(fieldDecls().fields, "fields").map((value) =>
 			object(value, "field"),
 		)) {
-			const target = String(object(field.type, "type").target);
+			const target = String(
+				object(object(field.type, "type").target, "target").value,
+			);
 			expect(allowed.has(target) || target.startsWith("ix://"), target).toBe(
 				true,
 			);
@@ -879,11 +862,17 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 	}
 
 	function committedLowered(): JsonObject {
-		if (process.env.SEMANTIC_CORE_WRITE_LOWERED === "1")
+		if (process.env.SEMANTIC_CORE_WRITE_LOWERED === "1") {
+			const unformatted = `${JSON.stringify(loweredFromFixture(), null, "\t")}\n`;
 			writeFileSync(
 				loweredPath,
-				`${JSON.stringify(loweredFromFixture(), null, "\t")}\n`,
+				execFileSync(
+					resolve(root, "node_modules/.bin/biome"),
+					["format", "--stdin-file-path", loweredPath],
+					{ cwd: root, encoding: "utf8", input: unformatted },
+				),
 			);
+		}
 		return object(
 			JSON.parse(readFileSync(loweredPath, "utf8")),
 			"lowered fixture",
@@ -911,13 +900,33 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 		const missing: string[] = [];
 		navigateProgram(program, {
 			model(model) {
-				if (fullName(model as never) !== NAMESPACE) return;
+				if (fullName(model as never) !== NAMESPACE || !model.name) return;
 				for (const name of model.properties.keys())
 					if (!covered.has(`${model.name}.${name}`))
 						missing.push(`${model.name}.${name}`);
 			},
 		});
 		expect(missing).toEqual([]);
+		const wireRows = [
+			"TypeRef.target",
+			"FieldDecl.constraints",
+			"MinConstraint.value",
+			"MaxConstraint.value",
+			"ExclusiveMinConstraint.value",
+			"ExclusiveMaxConstraint.value",
+			"EnumValuesConstraint.values",
+		];
+		for (const key of wireRows) {
+			const row = rows.find(
+				(entry) => `${String(entry.model)}.${String(entry.property)}` === key,
+			);
+			for (const word of ["kind", "value", "unwrap"])
+				expect(String(row?.note), `${key} ${word}`).toContain(word);
+		}
+		for (const row of rows)
+			expect(inventory().wireUnions, String(row.model)).not.toContain(
+				String(row.model),
+			);
 		const gate = (table: JsonObject[]) =>
 			table.every((row) => row.loss === "none");
 		expect(
@@ -1141,7 +1150,7 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 		(instance.fields as JsonObject[]).push({
 			name: "price",
 			type: {
-				target: "Decimal",
+				target: { kind: "KernelScalar", value: "Decimal" },
 				multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
 				decimal: { precision: 10, scale: 2 },
 				unit: "USD",

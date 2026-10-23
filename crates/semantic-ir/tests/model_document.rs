@@ -173,16 +173,20 @@ fn a_clock_field_is_admitted_without_a_declared_type() {
     assert_eq!(diagnostics("", &[record]), vec![]);
 }
 
-/// Provenance: IR-990 keeps the field-only admission boundary. IR-991 owns
-/// the exact FR-146-AC-2 diagnostic for this refusal.
+/// Provenance: IR-990 field-only admission; IR-991 exact refusal.
 #[test]
 fn a_clock_operation_parameter_remains_refused_at_its_type_ref() {
     let parameter = field("ix://acme/pkg/T/op/x", "x", "ix://quire/native/Clock");
     let record = framed(r#"{"modifies":[],"creates":[],"deletes":[]}"#)
         .replace(r#""params":[]"#, &format!(r#""params":[{parameter}]"#));
     let observed = diagnostics("", &[record]);
-    assert_eq!(observed.len(), 1);
-    assert_eq!(observed[0].0, "/ir/types/0/operations/0/params/0/typeRef");
+    assert_eq!(
+        observed,
+        vec![(
+            "/ir/types/0/operations/0/params/0/typeRef".to_string(),
+            "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD"
+        )]
+    );
 }
 
 /// Trace: FR-141
@@ -288,6 +292,187 @@ fn a_construct_definition_with_no_scalar_keeps_the_construct_decision() {
         vec![(
             "/ir/types/0/constraints/0".to_string(),
             CONSTRAINT_NOT_APPLICABLE
+        )]
+    );
+}
+
+fn record_with_member(member: &str) -> String {
+    format!(
+        r#"{{"identity":"ix://acme/pkg/T","displayName":"T","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{member}]}}"#
+    )
+}
+
+fn operation_result(type_ref: &str, extra: &str) -> String {
+    framed(r#"{"modifies":[],"creates":[],"deletes":[]}"#).replace(
+        r#""pre":[]"#,
+        &format!(r#""returns":{{"typeRef":"{type_ref}","multiplicity":{MULTIPLICITY},"nullable":false{extra}}},"pre":[]"#),
+    )
+}
+
+#[test]
+fn clock_and_quantity_nonmember_type_positions_refuse_at_exact_reference() {
+    // FR-146-AC-2, FR-146-AC-6: exact reader assertions below.
+    for (reference, code) in [
+        (
+            "ix://quire/native/Clock",
+            "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD",
+        ),
+        (
+            "ix://quire/unit/ms",
+            "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+        ),
+    ] {
+        for (kind, member) in [
+            ("alias", "target"),
+            ("reference", "target"),
+            ("sequence", "items"),
+            ("map", "values"),
+        ] {
+            let node = format!(
+                r#"{{"identity":"ix://acme/pkg/T","displayName":"T","kind":"{kind}","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","{member}":"{reference}"}}"#
+            );
+            assert_eq!(
+                diagnostics("", &[node]),
+                vec![(format!("/ir/types/0/{member}"), code)],
+                "{kind}: {reference}"
+            );
+        }
+        let variant = format!(
+            r#"{{"identity":"ix://acme/pkg/T","displayName":"T","kind":"union","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","variants":[{{"identity":"ix://acme/pkg/T/v","name":"v","origin":{GENERATED},"payloadType":"{reference}"}}]}}"#
+        );
+        assert_eq!(
+            diagnostics("", &[variant]),
+            vec![("/ir/types/0/variants/0/payloadType".to_string(), code)]
+        );
+        let node = record_with_member("").replace(
+            r#""constraints":[]"#,
+            &format!(
+                r#""constraints":[{}]"#,
+                constraint("k", "min", r#"{"value":"0"}"#, reference)
+            ),
+        );
+        assert_eq!(
+            diagnostics("", &[node]),
+            vec![("/ir/types/0/constraints/0/appliesTo".to_string(), code)]
+        );
+    }
+    assert_eq!(
+        diagnostics("", &[operation_result("ix://quire/native/Clock", "")]),
+        vec![(
+            "/ir/types/0/operations/0/returns/typeRef".to_string(),
+            "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD"
+        )]
+    );
+}
+
+#[test]
+fn quantity_members_check_uri_form_without_resolving_local_units() {
+    // FR-146-AC-6, FR-146-AC-9: exact reader assertions below.
+    for (name, accepted) in [
+        ("ms", true),
+        ("agent-ix/time-units/ms", true),
+        ("acme/rpc.v2/ms", true),
+        ("acme/rpc/ms", true),
+        ("a-b/c.d/e-f/ms", true),
+        ("", false),
+        ("3ms", false),
+        ("agent-ix/time-units/m-s", false),
+        ("agent-ix/time-units/3ms", false),
+        ("-acme/rpc/ms", false),
+        (".acme/rpc/ms", false),
+        ("agent-ix//ms", false),
+    ] {
+        let reference = format!("ix://quire/unit/{name}");
+        let member = field("ix://acme/pkg/T/x", "x", &reference);
+        let parameter = field("ix://acme/pkg/T/op/x", "x", &reference);
+        let parameter_record = framed(r#"{"modifies":[],"creates":[],"deletes":[]}"#)
+            .replace(r#""params":[]"#, &format!(r#""params":[{parameter}]"#));
+        for (record, pointer) in [
+            (record_with_member(&member), "/ir/types/0/fields/0/typeRef"),
+            (
+                parameter_record,
+                "/ir/types/0/operations/0/params/0/typeRef",
+            ),
+            (
+                operation_result(&reference, ""),
+                "/ir/types/0/operations/0/returns/typeRef",
+            ),
+        ] {
+            let expected = if accepted {
+                vec![]
+            } else {
+                vec![(
+                    pointer.to_string(),
+                    "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+                )]
+            };
+            assert_eq!(
+                diagnostics("", &[record]),
+                expected,
+                "{reference} at {pointer}"
+            );
+        }
+    }
+}
+
+#[test]
+fn special_member_shape_owns_nested_constraints_and_scalar_policy_diagnostics() {
+    // FR-146-AC-2, FR-146-AC-6: exact reader assertions below.
+    for (reference, code) in [
+        (
+            "ix://quire/native/Clock",
+            "agent-ix.semantic-ir.INVALID_CLOCK_FIELD",
+        ),
+        (
+            "ix://quire/unit/ms",
+            "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+        ),
+    ] {
+        // An explicit Decimal subject would otherwise leak a missing-policy diagnostic
+        // from the shared traversal, independently of constraint applicability.
+        let nested = constraint("k", "min", r#"{"value":"0"}"#, "ix://quire/native/Decimal");
+        let extras = format!(
+            r#", "unit":"ms","decimal":{{"precision":4,"scale":2}},"textProfile":"unicode","defaultValue":0,"constraints":[{nested}]"#
+        );
+        let member = field("ix://acme/pkg/T/x", "x", reference)
+            .replace(r#""defaultKind":"none""#, r#""defaultKind":"semantic""#);
+        let member = format!("{}{extras}}}", &member[..member.len() - 1]);
+        let mut observed = diagnostics("", &[record_with_member(&member)]);
+        observed.sort();
+        let mut expected: Vec<_> = [
+            "unit",
+            "decimal",
+            "textProfile",
+            "defaultKind",
+            "defaultValue",
+            "constraints",
+        ]
+        .into_iter()
+        .map(|name| (format!("/ir/types/0/fields/0/{name}"), code))
+        .collect();
+        expected.sort();
+        assert_eq!(observed, expected, "{reference}");
+    }
+    let member = field("ix://acme/pkg/T/x", "x", "ix://quire/unit/ms")
+        .replace(r#""lower":1"#, r#""lower":3"#);
+    assert_eq!(
+        diagnostics("", &[record_with_member(&member)]),
+        vec![(
+            "/ir/types/0/fields/0/multiplicity/upper".to_string(),
+            "agent-ix.semantic-ir.INVALID_MULTIPLICITY"
+        )]
+    );
+    assert_eq!(
+        diagnostics(
+            "",
+            &[operation_result(
+                "ix://quire/unit/ms",
+                r#", "decimal":{"precision":4,"scale":2}"#
+            )]
+        ),
+        vec![(
+            "/ir/types/0/operations/0/returns/decimal".to_string(),
+            "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER"
         )]
     );
 }

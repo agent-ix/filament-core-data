@@ -18,7 +18,7 @@ relationships:
 
 ## Description
 
-The repository SHALL make the thirty already-emitted JSON Schema 2020-12
+The repository SHALL make every inventory-derived JSON Schema 2020-12
 documents of `packages/semantic-core/generated/json-schema/` a first-class
 package artifact of the semantic kernel — inventoried by an index that names
 every document with its path, tied to the package version through the
@@ -29,7 +29,7 @@ them to any registry.
 
 ## Inputs
 
-- The thirty committed documents of `packages/semantic-core/generated/json-schema/`, produced by the pinned official `@typespec/json-schema` emitter under [FR-033](./FR-033-emit-semantic-core-json-schema.md) and byte-gated by `make semantic-core-check`
+- Every committed document of `packages/semantic-core/generated/json-schema/`, produced by the pinned official `@typespec/json-schema` emitter under [FR-033](./FR-033-emit-semantic-core-json-schema.md) and byte-gated by `make semantic-core-check`
 - `packages/semantic-core/package.json`, whose `version` the `base` encodes
 - The kernel bundle declaration of FR-081, which names this bundle as the kernel's structural source
 
@@ -43,7 +43,7 @@ them to any registry.
 
 ### What this requirement does not touch
 
-- This requirement SHALL read the thirty documents and write none of them. It runs no emitter, invokes no `tsp compile`, and reformats nothing; `packages/semantic-core/scripts/generate.mjs` remains the only writer of that directory, as `make semantic-core-generate` and `make semantic-core-check` already establish.
+- This requirement SHALL read every indexed document and write none of them. It runs no emitter, invokes no `tsp compile`, and reformats nothing; `packages/semantic-core/scripts/generate.mjs` remains the only writer of that directory, as `make semantic-core-generate` and `make semantic-core-check` already establish.
 - `packages/semantic-core/` SHALL be unchanged in its entirety, sources, manifest, and generated output alike.
 - The index SHALL NOT copy the documents into a second location. Each row names the one committed path, so the repository holds one copy of every schema document and a gate over it, rather than two copies and the drift between them. A vendored duplicate under `packages/semantic-kernel/` would be a second bundle with its own `$id`s and its own decay.
 - The index SHALL live at `packages/semantic-kernel/json-schema/index.json` and never inside `packages/semantic-core/generated/json-schema/`, which `generate.mjs` deletes outright when regenerating and whose `--check` form reports every `*.json` the emitter did not produce as stale. An index placed there would red the byte gate it exists to depend on.
@@ -71,10 +71,10 @@ them to any registry.
 
 ### Resolvable offline
 
-- The index SHALL record, and the check SHALL prove, that the bundle resolves entirely within itself: every `$ref` in every document either begins with the declared base and its remainder names a document the index lists, or is a local `#`-fragment. Thirty-five references are measured across the thirty documents and every one is of the first form.
+- The index SHALL record, and the check SHALL prove, that the bundle resolves entirely within itself: every `$ref` in every document either begins with the declared base and its remainder names a document the index lists, or is a local `#`-fragment. The recorded reference count SHALL equal the number of references read from the documents, and every non-local reference SHALL use the declared base.
 - A `$ref` carrying any other scheme, authority, or filesystem path SHALL fail the check naming the document and the JSON pointer.
 - The absolute `$id` base SHALL be treated as an identity and not as a location: no consumer, no gate, and no script in this repository SHALL fetch `https://schemas.agent-ix.org/...` to resolve a kernel reference, and the check SHALL assert that it opens no socket while resolving the bundle. A schema bundle that only resolves when a host is reachable is not a package artifact.
-- The check SHALL confirm every reference resolves against the local files alone, by loading the thirty documents from disk and resolving each reference in that set, so "resolvable offline" is a demonstrated property rather than a claim in a README.
+- The check SHALL confirm every reference resolves against the local files alone, by loading every indexed document from disk and resolving each reference in that set, so "resolvable offline" is a demonstrated property rather than a claim in a README.
 - The index SHALL record the reference count and the count of externally-resolving references, the latter being zero; a non-zero value SHALL fail.
 
 ### Publication
@@ -99,11 +99,11 @@ them to any registry.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-088-AC-1 | The index names all thirty documents in code-point order of file name, each with its repository-relative path and its declared `$id`. | Test |
+| FR-088-AC-1 | The index names every inventory-derived document in code-point order of file name, each with its repository-relative path and its declared `$id`. | Test |
 | FR-088-AC-2 | A document present in `packages/semantic-core/generated/json-schema/` and absent from the index, and an index row naming an absent document, each fail `make semantic-kernel-check` naming the file. | Test |
 | FR-088-AC-5 | Every document's `$id` equals the index's `base` concatenated with its file name, and a document given a `$id` outside the base fails the check naming the document. | Property |
 | FR-088-AC-6 | The index's `base` equals the `@jsonSchema` argument of `packages/semantic-core/main.tsp`. | Test |
-| FR-088-AC-8 | Every `$ref` in every document either begins with the declared base and names a listed document, or is a local `#`-fragment; the index records thirty-five references and zero externally-resolving ones. | Property |
+| FR-088-AC-8 | Every `$ref` in every document either begins with the declared base and names a listed document, or is a local `#`-fragment; the index records the number of references read from the documents and zero externally-resolving ones. | Property |
 | FR-088-AC-9 | A document carrying a `$ref` to `https://example.invalid/x.json`, to `../outside.json`, or to `/etc/passwd` fails the check naming the document and the JSON pointer. | Test |
 | FR-088-AC-10 | Resolving every reference in the bundle from disk succeeds with the runtime's socket constructor instrumented and asserting zero connections, and with no network available. | Integration |
 | FR-088-AC-11 | Every document declares `https://json-schema.org/draft/2020-12/schema`, and the index records that dialect read from the documents. | Test |

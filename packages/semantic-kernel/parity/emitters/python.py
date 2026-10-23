@@ -8,10 +8,9 @@ the wire form it answers with.
 
 One of the three generated families is measured here because a family is a
 rendering of one contract, not a second contract: `pydantic_v2_basemodel` is the
-validating family, and `msgspec_struct` cannot build a decoder for four of the
-thirty kernel types at all (FR-087 finding F2,
-`agent-ix/filament-core-data#125`), which is reported as unmet rather than as
-agreement.
+validating family. The adjacent union migration also permits `msgspec_struct`
+to construct decoders for its former four F2 failures; the parity run retains
+its original Pydantic decision path so its measurements remain comparable.
 
 It imports nothing under `conformance/` (FR-090-CON-4) and reads no clock and
 no environment variable (FR-090-CON-11).

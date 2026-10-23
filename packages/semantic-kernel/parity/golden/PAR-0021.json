@@ -8,7 +8,10 @@
 	"instance": {
 		"name": "unitSymbol",
 		"type": {
-			"target": "String"
+			"target": {
+				"kind": "KernelScalar",
+				"value": "String"
+			}
 		}
 	},
 	"expected": {
@@ -16,7 +19,10 @@
 		"wire": {
 			"name": "unitSymbol",
 			"type": {
-				"target": "String"
+				"target": {
+					"kind": "KernelScalar",
+					"value": "String"
+				}
 			}
 		}
 	},

@@ -2,7 +2,7 @@
  * The FR-088 modular JSON Schema artifact's decision path.
  *
  * The index at `packages/semantic-kernel/json-schema/index.json` names the
- * thirty published documents; every one is registered and the golden
+ * published documents; every one is registered and the golden
  * document's declaration is decided by its own `$id`. A schema validator
  * neither renames a member nor materializes a default, so the wire form it
  * answers with is the document it was handed.
