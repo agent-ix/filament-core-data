@@ -350,4 +350,13 @@ describe("FR-146 independent reader special member policy", () => {
 			["INVALID_QUANTITY_MEMBER", "types.0.fields.0.unit"],
 		]);
 	});
+	it("TC-1847 refuses a quantity constraint subject before interpreting its keyword", () => {
+		const document = clock();
+		document.types[0].constraints = [
+			{ keyword: "notAKeyword", appliesTo: "ix://quire/unit/ms" },
+		];
+		expect(observed(document)).toEqual([
+			["UNRESOLVED_TYPE_REF", "types.0.constraints.0.appliesTo"],
+		]);
+	});
 });

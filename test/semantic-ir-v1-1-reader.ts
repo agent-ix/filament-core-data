@@ -730,6 +730,17 @@ function checkConstraint(
 		});
 		return;
 	}
+	if (
+		typeof constraint.appliesTo === "string" &&
+		constraint.appliesTo.startsWith(QUANTITY_REFERENCE)
+	) {
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+			path: `${path}.appliesTo`,
+			message: "quantity reference is a field, parameter or result type only",
+		});
+		return;
+	}
 	const keyword = String(constraint.keyword);
 	const allowed = KEYWORD_APPLICABILITY[keyword];
 	if (!allowed) {
