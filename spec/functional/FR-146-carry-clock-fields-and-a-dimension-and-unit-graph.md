@@ -64,8 +64,9 @@ field values (QSpec FR-415, FR-141), so no IR member carries a clock's value;
 the clock field shape below refuses a default.
 
 The IR gives no dimension or unit a built-in meaning. `Time`, `s` and `ms` are
-ordinary declarations; QSL reads the base dimension named `Time` as its time
-dimension (QSL FR-230).
+ordinary declarations; QSL reads the dimension of a model's time unit as its
+time dimension when that dimension is a base dimension named `Time` (QSL
+FR-230).
 
 The FR-027 field `unit` member is unchanged: it is an opaque UCUM annotation
 on a scalar field for generated targets, and no reader resolves it against the
@@ -159,6 +160,12 @@ a field or operation parameter.
   `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` at `/dimensions/<i>/identity`.
 - If a base dimension's `terms` is not empty, then the reader SHALL refuse
   `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` at `/dimensions/<i>/terms`.
+- A dimension's identity SHALL carry the package identity, so dimensions of one
+  `name` in documents of different packages are different dimensions. The
+  reader SHALL compare a document's dimensions only with that document's own,
+  and SHALL raise no diagnostic for a `name` that a dimension of another
+  package also carries; a consumer that admits several packages names a package
+  dimension through its model alias (QSpec FR-142 "Namespaces").
 - If a term's `dimension` names no dimension node of the document, then the
   reader SHALL refuse `agent-ix.semantic-ir.UNRESOLVED_DIMENSION_REF` at
   `/dimensions/<i>/terms/<t>/dimension`.
@@ -384,6 +391,7 @@ A result carries no identity of its own, so a backend profile's
 | FR-146-AC-7 | Two documents differing only in the order of `units` have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; every committed positive fixture keeps its bytes and fingerprint; adding a unit classifies additive, and removing one, changing its `scale` or changing a dimension's `base` classifies breaking. | Test (TC-1848) |
 | FR-146-AC-8 | The AC-1 document and the AC-6 document each make every generation backend raise the blocking `UNDECLARED_LOSS` naming the clock or unit-typed member and write no file. With `allowedOmissions` naming the member, the backend omits it with one non-blocking `DECLARED_LOSS` naming it. With `allowedOmissions` naming only the owner, each of these is dropped with the owner under the owner's single `DECLARED_LOSS` and raises no loss of its own: the clock field of an omitted `Call` type, a unit-typed parameter of an omitted operation, a unit-typed parameter of an operation of an omitted type, and a unit-typed result of an omitted operation. A generated operation with a unit-typed result raises the blocking `UNDECLARED_LOSS` naming the operation and `returns`. A generated subtype of an omitted `Call` that inherits its clock field raises the blocking `UNDECLARED_LOSS` naming the field, unless `allowedOmissions` names the field. A document carrying `dimensions` and `units` generates exactly what it generates without them, and the JSON Schema and rust-serde backends' native lists carry `Clock` with no IR scalar. | Test (TC-1849) |
 | FR-146-AC-9 | A field, an operation parameter and an operation result typed `ix://quire/unit/agent-ix/time-units/ms`, `ix://quire/unit/acme/rpc.v2/ms` and `ix://quire/unit/acme/rpc/ms` are accepted with no diagnostic; the typeRefs `ix://quire/unit/agent-ix/time-units/m-s` and `ix://quire/unit/agent-ix/time-units/3ms` (the unit-name segment outside its pattern), `ix://quire/unit/-acme/rpc/ms` and `ix://quire/unit/.acme/rpc/ms` (an earlier segment outside both patterns) and `ix://quire/unit/agent-ix//ms` (an empty segment) each refuse exactly `UNRESOLVED_TYPE_REF` at that `typeRef`. | Test (TC-1852) |
+| FR-146-AC-10 | The documents of packages `acme/rpc` and `acme/flow`, each declaring base dimension `Time` (`ix://acme/rpc/dimension/Time`, `ix://acme/flow/dimension/Time`), root unit `s` and unit `ms` of `1/1000` of `s`, are each accepted by every reader with no diagnostic, and the two `Time` dimensions are two dimensions: a reader given one document raises no diagnostic for the other's `Time`. | Test (TC-1855) |
 
 ## Dependencies
 
