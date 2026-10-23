@@ -305,11 +305,22 @@ a field or operation parameter.
   admitted order.
 - The normalizer SHALL serialize a document with no `dimensions` and no `units`
   with neither member.
-- The compatibility classifier (FR-025, FR-051) SHALL classify an added
-  dimension or unit as additive.
-- The compatibility classifier SHALL classify a removed dimension or unit, or a
-  changed `base`, `terms`, `dimension`, `target`, `scale` or `offset`, as
-  breaking.
+- The compatibility classifier (FR-025, FR-051) SHALL observe each top-level
+  dimension, unit definition and dimension equivalence under the observed
+  families `dimension`, `unit-definition` and `dimension-equivalence`,
+  respectively. `src/compiler/compat/family-map.json` SHALL map all three to
+  report family `type` on surface `semantic`. The existing observed family
+  `unit` SHALL continue to mean only the FR-027 field `unit` UCUM annotation,
+  mapped to report family `field` on surface `semantic`.
+- Adding a dimension, unit definition or dimension equivalence SHALL classify
+  as `additive`. Removing any of them SHALL classify as `breaking`.
+- Renaming a dimension or unit definition SHALL classify as `breaking`, because
+  its minted identity changes. Changing a dimension's `base` or `terms`, a
+  unit definition's `dimension`, `target`, `scale` or `offset`, or a dimension
+  equivalence's dimension pair or `rootScale` SHALL classify as `breaking`.
+  Changing an equivalence pair is a removal of the old relation and an addition
+  of the new one, so the report SHALL use the more restrictive `breaking`
+  disposition.
 
 ### Generation backends
 
@@ -381,7 +392,7 @@ A result carries no identity of its own, so a backend profile's
 | FR-146-AC-4 | Each refuses exactly one diagnostic at the stated pointer: a term naming an undeclared dimension (`UNRESOLVED_DIMENSION_REF`, `…/terms/0/dimension`); a unit typed by an undeclared dimension (`UNRESOLVED_DIMENSION_REF`, `/units/<j>/dimension`); a unit targeting an undeclared unit (`UNRESOLVED_UNIT_REF`, `/units/<j>/target`); and, each `INVALID_UNIT_GRAPH`: scale `"0"` (`/scale`), a target in another dimension (`/target`), a second root of `Time` (`/units/<j>` of the second root), a root with scale `"2"` (`/scale`), a root with offset `"273"` (`/offset`), a two-unit target cycle (`/target` of the lower-index unit only), a self-target (`/target`), a two-dimension term cycle (the lower-index dimension's term only), a three-dimension component holding two cycles (one refusal, at the least-index dimension's first term into the component), a base dimension with a term (`/terms`), terms out of order and a repeated term (the later term), a term exponent `"0"` (`/exponent`), an identity `ix://acme/rpc/unit/msec` on unit `ms` and an identity `ix://acme/rpc/dimension/Duration` on dimension `Time` (`/identity`). A document carrying a zero scale and a cycle reports both. Two units named `ms` refuse `DUPLICATE_IDENTITY` at the later one's `/identity`. A dimension `Time` with no units is accepted. | Test (TC-1845) |
 | FR-146-AC-5 | Scale spellings `"2/4"`, `"1/1"`, `"-0"`, `"0/5"`, `"01/3"` and `"1.5"` each refuse exactly `INVALID_OPERAND` at `/units/<j>/scale`; the JSON number `0.001` refuses exactly `SCHEMA_VIOLATION` there; a numerator of 2^127 refuses exactly `INTEGER_OUTSIDE_I128`; `"1/1000"`, `"-3/2"` and `"273"` are accepted; an exponent `"+1"` refuses exactly `INVALID_OPERAND` at its pointer. | Test (TC-1846) |
 | FR-146-AC-6 | A field, an operation parameter and an operation result typed `ix://quire/unit/ms` are accepted with no diagnostic, both in the AC-3 document and in a document that declares no units; `ix://quire/unit/ms` as an alias target or sequence `items` refuses exactly `UNRESOLVED_TYPE_REF` at that member, and so do the typeRefs `ix://quire/unit/` and `ix://quire/unit/3ms`; a unit-typed field carrying `unit: "ms"`, a `min` constraint, a `decimal` policy and a semantic default refuses exactly one `INVALID_QUANTITY_MEMBER` at each of `/unit`, `/constraints`, `/decimal`, `/defaultKind` and `/defaultValue` under the field, and no `UNIT_ON_NON_SCALAR`, `CONSTRAINT_NOT_APPLICABLE`, decimal-policy code, `INVALID_DEFAULT_VALUE`, `UNKNOWN_CONSTRAINT_KEYWORD` or `INVALID_PATTERN`. | Test (TC-1847) |
-| FR-146-AC-7 | Two documents differing only in the order of `units` have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; every committed positive fixture keeps its bytes and fingerprint; adding a unit classifies additive, and removing one, changing its `scale` or changing a dimension's `base` classifies breaking. | Test (TC-1848) |
+| FR-146-AC-7 | Two documents differing only in the order of `units` have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; every committed positive fixture keeps its bytes and fingerprint. Each top-level dimension, unit-definition or dimension-equivalence change is reported with family `type` and surface `semantic`, using the corresponding observed family in `family-map.json`; the observed family `unit` remains the FR-027 field UCUM annotation. Adding a dimension, unit definition or equivalence is `additive`; removing any is `breaking`; renaming a dimension or unit definition, changing a dimension's `base` or `terms`, changing a unit definition's `dimension`, `target`, `scale` or `offset`, or changing an equivalence's dimension pair or `rootScale` is `breaking`. | Test (TC-1848) |
 | FR-146-AC-8 | The AC-1 document and the AC-6 document each make every generation backend raise the blocking `UNDECLARED_LOSS` naming the clock or unit-typed member and write no file. With `allowedOmissions` naming the member, the backend omits it with one non-blocking `DECLARED_LOSS` naming it. With `allowedOmissions` naming only the owner, each of these is dropped with the owner under the owner's single `DECLARED_LOSS` and raises no loss of its own: the clock field of an omitted `Call` type, a unit-typed parameter of an omitted operation, a unit-typed parameter of an operation of an omitted type, and a unit-typed result of an omitted operation. A generated operation with a unit-typed result raises the blocking `UNDECLARED_LOSS` naming the operation and `returns`. A generated subtype of an omitted `Call` that inherits its clock field raises the blocking `UNDECLARED_LOSS` naming the field, unless `allowedOmissions` names the field. A document carrying `dimensions` and `units` generates exactly what it generates without them, and the JSON Schema and rust-serde backends' native lists carry `Clock` with no IR scalar. | Test (TC-1849) |
 | FR-146-AC-9 | A field, an operation parameter and an operation result typed `ix://quire/unit/agent-ix/time-units/ms`, `ix://quire/unit/acme/rpc.v2/ms` and `ix://quire/unit/acme/rpc/ms` are accepted with no diagnostic; the typeRefs `ix://quire/unit/agent-ix/time-units/m-s` and `ix://quire/unit/agent-ix/time-units/3ms` (the unit-name segment outside its pattern), `ix://quire/unit/-acme/rpc/ms` and `ix://quire/unit/.acme/rpc/ms` (an earlier segment outside both patterns) and `ix://quire/unit/agent-ix//ms` (an empty segment) each refuse exactly `UNRESOLVED_TYPE_REF` at that `typeRef`. | Test (TC-1852) |
 
