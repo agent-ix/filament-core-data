@@ -273,10 +273,10 @@ computed by `quire matrix` from those trace tags.
 | TC-252 | No property in the compiled program resolves to `unknown` or an untyped record except `DefaultDecl.value` | Static | P0 | FR-031-AC-5, FR-031-CON-2 |
 | TC-253 | Adding one model at a new minor version changes only its emitted file and the bundle index; every prior file is byte-identical | Snapshot | P0 | FR-031-AC-6 |
 | TC-254 | The grammar lives under `packages/semantic-core/` (every shipped path resolves inside it), is compiled by the root-installed toolchain, is published rather than `private`, and no `spikes/` file imports it | Static | P0 | FR-031-CON-1 |
-| TC-255 | `kernel-scalars.json` has exactly one entry per `KernelScalar` member and none names `any` | Static | P0 | FR-032-AC-1 |
+| TC-255 | `kernel-scalars.json` has exactly one entry per `KernelScalar` member and only `JsonObject` names `any` | Static | P0 | FR-032-AC-1 |
 | TC-256 | The semantic-core reader rejects `Decimal` without `decimal` and `String` with `decimal` | Unit | P0 | FR-032-AC-2 |
-| TC-257 | Every entry's `irScalar` is in the IR v1 scalar enumeration, except `JsonObject` → open record | Static | P0 | FR-032-AC-3 |
-| TC-258 | A tenth enum member `Any` added to the source fails the inventory test | Unit | P0 | FR-032-AC-4, US-007-EX-3 |
+| TC-257 | Every entry's `irScalar` is in the IR v1 scalar enumeration, except `JsonObject` → `any` | Static | P0 | FR-032-AC-3 |
+| TC-258 | A twelfth enum member `Any` added to the source fails the inventory test | Unit | P0 | FR-032-AC-4, US-007-EX-3 |
 | TC-259 | Every `type.target` in the committed FR-006 `FieldDecl[]` fixture is `UUID`, `Integer`, `String`, `Timestamp`, `JsonObject`, or a `SemanticId` | Unit | P1 | FR-032-AC-5 |
 | TC-260 | A `KernelScalar` addition classifies additive; removal or re-representation classifies breaking, keyed on member name | Unit | P0 | FR-032-CON-1 |
 | TC-261 | One schema file exists per inventory model and enum with an absolute `$id` under the package base | Static | P0 | FR-033-AC-1 |
@@ -1372,6 +1372,8 @@ computed by `quire matrix` from those trace tags.
 | TC-1850 | Field created_at, operation reset_all and its parameter created_at of FR-001 mint FR-001/created_at, FR-001/reset_all and FR-001/reset_all/created_at on the Rust and Node minters and in the shared identity table; fields created_at and created__at of one record mint two identities; a field _tmp raises one blocking UNSLUGGABLE_NAME at its row and FR-001 lifts to no definition; a field and a state created_at of one machine raise DUPLICATE_IDENTITY at the state; the alias is FR-001Created-at | Unit | P0 | FR-095-AC-23 |
 | TC-1851 | The TypeSpec frontend mints model properties created_at and created__at, operation reset_all and its parameter created_at verbatim with no diagnostic, and a property _tmp raises one agent-ix.compiler.UNSLUGGABLE_NAME at its locus with no identity | Unit | P0 | FR-053-AC-16 |
 | TC-1852 | Unit typeRefs qualified by a package identity whose segments hold a hyphen or a dot (agent-ix/time-units/ms, acme/rpc.v2/ms) are accepted on a field, a parameter and a result; a unit-name segment with a hyphen or a leading digit, an earlier segment starting with a hyphen or a dot, and an empty segment each refuse exactly UNRESOLVED_TYPE_REF at the typeRef | Unit | P0 | FR-146-AC-9, FR-146-CON-1 |
+| TC-1853 | A field typed `ix://quire/native/Bytes`, one typed `ix://quire/native/Duration` and one typed `ix://quire/native/JsonObject` are admitted by QSpec domain-package intake with no `malformed-declaration`; `kernel-scalars.json` records `Bytes` → `bytes` (padded base64, `unitAllowed` false), `Duration` → `duration`, `JsonObject` → `any` | Unit | P0 | FR-032-AC-7 |
+| TC-1854 | `PT0S`, `PT1.5S`, `-PT0.000000001S`, `P1DT2H3M4.5S`, `PT36H` are `Duration` values of `0`, `3/2`, `-1/1000000000`, `93784.5`, `129600` seconds and `P1Y`, `P1M`, `P1W`, `P`, `PT`, `PT1.0000000001S`, `1S`, `pt1s` are outside the domain; `` (empty), `AP8=`, `AQID` are `Bytes` of 0, 2, 3 octets and `AP8`, `AP8==`, `A P8=` are outside it; `{"a":1,"b":[true,null]}` equals `{"b":[true,null],"a":1}` as `JsonObject`, and `[]`, `3`, `"x"`, `null` are `JsonObject` values | Unit | P0 | FR-032-AC-8 |
 | TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 |
 
 ## Option Permutation Matrix

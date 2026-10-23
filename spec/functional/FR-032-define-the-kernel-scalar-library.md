@@ -11,6 +11,12 @@ relationships:
     type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-144"
     type: "depends_on"
+  - target: "ix://agent-ix/quire-specification/FR-154"
+    type: "references"
+  - target: "ix://agent-ix/quire-specification/FR-322"
+    type: "references"
+  - target: "ix://agent-ix/quire-specification/FR-149"
+    type: "references"
 ---
 # [FR-032] Define the kernel scalar library
 
@@ -36,11 +42,13 @@ with a representation and bounds policy recorded in a machine-readable table.
 - The table SHALL record `Decimal` as IR `decimal`, governed by the decimal policy (`precision`, `scale`) that `TypeRef.decimal` carries under the grammar rule in FR-031 and that the IR carries as the `decimal` member ([FR-144](./FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md)).
 - The table SHALL record `Float32` as IR `float32` (IEEE 754 binary32) and `Float64` as IR `float64` (IEEE 754 binary64), each serialized as a finite JSON number.
 - The table SHALL record `Timestamp` as IR `datetime`, UTC, at most nanosecond precision, RFC 3339 serialization.
-- The table SHALL record `Duration` as IR `duration` with ISO 8601 serialization.
-- The table SHALL record `Bytes` as IR `bytes` whose length a `maxLength` constraint bounds in bytes.
+- The table SHALL record `Duration` as IR `duration`, an exact amount of elapsed time, serialized as an ISO 8601 duration string whose components are days, hours, minutes and seconds only (`[-]P[nD][T[nH][nM][n[.f]S]]`, at least one component, at most nine fractional-second digits, one day being 86400 seconds); a year, month or week component is outside the instance domain. A `Duration` value denotes the exact rational number of seconds its components give, and QSpec FR-322 "Model-owned members" reads `ix://quire/native/Duration` as the quantity type `Quantity<s>` over the unit `s` of the base dimension `Time`, so `PT1.5S` and `1500 ms` denote one duration.
+- The table SHALL record `Bytes` as IR `bytes`, an octet sequence of any length including the empty sequence, serialized as a JSON string of standard padded base64 (RFC 4648 section 4), whose length a `maxLength` constraint bounds in octets.
+- `Bytes` values compare equal exactly when their octet sequences are identical, which QSpec FR-149 states, and `Bytes` admits the octet count and concatenation operations of QSpec FR-322 and no ordering.
 - The table SHALL record `String` as IR `string` whose length `minLength`/`maxLength` bound in Unicode code points.
 - The table SHALL record `UUID` as IR `uuid` and `Boolean` as IR `boolean`.
-- The table SHALL record `JsonObject` as IR `any`, an unconstrained JSON value that is never typed further (FR-139).
+- The table SHALL record `JsonObject` as IR `any`, an unconstrained JSON value of any kind (object, array, string, number, boolean or `null`) that is never typed further (FR-139), despite its name. Two `JsonObject` values compare equal exactly when their RFC 8785 (JCS) serializations are identical, and QSpec FR-149 states that equality; the type admits equality only, with no member access and no ordering.
+- QSpec domain-package intake (QSpec FR-154) SHALL admit the native reference `ix://quire/native/<Name>` of every `KernelScalar` member, `Bytes`, `Duration` and `JsonObject` included, as the `typeRef` of a field, an operation parameter or result, an alias target, a sequence `items`, a map `values` and a variant case `payloadType`.
 - The table SHALL mark `unitAllowed: true` only for `Integer`, `Decimal`, `Float32`, `Float64`, `Timestamp`, `Duration`.
 - The bounds in the table are documentation for consumers; the semantic-core reader SHALL NOT evaluate values against them.
 
@@ -60,6 +68,8 @@ with a representation and bounds policy recorded in a machine-readable table.
 | FR-032-AC-4 | A twelfth enum member `Any` added to the source fails FR-031's inventory test. | Test |
 | FR-032-AC-6 | `kernel-scalars.json` records `Integer` → `integer`, `Decimal` → `decimal`, `Float32` → `float32` and `Float64` → `float64`, no entry maps to `number`, and `Integer`'s bounds name the default instance domain `-9007199254740991..=9007199254740991` and the i128 ceiling on a declared bound, rather than a 64-bit width. | Analysis |
 | FR-032-AC-5 | Every `type.target` in the committed FR-006 `FieldDecl[]` fixture is one of `UUID`, `Integer`, `String`, `Timestamp`, `JsonObject`, or a `SemanticId`. | Test |
+| FR-032-AC-7 | A field typed `ix://quire/native/Bytes`, a field typed `ix://quire/native/Duration` and a field typed `ix://quire/native/JsonObject` are each admitted by a QSpec domain-package intake (QSpec FR-154-AC-21) and none refuses `malformed-declaration`; `kernel-scalars.json` records `Bytes` → `bytes` serialized as padded base64 with `unitAllowed: false`, `Duration` → `duration` and `JsonObject` → `any`. | Test (TC-1853) |
+| FR-032-AC-8 | The instance strings `PT0S`, `PT1.5S`, `-PT0.000000001S`, `P1DT2H3M4.5S` and `PT36H` are `Duration` values denoting `0`, `3/2`, `-1/1000000000`, `93784.5` and `129600` seconds; `P1Y`, `P1M`, `P1W`, `P`, `PT`, `PT1.0000000001S`, `1S` and `pt1s` are outside the `Duration` instance domain. The base64 strings `` (empty), `AP8=` and `AQID` are `Bytes` values of 0, 2 and 3 octets, and `AP8`, `AP8==` and `A P8=` are outside the `Bytes` instance domain. The values `{"a":1,"b":[true,null]}` and `{"b":[true,null],"a":1}` are equal `JsonObject` values and `[]`, `3`, `"x"` and `null` are `JsonObject` values. | Test (TC-1854) |
 
 ## Dependencies
 
