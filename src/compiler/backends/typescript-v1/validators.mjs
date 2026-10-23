@@ -475,6 +475,19 @@ function unionCheckBody(entry) {
 	];
 	for (const variant of entry.variants ?? []) {
 		lines.push(`\t\tcase ${literal(variant.name)}: {`);
+		lines.push(
+			...nameSet(
+				"\t\t\t",
+				"declared",
+				variant.payload === undefined
+					? [UNION_DISCRIMINANT]
+					: [UNION_DISCRIMINANT, "value"],
+			),
+			"\t\t\tfor (const key of ownKeys(candidate)) {",
+			"\t\t\t\tif (declared.includes(key)) continue;",
+			'\t\t\t\tfail(errors, join(pointer, key), CODES.UNKNOWN_MEMBER, "the member is not declared by this union variant");',
+			"\t\t\t}",
+		);
 		if (variant.payload === undefined) {
 			lines.push("\t\t\tbreak;");
 		} else {

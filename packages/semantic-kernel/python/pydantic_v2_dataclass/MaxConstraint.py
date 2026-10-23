@@ -8,8 +8,10 @@ from typing import Literal
 from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
 
+from .MaxConstraintValue import MaxConstraintValue
+
 
 @dataclass(config=ConfigDict(extra='forbid'))
 class MaxConstraint:
     keyword: Literal['max']
-    value: float | str
+    value: MaxConstraintValue

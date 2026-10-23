@@ -17,14 +17,14 @@ or `make semantic-kernel-parity`.
 Current result:
 
 ```
-90/113 documents agree; 47 divergence rows, 0 unadjudicated
+92/114 documents agree; 45 divergence rows, 0 unadjudicated
 ```
 
 ## What is here
 
 | Path | Written by | What it is |
 | --- | --- | --- |
-| `golden/PAR-NNNN.json` | authored | 113 kernel instance documents, all 31 semantic declarations, classes `positive` / `negative` / `boundary` |
+| `golden/PAR-NNNN.json` | authored | 114 kernel instance documents, all 31 semantic declarations, classes `positive` / `negative` / `boundary` |
 | `golden.mjs` | authored | loads the corpus; names the four packages |
 | `project.mjs` | authored | lifts an emitter answer into the corpus verdict shape |
 | `emitters/*` | authored | one decision path per package; each returns `{id, resultState, wire, unknownFate}` |
@@ -74,7 +74,7 @@ file, which NFR-030 forbids. The remaining open defect owners are:
 | `DefaultDecl.value` and `OperationDecl.params` IR expressiveness losses | 11 | `agent-ix/filament-core-data#78` |
 | Optional and nullable are the same type in Rust and Python | 4 | `agent-ix/filament-core-data#129` |
 
-43 of the 47 rows are IR lowering defects rendered faithfully by the Rust and
+41 of the 45 rows are IR lowering defects rendered faithfully by the Rust and
 TypeScript packages, not backend defects. The previous untagged-union defect
 (#128) was fixed; its 36 rows no longer occur.
 

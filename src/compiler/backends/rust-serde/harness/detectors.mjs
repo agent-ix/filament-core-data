@@ -1111,8 +1111,8 @@ export const DETECTORS = Object.freeze([
 			// without a case is already a failing gate. Restating the number here
 			// would make adding a code fail twice and say less the second time.
 			assert(
-				entries.length >= 21,
-				`the registry carries ${entries.length} codes, fewer than the twenty-one FR-058 declares`,
+				entries.length >= 20,
+				`the registry carries ${entries.length} codes, fewer than the twenty required after the declared bytes wire form`,
 			);
 			assert(
 				new Set(entries.map((one) => one.code)).size === entries.length,
@@ -1160,7 +1160,7 @@ export const DETECTORS = Object.freeze([
 			}
 			// A blocking code blocks: a refused document emits nothing.
 			const refused = backend.mapping.mapDocument(
-				documentOf([scalarType("Blob", "bytes")]),
+				documentOf([scalarType("Odd", "unsupported")]),
 				{},
 			);
 			assert(
@@ -1169,7 +1169,7 @@ export const DETECTORS = Object.freeze([
 			);
 			assert(
 				backend.diagnostics.hasBlocking(refused.diagnostics),
-				"the bytes refusal is not blocking",
+				"the unsupported scalar refusal is not blocking",
 			);
 		},
 	},

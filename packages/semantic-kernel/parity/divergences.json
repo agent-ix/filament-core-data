@@ -17,7 +17,6 @@
 			"property": "decision",
 			"issue": "agent-ix/filament-core-data#127",
 			"documents": [
-				"PAR-0009",
 				"PAR-0025",
 				"PAR-0039",
 				"PAR-0053",
@@ -42,7 +41,6 @@
 			"property": "decision",
 			"issue": "agent-ix/filament-core-data#127",
 			"documents": [
-				"PAR-0009",
 				"PAR-0025",
 				"PAR-0039",
 				"PAR-0053",
@@ -127,30 +125,6 @@
 		}
 	],
 	"rows": [
-		{
-			"document": "PAR-0009",
-			"declaration": "TypeRef",
-			"class": "negative",
-			"property": "decision",
-			"decisions": {
-				"contract": "invalid",
-				"typescript": "success"
-			},
-			"wrongSide": "typescript",
-			"adjudicatedBy": "agent-ix/filament-core-data#127"
-		},
-		{
-			"document": "PAR-0009",
-			"declaration": "TypeRef",
-			"class": "negative",
-			"property": "decision",
-			"decisions": {
-				"contract": "invalid",
-				"rust": "success"
-			},
-			"wrongSide": "rust",
-			"adjudicatedBy": "agent-ix/filament-core-data#127"
-		},
 		{
 			"document": "PAR-0015",
 			"declaration": "DefaultDecl",

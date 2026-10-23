@@ -8,7 +8,10 @@
 	"instance": {
 		"name": "amount",
 		"type": {
-			"target": "Decimal",
+			"target": {
+				"kind": "KernelScalar",
+				"value": "Decimal"
+			},
 			"decimal": {
 				"precision": 18,
 				"scale": 2
@@ -23,8 +26,14 @@
 		"doc": "The amount.",
 		"constraints": [
 			{
-				"keyword": "min",
-				"value": 0
+				"kind": "MinConstraint",
+				"value": {
+					"keyword": "min",
+					"value": {
+						"kind": "number",
+						"value": 0
+					}
+				}
 			}
 		]
 	},
@@ -33,7 +42,10 @@
 		"wire": {
 			"name": "amount",
 			"type": {
-				"target": "Decimal",
+				"target": {
+					"kind": "KernelScalar",
+					"value": "Decimal"
+				},
 				"decimal": {
 					"precision": 18,
 					"scale": 2
@@ -48,8 +60,14 @@
 			"doc": "The amount.",
 			"constraints": [
 				{
-					"keyword": "min",
-					"value": 0
+					"kind": "MinConstraint",
+					"value": {
+						"keyword": "min",
+						"value": {
+							"kind": "number",
+							"value": 0
+						}
+					}
 				}
 			]
 		}

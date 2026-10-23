@@ -66,6 +66,133 @@ function barePrimitive(schema) {
 	);
 }
 
+/** Strict closed adjacent branch: `{kind: const, value: required payload}`. */
+function adjacentBranch(branch) {
+	if (!branch || typeof branch !== "object" || branch.type !== "object")
+		return null;
+	const properties = branch.properties;
+	if (!properties || typeof properties !== "object") return null;
+	const keys = Object.keys(properties);
+	if (
+		!keys.includes("kind") ||
+		keys.some((key) => key !== "kind" && key !== "value")
+	)
+		return null;
+	const tag = properties.kind;
+	if (
+		!tag ||
+		typeof tag !== "object" ||
+		typeof tag.const !== "string" ||
+		Object.keys(tag).some((key) => key !== "const" && key !== "type")
+	)
+		return null;
+	if (tag.type !== undefined && tag.type !== "string") return null;
+	const required = branch.required;
+	if (
+		!Array.isArray(required) ||
+		required.length !== keys.length ||
+		keys.some((key) => !required.includes(key))
+	)
+		return null;
+	if (
+		JSON.stringify(branch.unevaluatedProperties) !== JSON.stringify({ not: {} })
+	)
+		return null;
+	if (
+		Object.keys(branch).some(
+			(key) =>
+				![
+					"type",
+					"properties",
+					"required",
+					"unevaluatedProperties",
+					"description",
+				].includes(key),
+		)
+	)
+		return null;
+	const payload = properties.value;
+	if (
+		payload !== undefined &&
+		(!payload ||
+			typeof payload !== "object" ||
+			!(
+				(typeof payload.$ref === "string" &&
+					Object.keys(payload).every(
+						(key) => key === "$ref" || key === "x-agent-ix-semantic-id",
+					)) ||
+				barePrimitive(payload)
+			))
+	)
+		return null;
+	return { name: tag.const, payload };
+}
+
+function adjacentVariants(branches, owner, file, minted) {
+	if (!Array.isArray(branches) || branches.length < 2) return null;
+	const parsed = branches.map(adjacentBranch);
+	if (parsed.some((branch) => !branch)) return null;
+	if (new Set(parsed.map((branch) => branch.name)).size !== parsed.length)
+		return null;
+	return parsed.map((branch) => {
+		let payloadType;
+		if (branch.payload) {
+			if ("$ref" in branch.payload)
+				payloadType = identityOf(nameFromUrl(branch.payload.$ref));
+			else {
+				const scalarName = `${owner}${segment(branch.name)}`;
+				minted.push({
+					name: scalarName,
+					kind: "scalar",
+					scalar: SCALAR_OF[branch.payload.type],
+				});
+				payloadType = identityOf(scalarName);
+			}
+		}
+		return completeVariant(owner, { name: branch.name, payloadType }, file);
+	});
+}
+
+/** Find `oneOf` keywords outside the three adjacent-union positions. */
+function misplacedOneOf(schema) {
+	const pointers = [];
+	const walk = (node, at, position) => {
+		if (!node || typeof node !== "object") return;
+		if (Array.isArray(node)) {
+			node.forEach((item, index) => {
+				walk(item, `${at}/${index}`, "other");
+			});
+			return;
+		}
+		for (const [key, child] of Object.entries(node)) {
+			const pointer = `${at}/${key}`;
+			if (key === "oneOf") {
+				if (!["top", "property", "item"].includes(position))
+					pointers.push(pointer);
+				walk(child, pointer, "other");
+			} else if (
+				key === "properties" &&
+				position === "top" &&
+				child &&
+				typeof child === "object"
+			) {
+				for (const [name, property] of Object.entries(child))
+					walk(property, `${pointer}/${name}`, "property");
+			} else if (
+				key === "items" &&
+				position === "property" &&
+				node.type === "array"
+			) {
+				walk(child, pointer, "item");
+			} else {
+				walk(child, pointer, "other");
+			}
+		}
+	};
+	walk(schema, "", "top");
+	return pointers;
+}
+
 /**
  * A constraint in the shape `semantic-ir.schema.json` requires: an identity,
  * the subject it applies to, a diagnostic code and an origin — not a bare
@@ -214,9 +341,40 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 
 	/** @type {string | null} */
 	let typeRef = null;
+	if (
+		schema &&
+		Object.hasOwn(schema, "oneOf") &&
+		(!Array.isArray(schema.oneOf) ||
+			Object.keys(schema).some(
+				(key) => key !== "oneOf" && key !== "x-agent-ix-semantic-id",
+			))
+	) {
+		out.push(
+			diag(
+				DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+				`oneOf at ${at} is not an adjacent union position`,
+				`${at}/oneOf`,
+			),
+		);
+		return null;
+	}
 
 	if (schema && typeof schema === "object" && "$ref" in schema) {
 		typeRef = identityOf(nameFromUrl(schema.$ref));
+	} else if (schema && Array.isArray(schema.oneOf)) {
+		const name = mintName(owner, property);
+		const variants = adjacentVariants(schema.oneOf, name, file, minted);
+		if (!variants) {
+			out.push(
+				diag(
+					DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+					`oneOf branches at ${at} are not closed adjacent variants`,
+					`${at}/oneOf`,
+				),
+			);
+			return null;
+		}
+		typeRef = mint({ kind: "union", extensions: [], variants });
 	} else if (schema && Array.isArray(schema.anyOf)) {
 		// Branches are all `$ref`s, or all recognised property-position forms.
 		// A mixture is the case the table does not cover.
@@ -281,8 +439,39 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 		typeRef = mint({ kind: "scalar", scalar: "integer", constraints });
 	} else if (schema && schema.type === "array") {
 		const items = schema.items;
+		if (
+			items &&
+			Object.hasOwn(items, "oneOf") &&
+			(!Array.isArray(items.oneOf) ||
+				Object.keys(items).some(
+					(key) => key !== "oneOf" && key !== "x-agent-ix-semantic-id",
+				))
+		) {
+			out.push(
+				diag(
+					DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+					`oneOf at ${at}/items is not an adjacent array item`,
+					`${at}/items/oneOf`,
+				),
+			);
+			return null;
+		}
 		if (items && typeof items === "object" && "$ref" in items) {
 			typeRef = identityOf(nameFromUrl(items.$ref));
+		} else if (items && Array.isArray(items.oneOf)) {
+			const name = mintName(owner, property);
+			const variants = adjacentVariants(items.oneOf, name, file, minted);
+			if (!variants) {
+				out.push(
+					diag(
+						DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+						`array items at ${at} are not closed adjacent oneOf variants`,
+						`${at}/items/oneOf`,
+					),
+				);
+				return null;
+			}
+			typeRef = mint({ kind: "union", extensions: [], variants });
 		} else if (
 			items &&
 			Array.isArray(items.anyOf) &&
@@ -425,6 +614,15 @@ export function lowerBundle(documents, options = {}) {
 				),
 			);
 		}
+		for (const pointer of misplacedOneOf(schema)) {
+			out.push(
+				diag(
+					DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+					`oneOf at ${file}${pointer} is outside an adjacent union position`,
+					`${file}${pointer}`,
+				),
+			);
+		}
 	}
 	if (out.length > 0) return { diagnostics: Object.freeze(out) };
 
@@ -444,6 +642,29 @@ export function lowerBundle(documents, options = {}) {
 		}
 		/** @type {Record<string, unknown>[]} */
 		const minted = [];
+		if (
+			Object.hasOwn(schema, "oneOf") &&
+			(!Array.isArray(schema.oneOf) ||
+				Object.keys(schema).some(
+					(key) =>
+						![
+							"$schema",
+							"$id",
+							"description",
+							"oneOf",
+							"x-agent-ix-semantic-id",
+						].includes(key),
+				))
+		) {
+			out.push(
+				diag(
+					DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+					`${file} oneOf is not a top-level adjacent union`,
+					`${file}/oneOf`,
+				),
+			);
+			continue;
+		}
 
 		if (schema.type === "object") {
 			// A sealed object admits no member it did not evaluate. Defaulting a
@@ -527,6 +748,30 @@ export function lowerBundle(documents, options = {}) {
 						kind: "scalar",
 						scalar: "string",
 						constraints: [],
+					},
+					file,
+				),
+			);
+		} else if (Array.isArray(schema.oneOf)) {
+			const variants = adjacentVariants(schema.oneOf, name, file, minted);
+			if (!variants) {
+				out.push(
+					diag(
+						DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+						`${file} oneOf branches are not closed adjacent variants`,
+						`${file}/oneOf`,
+					),
+				);
+				continue;
+			}
+			types.push(
+				complete(
+					{
+						name,
+						identity: identityOf(name),
+						kind: "union",
+						extensions: [],
+						variants,
 					},
 					file,
 				),

@@ -7,7 +7,10 @@
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "nonEmpty",
-		"value": 1
+		"value": {
+			"kind": "number",
+			"value": 1
+		}
 	},
 	"expected": {
 		"resultState": "invalid"

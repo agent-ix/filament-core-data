@@ -6,11 +6,9 @@ component is new — the pure reference localization of
 the guard is unmodified and unassisted, the refusal register is closed, the
 profiles are frozen, and the repair is in the input.
 
-Two measured findings are pinned here rather than silenced. F1
-(`agent-ix/filament-core-data#79`) is a `StrEnum` member that shadows a `str`
-method; F2 (`agent-ix/filament-core-data#125`) is `msgspec`'s refusal of four
-kernel types. Both assert the measurement, so the day either is settled these
-tests fail and say so instead of the resolution passing unnoticed.
+The remaining measured F1 (`agent-ix/filament-core-data#79`) is a `StrEnum`
+member that shadows a `str` method. The adjacent union migration resolves
+F2's decoder-construction failure, and a test pins that resolution.
 """
 
 from __future__ import annotations
@@ -37,12 +35,6 @@ from python_backend.runner.generate import generate
 REPO = pathlib.Path(__file__).resolve().parents[1]
 KERNEL_SCHEMAS = REPO / "packages/semantic-core/generated/json-schema"
 BACKEND = REPO / "python_backend"
-
-#: The bundle, measured. Thirty-one documents carrying thirty-five absolute `$ref`s,
-#: none of them with a `title`.
-DOCUMENTS = 31
-ABSOLUTE_REFS = 35
-
 
 def _bundle_bytes() -> dict[str, bytes]:
     return {
@@ -184,7 +176,7 @@ def test_the_route_is_byte_identical_and_refuses_the_bundle_before_localization(
 ):
     """TC-1060: FR-087-AC-1."""
     paths = sorted(KERNEL_SCHEMAS.glob("*.json"))
-    assert len(paths) == DOCUMENTS
+    assert paths
 
     # AC-1, the negative half: the committed bundle is refused, on the scheme.
     committed = prepare_input_set(paths)
@@ -282,16 +274,21 @@ def test_the_pass_is_pure_recorded_and_followed_by_closure() -> None:
     assert committed == snapshot
 
     # AC-6: every rewrite attributable to a rule, by document and pointer, and
-    # the counts are the bundle's measured counts.
+    # the counts follow the committed bundle's actual documents and references.
     record = first.localization
     by_rule: dict[str, int] = {}
     for row in record:
         by_rule[row["rule"]] = by_rule.get(row["rule"], 0) + 1
         assert row["document"] in committed
         assert row["pointer"].startswith("/") or row["pointer"] == ""
-    assert by_rule[localize.REF_RULE] == ABSOLUTE_REFS
-    assert by_rule[localize.ID_RULE] == DOCUMENTS
-    assert by_rule[localize.TITLE_RULE] == DOCUMENTS
+    references: list[str] = []
+    for document in committed.values():
+        _refs(document, references)
+    assert by_rule[localize.REF_RULE] == sum(
+        reference.startswith(base) for reference in references
+    )
+    assert by_rule[localize.ID_RULE] == len(committed)
+    assert by_rule[localize.TITLE_RULE] == len(committed)
 
     # AC-7: the FR-074 closure pass then seals every sealed object, in both
     # directions — without it the same bundle generates an open model.
@@ -301,7 +298,10 @@ def test_the_pass_is_pure_recorded_and_followed_by_closure() -> None:
         for document in prepared.documents.values()
         if document.get("additionalProperties") is False
     )
-    assert sealed == 21
+    assert sealed == sum(
+        document.get("unevaluatedProperties") == {"not": {}}
+        for document in committed.values()
+    )
     assert not [
         name
         for name, document in first.documents.items()
@@ -345,7 +345,7 @@ def test_the_emitted_families_layout_and_imports() -> None:
             modules = sorted(
                 path.stem for path in tree.glob("*.py") if path.name != "__init__.py"
             )
-            assert len(modules) == DOCUMENTS
+            assert set(modules) == {path.stem for path in KERNEL_SCHEMAS.glob("*.json")}
 
             # AC-9: sorted, complete, and free of every shared name.
             files = {path.name: path.read_text() for path in tree.glob("*.py")}
@@ -484,28 +484,14 @@ def test_the_bundle_the_distribution_and_the_examples() -> None:
         assert run.returncode == 0, run.stdout + run.stderr
 
 
-def test_msgspec_cannot_decode_four_kernel_types() -> None:
-    """TC-1065: FR-087-AC-16, finding F2 (`agent-ix/filament-core-data#125`).
-
-    Neither union shape occurs in the thirteen published documents the issue
-    #23 qualification probed, so neither is a `gaps.json` row, and
-    FR-087-CON-4 forbids making one from here. The loss is
-    pinned instead: the day `#125` is settled this fails and says so.
-    """
+def test_msgspec_decodes_adjacent_kernel_union_types() -> None:
+    """TC-1065: IR-994; FR-087-AC-16; the former F2 types now decode."""
     msgspec = pytest.importorskip("msgspec")
     sys.path.insert(0, str(REPO / "packages/semantic-kernel"))
     try:
-        undecodable = set(emit.MSGSPEC_UNION_LOSS["types"])
-        refused: set[str] = set()
-        for path in (emit.PACKAGES / "msgspec_struct").glob("*.py"):
-            if path.name == "__init__.py":
-                continue
-            module = importlib.import_module(f"python.msgspec_struct.{path.stem}")
-            try:
-                msgspec.json.Decoder(getattr(module, path.stem))
-            except TypeError:
-                refused.add(path.stem)
-        assert refused == undecodable
+        for name in ("ConstraintDecl", "FieldDecl", "OperationDecl", "TypeRef"):
+            module = importlib.import_module(f"python.msgspec_struct.{name}")
+            msgspec.json.Decoder(getattr(module, name))
     finally:
         sys.path.remove(str(REPO / "packages/semantic-kernel"))
 

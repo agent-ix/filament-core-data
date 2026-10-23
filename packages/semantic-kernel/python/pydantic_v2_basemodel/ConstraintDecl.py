@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 from .EnumValuesConstraint import EnumValuesConstraint
 from .ExclusiveMaxConstraint import ExclusiveMaxConstraint
@@ -20,25 +20,113 @@ from .PatternConstraint import PatternConstraint
 from .UniqueConstraint import UniqueConstraint
 
 
+class ConstraintDecl5(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['PatternConstraint']
+    value: PatternConstraint
+
+
+class ConstraintDecl6(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['MinLengthConstraint']
+    value: MinLengthConstraint
+
+
+class ConstraintDecl7(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['MaxLengthConstraint']
+    value: MaxLengthConstraint
+
+
+class ConstraintDecl9(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['NonEmptyConstraint']
+    value: NonEmptyConstraint
+
+
+class ConstraintDecl10(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['UniqueConstraint']
+    value: UniqueConstraint
+
+
+class ConstraintDecl11(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['FormatConstraint']
+    value: FormatConstraint
+
+
+class ConstraintDecl1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['MinConstraint']
+    value: MinConstraint
+
+
+class ConstraintDecl2(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['MaxConstraint']
+    value: MaxConstraint
+
+
+class ConstraintDecl3(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['ExclusiveMinConstraint']
+    value: ExclusiveMinConstraint
+
+
+class ConstraintDecl4(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['ExclusiveMaxConstraint']
+    value: ExclusiveMaxConstraint
+
+
+class ConstraintDecl8(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    kind: Literal['EnumValuesConstraint']
+    value: EnumValuesConstraint
+
+
 class ConstraintDecl(
     RootModel[
-        MinConstraint
-        | MaxConstraint
-        | ExclusiveMinConstraint
-        | ExclusiveMaxConstraint
-        | PatternConstraint
-        | MinLengthConstraint
-        | MaxLengthConstraint
-        | EnumValuesConstraint
-        | NonEmptyConstraint
-        | UniqueConstraint
-        | FormatConstraint
+        ConstraintDecl1
+        | ConstraintDecl2
+        | ConstraintDecl3
+        | ConstraintDecl4
+        | ConstraintDecl5
+        | ConstraintDecl6
+        | ConstraintDecl7
+        | ConstraintDecl8
+        | ConstraintDecl9
+        | ConstraintDecl10
+        | ConstraintDecl11
     ]
 ):
     root: Annotated[
-        MinConstraint | MaxConstraint | ExclusiveMinConstraint | ExclusiveMaxConstraint | PatternConstraint | MinLengthConstraint | MaxLengthConstraint | EnumValuesConstraint | NonEmptyConstraint | UniqueConstraint | FormatConstraint,
+        ConstraintDecl1 | ConstraintDecl2 | ConstraintDecl3 | ConstraintDecl4 | ConstraintDecl5 | ConstraintDecl6 | ConstraintDecl7 | ConstraintDecl8 | ConstraintDecl9 | ConstraintDecl10 | ConstraintDecl11,
         Field(
-            description='FR-029 constraint declaration, discriminated on `keyword`.',
+            description='FR-029 constraint declaration, tagged by `kind` with its record in `value`.',
             title='ConstraintDecl',
         ),
     ]

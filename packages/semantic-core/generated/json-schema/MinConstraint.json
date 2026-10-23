@@ -8,20 +8,12 @@
 			"const": "min"
 		},
 		"value": {
-			"anyOf": [
-				{
-					"type": "number"
-				},
-				{
-					"type": "string"
-				}
-			]
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/MinConstraintValue.json"
 		}
 	},
 	"required": ["keyword", "value"],
 	"unevaluatedProperties": {
 		"not": {}
 	},
-	"description": "`min`: an exact numeric literal or ISO 8601 string for temporal scalars.",
 	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/MinConstraint"
 }

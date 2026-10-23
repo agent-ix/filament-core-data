@@ -7,13 +7,23 @@
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "enumValues",
-		"values": ["only"]
+		"values": [
+			{
+				"kind": "string",
+				"value": "only"
+			}
+		]
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
 			"keyword": "enumValues",
-			"values": ["only"]
+			"values": [
+				{
+					"kind": "string",
+					"value": "only"
+				}
+			]
 		}
 	},
 	"derivedFrom": [

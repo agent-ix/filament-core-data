@@ -7,10 +7,12 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from .EnumValuesConstraintValues import EnumValuesConstraintValues
+
 
 class EnumValuesConstraint(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
     keyword: Literal['enumValues']
-    values: Annotated[list[str | float | bool], Field(min_length=1)]
+    values: Annotated[list[EnumValuesConstraintValues], Field(min_length=1)]

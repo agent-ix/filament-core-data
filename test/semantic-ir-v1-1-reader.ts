@@ -63,7 +63,9 @@ const I128_MIN = -170141183460469231731687303715884105728n;
 const I128_MAX = 170141183460469231731687303715884105727n;
 
 function canonicalInteger(value: unknown): value is string {
-	return typeof value === "string" && /^(0|-?[1-9][0-9]*)$/.test(value);
+	return (
+		typeof value === "string" && /^(0|-?[1-9][0-9]*)(?![\s\S])/.test(value)
+	);
 }
 
 function withinI128(value: string): boolean {
@@ -115,6 +117,7 @@ function valueAdmitted(scalar: string | undefined, value: unknown): boolean {
 }
 
 function nativeScalar(identity: unknown): string | undefined {
+	if (identity === "ix://quire/native/Text") return "string";
 	if (typeof identity !== "string" || !identity.startsWith(NATIVE_PREFIX))
 		return undefined;
 	return NATIVE_SCALARS[identity.slice(NATIVE_PREFIX.length)];
@@ -277,13 +280,381 @@ function checkMultiplicity(
 	return value as Multiplicity;
 }
 
+const CLOCK_REFERENCE = "ix://quire/native/Clock";
+const QUANTITY_REFERENCE = "ix://quire/unit/";
+const CLOCK_OUTSIDE_FIELD = "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD";
+const INVALID_CLOCK_FIELD = "agent-ix.semantic-ir.INVALID_CLOCK_FIELD";
+const INVALID_QUANTITY_MEMBER = "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER";
+const INVALID_UNIT_GRAPH = "agent-ix.semantic-ir.INVALID_UNIT_GRAPH";
+const UNRESOLVED_DIMENSION_REF =
+	"agent-ix.semantic-ir.UNRESOLVED_DIMENSION_REF";
+const UNRESOLVED_UNIT_REF = "agent-ix.semantic-ir.UNRESOLVED_UNIT_REF";
+
+function quantityReference(reference: unknown): boolean {
+	if (
+		typeof reference !== "string" ||
+		!reference.startsWith(QUANTITY_REFERENCE)
+	)
+		return false;
+	const segments = reference.slice(QUANTITY_REFERENCE.length).split("/");
+	const unit = segments.pop();
+	const unitName = (name: string) =>
+		/^[A-Za-z][A-Za-z0-9_]*(?![\s\S])/.test(name);
+	return (
+		unit !== undefined &&
+		unitName(unit) &&
+		segments.every(
+			(segment) =>
+				unitName(segment) || /^[a-z0-9][a-z0-9._-]*(?![\s\S])/.test(segment),
+		)
+	);
+}
+
+/** Returns true when the type position has its own Clock or quantity rules. */
+function checkSpecialMember(
+	member: JsonObject,
+	path: string,
+	fieldPosition: boolean,
+	diagnostics: Diagnostic[],
+): boolean {
+	const clock = member.typeRef === CLOCK_REFERENCE;
+	const quantity = quantityReference(member.typeRef);
+	if (clock && !fieldPosition) {
+		diagnostics.push({
+			code: CLOCK_OUTSIDE_FIELD,
+			path: `${path}.typeRef`,
+			message: "Clock is a field type only",
+		});
+		return true;
+	}
+	if (!clock && !quantity) return false;
+	const code = clock ? INVALID_CLOCK_FIELD : INVALID_QUANTITY_MEMBER;
+	const emit = (name: string) =>
+		diagnostics.push({
+			code,
+			path: `${path}.${name}`,
+			message: `forbidden or invalid ${clock ? "Clock" : "quantity"} member ${name}`,
+		});
+	for (const name of ["unit", "decimal", "textProfile", "defaultValue"])
+		if (Object.hasOwn(member, name)) emit(name);
+	if (
+		(clock || Object.hasOwn(member, "defaultKind")) &&
+		member.defaultKind !== "none"
+	)
+		emit("defaultKind");
+	if (Array.isArray(member.constraints) && member.constraints.length > 0)
+		emit("constraints");
+	if (clock) {
+		const m = member.multiplicity;
+		if (
+			isObject(m) &&
+			(m.lower !== 1 ||
+				m.upper !== 1 ||
+				m.ordered !== false ||
+				m.unique !== false)
+		)
+			emit("multiplicity");
+		if (member.presence !== "required") emit("presence");
+		if (member.nullable !== false) emit("nullable");
+	}
+	return true;
+}
+
+type ExactInteger = { value: bigint } | { error: "canonical" | "overflow" };
+function graphInteger(value: unknown): ExactInteger {
+	if (!canonicalInteger(value)) return { error: "canonical" };
+	if (value.length > 40) return { error: "overflow" };
+	if (!withinI128(value)) return { error: "overflow" };
+	return { value: BigInt(value) };
+}
+function graphRational(value: unknown): ExactInteger {
+	if (typeof value !== "string") return { error: "canonical" };
+	const slash = value.indexOf("/");
+	if (slash === -1) return graphInteger(value);
+	if (value.indexOf("/", slash + 1) !== -1) return { error: "canonical" };
+	const numerator = graphInteger(value.slice(0, slash));
+	const denominator = graphInteger(value.slice(slash + 1));
+	if (
+		("error" in numerator && numerator.error === "overflow") ||
+		("error" in denominator && denominator.error === "overflow")
+	)
+		return { error: "overflow" };
+	if ("error" in numerator || "error" in denominator)
+		return { error: "canonical" };
+	if (numerator.value === 0n || denominator.value < 2n)
+		return { error: "canonical" };
+	let divisor = numerator.value < 0n ? -numerator.value : numerator.value;
+	let remainder = denominator.value;
+	while (remainder !== 0n) {
+		const next = divisor % remainder;
+		divisor = remainder;
+		remainder = next;
+	}
+	return divisor === 1n ? { value: numerator.value } : { error: "canonical" };
+}
+
+/** Tarjan's walk uses explicit frames so a long authored graph needs no JS recursion. */
+function cyclicGroups(edges: number[][]): number[][] {
+	const discovery = edges.map(() => -1);
+	const low = edges.map(() => -1);
+	const active = edges.map(() => false);
+	const stack: number[] = [];
+	const groups: number[][] = [];
+	let number = 0;
+	for (let start = 0; start < edges.length; start++) {
+		if (discovery[start] !== -1) continue;
+		const enter = (node: number) => {
+			discovery[node] = number;
+			low[node] = number++;
+			active[node] = true;
+			stack.push(node);
+		};
+		enter(start);
+		const frames: { node: number; next: number; parent?: number }[] = [
+			{ node: start, next: 0 },
+		];
+		while (frames.length) {
+			const frame = frames[frames.length - 1];
+			if (frame.next < edges[frame.node].length) {
+				const target = edges[frame.node][frame.next++];
+				if (discovery[target] === -1) {
+					enter(target);
+					frames.push({ node: target, next: 0, parent: frame.node });
+				} else if (active[target])
+					low[frame.node] = Math.min(low[frame.node], discovery[target]);
+			} else {
+				frames.pop();
+				if (frame.parent !== undefined)
+					low[frame.parent] = Math.min(low[frame.parent], low[frame.node]);
+				if (low[frame.node] === discovery[frame.node]) {
+					const group: number[] = [];
+					let top: number;
+					do {
+						top = stack.pop()!;
+						active[top] = false;
+						group.push(top);
+					} while (top !== frame.node);
+					if (group.length > 1 || edges[frame.node].includes(frame.node))
+						groups.push(group.sort((a, b) => a - b));
+				}
+			}
+		}
+	}
+	return groups.sort((a, b) => a[0] - b[0]);
+}
+
+function checkDimensionUnits(
+	document: JsonObject,
+	diagnostics: Diagnostic[],
+): void {
+	const dimensions = Array.isArray(document.dimensions)
+		? document.dimensions
+		: [];
+	const units = Array.isArray(document.units) ? document.units : [];
+	const packageIdentity = isObject(document.package)
+		? document.package.identity
+		: undefined;
+	const seen = new Set<string>();
+	const emit = (code: string, path: string, message: string) => {
+		const key = `${path}:${code}`;
+		if (!seen.has(key)) {
+			seen.add(key);
+			diagnostics.push({ code, path, message });
+		}
+	};
+	const declarationIndex = (
+		entries: unknown[],
+		plural: string,
+		singular: string,
+	) => {
+		const index = new Map<string, number>();
+		entries.forEach((entry, position) => {
+			if (!isObject(entry) || typeof entry.identity !== "string") return;
+			const path = `${plural}.${position}.identity`;
+			if (index.has(entry.identity))
+				emit(
+					"agent-ix.semantic-ir.DUPLICATE_IDENTITY",
+					path,
+					"identity is declared twice",
+				);
+			else index.set(entry.identity, position);
+			if (
+				entry.identity !==
+				`ix://${packageIdentity}/${singular}/${String(entry.name)}`
+			)
+				emit(
+					INVALID_UNIT_GRAPH,
+					path,
+					"identity must name its package and declaration",
+				);
+		});
+		return index;
+	};
+	const dimensionById = declarationIndex(dimensions, "dimensions", "dimension");
+	const unitById = declarationIndex(units, "units", "unit");
+	const dimensionEdges: number[][] = dimensions.map(() => []);
+	dimensions.forEach((dimension, position) => {
+		if (!isObject(dimension)) return;
+		const path = `dimensions.${position}`;
+		const terms = Array.isArray(dimension.terms) ? dimension.terms : [];
+		if (dimension.base === true && terms.length)
+			emit(INVALID_UNIT_GRAPH, `${path}.terms`, "base dimension has no terms");
+		let previous: string | undefined;
+		terms.forEach((term, termIndex) => {
+			if (!isObject(term)) return;
+			const termPath = `${path}.terms.${termIndex}`;
+			if (typeof term.dimension === "string") {
+				const target = dimensionById.get(term.dimension);
+				if (target === undefined)
+					emit(
+						UNRESOLVED_DIMENSION_REF,
+						`${termPath}.dimension`,
+						"unknown dimension reference",
+					);
+				else dimensionEdges[position].push(target);
+				if (previous !== undefined && previous >= term.dimension)
+					emit(
+						INVALID_UNIT_GRAPH,
+						termPath,
+						"dimension terms must be strictly ordered",
+					);
+				previous = term.dimension;
+			}
+			const exponent = graphInteger(term.exponent);
+			if ("error" in exponent)
+				emit(
+					exponent.error === "overflow"
+						? "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
+						: "agent-ix.semantic-ir.INVALID_OPERAND",
+					`${termPath}.exponent`,
+					"exponent must be a canonical i128 integer",
+				);
+			else if (exponent.value === 0n)
+				emit(
+					INVALID_UNIT_GRAPH,
+					`${termPath}.exponent`,
+					"dimension exponent must be nonzero",
+				);
+		});
+	});
+	for (const group of cyclicGroups(dimensionEdges)) {
+		const first = group[0];
+		const members = new Set(group);
+		const dimension = dimensions[first] as JsonObject;
+		const terms = Array.isArray(dimension.terms) ? dimension.terms : [];
+		const termIndex = terms.findIndex(
+			(term) =>
+				isObject(term) &&
+				typeof term.dimension === "string" &&
+				members.has(dimensionById.get(term.dimension) ?? -1),
+		);
+		emit(
+			INVALID_UNIT_GRAPH,
+			`dimensions.${first}.terms.${termIndex}`,
+			`dimension cycle: ${group.map((i) => (isObject(dimensions[i]) ? dimensions[i].name : "")).join(", ")}`,
+		);
+	}
+	const roots = new Map<string, number>();
+	const unitEdges: number[][] = units.map(() => []);
+	units.forEach((unit, position) => {
+		if (!isObject(unit)) return;
+		const path = `units.${position}`;
+		const dimension = typeof unit.dimension === "string" ? unit.dimension : "";
+		if (!dimensionById.has(dimension))
+			emit(
+				UNRESOLVED_DIMENSION_REF,
+				`${path}.dimension`,
+				"unknown dimension reference",
+			);
+		const parsed = new Map<string, bigint>();
+		for (const member of ["scale", "offset"]) {
+			const result = graphRational(unit[member]);
+			if ("error" in result)
+				emit(
+					result.error === "overflow"
+						? "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128"
+						: "agent-ix.semantic-ir.INVALID_OPERAND",
+					`${path}.${member}`,
+					"coefficient must be a canonical i128 rational",
+				);
+			else parsed.set(member, result.value);
+		}
+		if (parsed.get("scale") === 0n)
+			emit(INVALID_UNIT_GRAPH, `${path}.scale`, "scale must be nonzero");
+		if (typeof unit.target === "string") {
+			const target = unitById.get(unit.target);
+			if (target === undefined)
+				emit(UNRESOLVED_UNIT_REF, `${path}.target`, "unknown unit reference");
+			else {
+				unitEdges[position].push(target);
+				const targetUnit = units[target];
+				if (
+					isObject(targetUnit) &&
+					typeof targetUnit.dimension === "string" &&
+					dimensionById.has(dimension) &&
+					dimensionById.has(targetUnit.dimension) &&
+					dimension !== targetUnit.dimension
+				)
+					emit(
+						INVALID_UNIT_GRAPH,
+						`${path}.target`,
+						`unit dimensions differ: ${dimension}, ${targetUnit.dimension}`,
+					);
+			}
+		} else {
+			const first = roots.get(dimension);
+			if (first === undefined) roots.set(dimension, position);
+			else
+				emit(
+					INVALID_UNIT_GRAPH,
+					path,
+					`dimension ${dimension} already has root ${String((units[first] as JsonObject).name)}`,
+				);
+			if (parsed.has("scale") && unit.scale !== "1")
+				emit(INVALID_UNIT_GRAPH, `${path}.scale`, "root scale must be 1");
+			if (parsed.has("offset") && unit.offset !== "0")
+				emit(INVALID_UNIT_GRAPH, `${path}.offset`, "root offset must be 0");
+		}
+	});
+	for (const group of cyclicGroups(unitEdges)) {
+		let cursor = group[0];
+		const names: string[] = [];
+		for (let step = 0; step < group.length; step++) {
+			names.push(String((units[cursor] as JsonObject).name));
+			cursor = unitEdges[cursor][0];
+		}
+		emit(
+			INVALID_UNIT_GRAPH,
+			`units.${group[0]}.target`,
+			`unit cycle: ${names.join(", ")}`,
+		);
+	}
+}
+
 function checkField(
 	field: JsonObject,
 	path: string,
 	types: Map<string, JsonObject>,
 	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
+	fieldPosition = false,
 ): void {
+	const special = checkSpecialMember(field, path, fieldPosition, diagnostics);
+	if (special) {
+		if (field.multiplicity === undefined)
+			diagnostics.push({
+				code: "agent-ix.semantic-ir.MISSING_MULTIPLICITY",
+				path: `${path}.multiplicity`,
+				message: "a member declares its multiplicity",
+			});
+		else if (field.typeRef !== CLOCK_REFERENCE)
+			checkMultiplicity(
+				field.multiplicity,
+				`${path}.multiplicity`,
+				diagnostics,
+			);
+		return;
+	}
 	const resolved = resolveKind(types, field.typeRef);
 	if (!resolved) {
 		diagnostics.push({
@@ -352,6 +723,25 @@ function checkConstraint(
 	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
 ): void {
+	if (constraint.appliesTo === CLOCK_REFERENCE) {
+		diagnostics.push({
+			code: CLOCK_OUTSIDE_FIELD,
+			path: `${path}.appliesTo`,
+			message: "Clock is a field type only",
+		});
+		return;
+	}
+	if (
+		typeof constraint.appliesTo === "string" &&
+		constraint.appliesTo.startsWith(QUANTITY_REFERENCE)
+	) {
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+			path: `${path}.appliesTo`,
+			message: "quantity reference is a field, parameter or result type only",
+		});
+		return;
+	}
 	const keyword = String(constraint.keyword);
 	const allowed = KEYWORD_APPLICABILITY[keyword];
 	if (!allowed) {
@@ -448,6 +838,40 @@ function checkTypeDefinition(
 	lockExports: Set<string>,
 	diagnostics: Diagnostic[],
 ): void {
+	for (const member of ["target", "items", "values"]) {
+		if (definition[member] === CLOCK_REFERENCE)
+			diagnostics.push({
+				code: CLOCK_OUTSIDE_FIELD,
+				path: `${path}.${member}`,
+				message: "Clock is a field type only",
+			});
+		else if (
+			typeof definition[member] === "string" &&
+			definition[member].startsWith(QUANTITY_REFERENCE)
+		)
+			diagnostics.push({
+				code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+				path: `${path}.${member}`,
+				message: "quantity reference is a field, parameter or result type only",
+			});
+	}
+	asArray(definition.variants).forEach((variant, index) => {
+		if (variant.payloadType === CLOCK_REFERENCE)
+			diagnostics.push({
+				code: CLOCK_OUTSIDE_FIELD,
+				path: `${path}.variants.${index}.payloadType`,
+				message: "Clock is a field type only",
+			});
+		else if (
+			typeof variant.payloadType === "string" &&
+			variant.payloadType.startsWith(QUANTITY_REFERENCE)
+		)
+			diagnostics.push({
+				code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+				path: `${path}.variants.${index}.payloadType`,
+				message: "quantity reference is a field, parameter or result type only",
+			});
+	});
 	const isRecord = isEdgeKind(definition.kind);
 	if (definition.kind === "scalar" && definition.scalar === "number") {
 		diagnostics.push({
@@ -458,7 +882,14 @@ function checkTypeDefinition(
 		});
 	}
 	for (const [index, field] of asArray(definition.fields).entries())
-		checkField(field, `${path}.fields.${index}`, types, fields, diagnostics);
+		checkField(
+			field,
+			`${path}.fields.${index}`,
+			types,
+			fields,
+			diagnostics,
+			true,
+		);
 	for (const [index, constraint] of asArray(definition.constraints).entries())
 		checkConstraint(
 			constraint,
@@ -583,7 +1014,13 @@ function checkTypeDefinition(
 			);
 		}
 		if (isObject(operation.returns)) {
-			if (!resolveKind(types, operation.returns.typeRef)) {
+			const special = checkSpecialMember(
+				operation.returns,
+				`${path}.operations.${index}.returns`,
+				false,
+				diagnostics,
+			);
+			if (!special && !resolveKind(types, operation.returns.typeRef)) {
 				diagnostics.push({
 					code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 					path: `${path}.operations.${index}.returns.typeRef`,
@@ -707,6 +1144,7 @@ export function readSemanticIr(
 			},
 		];
 	}
+	checkDimensionUnits(document, diagnostics);
 	const types = new Map<string, JsonObject>();
 	for (const definition of asArray(document.types))
 		types.set(String(definition.identity), definition);
