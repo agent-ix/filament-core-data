@@ -38,3 +38,21 @@ Gate: vitest 606 passed, 53 failed (659 tests), identical to origin/main in the 
 Not mergeable: FND-001 (high) block the PR.
 
 Mergeable into origin/main (main and PR 305 are ancestors, merge-tree clean). Same conflicts with open PRs 292 and 84 as PR 305.
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs | Escape Cause |
+| --- | --- | --- | --- | --- |
+| FND-003 | low | AC-19 says the descending pair [Time, Duration] and the pair [Time, Time] refuse INVALID_UNIT_GRAPH at /dimensions, but gives their identities no value. If the identity keeps the form for [Duration, Time], the identity rule also refuses at /identity, so the AC is not "exactly one". State the identities the vectors use. | spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md:485 | missing-requirement |
+
+## Dispositions
+
+Round 1, fix head 73e9dd5e. Cross-package vectors hand-derived. Equivalence classes are the components of the declared pairs; the representative is the least identity. With Length~Time~Duration~Seconds one class, Speed has map {} and Velocity {} only once Distance~Length is declared, so the stated accept and refuse outcomes hold; Dur ({Time:1}) equals Time; Speed vs Time ({} vs {rep:1}) differ and refuse. This agrees with QSpec FR-142 "Dimension equivalence": a domain package names only its own dimensions and the unit of compilation relates two packages, which is why an entry naming acme/flow Time inside the acme/rpc document is UNRESOLVED_DIMENSION_REF. No cross-package narrowing remains.
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-001 | fixed | See after_excerpt in the Linear dispositions comment. |
+| FND-002 | fixed | See after_excerpt in the Linear dispositions comment. |
+| FND-003 | still-open | New finding of this round; the identities of the descending and equal-pair vectors are unstated. |
+
+Round 1 verdict: Mergeable after FND-003 (low) is fixed or dispositioned.
