@@ -111,8 +111,14 @@ model DecimalPolicy {
 }
 
 /** A reference to a kernel scalar or a semantic type. Reader: `decimal` iff target is Decimal; `unit` only on unit-allowed scalars. */
+@oneOf
+union TypeRefTarget {
+  SemanticId: { kind: "SemanticId"; value: SemanticId },
+  KernelScalar: { kind: "KernelScalar"; value: KernelScalar },
+}
+
 model TypeRef {
-  target: SemanticId | KernelScalar;
+  target: TypeRefTarget;
   multiplicity?: Multiplicity;
   unit?: UnitSymbol;
   decimal?: DecimalPolicy;
@@ -135,24 +141,48 @@ model SourceLocus {
 }
 
 /** `min`: an exact numeric literal or ISO 8601 string for temporal scalars. */
+@oneOf
+union MinConstraintValue {
+  number: { kind: "number"; value: float64 },
+  string: { kind: "string"; value: string },
+}
+
+@oneOf
+union MaxConstraintValue {
+  number: { kind: "number"; value: float64 },
+  string: { kind: "string"; value: string },
+}
+
+@oneOf
+union ExclusiveMinConstraintValue {
+  number: { kind: "number"; value: float64 },
+  string: { kind: "string"; value: string },
+}
+
+@oneOf
+union ExclusiveMaxConstraintValue {
+  number: { kind: "number"; value: float64 },
+  string: { kind: "string"; value: string },
+}
+
 model MinConstraint {
   keyword: ConstraintKeyword.min;
-  value: float64 | string;
+  value: MinConstraintValue;
 }
 
 model MaxConstraint {
   keyword: ConstraintKeyword.max;
-  value: float64 | string;
+  value: MaxConstraintValue;
 }
 
 model ExclusiveMinConstraint {
   keyword: ConstraintKeyword.exclusiveMin;
-  value: float64 | string;
+  value: ExclusiveMinConstraintValue;
 }
 
 model ExclusiveMaxConstraint {
   keyword: ConstraintKeyword.exclusiveMax;
-  value: float64 | string;
+  value: ExclusiveMaxConstraintValue;
 }
 
 model PatternConstraint {
@@ -171,9 +201,16 @@ model MaxLengthConstraint {
   @minValue(0) value: int32;
 }
 
+@oneOf
+union EnumValuesConstraintValues {
+  string: { kind: "string"; value: string },
+  number: { kind: "number"; value: float64 },
+  boolean: { kind: "boolean"; value: boolean },
+}
+
 model EnumValuesConstraint {
   keyword: ConstraintKeyword.enumValues;
-  @minItems(1) values: (string | float64 | boolean)[];
+  @minItems(1) values: EnumValuesConstraintValues[];
 }
 
 model NonEmptyConstraint {
@@ -189,19 +226,20 @@ model FormatConstraint {
   @pattern("^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$") name: string;
 }
 
-/** FR-029 constraint declaration, discriminated on `keyword`. */
+/** FR-029 constraint declaration, tagged by `kind` with its record in `value`. */
+@oneOf
 union ConstraintDecl {
-  MinConstraint,
-  MaxConstraint,
-  ExclusiveMinConstraint,
-  ExclusiveMaxConstraint,
-  PatternConstraint,
-  MinLengthConstraint,
-  MaxLengthConstraint,
-  EnumValuesConstraint,
-  NonEmptyConstraint,
-  UniqueConstraint,
-  FormatConstraint,
+  MinConstraint: { kind: "MinConstraint"; value: MinConstraint },
+  MaxConstraint: { kind: "MaxConstraint"; value: MaxConstraint },
+  ExclusiveMinConstraint: { kind: "ExclusiveMinConstraint"; value: ExclusiveMinConstraint },
+  ExclusiveMaxConstraint: { kind: "ExclusiveMaxConstraint"; value: ExclusiveMaxConstraint },
+  PatternConstraint: { kind: "PatternConstraint"; value: PatternConstraint },
+  MinLengthConstraint: { kind: "MinLengthConstraint"; value: MinLengthConstraint },
+  MaxLengthConstraint: { kind: "MaxLengthConstraint"; value: MaxLengthConstraint },
+  EnumValuesConstraint: { kind: "EnumValuesConstraint"; value: EnumValuesConstraint },
+  NonEmptyConstraint: { kind: "NonEmptyConstraint"; value: NonEmptyConstraint },
+  UniqueConstraint: { kind: "UniqueConstraint"; value: UniqueConstraint },
+  FormatConstraint: { kind: "FormatConstraint"; value: FormatConstraint },
 }
 
 /** A field declaration (one typed Properties row). Reader: unique by name; identity only on 1..1 non-JsonObject. */

@@ -3,24 +3,33 @@
 	"title": "A unit symbol on a unit-allowed scalar",
 	"declaration": "TypeRef",
 	"class": "boundary",
-	"properties": ["serialized-member-names", "round-trip"],
+	"properties": [
+		"serialized-member-names",
+		"round-trip"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
-		"target": "Decimal",
+		"target": {
+			"kind": "KernelScalar",
+			"value": "Decimal"
+		},
 		"unit": "mg/dL"
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
-			"target": "Decimal",
+			"target": {
+				"kind": "KernelScalar",
+				"value": "Decimal"
+			},
 			"unit": "mg/dL"
 		}
 	},
 	"derivedFrom": [
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/TypeRef.json",
-			"locator": "#/description",
-			"quote": "\"description\": \"A reference to a kernel scalar or a semantic type. Reader: `decimal` iff target is Decimal; `unit` only on unit-allowed scalars.\""
+			"locator": "#/properties/target/$ref",
+			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.3.3/TypeRefTarget.json\""
 		}
 	],
 	"provenance": {

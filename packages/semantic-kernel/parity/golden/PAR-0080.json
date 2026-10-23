@@ -3,22 +3,31 @@
 	"title": "The union admits a keyword-only member",
 	"declaration": "ConstraintDecl",
 	"class": "positive",
-	"properties": ["serialized-member-names", "round-trip"],
+	"properties": [
+		"serialized-member-names",
+		"round-trip"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
-		"keyword": "nonEmpty"
+		"kind": "NonEmptyConstraint",
+		"value": {
+			"keyword": "nonEmpty"
+		}
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
-			"keyword": "nonEmpty"
+			"kind": "NonEmptyConstraint",
+			"value": {
+				"keyword": "nonEmpty"
+			}
 		}
 	},
 	"derivedFrom": [
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/ConstraintDecl.json",
 			"locator": "#/description",
-			"quote": "\"description\": \"FR-029 constraint declaration, discriminated on `keyword`.\""
+			"quote": "\"description\": \"FR-029 constraint declaration, tagged by `kind` with its record in `value`.\""
 		}
 	],
 	"provenance": {

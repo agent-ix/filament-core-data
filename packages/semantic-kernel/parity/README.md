@@ -17,7 +17,7 @@ or `make semantic-kernel-parity`.
 Current result:
 
 ```
-90/113 documents agree; 47 divergence rows, 0 unadjudicated
+91/113 documents agree; 45 divergence rows, 0 unadjudicated
 ```
 
 ## What is here
@@ -74,7 +74,7 @@ file, which NFR-030 forbids. The remaining open defect owners are:
 | `DefaultDecl.value` and `OperationDecl.params` IR expressiveness losses | 11 | `agent-ix/filament-core-data#78` |
 | Optional and nullable are the same type in Rust and Python | 4 | `agent-ix/filament-core-data#129` |
 
-43 of the 47 rows are IR lowering defects rendered faithfully by the Rust and
+41 of the 45 rows are IR lowering defects rendered faithfully by the Rust and
 TypeScript packages, not backend defects. The previous untagged-union defect
 (#128) was fixed; its 36 rows no longer occur.
 

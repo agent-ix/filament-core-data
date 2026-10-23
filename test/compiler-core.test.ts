@@ -6582,6 +6582,105 @@ describe("generation backend seam registry codes (FR-063)", () => {
 // ---------------------------------------------------------------------------
 
 describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
+	/** Traces: IR-994; FR-054-AC-5, FR-082. */
+	it("lowers closed adjacent oneOf branches into a union without an untagged wire extension", async () => {
+		const lower = await import(
+			"../src/compiler/frontend/json-schema/lower.mjs"
+		);
+		const ref = (name: string) => ({
+			$ref: `https://schemas.example.test/${name}.json`,
+		});
+		const adjacent = (kind: string, payload?: string) => ({
+			type: "object",
+			properties: {
+				kind: { const: kind },
+				...(payload === undefined ? {} : { value: ref(payload) }),
+			},
+			required: payload === undefined ? ["kind"] : ["kind", "value"],
+			unevaluatedProperties: { not: {} },
+		});
+		const identity = (name: string) => `ix://agent-ix/semantic-core/${name}`;
+		const source = (name: string, body: object) =>
+			[
+				`${name}.json`,
+				{
+					$id: `https://schemas.example.test/${name}.json`,
+					"x-agent-ix-semantic-id": identity(name),
+					...body,
+				},
+			] as const;
+		const branches = [adjacent("Left", "Left"), adjacent("Right")];
+		const result = lower.lowerBundle(
+			[
+				source("Choice", { oneOf: branches }),
+				source("Holder", {
+					type: "object",
+					properties: {
+						choice: { oneOf: branches },
+						choices: { type: "array", items: { oneOf: branches } },
+					},
+					required: ["choice"],
+					unevaluatedProperties: { not: {} },
+				}),
+				source("Left", { type: "string" }),
+			],
+			{
+				source: {
+					identity: "ix://agent-ix/semantic-core",
+					version: "1.0.0",
+					dialect: "spec-bundle",
+					digest: `sha256:${"0".repeat(64)}`,
+				},
+			},
+		);
+		expect(result.diagnostics).toBeUndefined();
+		const types = result.document!.types as LoweredType[];
+		for (const name of ["Choice", "HolderChoice", "HolderChoices"]) {
+			const union = types.find((entry) => entry.displayName === name)!;
+			expect(union).toEqual(expect.objectContaining({ kind: "union" }));
+			expect(union.extensions).toEqual([]);
+			expect(union.variants).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						name: "Left",
+						payloadType: lower.identityOf("Left"),
+					}),
+					expect.objectContaining({ name: "Right" }),
+				]),
+			);
+		}
+	});
+
+	/** Traces: IR-994; FR-082. */
+	it("refuses an adjacent oneOf branch whose value is optional", async () => {
+		const lower = await import(
+			"../src/compiler/frontend/json-schema/lower.mjs"
+		);
+		const result = lower.lowerBundle([
+			[
+				"Choice.json",
+				{
+					$id: "https://schemas.example.test/Choice.json",
+					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Choice",
+					oneOf: [
+						{
+							type: "object",
+							properties: {
+								kind: { const: "Left" },
+								value: { type: "string" },
+							},
+							required: ["kind"],
+							unevaluatedProperties: { not: {} },
+						},
+					],
+				},
+			],
+		]);
+		expect(
+			result.diagnostics?.map((entry: { code: string }) => entry.code),
+		).toContain("agent-ix.compiler.UNSUPPORTED_SCHEMA_SHAPE");
+	});
+
 	/** Traces: TC-1543; FR-082. */
 	it("preserves an all-reference JSON Schema anyOf as an untagged union", async () => {
 		const lower = await import(
@@ -6722,7 +6821,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 
 		// UNSUPPORTED_SCHEMA_KEYWORD: a keyword outside the closed set.
 		const keywordRun = lower.lowerBundle([
-			["A.json", { $id: "A", type: "object", oneOf: [] }],
+			["A.json", { $id: "A", type: "object", contains: {} }],
 		]) as { diagnostics?: readonly Diagnostic[] };
 		note(keywordRun.diagnostics ?? []);
 

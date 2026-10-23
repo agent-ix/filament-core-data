@@ -3,17 +3,46 @@
 	"title": "An enumerated value set of mixed scalar kinds",
 	"declaration": "EnumValuesConstraint",
 	"class": "positive",
-	"properties": ["serialized-member-names", "round-trip"],
+	"properties": [
+		"serialized-member-names",
+		"round-trip"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "enumValues",
-		"values": ["draft", 1, true]
+		"values": [
+			{
+				"kind": "string",
+				"value": "draft"
+			},
+			{
+				"kind": "number",
+				"value": 1
+			},
+			{
+				"kind": "boolean",
+				"value": true
+			}
+		]
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
 			"keyword": "enumValues",
-			"values": ["draft", 1, true]
+			"values": [
+				{
+					"kind": "string",
+					"value": "draft"
+				},
+				{
+					"kind": "number",
+					"value": 1
+				},
+				{
+					"kind": "boolean",
+					"value": true
+				}
+			]
 		}
 	},
 	"derivedFrom": [

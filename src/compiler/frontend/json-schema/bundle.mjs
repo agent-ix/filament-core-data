@@ -27,7 +27,7 @@ function diagnostic(entry, message, locus) {
  * Checks a bundle declaration against the grammar it claims to package.
  *
  * The expected document set is derived from the authored inventory, one
- * `<name>.json` per model, union, enum and scalar, and compared with the
+ * `<name>.json` per model, union, internal wire union, enum and scalar, and compared with the
  * enumeration the bundle declares. Returns diagnostics rather than throwing, so
  * one run reports every disagreement instead of the first.
  *
@@ -42,7 +42,7 @@ export function checkKernelBundle(declaration, inventory) {
 	const declared = [
 		.../** @type {readonly string[]} */ (declaration.documents ?? []),
 	].sort();
-	const derived = ["models", "unions", "enums", "scalars"]
+	const derived = ["models", "unions", "wireUnions", "enums", "scalars"]
 		.flatMap((key) =>
 			Array.isArray(inventory[key])
 				? /** @type {readonly string[]} */ (inventory[key])

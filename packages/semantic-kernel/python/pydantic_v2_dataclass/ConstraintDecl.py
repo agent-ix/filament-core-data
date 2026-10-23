@@ -3,9 +3,10 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import Field
+from pydantic import ConfigDict, Field
+from pydantic.dataclasses import dataclass
 
 from .EnumValuesConstraint import EnumValuesConstraint
 from .ExclusiveMaxConstraint import ExclusiveMaxConstraint
@@ -19,10 +20,77 @@ from .NonEmptyConstraint import NonEmptyConstraint
 from .PatternConstraint import PatternConstraint
 from .UniqueConstraint import UniqueConstraint
 
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class ConstraintDecl5:
+    kind: Literal['PatternConstraint']
+    value: PatternConstraint
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class ConstraintDecl6:
+    kind: Literal['MinLengthConstraint']
+    value: MinLengthConstraint
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class ConstraintDecl7:
+    kind: Literal['MaxLengthConstraint']
+    value: MaxLengthConstraint
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class ConstraintDecl9:
+    kind: Literal['NonEmptyConstraint']
+    value: NonEmptyConstraint
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class ConstraintDecl10:
+    kind: Literal['UniqueConstraint']
+    value: UniqueConstraint
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class ConstraintDecl11:
+    kind: Literal['FormatConstraint']
+    value: FormatConstraint
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class ConstraintDecl1:
+    kind: Literal['MinConstraint']
+    value: MinConstraint
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class ConstraintDecl2:
+    kind: Literal['MaxConstraint']
+    value: MaxConstraint
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class ConstraintDecl3:
+    kind: Literal['ExclusiveMinConstraint']
+    value: ExclusiveMinConstraint
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class ConstraintDecl4:
+    kind: Literal['ExclusiveMaxConstraint']
+    value: ExclusiveMaxConstraint
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class ConstraintDecl8:
+    kind: Literal['EnumValuesConstraint']
+    value: EnumValuesConstraint
+
+
 type ConstraintDecl = Annotated[
-    MinConstraint | MaxConstraint | ExclusiveMinConstraint | ExclusiveMaxConstraint | PatternConstraint | MinLengthConstraint | MaxLengthConstraint | EnumValuesConstraint | NonEmptyConstraint | UniqueConstraint | FormatConstraint,
+    ConstraintDecl1 | ConstraintDecl2 | ConstraintDecl3 | ConstraintDecl4 | ConstraintDecl5 | ConstraintDecl6 | ConstraintDecl7 | ConstraintDecl8 | ConstraintDecl9 | ConstraintDecl10 | ConstraintDecl11,
     Field(
-        description='FR-029 constraint declaration, discriminated on `keyword`.',
+        description='FR-029 constraint declaration, tagged by `kind` with its record in `value`.',
         title='ConstraintDecl',
     ),
 ]

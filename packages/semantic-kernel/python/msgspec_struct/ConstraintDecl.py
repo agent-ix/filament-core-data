@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from msgspec import Meta
+from msgspec import Meta, Struct
 
 from .EnumValuesConstraint import EnumValuesConstraint
 from .ExclusiveMaxConstraint import ExclusiveMaxConstraint
@@ -19,10 +19,55 @@ from .NonEmptyConstraint import NonEmptyConstraint
 from .PatternConstraint import PatternConstraint
 from .UniqueConstraint import UniqueConstraint
 
+
+class ConstraintDecl5(Struct, tag_field='kind', tag='PatternConstraint'):
+    value: PatternConstraint
+
+
+class ConstraintDecl6(Struct, tag_field='kind', tag='MinLengthConstraint'):
+    value: MinLengthConstraint
+
+
+class ConstraintDecl7(Struct, tag_field='kind', tag='MaxLengthConstraint'):
+    value: MaxLengthConstraint
+
+
+class ConstraintDecl9(Struct, tag_field='kind', tag='NonEmptyConstraint'):
+    value: NonEmptyConstraint
+
+
+class ConstraintDecl10(Struct, tag_field='kind', tag='UniqueConstraint'):
+    value: UniqueConstraint
+
+
+class ConstraintDecl11(Struct, tag_field='kind', tag='FormatConstraint'):
+    value: FormatConstraint
+
+
+class ConstraintDecl1(Struct, tag_field='kind', tag='MinConstraint'):
+    value: MinConstraint
+
+
+class ConstraintDecl2(Struct, tag_field='kind', tag='MaxConstraint'):
+    value: MaxConstraint
+
+
+class ConstraintDecl3(Struct, tag_field='kind', tag='ExclusiveMinConstraint'):
+    value: ExclusiveMinConstraint
+
+
+class ConstraintDecl4(Struct, tag_field='kind', tag='ExclusiveMaxConstraint'):
+    value: ExclusiveMaxConstraint
+
+
+class ConstraintDecl8(Struct, tag_field='kind', tag='EnumValuesConstraint'):
+    value: EnumValuesConstraint
+
+
 type ConstraintDecl = Annotated[
-    MinConstraint | MaxConstraint | ExclusiveMinConstraint | ExclusiveMaxConstraint | PatternConstraint | MinLengthConstraint | MaxLengthConstraint | EnumValuesConstraint | NonEmptyConstraint | UniqueConstraint | FormatConstraint,
+    ConstraintDecl1 | ConstraintDecl2 | ConstraintDecl3 | ConstraintDecl4 | ConstraintDecl5 | ConstraintDecl6 | ConstraintDecl7 | ConstraintDecl8 | ConstraintDecl9 | ConstraintDecl10 | ConstraintDecl11,
     Meta(
-        description='FR-029 constraint declaration, discriminated on `keyword`.',
+        description='FR-029 constraint declaration, tagged by `kind` with its record in `value`.',
         title='ConstraintDecl',
     ),
 ]

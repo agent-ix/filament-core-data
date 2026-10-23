@@ -3,15 +3,24 @@
 	"title": "A reference to a kernel scalar",
 	"declaration": "TypeRef",
 	"class": "positive",
-	"properties": ["serialized-member-names", "round-trip"],
+	"properties": [
+		"serialized-member-names",
+		"round-trip"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
-		"target": "String"
+		"target": {
+			"kind": "KernelScalar",
+			"value": "String"
+		}
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
-			"target": "String"
+			"target": {
+				"kind": "KernelScalar",
+				"value": "String"
+			}
 		}
 	},
 	"derivedFrom": [

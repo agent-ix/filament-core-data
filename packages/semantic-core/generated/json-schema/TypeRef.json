@@ -4,14 +4,7 @@
 	"type": "object",
 	"properties": {
 		"target": {
-			"anyOf": [
-				{
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/SemanticId.json"
-				},
-				{
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/KernelScalar.json"
-				}
-			]
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/TypeRefTarget.json"
 		},
 		"multiplicity": {
 			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/Multiplicity.json"
@@ -27,6 +20,5 @@
 	"unevaluatedProperties": {
 		"not": {}
 	},
-	"description": "A reference to a kernel scalar or a semantic type. Reader: `decimal` iff target is Decimal; `unit` only on unit-allowed scalars.",
 	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/TypeRef"
 }

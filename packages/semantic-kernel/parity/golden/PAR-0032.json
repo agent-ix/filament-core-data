@@ -3,11 +3,16 @@
 	"title": "`max` with the wrong discriminant",
 	"declaration": "MaxConstraint",
 	"class": "negative",
-	"properties": ["serialized-member-names"],
+	"properties": [
+		"serialized-member-names"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "nonEmpty",
-		"value": 100
+		"value": {
+			"kind": "number",
+			"value": 100
+		}
 	},
 	"expected": {
 		"resultState": "invalid"

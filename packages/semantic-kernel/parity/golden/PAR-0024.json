@@ -3,12 +3,17 @@
 	"title": "An optional non-nullable member written as null",
 	"declaration": "FieldDecl",
 	"class": "negative",
-	"properties": ["presence-versus-null"],
+	"properties": [
+		"presence-versus-null"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
 		"name": "title",
 		"type": {
-			"target": "String"
+			"target": {
+				"kind": "KernelScalar",
+				"value": "String"
+			}
 		},
 		"doc": null
 	},

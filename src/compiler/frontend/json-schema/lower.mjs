@@ -66,6 +66,87 @@ function barePrimitive(schema) {
 	);
 }
 
+/** Strict closed adjacent branch: `{kind: const, value: required payload}`. */
+function adjacentBranch(branch) {
+	if (!branch || typeof branch !== "object" || branch.type !== "object")
+		return null;
+	const properties = branch.properties;
+	if (!properties || typeof properties !== "object") return null;
+	const keys = Object.keys(properties);
+	if (
+		!keys.includes("kind") ||
+		keys.some((key) => key !== "kind" && key !== "value")
+	)
+		return null;
+	const tag = properties.kind;
+	if (
+		!tag ||
+		typeof tag !== "object" ||
+		typeof tag.const !== "string" ||
+		Object.keys(tag).some((key) => key !== "const" && key !== "type")
+	)
+		return null;
+	if (tag.type !== undefined && tag.type !== "string") return null;
+	const required = branch.required;
+	if (
+		!Array.isArray(required) ||
+		required.length !== keys.length ||
+		keys.some((key) => !required.includes(key))
+	)
+		return null;
+	if (
+		JSON.stringify(branch.unevaluatedProperties) !== JSON.stringify({ not: {} })
+	)
+		return null;
+	if (
+		Object.keys(branch).some(
+			(key) =>
+				![
+					"type",
+					"properties",
+					"required",
+					"unevaluatedProperties",
+					"description",
+				].includes(key),
+		)
+	)
+		return null;
+	const payload = properties.value;
+	if (
+		payload !== undefined &&
+		(!payload ||
+			typeof payload !== "object" ||
+			!("$ref" in payload || barePrimitive(payload)))
+	)
+		return null;
+	return { name: tag.const, payload };
+}
+
+function adjacentVariants(branches, owner, file, minted) {
+	if (!Array.isArray(branches) || branches.length < 2) return null;
+	const parsed = branches.map(adjacentBranch);
+	if (parsed.some((branch) => !branch)) return null;
+	if (new Set(parsed.map((branch) => branch.name)).size !== parsed.length)
+		return null;
+	return parsed.map((branch) => {
+		let payloadType;
+		if (branch.payload) {
+			if ("$ref" in branch.payload)
+				payloadType = identityOf(nameFromUrl(branch.payload.$ref));
+			else {
+				const scalarName = `${owner}${segment(branch.name)}`;
+				minted.push({
+					name: scalarName,
+					kind: "scalar",
+					scalar: SCALAR_OF[branch.payload.type],
+				});
+				payloadType = identityOf(scalarName);
+			}
+		}
+		return completeVariant(owner, { name: branch.name, payloadType }, file);
+	});
+}
+
 /**
  * A constraint in the shape `semantic-ir.schema.json` requires: an identity,
  * the subject it applies to, a diagnostic code and an origin — not a bare
@@ -217,6 +298,20 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 
 	if (schema && typeof schema === "object" && "$ref" in schema) {
 		typeRef = identityOf(nameFromUrl(schema.$ref));
+	} else if (schema && Array.isArray(schema.oneOf)) {
+		const name = mintName(owner, property);
+		const variants = adjacentVariants(schema.oneOf, name, file, minted);
+		if (!variants) {
+			out.push(
+				diag(
+					DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+					`oneOf branches at ${at} are not closed adjacent variants`,
+					at,
+				),
+			);
+			return null;
+		}
+		typeRef = mint({ kind: "union", extensions: [], variants });
 	} else if (schema && Array.isArray(schema.anyOf)) {
 		// Branches are all `$ref`s, or all recognised property-position forms.
 		// A mixture is the case the table does not cover.
@@ -283,6 +378,20 @@ function lowerProperty(owner, property, schema, isRequired, out, minted, file) {
 		const items = schema.items;
 		if (items && typeof items === "object" && "$ref" in items) {
 			typeRef = identityOf(nameFromUrl(items.$ref));
+		} else if (items && Array.isArray(items.oneOf)) {
+			const name = mintName(owner, property);
+			const variants = adjacentVariants(items.oneOf, name, file, minted);
+			if (!variants) {
+				out.push(
+					diag(
+						DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+						`array items at ${at} are not closed adjacent oneOf variants`,
+						at,
+					),
+				);
+				return null;
+			}
+			typeRef = mint({ kind: "union", extensions: [], variants });
 		} else if (
 			items &&
 			Array.isArray(items.anyOf) &&
@@ -527,6 +636,30 @@ export function lowerBundle(documents, options = {}) {
 						kind: "scalar",
 						scalar: "string",
 						constraints: [],
+					},
+					file,
+				),
+			);
+		} else if (Array.isArray(schema.oneOf)) {
+			const variants = adjacentVariants(schema.oneOf, name, file, minted);
+			if (!variants) {
+				out.push(
+					diag(
+						DIAGNOSTIC_CODES.UNSUPPORTED_SCHEMA_SHAPE,
+						`${file} oneOf branches are not closed adjacent variants`,
+						`${file}/oneOf`,
+					),
+				);
+				continue;
+			}
+			types.push(
+				complete(
+					{
+						name,
+						identity: identityOf(name),
+						kind: "union",
+						extensions: [],
+						variants,
 					},
 					file,
 				),

@@ -19,17 +19,32 @@ export interface ClauseRef {
 }
 
 export type ConstraintDecl =
-	| EnumValuesConstraint
-	| ExclusiveMaxConstraint
-	| ExclusiveMinConstraint
-	| FormatConstraint
-	| MaxConstraint
-	| MaxLengthConstraint
-	| MinConstraint
-	| MinLengthConstraint
-	| NonEmptyConstraint
-	| PatternConstraint
-	| UniqueConstraint;
+	| {
+			readonly kind: "EnumValuesConstraint";
+			readonly value: EnumValuesConstraint;
+	  }
+	| {
+			readonly kind: "ExclusiveMaxConstraint";
+			readonly value: ExclusiveMaxConstraint;
+	  }
+	| {
+			readonly kind: "ExclusiveMinConstraint";
+			readonly value: ExclusiveMinConstraint;
+	  }
+	| { readonly kind: "FormatConstraint"; readonly value: FormatConstraint }
+	| { readonly kind: "MaxConstraint"; readonly value: MaxConstraint }
+	| {
+			readonly kind: "MaxLengthConstraint";
+			readonly value: MaxLengthConstraint;
+	  }
+	| { readonly kind: "MinConstraint"; readonly value: MinConstraint }
+	| {
+			readonly kind: "MinLengthConstraint";
+			readonly value: MinLengthConstraint;
+	  }
+	| { readonly kind: "NonEmptyConstraint"; readonly value: NonEmptyConstraint }
+	| { readonly kind: "PatternConstraint"; readonly value: PatternConstraint }
+	| { readonly kind: "UniqueConstraint"; readonly value: UniqueConstraint };
 
 export type ConstraintKeyword =
 	| "enumValues"
@@ -94,9 +109,18 @@ export interface EnumValuesConstraint {
 export type EnumValuesConstraintKeyword = "enumValues";
 
 export type EnumValuesConstraintValues =
-	| EnumValuesConstraintValuesBoolean
-	| EnumValuesConstraintValuesNumber
-	| EnumValuesConstraintValuesString;
+	| {
+			readonly kind: "boolean";
+			readonly value: EnumValuesConstraintValuesBoolean;
+	  }
+	| {
+			readonly kind: "number";
+			readonly value: EnumValuesConstraintValuesNumber;
+	  }
+	| {
+			readonly kind: "string";
+			readonly value: EnumValuesConstraintValuesString;
+	  };
 
 export type EnumValuesConstraintValuesBoolean = boolean;
 
@@ -112,8 +136,14 @@ export interface ExclusiveMaxConstraint {
 export type ExclusiveMaxConstraintKeyword = "exclusiveMax";
 
 export type ExclusiveMaxConstraintValue =
-	| ExclusiveMaxConstraintValueNumber
-	| ExclusiveMaxConstraintValueString;
+	| {
+			readonly kind: "number";
+			readonly value: ExclusiveMaxConstraintValueNumber;
+	  }
+	| {
+			readonly kind: "string";
+			readonly value: ExclusiveMaxConstraintValueString;
+	  };
 
 export type ExclusiveMaxConstraintValueNumber = number;
 
@@ -127,8 +157,14 @@ export interface ExclusiveMinConstraint {
 export type ExclusiveMinConstraintKeyword = "exclusiveMin";
 
 export type ExclusiveMinConstraintValue =
-	| ExclusiveMinConstraintValueNumber
-	| ExclusiveMinConstraintValueString;
+	| {
+			readonly kind: "number";
+			readonly value: ExclusiveMinConstraintValueNumber;
+	  }
+	| {
+			readonly kind: "string";
+			readonly value: ExclusiveMinConstraintValueString;
+	  };
 
 export type ExclusiveMinConstraintValueNumber = number;
 
@@ -182,8 +218,8 @@ export interface MaxConstraint {
 export type MaxConstraintKeyword = "max";
 
 export type MaxConstraintValue =
-	| MaxConstraintValueNumber
-	| MaxConstraintValueString;
+	| { readonly kind: "number"; readonly value: MaxConstraintValueNumber }
+	| { readonly kind: "string"; readonly value: MaxConstraintValueString };
 
 export type MaxConstraintValueNumber = number;
 
@@ -206,8 +242,8 @@ export interface MinConstraint {
 export type MinConstraintKeyword = "min";
 
 export type MinConstraintValue =
-	| MinConstraintValueNumber
-	| MinConstraintValueString;
+	| { readonly kind: "number"; readonly value: MinConstraintValueNumber }
+	| { readonly kind: "string"; readonly value: MinConstraintValueString };
 
 export type MinConstraintValueNumber = number;
 
@@ -301,7 +337,9 @@ export interface TypeRef {
 	readonly unit?: UnitSymbol;
 }
 
-export type TypeRefTarget = KernelScalar | SemanticId;
+export type TypeRefTarget =
+	| { readonly kind: "KernelScalar"; readonly value: KernelScalar }
+	| { readonly kind: "SemanticId"; readonly value: SemanticId };
 
 export interface UniqueConstraint {
 	readonly keyword: UniqueConstraintKeyword;

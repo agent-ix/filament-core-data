@@ -3,10 +3,16 @@
 	"title": "A reference to a semantic type carrying a decimal policy",
 	"declaration": "TypeRef",
 	"class": "positive",
-	"properties": ["serialized-member-names", "round-trip"],
+	"properties": [
+		"serialized-member-names",
+		"round-trip"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
-		"target": "ix://agent-ix/semantic-core/DecimalPolicy",
+		"target": {
+			"kind": "SemanticId",
+			"value": "ix://agent-ix/semantic-core/DecimalPolicy"
+		},
 		"decimal": {
 			"precision": 18,
 			"scale": 6
@@ -21,7 +27,10 @@
 	"expected": {
 		"resultState": "success",
 		"wire": {
-			"target": "ix://agent-ix/semantic-core/DecimalPolicy",
+			"target": {
+				"kind": "SemanticId",
+				"value": "ix://agent-ix/semantic-core/DecimalPolicy"
+			},
 			"decimal": {
 				"precision": 18,
 				"scale": 6
@@ -37,8 +46,8 @@
 	"derivedFrom": [
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/TypeRef.json",
-			"locator": "#/description",
-			"quote": "\"description\": \"A reference to a kernel scalar or a semantic type. Reader: `decimal` iff target is Decimal; `unit` only on unit-allowed scalars.\""
+			"locator": "#/properties/target/$ref",
+			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.3.3/TypeRefTarget.json\""
 		}
 	],
 	"provenance": {

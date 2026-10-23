@@ -3,12 +3,18 @@
 	"title": "An optional member absent is not the same as present-and-null",
 	"declaration": "FieldDecl",
 	"class": "boundary",
-	"properties": ["presence-versus-null", "round-trip"],
+	"properties": [
+		"presence-versus-null",
+		"round-trip"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
 		"name": "title",
 		"type": {
-			"target": "String"
+			"target": {
+				"kind": "KernelScalar",
+				"value": "String"
+			}
 		}
 	},
 	"expected": {
@@ -16,7 +22,10 @@
 		"wire": {
 			"name": "title",
 			"type": {
-				"target": "String"
+				"target": {
+					"kind": "KernelScalar",
+					"value": "String"
+				}
 			}
 		}
 	},

@@ -1,5 +1,5 @@
 {
-	"$comment": "Exact declaration inventory of AgentIx.Semantic.Core (FR-031). The compiled program must equal this set (NFR-014-AC-1); nothing else is a kernel declaration.",
+	"$comment": "Exact declaration inventory of AgentIx.Semantic.Core (FR-031). Public grammar declarations are models, unions, enums and scalars; wireUnions are internal named adjacent envelopes used by their fields. The compiled program must equal this set (NFR-014-AC-1).",
 	"namespace": "AgentIx.Semantic.Core",
 	"models": [
 		"Multiplicity",
@@ -25,6 +25,14 @@
 		"SourceLocus"
 	],
 	"unions": ["ConstraintDecl"],
+	"wireUnions": [
+		"EnumValuesConstraintValues",
+		"ExclusiveMaxConstraintValue",
+		"ExclusiveMinConstraintValue",
+		"MaxConstraintValue",
+		"MinConstraintValue",
+		"TypeRefTarget"
+	],
 	"enums": ["KernelScalar", "EdgeCategory", "ConstraintKeyword", "DefaultKind"],
 	"scalars": [
 		"Identifier",

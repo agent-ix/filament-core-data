@@ -7,15 +7,14 @@ from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
 
 from .DecimalPolicy import DecimalPolicy
-from .KernelScalar import KernelScalar
 from .Multiplicity import Multiplicity
-from .SemanticId import SemanticId
+from .TypeRefTarget import TypeRefTarget
 from .UnitSymbol import UnitSymbol
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
 class TypeRef:
-    target: SemanticId | KernelScalar
+    target: TypeRefTarget
     decimal: DecimalPolicy | None = None
     multiplicity: Multiplicity | None = None
     unit: UnitSymbol | None = None

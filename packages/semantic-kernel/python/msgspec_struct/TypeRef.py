@@ -6,14 +6,13 @@ from __future__ import annotations
 from msgspec import UNSET, Struct, UnsetType
 
 from .DecimalPolicy import DecimalPolicy
-from .KernelScalar import KernelScalar
 from .Multiplicity import Multiplicity
-from .SemanticId import SemanticId
+from .TypeRefTarget import TypeRefTarget
 from .UnitSymbol import UnitSymbol
 
 
 class TypeRef(Struct):
-    target: SemanticId | KernelScalar
+    target: TypeRefTarget
     decimal: DecimalPolicy | UnsetType = UNSET
     multiplicity: Multiplicity | UnsetType = UNSET
     unit: UnitSymbol | UnsetType = UNSET

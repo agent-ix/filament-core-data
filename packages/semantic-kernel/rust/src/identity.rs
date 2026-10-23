@@ -245,65 +245,6 @@ pub struct OccurrenceMeta {
     pub value: &'static str,
 }
 
-const CONSTRAINT_DECL_EXTENSIONS: &[ExtensionMeta] = &[crate::identity::ExtensionMeta {
-    identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-    version: "1.0.0",
-    required: false,
-    capability: None,
-    payload: "{\"wireForm\":\"untagged\"}",
-}];
-
-const ENUM_VALUES_CONSTRAINT_VALUES_EXTENSIONS: &[ExtensionMeta] =
-    &[crate::identity::ExtensionMeta {
-        identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-        version: "1.0.0",
-        required: false,
-        capability: None,
-        payload: "{\"wireForm\":\"untagged\"}",
-    }];
-
-const EXCLUSIVE_MAX_CONSTRAINT_VALUE_EXTENSIONS: &[ExtensionMeta] =
-    &[crate::identity::ExtensionMeta {
-        identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-        version: "1.0.0",
-        required: false,
-        capability: None,
-        payload: "{\"wireForm\":\"untagged\"}",
-    }];
-
-const EXCLUSIVE_MIN_CONSTRAINT_VALUE_EXTENSIONS: &[ExtensionMeta] =
-    &[crate::identity::ExtensionMeta {
-        identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-        version: "1.0.0",
-        required: false,
-        capability: None,
-        payload: "{\"wireForm\":\"untagged\"}",
-    }];
-
-const MAX_CONSTRAINT_VALUE_EXTENSIONS: &[ExtensionMeta] = &[crate::identity::ExtensionMeta {
-    identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-    version: "1.0.0",
-    required: false,
-    capability: None,
-    payload: "{\"wireForm\":\"untagged\"}",
-}];
-
-const MIN_CONSTRAINT_VALUE_EXTENSIONS: &[ExtensionMeta] = &[crate::identity::ExtensionMeta {
-    identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-    version: "1.0.0",
-    required: false,
-    capability: None,
-    payload: "{\"wireForm\":\"untagged\"}",
-}];
-
-const TYPE_REF_TARGET_EXTENSIONS: &[ExtensionMeta] = &[crate::identity::ExtensionMeta {
-    identity: "ix://agent-ix/semantic-core/extension/untagged-union-wire-form",
-    version: "1.0.0",
-    required: false,
-    capability: None,
-    payload: "{\"wireForm\":\"untagged\"}",
-}];
-
 /// Every generated type, in the order the contract declares them.
 pub const TYPES: &[TypeMeta] = &[
     crate::identity::TypeMeta {
@@ -376,7 +317,7 @@ pub const TYPES: &[TypeMeta] = &[
         relationships: &[],
         operations: &[],
         clauses: &[],
-        extensions: CONSTRAINT_DECL_EXTENSIONS,
+        extensions: &[],
     },
     crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/ConstraintKeyword",
@@ -691,6 +632,31 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
+        identity: "ix://agent-ix/semantic-core/EnumValuesConstraintValues",
+        display_name: "EnumValuesConstraintValues",
+        kind: "union",
+        rust_name: "EnumValuesConstraintValues",
+        roles: &[],
+        unknown_policy: "reject",
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
+                source_identity: "ix://agent-ix/semantic-core",
+                path:
+                    "packages/semantic-core/generated/json-schema/EnumValuesConstraintValues.json",
+                start_line: 1,
+                start_column: 1,
+                end_line: None,
+                end_column: None,
+            }),
+            generated: None,
+        },
+        fields: &[],
+        relationships: &[],
+        operations: &[],
+        clauses: &[],
+        extensions: &[],
+    },
+    crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/EnumValuesConstraintValuesString",
         display_name: "EnumValuesConstraintValuesString",
         kind: "scalar",
@@ -700,7 +666,8 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/EnumValuesConstraint.json",
+                path:
+                    "packages/semantic-core/generated/json-schema/EnumValuesConstraintValues.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -724,7 +691,8 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/EnumValuesConstraint.json",
+                path:
+                    "packages/semantic-core/generated/json-schema/EnumValuesConstraintValues.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -748,7 +716,8 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/EnumValuesConstraint.json",
+                path:
+                    "packages/semantic-core/generated/json-schema/EnumValuesConstraintValues.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -761,30 +730,6 @@ pub const TYPES: &[TypeMeta] = &[
         operations: &[],
         clauses: &[],
         extensions: &[],
-    },
-    crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/EnumValuesConstraintValues",
-        display_name: "EnumValuesConstraintValues",
-        kind: "union",
-        rust_name: "EnumValuesConstraintValues",
-        roles: &[],
-        unknown_policy: "reject",
-        origin: crate::identity::OriginMeta {
-            source: Some(crate::identity::SourceLocusMeta {
-                source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/EnumValuesConstraint.json",
-                start_line: 1,
-                start_column: 1,
-                end_line: None,
-                end_column: None,
-            }),
-            generated: None,
-        },
-        fields: &[],
-        relationships: &[],
-        operations: &[],
-        clauses: &[],
-        extensions: ENUM_VALUES_CONSTRAINT_VALUES_EXTENSIONS,
     },
     crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraint",
@@ -835,6 +780,31 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
+        identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue",
+        display_name: "ExclusiveMaxConstraintValue",
+        kind: "union",
+        rust_name: "ExclusiveMaxConstraintValue",
+        roles: &[],
+        unknown_policy: "reject",
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
+                source_identity: "ix://agent-ix/semantic-core",
+                path:
+                    "packages/semantic-core/generated/json-schema/ExclusiveMaxConstraintValue.json",
+                start_line: 1,
+                start_column: 1,
+                end_line: None,
+                end_column: None,
+            }),
+            generated: None,
+        },
+        fields: &[],
+        relationships: &[],
+        operations: &[],
+        clauses: &[],
+        extensions: &[],
+    },
+    crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValueNumber",
         display_name: "ExclusiveMaxConstraintValueNumber",
         kind: "scalar",
@@ -844,7 +814,8 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/ExclusiveMaxConstraint.json",
+                path:
+                    "packages/semantic-core/generated/json-schema/ExclusiveMaxConstraintValue.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -868,7 +839,8 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/ExclusiveMaxConstraint.json",
+                path:
+                    "packages/semantic-core/generated/json-schema/ExclusiveMaxConstraintValue.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -881,30 +853,6 @@ pub const TYPES: &[TypeMeta] = &[
         operations: &[],
         clauses: &[],
         extensions: &[],
-    },
-    crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/ExclusiveMaxConstraintValue",
-        display_name: "ExclusiveMaxConstraintValue",
-        kind: "union",
-        rust_name: "ExclusiveMaxConstraintValue",
-        roles: &[],
-        unknown_policy: "reject",
-        origin: crate::identity::OriginMeta {
-            source: Some(crate::identity::SourceLocusMeta {
-                source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/ExclusiveMaxConstraint.json",
-                start_line: 1,
-                start_column: 1,
-                end_line: None,
-                end_column: None,
-            }),
-            generated: None,
-        },
-        fields: &[],
-        relationships: &[],
-        operations: &[],
-        clauses: &[],
-        extensions: EXCLUSIVE_MAX_CONSTRAINT_VALUE_EXTENSIONS,
     },
     crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraint",
@@ -955,6 +903,31 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
+        identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraintValue",
+        display_name: "ExclusiveMinConstraintValue",
+        kind: "union",
+        rust_name: "ExclusiveMinConstraintValue",
+        roles: &[],
+        unknown_policy: "reject",
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
+                source_identity: "ix://agent-ix/semantic-core",
+                path:
+                    "packages/semantic-core/generated/json-schema/ExclusiveMinConstraintValue.json",
+                start_line: 1,
+                start_column: 1,
+                end_line: None,
+                end_column: None,
+            }),
+            generated: None,
+        },
+        fields: &[],
+        relationships: &[],
+        operations: &[],
+        clauses: &[],
+        extensions: &[],
+    },
+    crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraintValueNumber",
         display_name: "ExclusiveMinConstraintValueNumber",
         kind: "scalar",
@@ -964,7 +937,8 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/ExclusiveMinConstraint.json",
+                path:
+                    "packages/semantic-core/generated/json-schema/ExclusiveMinConstraintValue.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -988,7 +962,8 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/ExclusiveMinConstraint.json",
+                path:
+                    "packages/semantic-core/generated/json-schema/ExclusiveMinConstraintValue.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -1001,30 +976,6 @@ pub const TYPES: &[TypeMeta] = &[
         operations: &[],
         clauses: &[],
         extensions: &[],
-    },
-    crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/ExclusiveMinConstraintValue",
-        display_name: "ExclusiveMinConstraintValue",
-        kind: "union",
-        rust_name: "ExclusiveMinConstraintValue",
-        roles: &[],
-        unknown_policy: "reject",
-        origin: crate::identity::OriginMeta {
-            source: Some(crate::identity::SourceLocusMeta {
-                source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/ExclusiveMinConstraint.json",
-                start_line: 1,
-                start_column: 1,
-                end_line: None,
-                end_column: None,
-            }),
-            generated: None,
-        },
-        fields: &[],
-        relationships: &[],
-        operations: &[],
-        clauses: &[],
-        extensions: EXCLUSIVE_MIN_CONSTRAINT_VALUE_EXTENSIONS,
     },
     crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/FieldDecl",
@@ -1291,6 +1242,30 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
+        identity: "ix://agent-ix/semantic-core/MaxConstraintValue",
+        display_name: "MaxConstraintValue",
+        kind: "union",
+        rust_name: "MaxConstraintValue",
+        roles: &[],
+        unknown_policy: "reject",
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
+                source_identity: "ix://agent-ix/semantic-core",
+                path: "packages/semantic-core/generated/json-schema/MaxConstraintValue.json",
+                start_line: 1,
+                start_column: 1,
+                end_line: None,
+                end_column: None,
+            }),
+            generated: None,
+        },
+        fields: &[],
+        relationships: &[],
+        operations: &[],
+        clauses: &[],
+        extensions: &[],
+    },
+    crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/MaxConstraintValueNumber",
         display_name: "MaxConstraintValueNumber",
         kind: "scalar",
@@ -1300,7 +1275,7 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/MaxConstraint.json",
+                path: "packages/semantic-core/generated/json-schema/MaxConstraintValue.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -1324,7 +1299,7 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/MaxConstraint.json",
+                path: "packages/semantic-core/generated/json-schema/MaxConstraintValue.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -1337,30 +1312,6 @@ pub const TYPES: &[TypeMeta] = &[
         operations: &[],
         clauses: &[],
         extensions: &[],
-    },
-    crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/MaxConstraintValue",
-        display_name: "MaxConstraintValue",
-        kind: "union",
-        rust_name: "MaxConstraintValue",
-        roles: &[],
-        unknown_policy: "reject",
-        origin: crate::identity::OriginMeta {
-            source: Some(crate::identity::SourceLocusMeta {
-                source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/MaxConstraint.json",
-                start_line: 1,
-                start_column: 1,
-                end_line: None,
-                end_column: None,
-            }),
-            generated: None,
-        },
-        fields: &[],
-        relationships: &[],
-        operations: &[],
-        clauses: &[],
-        extensions: MAX_CONSTRAINT_VALUE_EXTENSIONS,
     },
     crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/MaxLengthConstraint",
@@ -1483,6 +1434,30 @@ pub const TYPES: &[TypeMeta] = &[
         extensions: &[],
     },
     crate::identity::TypeMeta {
+        identity: "ix://agent-ix/semantic-core/MinConstraintValue",
+        display_name: "MinConstraintValue",
+        kind: "union",
+        rust_name: "MinConstraintValue",
+        roles: &[],
+        unknown_policy: "reject",
+        origin: crate::identity::OriginMeta {
+            source: Some(crate::identity::SourceLocusMeta {
+                source_identity: "ix://agent-ix/semantic-core",
+                path: "packages/semantic-core/generated/json-schema/MinConstraintValue.json",
+                start_line: 1,
+                start_column: 1,
+                end_line: None,
+                end_column: None,
+            }),
+            generated: None,
+        },
+        fields: &[],
+        relationships: &[],
+        operations: &[],
+        clauses: &[],
+        extensions: &[],
+    },
+    crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/MinConstraintValueNumber",
         display_name: "MinConstraintValueNumber",
         kind: "scalar",
@@ -1492,7 +1467,7 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/MinConstraint.json",
+                path: "packages/semantic-core/generated/json-schema/MinConstraintValue.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -1516,7 +1491,7 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/MinConstraint.json",
+                path: "packages/semantic-core/generated/json-schema/MinConstraintValue.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -1529,30 +1504,6 @@ pub const TYPES: &[TypeMeta] = &[
         operations: &[],
         clauses: &[],
         extensions: &[],
-    },
-    crate::identity::TypeMeta {
-        identity: "ix://agent-ix/semantic-core/MinConstraintValue",
-        display_name: "MinConstraintValue",
-        kind: "union",
-        rust_name: "MinConstraintValue",
-        roles: &[],
-        unknown_policy: "reject",
-        origin: crate::identity::OriginMeta {
-            source: Some(crate::identity::SourceLocusMeta {
-                source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/MinConstraint.json",
-                start_line: 1,
-                start_column: 1,
-                end_line: None,
-                end_column: None,
-            }),
-            generated: None,
-        },
-        fields: &[],
-        relationships: &[],
-        operations: &[],
-        clauses: &[],
-        extensions: MIN_CONSTRAINT_VALUE_EXTENSIONS,
     },
     crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/MinLengthConstraint",
@@ -2164,7 +2115,7 @@ pub const TYPES: &[TypeMeta] = &[
         origin: crate::identity::OriginMeta {
             source: Some(crate::identity::SourceLocusMeta {
                 source_identity: "ix://agent-ix/semantic-core",
-                path: "packages/semantic-core/generated/json-schema/TypeRef.json",
+                path: "packages/semantic-core/generated/json-schema/TypeRefTarget.json",
                 start_line: 1,
                 start_column: 1,
                 end_line: None,
@@ -2176,7 +2127,7 @@ pub const TYPES: &[TypeMeta] = &[
         relationships: &[],
         operations: &[],
         clauses: &[],
-        extensions: TYPE_REF_TARGET_EXTENSIONS,
+        extensions: &[],
     },
     crate::identity::TypeMeta {
         identity: "ix://agent-ix/semantic-core/UniqueConstraint",

@@ -3,11 +3,16 @@
 	"title": "`exclusiveMax` with the wrong discriminant",
 	"declaration": "ExclusiveMaxConstraint",
 	"class": "negative",
-	"properties": ["serialized-member-names"],
+	"properties": [
+		"serialized-member-names"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "nonEmpty",
-		"value": 1
+		"value": {
+			"kind": "number",
+			"value": 1
+		}
 	},
 	"expected": {
 		"resultState": "invalid"

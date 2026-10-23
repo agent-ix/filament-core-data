@@ -9,11 +9,11 @@
 	],
 	"packages": ["json-schema", "typescript", "python", "rust"],
 	"documents": 113,
-	"agreeing": 90,
+	"agreeing": 91,
 	"byProperty": {
 		"serialized-member-names": {
 			"documents": 95,
-			"agreeing": 76
+			"agreeing": 77
 		},
 		"round-trip": {
 			"documents": 70,
@@ -287,7 +287,7 @@
 			"class": "negative",
 			"properties": ["serialized-member-names"],
 			"decidedBy": 4,
-			"agreement": false,
+			"agreement": true,
 			"decisions": {
 				"json-schema": {
 					"resultState": "invalid",
@@ -295,8 +295,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"typescript": {
-					"resultState": "success",
-					"agreesWithContract": false,
+					"resultState": "invalid",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				},
 				"python": {
@@ -305,8 +305,8 @@
 					"unknownFate": "not-exercised"
 				},
 				"rust": {
-					"resultState": "success",
-					"agreesWithContract": false,
+					"resultState": "invalid",
+					"agreesWithContract": true,
 					"unknownFate": "not-exercised"
 				}
 			}

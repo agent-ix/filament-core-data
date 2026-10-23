@@ -32,6 +32,7 @@ export const RECOGNISED_KEYWORDS = Object.freeze(
 		"const",
 		"enum",
 		"anyOf",
+		"oneOf",
 		"items",
 		"minItems",
 		"pattern",
@@ -60,7 +61,9 @@ export function unrecognisedKeywords(node, pointer = "") {
 	const out = [];
 	const walk = (value, at) => {
 		if (Array.isArray(value)) {
-			value.forEach((item, index) => walk(item, `${at}/${index}`));
+			value.forEach((item, index) => {
+				walk(item, `${at}/${index}`);
+			});
 			return;
 		}
 		if (value === null || typeof value !== "object") return;

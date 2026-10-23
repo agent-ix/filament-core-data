@@ -182,24 +182,20 @@ describe("TC-1009..1030 minted names and the closed keyword set (FR-082, FR-083)
 	});
 
 	// TC-1013
-	it("declares exactly the nineteen recognised keywords", () => {
-		expect(RECOGNISED_KEYWORDS.size).toBe(19);
+	it("declares exactly the twenty recognised keywords", () => {
+		expect(RECOGNISED_KEYWORDS.size).toBe(20);
 		for (const k of [
 			"$schema",
 			"$id",
 			"$ref",
 			"unevaluatedProperties",
 			"maximum",
+			"oneOf",
 			"x-agent-ix-semantic-id",
 		]) {
 			expect(RECOGNISED_KEYWORDS.has(k)).toBe(true);
 		}
-		for (const k of [
-			"oneOf",
-			"allOf",
-			"additionalProperties",
-			"patternProperties",
-		]) {
+		for (const k of ["allOf", "additionalProperties", "patternProperties"]) {
 			expect(RECOGNISED_KEYWORDS.has(k)).toBe(false);
 		}
 	});
@@ -221,10 +217,10 @@ describe("TC-1009..1030 minted names and the closed keyword set (FR-082, FR-083)
 	it("flags an unrecognised keyword but not an author-chosen field of that name", () => {
 		const found = unrecognisedKeywords({
 			type: "object",
-			oneOf: [{ additionalProperties: false }],
-			properties: { oneOf: { type: "string" } },
+			contains: { type: "string" },
+			properties: { contains: { type: "string" } },
 		});
-		expect(found).toEqual([{ keyword: "oneOf", pointer: "/oneOf" }]);
+		expect(found).toEqual([{ keyword: "contains", pointer: "/contains" }]);
 		// `properties` introduces author-chosen names; checking them would report
 		// every field in the grammar.
 	});

@@ -7,7 +7,9 @@ from typing import Annotated, Literal
 
 from msgspec import Meta, Struct
 
+from .EnumValuesConstraintValues import EnumValuesConstraintValues
+
 
 class EnumValuesConstraint(Struct):
     keyword: Literal['enumValues']
-    values: Annotated[list[str | float | bool], Meta(min_length=1)]
+    values: Annotated[list[EnumValuesConstraintValues], Meta(min_length=1)]

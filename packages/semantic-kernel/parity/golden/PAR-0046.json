@@ -3,17 +3,30 @@
 	"title": "A single-member value set",
 	"declaration": "EnumValuesConstraint",
 	"class": "boundary",
-	"properties": ["serialized-member-names", "round-trip"],
+	"properties": [
+		"serialized-member-names",
+		"round-trip"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "enumValues",
-		"values": ["only"]
+		"values": [
+			{
+				"kind": "string",
+				"value": "only"
+			}
+		]
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
 			"keyword": "enumValues",
-			"values": ["only"]
+			"values": [
+				{
+					"kind": "string",
+					"value": "only"
+				}
+			]
 		}
 	},
 	"derivedFrom": [

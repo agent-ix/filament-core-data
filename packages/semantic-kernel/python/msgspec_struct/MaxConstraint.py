@@ -7,7 +7,9 @@ from typing import Literal
 
 from msgspec import Struct
 
+from .MaxConstraintValue import MaxConstraintValue
+
 
 class MaxConstraint(Struct):
     keyword: Literal['max']
-    value: float | str
+    value: MaxConstraintValue

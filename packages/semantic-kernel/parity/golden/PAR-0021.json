@@ -3,12 +3,18 @@
 	"title": "A required single-valued field",
 	"declaration": "FieldDecl",
 	"class": "positive",
-	"properties": ["serialized-member-names", "round-trip"],
+	"properties": [
+		"serialized-member-names",
+		"round-trip"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
 		"name": "unitSymbol",
 		"type": {
-			"target": "String"
+			"target": {
+				"kind": "KernelScalar",
+				"value": "String"
+			}
 		}
 	},
 	"expected": {
@@ -16,7 +22,10 @@
 		"wire": {
 			"name": "unitSymbol",
 			"type": {
-				"target": "String"
+				"target": {
+					"kind": "KernelScalar",
+					"value": "String"
+				}
 			}
 		}
 	},

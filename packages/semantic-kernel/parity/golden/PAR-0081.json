@@ -3,26 +3,35 @@
 	"title": "The union admits an operand-carrying member",
 	"declaration": "ConstraintDecl",
 	"class": "positive",
-	"properties": ["serialized-member-names", "round-trip"],
+	"properties": [
+		"serialized-member-names",
+		"round-trip"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
-		"keyword": "pattern",
-		"regex": "^a$",
-		"dialect": "ecma-262"
-	},
-	"expected": {
-		"resultState": "success",
-		"wire": {
+		"kind": "PatternConstraint",
+		"value": {
 			"keyword": "pattern",
 			"regex": "^a$",
 			"dialect": "ecma-262"
 		}
 	},
+	"expected": {
+		"resultState": "success",
+		"wire": {
+			"kind": "PatternConstraint",
+			"value": {
+				"keyword": "pattern",
+				"regex": "^a$",
+				"dialect": "ecma-262"
+			}
+		}
+	},
 	"derivedFrom": [
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/ConstraintDecl.json",
-			"locator": "#/anyOf",
-			"quote": "\"anyOf\": ["
+			"locator": "#/oneOf",
+			"quote": "\"oneOf\": ["
 		}
 	],
 	"provenance": {

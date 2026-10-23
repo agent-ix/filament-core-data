@@ -3,11 +3,16 @@
 	"title": "`min` with the wrong discriminant",
 	"declaration": "MinConstraint",
 	"class": "negative",
-	"properties": ["serialized-member-names"],
+	"properties": [
+		"serialized-member-names"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "nonEmpty",
-		"value": 0
+		"value": {
+			"kind": "number",
+			"value": 0
+		}
 	},
 	"expected": {
 		"resultState": "invalid"

@@ -3,10 +3,15 @@
 	"title": "A target that is neither a semantic identity nor a kernel scalar",
 	"declaration": "TypeRef",
 	"class": "negative",
-	"properties": ["serialized-member-names"],
+	"properties": [
+		"serialized-member-names"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
-		"target": "not a target"
+		"target": {
+			"kind": "KernelScalar",
+			"value": "not a target"
+		}
 	},
 	"expected": {
 		"resultState": "invalid"

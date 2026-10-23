@@ -3,7 +3,10 @@
 	"title": "An operation with one parameter and no clauses",
 	"declaration": "OperationDecl",
 	"class": "positive",
-	"properties": ["serialized-member-names", "round-trip"],
+	"properties": [
+		"serialized-member-names",
+		"round-trip"
+	],
 	"unknownPolicy": "reject",
 	"instance": {
 		"name": "rename",
@@ -11,7 +14,10 @@
 			{
 				"name": "to",
 				"type": {
-					"target": "String"
+					"target": {
+						"kind": "KernelScalar",
+						"value": "String"
+					}
 				}
 			}
 		]
@@ -24,7 +30,10 @@
 				{
 					"name": "to",
 					"type": {
-						"target": "String"
+						"target": {
+							"kind": "KernelScalar",
+							"value": "String"
+						}
 					}
 				}
 			]
