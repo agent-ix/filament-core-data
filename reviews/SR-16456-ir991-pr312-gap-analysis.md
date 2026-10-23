@@ -36,3 +36,25 @@ Planless, diff-scoped check of FR-146 reader criteria against the computed Quire
 ## Verdict
 
 FAIL for incremental traceability: six in-scope FR-146 acceptance criteria remain untagged at the exact reviewed head. This is a traceability finding; the new focused tests themselves assert real behavior.
+
+## Dispositions
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-001 | fixed | FR-146-AC-2 now has 11 recognized binders in the computed matrix. |
+| FND-002 | fixed | FR-146-AC-3 now has 6 recognized binders. |
+| FND-003 | fixed | FR-146-AC-4 now has 19 recognized binders. |
+| FND-004 | fixed | FR-146-AC-5 now has 8 recognized binders. |
+| FND-005 | fixed | FR-146-AC-6 now has 13 recognized binders. |
+| FND-006 | fixed | FR-146-AC-9 now has 5 recognized binders. |
+
+### Round 1 evidence
+
+The exact head `578541ff119b8ba49cf02ffc2f941516f56eaca0` adds only 48 trace comments across five test paths and byte-exact copies of the original SR-16455/16456 files. No production code, test assertion, fixture, spec, lock or gate file changed. Direct comparison of computed matrix JSON against reviewed head `d3080d6f24f05428b35c1a450b2ab78a055b0930` has exactly six changed criteria: AC-2/3/4/5/6/9, each now `tagged` with 11/6/19/8/13/5 binders. AC-7/8 remain `untagged` and excluded to IR-993. All other 2182 criterion records are byte-equivalent after JSON parsing. `git diff --check` passes.
+
+- FND-001 after excerpt: `// FR-146-AC-2: exact reader assertions below.` at `crates/semantic-ir/tests/clock_units.rs:97`.
+- FND-002 after excerpt: `// FR-146-AC-3: exact reader assertions below.` at `crates/semantic-ir/tests/clock_units.rs:11`.
+- FND-003 after excerpt: `// FR-146-AC-4: exact reader assertions below.` at `crates/semantic-ir/tests/clock_units.rs:41`.
+- FND-004 after excerpt: `// FR-146-AC-5: exact reader assertions below.` at `crates/semantic-ir/tests/clock_units.rs:41`.
+- FND-005 after excerpt: `// FR-146-AC-6, FR-146-AC-9: exact reader assertions below.` at `crates/semantic-ir/tests/model_document.rs:370`.
+- FND-006 after excerpt: `// FR-146-AC-6, FR-146-AC-9: exact reader assertions below.` at `crates/semantic-ir/tests/model_document.rs:370`.
