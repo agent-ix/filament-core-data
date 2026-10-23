@@ -54,6 +54,7 @@ form and the fence form of one declaration produce identical `types[]`.
 - If neither the frontmatter `name` nor the `title` is a semantic-core `Identifier`, then the frontend SHALL raise `agent-ix.extraction-frontend.UNNAMEABLE_ARTIFACT` at the frontmatter.
 - The frontend SHALL set `roles` to `<module short name>:<object type>` (for example `domain:entity`) followed by each manifest role as `<module short name>:<role>`, sorted and de-duplicated, where the module short name is the manifest `name` with its `spec-objects-` prefix removed (`spec-objects-domain` → `domain`).
 - The frontend SHALL set `unknownPolicy` to `reject`.
+- The frontend SHALL lower an artifact whose frontmatter `object` is `dimension` or `unit` to a `dimensions` or `units` node ([FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md) "Spec-bundle extraction") and emit no record for it, and SHALL lower a field row whose resolution is `Clock` or `Unit` to a clock or unit-typed member under that requirement's shapes.
 - The frontend SHALL set the record's `origin.source` to the artifact's `path` at line 1, column 1, with `sourceIdentity` `ix://<org>/<name>/spec`.
 - If `availability.fields.state` is `not_applicable` (the object type requires no `## Properties`), then the frontend SHALL emit the type with `fields: []`, or with no `fields` member where its FR-142 construct carries none.
 - If `availability.fields.state` is `unavailable` or `missing`, then the frontend SHALL NOT emit a record for that artifact.
