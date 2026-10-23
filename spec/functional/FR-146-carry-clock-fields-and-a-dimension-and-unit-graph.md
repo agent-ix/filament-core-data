@@ -70,7 +70,7 @@ clocks and whose quantities are in units the domain package declares:
 | `dimensions` | document | The dimension nodes of the package: base dimensions such as `Time`, and derived dimensions, each a product of dimensions of the package raised to integer exponents, the empty product being the dimensionless dimension (QSpec FR-142). |
 | `dimensionEquivalences` | document | The declared equivalences of the package: each relates two dimension nodes of the package that name one physical dimension, so a consumer that admits this package beside another that declares the same dimension can exchange quantities (QSpec FR-142 "Dimension equivalence"). |
 | `units` | document | The unit nodes of the package: each typed by one dimension, either the dimension's root or a unit with an exact scale and offset to a target unit of the same dimension (QSpec FR-142). |
-| `ix://quire/unit/<name>` | a field, parameter, result, alias `target`, sequence `items`, map `values` or variant `payloadType` | The position holds a quantity in unit `<name>`: QSpec's `Quantity<u>` (QSpec FR-142, FR-322 "Model-owned members" step 4). |
+| `ix://quire/unit/<name>` | a field, parameter, result, alias `target`, sequence `items`, map `values`, variant `payloadType` or constraint `appliesTo` | The position holds a quantity in unit `<name>`: QSpec's `Quantity<u>` (QSpec FR-142, FR-322 "Model-owned members" step 4). |
 
 A clock is not a quantity: it holds no value in the IR, has no unit of its own,
 and takes its unit from the model's `time` member in QSL source (QSL FR-230).
@@ -410,11 +410,23 @@ package is the consumer's declaration.
   dimension with no equivalence to another is convertible to no member of the
   other (QSpec FR-142 "Dimensions of different owners"). The reader compares no
   two quantity types.
-- If `ix://quire/unit/<name>` is a `reference` `target` or a constraint
-  `appliesTo`, then the reader SHALL refuse
-  `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` at that member's pointer, because a
-  reference names an object and a bounded quantity is not a type form (QSpec
+- If `ix://quire/unit/<name>` is a `reference` `target`, then the reader SHALL
+  refuse `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF` at that member's pointer,
+  because a reference names an object and a quantity has no identity (QSpec
   FR-142 "Quantity type reference").
+- A **quantity constraint** is a constraint whose `appliesTo` is a well-formed
+  `ix://quire/unit/<name>` or an alias that reaches one. The reader SHALL admit
+  the keywords `min` and `max` on a quantity constraint, with `operands { value }`
+  where `value` is a canonical rational string (the `n` or `n/d` form that
+  "Units" defines, within `i128`, of any sign) that states a bound in the unit
+  `<name>`, and SHALL raise no `UNRESOLVED_TYPE_REF` for that `appliesTo`.
+- If a quantity constraint carries a keyword of the closed eleven other than
+  `min` and `max`, then the reader SHALL refuse
+  `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` at
+  `…/constraints/<c>/keyword`.
+- If a quantity constraint's `value` is not a canonical rational (`"2/4"`,
+  `"1/1"`, `"1.5"`, a JSON number), then the reader SHALL refuse
+  `agent-ix.semantic-ir.INVALID_OPERAND` at `…/constraints/<c>/operands/value`.
 - If a `typeRef` begins `ix://quire/unit/` and `<name>` does not have the form
   above, then the reader SHALL refuse `agent-ix.semantic-ir.UNRESOLVED_TYPE_REF`
   at that `typeRef`.
@@ -510,6 +522,25 @@ the member's type does, as the unit's `<name>`.
   `agent-ix.sysml-target.DECLARED_LOSS` naming the member and the bound, because
   the attribute states no bound. A generated validator SHALL accept `null` for a
   constrained clock whatever the bound.
+- A **quantity constraint** SHALL map to a bound that the generated validator
+  checks by exact rational comparison, on each member and alias typed by the unit
+  (or by an alias of it) that the constraint applies to. An instance that
+  satisfies the canonical rational check and violates `min` (below the bound) or
+  `max` (above it) is invalid and reports the constraint's own
+  `diagnosticCode` at the value, as FR-066 reports any violated bound; equality
+  with the bound satisfies both keywords. The JSON Schema backend SHALL write
+  `x-agent-ix-quantity-min` or `x-agent-ix-quantity-max` with the operand string
+  beside `x-agent-ix-unit` on the schema of each such member and alias, and
+  states the comparison in no `pattern` (a regular expression cannot compare
+  rationals), so the Python backends, which generate from that schema, attach a
+  generated check beside `check_canonical_rational` that raises `ValueError`
+  whose message begins with the constraint's `diagnosticCode`. The Rust
+  `Rational` newtype of the member SHALL carry the bound check in its generated
+  `Deserialize`; the TypeScript validator SHALL run the check with `bigint`
+  cross-multiplication. The SysML v2 backend SHALL write a `doc` comment
+  `quantity constraint <keyword> <operand>` on the attribute and one non-blocking
+  `agent-ix.sysml-target.DECLARED_LOSS` naming the member and the exact bound,
+  because the attribute states no bound.
 - A **clock collection** SHALL map to the collection form that the same multiplicity,
   sequence `items` or map `values` takes over any other element in the backend
   (FR-054's collection axis, FR-064, FR-136, FR-100, FR-138), the element being the
@@ -603,7 +634,8 @@ unit-reference constructs of a spec bundle to the IR constructs above.
 - QSL reads a `reference` whose `target` is `ix://quire/native/Clock`, or an
   alias that reaches it, as `Reference<Clock>` (QSL FR-230 "Clock references"),
   and a constraint whose `appliesTo` is that type as a clock constraint (QSpec
-  FR-154-AC-18, FR-415 "Clock places").
+  FR-154-AC-18, FR-415 "Clock places"), and a constraint whose `appliesTo` is
+  a unit reference as a bound `min` or `max` in that unit (QSpec FR-154-AC-18).
 - QSL reads `dimensions`, `units` and `dimensionEquivalences` into the unit graph
   of its checked package,
   beside the dimensions and units its own source declares (QSL FR-230). A
@@ -630,7 +662,7 @@ unit-reference constructs of a spec bundle to the IR constructs above.
 | FR-146-AC-3 | A document declaring base dimension `Time` (`ix://acme/rpc/dimension/Time`, `base: true`, no terms), derived dimension `Rate` (`base: false`, terms `[{Time, "-1"}]`), dimensionless dimension `Ratio` (`base: false`, no terms), root unit `s` (`scale` `"1"`, `offset` `"0"`) and unit `ms` (`target` `s`, `scale` `"1/1000"`, `offset` `"0"`) is accepted by every reader; the same document without `dimensions` and `units` serializes with neither member. | Test (TC-1844) |
 | FR-146-AC-4 | Each refuses exactly one diagnostic at the stated pointer: a term naming an undeclared dimension (`UNRESOLVED_DIMENSION_REF`, `…/terms/0/dimension`); a unit typed by an undeclared dimension (`UNRESOLVED_DIMENSION_REF`, `/units/<j>/dimension`); a unit targeting an undeclared unit (`UNRESOLVED_UNIT_REF`, `/units/<j>/target`); and, each `INVALID_UNIT_GRAPH`: scale `"0"` (`/scale`), a target in another dimension (`/target`), a second root of `Time` (`/units/<j>` of the second root), a root with scale `"2"` (`/scale`), a root with offset `"273"` (`/offset`), a two-unit target cycle (`/target` of the lower-index unit only), a self-target (`/target`), a two-dimension term cycle (the lower-index dimension's term only), a three-dimension component holding two cycles (one refusal, at the least-index dimension's first term into the component), a base dimension with a term (`/terms`), terms out of order and a repeated term (the later term), a term exponent `"0"` (`/exponent`), an identity `ix://acme/rpc/unit/msec` on unit `ms` and an identity `ix://acme/rpc/dimension/Duration` on dimension `Time` (`/identity`). A document carrying a zero scale and a cycle reports both. Two units named `ms` refuse `DUPLICATE_IDENTITY` at the later one's `/identity`. A dimension `Time` with no units is accepted. | Test (TC-1845) |
 | FR-146-AC-5 | Scale spellings `"2/4"`, `"1/1"`, `"-0"`, `"0/5"`, `"01/3"` and `"1.5"` each refuse exactly `INVALID_OPERAND` at `/units/<j>/scale`; the JSON number `0.001` refuses exactly `SCHEMA_VIOLATION` there; a numerator of 2^127 refuses exactly `INTEGER_OUTSIDE_I128`; `"1/1000"`, `"-3/2"` and `"273"` are accepted; an exponent `"+1"` refuses exactly `INVALID_OPERAND` at its pointer. | Test (TC-1846) |
-| FR-146-AC-6 | A field, an operation parameter, an operation result, an alias target, a sequence `items`, a map `values` and a variant `payloadType` typed `ix://quire/unit/ms` are accepted with no diagnostic, both in the AC-3 document and in a document that declares no units; `ix://quire/unit/ms` as a reference target or a constraint `appliesTo` refuses exactly `UNRESOLVED_TYPE_REF` at that member, and so do the typeRefs `ix://quire/unit/` and `ix://quire/unit/3ms`; a unit-typed field carrying `unit: "ms"`, a `min` constraint, a `decimal` policy and a semantic default refuses exactly one `INVALID_QUANTITY_MEMBER` at each of `/unit`, `/constraints`, `/decimal`, `/defaultKind` and `/defaultValue` under the field, and no `UNIT_ON_NON_SCALAR`, `CONSTRAINT_NOT_APPLICABLE`, decimal-policy code, `INVALID_DEFAULT_VALUE`, `UNKNOWN_CONSTRAINT_KEYWORD` or `INVALID_PATTERN`. | Test (TC-1847) |
+| FR-146-AC-6 | A field, an operation parameter, an operation result, an alias target, a sequence `items`, a map `values` and a variant `payloadType` typed `ix://quire/unit/ms` are accepted with no diagnostic, both in the AC-3 document and in a document that declares no units; `ix://quire/unit/ms` as a reference target refuses exactly `UNRESOLVED_TYPE_REF` at that member (as a constraint `appliesTo` it is accepted, FR-146-AC-23), and so do the typeRefs `ix://quire/unit/` and `ix://quire/unit/3ms`; a unit-typed field carrying `unit: "ms"`, a `min` constraint, a `decimal` policy and a semantic default refuses exactly one `INVALID_QUANTITY_MEMBER` at each of `/unit`, `/constraints`, `/decimal`, `/defaultKind` and `/defaultValue` under the field, and no `UNIT_ON_NON_SCALAR`, `CONSTRAINT_NOT_APPLICABLE`, decimal-policy code, `INVALID_DEFAULT_VALUE`, `UNKNOWN_CONSTRAINT_KEYWORD` or `INVALID_PATTERN`. | Test (TC-1847) |
 | FR-146-AC-7 | Two documents differing only in the order of `units` have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; every committed positive fixture keeps its bytes and fingerprint; adding a unit classifies additive, and removing one, changing its `scale` or changing a dimension's `base` classifies breaking. | Test (TC-1848) |
 | FR-146-AC-8 | The AC-1 document, the AC-2 document and the AC-6 document each generate on every generation backend with no `UNDECLARED_LOSS` and with every file written. With `allowedOmissions` naming a clock or unit-typed member, the backend omits it with one non-blocking `DECLARED_LOSS` naming it. With `allowedOmissions` naming only the owner, each of these is dropped with the owner under the owner's single `DECLARED_LOSS` and raises no loss of its own: the clock field of an omitted `Call` type, a clock or unit-typed parameter of an omitted operation, a unit-typed parameter of an operation of an omitted type, and a clock or unit-typed result of an omitted operation. A generated subtype of an omitted `Call` that inherits its clock field generates the field unless `allowedOmissions` names it. A document carrying `dimensions`, `units` and `dimensionEquivalences` generates exactly what it generates without them, and the JSON Schema and rust-serde backends' native lists carry `Clock` with no IR scalar. | Test (TC-1849) |
 | FR-146-AC-9 | A field, an operation parameter and an operation result typed `ix://quire/unit/agent-ix/time-units/ms`, `ix://quire/unit/acme/rpc.v2/ms` and `ix://quire/unit/acme/rpc/ms` are accepted with no diagnostic; the typeRefs `ix://quire/unit/agent-ix/time-units/m-s` and `ix://quire/unit/agent-ix/time-units/3ms` (the unit-name segment outside its pattern), `ix://quire/unit/-acme/rpc/ms` and `ix://quire/unit/.acme/rpc/ms` (an earlier segment outside both patterns) and `ix://quire/unit/agent-ix//ms` (an empty segment) each refuse exactly `UNRESOLVED_TYPE_REF` at that `typeRef`. | Test (TC-1852) |
@@ -647,6 +679,8 @@ unit-reference constructs of a spec bundle to the IR constructs above.
 | FR-146-AC-20 | Two documents differing only in the order of two `dimensionEquivalences` nodes have different normalized bytes and different fingerprints, and `IDENTITY_SET_PATHS` still has exactly its thirteen paths; a document with none serializes with no `dimensionEquivalences` member and every committed positive fixture keeps its bytes and fingerprint; adding an equivalence classifies additive, and removing one or changing an entry of its `dimensions` classifies breaking. A field typed `ix://quire/unit/acme/rpc/s`, a field typed `ix://quire/unit/acme/flow/s` and an operation whose parameter and result are typed by the two are accepted by every reader with no diagnostic, because a reader compares no two quantity types. | Test (TC-1865) |
 | FR-146-AC-21 | A `reference` type `CR` whose `target` is `ix://quire/native/Clock`, a `reference` type `CA` whose `target` is the alias `Stopwatch` of `Clock`, a constraint `max` with `operands.value` `"3"` and `appliesTo` `ix://quire/native/Clock`, `max` `"3/2"` and `min` `"1"` each with `appliesTo` the alias `Timeout` of `Clock` are accepted by every reader with no diagnostic and no node for the clock. The keyword `minLength` on a constraint with `appliesTo` `Clock` refuses exactly `CONSTRAINT_NOT_APPLICABLE` at `…/constraints/<c>/keyword`; the operand `"-1"`, the operand `"2/4"` and the JSON number `3` on `max` each refuse exactly `INVALID_OPERAND` at `…/constraints/<c>/operands/value`; a keyword outside the closed eleven refuses `UNKNOWN_CONSTRAINT_KEYWORD` as on any subject. | Test (TC-1866) |
 | FR-146-AC-22 | Over a document whose object type `Call` has a field `r` of the reference type `CR` of AC-21, an optional field `s` of `CA`, an alias `Timeout` of `Clock` carrying `max` `"3"` and a field `t` typed `Timeout`: the JSON Schema backend writes `r` and `s` as `{"type": "string", "x-agent-ix-reference-target": "ix://quire/native/Clock"}`, writes the schema of `Timeout` as `{"type": "null", "x-agent-ix-clock": true, "x-agent-ix-clock-max": "3"}` and the schema of a clock constrained by `min` `"1"` with `x-agent-ix-clock-min` `"1"`; the Rust backend writes the reference as a newtype over `SemanticIdentity`, `Timeout` as a newtype over `Clock`, and `pub const CLOCK_BOUNDS: &[ClockBound]` in `identity.rs` with the entry `Timeout` `max` `"3"`; the TypeScript backend writes the branded reference type over the identity string, `Timeout` as a type alias to `null`, and `export const CLOCK_BOUNDS` with the same entry; the Python backends write `r: str`, `t: None` and `CLOCK_BOUNDS` keyed `<Alias>`; the SysML v2 backend writes `attribute t : Clock;` with a `doc` comment `clock constraint max 3` and one non-blocking `agent-ix.sysml-target.DECLARED_LOSS` naming `Timeout` and the bound `3`. A constraint whose `appliesTo` is `Clock` itself writes its bound on every clock schema of the document. An instance validates `t` as `null` whatever the bound, since the IR holds no clock value, and an instance of `r` validates as any reference does. | Test (TC-1867) |
+| FR-146-AC-23 | An alias `Delay` of `ix://quire/unit/ms` and constraints `max` `"500"` and `min` `"-3/2"` with `appliesTo` `ix://quire/unit/ms`, and `max` `"5/2"` with `appliesTo` `Delay`, are accepted by every reader with no diagnostic. The keyword `pattern` on a constraint with `appliesTo` `ix://quire/unit/ms` refuses exactly `CONSTRAINT_NOT_APPLICABLE` at `…/constraints/<c>/keyword`; the operands `"2/4"`, `"1/1"`, `"1.5"` and the JSON number `3` on `max` each refuse exactly `INVALID_OPERAND` at `…/constraints/<c>/operands/value`; `ix://quire/unit/ms` as a `reference` `target` still refuses `UNRESOLVED_TYPE_REF`, because a quantity has no identity. | Test (TC-1868) |
+| FR-146-AC-24 | Over a document whose object type `Call` has a field `d` typed `ix://quire/unit/ms` and a field `e` typed `Delay`, with `max` `"500"` on `ix://quire/unit/ms` and `min` `"1/2"` on `Delay`: the JSON Schema backend writes `d` as `{"type": "string", "pattern": P, "x-agent-ix-unit": "ms", "x-agent-ix-quantity-max": "500"}` and `e` with both `x-agent-ix-quantity-max` `"500"` and `x-agent-ix-quantity-min` `"1/2"`; the TypeScript validator accepts `"500"` and `"1000/3"` for `d` and rejects `"501"` and `"1001/2"` with the constraint's `diagnosticCode`, accepts `"1/2"` and rejects `"1/3"` for `e`; the Rust `Deserialize` of `d` and `e` and the Python generated check decide the same four values the same way, the Python message beginning with the `diagnosticCode`; the SysML v2 backend writes the `doc` comment `quantity constraint max 500` and one non-blocking `DECLARED_LOSS` naming `d` and the bound `500`, and two runs are byte-identical. | Test (TC-1869) |
 
 ## Dependencies
 
