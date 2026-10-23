@@ -36,7 +36,7 @@ tree, the regeneration gate, and the one criterion it cannot close.
 
 ## Inputs
 
-- `packages/semantic-kernel/semantic-ir.json`, the kernel IR document FR-082 produces: one `semantic-ir.schema.json` document at `contractVersion` `2.0.0`, carrying the 53 types lowered from the 30 JSON Schema 2020-12 documents under `packages/semantic-core/generated/json-schema/`
+- `packages/semantic-kernel/semantic-ir.json`, the kernel IR document FR-082 produces: one `semantic-ir.schema.json` document at `contractVersion` `2.0.0`, carrying the types lowered from every enumerated JSON Schema document under `packages/semantic-core/generated/json-schema/`
 - The representability register FR-084 records on that document, including its `source.dialect` of `typespec` — `packages/semantic-core/main.tsp` is the authored source and the emitted bundle is the pinned official emitter's projection of it, which is transport and not source
 - `src/compiler/backends/typescript-v1/index.mjs`, exporting `typescriptBackend` with `supportedIrVersions` of exactly `["2.0.0"]` and `owningIssue` of `agent-ix/filament-core-data#22`
 - `src/compiler/backends/seam.mjs` `generateTarget(request, options)` of [FR-063](./FR-063-declare-the-generation-backend-seam.md), reached through `src/compiler/cli.mjs generate` as the `generate-typescript` target of the `Makefile` already reaches it. Both modules are read and invoked; `src/compiler/backends/**` is a prohibited path for this issue and no byte of either changes here

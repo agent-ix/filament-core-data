@@ -43,7 +43,7 @@ against the contract owner, in that order.
 
 - `schema/semantic/v1/semantic-ir.schema.json`, whose root requires `contractVersion`, `source`, `package`, `types`, `occurrences`, and `extensions`, whose `source` requires `identity`, `version`, `dialect`, and `digest`, and whose `package` requires `identity`, `version`, `manifestDigest`, `mappingVersions`, `profileVersions`, and `lockDigest`, all under `additionalProperties: false`
 - `schema/semantic/v1/common.schema.json#/$defs/frontendDialect`, whose enum is exactly `typespec` and `spec-bundle`; `#/$defs/sha256`, whose pattern is `^sha256:[0-9a-f]{64}$`; `#/$defs/packageIdentity`; and `#/$defs/semver`
-- The 30 documents of `packages/semantic-core/generated/json-schema/` and their gating target `make semantic-core-check`
+- Every inventory-derived document of `packages/semantic-core/generated/json-schema/` and their gating target `make semantic-core-check`
 - `packages/semantic-core/main.tsp`, the authored source, and `packages/semantic-core/inventory.json`, its declaration inventory
 - `packages/semantic-core/kernel-scalars.json`, whose `JsonObject` row prescribes the `record` / `fields: []` / `unknownPolicy: preserve` lowering
 - `src/compiler/diagnostics.mjs`, the closed `DIAGNOSTIC_CODES` registry [FR-049](./FR-049-emit-stable-source-located-diagnostics.md) owns, which every code this requirement emits must join

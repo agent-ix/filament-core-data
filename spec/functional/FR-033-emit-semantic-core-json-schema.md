@@ -27,8 +27,8 @@ from `data_schema`.
 
 ## Outputs
 
-- `packages/semantic-core/generated/json-schema/*.json`, one file per model and enum, with absolute `$id` values under `https://schemas.agent-ix.org/semantic-core/<package.json version>/`
-- `fixtures/semantic-core/positive/config-version-field-decls.json` (the FR-006 rows as a `FieldDecl[]` declaration set) and `fixtures/semantic-core/negative/<model>-*.json` (at least one per grammar model)
+- `packages/semantic-core/generated/json-schema/*.json`, one file per inventory model, union (including internal `wireUnions`) and enum, with absolute `$id` values under `https://schemas.agent-ix.org/semantic-core/<package.json version>/`
+- `fixtures/semantic-core/positive/config-version-field-decls.json` (the FR-006 rows as a `FieldDecl[]` declaration set, with each adjacent union represented by its `{ kind, value }` envelope) and `fixtures/semantic-core/negative/<declaration>-*.json` (at least one per grammar model and union)
 - A `check` script (`make semantic-core-check`) that regenerates and fails on any byte difference
 
 ## Behavior
@@ -36,8 +36,8 @@ from `data_schema`.
 - The build SHALL run only the official `@typespec/json-schema` emitter with `seal-object-schemas: true`, with no custom emitter.
 - The emitted bundle SHALL carry an absolute `$id` for every emitted schema after the pinned #31 normalization.
 - The normalization SHALL be a named post-processing step with one definition and one call site.
-- The emitted `FieldDecl.json` SHALL validate every element of the FR-006 `FieldDecl[]` fixture with Ajv 2020 in strict mode without any further alias.
-- The emitted schemas SHALL reject every negative fixture at its model schema, where negative fixtures exercise shape errors (missing required property, unknown property, wrong type, keyword or category outside the closed set).
+- The emitted `FieldDecl.json` SHALL validate every element of the FR-006 `FieldDecl[]` fixture with Ajv 2020 in strict mode without any further alias; `TypeRef.target` and constraint union values SHALL use their declared adjacent `{ kind, value }` envelope.
+- The emitted model and union schemas SHALL reject every negative fixture at its named schema, where negative fixtures exercise shape errors (missing required property, unknown property, wrong type, keyword or category outside the closed set, or a malformed adjacent-union envelope).
 - The sealing option SHALL close every emitted object schema, emitting either `unevaluatedProperties: {not: {}}` or `additionalProperties: false`, and the test accepts either form.
 - If regeneration produces bytes that differ from the committed output, then the `check` script SHALL exit non-zero naming the first differing file.
 
@@ -52,9 +52,9 @@ from `data_schema`.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-033-AC-1 | One schema file exists per inventory model and enum with an absolute `$id` under the package base. | Analysis |
-| FR-033-AC-2 | Every element of the FR-006 `FieldDecl[]` fixture validates against `FieldDecl.json` under Ajv strict mode with no alias. | Test |
-| FR-033-AC-3 | Each negative fixture fails against its named model schema, and at least one exists per grammar model. | Test |
+| FR-033-AC-1 | One schema file exists per inventory model, public union, `wireUnion`, and enum with an absolute `$id` under the package base. | Analysis |
+| FR-033-AC-2 | Every element of the FR-006 `FieldDecl[]` fixture validates against `FieldDecl.json` under Ajv strict mode with no alias, with `TypeRef.target` and constraint union values in their adjacent `{ kind, value }` form. | Test |
+| FR-033-AC-3 | Each negative fixture fails against its named model or union schema, and at least one exists per grammar model and union; the adjacent union fixtures include malformed and untagged forms. | Test |
 | FR-033-AC-4 | Regenerating twice yields byte-identical output; a mutated byte makes the `check` script fail naming the file. | Test |
 
 ## Dependencies
