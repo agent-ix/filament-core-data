@@ -115,6 +115,9 @@ fn tc_1843_clock_shape_refuses_each_forbidden_member_once() {
             "\"defaultKind\": \"none\", \"textProfile\": \"unicode\"",
             "textProfile",
         ),
+        ("\"defaultKind\": \"none\"", "\"defaultKind\": \"none\", \"unit\": \"ms\"", "unit"),
+        ("\"defaultKind\": \"none\"", "\"defaultKind\": \"none\", \"decimal\": {\"precision\": 4, \"scale\": 2}", "decimal"),
+        ("\"defaultKind\": \"none\"", "\"defaultKind\": \"none\", \"constraints\": [{\"identity\":\"ix://acme/config/Config/x/min\",\"keyword\":\"min\",\"operands\":{\"value\":\"0\"},\"appliesTo\":\"ix://acme/config/Config/x\",\"diagnosticCode\":\"ix://acme/config/MIN\",\"origin\":{\"generated\":{\"generatorIdentity\":\"ix://acme/config/case-author\",\"generatorVersion\":\"1.0.0\",\"inputIdentities\":[\"ix://acme/config/source\"]}}}]", "constraints"),
     ] {
         assert!(CONFIG_CLOCK.contains(before));
         let changed = CONFIG_CLOCK.replacen(before, after, 1);
@@ -174,5 +177,63 @@ fn tc_1844_through_1846_public_reader_has_exact_shared_graph_verdicts() {
         observed.sort();
         expected.sort();
         assert_eq!(observed, expected, "{name}");
+    }
+}
+
+fn set_member(
+    node: &mut agent_ix_semantic_ir::json::Json,
+    name: &str,
+    value: agent_ix_semantic_ir::json::Json,
+) {
+    let agent_ix_semantic_ir::json::Json::Object(members) = node else {
+        panic!("authored object");
+    };
+    if let Some((_, prior)) = members.iter_mut().find(|(key, _)| key == name) {
+        *prior = value;
+    } else {
+        members.push((name.to_owned(), value));
+    }
+}
+
+#[test]
+fn tc_1843_clock_nonfield_positions_have_their_own_exact_code() {
+    use agent_ix_semantic_ir::json::Json;
+    for (kind, member) in [
+        ("alias", "target"),
+        ("reference", "target"),
+        ("sequence", "items"),
+        ("map", "values"),
+    ] {
+        let mut document = parse(CONFIG_CLOCK).expect("raw clock fixture");
+        let mut node = document
+            .get("types")
+            .and_then(Json::as_array)
+            .expect("types")[0]
+            .clone();
+        let Json::Object(members) = &mut node else {
+            panic!("authored type")
+        };
+        members.retain(|(key, _)| key != "fields");
+        set_member(&mut node, "kind", Json::Str(kind.to_owned()));
+        set_member(
+            &mut node,
+            member,
+            Json::Str("ix://quire/native/Clock".to_owned()),
+        );
+        set_member(&mut document, "types", Json::Array(vec![node]));
+        let bundle = Json::Object(vec![("ir".to_owned(), document)]);
+        let observed: Vec<_> = decide(&bundle)
+            .diagnostics
+            .into_iter()
+            .map(|d| (d.code, d.pointer))
+            .collect();
+        assert_eq!(
+            observed,
+            vec![(
+                "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD",
+                format!("/ir/types/0/{member}")
+            )],
+            "{kind}"
+        );
     }
 }
