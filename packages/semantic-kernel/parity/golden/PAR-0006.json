@@ -3,10 +3,7 @@
 	"title": "A reference to a kernel scalar",
 	"declaration": "TypeRef",
 	"class": "positive",
-	"properties": [
-		"serialized-member-names",
-		"round-trip"
-	],
+	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"target": {

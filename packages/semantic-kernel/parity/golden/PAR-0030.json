@@ -3,10 +3,7 @@
 	"title": "`max` with a numeric operand",
 	"declaration": "MaxConstraint",
 	"class": "positive",
-	"properties": [
-		"serialized-member-names",
-		"round-trip"
-	],
+	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "max",

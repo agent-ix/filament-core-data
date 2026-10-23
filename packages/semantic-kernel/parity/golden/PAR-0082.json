@@ -3,9 +3,7 @@
 	"title": "A keyword outside the union's eleven members",
 	"declaration": "ConstraintDecl",
 	"class": "negative",
-	"properties": [
-		"serialized-member-names"
-	],
+	"properties": ["serialized-member-names"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"kind": "between",

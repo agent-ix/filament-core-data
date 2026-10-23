@@ -29,9 +29,7 @@
 				"generated": {
 					"generatorIdentity": "ix://agent-ix/filament-core-data/generator/semantic-core-lowerer",
 					"generatorVersion": "1.0.0",
-					"inputIdentities": [
-						"ix://agent-ix/config-service/type/ConfigVersion"
-					]
+					"inputIdentities": ["ix://agent-ix/config-service/type/ConfigVersion"]
 				}
 			},
 			"constraints": [],
@@ -58,9 +56,7 @@
 				"generated": {
 					"generatorIdentity": "ix://agent-ix/filament-core-data/generator/semantic-core-lowerer",
 					"generatorVersion": "1.0.0",
-					"inputIdentities": [
-						"ix://agent-ix/config-service/type/ConfigVersion"
-					]
+					"inputIdentities": ["ix://agent-ix/config-service/type/ConfigVersion"]
 				}
 			},
 			"constraints": [],
@@ -87,9 +83,7 @@
 				"generated": {
 					"generatorIdentity": "ix://agent-ix/filament-core-data/generator/semantic-core-lowerer",
 					"generatorVersion": "1.0.0",
-					"inputIdentities": [
-						"ix://agent-ix/config-service/type/ConfigVersion"
-					]
+					"inputIdentities": ["ix://agent-ix/config-service/type/ConfigVersion"]
 				}
 			},
 			"constraints": [],
@@ -116,9 +110,7 @@
 				"generated": {
 					"generatorIdentity": "ix://agent-ix/filament-core-data/generator/semantic-core-lowerer",
 					"generatorVersion": "1.0.0",
-					"inputIdentities": [
-						"ix://agent-ix/config-service/type/ConfigVersion"
-					]
+					"inputIdentities": ["ix://agent-ix/config-service/type/ConfigVersion"]
 				}
 			},
 			"constraints": [],
@@ -145,9 +137,7 @@
 				"generated": {
 					"generatorIdentity": "ix://agent-ix/filament-core-data/generator/semantic-core-lowerer",
 					"generatorVersion": "1.0.0",
-					"inputIdentities": [
-						"ix://agent-ix/config-service/type/ConfigVersion"
-					]
+					"inputIdentities": ["ix://agent-ix/config-service/type/ConfigVersion"]
 				}
 			},
 			"constraints": [],

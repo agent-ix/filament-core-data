@@ -3,10 +3,7 @@
 	"title": "`min` with a numeric operand",
 	"declaration": "MinConstraint",
 	"class": "positive",
-	"properties": [
-		"serialized-member-names",
-		"round-trip"
-	],
+	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "min",

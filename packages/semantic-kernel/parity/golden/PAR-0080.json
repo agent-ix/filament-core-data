@@ -3,10 +3,7 @@
 	"title": "The union admits a keyword-only member",
 	"declaration": "ConstraintDecl",
 	"class": "positive",
-	"properties": [
-		"serialized-member-names",
-		"round-trip"
-	],
+	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"kind": "NonEmptyConstraint",

@@ -3,10 +3,7 @@
 	"title": "A unit symbol on a unit-allowed scalar",
 	"declaration": "TypeRef",
 	"class": "boundary",
-	"properties": [
-		"serialized-member-names",
-		"round-trip"
-	],
+	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"target": {

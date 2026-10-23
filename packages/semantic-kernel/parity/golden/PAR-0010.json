@@ -3,9 +3,7 @@
 	"title": "An undeclared member beside a valid target",
 	"declaration": "TypeRef",
 	"class": "negative",
-	"properties": [
-		"unknown-member-states"
-	],
+	"properties": ["unknown-member-states"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"target": {

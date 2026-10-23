@@ -3,10 +3,7 @@
 	"title": "A reference to a semantic type carrying a decimal policy",
 	"declaration": "TypeRef",
 	"class": "positive",
-	"properties": [
-		"serialized-member-names",
-		"round-trip"
-	],
+	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"target": {

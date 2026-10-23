@@ -3,9 +3,7 @@
 	"title": "`exclusiveMin` with the wrong discriminant",
 	"declaration": "ExclusiveMinConstraint",
 	"class": "negative",
-	"properties": [
-		"serialized-member-names"
-	],
+	"properties": ["serialized-member-names"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "nonEmpty",

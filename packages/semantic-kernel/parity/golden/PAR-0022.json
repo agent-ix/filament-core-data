@@ -3,11 +3,7 @@
 	"title": "A field carrying every declared optional member",
 	"declaration": "FieldDecl",
 	"class": "positive",
-	"properties": [
-		"serialized-member-names",
-		"defaults",
-		"round-trip"
-	],
+	"properties": ["serialized-member-names", "defaults", "round-trip"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"name": "amount",

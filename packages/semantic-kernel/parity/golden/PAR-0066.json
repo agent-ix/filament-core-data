@@ -3,10 +3,7 @@
 	"title": "An operation carrying a return type and both clause lists",
 	"declaration": "OperationDecl",
 	"class": "positive",
-	"properties": [
-		"serialized-member-names",
-		"round-trip"
-	],
+	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"name": "withdraw",

@@ -3,10 +3,7 @@
 	"title": "`exclusiveMax` with a numeric operand",
 	"declaration": "ExclusiveMaxConstraint",
 	"class": "positive",
-	"properties": [
-		"serialized-member-names",
-		"round-trip"
-	],
+	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "exclusiveMax",

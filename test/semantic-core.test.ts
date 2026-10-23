@@ -862,11 +862,17 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 	}
 
 	function committedLowered(): JsonObject {
-		if (process.env.SEMANTIC_CORE_WRITE_LOWERED === "1")
+		if (process.env.SEMANTIC_CORE_WRITE_LOWERED === "1") {
+			const unformatted = `${JSON.stringify(loweredFromFixture(), null, "\t")}\n`;
 			writeFileSync(
 				loweredPath,
-				`${JSON.stringify(loweredFromFixture(), null, "\t")}\n`,
+				execFileSync(
+					resolve(root, "node_modules/.bin/biome"),
+					["format", "--stdin-file-path", loweredPath],
+					{ cwd: root, encoding: "utf8", input: unformatted },
+				),
 			);
+		}
 		return object(
 			JSON.parse(readFileSync(loweredPath, "utf8")),
 			"lowered fixture",

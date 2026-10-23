@@ -3,9 +3,7 @@
 	"title": "An undeclared member on a sealed field declaration",
 	"declaration": "FieldDecl",
 	"class": "negative",
-	"properties": [
-		"unknown-member-states"
-	],
+	"properties": ["unknown-member-states"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"name": "title",

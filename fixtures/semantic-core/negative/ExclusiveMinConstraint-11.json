@@ -5,9 +5,7 @@
 		"keyword": "exclusiveMin",
 		"value": {
 			"kind": "number",
-			"value": [
-				1
-			]
+			"value": [1]
 		}
 	}
 }

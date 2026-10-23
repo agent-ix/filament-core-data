@@ -3,9 +3,7 @@
 	"title": "`max` with the wrong discriminant",
 	"declaration": "MaxConstraint",
 	"class": "negative",
-	"properties": [
-		"serialized-member-names"
-	],
+	"properties": ["serialized-member-names"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "nonEmpty",

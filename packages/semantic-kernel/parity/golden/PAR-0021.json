@@ -3,10 +3,7 @@
 	"title": "A required single-valued field",
 	"declaration": "FieldDecl",
 	"class": "positive",
-	"properties": [
-		"serialized-member-names",
-		"round-trip"
-	],
+	"properties": ["serialized-member-names", "round-trip"],
 	"unknownPolicy": "reject",
 	"instance": {
 		"name": "unitSymbol",
