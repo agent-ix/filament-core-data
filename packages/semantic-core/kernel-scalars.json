@@ -51,19 +51,19 @@
 		},
 		"Duration": {
 			"irScalar": "duration",
-			"bounds": "ISO 8601 duration",
-			"serialization": "ISO 8601",
+			"bounds": "exact elapsed time: days, hours, minutes and seconds, at most nine fractional-second digits",
+			"serialization": "ISO 8601 duration string",
 			"unitAllowed": true
 		},
 		"Bytes": {
 			"irScalar": "bytes",
-			"bounds": "maxLength in bytes",
-			"serialization": "base64 string",
+			"bounds": "minLength and maxLength in octets",
+			"serialization": "canonical padded base64 string (RFC 4648 section 4; unused bits zero; FR-032 Bytes wire form)",
 			"unitAllowed": false
 		},
 		"JsonObject": {
 			"irScalar": "any",
-			"bounds": "any JSON value",
+			"bounds": "any JSON value of any kind",
 			"serialization": "JSON value",
 			"unitAllowed": false
 		}

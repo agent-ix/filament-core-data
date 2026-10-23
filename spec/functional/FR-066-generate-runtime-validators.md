@@ -116,21 +116,23 @@ contract itself rather than against an erased TypeScript type.
 
 ### The scalar value domain
 
-- The JSON wire form of the `bytes` kernel scalar, and the shape of a
-  discriminated union's tag on the wire, are unspecified in the published
-  contract and are recorded as `agent-ix/filament-core-data#58`, where issue
-  #21 has already entered its own reading. The readings below are therefore a
-  **declared backend decision pending #58** rather than settled contract, and
-  this requirement SHALL say so where it states them. `conformance/thresholds.json`
-  permits the `typescript-backend` slot zero divergences, so if #58 settles
-  against a reading here the consequence is a reported failure for the owner to
-  disposition, and this work SHALL NOT suppress it as a registered divergence.
-- Pending `agent-ix/filament-core-data#58`, the backend SHALL render a `bytes`
-  subject as a `string` carrying standard base64 as RFC 4648 §4 defines it, and
-  the generated validator SHALL reject a value that is not well-formed base64
-  under that alphabet.
+- The shape of a discriminated union's tag on the wire is unspecified in the
+  published contract and is recorded as `agent-ix/filament-core-data#58`, where
+  issue #21 has already entered its own reading. The union reading below is
+  therefore a **declared backend decision pending #58** rather than settled
+  contract, and this requirement SHALL say so where it states it.
+  `conformance/thresholds.json` permits the `typescript-backend` slot zero
+  divergences, so if #58 settles against that reading the consequence is a
+  reported failure for the owner to disposition, and this work SHALL NOT
+  suppress it as a registered divergence.
+- The backend SHALL render a `bytes` subject as a `string` carrying the Bytes
+  wire form of [FR-032](./FR-032-define-the-kernel-scalar-library.md), and the
+  generated validator SHALL reject a value outside that instance domain:
+  a character outside the standard base64 alphabet, a length that is not a
+  multiple of four, missing, surplus or misplaced padding, and non-zero unused
+  bits in a padded final group.
 - A `minLength` or `maxLength` over a `string` subject SHALL count Unicode code points rather than UTF-16 code units, so an astral character counts once.
-- Pending `agent-ix/filament-core-data#58`, a `minLength` or `maxLength` over a `bytes` subject SHALL count the octets the base64 string decodes to, rather than the characters of its encoding.
+- A `minLength` or `maxLength` over a `bytes` subject SHALL count the octets the base64 string decodes to, rather than the characters of its encoding.
 - A generated validator for a safe `integer` subject SHALL reject a non-integral number with its own structural code.
 - A generated validator for a safe `integer`, `float32` or `float64` subject SHALL reject `NaN` with its own structural code.
 - A generated validator for a safe `integer`, `float32` or `float64` subject SHALL reject `Infinity` and `-Infinity` with its own structural code.
@@ -209,7 +211,7 @@ contract itself rather than against an erased TypeScript type.
 | FR-066-CON-6 | A generated validator SHALL be a pure function of its argument, reading no clock, no environment variable, no file, and no socket. | Determinism | Purity test |
 | FR-066-CON-7 | The instance corpus SHALL be authored from the contract and never recorded from a run of the generated validator; a case whose expectation was produced by the implementation under test is not evidence and is refused. | Integrity | Branch diff |
 | FR-066-CON-8 | The differential check SHALL add no dependency to either lockfile; `ajv@8.20.0` and `ajv-formats@3.0.1` are already pinned devDependencies and are the only second decider used. | Non-disruption | Lockfile comparison |
-| FR-066-CON-9 | The backend SHALL record the `bytes` wire form, its length unit, and the wire shape of a union's discriminator as declared decisions pending `agent-ix/filament-core-data#58`, in one named place each, so that settling #58 is one edit rather than a search. This ticket decides #58 for nobody, and a divergence arising from it is reported for the owner rather than suppressed. | Integrity | Static analysis |
+| FR-066-CON-9 | The backend SHALL record the wire shape of a union's discriminator as a declared decision pending `agent-ix/filament-core-data#58`, in one named place, so that settling #58 is one edit rather than a search. This ticket decides #58 for nobody, and a divergence arising from it is reported for the owner rather than suppressed. | Integrity | Static analysis |
 
 ## Acceptance Criteria
 
@@ -234,7 +236,7 @@ contract itself rather than against an erased TypeScript type.
 | FR-066-AC-17 | `tsc --noEmit` accepts a consumer that reads `result.value` only inside an `if (result.ok)` branch and rejects the same consumer reading it outside that branch. | Compile |
 | FR-066-AC-18 | For every instance case outside the Float32 uniqueness refusal class of FR-100, the generated validator and `ajv@8.20.0` running the case's authored JSON Schema document reach the same accept-or-reject verdict; a seeded defect in either decider makes the check fail. | Test |
 | FR-066-AC-19 | `errors.ts` is emitted, is the eighth member of the FR-065 file set, carries the closed structural-code list, and is reachable through its own `exports` subpath. | Unit |
-| FR-066-AC-20 | A `bytes` subject rejects a string that is not well-formed base64, and a `maxLength` of 3 on a `bytes` subject accepts a four-character base64 string decoding to three octets while rejecting one decoding to four. | Unit |
+| FR-066-AC-20 | A `bytes` subject rejects every string outside the Bytes wire form of FR-032 (`AP8`, `AP8==`, `AP9=`, `A P8=`, `-_8=`, `AA`), and a `maxLength` of 3 on a `bytes` subject accepts `AQID` and rejects `AQIDBA==`. | Unit |
 | FR-066-AC-21 | An unbounded `integer` subject rejects `1.5`, `NaN`, `Infinity`, `-Infinity`, and `Number.MAX_SAFE_INTEGER + 2`, each with its own structural code, and accepts `-0` wherever it accepts `0`. | Unit |
 | FR-066-AC-22 | An ordering constraint whose resolved subject is a `duration` produces a representability loss through FR-068 and no generated package. | Unit |
 | FR-066-AC-23 | An input carrying `__proto__`, `constructor`, and `prototype` as declared member names validates by the ordinary rule; the same names as undeclared members under `preserve` are carried into a null-prototype preserved-member object and mutate no prototype. | Unit |
@@ -243,7 +245,7 @@ contract itself rather than against an erased TypeScript type.
 | FR-066-AC-26 | A `record` declaring `preserve` renders its undeclared members in one separately named readonly member rather than an index signature, and the four presence and nullability forms still typecheck distinctly under `exactOptionalPropertyTypes`. | Compile |
 | FR-066-AC-27 | `unknownPolicy` declared on a `union` and on a `map` produces no validation effect, and the declared value appears in the FR-067 metadata for both. | Unit |
 | FR-066-AC-28 | A document whose admissibility result is `lossy` generates validators; a document carrying a representability loss generates none. | Unit |
-| FR-066-AC-29 | The `bytes` wire form, its length unit, and the union discriminator's wire shape each appear as a single named declared decision citing `agent-ix/filament-core-data#58`, and `conformance/divergences.json` carries no entry attributed to that question. | Static |
+| FR-066-AC-29 | The union discriminator's wire shape appears as a single named declared decision citing `agent-ix/filament-core-data#58`, and `conformance/divergences.json` carries no entry attributed to that question. | Static |
 | FR-066-AC-30 | A safe `integer` field with semantic `defaultValue` `"42"` returns the JSON number `42` for an absent member and reports no defect; a `decimal(5, 2)` field with `defaultValue` `"1.5"` returns `"1.50"`; a `decimal(5, 2)` subject with `enumValues` `["1.1"]` accepts `"1.10"`; a `unique` collection of that subject holding `"1.1"` and `"1.10"` is rejected. | Unit |
 | FR-066-AC-31 | A Float32 unique field and a Float32 sequence with a `unique` constraint each pass the differential check only when JSON Schema generation returns the FR-100 blocking refusal with zero files and the TypeScript validator rejects `[0.1, 0.10000000149011612]` and `[0, -0]` while accepting `[0.1, 0.2]`. Seeding a weaker emitted schema or suppressing an instance disagreement outside this refusal class makes the check fail. | Test |
 
