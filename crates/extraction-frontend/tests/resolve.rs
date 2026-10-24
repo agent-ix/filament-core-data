@@ -324,7 +324,8 @@ fn tc_1214_a_foreign_package_type_is_import_unsupported_naming_the_package() {
         .as_deref()
         .expect("fields")[1];
     assert_eq!(
-        thing.type_ref.target, "ix://acme/other/type/Thing",
+        thing.type_ref.target.as_str(),
+        "ix://acme/other/type/Thing",
         "the engine resolved the import"
     );
     let lift = resolve(&bundle, &extractions);
