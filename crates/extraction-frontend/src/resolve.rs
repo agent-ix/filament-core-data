@@ -365,7 +365,12 @@ pub fn pass_two(bundle: &Bundle, extractions: &Extractions, outcomes: &Outcomes)
             let rows = document.map(|d| field_rows(d.raw())).unwrap_or_default();
             for (index, field) in fields.iter().enumerate() {
                 let row = locate(&rows, index, &field.name);
-                classify_token(&field.name, Site::Field, &field.type_ref.target, row);
+                classify_token(
+                    &field.name,
+                    Site::Field,
+                    field.type_ref.target.as_str(),
+                    row,
+                );
             }
         }
         // FR-094 "Operations": every parameter row and every `Returns:`
@@ -383,7 +388,7 @@ pub fn pass_two(bundle: &Bundle, extractions: &Extractions, outcomes: &Outcomes)
                         Site::Param {
                             operation: operation.name.clone(),
                         },
-                        &param.type_ref.target,
+                        param.type_ref.target.as_str(),
                         row,
                     );
                 }
@@ -400,7 +405,7 @@ pub fn pass_two(bundle: &Bundle, extractions: &Extractions, outcomes: &Outcomes)
                         Site::Returns {
                             operation: operation.name.clone(),
                         },
-                        &returns.target,
+                        returns.target.as_str(),
                         row.as_ref(),
                     );
                 }
