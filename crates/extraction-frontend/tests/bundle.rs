@@ -435,7 +435,7 @@ fn tc_1206_bundle_index_names_every_object_by_id_and_title_and_a_title_cell_reso
         .fields
         .as_deref()
         .expect("fields")[1];
-    assert_eq!(item.type_ref.target, "ix://acme/shop/type/Widget");
+    assert_eq!(item.type_ref.target.as_str(), "ix://acme/shop/type/Widget");
     assert!(
         engine_codes(&out.diagnostics).is_empty(),
         "no unresolved-type advisory: {:?}",
