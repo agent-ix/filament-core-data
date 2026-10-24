@@ -406,7 +406,7 @@ fn tc_1206_bundle_index_names_every_object_by_id_and_title_and_a_title_cell_reso
         .expect("fields")[4];
     assert_eq!(parent.name, "parent");
     assert_eq!(
-        parent.type_ref.target,
+        parent.type_ref.target.as_str(),
         "ix://agent-ix/docs-service/type/Snapshot"
     );
 
