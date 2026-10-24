@@ -1483,7 +1483,7 @@ mod adjacent_constraint_tests {
 
     #[trace("TC-1223", "FR-093-AC-4")]
     #[test]
-    fn adjacent_numeric_constraint_values_lower_to_exact_ir_primitives() {
+    fn tc_1223_adjacent_numeric_constraint_values_lower_to_exact_ir_primitives() {
         for (kind, keyword) in [
             ("MinConstraint", "min"),
             ("MaxConstraint", "max"),
@@ -1506,7 +1506,7 @@ mod adjacent_constraint_tests {
 
     #[trace("TC-1223", "FR-093-AC-4")]
     #[test]
-    fn adjacent_remaining_constraints_keep_ir_operands_without_wire_wrappers() {
+    fn tc_1223_adjacent_remaining_constraints_keep_ir_operands_without_wire_wrappers() {
         for (kind, keyword, operands) in [
             ("MinLengthConstraint", "minLength", json!({"value": 2})),
             ("MaxLengthConstraint", "maxLength", json!({"value": 17})),
