@@ -2,7 +2,7 @@
 id: PR_001
 title: Fulfilment
 object: process
-type: FR
+type: process
 name: Fulfilment
 relationships:
   - target: EV_001

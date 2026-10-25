@@ -2,7 +2,7 @@
 id: FR-002
 title: Pair
 object: entity
-type: FR
+type: entity
 ---
 
 # FR-002: Pair

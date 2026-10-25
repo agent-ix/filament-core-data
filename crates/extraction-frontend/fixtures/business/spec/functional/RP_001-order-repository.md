@@ -2,7 +2,7 @@
 id: RP_001
 title: Order Repository
 object: repository
-type: FR
+type: repository
 name: OrderRepository
 relationships:
   - target: FR-001

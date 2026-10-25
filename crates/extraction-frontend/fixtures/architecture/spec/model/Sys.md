@@ -2,7 +2,7 @@
 id: Sys
 title: Sys
 object: entity
-type: FR
+type: entity
 name: Sys
 ---
 

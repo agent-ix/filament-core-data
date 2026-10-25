@@ -2,7 +2,7 @@
 id: FR-005
 title: SnapshotGroup
 object: entity
-type: FR
+type: entity
 ---
 
 # FR-005: SnapshotGroup

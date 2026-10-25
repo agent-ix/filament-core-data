@@ -2,7 +2,7 @@
 id: OP-001
 title: Basket
 object: entity
-type: FR
+type: entity
 name: Basket
 ---
 

@@ -2,7 +2,7 @@
 id: FR-002
 title: Status
 object: entity
-type: FR
+type: entity
 ---
 
 # FR-002: Status

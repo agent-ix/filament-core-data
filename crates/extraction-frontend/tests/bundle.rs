@@ -78,7 +78,7 @@ fn spec_md(org: Option<&str>, name: &str) -> String {
 
 fn entity_md(id: &str, title: &str, rows: &[&str]) -> String {
     let mut s = format!(
-        "---\nid: {id}\ntitle: {title}\nobject: entity\ntype: FR\n---\n\n# {id}: {title}\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|---|---|---|---|\n"
+        "---\nid: {id}\ntitle: {title}\nobject: entity\ntype: entity\n---\n\n# {id}: {title}\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|---|---|---|---|\n"
     );
     for row in rows {
         s.push_str(row);
@@ -331,7 +331,7 @@ fn tc_1204_bundle_without_org_or_with_malformed_name_refuses_at_spec_md() {
     );
     write(
         &dir.path().join("spec/functional/FR-001-x.md"),
-        "---\ntitle: Thing\nobject: entity\ntype: FR\n---\n\n# Thing\n",
+        "---\ntitle: Thing\nobject: entity\ntype: entity\n---\n\n# Thing\n",
     );
     let refusal = Bundle::load(dir.path(), &[&business_module()]).expect_err("refused");
     assert_eq!(refusal.code(), Code::BundleUnidentified);
@@ -367,6 +367,112 @@ fn tc_1205_unknown_object_type_diagnoses_and_skips_while_no_object_is_silent() {
     assert_eq!((locus.start_line, locus.start_column), (1, 1));
     assert_eq!(locus.source_identity, "ix://agent-ix/docs-service/spec");
     assert!(d.message.contains("widget"));
+}
+
+/// A document with the given frontmatter `type` and optional `object`, and a
+/// one-row Properties table.
+fn typed_md(id: &str, title: &str, doc_type: &str, object: Option<&str>) -> String {
+    let object = object.map(|o| format!("object: {o}\n")).unwrap_or_default();
+    format!(
+        "---\nid: {id}\ntitle: {title}\n{object}type: {doc_type}\n---\n\n# {id}: {title}\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|---|---|---|---|\n| id | UUID | 1 | identity |\n"
+    )
+}
+
+#[trace("TC-1870", "FR-091-AC-15")]
+#[test]
+fn tc_1870_composed_document_is_never_extracted_even_with_object() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    write(
+        &dir.path().join("spec/spec.md"),
+        &spec_md(Some("agent-ix"), "docs-service"),
+    );
+    // Composed: `type` is an artifact type, `object:` is present.
+    write(
+        &dir.path().join("spec/functional/FR-204-money.md"),
+        &typed_md("FR-204", "Money", "FR", Some("entity")),
+    );
+    write(
+        &dir.path().join("spec/functional/FR-271-status.md"),
+        &typed_md("FR-271", "Status", "FR", Some("enumeration")),
+    );
+    // No `object:`: skipped as before.
+    write(
+        &dir.path().join("spec/functional/FR-100-plain.md"),
+        &typed_md("FR-100", "Plain", "FR", None),
+    );
+    // `type` is not a loaded object type: composed, so exempt from
+    // UNKNOWN_OBJECT_TYPE even though `widget` is undeclared.
+    write(
+        &dir.path().join("spec/functional/FR-300-widget.md"),
+        &typed_md("FR-300", "Widget", "FR", Some("widget")),
+    );
+    write(
+        &dir.path().join("spec/functional/FR-301-gadget.md"),
+        &typed_md("FR-301", "Gadget", "gadget", Some("entity")),
+    );
+    // A loaded object type is not composed; `object` decides.
+    write(
+        &dir.path().join("spec/domain/Mixed.md"),
+        &typed_md("MIX-1", "Mixed", "entity", Some("value_object")),
+    );
+    // No `object`: never lifted by `type` alone.
+    write(
+        &dir.path().join("spec/domain/Bare.md"),
+        &typed_md("BARE-1", "Bare", "entity", None),
+    );
+    // Object-typed documents lift, `enumeration` included.
+    write(
+        &dir.path().join("spec/domain/Order.md"),
+        &typed_md("ORD-1", "Order", "entity", Some("entity")),
+    );
+    write(
+        &dir.path().join("spec/domain/Colour.md"),
+        &typed_md("ENUM-1", "Colour", "enumeration", Some("enumeration")),
+    );
+    let bundle = Bundle::load(dir.path(), &[&business_module()]).expect("loads");
+    let out = extract(&bundle);
+    let ids: Vec<&String> = out.artifacts.keys().collect();
+    assert_eq!(ids, ["ENUM-1", "MIX-1", "ORD-1"]);
+    assert_eq!(out.artifacts["MIX-1"].object, "value_object");
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+    // A composed document is not an object-typed artifact of the index.
+    let indexed: Vec<&str> = bundle
+        .index()
+        .objects
+        .iter()
+        .map(|o| o.id.as_str())
+        .collect();
+    for composed in ["FR-204", "FR-271", "FR-100", "FR-300", "FR-301", "BARE-1"] {
+        assert!(!indexed.contains(&composed), "{composed} in {indexed:?}");
+    }
+}
+
+#[trace("TC-1870", "FR-091-AC-15")]
+#[test]
+fn tc_1870_unknown_object_diagnoses_only_a_non_composed_document() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    write(
+        &dir.path().join("spec/spec.md"),
+        &spec_md(Some("agent-ix"), "docs-service"),
+    );
+    write(
+        &dir.path().join("spec/functional/FR-300-widget.md"),
+        &typed_md("FR-300", "Widget", "FR", Some("widget")),
+    );
+    let out = extract(&Bundle::load(dir.path(), &[&business_module()]).expect("loads"));
+    assert!(out.artifacts.is_empty());
+    assert!(out.diagnostics.is_empty(), "{:?}", out.diagnostics);
+
+    write(
+        &dir.path().join("spec/functional/W-1-widget.md"),
+        &typed_md("W-1", "Widget Two", "widget", Some("widget")),
+    );
+    let out = extract(&Bundle::load(dir.path(), &[&business_module()]).expect("loads"));
+    assert_eq!(out.diagnostics.len(), 1, "{:?}", out.diagnostics);
+    assert_eq!(
+        out.diagnostics[0].code,
+        WireCode::Registry(Code::UnknownObjectType)
+    );
 }
 
 #[trace("TC-1206", "FR-091-AC-7")]

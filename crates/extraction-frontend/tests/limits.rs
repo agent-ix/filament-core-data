@@ -38,7 +38,7 @@ fn spec_md() -> String {
 
 fn entity_md(id: &str, name: &str, rows: &[String], extra: &str) -> String {
     let mut s = format!(
-        "---\nid: {id}\ntitle: {name}\nobject: entity\ntype: FR\n---\n\n# {id}: {name}\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|---|---|---|---|\n"
+        "---\nid: {id}\ntitle: {name}\nobject: entity\ntype: entity\n---\n\n# {id}: {name}\n\n## Properties\n\n| Field | Type | Multiplicity | Constraints |\n|---|---|---|---|\n"
     );
     for row in rows {
         s.push_str(row);
