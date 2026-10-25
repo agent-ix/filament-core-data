@@ -1477,9 +1477,16 @@ function renderCheck(
 	switch (check.form) {
 		case "length": {
 			const comparison = check.keyword === "minLength" ? "<" : ">";
+			const length =
+				subjectScalar === "bytes"
+					? `${subject}.as_slice().len()`
+					: `${subject}.chars().count()`;
 			lines.push(
-				`            if ${subject}.chars().count() ${comparison} ${check.value}usize {`,
-				...fail(rustString(String(check.value)), `${subject}.as_str()`),
+				`            if ${length} ${comparison} ${check.value}usize {`,
+				...fail(
+					rustString(String(check.value)),
+					subjectScalar === "bytes" ? undefined : `${subject}.as_str()`,
+				),
 				"            }",
 			);
 			break;
@@ -1592,7 +1599,11 @@ function renderCheck(
 					"            }",
 				);
 			} else {
-				const value = numeric ? owned : `${subject}.as_str()`;
+				const value = numeric
+					? owned
+					: check.scalar === "bytes"
+						? `${subject}.to_base64().as_str()`
+						: `${subject}.as_str()`;
 				lines.push(
 					`            if !${constant}.contains(&${value}) {`,
 					...fail(rustString(canonicalJson(check.values))),
@@ -2028,7 +2039,7 @@ function renderNewtype(type, model, byIdentity, diagnostics) {
  * the type gains a generated catch-all `Unknown` variant, and the two impls are
  * written out rather than derived — serde's `#[serde(other)]` is a unit-variant
  * attribute for an internally or adjacently tagged enum, and neither a
- * string-shaped enum nor an externally tagged union is one of those, so a
+ * string-shaped enum nor a tagged union retaining its unknown payload is one of those, so a
  * derived catch-all cannot keep the tag it caught.
  */
 function renderEnum(type) {
@@ -2042,12 +2053,20 @@ function renderEnum(type) {
 			? "#[derive(Clone, Debug, PartialEq)]"
 			: "#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]",
 	);
-	if (union && type.wireForm === "untagged") lines.push("#[serde(untagged)]");
+	if (union && !catchAll)
+		lines.push(
+			'#[serde(tag = "kind", content = "value", deny_unknown_fields)]',
+		);
 	lines.push(`pub enum ${type.typeName} {`);
 	for (const variant of type.variants) {
 		lines.push(...docLines(variant.doc, "    "));
 		if (variant.rename !== undefined && !catchAll) {
 			lines.push(`    #[serde(rename = ${rustString(variant.rename)})]`);
+		}
+		if (union && !catchAll && variant.payload === undefined) {
+			lines.push(
+				'    #[serde(deserialize_with = "crate::support::reject_unit_variant_value")]',
+			);
 		}
 		lines.push(
 			variant.payload === undefined
@@ -2156,7 +2175,7 @@ function stringEnumImpls(type) {
 	return lines;
 }
 
-/** The two impls of an externally tagged `union` that carries a catch-all. */
+/** The two adjacent-wire impls of a `union` that retains an unknown variant. */
 function unionImpls(type) {
 	const lines = [`impl Serialize for ${type.typeName} {`];
 	lines.push(
@@ -2164,28 +2183,43 @@ function unionImpls(type) {
 		"    where",
 		"        S: serde::Serializer,",
 		"    {",
-		"        use serde::ser::SerializeMap;",
 		"        match self {",
 	);
 	for (const variant of type.variants) {
 		if (variant.payload === undefined) {
+			const pattern = `${type.typeName}::${variant.ident}`;
+			const args = ["serializer", rustString(variant.name)];
+			const arm = callArm(
+				"            ",
+				pattern,
+				"crate::support::serialize_adjacent_unit",
+				args,
+				",",
+			);
 			lines.push(
-				...callArm(
-					"            ",
-					`${type.typeName}::${variant.ident}`,
-					"serializer.serialize_str",
-					[rustString(variant.name)],
-					",",
-				),
+				...(arm.length === 1
+					? arm
+					: [
+							`            ${pattern} => {`,
+							...callLines(
+								"                ",
+								"crate::support::serialize_adjacent_unit",
+								args,
+								"",
+							),
+							"            }",
+						]),
 			);
 			continue;
 		}
 		lines.push(
-			`            ${type.typeName}::${variant.ident}(payload) => {`,
-			"                let mut map = serializer.serialize_map(Some(1))?;",
-			`                map.serialize_entry(${rustString(variant.name)}, payload)?;`,
-			"                map.end()",
-			"            }",
+			...callArm(
+				"            ",
+				`${type.typeName}::${variant.ident}(payload)`,
+				"crate::support::serialize_adjacent_payload",
+				["serializer", rustString(variant.name), "payload"],
+				",",
+			),
 		);
 	}
 	lines.push(
@@ -2203,7 +2237,7 @@ function unionImpls(type) {
 		"    where",
 		"        D: serde::Deserializer<'de>,",
 		"    {",
-		`        deserializer.deserialize_any(${type.typeName}Visitor)`,
+		`        deserializer.deserialize_map(${type.typeName}Visitor)`,
 		"    }",
 		"}",
 		"",
@@ -2213,47 +2247,34 @@ function unionImpls(type) {
 		`    type Value = ${type.typeName};`,
 		"",
 		"    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {",
-		`        formatter.write_str(${rustString(`an externally tagged ${type.typeName}`)})`,
-		"    }",
-		"",
-		"    fn visit_str<E>(self, tag: &str) -> Result<Self::Value, E>",
-		"    where",
-		"        E: serde::de::Error,",
-		"    {",
-		"        Ok(match tag {",
-	);
-	for (const variant of type.variants) {
-		if (variant.payload !== undefined) continue;
-		lines.push(
-			...matchArm(
-				"            ",
-				rustString(variant.name),
-				`${type.typeName}::${variant.ident}`,
-			),
-		);
-	}
-	lines.push(
-		...callArm(
-			"            ",
-			"_",
-			`${type.typeName}::Unknown(crate::support::UnknownVariant::Tag`,
-			["tag.to_owned()"],
-			"),",
-		),
-		"        })",
+		`        formatter.write_str(${rustString(`an adjacently tagged ${type.typeName}`)})`,
 		"    }",
 		"",
 		"    fn visit_map<A>(self, mut access: A) -> Result<Self::Value, A::Error>",
 		"    where",
 		"        A: serde::de::MapAccess<'de>,",
 		"    {",
-		"        let Some(tag) = access.next_key::<String>()? else {",
+		"        let Some(member) = access.next_key::<String>()? else {",
 		...callLines(
 			"            ",
 			"return Err(serde::de::Error::custom",
-			[rustString(`an externally tagged ${type.typeName} carries one member`)],
+			[rustString(`an adjacently tagged ${type.typeName} requires kind`)],
 			");",
 		),
+		"        };",
+		"        let (tag, mut buffered) = match member.as_str() {",
+		'            "kind" => (access.next_value::<String>()?, None),',
+		'            "value" => {',
+		"                let value = access.next_value::<crate::support::SemanticValue>()?;",
+		"                let Some(member) = access.next_key::<String>()? else {",
+		'                    return Err(serde::de::Error::missing_field("kind"));',
+		"                };",
+		'                if member != "kind" {',
+		'                    return Err(serde::de::Error::unknown_field(&member, &["kind"]));',
+		"                }",
+		"                (access.next_value::<String>()?, Some(value))",
+		"            }",
+		'            _ => return Err(serde::de::Error::unknown_field(&member, &["kind", "value"])),',
 		"        };",
 		"        let value = match tag.as_str() {",
 	);
@@ -2261,31 +2282,50 @@ function unionImpls(type) {
 		if (variant.payload === undefined) {
 			lines.push(
 				`            ${rustString(variant.name)} => {`,
-				"                access.next_value::<serde::de::IgnoredAny>()?;",
+				"                if buffered.is_some() {",
+				...callLines(
+					"                    ",
+					"return Err(serde::de::Error::custom",
+					[rustString("a payload-free variant must omit its value member")],
+					");",
+				),
+				"                }",
 				`                ${type.typeName}::${variant.ident}`,
 				"            }",
 			);
 			continue;
 		}
 		lines.push(
-			...callArm(
-				"            ",
-				rustString(variant.name),
-				`${type.typeName}::${variant.ident}`,
-				["access.next_value()?"],
-				",",
-			),
+			`            ${rustString(variant.name)} => {`,
+			"                let payload = match buffered.take() {",
+			"                    Some(value) => crate::support::deserialize_semantic(value)",
+			"                        .map_err(serde::de::Error::custom)?,",
+			"                    None => crate::support::read_adjacent_payload(&mut access)?,",
+			"                };",
+			`                ${type.typeName}::${variant.ident}(payload)`,
+			"            }",
 		);
 	}
 	lines.push(
-		...callArm(
-			"            ",
-			"_",
-			`${type.typeName}::Unknown(crate::support::UnknownVariant::Tagged`,
-			["tag", "access.next_value()?"],
-			"),",
-		),
+		"            _ => {",
+		"                let unknown = match buffered.take() {",
+		"                    Some(value) => crate::support::UnknownVariant::Tagged(tag, value),",
+		"                    None => match access.next_key::<String>()? {",
+		"                        None => crate::support::UnknownVariant::Tag(tag),",
+		'                        Some(member) if member == "value" => {',
+		"                            crate::support::UnknownVariant::Tagged(tag, access.next_value()?)",
+		"                        }",
+		"                        Some(member) => {",
+		'                            return Err(serde::de::Error::unknown_field(&member, &["value"]));',
+		"                        }",
+		"                    },",
+		"                };",
+		`                ${type.typeName}::Unknown(unknown)`,
+		"            }",
 		"        };",
+		"        if let Some(member) = access.next_key::<String>()? {",
+		"            return Err(serde::de::Error::unknown_field(&member, &[]));",
+		"        }",
 		"        Ok(value)",
 		"    }",
 		"}",

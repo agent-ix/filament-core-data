@@ -1,5 +1,5 @@
 {
-	"$comment": "Observed-change family to compatibility-report family and surface (FR-051). The left column is the vocabulary `fixtures/semantic/v1/compatibility/cases.json` uses to name a kind of change; the right is the closed `family` and `surface` enumeration `compatibility-report.schema.json` declares. The map is data because FR-051-AC-2 asserts the correspondence, and an assertion against a table restated in a test would only prove the test agrees with itself.",
+	"$comment": "Observed-change family to compatibility-report family and surface (FR-051). The left column maps families from `fixtures/semantic/v1/compatibility/cases.json` and FR-146 top-level graph observations; the existing `unit` observation remains the FR-027 field UCUM annotation, while `dimension`, `unit-definition` and `dimension-equivalence` are FR-146 graph changes. The right is the closed `family` and `surface` enumeration `compatibility-report.schema.json` declares. The map is data because FR-051-AC-2 asserts the correspondence, and an assertion against a table restated in a test would only prove the test agrees with itself.",
 	"families": {
 		"abstract": {
 			"family": "type",
@@ -31,6 +31,14 @@
 		},
 		"documentation": {
 			"family": "documentation",
+			"surface": "semantic"
+		},
+		"dimension": {
+			"family": "type",
+			"surface": "semantic"
+		},
+		"dimension-equivalence": {
+			"family": "type",
 			"surface": "semantic"
 		},
 		"enum": {
@@ -107,6 +115,10 @@
 		},
 		"unit": {
 			"family": "field",
+			"surface": "semantic"
+		},
+		"unit-definition": {
+			"family": "type",
 			"surface": "semantic"
 		},
 		"unknown-policy": {

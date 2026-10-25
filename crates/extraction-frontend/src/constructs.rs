@@ -483,7 +483,7 @@ pub(crate) fn shape(
                 references
                     .identity(
                         Member::DeclaredType,
-                        &part.record.declared_type.target,
+                        part.record.declared_type.target.as_str(),
                         ctx,
                         "a systems `part` row",
                     )
@@ -517,7 +517,7 @@ pub(crate) fn shape(
                 references
                     .identity(
                         Member::InterfaceType,
-                        &port.record.interface_type.target,
+                        port.record.interface_type.target.as_str(),
                         ctx,
                         "a systems `port` row",
                     )

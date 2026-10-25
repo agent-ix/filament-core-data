@@ -7,7 +7,7 @@ status: normative
 # Rust/Serde backend diagnostic registry
 
 The closed `agent-ix.rust-backend.*` set, rendered from
-`src/compiler/backends/rust-serde/diagnostics.mjs`. 21 codes.
+`src/compiler/backends/rust-serde/diagnostics.mjs`. 20 codes.
 
 This is the *generator's* namespace. The Rust reader in `crates/semantic-ir`
 emits `agent-ix.semantic-ir.*` from the published set
@@ -26,7 +26,6 @@ input.
 | `agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT` | error | yes | a construct selects no mapping row and no named refusal |
 | `agent-ix.rust-backend.UNSUPPORTED_PATTERN` | error | yes | an ECMA-262 pattern is neither expressible in the declared subset nor a proved-validator registry key |
 | `agent-ix.rust-backend.UNSUPPORTED_SCALAR` | error | yes | a kind: "scalar" names a value outside the nine kernel scalars |
-| `agent-ix.rust-backend.UNDECLARED_WIRE_FORM` | error | yes | a construct's JSON wire form is declared by no published artifact — the bytes kernel scalar at this revision |
 | `agent-ix.rust-backend.UNSUPPORTED_MULTIPLICITY` | error | yes | a field's multiplicity.upper is 0, so the member may never be present and has no Rust form that serde round-trips |
 | `agent-ix.rust-backend.PAYLOAD_ON_ENUM_VARIANT` | error | yes | a kind: "enum" variant carries a payloadType, which the schema permits and no contract rule reconciles with the kind |
 | `agent-ix.rust-backend.UNORDERED_SUBJECT` | error | yes | a bound keyword names a subject the contract does not order — an ISO 8601 duration at this revision |

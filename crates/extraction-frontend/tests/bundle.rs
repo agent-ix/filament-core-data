@@ -378,7 +378,7 @@ fn typed_md(id: &str, title: &str, doc_type: &str, object: Option<&str>) -> Stri
     )
 }
 
-#[trace("TC-1841", "FR-091-AC-12")]
+#[trace("TC-1870", "FR-091-AC-15")]
 #[test]
 fn tc_1841_composed_document_is_never_extracted_even_with_object() {
     let dir = tempfile::tempdir().expect("tempdir");
@@ -447,7 +447,7 @@ fn tc_1841_composed_document_is_never_extracted_even_with_object() {
     }
 }
 
-#[trace("TC-1841", "FR-091-AC-12")]
+#[trace("TC-1870", "FR-091-AC-15")]
 #[test]
 fn tc_1841_unknown_object_diagnoses_only_a_non_composed_document() {
     let dir = tempfile::tempdir().expect("tempdir");
@@ -512,7 +512,7 @@ fn tc_1206_bundle_index_names_every_object_by_id_and_title_and_a_title_cell_reso
         .expect("fields")[4];
     assert_eq!(parent.name, "parent");
     assert_eq!(
-        parent.type_ref.target,
+        parent.type_ref.target.as_str(),
         "ix://agent-ix/docs-service/type/Snapshot"
     );
 
@@ -541,7 +541,7 @@ fn tc_1206_bundle_index_names_every_object_by_id_and_title_and_a_title_cell_reso
         .fields
         .as_deref()
         .expect("fields")[1];
-    assert_eq!(item.type_ref.target, "ix://acme/shop/type/Widget");
+    assert_eq!(item.type_ref.target.as_str(), "ix://acme/shop/type/Widget");
     assert!(
         engine_codes(&out.diagnostics).is_empty(),
         "no unresolved-type advisory: {:?}",

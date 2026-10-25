@@ -1,0 +1,40 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.3.3/MinConstraintValue.json",
+	"oneOf": [
+		{
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "number"
+				},
+				"value": {
+					"type": "number"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
+		},
+		{
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "string"
+				},
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
+		}
+	],
+	"description": "`min`: an exact numeric literal or ISO 8601 string for temporal scalars.",
+	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/MinConstraintValue"
+}

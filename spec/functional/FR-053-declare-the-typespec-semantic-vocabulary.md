@@ -63,6 +63,7 @@ no semantic value is inferred from a declaration's spelling.
 - `slug(value)` SHALL replace every character outside `[A-Za-z0-9]` with `-`, collapse runs of `-`, and trim leading and trailing `-`.
 - If two declarations mint the same identity, then the frontend SHALL raise `agent-ix.semantic-ir.DUPLICATE_IDENTITY` at the locus of the declaration that is later in the order of package-root-relative source path, then start line, then start column, carrying the earlier locus as a related locus.
 - If slugging two distinct declaration names produces one identity, then the frontend SHALL raise `agent-ix.compiler.UNSLUGGABLE_NAME` at the later declaration's locus rather than emitting a colliding identity.
+- The frontend SHALL mint a model property's, an operation's and an operation parameter's name verbatim as its member name (`created_at` mints `<Name>/created_at`), and if that name does not match `^[A-Za-z][A-Za-z0-9_]*$` (a property `_tmp`), then the frontend SHALL raise `agent-ix.compiler.UNSLUGGABLE_NAME` at the declaration's locus and emit no identity for it.
 
 ### Constraints and minted aliases
 
@@ -126,6 +127,7 @@ no semantic value is inferred from a declaration's spelling.
 | FR-053-AC-13 | Each of the four extension lowerings produces the identity, version, `required` flag, and payload FR-034 names, and `@semanticExtension` carries an arbitrary parsed payload. | Test |
 | FR-053-AC-14 | An enum member with an assigned value raises `UNSUPPORTED_LOSS` at the member's locus, and no document is written. | Test |
 | FR-053-AC-15 | Every added manifest declares `AGPL-3.0-or-later`, and `package.json` gains no dependency and no `file:`/`link:` specifier. | Analysis |
+| FR-053-AC-16 | A model with properties `created_at` and `created__at` and an operation `reset_all` with parameter `created_at` mints `<Name>/created_at`, `<Name>/created__at`, `<Name>/reset_all` and `<Name>/reset_all/created_at` with no diagnostic; a property `_tmp` raises one `agent-ix.compiler.UNSLUGGABLE_NAME` at its locus and emits no identity for it. | Test (TC-1851) |
 
 ## Dependencies
 

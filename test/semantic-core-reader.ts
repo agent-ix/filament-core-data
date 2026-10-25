@@ -94,7 +94,7 @@ function checkTypeRef(
 	isReturns = false,
 ): void {
 	if (!isObject(ref)) return;
-	const target = String(ref.target);
+	const target = isObject(ref.target) ? String(ref.target.value) : "";
 	const kernel = (KERNEL_SCALARS as readonly string[]).includes(target);
 	checkMultiplicity(ref.multiplicity, `${path}.multiplicity`, out);
 	if (target === "Decimal" && ref.decimal === undefined)
@@ -157,7 +157,10 @@ function checkFields(
 					`${path}.${index}.identity`,
 					"identity needs 1..1",
 				);
-			if (field.type.target === "JsonObject")
+			if (
+				isObject(field.type.target) &&
+				field.type.target.value === "JsonObject"
+			)
 				push(
 					out,
 					"agent-ix.semantic-core.IDENTITY_ON_JSON_OBJECT",

@@ -678,6 +678,7 @@ class Population:
     kind: ConstructKind
     members: list[common_schema.SemanticIdentity]
     origin: common_schema.Origin
+    symmetric: bool | None = None
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))

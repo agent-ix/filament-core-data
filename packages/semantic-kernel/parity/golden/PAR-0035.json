@@ -7,13 +7,19 @@
 	"unknownPolicy": "reject",
 	"instance": {
 		"keyword": "exclusiveMax",
-		"value": 1
+		"value": {
+			"kind": "number",
+			"value": 1
+		}
 	},
 	"expected": {
 		"resultState": "success",
 		"wire": {
 			"keyword": "exclusiveMax",
-			"value": 1
+			"value": {
+				"kind": "number",
+				"value": 1
+			}
 		}
 	},
 	"derivedFrom": [

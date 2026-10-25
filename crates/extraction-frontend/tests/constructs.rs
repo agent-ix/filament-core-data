@@ -1227,6 +1227,7 @@ fn construct<'a>(document: &'a Value, id: &str) -> &'a Value {
     &document["types"][position(document, &type_ref(id))]
 }
 
+#[trace("TC-1751", "FR-091-AC-13")]
 #[trace("TC-1751", "FR-143-AC-1")]
 #[trace("TC-1751", "FR-143-CON-2")]
 #[test]

@@ -207,13 +207,13 @@ export function renderValue(value, depth, column, trail = 0) {
 			if (structFitsInline(value, column, trail)) return [inlineOf(value)];
 			const lines = [`${value.path} {`];
 			for (const field of value.fields) {
-				const inner = renderValue(
-					field.value,
-					depth + 1,
-					pad.length + INDENT.length + field.name.length + 2,
-					1,
-				);
-				inner[0] = `${pad}${INDENT}${field.name}: ${inner[0]}`;
+				const fieldColumn = pad.length + INDENT.length + field.name.length + 2;
+				const inner =
+					field.value.kind === "atom" &&
+					fieldColumn + field.value.text.length + 1 > MAX_WIDTH
+						? ["", `${pad}${INDENT}${INDENT}${field.value.text}`]
+						: renderValue(field.value, depth + 1, fieldColumn, 1);
+				inner[0] = `${pad}${INDENT}${field.name}:${inner[0] ? ` ${inner[0]}` : ""}`;
 				inner[inner.length - 1] = `${inner[inner.length - 1]},`;
 				lines.push(...inner);
 			}

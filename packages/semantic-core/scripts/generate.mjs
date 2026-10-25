@@ -12,8 +12,8 @@
 
 import { execFileSync } from "node:child_process";
 import {
-	mkdtempSync,
 	mkdirSync,
+	mkdtempSync,
 	readdirSync,
 	readFileSync,
 	rmSync,
@@ -61,8 +61,8 @@ function annotateSemanticIdentity(files) {
 
 function formatJson(name, text) {
 	return execFileSync(
-		"pnpm",
-		["exec", "biome", "format", `--stdin-file-path=${name}`],
+		resolve(repoRoot, "node_modules/.bin/biome"),
+		["format", `--stdin-file-path=${name}`],
 		{
 			cwd: repoRoot,
 			input: text,
@@ -77,10 +77,8 @@ function emit() {
 	const scratch = mkdtempSync(join(tmpdir(), "semantic-core-emit-"));
 	try {
 		execFileSync(
-			"pnpm",
+			resolve(repoRoot, "node_modules/.bin/tsp"),
 			[
-				"exec",
-				"tsp",
 				"compile",
 				packageRoot,
 				"--option",

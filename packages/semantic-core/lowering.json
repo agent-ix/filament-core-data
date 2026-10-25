@@ -1,5 +1,5 @@
 {
-	"$comment": "FR-034 lowering table: every grammar-model property → IR v1.1 node property. A row with loss != none fails the fixture gate.",
+	"$comment": "FR-034 lowering table: every grammar-model property → IR 2.0.0 node property. Internal wire unions select a branch and unwrap its payload without creating an IR node. A row with loss != none fails the fixture gate.",
 	"rows": [
 		{
 			"model": "Multiplicity",
@@ -35,7 +35,7 @@
 			"irNode": "field",
 			"irProperty": "typeRef",
 			"loss": "none",
-			"note": "SemanticId verbatim; KernelScalar → package-local kernel definition identity"
+			"note": "Select target.kind, unwrap target.value; SemanticId verbatim, KernelScalar → package-local kernel definition identity"
 		},
 		{
 			"model": "TypeRef",
@@ -138,7 +138,7 @@
 			"irNode": "typeDefinition(alias)",
 			"irProperty": "constraints[]",
 			"loss": "none",
-			"note": "appliesTo = minted alias identity"
+			"note": "Select each ConstraintDecl.kind, unwrap ConstraintDecl.value; appliesTo = minted alias identity"
 		},
 		{
 			"model": "MinConstraint",
@@ -152,7 +152,8 @@
 			"property": "value",
 			"irNode": "constraint",
 			"irProperty": "operands.value",
-			"loss": "none"
+			"loss": "none",
+			"note": "Select MinConstraintValue.kind, unwrap MinConstraintValue.value"
 		},
 		{
 			"model": "MaxConstraint",
@@ -166,7 +167,8 @@
 			"property": "value",
 			"irNode": "constraint",
 			"irProperty": "operands.value",
-			"loss": "none"
+			"loss": "none",
+			"note": "Select MaxConstraintValue.kind, unwrap MaxConstraintValue.value"
 		},
 		{
 			"model": "ExclusiveMinConstraint",
@@ -180,7 +182,8 @@
 			"property": "value",
 			"irNode": "constraint",
 			"irProperty": "operands.value",
-			"loss": "none"
+			"loss": "none",
+			"note": "Select ExclusiveMinConstraintValue.kind, unwrap ExclusiveMinConstraintValue.value"
 		},
 		{
 			"model": "ExclusiveMaxConstraint",
@@ -194,7 +197,8 @@
 			"property": "value",
 			"irNode": "constraint",
 			"irProperty": "operands.value",
-			"loss": "none"
+			"loss": "none",
+			"note": "Select ExclusiveMaxConstraintValue.kind, unwrap ExclusiveMaxConstraintValue.value"
 		},
 		{
 			"model": "PatternConstraint",
@@ -257,7 +261,8 @@
 			"property": "values",
 			"irNode": "constraint",
 			"irProperty": "operands.values",
-			"loss": "none"
+			"loss": "none",
+			"note": "Select each EnumValuesConstraintValues.kind, unwrap each EnumValuesConstraintValues.value"
 		},
 		{
 			"model": "NonEmptyConstraint",
@@ -293,7 +298,7 @@
 			"irNode": "constraint",
 			"irProperty": "oneOf variant",
 			"loss": "none",
-			"note": "selected by keyword"
+			"note": "selected by kind; unwrap value to the corresponding constraint model"
 		},
 		{
 			"model": "RelationDecl",

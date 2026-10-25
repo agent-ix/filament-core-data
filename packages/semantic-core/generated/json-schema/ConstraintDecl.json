@@ -1,41 +1,184 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
 	"$id": "https://schemas.agent-ix.org/semantic-core/0.3.3/ConstraintDecl.json",
-	"anyOf": [
+	"oneOf": [
 		{
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/MinConstraint.json"
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "MinConstraint"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/MinConstraint.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
 		},
 		{
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/MaxConstraint.json"
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "MaxConstraint"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/MaxConstraint.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
 		},
 		{
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/ExclusiveMinConstraint.json"
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "ExclusiveMinConstraint"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/ExclusiveMinConstraint.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
 		},
 		{
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/ExclusiveMaxConstraint.json"
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "ExclusiveMaxConstraint"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/ExclusiveMaxConstraint.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
 		},
 		{
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/PatternConstraint.json"
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "PatternConstraint"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/PatternConstraint.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
 		},
 		{
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/MinLengthConstraint.json"
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "MinLengthConstraint"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/MinLengthConstraint.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
 		},
 		{
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/MaxLengthConstraint.json"
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "MaxLengthConstraint"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/MaxLengthConstraint.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
 		},
 		{
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/EnumValuesConstraint.json"
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "EnumValuesConstraint"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/EnumValuesConstraint.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
 		},
 		{
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/NonEmptyConstraint.json"
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "NonEmptyConstraint"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/NonEmptyConstraint.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
 		},
 		{
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/UniqueConstraint.json"
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "UniqueConstraint"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/UniqueConstraint.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
 		},
 		{
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/FormatConstraint.json"
+			"type": "object",
+			"properties": {
+				"kind": {
+					"type": "string",
+					"const": "FormatConstraint"
+				},
+				"value": {
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/FormatConstraint.json"
+				}
+			},
+			"required": ["kind", "value"],
+			"unevaluatedProperties": {
+				"not": {}
+			}
 		}
 	],
-	"description": "FR-029 constraint declaration, discriminated on `keyword`.",
+	"description": "FR-029 constraint declaration, tagged by `kind` with its record in `value`.",
 	"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/ConstraintDecl"
 }

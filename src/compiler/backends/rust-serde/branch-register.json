@@ -10,8 +10,8 @@
 		"src/compiler/ir/applicability.mjs"
 	],
 	"contributions": {
-		"diagnostics.mjs": 21,
-		"mapping-table.json": 73,
+		"diagnostics.mjs": 20,
+		"mapping-table.json": 74,
 		"names.mjs": 10,
 		"src/compiler/ir/applicability.mjs": 55
 	},
@@ -650,15 +650,6 @@
 			]
 		},
 		{
-			"branchId": "diagnostic:agent-ix.rust-backend.UNDECLARED_WIRE_FORM",
-			"axis": "diagnostic",
-			"vocabulary": "diagnostics.mjs",
-			"construct": "error, blocking: a construct's JSON wire form is declared by no published artifact — the bytes kernel scalar at this revision",
-			"cases": [
-				"TC-725 every registered diagnostic code is disposed as its severity requires and named by a live path"
-			]
-		},
-		{
 			"branchId": "diagnostic:agent-ix.rust-backend.UNKNOWN_FORMAT",
 			"axis": "diagnostic",
 			"vocabulary": "diagnostics.mjs",
@@ -1161,7 +1152,7 @@
 			"branchId": "scalar:bytes",
 			"axis": "scalar",
 			"vocabulary": "mapping-table.json",
-			"construct": "null — agent-ix.rust-backend.UNDECLARED_WIRE_FORM",
+			"construct": "Bytes",
 			"cases": [
 				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
 			]
@@ -1354,6 +1345,15 @@
 			"construct": "pub struct N { .. } with pub enum NState { .. } and pub const TRANSITIONS: &[TransitionMeta]",
 			"cases": [
 				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
+			]
+		},
+		{
+			"branchId": "support-type:bytes",
+			"axis": "support-type",
+			"vocabulary": "mapping-table.json",
+			"construct": "the bytes kernel scalar rendered by crate::support::Bytes",
+			"cases": [
+				"TC-725 every kernel scalar maps to the Rust base the mapping table states"
 			]
 		},
 		{

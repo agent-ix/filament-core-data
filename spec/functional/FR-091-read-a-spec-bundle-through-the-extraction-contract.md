@@ -27,7 +27,7 @@ mapping.
 
 - A bundle root: the directory holding `spec/spec.md` and its artifact directories
 - One or more module roots, each a directory holding a module `manifest.yaml`, supplied explicitly by the caller
-- The `quire-rs` crate at the exact revision NFR-033 pins, which is at or after `a874fb6` (quire-rs#411, `Registry::load_module_set`), with its default features and without the `python` feature
+- The `quire-rs` crate at the exact revision NFR-033 pins, which is at or after `a874fb6` (quire-rs#411, `Registry::load_module_set`), with `default-features = false`, `features = ["resolve-file"]`, and without the `python` feature
 - The `spec.md` frontmatter `org` and `name` of the bundle, which name the package
 
 ## Outputs
@@ -37,6 +37,20 @@ mapping.
 - A `Refusal` naming the reason the bundle could not be read, with the module or document that caused it
 
 ## Behavior
+
+### Dependency feature boundary
+
+- The frontend SHALL select the existing `quire-rs` filesystem and Markdown semantic extraction capabilities without activating `rust-symbols`, `python-symbols`, or `typescript-symbols` on its dependency edge.
+- For a consumer whose normal/build dependency paths to the pinned `quire-rs` package all pass through the frontend's lift dependency, the activated normal/build dependency graph SHALL contain no path to `quire-rust-extraction`, `quire-code-parse`, the `tree-sitter` runtime, or any tree-sitter language or grammar package.
+- The frontend SHALL preserve the real public `lift(LiftRequest)` pipeline, including typed `body_extraction` for model and enum tables, canonical document bytes, package and node identities, typed outcomes and diagnostics, and the [FR-099](./FR-099-provide-the-extraction-frontend-command-line.md) CLI exit behavior.
+
+This dependency boundary is planned under
+[IR-640](https://linear.app/agent-ix/issue/IR-640) and
+[ADR-0012](../../docs/semantic-data-system/adr/0012-lift-dependency-feature-selection.md);
+this specification does not claim implementation or qualification. Cargo feature
+unification may activate source parsers through an unrelated consumer edge;
+such activation is outside the frontend's guarantee. Lockfile package retention
+is distinct from activation and compilation and does not itself violate it.
 
 ### Loading
 
@@ -104,7 +118,10 @@ contract today; FR-094-CON-1 records the upstream dependency.
 | FR-091-AC-9 | Every `SemanticDiagnostic` the engine returns for the `legacy-form` control appears in the frontend's diagnostics as one `ENGINE_DIAGNOSTIC` whose message begins with the engine code followed by ` (reason: <reason>): `, whose `causes` is empty, whose severity is the FR-096 mapping of the engine severity, and whose locus line and column equal the engine's. | Test (TC-1208) |
 | FR-091-AC-10 | The legacy `docs-service` FR-006 (free-column table) yields `fields` `unavailable` with reason `legacy-form` and the engine's `semantic.legacy-properties-form` warning at line 17, and the document is not lowered. | Test (TC-1209) |
 | FR-091-AC-11 | A bundle holding two documents with `id: FR-006` refuses with `DUPLICATE_ARTIFACT_ID` at the second path naming both; an engine diagnostic injected with `line: 0` reaches the diagnostics array with no `locus` and the document path in `related`, and the array validates against `common.schema.json#/$defs/diagnostic`. | Test (TC-1331) |
-| FR-091-AC-12 | A document with `type: FR` and `object: entity`, one with `type: FR` and `object: enumeration`, and one with `type: FR` and no `object` yield no extraction, no diagnostic, and no `BundleIndex` entry; `type: FR` with `object: widget` (undeclared) yields no diagnostic, while `type: widget` with `object: widget` yields `UNKNOWN_OBJECT_TYPE`; a document with `type: entity` and no `object` yields no extraction; a document with `type: entity` and `object: entity`, and one with `type: enumeration` and `object: enumeration`, are extracted. | Test (TC-1841) |
+| FR-091-AC-12 | A consumer whose normal/build dependency paths to the pinned `quire-rs` package all pass through the frontend's public lift dependency has no activated normal/build path to the source parser packages excluded above. A scratch negative control restoring default features activates the excluded parsers and is rejected by the same graph check. The assertion inspects the resolved activated graph, not only manifest text or lockfile names. | Test |
+| FR-091-AC-13 | With the selected features, real public `LiftRequest` calls over the existing positive model/enum and construct fixtures, negative bundles, and legacy controls retain their expected canonical document bytes, package/node identities, typed `Written`/`Blocked`/`Refused` outcomes and diagnostics; the real CLI retains FR-099 exit codes `0`, `1`, and `2`. Typed `body_extraction` remains the semantic oracle; no copied parser, mocked success, or replay bypass supplies the result. | Test |
+| FR-091-AC-14 | Qualification reports lockfile bytes/package identities separately from activated normal/build package identities and actually compiled grammar packages, with measured wall time and peak memory for matched upgrade-only control and candidate builds. The builds use the same consumer and upstream revisions except the reviewed feature change, compiler, profile, job count, initially absent independent target directories and source-cache policy. Any first-run failure remains recorded. A single comparison is observational; no numeric speedup or literal lockfile package disappearance is required. | Analysis |
+| FR-091-AC-15 | A document with `type: FR` and `object: entity`, one with `type: FR` and `object: enumeration`, and one with `type: FR` and no `object` yield no extraction, no diagnostic, and no `BundleIndex` entry; `type: FR` with `object: widget` (undeclared) yields no diagnostic, while `type: widget` with `object: widget` yields `UNKNOWN_OBJECT_TYPE`; a document with `type: entity` and no `object` yields no extraction; a document with `type: entity` and `object: entity`, and one with `type: enumeration` and `object: enumeration`, are extracted. | Test (TC-1870) |
 
 ## Dependencies
 

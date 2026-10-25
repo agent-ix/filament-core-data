@@ -94,6 +94,7 @@ fn tree(root: &Path) -> Vec<(PathBuf, Vec<u8>)> {
     out
 }
 
+#[trace("TC-1295", "FR-091-AC-13")]
 #[trace("TC-1295", "FR-099-AC-1")]
 #[test]
 fn tc_1295_lift_writes_two_files_and_the_sidecar_options_rename_them() {
@@ -130,6 +131,7 @@ fn tc_1295_lift_writes_two_files_and_the_sidecar_options_rename_them() {
     );
 }
 
+#[trace("TC-1296", "FR-091-AC-13")]
 #[trace("TC-1296", "FR-099-AC-2")]
 #[test]
 fn tc_1296_a_blocking_lift_exits_1_with_the_sidecar_and_refusals_exit_2_writing_nothing() {

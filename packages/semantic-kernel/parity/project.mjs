@@ -135,7 +135,7 @@ export function project(answer, goldenDocument) {
  * The unknown-member fate the contract states for one golden document.
  *
  * Every kernel object is sealed with `unevaluatedProperties: { not: {} }`, so
- * `reject` is the only policy the thirty published documents declare. A
+ * `reject` is the only policy the published documents declare. A
  * document that does not carry an undeclared member does not exercise the
  * policy at all, and reporting it as agreeing would be reporting an
  * unmeasured property as measured.

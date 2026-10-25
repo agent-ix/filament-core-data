@@ -39,10 +39,15 @@ export function run(): number {
 	const field: FieldDecl = {
 		name: "unitSymbol",
 		type: {
-			target: "String",
+			target: { kind: "KernelScalar", value: "String" },
 			multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
 		},
-		constraints: [{ keyword: "min", value: 0 }],
+		constraints: [
+			{
+				kind: "MinConstraint",
+				value: { keyword: "min", value: { kind: "number", value: 0 } },
+			},
+		],
 	};
 	const constructed = validateFieldDecl(field);
 	assert(constructed.ok, "a valid FieldDecl with multiplicity was rejected");
@@ -71,10 +76,23 @@ export function run(): number {
 	const positive = validateMultiplicity(PAR_0001.instance);
 	assert(positive.ok, "PAR-0001 did not deserialize");
 	if (positive.ok) assert(positive.value.upper === 1, "PAR-0001 lost upper");
-	const constraint = validateConstraintDecl(PAR_0027.instance);
+	const constraint = validateConstraintDecl({
+		kind: "MinConstraint",
+		value: PAR_0027.instance,
+	});
 	assert(constraint.ok, "PAR-0027 did not preserve its numeric operand");
-	if (constraint.ok)
-		assert(constraint.value.keyword === "min", "PAR-0027 lost its keyword");
+	if (constraint.ok) {
+		assert(constraint.value.kind === "MinConstraint", "PAR-0027 lost its kind");
+		assert(
+			constraint.value.value.keyword === "min",
+			"PAR-0027 lost its keyword",
+		);
+		assert(
+			constraint.value.value.value.kind === "number" &&
+				constraint.value.value.value.value === 0,
+			"PAR-0027 lost its numeric operand",
+		);
+	}
 
 	rejected(
 		validateFieldDecl({ ...field, undeclared: 1 }),
@@ -86,8 +104,8 @@ export function run(): number {
 	);
 	rejected(validateKernelScalar("NotAKernelScalar"), "an unknown KernelScalar");
 	rejected(
-		validateConstraintDecl({ keyword: "notAKeyword" }),
-		"an unknown ConstraintDecl keyword",
+		validateConstraintDecl({ kind: "notAKeyword", value: {} }),
+		"an unknown ConstraintDecl variant",
 	);
 	rejected(validateMultiplicity({ lower: -1 }), "a minimum-bound violation");
 

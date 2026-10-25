@@ -8,8 +8,10 @@ from typing import Literal
 from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
 
+from .ExclusiveMinConstraintValue import ExclusiveMinConstraintValue
+
 
 @dataclass(config=ConfigDict(extra='forbid'))
 class ExclusiveMinConstraint:
     keyword: Literal['exclusiveMin']
-    value: float | str
+    value: ExclusiveMinConstraintValue

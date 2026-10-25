@@ -436,8 +436,8 @@ impl Keyword {
             Constraint::MaxLength { .. } => Keyword::MaxLength,
             Constraint::Pattern { .. } => Keyword::Pattern,
             Constraint::EnumValues { .. } => Keyword::EnumValues,
-            Constraint::NonEmpty => Keyword::NonEmpty,
-            Constraint::Unique => Keyword::Unique,
+            Constraint::NonEmpty { .. } => Keyword::NonEmpty,
+            Constraint::Unique { .. } => Keyword::Unique,
             Constraint::Format { .. } => Keyword::Format,
         }
     }
@@ -564,19 +564,41 @@ pub const KEYWORDS: [&str; 11] = [
     "format",
 ];
 
-/// `keyword` and `operands` of one engine `Constraint`: the engine's own
-/// serialization (`keyword` tag plus the operand members) split in two,
-/// so no operand is respelled here.
+/// Project an admitted semantic-core constraint into Semantic IR's keyword and
+/// primitive operands. The grammar model's adjacent wire wrappers do not become
+/// IR nodes or operands (FR-034's lowering table).
 fn keyword_and_operands(constraint: &Constraint) -> (String, serde_json::Map<String, Value>) {
-    let mut map = match serde_json::to_value(constraint) {
-        Ok(Value::Object(map)) => map,
-        _ => serde_json::Map::new(),
+    let one = |name: &str, value| serde_json::Map::from_iter([(name.to_string(), value)]);
+    let (keyword, operands) = match constraint {
+        Constraint::Min { value, .. } => ("min", one("value", value.to_json_value())),
+        Constraint::Max { value, .. } => ("max", one("value", value.to_json_value())),
+        Constraint::ExclusiveMin { value, .. } => {
+            ("exclusiveMin", one("value", value.to_json_value()))
+        }
+        Constraint::ExclusiveMax { value, .. } => {
+            ("exclusiveMax", one("value", value.to_json_value()))
+        }
+        Constraint::MinLength { value, .. } => ("minLength", one("value", Value::from(*value))),
+        Constraint::MaxLength { value, .. } => ("maxLength", one("value", Value::from(*value))),
+        Constraint::Pattern { regex, dialect, .. } => (
+            "pattern",
+            serde_json::Map::from_iter([
+                ("regex".to_string(), Value::String(regex.clone())),
+                ("dialect".to_string(), Value::String(dialect.clone())),
+            ]),
+        ),
+        Constraint::EnumValues { values, .. } => (
+            "enumValues",
+            one(
+                "values",
+                Value::Array(values.iter().map(|value| value.to_json_value()).collect()),
+            ),
+        ),
+        Constraint::NonEmpty { .. } => ("nonEmpty", serde_json::Map::new()),
+        Constraint::Unique { .. } => ("unique", serde_json::Map::new()),
+        Constraint::Format { name, .. } => ("format", one("name", Value::String(name.clone()))),
     };
-    let keyword = map
-        .remove("keyword")
-        .and_then(|v| v.as_str().map(str::to_string))
-        .unwrap_or_default();
-    (keyword, map)
+    (keyword.to_string(), operands)
 }
 
 // ---------------------------------------------------------------------------
@@ -1437,4 +1459,81 @@ fn identities_of(definition: &TypeDefinition) -> Vec<(String, Locus)> {
 /// The document of `bundle` at `path`.
 pub fn document_at<'a>(bundle: &'a Bundle, path: &str) -> Option<&'a Document> {
     bundle.documents().iter().find(|d| d.path() == path)
+}
+
+#[cfg(test)]
+mod adjacent_constraint_tests {
+    use super::keyword_and_operands;
+    use ix_trace_rs::trace;
+    use quire_rs::semantic::Constraint;
+    use serde_json::{json, Value};
+
+    fn assert_projection(kind: &str, keyword: &str, wire_operands: Value, operands: Value) {
+        let mut payload = wire_operands.as_object().unwrap().clone();
+        payload.insert("keyword".to_string(), json!(keyword));
+        let constraint: Constraint = serde_json::from_value(json!({
+            "kind": kind,
+            "value": payload,
+        }))
+        .expect("published semantic-core adjacent constraint");
+        let (actual_keyword, actual_operands) = keyword_and_operands(&constraint);
+        assert_eq!(actual_keyword, keyword, "{kind}");
+        assert_eq!(Value::Object(actual_operands), operands, "{kind}");
+    }
+
+    #[trace("TC-1223", "FR-093-AC-4")]
+    #[test]
+    fn tc_1223_adjacent_numeric_constraint_values_lower_to_exact_ir_primitives() {
+        for (kind, keyword) in [
+            ("MinConstraint", "min"),
+            ("MaxConstraint", "max"),
+            ("ExclusiveMinConstraint", "exclusiveMin"),
+            ("ExclusiveMaxConstraint", "exclusiveMax"),
+        ] {
+            for (value_kind, value) in [
+                ("number", json!(7)),
+                ("string", json!("170141183460469231731687303715884105728")),
+            ] {
+                assert_projection(
+                    kind,
+                    keyword,
+                    json!({"value": {"kind": value_kind, "value": value}}),
+                    json!({"value": value}),
+                );
+            }
+        }
+    }
+
+    #[trace("TC-1223", "FR-093-AC-4")]
+    #[test]
+    fn tc_1223_adjacent_remaining_constraints_keep_ir_operands_without_wire_wrappers() {
+        for (kind, keyword, operands) in [
+            ("MinLengthConstraint", "minLength", json!({"value": 2})),
+            ("MaxLengthConstraint", "maxLength", json!({"value": 17})),
+            (
+                "PatternConstraint",
+                "pattern",
+                json!({"regex": "^[a-z]+$", "dialect": "ecma-262"}),
+            ),
+            ("NonEmptyConstraint", "nonEmpty", json!({})),
+            ("UniqueConstraint", "unique", json!({})),
+            (
+                "FormatConstraint",
+                "format",
+                json!({"name": "acme:identifier"}),
+            ),
+        ] {
+            assert_projection(kind, keyword, operands.clone(), operands);
+        }
+        assert_projection(
+            "EnumValuesConstraint",
+            "enumValues",
+            json!({"values": [
+                {"kind": "string", "value": "active"},
+                {"kind": "number", "value": 3},
+                {"kind": "boolean", "value": false},
+            ]}),
+            json!({"values": ["active", 3, false]}),
+        );
+    }
 }

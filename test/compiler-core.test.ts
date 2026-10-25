@@ -6582,6 +6582,238 @@ describe("generation backend seam registry codes (FR-063)", () => {
 // ---------------------------------------------------------------------------
 
 describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
+	/** Traces: IR-994; FR-054-AC-5, FR-082. */
+	it("lowers closed adjacent oneOf branches into a union without an untagged wire extension", async () => {
+		const lower = await import(
+			"../src/compiler/frontend/json-schema/lower.mjs"
+		);
+		const ref = (name: string) => ({
+			$ref: `https://schemas.example.test/${name}.json`,
+		});
+		const adjacent = (kind: string, payload?: string) => ({
+			type: "object",
+			properties: {
+				kind: { const: kind },
+				...(payload === undefined ? {} : { value: ref(payload) }),
+			},
+			required: payload === undefined ? ["kind"] : ["kind", "value"],
+			unevaluatedProperties: { not: {} },
+		});
+		const identity = (name: string) => `ix://agent-ix/semantic-core/${name}`;
+		const source = (name: string, body: object) =>
+			[
+				`${name}.json`,
+				{
+					$id: `https://schemas.example.test/${name}.json`,
+					"x-agent-ix-semantic-id": identity(name),
+					...body,
+				},
+			] as const;
+		const branches = [adjacent("Left", "Left"), adjacent("Right")];
+		const result = lower.lowerBundle(
+			[
+				source("Choice", { oneOf: branches }),
+				source("Holder", {
+					type: "object",
+					properties: {
+						choice: { oneOf: branches },
+						choices: { type: "array", items: { oneOf: branches } },
+					},
+					required: ["choice"],
+					unevaluatedProperties: { not: {} },
+				}),
+				source("Left", { type: "string" }),
+			],
+			{
+				source: {
+					identity: "ix://agent-ix/semantic-core",
+					version: "1.0.0",
+					dialect: "spec-bundle",
+					digest: `sha256:${"0".repeat(64)}`,
+				},
+			},
+		);
+		expect(result.diagnostics).toBeUndefined();
+		const types = result.document!.types as LoweredType[];
+		for (const name of ["Choice", "HolderChoice", "HolderChoices"]) {
+			const union = types.find((entry) => entry.displayName === name)!;
+			expect(union).toEqual(expect.objectContaining({ kind: "union" }));
+			expect(union.extensions).toEqual([]);
+			expect(union.variants).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						name: "Left",
+						payloadType: lower.identityOf("Left"),
+					}),
+					expect.objectContaining({ name: "Right" }),
+				]),
+			);
+		}
+	});
+
+	/** Traces: IR-994; FR-082. */
+	it("refuses an adjacent oneOf branch whose value is optional", async () => {
+		const lower = await import(
+			"../src/compiler/frontend/json-schema/lower.mjs"
+		);
+		const result = lower.lowerBundle([
+			[
+				"Choice.json",
+				{
+					$id: "https://schemas.example.test/Choice.json",
+					"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Choice",
+					oneOf: [
+						{
+							type: "object",
+							properties: {
+								kind: { const: "Left" },
+								value: { type: "string" },
+							},
+							required: ["kind"],
+							unevaluatedProperties: { not: {} },
+						},
+					],
+				},
+			],
+		]);
+		expect(
+			result.diagnostics?.map((entry: { code: string }) => entry.code),
+		).toContain("agent-ix.compiler.UNSUPPORTED_SCHEMA_SHAPE");
+	});
+
+	/** Traces: IR-994; FR-082-AC-3. */
+	it("refuses non-adjacent oneOf shapes at their oneOf pointer", async () => {
+		const { lowerBundle } = await import(
+			"../src/compiler/frontend/json-schema/lower.mjs"
+		);
+		const valid = (kind: string) => ({
+			type: "object",
+			properties: {
+				kind: { type: "string", const: kind },
+				value: { type: "string" },
+			},
+			required: ["kind", "value"],
+			unevaluatedProperties: { not: {} },
+		});
+		const cases: [string, object, string][] = [
+			["one branch", { oneOf: [valid("A")] }, "Choice.json/oneOf"],
+			[
+				"duplicate tags",
+				{ oneOf: [valid("A"), valid("A")] },
+				"Choice.json/oneOf",
+			],
+			[
+				"non-object",
+				{ oneOf: [{ type: "string" }, valid("B")] },
+				"Choice.json/oneOf",
+			],
+			[
+				"missing kind",
+				{
+					oneOf: [
+						{ ...valid("A"), properties: { value: { type: "string" } } },
+						valid("B"),
+					],
+				},
+				"Choice.json/oneOf",
+			],
+			[
+				"extra property",
+				{
+					oneOf: [
+						{
+							...valid("A"),
+							properties: {
+								...valid("A").properties,
+								extra: { type: "string" },
+							},
+						},
+						valid("B"),
+					],
+				},
+				"Choice.json/oneOf",
+			],
+			[
+				"mismatched required",
+				{ oneOf: [{ ...valid("A"), required: ["kind"] }, valid("B")] },
+				"Choice.json/oneOf",
+			],
+			[
+				"missing closure",
+				{
+					oneOf: [
+						{ ...valid("A"), unevaluatedProperties: undefined },
+						valid("B"),
+					],
+				},
+				"Choice.json/oneOf",
+			],
+			[
+				"extra branch keyword",
+				{ oneOf: [{ ...valid("A"), minLength: 1 }, valid("B")] },
+				"Choice.json/oneOf",
+			],
+			[
+				"unsupported payload",
+				{
+					oneOf: [
+						{
+							...valid("A"),
+							properties: { kind: { const: "A" }, value: { type: "array" } },
+						},
+						valid("B"),
+					],
+				},
+				"Choice.json/oneOf",
+			],
+			[
+				"oneOf on record",
+				{
+					type: "object",
+					properties: {},
+					required: [],
+					unevaluatedProperties: { not: {} },
+					oneOf: [valid("A"), valid("B")],
+				},
+				"Choice.json/oneOf",
+			],
+			[
+				"nested oneOf",
+				{
+					type: "object",
+					properties: {
+						nested: {
+							type: "string",
+							items: { oneOf: [valid("A"), valid("B")] },
+						},
+					},
+					required: [],
+					unevaluatedProperties: { not: {} },
+				},
+				"Choice.json/properties/nested/items/oneOf",
+			],
+		];
+		for (const [label, body, pointer] of cases) {
+			const result = lowerBundle([
+				[
+					"Choice.json",
+					{
+						$id: "https://schemas.example.test/Choice.json",
+						"x-agent-ix-semantic-id": "ix://agent-ix/semantic-core/Choice",
+						...body,
+					},
+				],
+			]);
+			expect(result.document, label).toBeUndefined();
+			expect(result.diagnostics, label).toEqual([
+				expect.objectContaining({
+					code: "agent-ix.compiler.UNSUPPORTED_SCHEMA_SHAPE",
+					locus: pointer,
+				}),
+			]);
+		}
+	});
+
 	/** Traces: TC-1543; FR-082. */
 	it("preserves an all-reference JSON Schema anyOf as an untagged union", async () => {
 		const lower = await import(
@@ -6722,7 +6954,7 @@ describe("issue #11 kernel diagnostic codes (FR-081, FR-082, FR-084)", () => {
 
 		// UNSUPPORTED_SCHEMA_KEYWORD: a keyword outside the closed set.
 		const keywordRun = lower.lowerBundle([
-			["A.json", { $id: "A", type: "object", oneOf: [] }],
+			["A.json", { $id: "A", type: "object", contains: {} }],
 		]) as { diagnostics?: readonly Diagnostic[] };
 		note(keywordRun.diagnostics ?? []);
 
@@ -6920,6 +7152,67 @@ describe("diagnostic coverage (FR-049 closing gate)", () => {
 					d.code === DIAGNOSTIC_CODES.SYSML_UNSUPPORTED_CONSTRUCT.code,
 			),
 		).toBe(true);
+	});
+
+	/** FR-146-AC-4: real reader fixtures contribute to the closing registry census. */
+	it("observes the Clock and unit graph diagnostics from their authored fixtures", () => {
+		for (const filename of ["graph-cases.json", "clock-cases.json"]) {
+			const cases = JSON.parse(
+				readFileSync(
+					new URL(
+						`../fixtures/semantic/v1/clock-units/${filename}`,
+						import.meta.url,
+					),
+					"utf8",
+				),
+			) as {
+				name: string;
+				document: Json;
+				expected: { code: string; pointer: string }[];
+			}[];
+			for (const fixture of cases) {
+				const diagnostics = note(
+					readContractIr(fixture.document as never) as never,
+				);
+				expect(
+					diagnostics.map((entry) => entry.code).sort(),
+					fixture.name,
+				).toEqual(fixture.expected.map((entry) => entry.code).sort());
+			}
+		}
+	});
+
+	it("observes unresolved unit targets and invalid quantity members", () => {
+		const unitDocument = JSON.parse(
+			readFileSync(
+				new URL(
+					"../fixtures/semantic/v1/clock-units/config-time.json",
+					import.meta.url,
+				),
+				"utf8",
+			),
+		);
+		unitDocument.units[1].target = "ix://acme/config/unit/Unknown";
+		expect(
+			note(readContractIr(unitDocument) as never).map((entry) => entry.code),
+		).toEqual([DIAGNOSTIC_CODES.UNRESOLVED_UNIT_REF.code]);
+		const quantityDocument = JSON.parse(
+			readFileSync(
+				new URL(
+					"../fixtures/semantic/v1/clock-units/config-clock.json",
+					import.meta.url,
+				),
+				"utf8",
+			),
+		);
+		const field = quantityDocument.types[0].fields[0];
+		field.typeRef = "ix://quire/unit/ms";
+		field.unit = "ms";
+		expect(
+			note(readContractIr(quantityDocument) as never).map(
+				(entry) => entry.code,
+			),
+		).toEqual([DIAGNOSTIC_CODES.INVALID_QUANTITY_MEMBER.code]);
 	});
 
 	/** Traces: TC-494, TC-609; FR-049-AC-3. */

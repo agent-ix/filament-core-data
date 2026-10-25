@@ -3,7 +3,6 @@
 
 import {
 	cpSync,
-	existsSync,
 	mkdtempSync,
 	mkdirSync,
 	readFileSync,
@@ -59,18 +58,6 @@ function assertClosure(metadata) {
 
 const scratch = mkdtempSync(join(tmpdir(), "fcd-kernel-rust-consumer-"));
 try {
-	if (
-		readFileSync(join(CONSUMER, "fixtures/PAR-0001.json"), "utf8") !==
-		readFileSync(GOLDEN, "utf8")
-	) {
-		throw new Error("the Rust consumer fixture diverged from golden PAR-0001");
-	}
-	if (
-		readFileSync(join(CONSUMER, "fixtures/PAR-0027.json"), "utf8") !==
-		readFileSync(CONSTRAINT_GOLDEN, "utf8")
-	) {
-		throw new Error("the Rust consumer fixture diverged from golden PAR-0027");
-	}
 	const target = join(scratch, "target");
 	run(
 		"cargo",
@@ -84,16 +71,21 @@ try {
 	run("tar", ["-xzf", join(target, "package", `${CRATE}.crate`), "-C", build]);
 	// The consumer names the unpacked crate without its version.
 	renameSync(join(build, CRATE), join(build, "agent-ix-semantic-kernel"));
-	cpSync(CONSUMER, join(build, "kernel-consumer"), { recursive: true });
+	const consumer = join(build, "kernel-consumer");
+	cpSync(CONSUMER, consumer, { recursive: true });
+	const fixtures = join(consumer, "fixtures");
+	mkdirSync(fixtures, { recursive: true });
+	cpSync(GOLDEN, join(fixtures, "PAR-0001.json"));
+	cpSync(CONSTRAINT_GOLDEN, join(fixtures, "PAR-0027.json"));
 	const output = run("cargo", ["test", "--offline"], {
-		cwd: join(build, "kernel-consumer"),
+		cwd: consumer,
 		env: { ...process.env, CARGO_TARGET_DIR: join(scratch, "consumer-target") },
 	});
 	process.stdout.write(output);
 	assertClosure(
 		JSON.parse(
 			run("cargo", ["metadata", "--offline", "--format-version", "1"], {
-				cwd: join(build, "kernel-consumer"),
+				cwd: consumer,
 			}),
 		),
 	);

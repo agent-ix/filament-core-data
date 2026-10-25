@@ -1,0 +1,3258 @@
+[
+	{
+		"name": "base-derived-dimensionless",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Rate",
+					"name": "Rate",
+					"base": false,
+					"terms": [
+						{
+							"dimension": "ix://acme/config/dimension/Time",
+							"exponent": "-1"
+						}
+					],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Ratio",
+					"name": "Ratio",
+					"base": false,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": []
+	},
+	{
+		"name": "no-units-required",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": []
+	},
+	{
+		"name": "unknown-term",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Rate",
+					"name": "Rate",
+					"base": false,
+					"terms": [
+						{
+							"dimension": "ix://acme/config/dimension/Unknown",
+							"exponent": "1"
+						}
+					],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.UNRESOLVED_DIMENSION_REF",
+				"pointer": "/ir/dimensions/1/terms/0/dimension"
+			}
+		]
+	},
+	{
+		"name": "base-has-term",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Rate",
+					"name": "Rate",
+					"base": true,
+					"terms": [
+						{
+							"dimension": "ix://acme/config/dimension/Time",
+							"exponent": "1"
+						}
+					],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/dimensions/1/terms"
+			}
+		]
+	},
+	{
+		"name": "zero-exponent",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Rate",
+					"name": "Rate",
+					"base": false,
+					"terms": [
+						{
+							"dimension": "ix://acme/config/dimension/Time",
+							"exponent": "0"
+						}
+					],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/dimensions/1/terms/0/exponent"
+			}
+		]
+	},
+	{
+		"name": "plus-exponent",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Rate",
+					"name": "Rate",
+					"base": false,
+					"terms": [
+						{
+							"dimension": "ix://acme/config/dimension/Time",
+							"exponent": "+1"
+						}
+					],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/dimensions/1/terms/0/exponent"
+			}
+		]
+	},
+	{
+		"name": "repeated-term",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Rate",
+					"name": "Rate",
+					"base": false,
+					"terms": [
+						{
+							"dimension": "ix://acme/config/dimension/Time",
+							"exponent": "1"
+						},
+						{
+							"dimension": "ix://acme/config/dimension/Time",
+							"exponent": "2"
+						}
+					],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/dimensions/1/terms/1"
+			}
+		]
+	},
+	{
+		"name": "term-order",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Ratio",
+					"name": "Ratio",
+					"base": false,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Rate",
+					"name": "Rate",
+					"base": false,
+					"terms": [
+						{
+							"dimension": "ix://acme/config/dimension/Time",
+							"exponent": "1"
+						},
+						{
+							"dimension": "ix://acme/config/dimension/Ratio",
+							"exponent": "1"
+						}
+					],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/dimensions/2/terms/1"
+			}
+		]
+	},
+	{
+		"name": "one-scc-two-cycles",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": false,
+					"terms": [
+						{
+							"dimension": "ix://acme/config/dimension/Rate",
+							"exponent": "1"
+						},
+						{
+							"dimension": "ix://acme/config/dimension/Ratio",
+							"exponent": "1"
+						}
+					],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Rate",
+					"name": "Rate",
+					"base": false,
+					"terms": [
+						{
+							"dimension": "ix://acme/config/dimension/Time",
+							"exponent": "1"
+						}
+					],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Ratio",
+					"name": "Ratio",
+					"base": false,
+					"terms": [
+						{
+							"dimension": "ix://acme/config/dimension/Time",
+							"exponent": "1"
+						}
+					],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/dimensions/0/terms/0"
+			}
+		]
+	},
+	{
+		"name": "dimension-self-cycle",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": false,
+					"terms": [
+						{
+							"dimension": "ix://acme/config/dimension/Time",
+							"exponent": "1"
+						}
+					],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/dimensions/0/terms/0"
+			}
+		]
+	},
+	{
+		"name": "unit-self-cycle",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/ms",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/units/1/target"
+			}
+		]
+	},
+	{
+		"name": "second-root",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/seconds",
+					"name": "seconds",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/units/2"
+			}
+		]
+	},
+	{
+		"name": "zero-root-once",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "0",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/units/0/scale"
+			}
+		]
+	},
+	{
+		"name": "wrong-unit-identity",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/msec",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/units/1/identity"
+			}
+		]
+	},
+	{
+		"name": "wrong-dimension-identity",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Duration",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Duration",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Duration",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/dimensions/0/identity"
+			}
+		]
+	},
+	{
+		"name": "duplicate-dimension",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.DUPLICATE_IDENTITY",
+				"pointer": "/ir/dimensions/1/identity"
+			}
+		]
+	},
+	{
+		"name": "cross-dimension-target",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/dimension/Length",
+					"name": "Length",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/m",
+					"scale": "1/1000",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/m",
+					"name": "m",
+					"dimension": "ix://acme/config/dimension/Length",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/units/1/target"
+			}
+		]
+	},
+	{
+		"name": "cycle-and-zero-both",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"target": "ix://acme/config/unit/ms"
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "0",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/units/0/target"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_UNIT_GRAPH",
+				"pointer": "/ir/units/1/scale"
+			}
+		]
+	},
+	{
+		"name": "bad-offset-'1\\n'",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "1\n",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/units/1/offset"
+			}
+		]
+	},
+	{
+		"name": "bad-offset-'1\\r'",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "1\r",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/units/1/offset"
+			}
+		]
+	},
+	{
+		"name": "bad-offset-' 1'",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": " 1",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/units/1/offset"
+			}
+		]
+	},
+	{
+		"name": "bad-offset-'1 '",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "1 ",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/units/1/offset"
+			}
+		]
+	},
+	{
+		"name": "bad-offset-'١'",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "١",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/units/1/offset"
+			}
+		]
+	},
+	{
+		"name": "bad-offset-'2/4'",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "2/4",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/units/1/offset"
+			}
+		]
+	},
+	{
+		"name": "bad-offset-'1/1'",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "1/1",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/units/1/offset"
+			}
+		]
+	},
+	{
+		"name": "bad-offset-'0/5'",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "0/5",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/units/1/offset"
+			}
+		]
+	},
+	{
+		"name": "bad-offset-'-0'",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "-0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/units/1/offset"
+			}
+		]
+	},
+	{
+		"name": "bad-offset-'1.5'",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "1.5",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/units/1/offset"
+			}
+		]
+	},
+	{
+		"name": "negative-i128-min",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "-170141183460469231731687303715884105728",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": []
+	},
+	{
+		"name": "positive-i128-max",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/1000",
+					"offset": "170141183460469231731687303715884105727",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": []
+	},
+	{
+		"name": "denominator-overflow",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Integer",
+					"displayName": "Integer",
+					"kind": "scalar",
+					"scalar": "integer",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject"
+				}
+			],
+			"occurrences": [],
+			"extensions": [],
+			"dimensions": [
+				{
+					"identity": "ix://acme/config/dimension/Time",
+					"name": "Time",
+					"base": true,
+					"terms": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			],
+			"units": [
+				{
+					"identity": "ix://acme/config/unit/s",
+					"name": "s",
+					"dimension": "ix://acme/config/dimension/Time",
+					"scale": "1",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/config/unit/ms",
+					"name": "ms",
+					"dimension": "ix://acme/config/dimension/Time",
+					"target": "ix://acme/config/unit/s",
+					"scale": "1/170141183460469231731687303715884105728",
+					"offset": "0",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					}
+				}
+			]
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128",
+				"pointer": "/ir/units/1/scale"
+			}
+		]
+	}
+]

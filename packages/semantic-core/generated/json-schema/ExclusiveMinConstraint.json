@@ -8,14 +8,7 @@
 			"const": "exclusiveMin"
 		},
 		"value": {
-			"anyOf": [
-				{
-					"type": "number"
-				},
-				{
-					"type": "string"
-				}
-			]
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/ExclusiveMinConstraintValue.json"
 		}
 	},
 	"required": ["keyword", "value"],

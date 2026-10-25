@@ -134,18 +134,37 @@ pub const SC_EDGE_CATEGORY: &str =
 pub const SC_ENUM_VALUE: &str =
     include_str!("../../../packages/semantic-core/generated/json-schema/EnumValue.json");
 
+/// `EnumValueName.json`.
+pub const SC_ENUM_VALUE_NAME: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/EnumValueName.json");
+
 /// `EnumValuesConstraint.json`.
 pub const SC_ENUM_VALUES_CONSTRAINT: &str =
     include_str!("../../../packages/semantic-core/generated/json-schema/EnumValuesConstraint.json");
+
+/// `EnumValuesConstraintValues.json`.
+pub const SC_ENUM_VALUES_CONSTRAINT_VALUES: &str = include_str!(
+    "../../../packages/semantic-core/generated/json-schema/EnumValuesConstraintValues.json"
+);
 
 /// `ExclusiveMaxConstraint.json`.
 pub const SC_EXCLUSIVE_MAX_CONSTRAINT: &str = include_str!(
     "../../../packages/semantic-core/generated/json-schema/ExclusiveMaxConstraint.json"
 );
 
+/// `ExclusiveMaxConstraintValue.json`.
+pub const SC_EXCLUSIVE_MAX_CONSTRAINT_VALUE: &str = include_str!(
+    "../../../packages/semantic-core/generated/json-schema/ExclusiveMaxConstraintValue.json"
+);
+
 /// `ExclusiveMinConstraint.json`.
 pub const SC_EXCLUSIVE_MIN_CONSTRAINT: &str = include_str!(
     "../../../packages/semantic-core/generated/json-schema/ExclusiveMinConstraint.json"
+);
+
+/// `ExclusiveMinConstraintValue.json`.
+pub const SC_EXCLUSIVE_MIN_CONSTRAINT_VALUE: &str = include_str!(
+    "../../../packages/semantic-core/generated/json-schema/ExclusiveMinConstraintValue.json"
 );
 
 /// `FieldDecl.json`.
@@ -168,6 +187,10 @@ pub const SC_KERNEL_SCALAR: &str =
 pub const SC_MAX_CONSTRAINT: &str =
     include_str!("../../../packages/semantic-core/generated/json-schema/MaxConstraint.json");
 
+/// `MaxConstraintValue.json`.
+pub const SC_MAX_CONSTRAINT_VALUE: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/MaxConstraintValue.json");
+
 /// `MaxLengthConstraint.json`.
 pub const SC_MAX_LENGTH_CONSTRAINT: &str =
     include_str!("../../../packages/semantic-core/generated/json-schema/MaxLengthConstraint.json");
@@ -175,6 +198,10 @@ pub const SC_MAX_LENGTH_CONSTRAINT: &str =
 /// `MinConstraint.json`.
 pub const SC_MIN_CONSTRAINT: &str =
     include_str!("../../../packages/semantic-core/generated/json-schema/MinConstraint.json");
+
+/// `MinConstraintValue.json`.
+pub const SC_MIN_CONSTRAINT_VALUE: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/MinConstraintValue.json");
 
 /// `MinLengthConstraint.json`.
 pub const SC_MIN_LENGTH_CONSTRAINT: &str =
@@ -212,6 +239,10 @@ pub const SC_SOURCE_LOCUS: &str =
 pub const SC_TYPE_REF: &str =
     include_str!("../../../packages/semantic-core/generated/json-schema/TypeRef.json");
 
+/// `TypeRefTarget.json`.
+pub const SC_TYPE_REF_TARGET: &str =
+    include_str!("../../../packages/semantic-core/generated/json-schema/TypeRefTarget.json");
+
 /// `UniqueConstraint.json`.
 pub const SC_UNIQUE_CONSTRAINT: &str =
     include_str!("../../../packages/semantic-core/generated/json-schema/UniqueConstraint.json");
@@ -223,7 +254,7 @@ pub const SC_UNIT_SYMBOL: &str =
 /// Every embedded semantic-core schema, keyed by its filename exactly as it
 /// appears under `packages/semantic-core/generated/json-schema/` — the same
 /// names `@agent-ix/semantic-core` publishes to npm. This is the cargo route
-/// those 30 documents previously had none of.
+/// the documents previously had none of.
 pub const SEMANTIC_CORE_SCHEMAS: &[(&str, &str)] = &[
     ("ClauseLanguage.json", SC_CLAUSE_LANGUAGE),
     ("ClauseRef.json", SC_CLAUSE_REF),
@@ -234,16 +265,31 @@ pub const SEMANTIC_CORE_SCHEMAS: &[(&str, &str)] = &[
     ("DefaultKind.json", SC_DEFAULT_KIND),
     ("EdgeCategory.json", SC_EDGE_CATEGORY),
     ("EnumValue.json", SC_ENUM_VALUE),
+    ("EnumValueName.json", SC_ENUM_VALUE_NAME),
     ("EnumValuesConstraint.json", SC_ENUM_VALUES_CONSTRAINT),
+    (
+        "EnumValuesConstraintValues.json",
+        SC_ENUM_VALUES_CONSTRAINT_VALUES,
+    ),
     ("ExclusiveMaxConstraint.json", SC_EXCLUSIVE_MAX_CONSTRAINT),
+    (
+        "ExclusiveMaxConstraintValue.json",
+        SC_EXCLUSIVE_MAX_CONSTRAINT_VALUE,
+    ),
     ("ExclusiveMinConstraint.json", SC_EXCLUSIVE_MIN_CONSTRAINT),
+    (
+        "ExclusiveMinConstraintValue.json",
+        SC_EXCLUSIVE_MIN_CONSTRAINT_VALUE,
+    ),
     ("FieldDecl.json", SC_FIELD_DECL),
     ("FormatConstraint.json", SC_FORMAT_CONSTRAINT),
     ("Identifier.json", SC_IDENTIFIER),
     ("KernelScalar.json", SC_KERNEL_SCALAR),
     ("MaxConstraint.json", SC_MAX_CONSTRAINT),
+    ("MaxConstraintValue.json", SC_MAX_CONSTRAINT_VALUE),
     ("MaxLengthConstraint.json", SC_MAX_LENGTH_CONSTRAINT),
     ("MinConstraint.json", SC_MIN_CONSTRAINT),
+    ("MinConstraintValue.json", SC_MIN_CONSTRAINT_VALUE),
     ("MinLengthConstraint.json", SC_MIN_LENGTH_CONSTRAINT),
     ("Multiplicity.json", SC_MULTIPLICITY),
     ("NonEmptyConstraint.json", SC_NON_EMPTY_CONSTRAINT),
@@ -253,6 +299,7 @@ pub const SEMANTIC_CORE_SCHEMAS: &[(&str, &str)] = &[
     ("SemanticId.json", SC_SEMANTIC_ID),
     ("SourceLocus.json", SC_SOURCE_LOCUS),
     ("TypeRef.json", SC_TYPE_REF),
+    ("TypeRefTarget.json", SC_TYPE_REF_TARGET),
     ("UniqueConstraint.json", SC_UNIQUE_CONSTRAINT),
     ("UnitSymbol.json", SC_UNIT_SYMBOL),
 ];
@@ -269,6 +316,47 @@ pub fn semantic_core_by_name(name: &str) -> Option<&'static str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn every_generated_semantic_core_document_is_embedded_byte_exact() {
+        let directory = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../packages/semantic-core/generated/json-schema");
+        let mut generated = std::collections::BTreeSet::new();
+        let mut missing = Vec::new();
+        for entry in std::fs::read_dir(directory).expect("generated schema directory") {
+            let path = entry.expect("generated schema entry").path();
+            if path
+                .extension()
+                .is_some_and(|extension| extension == "json")
+            {
+                let name = path.file_name().unwrap().to_str().unwrap().to_owned();
+                generated.insert(name.clone());
+                match semantic_core_by_name(&name) {
+                    Some(embedded) => assert_eq!(
+                        embedded.as_bytes(),
+                        std::fs::read(path).expect("generated schema bytes"),
+                        "{name} differs from its generated source"
+                    ),
+                    None => missing.push(name),
+                }
+            }
+        }
+        missing.sort();
+        assert!(
+            missing.is_empty(),
+            "unshipped generated schemas: {missing:?}"
+        );
+        let embedded: std::collections::BTreeSet<_> = SEMANTIC_CORE_SCHEMAS
+            .iter()
+            .map(|(name, _)| (*name).to_owned())
+            .collect();
+        assert_eq!(
+            embedded.len(),
+            SEMANTIC_CORE_SCHEMAS.len(),
+            "duplicate names"
+        );
+        assert_eq!(generated, embedded, "generated and embedded schema census");
+    }
 
     #[test]
     fn every_embedded_schema_is_well_formed_json_with_a_matching_id() {
@@ -319,5 +407,27 @@ mod tests {
             Some(SC_CLAUSE_LANGUAGE)
         );
         assert_eq!(semantic_core_by_name("does-not-exist.json"), None);
+    }
+
+    #[test]
+    fn every_semantic_core_ref_names_an_embedded_document() {
+        const BASE: &str = "https://schemas.agent-ix.org/semantic-core/";
+        for (name, text) in SEMANTIC_CORE_SCHEMAS {
+            for (at, _) in text.match_indices("\"$ref\"") {
+                let rest = &text[at..];
+                let Some(start) = rest.find(BASE) else {
+                    continue;
+                };
+                let after = &rest[start + BASE.len()..];
+                let end = after.find('"').expect("a $ref string is terminated");
+                let (_, file) = after[..end]
+                    .split_once('/')
+                    .expect("a semantic-core $ref has a version segment");
+                assert!(
+                    semantic_core_by_name(file).is_some(),
+                    "{name} refs {file}, which is not embedded"
+                );
+            }
+        }
     }
 }

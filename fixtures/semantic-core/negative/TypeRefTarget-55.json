@@ -1,0 +1,7 @@
+{
+	"model": "TypeRefTarget",
+	"reason": "kind outside the closed adjacent variants",
+	"value": {
+		"kind": "not-a-variant"
+	}
+}

@@ -49,9 +49,6 @@ const DECLARED = {
 	UNSUPPORTED_SCALAR: blocking(
 		'a kind: "scalar" names a value outside the nine kernel scalars',
 	),
-	UNDECLARED_WIRE_FORM: blocking(
-		"a construct's JSON wire form is declared by no published artifact — the bytes kernel scalar at this revision",
-	),
 	UNSUPPORTED_MULTIPLICITY: blocking(
 		"a field's multiplicity.upper is 0, so the member may never be present and has no Rust form that serde round-trips",
 	),

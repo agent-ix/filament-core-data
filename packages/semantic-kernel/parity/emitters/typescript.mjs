@@ -23,7 +23,7 @@ const exercised = (document) =>
 /** One answer per golden document, in corpus order. */
 export function decide(golden = loadGolden()) {
 	return golden.map((document) => {
-		// The emitter must reach whichever of the 30 generated validators the
+		// The emitter must reach whichever generated validator the
 		// document names. Naming them statically here would be a second
 		// hand-maintained list of the declarations the inventory already owns,
 		// and a list that drifted would excuse a declaration from measurement.

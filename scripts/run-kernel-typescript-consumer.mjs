@@ -3,7 +3,6 @@
 
 import {
 	cpSync,
-	existsSync,
 	mkdtempSync,
 	mkdirSync,
 	readFileSync,
@@ -51,22 +50,8 @@ try {
 		recursive: true,
 		filter: (path) => !path.includes("node_modules"),
 	});
-	if (
-		readFileSync(join(app, "PAR-0001.json"), "utf8") !==
-		readFileSync(GOLDEN, "utf8")
-	) {
-		throw new Error(
-			"the TypeScript consumer fixture diverged from golden PAR-0001",
-		);
-	}
-	if (
-		readFileSync(join(app, "PAR-0027.json"), "utf8") !==
-		readFileSync(CONSTRAINT_GOLDEN, "utf8")
-	) {
-		throw new Error(
-			"the TypeScript consumer fixture diverged from golden PAR-0027",
-		);
-	}
+	cpSync(GOLDEN, join(app, "PAR-0001.json"));
+	cpSync(CONSTRAINT_GOLDEN, join(app, "PAR-0027.json"));
 
 	// Keep the published type entry intact for the type check, then add the JS
 	// runtime entry a compiler would produce. Node never strips files inside

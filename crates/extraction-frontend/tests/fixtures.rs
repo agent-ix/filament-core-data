@@ -222,6 +222,7 @@ fn diagnostics_bytes(diagnostics: &[Diagnostic]) -> Vec<u8> {
     canonical_bytes(&serde_json::to_value(diagnostics).expect("serialize"))
 }
 
+#[trace("TC-1288", "FR-091-AC-13")]
 #[trace("TC-1288", "FR-098-AC-4")]
 #[test]
 fn tc_1288_every_negative_emits_its_code_at_the_golden_locus_and_only_its_pinned_companions() {
@@ -419,6 +420,7 @@ fn compare_golden(name: &Path, committed: &Path, into: &Path) -> Result<(), Stri
     Ok(())
 }
 
+#[trace("TC-1286", "FR-091-AC-13")]
 #[trace("TC-1286", "FR-098-AC-2")]
 #[test]
 fn tc_1286_regenerating_every_golden_into_the_target_directory_reproduces_it_byte_for_byte() {
