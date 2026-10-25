@@ -380,7 +380,7 @@ fn typed_md(id: &str, title: &str, doc_type: &str, object: Option<&str>) -> Stri
 
 #[trace("TC-1870", "FR-091-AC-15")]
 #[test]
-fn tc_1841_composed_document_is_never_extracted_even_with_object() {
+fn tc_1870_composed_document_is_never_extracted_even_with_object() {
     let dir = tempfile::tempdir().expect("tempdir");
     write(
         &dir.path().join("spec/spec.md"),
@@ -449,7 +449,7 @@ fn tc_1841_composed_document_is_never_extracted_even_with_object() {
 
 #[trace("TC-1870", "FR-091-AC-15")]
 #[test]
-fn tc_1841_unknown_object_diagnoses_only_a_non_composed_document() {
+fn tc_1870_unknown_object_diagnoses_only_a_non_composed_document() {
     let dir = tempfile::tempdir().expect("tempdir");
     write(
         &dir.path().join("spec/spec.md"),
