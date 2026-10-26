@@ -106,6 +106,14 @@ fn canonical_rational(text: &str) -> Result<RationalKind, NumericError> {
     }
 }
 
+/// Whether `text` is a canonical `n` or `n/d` rational within `i128`: `Ok`
+/// holds whether it is negative, `Err` the diagnostic code that refuses it.
+pub(crate) fn rational_operand(text: &str) -> Result<bool, &'static str> {
+    canonical_rational(text)
+        .map(|_| text.starts_with('-'))
+        .map_err(NumericError::code)
+}
+
 fn text<'a>(node: &'a Json, member: &str) -> Option<&'a str> {
     node.get(member).and_then(Json::as_str)
 }

@@ -271,6 +271,36 @@ describe("SysML v2 textual target", () => {
 		expect(result.files[0].text).toContain("attribute 'attribute'");
 	});
 
+	it("refuses an alias of a clock or a quantity instead of aliasing the alias to itself", () => {
+		const cases = JSON.parse(
+			readFileSync(
+				resolve(root, "fixtures/semantic/v1/clock-units/clock-cases.json"),
+				"utf8",
+			),
+		) as { name: string; document: TestIr }[];
+		for (const [name, target] of [
+			["clock-alias", "ix://quire/native/Clock"],
+			["quantity-alias", "ix://quire/unit/ms"],
+		]) {
+			const ir = cases.find((one) => one.name === name)?.document;
+			const result = sysmlBackend.generate({ ir } as never);
+			expect(result.state, name).toBe("unsupported");
+			expect(result.files, name).toEqual([]);
+			expect(
+				result.diagnostics.map((d: { code: string; message: string }) => [
+					d.code,
+					d.message,
+				]),
+				name,
+			).toEqual([
+				[
+					"agent-ix.sysml-target.UNSUPPORTED_CONSTRUCT",
+					`ix://acme/config/Config: alias target ${target} names no declared type and has no SysML mapping`,
+				],
+			]);
+		}
+	});
+
 	/** Trace: FR-138-AC-5, FR-138-AC-6. */
 	it("refuses an unmapped source-located construct without a truncated file", () => {
 		const ir = numericDocument();

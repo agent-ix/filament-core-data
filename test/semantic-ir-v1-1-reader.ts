@@ -282,8 +282,7 @@ function checkMultiplicity(
 
 const CLOCK_REFERENCE = "ix://quire/native/Clock";
 const QUANTITY_REFERENCE = "ix://quire/unit/";
-const CLOCK_OUTSIDE_FIELD = "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD";
-const INVALID_CLOCK_FIELD = "agent-ix.semantic-ir.INVALID_CLOCK_FIELD";
+const INVALID_CLOCK_MEMBER = "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER";
 const INVALID_QUANTITY_MEMBER = "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER";
 const INVALID_UNIT_GRAPH = "agent-ix.semantic-ir.INVALID_UNIT_GRAPH";
 const UNRESOLVED_DIMENSION_REF =
@@ -310,25 +309,84 @@ function quantityReference(reference: unknown): boolean {
 	);
 }
 
+/**
+ * What a type reference makes of the member or constraint subject holding it:
+ * a clock or a well-formed quantity, directly or through aliases and a field's
+ * own `typeRef`; or "malformed", a quantity reference that is not well formed.
+ */
+const specialMemo = new WeakMap<
+	Map<string, JsonObject>,
+	Map<string, "clock" | "quantity" | "malformed" | undefined>
+>();
+function specialKind(
+	types: Map<string, JsonObject>,
+	fields: Map<string, JsonObject>,
+	typeRef: unknown,
+): "clock" | "quantity" | "malformed" | undefined {
+	let memo = specialMemo.get(types);
+	if (!memo) {
+		memo = new Map();
+		specialMemo.set(types, memo);
+	}
+	const walked: string[] = [];
+	const seen = new Set<string>();
+	let reference = typeRef;
+	let found: "clock" | "quantity" | "malformed" | undefined;
+	while (typeof reference === "string" && !seen.has(reference)) {
+		if (reference === CLOCK_REFERENCE) {
+			found = "clock";
+			break;
+		}
+		if (quantityReference(reference)) {
+			found = "quantity";
+			break;
+		}
+		if (reference.startsWith(QUANTITY_REFERENCE)) {
+			found = "malformed";
+			break;
+		}
+		if (memo.has(reference)) {
+			found = memo.get(reference);
+			break;
+		}
+		seen.add(reference);
+		walked.push(reference);
+		if (nativeScalar(reference) !== undefined) break;
+		const field = fields.get(reference);
+		if (field) {
+			reference = field.typeRef;
+			continue;
+		}
+		const definition = types.get(reference);
+		if (!definition || definition.kind !== "alias") break;
+		reference = definition.target;
+	}
+	for (const step of walked) memo.set(step, found);
+	return found;
+}
+
 /** Returns true when the type position has its own Clock or quantity rules. */
 function checkSpecialMember(
 	member: JsonObject,
 	path: string,
-	fieldPosition: boolean,
+	types: Map<string, JsonObject>,
+	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
 ): boolean {
-	const clock = member.typeRef === CLOCK_REFERENCE;
-	const quantity = quantityReference(member.typeRef);
-	if (clock && !fieldPosition) {
-		diagnostics.push({
-			code: CLOCK_OUTSIDE_FIELD,
-			path: `${path}.typeRef`,
-			message: "Clock is a field type only",
-		});
+	const special = specialKind(types, fields, member.typeRef);
+	if (special === undefined) return false;
+	if (special === "malformed") {
+		// Through an alias the malformed reference is refused at the alias.
+		if (String(member.typeRef).startsWith(QUANTITY_REFERENCE))
+			diagnostics.push({
+				code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+				path: `${path}.typeRef`,
+				message: "a quantity type reference must be well formed",
+			});
 		return true;
 	}
-	if (!clock && !quantity) return false;
-	const code = clock ? INVALID_CLOCK_FIELD : INVALID_QUANTITY_MEMBER;
+	const clock = special === "clock";
+	const code = clock ? INVALID_CLOCK_MEMBER : INVALID_QUANTITY_MEMBER;
 	const emit = (name: string) =>
 		diagnostics.push({
 			code,
@@ -337,27 +395,45 @@ function checkSpecialMember(
 		});
 	for (const name of ["unit", "decimal", "textProfile", "defaultValue"])
 		if (Object.hasOwn(member, name)) emit(name);
-	if (
-		(clock || Object.hasOwn(member, "defaultKind")) &&
-		member.defaultKind !== "none"
-	)
+	if (Object.hasOwn(member, "defaultKind") && member.defaultKind !== "none")
 		emit("defaultKind");
 	if (Array.isArray(member.constraints) && member.constraints.length > 0)
 		emit("constraints");
-	if (clock) {
-		const m = member.multiplicity;
-		if (
-			isObject(m) &&
-			(m.lower !== 1 ||
-				m.upper !== 1 ||
-				m.ordered !== false ||
-				m.unique !== false)
-		)
-			emit("multiplicity");
-		if (member.presence !== "required") emit("presence");
-		if (member.nullable !== false) emit("nullable");
-	}
+	if (clock && member.nullable !== false) emit("nullable");
 	return true;
+}
+
+/** A bound on a clock or a quantity: `min`/`max` with an exact rational. */
+function checkSpecialConstraint(
+	constraint: JsonObject,
+	path: string,
+	special: "clock" | "quantity",
+	diagnostics: Diagnostic[],
+): void {
+	const keyword = String(constraint.keyword);
+	if (keyword !== "min" && keyword !== "max") {
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
+			path: `${path}.keyword`,
+			message: `${keyword} does not bound a ${special}`,
+		});
+		return;
+	}
+	const operands = isObject(constraint.operands) ? constraint.operands : {};
+	const bound = graphRational(operands.value);
+	const at = `${path}.operands.value`;
+	if ("error" in bound && bound.error === "overflow")
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128",
+			path: at,
+			message: "the bound is outside the exact i128 domain",
+		});
+	else if ("error" in bound || (special === "clock" && bound.value < 0n))
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.INVALID_OPERAND",
+			path: at,
+			message: `a ${special} bound is a canonical rational`,
+		});
 }
 
 type ExactInteger = { value: bigint } | { error: "canonical" | "overflow" };
@@ -637,9 +713,8 @@ function checkField(
 	types: Map<string, JsonObject>,
 	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
-	fieldPosition = false,
 ): void {
-	const special = checkSpecialMember(field, path, fieldPosition, diagnostics);
+	const special = checkSpecialMember(field, path, types, fields, diagnostics);
 	if (special) {
 		if (field.multiplicity === undefined)
 			diagnostics.push({
@@ -647,7 +722,7 @@ function checkField(
 				path: `${path}.multiplicity`,
 				message: "a member declares its multiplicity",
 			});
-		else if (field.typeRef !== CLOCK_REFERENCE)
+		else
 			checkMultiplicity(
 				field.multiplicity,
 				`${path}.multiplicity`,
@@ -723,23 +798,15 @@ function checkConstraint(
 	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
 ): void {
-	if (constraint.appliesTo === CLOCK_REFERENCE) {
-		diagnostics.push({
-			code: CLOCK_OUTSIDE_FIELD,
-			path: `${path}.appliesTo`,
-			message: "Clock is a field type only",
-		});
-		return;
-	}
-	if (
-		typeof constraint.appliesTo === "string" &&
-		constraint.appliesTo.startsWith(QUANTITY_REFERENCE)
-	) {
-		diagnostics.push({
-			code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
-			path: `${path}.appliesTo`,
-			message: "quantity reference is a field, parameter or result type only",
-		});
+	const special = specialKind(types, fields, constraint.appliesTo);
+	if (special === "malformed") {
+		// Through an alias the malformed reference is refused at the alias.
+		if (String(constraint.appliesTo).startsWith(QUANTITY_REFERENCE))
+			diagnostics.push({
+				code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+				path: `${path}.appliesTo`,
+				message: "a quantity type reference must be well formed",
+			});
 		return;
 	}
 	const keyword = String(constraint.keyword);
@@ -750,6 +817,10 @@ function checkConstraint(
 			path: `${path}.keyword`,
 			message: `unknown keyword ${keyword}`,
 		});
+		return;
+	}
+	if (special !== undefined) {
+		checkSpecialConstraint(constraint, path, special, diagnostics);
 		return;
 	}
 	const resolved = resolveKind(types, constraint.appliesTo, fields);
@@ -838,40 +909,35 @@ function checkTypeDefinition(
 	lockExports: Set<string>,
 	diagnostics: Diagnostic[],
 ): void {
-	for (const member of ["target", "items", "values"]) {
-		if (definition[member] === CLOCK_REFERENCE)
-			diagnostics.push({
-				code: CLOCK_OUTSIDE_FIELD,
-				path: `${path}.${member}`,
-				message: "Clock is a field type only",
-			});
-		else if (
-			typeof definition[member] === "string" &&
-			definition[member].startsWith(QUANTITY_REFERENCE)
+	const refuseMalformed = (reference: unknown, at: string) => {
+		if (
+			typeof reference === "string" &&
+			reference.startsWith(QUANTITY_REFERENCE) &&
+			!quantityReference(reference)
 		)
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
-				path: `${path}.${member}`,
-				message: "quantity reference is a field, parameter or result type only",
+				path: at,
+				message: "a quantity type reference must be well formed",
 			});
-	}
-	asArray(definition.variants).forEach((variant, index) => {
-		if (variant.payloadType === CLOCK_REFERENCE)
-			diagnostics.push({
-				code: CLOCK_OUTSIDE_FIELD,
-				path: `${path}.variants.${index}.payloadType`,
-				message: "Clock is a field type only",
-			});
-		else if (
-			typeof variant.payloadType === "string" &&
-			variant.payloadType.startsWith(QUANTITY_REFERENCE)
-		)
-			diagnostics.push({
-				code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
-				path: `${path}.variants.${index}.payloadType`,
-				message: "quantity reference is a field, parameter or result type only",
-			});
-	});
+	};
+	for (const member of ["target", "items", "values"])
+		refuseMalformed(definition[member], `${path}.${member}`);
+	if (
+		definition.kind === "reference" &&
+		specialKind(types, fields, definition.target) === "quantity"
+	)
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+			path: `${path}.target`,
+			message: "a reference names an object and a quantity has no identity",
+		});
+	asArray(definition.variants).forEach((variant, index) =>
+		refuseMalformed(
+			variant.payloadType,
+			`${path}.variants.${index}.payloadType`,
+		),
+	);
 	const isRecord = isEdgeKind(definition.kind);
 	if (definition.kind === "scalar" && definition.scalar === "number") {
 		diagnostics.push({
@@ -882,14 +948,7 @@ function checkTypeDefinition(
 		});
 	}
 	for (const [index, field] of asArray(definition.fields).entries())
-		checkField(
-			field,
-			`${path}.fields.${index}`,
-			types,
-			fields,
-			diagnostics,
-			true,
-		);
+		checkField(field, `${path}.fields.${index}`, types, fields, diagnostics);
 	for (const [index, constraint] of asArray(definition.constraints).entries())
 		checkConstraint(
 			constraint,
@@ -1017,7 +1076,8 @@ function checkTypeDefinition(
 			const special = checkSpecialMember(
 				operation.returns,
 				`${path}.operations.${index}.returns`,
-				false,
+				types,
+				fields,
 				diagnostics,
 			);
 			if (!special && !resolveKind(types, operation.returns.typeRef)) {

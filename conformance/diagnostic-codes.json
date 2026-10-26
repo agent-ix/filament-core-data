@@ -423,24 +423,13 @@
 			"exercisedBy": "test:TC-1748"
 		},
 		{
-			"code": "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD",
+			"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 			"provenance": "minted",
 			"decidedBy": "cross-field",
 			"sources": [
 				"spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md"
 			],
-			"rule": "Clock is used as a type in a position other than a definition field.",
-			"citation": "then the reader SHALL refuse",
-			"exercisedBy": "test:TC-1843"
-		},
-		{
-			"code": "agent-ix.semantic-ir.INVALID_CLOCK_FIELD",
-			"provenance": "minted",
-			"decidedBy": "cross-field",
-			"sources": [
-				"spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md"
-			],
-			"rule": "A Clock field violates one of its required shape members.",
+			"rule": "A clock member (a field, parameter or result, or one typed by an alias of Clock) violates one of its required shape members.",
 			"citation": "once for each member that breaks",
 			"exercisedBy": "test:TC-1843"
 		},

@@ -32,11 +32,18 @@ pub struct Finding {
 /// Collects schema-layer defects.
 pub struct Findings {
     items: Vec<Finding>,
+    /// Identities of the core aliases whose target chain reaches a clock or a
+    /// well-formed quantity type reference: a member typed by one is a
+    /// clock or quantity member, as one typed by the reference itself.
+    special_aliases: std::collections::HashSet<String>,
 }
 
 impl Findings {
     fn new() -> Self {
-        Findings { items: Vec::new() }
+        Findings {
+            items: Vec::new(),
+            special_aliases: std::collections::HashSet::new(),
+        }
     }
 
     fn push(&mut self, pointer: &str, message: impl Into<String>) {
@@ -854,6 +861,7 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
         let types_at = child(at, "types");
         if expect_array(types, &types_at, "types", f) {
             let items = types.as_array().unwrap_or(&[]);
+            f.special_aliases = special_alias_identities(items);
             if items.is_empty() {
                 f.push(&types_at, "a document declares at least one type");
             }
@@ -1661,12 +1669,62 @@ pub(crate) fn is_quantity_type_ref(identity: &str) -> bool {
         && parts.all(|part| unit_name(part) || package_segment(part))
 }
 
-fn special_member_shape(field: &Json) -> bool {
+fn is_special_type_ref(identity: &str) -> bool {
+    identity == "ix://quire/native/Clock" || is_quantity_type_ref(identity)
+}
+
+/// The core aliases whose `target` chain reaches a clock or a well-formed
+/// quantity type reference.
+fn special_alias_identities(types: &[Json]) -> std::collections::HashSet<String> {
+    let targets: std::collections::HashMap<&str, &str> = types
+        .iter()
+        .filter(|definition| definition.get("kind").and_then(Json::as_str) == Some("alias"))
+        .filter_map(|definition| {
+            Some((
+                definition.get("identity").and_then(Json::as_str)?,
+                definition.get("target").and_then(Json::as_str)?,
+            ))
+        })
+        .collect();
+    // Each chain is walked once: every alias on it shares the verdict.
+    let mut verdict: std::collections::HashMap<&str, bool> = std::collections::HashMap::new();
+    for &start in targets.keys() {
+        let mut path: Vec<&str> = Vec::new();
+        let mut on_path: std::collections::HashSet<&str> = std::collections::HashSet::new();
+        let mut at = start;
+        let reaches = loop {
+            if let Some(&known) = verdict.get(at) {
+                break known;
+            }
+            let Some(&next) = targets.get(at) else {
+                break false;
+            };
+            if !on_path.insert(at) {
+                break false;
+            }
+            path.push(at);
+            if is_special_type_ref(next) {
+                break true;
+            }
+            at = next;
+        };
+        for step in path {
+            verdict.insert(step, reaches);
+        }
+    }
+    verdict
+        .into_iter()
+        .filter(|(_, reaches)| *reaches)
+        .map(|(identity, _)| identity.to_string())
+        .collect()
+}
+
+fn special_member_shape(field: &Json, f: &Findings) -> bool {
     field
         .get("typeRef")
         .and_then(Json::as_str)
         .is_some_and(|identity| {
-            identity == "ix://quire/native/Clock" || is_quantity_type_ref(identity)
+            is_special_type_ref(identity) || f.special_aliases.contains(identity)
         })
 }
 
@@ -1724,7 +1782,7 @@ fn field_schema(field: &Json, at: &str, f: &mut Findings) {
         f,
     );
     let default_kind = field.get("defaultKind").and_then(Json::as_str);
-    match default_kind.filter(|_| !special_member_shape(field)) {
+    match default_kind.filter(|_| !special_member_shape(field, f)) {
         Some("none") if field.has("defaultValue") => f.push(
             at,
             "a field whose defaultKind is none carries no defaultValue",
@@ -1751,7 +1809,7 @@ fn field_schema(field: &Json, at: &str, f: &mut Findings) {
         "a unit is a non-empty run of printable ASCII",
         f,
     );
-    if special_member_shape(field) {
+    if special_member_shape(field, f) {
         expect_string(
             field.get("textProfile"),
             &child(at, "textProfile"),

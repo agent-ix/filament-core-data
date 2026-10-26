@@ -162,15 +162,15 @@ describe("FR-146 Clock and quantity positions", () => {
 		];
 		expect(validateIrDocument(document)).toEqual([]);
 		const diagnostics = [...readContractIr(document)];
-		expect(diagnostics).toHaveLength(9);
+		expect(diagnostics).toHaveLength(8);
+		const members = diagnostics.filter(
+			(d) => d.code === "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+		);
+		expect(members).toHaveLength(7);
 		expect(
-			diagnostics.every(
-				(d) => d.code === "agent-ix.semantic-ir.INVALID_CLOCK_FIELD",
-			),
-		).toBe(true);
+			diagnostics.filter((d) => !members.includes(d)).map((d) => d.code),
+		).toEqual(["agent-ix.semantic-ir.INVALID_MULTIPLICITY"]);
 		for (const member of [
-			"multiplicity",
-			"presence",
 			"nullable",
 			"defaultKind",
 			"defaultValue",
@@ -180,10 +180,40 @@ describe("FR-146 Clock and quantity positions", () => {
 			"constraints",
 		])
 			expect(
-				diagnostics.filter((d) =>
+				members.filter((d) =>
 					d.message.startsWith(`/ir/types/0/fields/0/${member}:`),
 				),
 			).toHaveLength(1);
+	});
+	it("TC-1843 gives a clock member the multiplicity and presence of any member", () => {
+		// FR-146-AC-2, FR-146-AC-16: exact reader assertions below.
+		for (const [multiplicity, presence] of [
+			[{ lower: 0, upper: 1, ordered: false, unique: false }, "optional"],
+			[{ lower: 0, upper: 3, ordered: true, unique: false }, "required"],
+			[{ lower: 0, upper: 3, ordered: false, unique: true }, "required"],
+			[{ lower: 0, ordered: true, unique: false }, "required"],
+		] as const) {
+			const document = clockDocument();
+			const field = document.types[0].fields[0];
+			field.multiplicity = { ...multiplicity };
+			field.presence = presence;
+			expect(validateIrDocument(document)).toEqual([]);
+			expect([...readContractIr(document)]).toEqual([]);
+			expect(readSemanticIr(document)).toEqual([]);
+		}
+		const reversed = clockDocument();
+		reversed.types[0].fields[0].multiplicity = {
+			lower: 3,
+			upper: 1,
+			ordered: false,
+			unique: false,
+		};
+		expect([...readContractIr(reversed)].map((d) => d.code)).toEqual([
+			"agent-ix.semantic-ir.INVALID_MULTIPLICITY",
+		]);
+		expect(readSemanticIr(reversed).map((d) => d.code)).toEqual([
+			"agent-ix.semantic-ir.INVALID_MULTIPLICITY",
+		]);
 	});
 	it("TC-1847 admits well-formed quantities without locally declared units", () => {
 		// FR-146-AC-6: exact reader assertions below.
@@ -213,8 +243,8 @@ describe("FR-146 Clock and quantity positions", () => {
 });
 
 describe("FR-146 Clock placement and quantity member adverse cases", () => {
-	it("TC-1843 refuses Clock at each non-field type position", () => {
-		// FR-146-AC-2: exact reader assertions below.
+	it("TC-1843 admits Clock at each non-field type position", () => {
+		// FR-146-AC-2, FR-146-AC-21: exact reader assertions below.
 		for (const [kind, member] of [
 			["alias", "target"],
 			["reference", "target"],
@@ -226,44 +256,65 @@ describe("FR-146 Clock placement and quantity member adverse cases", () => {
 			node.kind = kind;
 			delete node.fields;
 			node[member] = "ix://quire/native/Clock";
-			expect(
-				[...readContractIr(document)]
-					.filter((d) => d.code === "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD")
-					.map((d) => d.message),
-			).toEqual([`/ir/types/0/${member}: Clock is field-only`]);
+			expect(validateIrDocument(document)).toEqual([]);
+			expect([...readContractIr(document)], kind).toEqual([]);
+			expect(readSemanticIr(document), kind).toEqual([]);
 		}
 		const document = clockDocument();
 		const node = document.types[0];
 		const origin = node.origin;
-		node.operations = [
-			{
-				identity: `${node.identity}/op`,
-				name: "op",
-				params: [
+		const operation = (params: object[], returns: object) => ({
+			identity: `${node.identity}/op`,
+			name: "op",
+			params,
+			returns,
+			pre: [],
+			post: [],
+			origin,
+		});
+		const arg = {
+			...node.fields[0],
+			identity: `${node.identity}/op/arg`,
+			name: "arg",
+		};
+		const result = (multiplicity: object, nullable = false) => ({
+			typeRef: "ix://quire/native/Clock",
+			multiplicity,
+			nullable,
+		});
+		const once = { lower: 1, upper: 1, ordered: false, unique: false };
+		for (const [params, returns] of [
+			[[arg], result(once)],
+			[
+				[{ ...arg, presence: "optional", multiplicity: { ...once, lower: 0 } }],
+				result({ lower: 0, upper: 1, ordered: false, unique: false }),
+			],
+			[
+				[
 					{
-						...node.fields[0],
-						identity: `${node.identity}/op/arg`,
-						name: "arg",
+						...arg,
+						multiplicity: { lower: 0, upper: 2, ordered: true, unique: false },
 					},
 				],
-				returns: {
-					typeRef: "ix://quire/native/Clock",
-					multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
-					nullable: false,
-				},
-				pre: [],
-				post: [],
-				origin,
-			},
+				result(once),
+			],
+		] as const) {
+			node.operations = [operation([...params], returns)];
+			expect(validateIrDocument(document)).toEqual([]);
+			expect([...readContractIr(document)]).toEqual([]);
+			expect(readSemanticIr(document)).toEqual([]);
+		}
+		node.operations = [
+			operation([{ ...arg, nullable: true }], result(once, true)),
 		];
-		const diagnostics = [...readContractIr(document)];
-		expect(diagnostics.map((d) => d.code)).toEqual([
-			"agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD",
-			"agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD",
+		const refused = [...readContractIr(document)];
+		expect(refused.map((d) => d.code)).toEqual([
+			"agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+			"agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 		]);
-		expect(diagnostics.map((d) => d.message)).toEqual([
-			"/ir/types/0/operations/0/params/0/typeRef: invalid Clock member",
-			"/ir/types/0/operations/0/returns/typeRef: invalid Clock member",
+		expect(refused.map((d) => d.message.split(": ")[0])).toEqual([
+			"/ir/types/0/operations/0/params/0/nullable",
+			"/ir/types/0/operations/0/returns/nullable",
 		]);
 	});
 	it("TC-1847 retains ordinary multiplicity validation for a quantity field", () => {
@@ -347,12 +398,44 @@ describe("FR-146 shared raw graph verdicts", () => {
 	});
 });
 
+describe("FR-146 Clock in other identity members", () => {
+	it("TC-1843 keeps a relationship end's own resolution rule for Clock and raises no FR-146 code", () => {
+		// FR-146-AC-2: exact reader assertions below.
+		const document = clockDocument();
+		const node = document.types[0];
+		const end = (type: string, role?: string) => ({
+			multiplicity: { lower: 0, ordered: false, unique: false },
+			...(role ? { role } : {}),
+			type,
+		});
+		node.relationships = [
+			{
+				category: "structural",
+				composite: false,
+				direction: "source-to-target",
+				identity: `${node.identity}/link`,
+				origin: node.origin,
+				sourceEnd: end(node.identity, "owner"),
+				targetEnd: end("ix://quire/native/Clock"),
+			},
+		];
+		expect(validateIrDocument(document)).toEqual([]);
+		expect([...readContractIr(document)].map((d) => d.code)).toEqual([
+			"agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
+		]);
+		expect(readSemanticIr(document).map((d) => d.code)).toEqual([
+			"agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET",
+		]);
+	});
+});
+
 describe("FR-146 direct constraint type positions", () => {
-	it("TC-1843 and TC-1847 keep disallowed appliesTo positions independent of keyword validation", () => {
-		// FR-146-AC-2, FR-146-AC-6: exact reader assertions below.
+	it("TC-1866 and TC-1868 admit a bound on a clock or a quantity and refuse a malformed quantity", () => {
+		// FR-146-AC-21, FR-146-AC-23: exact reader assertions below.
 		for (const [typeRef, code] of [
-			["ix://quire/native/Clock", "CLOCK_OUTSIDE_FIELD"],
-			["ix://quire/unit/ms", "UNRESOLVED_TYPE_REF"],
+			["ix://quire/native/Clock", undefined],
+			["ix://quire/unit/ms", undefined],
+			["ix://quire/unit/3ms", "UNRESOLVED_TYPE_REF"],
 		] as const) {
 			const document = clockDocument();
 			const node = document.types[0];
@@ -367,12 +450,13 @@ describe("FR-146 direct constraint type positions", () => {
 				},
 			];
 			const actual = [...readContractIr(document)];
-			expect(actual.map((d) => d.code)).toEqual([
-				`agent-ix.semantic-ir.${code}`,
-			]);
-			expect(actual[0].message).toContain(
-				"/ir/types/0/constraints/0/appliesTo:",
+			expect(actual.map((d) => d.code)).toEqual(
+				code === undefined ? [] : [`agent-ix.semantic-ir.${code}`],
 			);
+			if (code !== undefined)
+				expect(actual[0].message).toContain(
+					"/ir/types/0/constraints/0/appliesTo:",
+				);
 		}
 	});
 	it("retains JSON member type failures for forbidden textProfile values", () => {

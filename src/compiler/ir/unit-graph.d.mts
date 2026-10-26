@@ -9,3 +9,6 @@ export declare function checkUnitGraph(
 		locus?: SourceLocus,
 	) => unknown,
 ): void;
+export declare function rationalOperand(
+	text: unknown,
+): { value: bigint } | { invalid: true } | { outside: true };

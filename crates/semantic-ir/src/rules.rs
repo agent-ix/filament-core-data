@@ -34,16 +34,23 @@ pub struct RuleLimits {
 /// naming one resolves against this closed set instead of `document.types`.
 pub const NATIVE_PREFIX: &str = "ix://quire/native/";
 
-/// A field-only native type reference: a clock is no IR scalar or document node.
+/// The native clock type reference: a clock is no IR scalar or document node.
 const CLOCK_TYPE_REF: &str = "ix://quire/native/Clock";
-const CLOCK_OUTSIDE_FIELD: &str = "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD";
-const INVALID_CLOCK_FIELD: &str = "agent-ix.semantic-ir.INVALID_CLOCK_FIELD";
+const INVALID_CLOCK_MEMBER: &str = "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER";
 const INVALID_QUANTITY_MEMBER: &str = "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER";
 
 // These references have position-specific rules; ordinary identity members
 // continue to use their own resolution rules.
 fn special_type_ref(identity: &str) -> bool {
     identity == CLOCK_TYPE_REF || identity.starts_with("ix://quire/unit/")
+}
+
+/// What a clock or quantity type reference, directly or through an alias
+/// chain, makes of a member or a constraint subject.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum Special {
+    Clock,
+    Quantity,
 }
 
 const INEXACT_INTEGER: &str = "agent-ix.semantic-ir.INEXACT_INTEGER";
@@ -289,6 +296,9 @@ pub struct Document<'a> {
     /// What each identity resolved to, so a chain is walked once however many
     /// fields and constraints name its head.
     resolved: RefCell<HashMap<String, Cached>>,
+    /// What each identity makes of a member that holds it (a clock, a
+    /// quantity or neither), shared along a chain for the same reason.
+    special: RefCell<HashMap<String, Option<Special>>>,
     /// Decimal policies on each identity's resolution suffix.  Alias walks
     /// are shared here so checking every edge in a long chain stays linear.
     decimal_policy_cache: RefCell<HashMap<String, DecimalPolicySummary>>,
@@ -375,6 +385,7 @@ impl<'a> Document<'a> {
             construct_aliases,
             by_feature,
             resolved: RefCell::new(HashMap::new()),
+            special: RefCell::new(HashMap::new()),
             decimal_policy_cache: RefCell::new(HashMap::new()),
         })
     }
@@ -612,6 +623,7 @@ impl<'a> Document<'a> {
         }
 
         fn fields<'a>(
+            document: &Document<'a>,
             items: &'a [Json],
             at: &str,
             kind: TypePositionKind,
@@ -628,10 +640,8 @@ impl<'a> Document<'a> {
                     });
                 }
                 let type_ref = field.get("typeRef").and_then(Json::as_str);
-                let special_member = type_ref.is_some_and(|identity| {
-                    (kind == TypePositionKind::FieldType && identity == CLOCK_TYPE_REF)
-                        || is_quantity_type_ref(identity)
-                });
+                let special_member =
+                    type_ref.is_some_and(|identity| document.special_of(identity).is_some());
                 if !special_member {
                     if let Some(items) = field.get("constraints").and_then(Json::as_array) {
                         visit_constraints(items, &child(&field_at, "constraints"), visit);
@@ -709,6 +719,7 @@ impl<'a> Document<'a> {
             }
             if let Some(fields_items) = definition.get("fields").and_then(Json::as_array) {
                 fields(
+                    self,
                     fields_items,
                     &child(&type_at, "fields"),
                     TypePositionKind::FieldType,
@@ -721,6 +732,7 @@ impl<'a> Document<'a> {
                     let operation_at = index(&operations_at, member);
                     if let Some(params) = operation.get("params").and_then(Json::as_array) {
                         fields(
+                            self,
                             params,
                             &child(&operation_at, "params"),
                             TypePositionKind::ParameterType,
@@ -774,6 +786,48 @@ impl<'a> Document<'a> {
             Cached::Native(scalar) => Some(Resolved::Native(scalar)),
             Cached::Node(position) => self.types.get(position).map(Resolved::Node),
         }
+    }
+
+    /// Whether `identity` is a clock or a well-formed quantity type
+    /// reference, or reaches one through aliases or a field's own `typeRef`.
+    fn special_of(&self, identity: &str) -> Option<Special> {
+        let mut seen = BTreeSet::new();
+        let mut walked: Vec<&str> = Vec::new();
+        let mut at = identity;
+        let found = loop {
+            if at == CLOCK_TYPE_REF {
+                break Some(Special::Clock);
+            }
+            if is_quantity_type_ref(at) {
+                break Some(Special::Quantity);
+            }
+            if let Some(known) = self.special.borrow().get(at) {
+                break *known;
+            }
+            if !seen.insert(at) || native_scalar(at).is_some() {
+                break None;
+            }
+            walked.push(at);
+            if let Some(field) = self.field_of(at) {
+                match field.get("typeRef").and_then(Json::as_str) {
+                    Some(next) => at = next,
+                    None => break None,
+                }
+                continue;
+            }
+            let Some(definition) = self.type_of(at).filter(|d| self.is_alias_definition(d)) else {
+                break None;
+            };
+            match definition.get("target").and_then(Json::as_str) {
+                Some(next) => at = next,
+                None => break None,
+            }
+        };
+        let mut memo = self.special.borrow_mut();
+        for step in walked {
+            memo.insert(step.to_string(), found);
+        }
+        found
     }
 
     /// One uncached walk; `walked` collects every alias identity it passes,
@@ -1193,23 +1247,51 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         .collect();
 
     document.type_positions(|position| {
-        let clock = position.identity == CLOCK_TYPE_REF;
         let quantity = is_quantity_type_ref(position.identity);
-        let member = matches!(position.kind, TypePositionKind::FieldType | TypePositionKind::ParameterType | TypePositionKind::OperationReturn);
-        let clock_field = clock && position.kind == TypePositionKind::FieldType;
+        let member = matches!(
+            position.kind,
+            TypePositionKind::FieldType
+                | TypePositionKind::ParameterType
+                | TypePositionKind::OperationReturn
+        );
+        let special = document.special_of(position.identity);
+        if special.is_some() && member && !special_type_ref(position.identity) {
+            special_member_shape(
+                position.subject,
+                &position.pointer,
+                special == Some(Special::Clock),
+                sink,
+            );
+            return;
+        }
         if special_type_ref(position.identity) {
             let pointer = match position.kind {
-                TypePositionKind::FieldType | TypePositionKind::ParameterType | TypePositionKind::OperationReturn => child(&position.pointer, "typeRef"),
+                TypePositionKind::FieldType
+                | TypePositionKind::ParameterType
+                | TypePositionKind::OperationReturn => child(&position.pointer, "typeRef"),
                 TypePositionKind::ConstraintSubject => child(&position.pointer, "appliesTo"),
                 _ => position.pointer.clone(),
             };
-            if clock && !clock_field {
-                sink.emit(pointer, CLOCK_OUTSIDE_FIELD, "Clock is permitted only as a field type");
-            } else if !clock_field && !(quantity && member) {
-                sink.emit(pointer, UNRESOLVED_TYPE_REF, "a quantity type reference is permitted only on a field, parameter or result and must be well formed");
+            if !quantity && position.identity != CLOCK_TYPE_REF {
+                sink.emit(
+                    pointer,
+                    UNRESOLVED_TYPE_REF,
+                    "a quantity type reference must be well formed",
+                );
+            } else if quantity && position.kind == TypePositionKind::ReferenceTarget {
+                sink.emit(
+                    pointer,
+                    UNRESOLVED_TYPE_REF,
+                    "a reference names an object and a quantity has no identity",
+                );
             }
-            if clock_field || (quantity && member) {
-                special_member_shape(position.subject, &position.pointer, clock_field, sink);
+            if member && (quantity || position.identity == CLOCK_TYPE_REF) {
+                special_member_shape(
+                    position.subject,
+                    &position.pointer,
+                    position.identity == CLOCK_TYPE_REF,
+                    sink,
+                );
             }
             return;
         }
@@ -1239,6 +1321,12 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                             "the {} target resolves to no declared type",
                             if is_alias { "alias" } else { kind }
                         ),
+                    );
+                } else if !is_alias && document.special_of(target) == Some(Special::Quantity) {
+                    sink.emit(
+                        child(&type_at, "target"),
+                        UNRESOLVED_TYPE_REF,
+                        "a reference names an object and a quantity has no identity",
                     );
                 } else if is_alias {
                     match walk_alias(document, definition, &mut alias_memo) {
@@ -1286,14 +1374,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         }
         if let Some(fields) = definition.get("fields").and_then(Json::as_array) {
             let fields_at = child(&type_at, "fields");
-            field_rules(
-                document,
-                &declared,
-                fields,
-                &fields_at,
-                FieldContext::DefinitionField,
-                sink,
-            );
+            field_rules(document, &declared, fields, &fields_at, sink);
             duplicate_names(fields, &fields_at, DUPLICATE_FIELD_NAME, sink);
         }
         if let Some(relationships) = definition.get("relationships").and_then(Json::as_array) {
@@ -1382,14 +1463,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                 let operation_at = index(&operations_at, member);
                 if let Some(params) = operation.get("params").and_then(Json::as_array) {
                     let params_at = child(&operation_at, "params");
-                    field_rules(
-                        document,
-                        &declared,
-                        params,
-                        &params_at,
-                        FieldContext::OperationParameter,
-                        sink,
-                    );
+                    field_rules(document, &declared, params, &params_at, sink);
                     duplicate_names(params, &params_at, DUPLICATE_PARAM, sink);
                 }
                 if let Some(returns) = operation.get("returns") {
@@ -1561,40 +1635,16 @@ fn duplicate_names(items: &[Json], items_at: &str, code: &'static str, sink: &mu
     }
 }
 
-#[derive(Clone, Copy, Eq, PartialEq)]
-enum FieldContext {
-    DefinitionField,
-    OperationParameter,
-}
-
 /// FR-146 special members carry no scalar value, policy, or constraints.
 fn special_member_shape(member: &Json, at: &str, clock: bool, sink: &mut Sink<'_>) {
     let code = if clock {
-        INVALID_CLOCK_FIELD
+        INVALID_CLOCK_MEMBER
     } else {
         INVALID_QUANTITY_MEMBER
     };
     let mut invalid = Vec::new();
-    if clock {
-        if let Some(multiplicity) = member.get("multiplicity") {
-            if multiplicity.get("lower").and_then(Json::as_i64) != Some(1)
-                || multiplicity.get("upper").and_then(Json::as_i64) != Some(1)
-                || multiplicity.get("ordered").and_then(Json::as_bool) != Some(false)
-                || multiplicity.get("unique").and_then(Json::as_bool) != Some(false)
-            {
-                invalid.push("multiplicity");
-            }
-        }
-        if member
-            .get("presence")
-            .and_then(Json::as_str)
-            .is_some_and(|presence| presence != "required")
-        {
-            invalid.push("presence");
-        }
-        if member.get("nullable").and_then(Json::as_bool) == Some(true) {
-            invalid.push("nullable");
-        }
+    if clock && member.get("nullable").and_then(Json::as_bool) == Some(true) {
+        invalid.push("nullable");
     }
     if member
         .get("defaultKind")
@@ -1629,7 +1679,6 @@ fn field_rules(
     declared: &HashSet<String>,
     fields: &[Json],
     fields_at: &str,
-    context: FieldContext,
     sink: &mut Sink<'_>,
 ) {
     for (member, field) in fields.iter().enumerate() {
@@ -1644,9 +1693,7 @@ fn field_rules(
                 );
             }
         }
-        let clock_field =
-            context == FieldContext::DefinitionField && type_ref == Some(CLOCK_TYPE_REF);
-        if let Some(multiplicity) = field.get("multiplicity").filter(|_| !clock_field) {
+        if let Some(multiplicity) = field.get("multiplicity") {
             let multiplicity_at = child(&field_at, "multiplicity");
             let lower = multiplicity.get("lower").and_then(Json::as_i64);
             let upper = multiplicity.get("upper").and_then(Json::as_i64);
@@ -1660,7 +1707,7 @@ fn field_rules(
                 }
             }
         }
-        if clock_field || type_ref.is_some_and(is_quantity_type_ref) {
+        if type_ref.is_some_and(|identity| document.special_of(identity).is_some()) {
             continue;
         }
         if field.has("unit") {
@@ -1889,7 +1936,13 @@ fn constraint_rules(
         None => return,
     };
     let applies = constraint.get("appliesTo").and_then(Json::as_str);
-    if applies.is_some_and(special_type_ref) {
+    if applies.is_some_and(special_type_ref)
+        && applies.and_then(|a| document.special_of(a)).is_none()
+    {
+        return;
+    }
+    if let Some(special) = applies.and_then(|identity| document.special_of(identity)) {
+        special_constraint(constraint, constraint_at, keyword, special, sink);
         return;
     }
     let resolved = applies.and_then(|identity| document.resolve(identity));
@@ -1987,6 +2040,59 @@ fn constraint_rules(
                 );
             }
         }
+    }
+}
+
+/// A constraint whose subject is a clock or a quantity: `min` and `max` with
+/// an exact rational operand (non-negative for a clock), nothing else.
+fn special_constraint(
+    constraint: &Json,
+    constraint_at: &str,
+    keyword: &str,
+    special: Special,
+    sink: &mut Sink<'_>,
+) {
+    const KEYWORDS: [&str; 11] = [
+        "min",
+        "max",
+        "exclusiveMin",
+        "exclusiveMax",
+        "minLength",
+        "maxLength",
+        "pattern",
+        "format",
+        "enumValues",
+        "nonEmpty",
+        "unique",
+    ];
+    if !KEYWORDS.contains(&keyword) {
+        return;
+    }
+    if !matches!(keyword, "min" | "max") {
+        sink.emit(
+            child(constraint_at, "keyword"),
+            CONSTRAINT_NOT_APPLICABLE,
+            "only min and max state a bound on a clock or a quantity",
+        );
+        return;
+    }
+    let value_at = child(&child(constraint_at, "operands"), "value");
+    let verdict = match constraint.get("operands").and_then(|o| o.get("value")) {
+        Some(Json::Str(text)) => crate::unit_graph::rational_operand(text),
+        _ => Err(INVALID_OPERAND),
+    };
+    match verdict {
+        Ok(true) if special == Special::Clock => sink.emit(
+            value_at,
+            INVALID_OPERAND,
+            "a clock bound is a non-negative canonical rational",
+        ),
+        Ok(_) => {}
+        Err(code) => sink.emit(
+            value_at,
+            code,
+            "a bound is a canonical rational string within i128",
+        ),
     }
 }
 

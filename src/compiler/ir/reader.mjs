@@ -1,4 +1,4 @@
-import { checkUnitGraph } from "./unit-graph.mjs";
+import { checkUnitGraph, rationalOperand } from "./unit-graph.mjs";
 /**
  * The compiler's IR reader: the cross-field rules a JSON Schema cannot express
  * (FR-050).
@@ -489,31 +489,67 @@ export function readContractIr(document, options = {}) {
 				)
 		);
 	};
-	const specialMember = (member, pointer, isField) => {
-		const clock = member.typeRef === clockRef;
-		const quantity = quantityName(member.typeRef);
+	// What a type reference makes of the member or constraint subject that
+	// holds it: a clock or a well-formed quantity, directly or through aliases
+	// and a field's own `typeRef`; or "malformed", a quantity reference that is
+	// not well formed. Aliases are core or construct-shaped.
+	const specialMemo = new Map();
+	const specialOf = (typeRef) => {
+		const walked = [];
+		const seen = new Set();
+		let ref = typeRef;
+		let found;
+		while (typeof ref === "string" && !seen.has(ref)) {
+			if (ref === clockRef) {
+				found = "clock";
+				break;
+			}
+			if (quantityName(ref)) {
+				found = "quantity";
+				break;
+			}
+			if (ref.startsWith(quantityPrefix)) {
+				found = "malformed";
+				break;
+			}
+			if (specialMemo.has(ref)) {
+				found = specialMemo.get(ref);
+				break;
+			}
+			seen.add(ref);
+			walked.push(ref);
+			if (nativeScalar(ref) !== undefined) break;
+			const field = fields.get(ref);
+			if (field) {
+				ref = field.typeRef;
+				continue;
+			}
+			const definition = types.get(ref);
+			if (!definition || !isAliasShaped(definition)) break;
+			ref = definition.target;
+		}
+		for (const step of walked) specialMemo.set(step, found);
+		return found;
+	};
+	const specialMember = (member, pointer) => {
+		const special = specialOf(member.typeRef);
+		if (special === undefined) return false;
+		const clock = special === "clock";
 		const emit = (code, name) =>
 			raise(
 				code,
 				`/ir${pointer}/${name}: invalid ${clock ? "Clock" : "quantity"} member`,
 				locusOf(member),
 			);
-		if (clock && !isField) {
-			emit(DIAGNOSTIC_CODES.CLOCK_OUTSIDE_FIELD, "typeRef");
+		if (special === "malformed") {
+			// An alias that reaches a malformed reference is refused at the
+			// alias target; only a direct malformed reference is refused here.
+			if (member.typeRef.startsWith(quantityPrefix))
+				emit(DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF, "typeRef");
 			return true;
 		}
-		if (!clock && !quantity) {
-			if (
-				typeof member.typeRef === "string" &&
-				member.typeRef.startsWith(quantityPrefix)
-			) {
-				emit(DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF, "typeRef");
-				return true;
-			}
-			return false;
-		}
 		const code = clock
-			? DIAGNOSTIC_CODES.INVALID_CLOCK_FIELD
+			? DIAGNOSTIC_CODES.INVALID_CLOCK_MEMBER
 			: DIAGNOSTIC_CODES.INVALID_QUANTITY_MEMBER;
 		for (const name of ["unit", "decimal", "textProfile", "defaultValue"])
 			if (Object.hasOwn(member, name)) emit(code, name);
@@ -521,32 +557,19 @@ export function readContractIr(document, options = {}) {
 			emit(code, "defaultKind");
 		if (Array.isArray(member.constraints) && member.constraints.length)
 			emit(code, "constraints");
-		if (clock) {
-			const m = member.multiplicity;
-			if (
-				isObject(m) &&
-				(m.lower !== 1 ||
-					m.upper !== 1 ||
-					m.ordered !== false ||
-					m.unique !== false)
-			)
-				emit(code, "multiplicity");
-			if (member.presence !== "required") emit(code, "presence");
-			if (member.nullable !== false) emit(code, "nullable");
-		}
+		if (clock && member.nullable !== false) emit(code, "nullable");
 		return true;
 	};
 
-	const checkField = (field, fieldPointer = undefined, isField = false) => {
-		if (specialMember(field, fieldPointer, isField)) {
+	const checkField = (field, fieldPointer = undefined) => {
+		if (specialMember(field, fieldPointer)) {
 			if (field.multiplicity === undefined)
 				raise(
 					DIAGNOSTIC_CODES.MISSING_MULTIPLICITY,
 					"a field declares its multiplicity",
 					locusOf(field),
 				);
-			else if (field.typeRef !== clockRef)
-				checkMultiplicity(field.multiplicity, field);
+			else checkMultiplicity(field.multiplicity, field);
 			return;
 		}
 		const resolved = resolveKind(
@@ -656,28 +679,57 @@ export function readContractIr(document, options = {}) {
 		}
 	};
 
+	// A bound on a clock or a quantity: `min` or `max` with an exact rational
+	// (non-negative for a clock); every other keyword does not apply.
+	const checkSpecialConstraint = (
+		constraint,
+		owner,
+		constraintPointer,
+		special,
+	) => {
+		const keyword = String(constraint.keyword);
+		const locus = locusOf(constraint) ?? locusOf(owner);
+		if (keyword !== "min" && keyword !== "max") {
+			raise(
+				DIAGNOSTIC_CODES.CONSTRAINT_NOT_APPLICABLE,
+				`/ir${constraintPointer}/keyword: ${fragment(keyword)} does not bound a ${special}`,
+				locus,
+			);
+			return;
+		}
+		const operand = rationalOperand(constraint.operands?.value);
+		const at = `/ir${constraintPointer}/operands/value`;
+		if ("outside" in operand)
+			raise(
+				DIAGNOSTIC_CODES.INTEGER_OUTSIDE_I128,
+				`${at}: the bound is outside the exact i128 domain`,
+				locus,
+			);
+		else if (
+			"invalid" in operand ||
+			(special === "clock" && operand.value < 0n)
+		)
+			raise(
+				DIAGNOSTIC_CODES.INVALID_OPERAND,
+				`${at}: a ${special} bound is a ${special === "clock" ? "non-negative " : ""}canonical rational`,
+				locus,
+			);
+	};
+
 	const checkConstraint = (
 		constraint,
 		owner,
 		constraintPointer = undefined,
 	) => {
-		if (constraint.appliesTo === clockRef) {
-			raise(
-				DIAGNOSTIC_CODES.CLOCK_OUTSIDE_FIELD,
-				`/ir${constraintPointer}/appliesTo: Clock is field-only`,
-				locusOf(constraint) ?? locusOf(owner),
-			);
-			return;
-		}
-		if (
-			typeof constraint.appliesTo === "string" &&
-			constraint.appliesTo.startsWith(quantityPrefix)
-		) {
-			raise(
-				DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
-				`/ir${constraintPointer}/appliesTo: quantity references are member-only`,
-				locusOf(constraint) ?? locusOf(owner),
-			);
+		const special = specialOf(constraint.appliesTo);
+		if (special === "malformed") {
+			// Through an alias the malformed reference is refused at the alias.
+			if (constraint.appliesTo.startsWith(quantityPrefix))
+				raise(
+					DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
+					`/ir${constraintPointer}/appliesTo: a quantity type reference must be well formed`,
+					locusOf(constraint) ?? locusOf(owner),
+				);
 			return;
 		}
 		const keyword = String(constraint.keyword);
@@ -687,6 +739,10 @@ export function readContractIr(document, options = {}) {
 				`${fragment(keyword)} is outside the closed constraint vocabulary`,
 				locusOf(constraint) ?? locusOf(owner),
 			);
+			return;
+		}
+		if (special !== undefined) {
+			checkSpecialConstraint(constraint, owner, constraintPointer, special);
 			return;
 		}
 		const resolved = resolveKind(types, fields, constraint.appliesTo);
@@ -844,40 +900,40 @@ export function readContractIr(document, options = {}) {
 				);
 			}
 		}
-		for (const member of ["target", "items", "values"]) {
-			if (definition[member] === clockRef)
-				raise(
-					DIAGNOSTIC_CODES.CLOCK_OUTSIDE_FIELD,
-					`/ir${definitionPointer}/${member}: Clock is field-only`,
-					locusOf(definition),
-				);
-			else if (
-				typeof definition[member] === "string" &&
-				definition[member].startsWith(quantityPrefix)
+		const quantityRefused = (ref, pointer, owner) => {
+			if (
+				typeof ref === "string" &&
+				ref.startsWith(quantityPrefix) &&
+				!quantityName(ref)
 			)
 				raise(
 					DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
-					`/ir${definitionPointer}/${member}: quantity references are member-only`,
-					locusOf(definition),
+					`${pointer}: a quantity type reference must be well formed`,
+					locusOf(owner),
 				);
-		}
-		asArray(definition.variants).forEach((variant, index) => {
-			if (variant.payloadType === clockRef)
-				raise(
-					DIAGNOSTIC_CODES.CLOCK_OUTSIDE_FIELD,
-					`/ir${definitionPointer}/variants/${index}/payloadType: Clock is field-only`,
-					locusOf(variant),
-				);
-			else if (
-				typeof variant.payloadType === "string" &&
-				variant.payloadType.startsWith(quantityPrefix)
-			)
-				raise(
-					DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
-					`/ir${definitionPointer}/variants/${index}/payloadType: quantity references are member-only`,
-					locusOf(variant),
-				);
-		});
+		};
+		for (const member of ["target", "items", "values"])
+			quantityRefused(
+				definition[member],
+				`/ir${definitionPointer}/${member}`,
+				definition,
+			);
+		if (
+			definition.kind === "reference" &&
+			specialOf(definition.target) === "quantity"
+		)
+			raise(
+				DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
+				`/ir${definitionPointer}/target: a reference names an object and a quantity has no identity`,
+				locusOf(definition),
+			);
+		asArray(definition.variants).forEach((variant, index) =>
+			quantityRefused(
+				variant.payloadType,
+				`/ir${definitionPointer}/variants/${index}/payloadType`,
+				variant,
+			),
+		);
 		if (definition.kind === "sequence")
 			checkCompositeDecimalRef(definition.items, definition);
 		if (definition.kind === "map")
@@ -914,7 +970,7 @@ export function readContractIr(document, options = {}) {
 			return;
 		}
 		for (const [fieldIndex, field] of ownFields.entries()) {
-			checkField(field, `${definitionPointer}/fields/${fieldIndex}`, true);
+			checkField(field, `${definitionPointer}/fields/${fieldIndex}`);
 		}
 		for (const [constraintIndex, constraint] of asArray(
 			definition.constraints,
@@ -1046,7 +1102,6 @@ export function readContractIr(document, options = {}) {
 				const special = specialMember(
 					operation.returns,
 					`${definitionPointer}/operations/${operationIndex}/returns`,
-					false,
 				);
 				if (
 					!special &&

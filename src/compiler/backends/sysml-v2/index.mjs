@@ -277,6 +277,14 @@ function renderType(type, types, diagnostics) {
 	if (type.kind === "enum") return renderEnum(type, diagnostics);
 	const name = semanticIdentifier(type, type.displayName, diagnostics);
 	const target = types.get(type.target);
+	if (!target) {
+		unsupported(
+			type,
+			`alias target ${fragment(type.target)} names no declared type and has no SysML mapping`,
+			diagnostics,
+		);
+		return null;
+	}
 	const targetName =
 		scalarName(target) ??
 		semanticIdentifier(target ?? type, target?.displayName, diagnostics);
