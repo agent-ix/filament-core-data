@@ -211,7 +211,7 @@ describe("FR-146 independent reader special member policy", () => {
 		document.types[0].fields[0].typeRef = "ix://quire/native/Text";
 		expect(observed(document)).toEqual([]);
 	});
-	it("TC-1843 emits only the nine exact Clock shape diagnostics", () => {
+	it("TC-1843 emits only the seven exact Clock shape diagnostics and an ordinary multiplicity refusal", () => {
 		// FR-146-AC-2: exact reader assertions below.
 		const document = clock();
 		const field = document.types[0].fields[0];
@@ -226,22 +226,24 @@ describe("FR-146 independent reader special member policy", () => {
 		field.constraints = [{ keyword: "notAKeyword", appliesTo: field.identity }];
 		expect(observed(document)).toEqual(
 			[
-				"constraints",
-				"decimal",
-				"defaultKind",
-				"defaultValue",
-				"multiplicity",
-				"nullable",
-				"presence",
-				"textProfile",
-				"unit",
-			]
-				.map((member) => ["INVALID_CLOCK_FIELD", `types.0.fields.0.${member}`])
-				.sort((a, b) => a[1].localeCompare(b[1])),
+				...[
+					"constraints",
+					"decimal",
+					"defaultKind",
+					"defaultValue",
+					"nullable",
+					"textProfile",
+					"unit",
+				].map((member) => [
+					"INVALID_CLOCK_MEMBER",
+					`types.0.fields.0.${member}`,
+				]),
+				["INVALID_MULTIPLICITY", "types.0.fields.0.multiplicity.upper"],
+			].sort((a, b) => a[1].localeCompare(b[1])),
 		);
 	});
-	it("TC-1843 applies Clock's own outside-field code to every type position", () => {
-		// FR-146-AC-2: exact reader assertions below.
+	it("TC-1843 admits Clock at every type position", () => {
+		// FR-146-AC-2, FR-146-AC-21: exact reader assertions below.
 		for (const [kind, member] of [
 			["alias", "target"],
 			["reference", "target"],
@@ -253,9 +255,7 @@ describe("FR-146 independent reader special member policy", () => {
 			definition.kind = kind;
 			delete definition.fields;
 			definition[member] = "ix://quire/native/Clock";
-			expect(observed(document)).toEqual([
-				["CLOCK_OUTSIDE_FIELD", `types.0.${member}`],
-			]);
+			expect(observed(document), kind).toEqual([]);
 		}
 		const document = clock();
 		const definition = document.types[0];
@@ -268,7 +268,11 @@ describe("FR-146 independent reader special member policy", () => {
 			},
 		];
 		definition.constraints = [
-			{ keyword: "min", appliesTo: "ix://quire/native/Clock" },
+			{
+				keyword: "max",
+				operands: { value: "3/2" },
+				appliesTo: "ix://quire/native/Clock",
+			},
 		];
 		definition.operations = [
 			{
@@ -277,18 +281,90 @@ describe("FR-146 independent reader special member policy", () => {
 				params: [
 					{ ...definition.fields[0], identity: `${definition.identity}/op/p` },
 				],
-				returns: { typeRef: "ix://quire/native/Clock" },
+				returns: {
+					typeRef: "ix://quire/native/Clock",
+					multiplicity: { lower: 0, upper: 1, ordered: false, unique: false },
+					nullable: false,
+				},
 				pre: [],
 				post: [],
 				origin: origin(),
 			},
 		];
+		expect(observed(document)).toEqual([]);
+	});
+	it("TC-1843 makes a member typed by an alias of Clock a clock member", () => {
+		// FR-146-AC-2: exact reader assertions below.
+		const document = clock();
+		const definition = document.types[0];
+		definition.fields[0].typeRef = "ix://acme/config/Stopwatch";
+		definition.fields[0].unit = "ms";
+		definition.fields[0].textProfile = "anything";
+		document.types.push({
+			...structuredClone(definition),
+			identity: "ix://acme/config/Stopwatch",
+			kind: "alias",
+			target: "ix://quire/native/Clock",
+		});
+		delete document.types[1].fields;
 		expect(observed(document)).toEqual([
-			["CLOCK_OUTSIDE_FIELD", "types.0.constraints.0.appliesTo"],
-			["CLOCK_OUTSIDE_FIELD", "types.0.operations.0.params.0.typeRef"],
-			["CLOCK_OUTSIDE_FIELD", "types.0.operations.0.returns.typeRef"],
-			["CLOCK_OUTSIDE_FIELD", "types.0.variants.0.payloadType"],
+			["INVALID_CLOCK_MEMBER", "types.0.fields.0.textProfile"],
+			["INVALID_CLOCK_MEMBER", "types.0.fields.0.unit"],
 		]);
+	});
+	it("TC-1866 and TC-1868 hold a clock or quantity bound to min and max with an exact rational", () => {
+		// FR-146-AC-21, FR-146-AC-23: exact reader assertions below.
+		const constrained = (
+			appliesTo: string,
+			keyword: string,
+			operands: unknown,
+		) => {
+			const document = clock();
+			document.types[0].constraints = [{ keyword, operands, appliesTo }];
+			return document;
+		};
+		const clockRef = "ix://quire/native/Clock";
+		const ms = "ix://quire/unit/ms";
+		for (const [appliesTo, keyword, value] of [
+			[clockRef, "max", "3"],
+			[clockRef, "min", "3/2"],
+			[ms, "max", "500"],
+			[ms, "min", "-3/2"],
+		]) {
+			expect(
+				observed(constrained(appliesTo, keyword, { value })),
+				`${appliesTo} ${keyword} ${value}`,
+			).toEqual([]);
+		}
+		const refused: [string, string, string | number, string][] = [
+			[clockRef, "max", "-1", "INVALID_OPERAND"],
+			[clockRef, "max", "2/4", "INVALID_OPERAND"],
+			[clockRef, "max", 3, "INVALID_OPERAND"],
+			[ms, "max", "2/4", "INVALID_OPERAND"],
+			[ms, "max", "1/1", "INVALID_OPERAND"],
+			[ms, "max", "1.5", "INVALID_OPERAND"],
+			[ms, "max", 3, "INVALID_OPERAND"],
+			[
+				clockRef,
+				"max",
+				"170141183460469231731687303715884105728",
+				"INTEGER_OUTSIDE_I128",
+			],
+		];
+		for (const [appliesTo, keyword, value, code] of refused) {
+			expect(
+				observed(constrained(appliesTo, keyword, { value })),
+				`${appliesTo} ${keyword} ${value}`,
+			).toEqual([[code, "types.0.constraints.0.operands.value"]]);
+		}
+		for (const appliesTo of [clockRef, ms]) {
+			expect(
+				observed(constrained(appliesTo, "minLength", { value: 3 })),
+				appliesTo,
+			).toEqual([
+				["CONSTRAINT_NOT_APPLICABLE", "types.0.constraints.0.keyword"],
+			]);
+		}
 	});
 	it("TC-1847 retains missing multiplicity and other reference roles", () => {
 		// FR-146-AC-6: exact reader assertions below.
@@ -362,14 +438,90 @@ describe("FR-146 independent reader special member policy", () => {
 			["INVALID_QUANTITY_MEMBER", "types.0.fields.0.unit"],
 		]);
 	});
-	it("TC-1847 refuses a quantity constraint subject before interpreting its keyword", () => {
+	it("TC-1847 refuses a malformed quantity constraint subject before interpreting its keyword", () => {
 		// FR-146-AC-6: exact reader assertions below.
 		const document = clock();
 		document.types[0].constraints = [
-			{ keyword: "notAKeyword", appliesTo: "ix://quire/unit/ms" },
+			{ keyword: "notAKeyword", appliesTo: "ix://quire/unit/3ms" },
 		];
 		expect(observed(document)).toEqual([
 			["UNRESOLVED_TYPE_REF", "types.0.constraints.0.appliesTo"],
 		]);
+	});
+	it("TC-1847 and TC-1868 admit a quantity alias at every position and refuse a quantity reference", () => {
+		// FR-146-AC-6, FR-146-AC-23: exact reader assertions below.
+		const withAlias = (name: string, target: string) => {
+			const document = clock();
+			document.types[0].fields[0].typeRef = `ix://acme/config/${name}`;
+			document.types.push({
+				...structuredClone(document.types[0]),
+				identity: `ix://acme/config/${name}`,
+				kind: "alias",
+				target,
+			});
+			delete document.types[1].fields;
+			return document;
+		};
+		const ms = "ix://quire/unit/ms";
+		expect(observed(withAlias("Delay", ms))).toEqual([]);
+		const chained = withAlias("Outer", "ix://acme/config/Inner");
+		chained.types.push({
+			...structuredClone(chained.types[1]),
+			identity: "ix://acme/config/Inner",
+			target: ms,
+		});
+		expect(observed(chained)).toEqual([]);
+		const union = withAlias("Delay", ms);
+		union.types[0] = {
+			...union.types[0],
+			kind: "union",
+			variants: [
+				{
+					identity: "ix://acme/config/Config/v",
+					name: "v",
+					payloadType: "ix://acme/config/Delay",
+					origin: origin(),
+				},
+			],
+		};
+		delete union.types[0].fields;
+		expect(observed(union)).toEqual([]);
+		const reference = withAlias("Delay", ms);
+		reference.types[0] = {
+			...reference.types[0],
+			kind: "reference",
+			target: ms,
+		};
+		delete reference.types[0].fields;
+		expect(observed(reference)).toEqual([
+			["UNRESOLVED_TYPE_REF", "types.0.target"],
+		]);
+		reference.types[0].target = "ix://acme/config/Delay";
+		expect(observed(reference)).toEqual([
+			["UNRESOLVED_TYPE_REF", "types.0.target"],
+		]);
+		const malformed = withAlias("Delay", "ix://quire/unit/3ms");
+		expect(observed(malformed)).toEqual([
+			["UNRESOLVED_TYPE_REF", "types.1.target"],
+		]);
+		const bound = withAlias("Delay", ms);
+		bound.types[0].constraints = [
+			{
+				keyword: "max",
+				operands: { value: "5/2" },
+				appliesTo: "ix://acme/config/Delay",
+			},
+		];
+		expect(observed(bound)).toEqual([]);
+	});
+	it("TC-1866 and TC-1868 refuse an unknown keyword on a clock or quantity subject as on any subject", () => {
+		// FR-146-AC-21: exact reader assertions below.
+		for (const appliesTo of ["ix://quire/native/Clock", "ix://quire/unit/ms"]) {
+			const document = clock();
+			document.types[0].constraints = [{ keyword: "notAKeyword", appliesTo }];
+			expect(observed(document)).toEqual([
+				["UNKNOWN_CONSTRAINT_KEYWORD", "types.0.constraints.0.keyword"],
+			]);
+		}
 	});
 });

@@ -35,6 +35,15 @@ function rational(text) {
 	return a === 1n ? { value: n.value } : { invalid: true };
 }
 
+/**
+ * A canonical `n` or `n/d` rational within i128 (a bound of a clock or quantity
+ * constraint): `{ value }` holds the numerator, `{ invalid }` a non-canonical
+ * spelling and `{ outside }` a component outside i128.
+ */
+export function rationalOperand(text) {
+	return rational(text);
+}
+
 /** Strong components with explicit stacks; authored graph depth is not JS call depth. */
 function components(edges) {
 	const seen = new Set();

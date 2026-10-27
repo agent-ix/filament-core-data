@@ -173,19 +173,16 @@ fn a_clock_field_is_admitted_without_a_declared_type() {
     assert_eq!(diagnostics("", &[record]), vec![]);
 }
 
-/// Provenance: IR-990 field-only admission; IR-991 exact refusal.
+/// Trace: FR-146-AC-2
 #[test]
-fn a_clock_operation_parameter_remains_refused_at_its_type_ref() {
+fn a_clock_operation_parameter_and_result_are_admitted() {
     let parameter = field("ix://acme/pkg/T/op/x", "x", "ix://quire/native/Clock");
     let record = framed(r#"{"modifies":[],"creates":[],"deletes":[]}"#)
         .replace(r#""params":[]"#, &format!(r#""params":[{parameter}]"#));
-    let observed = diagnostics("", &[record]);
+    assert_eq!(diagnostics("", &[record]), vec![]);
     assert_eq!(
-        observed,
-        vec![(
-            "/ir/types/0/operations/0/params/0/typeRef".to_string(),
-            "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD"
-        )]
+        diagnostics("", &[operation_result("ix://quire/native/Clock", "")]),
+        vec![]
     );
 }
 
@@ -310,17 +307,11 @@ fn operation_result(type_ref: &str, extra: &str) -> String {
 }
 
 #[test]
-fn clock_and_quantity_nonmember_type_positions_refuse_at_exact_reference() {
-    // FR-146-AC-2, FR-146-AC-6: exact reader assertions below.
-    for (reference, code) in [
-        (
-            "ix://quire/native/Clock",
-            "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD",
-        ),
-        (
-            "ix://quire/unit/ms",
-            "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
-        ),
+fn clock_and_quantity_are_admitted_at_every_position_but_a_quantity_reference_target() {
+    // FR-146-AC-2, FR-146-AC-6, FR-146-AC-21, FR-146-AC-23: exact reader assertions below.
+    for (reference, quantity) in [
+        ("ix://quire/native/Clock", false),
+        ("ix://quire/unit/ms", true),
     ] {
         for (kind, member) in [
             ("alias", "target"),
@@ -331,19 +322,20 @@ fn clock_and_quantity_nonmember_type_positions_refuse_at_exact_reference() {
             let node = format!(
                 r#"{{"identity":"ix://acme/pkg/T","displayName":"T","kind":"{kind}","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","{member}":"{reference}"}}"#
             );
-            assert_eq!(
-                diagnostics("", &[node]),
-                vec![(format!("/ir/types/0/{member}"), code)],
-                "{kind}: {reference}"
-            );
+            let expected = if quantity && kind == "reference" {
+                vec![(
+                    "/ir/types/0/target".to_string(),
+                    "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+                )]
+            } else {
+                vec![]
+            };
+            assert_eq!(diagnostics("", &[node]), expected, "{kind}: {reference}");
         }
         let variant = format!(
             r#"{{"identity":"ix://acme/pkg/T","displayName":"T","kind":"union","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","variants":[{{"identity":"ix://acme/pkg/T/v","name":"v","origin":{GENERATED},"payloadType":"{reference}"}}]}}"#
         );
-        assert_eq!(
-            diagnostics("", &[variant]),
-            vec![("/ir/types/0/variants/0/payloadType".to_string(), code)]
-        );
+        assert_eq!(diagnostics("", &[variant]), vec![], "{reference}");
         let node = record_with_member("").replace(
             r#""constraints":[]"#,
             &format!(
@@ -351,17 +343,11 @@ fn clock_and_quantity_nonmember_type_positions_refuse_at_exact_reference() {
                 constraint("k", "min", r#"{"value":"0"}"#, reference)
             ),
         );
-        assert_eq!(
-            diagnostics("", &[node]),
-            vec![("/ir/types/0/constraints/0/appliesTo".to_string(), code)]
-        );
+        assert_eq!(diagnostics("", &[node]), vec![], "{reference}");
     }
     assert_eq!(
         diagnostics("", &[operation_result("ix://quire/native/Clock", "")]),
-        vec![(
-            "/ir/types/0/operations/0/returns/typeRef".to_string(),
-            "agent-ix.semantic-ir.CLOCK_OUTSIDE_FIELD"
-        )]
+        vec![]
     );
 }
 
@@ -421,7 +407,7 @@ fn special_member_shape_owns_nested_constraints_and_scalar_policy_diagnostics() 
     for (reference, code) in [
         (
             "ix://quire/native/Clock",
-            "agent-ix.semantic-ir.INVALID_CLOCK_FIELD",
+            "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
         ),
         (
             "ix://quire/unit/ms",
