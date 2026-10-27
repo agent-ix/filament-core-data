@@ -19,8 +19,8 @@ use agent_ix_semantic_ir::json::parse as parse_json;
 use agent_ix_semantic_ir::normalize::normalized;
 use agent_ix_semantic_ir::{decide, ResultState};
 use common::{
-    bundle_fixtures, business_module, collator_order, edge_vocabulary, lift_fixture, normalize_ir,
-    positive_lifts, workspace_dir,
+    bundle_fixtures, business_module, collator_order, edge_vocabulary, fingerprint_ir,
+    lift_fixture, normalize_ir, positive_lifts, workspace_dir,
 };
 use ix_trace_rs::trace;
 use proptest::prelude::*;
@@ -496,7 +496,8 @@ fn tc_1276_a_lift_with_two_supertypes_writes_supertypes_and_fields_in_authored_o
 /// End to end: an operation authored with parameters `zeta`, `alpha` is
 /// written with `params` in that order, a fixed point of FR-050
 /// `normalizeIr` and the reader's canonical form, and reversing them changes
-/// both the normalized bytes and the fingerprint.
+/// both the normalized bytes and the production `fingerprintIr` (read through
+/// node).
 #[trace("TC-1276", "FR-097-AC-4")]
 #[test]
 fn tc_1276_a_lift_with_two_operation_params_writes_them_in_authored_order() {
@@ -550,6 +551,7 @@ fn tc_1276_a_lift_with_two_operation_params_writes_them_in_authored_order() {
     let reversed_bytes = serde_json::to_vec(&reversed).expect("json");
     assert_eq!(params_of(&reversed), ["alpha", "zeta"]);
     assert_ne!(normalize_ir(&reversed_bytes), normalize_ir(bytes));
+    assert_ne!(fingerprint_ir(&reversed_bytes), fingerprint_ir(bytes));
 }
 
 #[trace("TC-1276", "FR-097-AC-4")]

@@ -4222,7 +4222,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		);
 	});
 
-	/** Traces: TC-516; FR-050-AC-7. */
+	/** Trace: FR-050-AC-7. */
 	it("fingerprints by meaning, not by ordering", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
 			types: Json[];
