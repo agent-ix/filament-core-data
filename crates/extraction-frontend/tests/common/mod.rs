@@ -304,7 +304,7 @@ pub fn run_node(args: &[&str], stdin: &[u8], path: Option<&str>) -> Result<NodeR
 }
 
 /// `normalizeIr` of `src/compiler/ir/normalize.mjs` over the JSON on stdin,
-/// as bytes.
+/// as bytes, unmodified.
 pub fn normalize_ir(bytes: &[u8]) -> Vec<u8> {
     let script = format!(
         "const fs=require('fs');const {{pathToFileURL}}=require('url');\

@@ -99,8 +99,8 @@ fn node_lists(document: &Value) -> Vec<(String, Vec<String>)> {
         .iter()
         .enumerate()
     {
+        // `fields` and `supertypes` are ordered sequences, not sorted sets.
         for list in [
-            "fields",
             "variants",
             "constraints",
             "relationships",
@@ -401,6 +401,108 @@ fn document_strategy() -> impl Strategy<Value = Value> {
                 "extensions": extensions,
             })
         })
+}
+
+#[trace("TC-1276", "FR-097-AC-4")]
+#[test]
+fn tc_1276_fields_and_supertypes_keep_their_authored_order_while_sets_are_identity_sorted() {
+    let mut document = json!({
+        "types": [{
+            "identity": "ix://a/T",
+            "supertypes": [{"identity": "ix://a/Q"}, {"identity": "ix://a/P"}],
+            "fields": [
+                {"identity": "ix://a/T~b", "extensions": [{"identity": "z"}, {"identity": "y"}]},
+                {"identity": "ix://a/T~a"}
+            ],
+            "variants": [{"identity": "ix://a/T~v2"}, {"identity": "ix://a/T~v1"}],
+        }]
+    });
+    sort_node_lists(&mut document);
+    let ids = |pointer: &str| -> Vec<String> {
+        document
+            .pointer(pointer)
+            .and_then(Value::as_array)
+            .expect("list")
+            .iter()
+            .map(|n| n["identity"].as_str().expect("identity").to_string())
+            .collect()
+    };
+    assert_eq!(ids("/types/0/fields"), ["ix://a/T~b", "ix://a/T~a"]);
+    assert_eq!(ids("/types/0/supertypes"), ["ix://a/Q", "ix://a/P"]);
+    assert_eq!(ids("/types/0/variants"), ["ix://a/T~v1", "ix://a/T~v2"]);
+    assert_eq!(ids("/types/0/fields/0/extensions"), ["y", "z"]);
+}
+
+/// End to end: a value object authored with two `specializes` edges
+/// (`VO_003`, then `VO_002`) and fields `sku`, `quantity`, `kind` is written
+/// with `supertypes` and `fields` in that authored order, not identity order,
+/// and the written bytes read back the same.
+#[trace("TC-1276", "FR-097-AC-4")]
+#[test]
+fn tc_1276_a_lift_with_two_supertypes_writes_supertypes_and_fields_in_authored_order() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    common::copy_tree(&common::fixture("business"), &root);
+    let functional = root.join("spec/functional");
+    for (id, name) in [("VO_002", "VariantTwo"), ("VO_003", "VariantThree")] {
+        fs::write(
+            functional.join(format!("{id}-variant.md")),
+            format!(
+                "---\nid: {id}\ntitle: {name}\nobject: value_object\ntype: value_object\n\
+                 name: {name}\n---\n\n# {id}: {name}\n\n## Description\n\nA target.\n\n\
+                 ## Properties\n\n| Field | Type | Multiplicity | Constraints |\n\
+                 |-------|------|--------------|-------------|\n\
+                 | sku | String | 1 | pattern: /^[A-Z0-9-]+$/ |\n"
+            ),
+        )
+        .expect("write variant");
+    }
+    let path = functional.join("VO_001-order-line.md");
+    let text = fs::read_to_string(&path).expect("read");
+    let edited = text.replace(
+        "relationships:\n",
+        "relationships:\n  - target: VO_003\n    type: specializes\n  - target: VO_002\n    type: specializes\n",
+    );
+    assert_ne!(edited, text);
+    fs::write(&path, edited).expect("write");
+
+    let out = dir.path().join("out");
+    fs::create_dir_all(&out).expect("out");
+    let request = common::request_at(&root, &out);
+    let outcome = agent_ix_extraction_frontend::lift(&request);
+    let document: Value = serde_json::from_slice(written_bytes(&outcome)).expect("json");
+    let order_line = document["types"]
+        .as_array()
+        .expect("types")
+        .iter()
+        .find(|t| {
+            t["identity"]
+                .as_str()
+                .is_some_and(|i| i.ends_with("VO_001"))
+        })
+        .expect("VO_001");
+    let supertypes: Vec<&str> = order_line["supertypes"]
+        .as_array()
+        .expect("supertypes")
+        .iter()
+        .map(|s| s.as_str().or_else(|| s["identity"].as_str()).expect("ref"))
+        .collect();
+    assert_eq!(supertypes.len(), 2, "{supertypes:?}");
+    assert!(supertypes[0].ends_with("VO_003") && supertypes[1].ends_with("VO_002"));
+    let fields: Vec<&str> = order_line["fields"]
+        .as_array()
+        .expect("fields")
+        .iter()
+        .map(|f| f["name"].as_str().expect("name"))
+        .collect();
+    assert_eq!(fields, ["sku", "quantity", "kind"]);
+    // The written bytes are a fixed point of FR-050 `normalizeIr` and of the
+    // reader's canonical form, with that order.
+    assert_eq!(
+        normalize_ir(written_bytes(&outcome)),
+        written_bytes(&outcome)
+    );
+    assert_eq!(canonical_bytes(&document), written_bytes(&outcome));
 }
 
 #[trace("TC-1276", "FR-097-AC-4")]
