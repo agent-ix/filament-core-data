@@ -15,7 +15,6 @@ import { canonicalize, digest } from "../packages/canonical.mjs";
 /** The IR arrays whose order carries no meaning and is sorted by identity. */
 export const IDENTITY_SETS = Object.freeze([
 	"/types",
-	"/types/*/fields",
 	"/types/*/variants",
 	"/types/*/constraints",
 	"/types/*/relationships",

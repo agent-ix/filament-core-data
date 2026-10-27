@@ -304,16 +304,13 @@ pub fn run_node(args: &[&str], stdin: &[u8], path: Option<&str>) -> Result<NodeR
 }
 
 /// `normalizeIr` of `src/compiler/ir/normalize.mjs` over the JSON on stdin,
-/// as bytes, with `IDENTITY_SETS` less `/types/*/fields`: a type's `fields`
-/// keep their authored order (QSpec FR-154-AC-32), so the frontend does not
-/// identity-sort them, while `fingerprintIr` keeps the full set.
+/// as bytes, unmodified.
 pub fn normalize_ir(bytes: &[u8]) -> Vec<u8> {
     let script = format!(
         "const fs=require('fs');const {{pathToFileURL}}=require('url');\
          import(pathToFileURL({:?}).href).then(m=>{{\
          const doc=JSON.parse(fs.readFileSync(0,'utf8'));\
-         const sets=m.IDENTITY_SETS.filter(s=>s!=='/types/*/fields');\
-         process.stdout.write(m.normalizeIr(doc,{{sets}}));}}).catch(e=>{{console.error(e);process.exit(3);}});",
+         process.stdout.write(m.normalizeIr(doc));}}).catch(e=>{{console.error(e);process.exit(3);}});",
         workspace_dir().join("src/compiler/ir/normalize.mjs").to_string_lossy()
     );
     let run = run_node(&["-e", &script], bytes, None).expect("node runs");

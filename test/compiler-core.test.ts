@@ -4233,9 +4233,35 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		};
 		reordered.types.reverse();
 		for (const type of reordered.types) {
-			if (Array.isArray(type.fields)) (type.fields as Json[]).reverse();
+			for (const set of ["variants", "constraints", "relationships"]) {
+				if (Array.isArray(type[set])) (type[set] as Json[]).reverse();
+			}
 		}
 		expect(fingerprintIr(reordered)).toBe(base);
+
+		// `fields` and `supertypes` are ordered sequences (QSpec FR-154-AC-32),
+		// so reordering either is a different document.
+		const withTwo = (order: string[], supers: string[]) => {
+			const doc = JSON.parse(JSON.stringify(document)) as never as {
+				types: Json[];
+			};
+			const type = doc.types.find(
+				(t) => Array.isArray(t.fields) && (t.fields as Json[]).length > 1,
+			) as Json;
+			const fields = type.fields as Json[];
+			type.fields = order.map((n) => fields[Number(n)]);
+			type.supertypes = supers.map((identity) => ({ identity }));
+			return doc;
+		};
+		const fieldsForward = fingerprintIr(
+			withTwo(["0", "1"], ["ix://a/P", "ix://a/Q"]),
+		);
+		expect(
+			fingerprintIr(withTwo(["1", "0"], ["ix://a/P", "ix://a/Q"])),
+		).not.toBe(fieldsForward);
+		expect(
+			fingerprintIr(withTwo(["0", "1"], ["ix://a/Q", "ix://a/P"])),
+		).not.toBe(fieldsForward);
 
 		const semantic = JSON.parse(JSON.stringify(document)) as never as {
 			types: Json[];
