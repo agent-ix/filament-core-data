@@ -19,8 +19,8 @@ use agent_ix_semantic_ir::json::parse as parse_json;
 use agent_ix_semantic_ir::normalize::normalized;
 use agent_ix_semantic_ir::{decide, ResultState};
 use common::{
-    bundle_fixtures, business_module, collator_order, edge_vocabulary, lift_fixture, normalize_ir,
-    positive_lifts, workspace_dir,
+    bundle_fixtures, business_module, collator_order, edge_vocabulary, fingerprint_ir,
+    lift_fixture, normalize_ir, positive_lifts, workspace_dir,
 };
 use ix_trace_rs::trace;
 use proptest::prelude::*;
@@ -122,18 +122,6 @@ fn node_lists(document: &Value) -> Vec<(String, Vec<String>)> {
             out.push((
                 format!("/types/{i}/fields/{f}/extensions"),
                 identities(&field["extensions"]),
-            ));
-        }
-        for (o, operation) in definition["operations"]
-            .as_array()
-            .map(Vec::as_slice)
-            .unwrap_or(&[])
-            .iter()
-            .enumerate()
-        {
-            out.push((
-                format!("/types/{i}/operations/{o}/params"),
-                identities(&operation["params"]),
             ));
         }
     }
@@ -503,6 +491,67 @@ fn tc_1276_a_lift_with_two_supertypes_writes_supertypes_and_fields_in_authored_o
         written_bytes(&outcome)
     );
     assert_eq!(canonical_bytes(&document), written_bytes(&outcome));
+}
+
+/// End to end: an operation authored with parameters `zeta`, `alpha` is
+/// written with `params` in that order, a fixed point of FR-050
+/// `normalizeIr` and the reader's canonical form, and reversing them changes
+/// both the normalized bytes and the production `fingerprintIr` (read through
+/// node).
+#[trace("TC-1276", "FR-097-AC-4")]
+#[test]
+fn tc_1276_a_lift_with_two_operation_params_writes_them_in_authored_order() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let root = dir.path().join("business");
+    common::copy_tree(&common::fixture("business"), &root);
+    let path = root.join("spec/functional/operations.md");
+    let text = fs::read_to_string(&path).expect("read");
+    let edited = text.replacen(
+        "### clear\n",
+        "### shuffle\n\n| Param | Type | Multiplicity | Constraints |\n\
+         |-------|------|--------------|-------------|\n\
+         | zeta | Integer | 1 | |\n| alpha | Integer | 1 | |\n\n### clear\n",
+        1,
+    );
+    assert_ne!(edited, text);
+    fs::write(&path, edited).expect("write");
+
+    let out = dir.path().join("out");
+    fs::create_dir_all(&out).expect("out");
+    let request = common::request_at(&root, &out);
+    let outcome = agent_ix_extraction_frontend::lift(&request);
+    let bytes = written_bytes(&outcome);
+    let document: Value = serde_json::from_slice(bytes).expect("json");
+    let params_of = |document: &Value| -> Vec<String> {
+        document["types"]
+            .as_array()
+            .expect("types")
+            .iter()
+            .flat_map(|t| t["operations"].as_array().cloned().unwrap_or_default())
+            .find(|o| o["name"] == "shuffle")
+            .expect("shuffle")["params"]
+            .as_array()
+            .expect("params")
+            .iter()
+            .map(|p| p["name"].as_str().expect("name").to_string())
+            .collect()
+    };
+    assert_eq!(params_of(&document), ["zeta", "alpha"]);
+    assert_eq!(normalize_ir(bytes), bytes);
+    assert_eq!(canonical_bytes(&document), bytes);
+
+    let mut reversed = document.clone();
+    for t in reversed["types"].as_array_mut().expect("types") {
+        for o in t["operations"].as_array_mut().into_iter().flatten() {
+            if o["name"] == "shuffle" {
+                o["params"].as_array_mut().expect("params").reverse();
+            }
+        }
+    }
+    let reversed_bytes = serde_json::to_vec(&reversed).expect("json");
+    assert_eq!(params_of(&reversed), ["alpha", "zeta"]);
+    assert_ne!(normalize_ir(&reversed_bytes), normalize_ir(bytes));
+    assert_ne!(fingerprint_ir(&reversed_bytes), fingerprint_ir(bytes));
 }
 
 #[trace("TC-1276", "FR-097-AC-4")]

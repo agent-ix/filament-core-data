@@ -22,7 +22,6 @@ export const IDENTITY_SETS = Object.freeze([
 	"/types/*/clauses",
 	"/types/*/extensions",
 	"/types/*/fields/*/extensions",
-	"/types/*/operations/*/params",
 	"/types/*/operations/*/params/*/extensions",
 	"/occurrences",
 	"/extensions",
