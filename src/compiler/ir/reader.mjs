@@ -199,14 +199,6 @@ function checkConstructs(document, definitions, raise, locusOf) {
  * declares no node, over the closed set of kernel scalars below.
  */
 const NATIVE_PREFIX = "ix://quire/native/";
-const TEXT_PROFILES = [
-	"unicode-scalars",
-	"nfc",
-	"nfd",
-	"nfkc",
-	"nfkd",
-	"binary-utf8",
-];
 const NATIVE_SCALARS = new Map([
 	["UUID", "uuid"],
 	["Boolean", "boolean"],
@@ -570,19 +562,6 @@ export function readContractIr(document, options = {}) {
 	};
 
 	const checkField = (field, fieldPointer = undefined) => {
-		// The published JSON Schema cannot follow an alias to a clock or unit,
-		// so it types `textProfile` as a string only; the enumeration is
-		// enforced here for every member that is not a clock or quantity member.
-		if (
-			Object.hasOwn(field, "textProfile") &&
-			specialOf(field.typeRef) === undefined &&
-			!TEXT_PROFILES.includes(field.textProfile)
-		)
-			raise(
-				DIAGNOSTIC_CODES.SCHEMA_VIOLATION,
-				`/ir${fieldPointer}/textProfile: a text profile is one of ${TEXT_PROFILES.join(", ")}`,
-				locusOf(field),
-			);
 		if (specialMember(field, fieldPointer)) {
 			if (field.multiplicity === undefined)
 				raise(

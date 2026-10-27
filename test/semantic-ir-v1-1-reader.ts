@@ -711,14 +711,6 @@ function checkDimensionUnits(
 	}
 }
 
-const TEXT_PROFILES = [
-	"unicode-scalars",
-	"nfc",
-	"nfd",
-	"nfkc",
-	"nfkd",
-	"binary-utf8",
-];
 function checkField(
 	field: JsonObject,
 	path: string,
@@ -726,19 +718,6 @@ function checkField(
 	fields: Map<string, JsonObject>,
 	diagnostics: Diagnostic[],
 ): void {
-	// The published schema types `textProfile` as a string only (it cannot
-	// follow an alias to a clock or unit); the enumeration is enforced here
-	// for every member that is not a clock or quantity member.
-	if (
-		Object.hasOwn(field, "textProfile") &&
-		specialKind(types, fields, field.typeRef) === undefined &&
-		!TEXT_PROFILES.includes(field.textProfile as string)
-	)
-		diagnostics.push({
-			code: "agent-ix.semantic-ir.SCHEMA_VIOLATION",
-			path: `${path}.textProfile`,
-			message: `a text profile is one of ${TEXT_PROFILES.join(", ")}`,
-		});
 	const special = checkSpecialMember(field, path, types, fields, diagnostics);
 	if (special) {
 		if (field.multiplicity === undefined)

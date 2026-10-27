@@ -66,7 +66,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-invalid-nullable",
@@ -140,7 +141,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/nullable"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-invalid-defaultKind",
@@ -214,7 +216,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/defaultKind"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-invalid-defaultValue",
@@ -289,7 +292,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/defaultValue"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-invalid-unit",
@@ -364,7 +368,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/unit"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-invalid-decimal",
@@ -442,7 +447,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/decimal"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-invalid-textProfile",
@@ -517,7 +523,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/textProfile"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-invalid-constraints",
@@ -609,7 +616,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/constraints"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-field-optional",
@@ -678,7 +686,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-field-collections",
@@ -809,7 +818,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-alias",
@@ -856,7 +866,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-alias-of-alias-field",
@@ -959,7 +970,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-alias-field-invalid-shape",
@@ -1099,7 +1111,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/textProfile"
 			}
-		]
+		],
+		"ajv": "rejects"
 	},
 	{
 		"name": "clock-reference",
@@ -1146,7 +1159,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-reference-via-alias",
@@ -1210,7 +1224,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-sequence",
@@ -1257,7 +1272,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-map",
@@ -1304,7 +1320,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-variant",
@@ -1364,7 +1381,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-parameter-required-optional-collection",
@@ -1491,7 +1509,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-parameter-invalid-shape",
@@ -1595,7 +1614,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/operations/0/params/0/unit"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-return",
@@ -1668,7 +1688,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-return-optional",
@@ -1741,7 +1762,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-return-nullable",
@@ -1819,7 +1841,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/operations/0/returns/nullable"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-alias-parameter-and-return",
@@ -1931,7 +1954,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-constraint-max",
@@ -1995,7 +2019,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-constraint-alias-max-rational",
@@ -2076,7 +2101,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-constraint-alias-min",
@@ -2157,7 +2183,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-constraint-min-zero",
@@ -2221,7 +2248,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-constraint-keyword-refused",
@@ -2290,7 +2318,8 @@
 				"code": "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
 				"pointer": "/ir/types/0/constraints/0/keyword"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-constraint-alias-keyword-refused",
@@ -2377,7 +2406,8 @@
 				"code": "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
 				"pointer": "/ir/types/0/constraints/0/keyword"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-constraint-operand-negative",
@@ -2446,7 +2476,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
 				"pointer": "/ir/types/0/constraints/0/operands/value"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-constraint-operand-noncanonical",
@@ -2515,7 +2546,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
 				"pointer": "/ir/types/0/constraints/0/operands/value"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-constraint-operand-decimal",
@@ -2584,7 +2616,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
 				"pointer": "/ir/types/0/constraints/0/operands/value"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-constraint-operand-number",
@@ -2653,7 +2686,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
 				"pointer": "/ir/types/0/constraints/0/operands/value"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-constraint-operand-outside-i128",
@@ -2722,7 +2756,8 @@
 				"code": "agent-ix.semantic-ir.INTEGER_OUTSIDE_I128",
 				"pointer": "/ir/types/0/constraints/0/operands/value"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-alias",
@@ -2769,7 +2804,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-alias-of-alias-field",
@@ -2872,7 +2908,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-alias-field-parameter-return",
@@ -3006,7 +3043,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-alias-field-invalid-shape",
@@ -3112,7 +3150,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
 				"pointer": "/ir/types/0/fields/0/textProfile"
 			}
-		]
+		],
+		"ajv": "rejects"
 	},
 	{
 		"name": "quantity-sequence",
@@ -3159,7 +3198,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-map",
@@ -3206,7 +3246,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-variant",
@@ -3266,7 +3307,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-alias-variant",
@@ -3343,7 +3385,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-reference-refused",
@@ -3395,7 +3438,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/target"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-reference-via-alias-refused",
@@ -3464,7 +3508,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/target"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-alias-malformed-target-refused",
@@ -3516,7 +3561,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/target"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-sequence-malformed-items-refused",
@@ -3568,7 +3614,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/items"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-constraint-min",
@@ -3632,7 +3679,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-constraint-max",
@@ -3696,7 +3744,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-constraint-alias-max",
@@ -3777,7 +3826,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-constraint-keyword-refused",
@@ -3847,7 +3897,8 @@
 				"code": "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
 				"pointer": "/ir/types/0/constraints/0/keyword"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-constraint-operand-noncanonical",
@@ -3916,7 +3967,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
 				"pointer": "/ir/types/0/constraints/0/operands/value"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-constraint-operand-unit-denominator",
@@ -3985,7 +4037,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
 				"pointer": "/ir/types/0/constraints/0/operands/value"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-constraint-operand-decimal",
@@ -4054,7 +4107,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
 				"pointer": "/ir/types/0/constraints/0/operands/value"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-constraint-operand-number",
@@ -4123,7 +4177,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
 				"pointer": "/ir/types/0/constraints/0/operands/value"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-constraint-malformed-applies-to-refused",
@@ -4192,7 +4247,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/constraints/0/appliesTo"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-ms-field",
@@ -4261,7 +4317,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-ms-parameter",
@@ -4368,7 +4425,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-ms-return",
@@ -4463,7 +4521,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-agent-ix/time-units/ms-field",
@@ -4532,7 +4591,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-agent-ix/time-units/ms-parameter",
@@ -4639,7 +4699,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-agent-ix/time-units/ms-return",
@@ -4734,7 +4795,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-acme/rpc.v2/ms-field",
@@ -4803,7 +4865,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-acme/rpc.v2/ms-parameter",
@@ -4910,7 +4973,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-acme/rpc.v2/ms-return",
@@ -5005,7 +5069,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-acme/rpc/ms-field",
@@ -5074,7 +5139,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-acme/rpc/ms-parameter",
@@ -5181,7 +5247,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-acme/rpc/ms-return",
@@ -5276,7 +5343,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-a-b/c.d/e-f/ms-field",
@@ -5345,7 +5413,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-a-b/c.d/e-f/ms-parameter",
@@ -5452,7 +5521,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-a-b/c.d/e-f/ms-return",
@@ -5547,7 +5617,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-bad-",
@@ -5621,7 +5692,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/fields/0/typeRef"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-bad-3ms",
@@ -5695,7 +5767,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/fields/0/typeRef"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-bad-agent-ix/time-units/m-s",
@@ -5769,7 +5842,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/fields/0/typeRef"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-bad--acme/rpc/ms",
@@ -5843,7 +5917,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/fields/0/typeRef"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-bad-.acme/rpc/ms",
@@ -5917,7 +5992,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/fields/0/typeRef"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-bad-agent-ix//ms",
@@ -5991,7 +6067,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/fields/0/typeRef"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-construct-alias",
@@ -6058,7 +6135,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-construct-alias-field",
@@ -6164,7 +6242,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-construct-alias-field-invalid-shape",
@@ -6324,7 +6403,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/constraints"
 			}
-		]
+		],
+		"ajv": "rejects"
 	},
 	{
 		"name": "clock-core-alias-field-invalid-text-profile",
@@ -6416,7 +6496,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/textProfile"
 			}
-		]
+		],
+		"ajv": "rejects"
 	},
 	{
 		"name": "clock-alias-chain-through-construct-alias-invalid-shape",
@@ -6545,7 +6626,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/unit"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-construct-alias-reference-accepted",
@@ -6629,7 +6711,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "clock-construct-alias-constraint-keyword-refused",
@@ -6736,7 +6819,8 @@
 				"code": "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
 				"pointer": "/ir/types/0/constraints/0/keyword"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-construct-alias-field",
@@ -6842,7 +6926,8 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": []
+		"expected": [],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-construct-alias-field-invalid-shape",
@@ -6968,7 +7053,8 @@
 				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
 				"pointer": "/ir/types/0/fields/0/textProfile"
 			}
-		]
+		],
+		"ajv": "rejects"
 	},
 	{
 		"name": "quantity-construct-alias-reference-refused",
@@ -7057,7 +7143,8 @@
 				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 				"pointer": "/ir/types/0/target"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
 		"name": "quantity-construct-alias-constraint-operand-refused",
@@ -7163,10 +7250,11 @@
 				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
 				"pointer": "/ir/types/0/constraints/0/operands/value"
 			}
-		]
+		],
+		"ajv": "accepts"
 	},
 	{
-		"name": "ordinary-string-field-invalid-text-profile",
+		"name": "clock-alias-field-default-semantic-without-value",
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
@@ -7208,16 +7296,15 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/String",
+							"typeRef": "ix://acme/config/Stopwatch",
 							"multiplicity": {
 								"lower": 1,
-								"upper": 1,
 								"ordered": false,
-								"unique": false
+								"unique": false,
+								"upper": 1
 							},
 							"presence": "required",
 							"nullable": false,
-							"defaultKind": "none",
 							"origin": {
 								"generated": {
 									"generatorIdentity": "ix://acme/config/case-author",
@@ -7225,88 +7312,13 @@
 									"inputIdentities": ["ix://acme/config/source"]
 								}
 							},
-							"textProfile": "unicode"
-						}
-					]
-				}
-			],
-			"occurrences": [],
-			"extensions": []
-		},
-		"expected": [
-			{
-				"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
-				"pointer": "/ir/types/0/fields/0/textProfile"
-			}
-		]
-	},
-	{
-		"name": "ordinary-alias-string-field-invalid-text-profile",
-		"document": {
-			"contractVersion": "2.0.0",
-			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
-			},
-			"source": {
-				"identity": "ix://test/orders/source",
-				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-			},
-			"package": {
-				"identity": "acme/config",
-				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"mappingVersions": ["1.0.0"],
-				"profileVersions": []
-			},
-			"constructs": [],
-			"types": [
-				{
-					"identity": "ix://acme/config/Config",
-					"displayName": "Config",
-					"kind": "record",
-					"roles": [],
-					"origin": {
-						"generated": {
-							"generatorIdentity": "ix://acme/config/case-author",
-							"generatorVersion": "1.0.0",
-							"inputIdentities": ["ix://acme/config/source"]
-						}
-					},
-					"constraints": [],
-					"extensions": [],
-					"unknownPolicy": "reject",
-					"fields": [
-						{
-							"identity": "ix://acme/config/Config/x",
-							"name": "x",
-							"typeRef": "ix://acme/config/Label",
-							"multiplicity": {
-								"lower": 1,
-								"upper": 1,
-								"ordered": false,
-								"unique": false
-							},
-							"presence": "required",
-							"nullable": false,
-							"defaultKind": "none",
-							"origin": {
-								"generated": {
-									"generatorIdentity": "ix://acme/config/case-author",
-									"generatorVersion": "1.0.0",
-									"inputIdentities": ["ix://acme/config/source"]
-								}
-							},
-							"textProfile": "unicode"
+							"defaultKind": "semantic"
 						}
 					]
 				},
 				{
-					"identity": "ix://acme/config/Label",
-					"displayName": "Label",
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
 					"kind": "alias",
 					"roles": [],
 					"origin": {
@@ -7319,7 +7331,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/String"
+					"target": "ix://quire/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -7327,9 +7339,1226 @@
 		},
 		"expected": [
 			{
-				"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultKind"
+			}
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "clock-alias-field-default-none-with-value",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Stopwatch",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "none",
+							"defaultValue": 0
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
+					"kind": "alias",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultValue"
+			}
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "clock-alias-field-text-profile-only",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Stopwatch",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "none",
+							"textProfile": "unicode"
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
+					"kind": "alias",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/textProfile"
 			}
-		]
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "clock-construct-alias-field-default-semantic-without-value",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Stopwatch",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "semantic"
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultKind"
+			}
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "clock-construct-alias-field-default-none-with-value",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Stopwatch",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "none",
+							"defaultValue": 0
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultValue"
+			}
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "clock-construct-alias-field-text-profile-only",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Stopwatch",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "none",
+							"textProfile": "unicode"
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/textProfile"
+			}
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "quantity-alias-field-default-semantic-without-value",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Delay",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "semantic"
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Delay",
+					"displayName": "Delay",
+					"kind": "alias",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/unit/ms"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultKind"
+			}
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "quantity-alias-field-default-none-with-value",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Delay",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "none",
+							"defaultValue": 0
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Delay",
+					"displayName": "Delay",
+					"kind": "alias",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/unit/ms"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultValue"
+			}
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "quantity-alias-field-text-profile-only",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Delay",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "none",
+							"textProfile": "unicode"
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Delay",
+					"displayName": "Delay",
+					"kind": "alias",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/unit/ms"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/textProfile"
+			}
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "quantity-construct-alias-field-default-semantic-without-value",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Delay",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "semantic"
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Delay",
+					"displayName": "Delay",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/unit/ms"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultKind"
+			}
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "quantity-construct-alias-field-default-none-with-value",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Delay",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "none",
+							"defaultValue": 0
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Delay",
+					"displayName": "Delay",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/unit/ms"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultValue"
+			}
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "quantity-construct-alias-field-text-profile-only",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Delay",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "none",
+							"textProfile": "unicode"
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Delay",
+					"displayName": "Delay",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/unit/ms"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/textProfile"
+			}
+		],
+		"ajv": "rejects"
+	},
+	{
+		"name": "quantity-field-invalid-textProfile",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://quire/unit/ms",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultKind": "none",
+							"textProfile": "unicode"
+						}
+					]
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/textProfile"
+			}
+		],
+		"ajv": "accepts"
 	}
 ]

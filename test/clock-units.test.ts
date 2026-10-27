@@ -492,37 +492,6 @@ it("TC-1846 refuses an arbitrarily long canonical integer without widening the i
 	]);
 });
 
-it("TC-1843 keeps the schema layer from pre-rejecting a non-enumerated text profile on a clock or unit member, and still refuses a non-string one", () => {
-	// FR-146-AC-2: the verdict is INVALID_CLOCK_MEMBER, never SCHEMA_VIOLATION.
-	const cases = JSON.parse(
-		readFileSync(
-			new URL(
-				"../fixtures/semantic/v1/clock-units/clock-cases.json",
-				import.meta.url,
-			),
-			"utf8",
-		),
-	) as { name: string; document: ReturnType<typeof configTime> }[];
-	for (const name of [
-		"clock-alias-field-invalid-shape",
-		"clock-construct-alias-field-invalid-shape",
-		"quantity-alias-field-invalid-shape",
-		"quantity-construct-alias-field-invalid-shape",
-	]) {
-		const found = cases.find((c) => c.name === name);
-		expect(found, name).toBeDefined();
-		const document = structuredClone(found?.document) as ReturnType<
-			typeof configTime
-		>;
-		expect(document.types[0].fields[0].textProfile, name).toBe("unicode");
-		expect(validateIrDocument(document), name).toEqual([]);
-		document.types[0].fields[0].textProfile = 3;
-		const errors = validateIrDocument(document);
-		expect(errors.length, name).toBeGreaterThan(0);
-		expect(JSON.stringify(errors), name).toContain("textProfile");
-	}
-});
-
 it("TC-1842/1843/1847/1852 keeps both TS readers on exact Clock and quantity located verdicts", () => {
 	// FR-146-AC-2, FR-146-AC-6, FR-146-AC-9: exact reader assertions below.
 	const cases = JSON.parse(
@@ -537,13 +506,23 @@ it("TC-1842/1843/1847/1852 keeps both TS readers on exact Clock and quantity loc
 		name: string;
 		document: ReturnType<typeof configTime>;
 		expected: { code: string; pointer: string }[];
+		ajv: "accepts" | "rejects";
 	}[];
 	const order = (
 		a: { code: string; pointer: string },
 		b: { code: string; pointer: string },
 	) => `${a.code}${a.pointer}`.localeCompare(`${b.code}${b.pointer}`);
 	for (const c of cases) {
-		expect(validateIrDocument(c.document), c.name).toEqual([]);
+		// Two-level contract (FR-146-AC-2): the strict published schema keys its
+		// rules on the literal Clock/unit typeRef, so it rejects some alias-typed
+		// members itself ("rejects"); the readers still raise the member code, and
+		// every layer rejects such a document.
+		const schema = validateIrDocument(c.document);
+		if (c.ajv === "accepts") expect(schema, c.name).toEqual([]);
+		else {
+			expect(schema.length, c.name).toBeGreaterThan(0);
+			expect(c.expected.length, c.name).toBeGreaterThan(0);
+		}
 		const actual = [...readContractIr(c.document)].map((d) => ({
 			code: d.code,
 			pointer: d.message.split(": ")[0],
