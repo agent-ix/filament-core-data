@@ -181,6 +181,11 @@ a field or operation parameter.
   `DECIMAL_POLICY_MISSING`, `DECIMAL_POLICY_CONFLICT` or
   `INVALID_DEFAULT_VALUE` at any of the shape members, so that
   `INVALID_CLOCK_MEMBER` is the one code each such member carries.
+  The published JSON Schema cannot follow an alias, so it types a member's
+  `textProfile` as a string only; the reader SHALL refuse a `textProfile`
+  outside the enumeration on every other member with `SCHEMA_VIOLATION` at
+  `<member>/textProfile`, and on a clock or unit member (directly or through an
+  alias) with `INVALID_CLOCK_MEMBER` or `INVALID_QUANTITY_MEMBER` there.
 - For a clock member, the reader SHALL NOT apply the constraint rules
   (`UNKNOWN_CONSTRAINT_KEYWORD`, `CONSTRAINT_NOT_APPLICABLE`, `INVALID_PATTERN`,
   `INVALID_OPERAND`) to its `constraints`, whose one code is the

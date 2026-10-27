@@ -492,8 +492,8 @@ it("TC-1846 refuses an arbitrarily long canonical integer without widening the i
 	]);
 });
 
-it("TC-1843 refuses a non-enumerated text profile on an alias-typed member at the schema layer for core and construct aliases", () => {
-	// FR-146-AC-2: the schema keys its relaxation on the literal Clock typeRef.
+it("TC-1843 keeps the schema layer from pre-rejecting a non-enumerated text profile on a clock or unit member, and still refuses a non-string one", () => {
+	// FR-146-AC-2: the verdict is INVALID_CLOCK_MEMBER, never SCHEMA_VIOLATION.
 	const cases = JSON.parse(
 		readFileSync(
 			new URL(
@@ -506,13 +506,17 @@ it("TC-1843 refuses a non-enumerated text profile on an alias-typed member at th
 	for (const name of [
 		"clock-alias-field-invalid-shape",
 		"clock-construct-alias-field-invalid-shape",
+		"quantity-alias-field-invalid-shape",
+		"quantity-construct-alias-field-invalid-shape",
 	]) {
 		const found = cases.find((c) => c.name === name);
 		expect(found, name).toBeDefined();
 		const document = structuredClone(found?.document) as ReturnType<
 			typeof configTime
 		>;
-		document.types[0].fields[0].textProfile = "anything";
+		expect(document.types[0].fields[0].textProfile, name).toBe("unicode");
+		expect(validateIrDocument(document), name).toEqual([]);
+		document.types[0].fields[0].textProfile = 3;
 		const errors = validateIrDocument(document);
 		expect(errors.length, name).toBeGreaterThan(0);
 		expect(JSON.stringify(errors), name).toContain("textProfile");

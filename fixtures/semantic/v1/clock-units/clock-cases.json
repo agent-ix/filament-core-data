@@ -1044,7 +1044,8 @@
 										}
 									}
 								}
-							]
+							],
+							"textProfile": "unicode"
 						}
 					]
 				},
@@ -1093,6 +1094,10 @@
 			{
 				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
 				"pointer": "/ir/types/0/fields/0/constraints"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/textProfile"
 			}
 		]
 	},
@@ -3064,7 +3069,8 @@
 								}
 							},
 							"unit": "ms",
-							"defaultValue": 0
+							"defaultValue": 0,
+							"textProfile": "unicode"
 						}
 					]
 				},
@@ -3101,6 +3107,10 @@
 			{
 				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
 				"pointer": "/ir/types/0/fields/0/defaultValue"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/textProfile"
 			}
 		]
 	},
@@ -6239,7 +6249,7 @@
 								"precision": 4,
 								"scale": 2
 							},
-							"textProfile": "nfc",
+							"textProfile": "unicode",
 							"constraints": [
 								{
 									"identity": "ix://acme/config/Config/x/min",
@@ -6376,7 +6386,7 @@
 									"inputIdentities": ["ix://acme/config/source"]
 								}
 							},
-							"textProfile": "nfc"
+							"textProfile": "unicode"
 						}
 					]
 				},
@@ -6913,7 +6923,7 @@
 							},
 							"unit": "ms",
 							"defaultValue": 0,
-							"textProfile": "nfc"
+							"textProfile": "unicode"
 						}
 					]
 				},
@@ -7152,6 +7162,173 @@
 			{
 				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
 				"pointer": "/ir/types/0/constraints/0/operands/value"
+			}
+		]
+	},
+	{
+		"name": "ordinary-string-field-invalid-text-profile",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://quire/native/String",
+							"multiplicity": {
+								"lower": 1,
+								"upper": 1,
+								"ordered": false,
+								"unique": false
+							},
+							"presence": "required",
+							"nullable": false,
+							"defaultKind": "none",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"textProfile": "unicode"
+						}
+					]
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+				"pointer": "/ir/types/0/fields/0/textProfile"
+			}
+		]
+	},
+	{
+		"name": "ordinary-alias-string-field-invalid-text-profile",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Label",
+							"multiplicity": {
+								"lower": 1,
+								"upper": 1,
+								"ordered": false,
+								"unique": false
+							},
+							"presence": "required",
+							"nullable": false,
+							"defaultKind": "none",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"textProfile": "unicode"
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Label",
+					"displayName": "Label",
+					"kind": "alias",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/String"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+				"pointer": "/ir/types/0/fields/0/textProfile"
 			}
 		]
 	}

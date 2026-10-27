@@ -774,31 +774,6 @@
 			"allOf": [
 				{
 					"if": {
-						"properties": {
-							"typeRef": {
-								"anyOf": [
-									{
-										"const": "ix://quire/native/Clock"
-									},
-									{
-										"type": "string",
-										"pattern": "^ix://quire/unit/(?:(?:[A-Za-z][A-Za-z0-9_]*|[a-z0-9][a-z0-9._-]*)/)*[A-Za-z][A-Za-z0-9_]*$"
-									}
-								]
-							}
-						},
-						"required": ["typeRef"]
-					},
-					"else": {
-						"properties": {
-							"textProfile": {
-								"$ref": "common.schema.json#/$defs/textProfile"
-							}
-						}
-					}
-				},
-				{
-					"if": {
 						"not": {
 							"properties": {
 								"typeRef": {
