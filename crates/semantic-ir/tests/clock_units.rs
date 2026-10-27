@@ -265,11 +265,7 @@ fn tc_1843_alias_typed_clock_member_carries_only_its_own_shape_code() {
         Json::Str("ix://acme/config/Stopwatch".to_owned()),
     );
     set_member(&mut list[0], "unit", Json::Str("ms".to_owned()));
-    set_member(
-        &mut list[0],
-        "textProfile",
-        Json::Str("anything".to_owned()),
-    );
+    set_member(&mut list[0], "textProfile", Json::Str("nfc".to_owned()));
     set_member(&mut document, "types", Json::Array(vec![record, alias]));
     let bundle = Json::Object(vec![("ir".to_owned(), document)]);
     let mut observed: Vec<_> = decide(&bundle)
@@ -290,6 +286,41 @@ fn tc_1843_alias_typed_clock_member_carries_only_its_own_shape_code() {
                 "/ir/types/0/fields/0/unit".to_string()
             ),
         ]
+    );
+    // The published schema keys its clock relaxation on the literal typeRef, so
+    // a text profile outside the enumeration on an alias-typed member is a
+    // schema violation at every layer, never an INVALID_CLOCK_MEMBER.
+    let ir = bundle.get("ir").expect("ir").clone();
+    let mut document = ir;
+    let Some((_, Json::Array(types))) = (match &mut document {
+        Json::Object(members) => members.iter_mut().find(|(key, _)| key == "types"),
+        _ => None,
+    }) else {
+        panic!("types")
+    };
+    let Json::Object(record) = &mut types[0] else {
+        panic!("record")
+    };
+    let Some((_, Json::Array(list))) = record.iter_mut().find(|(key, _)| key == "fields") else {
+        panic!("fields")
+    };
+    set_member(
+        &mut list[0],
+        "textProfile",
+        Json::Str("anything".to_owned()),
+    );
+    let bundle = Json::Object(vec![("ir".to_owned(), document)]);
+    let observed: Vec<_> = decide(&bundle)
+        .diagnostics
+        .into_iter()
+        .map(|d| (d.code, d.pointer))
+        .collect();
+    assert_eq!(
+        observed,
+        vec![(
+            "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+            "/ir/types/0/fields/0/textProfile".to_string()
+        )]
     );
 }
 

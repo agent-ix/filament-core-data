@@ -309,6 +309,10 @@ function quantityReference(reference: unknown): boolean {
 	);
 }
 
+const constructAliases = new WeakSet<JsonObject>();
+function isAliasDefinition(definition: JsonObject): boolean {
+	return definition.kind === "alias" || constructAliases.has(definition);
+}
 /**
  * What a type reference makes of the member or constraint subject holding it:
  * a clock or a well-formed quantity, directly or through aliases and a field's
@@ -358,7 +362,7 @@ function specialKind(
 			continue;
 		}
 		const definition = types.get(reference);
-		if (!definition || definition.kind !== "alias") break;
+		if (!definition || !isAliasDefinition(definition)) break;
 		reference = definition.target;
 	}
 	for (const step of walked) memo.set(step, found);
@@ -1208,6 +1212,22 @@ export function readSemanticIr(
 	const types = new Map<string, JsonObject>();
 	for (const definition of asArray(document.types))
 		types.set(String(definition.identity), definition);
+	// A type whose construct kind declares the alias shape is an alias, as a
+	// core `alias` is (FR-142): both reach a clock or unit for FR-146.
+	const aliasKinds = new Set<string>();
+	for (const entry of asArray(document.constructs)) {
+		const shape = isObject(entry.construct) ? entry.construct.shape : undefined;
+		if (shape === "alias" && isObject(entry.kind))
+			aliasKinds.add(JSON.stringify([entry.kind.module, entry.kind.name]));
+	}
+	for (const definition of types.values())
+		if (
+			isObject(definition.kind) &&
+			aliasKinds.has(
+				JSON.stringify([definition.kind.module, definition.kind.name]),
+			)
+		)
+			constructAliases.add(definition);
 	// Every field or operation param in the document, by its own identity
 	// (mirrors tests/semantic_ir_reader.py's `_field_index`).
 	const fields = new Map<string, JsonObject>();

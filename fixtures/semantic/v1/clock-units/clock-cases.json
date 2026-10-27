@@ -5982,5 +5982,1177 @@
 				"pointer": "/ir/types/0/fields/0/typeRef"
 			}
 		]
+	},
+	{
+		"name": "clock-construct-alias",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": []
+	},
+	{
+		"name": "clock-construct-alias-field",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Stopwatch",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"defaultKind": "none",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": []
+	},
+	{
+		"name": "clock-construct-alias-field-invalid-shape",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Stopwatch",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": true,
+							"defaultKind": "semantic",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"defaultValue": 0,
+							"unit": "ms",
+							"decimal": {
+								"precision": 4,
+								"scale": 2
+							},
+							"textProfile": "nfc",
+							"constraints": [
+								{
+									"identity": "ix://acme/config/Config/x/min",
+									"keyword": "min",
+									"operands": {
+										"value": "0"
+									},
+									"appliesTo": "ix://acme/config/Config/x",
+									"diagnosticCode": "ix://acme/config/MIN",
+									"origin": {
+										"generated": {
+											"generatorIdentity": "ix://acme/config/case-author",
+											"generatorVersion": "1.0.0",
+											"inputIdentities": ["ix://acme/config/source"]
+										}
+									}
+								}
+							]
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/nullable"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultKind"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultValue"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/unit"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/decimal"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/textProfile"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/constraints"
+			}
+		]
+	},
+	{
+		"name": "clock-core-alias-field-invalid-text-profile",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Stopwatch",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"defaultKind": "none",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"textProfile": "nfc"
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
+					"kind": "alias",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/textProfile"
+			}
+		]
+	},
+	{
+		"name": "clock-alias-chain-through-construct-alias-invalid-shape",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Outer",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"defaultKind": "none",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"unit": "ms"
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Outer",
+					"displayName": "Outer",
+					"kind": "alias",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://acme/config/Stopwatch"
+				},
+				{
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				"pointer": "/ir/types/0/fields/0/unit"
+			}
+		]
+	},
+	{
+		"name": "clock-construct-alias-reference-accepted",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "reference",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://acme/config/Stopwatch"
+				},
+				{
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": []
+	},
+	{
+		"name": "clock-construct-alias-constraint-keyword-refused",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [
+						{
+							"identity": "ix://acme/config/Config/c",
+							"keyword": "pattern",
+							"operands": {
+								"regex": "x",
+								"dialect": "ecma-262"
+							},
+							"appliesTo": "ix://acme/config/Stopwatch",
+							"diagnosticCode": "ix://acme/config/MIN",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							}
+						}
+					],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": []
+				},
+				{
+					"identity": "ix://acme/config/Stopwatch",
+					"displayName": "Stopwatch",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/native/Clock"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE",
+				"pointer": "/ir/types/0/constraints/0/keyword"
+			}
+		]
+	},
+	{
+		"name": "quantity-construct-alias-field",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Delay",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"defaultKind": "none",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							}
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Delay",
+					"displayName": "Delay",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/unit/ms"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": []
+	},
+	{
+		"name": "quantity-construct-alias-field-invalid-shape",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": [
+						{
+							"identity": "ix://acme/config/Config/x",
+							"name": "x",
+							"typeRef": "ix://acme/config/Delay",
+							"multiplicity": {
+								"lower": 1,
+								"ordered": false,
+								"unique": false,
+								"upper": 1
+							},
+							"presence": "required",
+							"nullable": false,
+							"defaultKind": "semantic",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							},
+							"unit": "ms",
+							"defaultValue": 0,
+							"textProfile": "nfc"
+						}
+					]
+				},
+				{
+					"identity": "ix://acme/config/Delay",
+					"displayName": "Delay",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/unit/ms"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/unit"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultKind"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/defaultValue"
+			},
+			{
+				"code": "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
+				"pointer": "/ir/types/0/fields/0/textProfile"
+			}
+		]
+	},
+	{
+		"name": "quantity-construct-alias-reference-refused",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "reference",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://acme/config/Delay"
+				},
+				{
+					"identity": "ix://acme/config/Delay",
+					"displayName": "Delay",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/unit/ms"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+				"pointer": "/ir/types/0/target"
+			}
+		]
+	},
+	{
+		"name": "quantity-construct-alias-constraint-operand-refused",
+		"document": {
+			"contractVersion": "2.0.0",
+			"canonicalization": {
+				"algorithm": "rfc8785-v1",
+				"digest": "sha256-jcs"
+			},
+			"source": {
+				"identity": "ix://test/orders/source",
+				"version": "1",
+				"dialect": "spec-bundle",
+				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+			},
+			"package": {
+				"identity": "acme/config",
+				"version": "1",
+				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+				"mappingVersions": ["1.0.0"],
+				"profileVersions": []
+			},
+			"constructs": [
+				{
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"moduleVersion": "1.0.0",
+					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+					"construct": {
+						"identity": "none",
+						"shape": "alias",
+						"meaning": "quire.meaning.model.value-type/v1",
+						"members": {
+							"target": "required"
+						}
+					}
+				}
+			],
+			"types": [
+				{
+					"identity": "ix://acme/config/Config",
+					"displayName": "Config",
+					"kind": "record",
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [
+						{
+							"identity": "ix://acme/config/Config/c",
+							"keyword": "max",
+							"operands": {
+								"value": "2/4"
+							},
+							"appliesTo": "ix://acme/config/Delay",
+							"diagnosticCode": "ix://acme/config/MIN",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/config/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/config/source"]
+								}
+							}
+						}
+					],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"fields": []
+				},
+				{
+					"identity": "ix://acme/config/Delay",
+					"displayName": "Delay",
+					"kind": {
+						"module": "test/business",
+						"name": "value_type"
+					},
+					"roles": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/config/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/config/source"]
+						}
+					},
+					"constraints": [],
+					"extensions": [],
+					"unknownPolicy": "reject",
+					"target": "ix://quire/unit/ms"
+				}
+			],
+			"occurrences": [],
+			"extensions": []
+		},
+		"expected": [
+			{
+				"code": "agent-ix.semantic-ir.INVALID_OPERAND",
+				"pointer": "/ir/types/0/constraints/0/operands/value"
+			}
+		]
 	}
 ]

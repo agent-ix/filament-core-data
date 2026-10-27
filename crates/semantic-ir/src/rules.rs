@@ -41,7 +41,7 @@ const INVALID_QUANTITY_MEMBER: &str = "agent-ix.semantic-ir.INVALID_QUANTITY_MEM
 
 // These references have position-specific rules; ordinary identity members
 // continue to use their own resolution rules.
-fn special_type_ref(identity: &str) -> bool {
+pub(crate) fn special_type_ref(identity: &str) -> bool {
     identity == CLOCK_TYPE_REF || identity.starts_with("ix://quire/unit/")
 }
 

@@ -13,7 +13,9 @@ use std::collections::{BTreeSet, HashSet};
 
 use crate::diag::{child, index};
 use crate::json::Json;
-use crate::rules::{native_scalar, Document, Sink, DANGLING_CLAUSE_REF, UNRESOLVED_TYPE_REF};
+use crate::rules::{
+    native_scalar, special_type_ref, Document, Sink, DANGLING_CLAUSE_REF, UNRESOLVED_TYPE_REF,
+};
 use crate::schema::SCHEMA_VIOLATION;
 use crate::vocabulary::{Declaration, Member, Rule, Shape};
 
@@ -340,7 +342,12 @@ fn references(
                 .flatten()
         });
         let Some(found) = found else {
-            if member == Member::Target && native_scalar(&name).is_some() {
+            // A construct alias, as a core alias, may target a native scalar,
+            // the clock or a quantity reference (FR-146-AC-2, FR-146-AC-6); a
+            // malformed quantity reference is refused by the type-ref rule.
+            if member == Member::Target
+                && (native_scalar(&name).is_some() || special_type_ref(&name))
+            {
                 continue;
             }
             let message = if member == Member::SourceElement {
