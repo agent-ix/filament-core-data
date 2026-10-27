@@ -4263,6 +4263,33 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			fingerprintIr(withTwo(["0", "1"], ["ix://a/Q", "ix://a/P"])),
 		).not.toBe(fieldsForward);
 
+		// An operation's `params` are positional (QSpec FR-154, FR-432): a
+		// reversal is a different document, while a parameter's own
+		// `extensions` stay an identity set.
+		const withParams = (names: string[], extensions: string[]) => {
+			const doc = JSON.parse(JSON.stringify(document)) as never as {
+				types: Json[];
+			};
+			(doc.types[0] as Json).operations = [
+				{
+					identity: "ix://a/T/op",
+					params: names.map((name) => ({
+						identity: `ix://a/T/op/${name}`,
+						name,
+						extensions: extensions.map((identity) => ({ identity })),
+					})),
+				},
+			];
+			return doc;
+		};
+		const paramsForward = fingerprintIr(withParams(["z", "a"], ["x", "y"]));
+		expect(fingerprintIr(withParams(["a", "z"], ["x", "y"]))).not.toBe(
+			paramsForward,
+		);
+		expect(fingerprintIr(withParams(["z", "a"], ["y", "x"]))).toBe(
+			paramsForward,
+		);
+
 		const semantic = JSON.parse(JSON.stringify(document)) as never as {
 			types: Json[];
 		};

@@ -9,7 +9,8 @@
 //! serializes the same tree the frontend assembled.
 //!
 //! [`sort_node_lists`] orders every identity-keyed set by `identity` under a
-//! code-point comparison, except a type's `fields` and `supertypes`, whose
+//! code-point comparison, except a type's `fields` and `supertypes` and an
+//! operation's `params`, whose
 //! array order is authored and significant — the set FR-050's `normalizeIr` declares
 //! (`IDENTITY_SETS` of `src/compiler/ir/normalize.mjs`), so that
 //! `normalizeIr` of the written document is the identity on its bytes
@@ -63,8 +64,8 @@ fn sort_field(field: &mut Value) {
 /// Sort every identity-keyed set of `document` in place (FR-097 "Canonical
 /// form"): `types`; within each type `variants`, `constraints`,
 /// `relationships`, `operations`, `clauses` and `extensions`; within each
-/// field its `extensions` (the `fields` array itself keeps its order); within each operation `params` and each
-/// parameter's `extensions`; `occurrences`; and the top-level `extensions`.
+/// field its `extensions` (the `fields` array itself keeps its order); within each operation each
+/// parameter's `extensions` (the `params` array itself keeps its order); `occurrences`; and the top-level `extensions`.
 pub fn sort_node_lists(document: &mut Value) {
     if let Some(types) = document.get_mut("types") {
         if let Some(definitions) = types.as_array_mut() {
@@ -83,7 +84,6 @@ pub fn sort_node_lists(document: &mut Value) {
                 {
                     for operation in operations.iter_mut() {
                         if let Some(params) = operation.get_mut("params") {
-                            sort_by_identity(params);
                             if let Some(params) = params.as_array_mut() {
                                 params.iter_mut().for_each(sort_field);
                             }
