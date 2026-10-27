@@ -99,8 +99,8 @@ fn node_lists(document: &Value) -> Vec<(String, Vec<String>)> {
         .iter()
         .enumerate()
     {
+        // `fields` and `supertypes` are ordered sequences, not sorted sets.
         for list in [
-            "fields",
             "variants",
             "constraints",
             "relationships",
@@ -401,6 +401,36 @@ fn document_strategy() -> impl Strategy<Value = Value> {
                 "extensions": extensions,
             })
         })
+}
+
+#[trace("TC-1276", "FR-097-AC-4")]
+#[test]
+fn tc_1276_fields_and_supertypes_keep_their_authored_order_while_sets_are_identity_sorted() {
+    let mut document = json!({
+        "types": [{
+            "identity": "ix://a/T",
+            "supertypes": [{"identity": "ix://a/Q"}, {"identity": "ix://a/P"}],
+            "fields": [
+                {"identity": "ix://a/T~b", "extensions": [{"identity": "z"}, {"identity": "y"}]},
+                {"identity": "ix://a/T~a"}
+            ],
+            "variants": [{"identity": "ix://a/T~v2"}, {"identity": "ix://a/T~v1"}],
+        }]
+    });
+    sort_node_lists(&mut document);
+    let ids = |pointer: &str| -> Vec<String> {
+        document
+            .pointer(pointer)
+            .and_then(Value::as_array)
+            .expect("list")
+            .iter()
+            .map(|n| n["identity"].as_str().expect("identity").to_string())
+            .collect()
+    };
+    assert_eq!(ids("/types/0/fields"), ["ix://a/T~b", "ix://a/T~a"]);
+    assert_eq!(ids("/types/0/supertypes"), ["ix://a/Q", "ix://a/P"]);
+    assert_eq!(ids("/types/0/variants"), ["ix://a/T~v1", "ix://a/T~v2"]);
+    assert_eq!(ids("/types/0/fields/0/extensions"), ["y", "z"]);
 }
 
 #[trace("TC-1276", "FR-097-AC-4")]

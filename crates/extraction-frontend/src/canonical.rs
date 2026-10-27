@@ -9,7 +9,8 @@
 //! serializes the same tree the frontend assembled.
 //!
 //! [`sort_node_lists`] orders every identity-keyed set by `identity` under a
-//! code-point comparison — the set FR-050's `normalizeIr` declares
+//! code-point comparison, except a type's `fields` and `supertypes`, whose
+//! array order is authored and significant — the set FR-050's `normalizeIr` declares
 //! (`IDENTITY_SETS` of `src/compiler/ir/normalize.mjs`), so that
 //! `normalizeIr` of the written document is the identity on its bytes
 //! (FR-097-AC-5). FR-097 lists the type-level lists and `params`; the
@@ -23,9 +24,11 @@ use serde_json::Value;
 
 /// The member of the input bundle the reader decides.
 pub const IR_MEMBER: &str = "ir";
-/// The identity-keyed lists of one `typeDefinition`, in FR-097's order.
-pub const TYPE_LISTS: [&str; 7] = [
-    "fields",
+/// The identity-keyed sets of one `typeDefinition`, in FR-097's order.
+/// `fields` is not among them: its array order is the authored declaration
+/// order (QSpec FR-154-AC-32), which the effective field order reads
+/// (FR-208-AC-18), so it is kept as assembled and `supertypes` likewise.
+pub const TYPE_LISTS: [&str; 6] = [
     "variants",
     "constraints",
     "relationships",
@@ -58,9 +61,9 @@ fn sort_field(field: &mut Value) {
 }
 
 /// Sort every identity-keyed set of `document` in place (FR-097 "Canonical
-/// form"): `types`; within each type `fields`, `variants`, `constraints`,
+/// form"): `types`; within each type `variants`, `constraints`,
 /// `relationships`, `operations`, `clauses` and `extensions`; within each
-/// field its `extensions`; within each operation `params` and each
+/// field its `extensions` (the `fields` array itself keeps its order); within each operation `params` and each
 /// parameter's `extensions`; `occurrences`; and the top-level `extensions`.
 pub fn sort_node_lists(document: &mut Value) {
     if let Some(types) = document.get_mut("types") {

@@ -178,13 +178,13 @@ fn tc_1293_a_snapshot_payload_validates_and_version_number_zero_fails_at_version
     assert_eq!(
         names,
         [
-            "createdAt",
-            "createdBy",
+            "id",
+            "versionNumber",
             "data",
             "hash",
-            "id",
             "parent",
-            "versionNumber"
+            "createdAt",
+            "createdBy"
         ]
     );
     let representative = serde_json::json!({
