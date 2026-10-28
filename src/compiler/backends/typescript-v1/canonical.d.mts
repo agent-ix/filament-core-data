@@ -1,6 +1,6 @@
 /** Declarations for the TypeScript backend's canonical byte form (FR-069). */
 
-/** The thirteen container paths the fingerprint form orders by `identity`. */
+/** The eleven container paths the fingerprint form orders by `identity`. */
 export declare const IDENTITY_SET_PATHS: readonly string[];
 
 /** The declared key-ordering rule, named so a later definition is a data edit. */

@@ -23,6 +23,9 @@ import {
 import {
 	CanonicalError,
 	canonicalize as canonicalizeForTarget,
+	fingerprintIrForTarget,
+	IDENTITY_SET_PATHS,
+	normalizeIr as normalizeIrForFingerprint,
 	normalizeIrForTarget,
 } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 import {
@@ -1314,6 +1317,234 @@ describe("FR-069 canonicalization: nullable materialization (fcd#187)", () => {
 				normalized.types[0].fields as Record<string, unknown>[]
 			)[0];
 			expect(normalizedField.nullable, testCase.id).toBe(testCase.normalized);
+		}
+	});
+});
+
+describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
+	/** Traces: TC-1871; FR-069-AC-26. */
+	it("TC-1871 matches every committed canonical byte and digest vector", () => {
+		const fixture = JSON.parse(
+			readFileSync(
+				resolve(
+					root,
+					"test/fixtures/compiler/rfc8785/typescript-identity-set-fingerprint.json",
+				),
+				"utf8",
+			),
+		) as {
+			vectors: {
+				id: string;
+				input: unknown;
+				expectedBytes: string;
+				sha256: string;
+			}[];
+		};
+		expect(fixture.vectors.map(({ id }) => id)).toEqual([
+			"base-out-of-order-sets",
+			"genuine-sets-permuted",
+			"fields-reversed",
+			"supertypes-reversed",
+			"params-reversed",
+		]);
+		for (const row of fixture.vectors) {
+			expect(
+				canonicalizeForTarget(normalizeIrForFingerprint(row.input), {
+					sets: true,
+				}),
+				row.id,
+			).toBe(row.expectedBytes);
+			expect(fingerprintIrForTarget(row.input), row.id).toBe(row.sha256);
+		}
+		const [base, permuted, ...reversed] = fixture.vectors;
+		expect(permuted.expectedBytes).toBe(base.expectedBytes);
+		expect(permuted.sha256).toBe(base.sha256);
+		expect(
+			new Set(reversed.map(({ expectedBytes }) => expectedBytes)).size,
+		).toBe(3);
+		expect(new Set(reversed.map(({ sha256 }) => sha256)).size).toBe(3);
+		for (const row of reversed) {
+			expect(row.expectedBytes).not.toBe(base.expectedBytes);
+			expect(row.sha256).not.toBe(base.sha256);
+			expect(normalizeIrForTarget(row.input)).not.toBe(
+				normalizeIrForTarget(base.input),
+			);
+		}
+		expect(normalizeIrForTarget(permuted.input)).not.toBe(
+			normalizeIrForTarget(base.input),
+		);
+	});
+
+	/** Traces: TC-806; FR-069-AC-1, FR-069-AC-2. */
+	it("TC-806 ignores permutations at every declared set path and no ordered path", () => {
+		const expectedPaths = [
+			"/types",
+			"/types/*/variants",
+			"/types/*/constraints",
+			"/types/*/relationships",
+			"/types/*/operations",
+			"/types/*/clauses",
+			"/types/*/extensions",
+			"/types/*/fields/*/extensions",
+			"/types/*/operations/*/params/*/extensions",
+			"/occurrences",
+			"/extensions",
+		];
+		expect(IDENTITY_SET_PATHS).toEqual(expectedPaths);
+		const pair = () => [{ identity: "z" }, { identity: "a" }];
+		const base = {
+			types: [
+				{
+					identity: "z",
+					fields: [{ identity: "f", extensions: pair() }],
+					variants: pair(),
+					constraints: pair(),
+					relationships: pair(),
+					operations: [
+						{
+							identity: "z",
+							params: [{ identity: "p", extensions: pair() }],
+						},
+						{ identity: "a" },
+					],
+					clauses: pair(),
+					extensions: pair(),
+				},
+				{ identity: "a" },
+			],
+			occurrences: pair(),
+			extensions: pair(),
+		};
+		const expectedBytes = canonicalizeForTarget(base);
+		const expectedDigest = fingerprintIrForTarget(base);
+		for (const path of expectedPaths) {
+			const changed = structuredClone(base);
+			let value: unknown = changed;
+			for (const segment of path.slice(1).split("/")) {
+				value =
+					segment === "*"
+						? (value as unknown[])[0]
+						: (value as Record<string, unknown>)[segment];
+			}
+			if (!Array.isArray(value)) throw new Error(`missing set at ${path}`);
+			value.reverse();
+			expect(canonicalizeForTarget(changed), path).toBe(expectedBytes);
+			expect(fingerprintIrForTarget(changed), path).toBe(expectedDigest);
+			expect(normalizeIrForTarget(changed), path).not.toBe(
+				normalizeIrForTarget(base),
+			);
+		}
+	});
+
+	/** Traces: TC-792; FR-067-AC-6, FR-069-AC-2. */
+	it("TC-792 fingerprints admitted documents by set identity and authored sequence order", () => {
+		const cliSource = readFileSync(generator, "utf8");
+		expect(cliSource).toContain(
+			'import { fingerprintIrForTarget } from "./backends/typescript-v1/canonical.mjs";',
+		);
+		expect(cliSource).toMatch(
+			/lockFingerprint:\s*fingerprintIrForTarget\(ir\)/,
+		);
+		type Type = {
+			identity: string;
+			fields?: unknown[];
+			supertypes?: string[];
+			operations?: { params?: unknown[] }[];
+			constraints?: {
+				identity: string;
+				diagnosticCode: string;
+			}[];
+			extensions?: { identity: string }[];
+		};
+		type Document = { types: Type[] };
+		const base = JSON.parse(
+			readFileSync(
+				resolve(
+					root,
+					"fixtures/semantic/v1/positive/semantic-ir-v2-constructs.json",
+				),
+				"utf8",
+			),
+		) as Document;
+		const parent = structuredClone(
+			base.types.find(
+				(type) => type.identity === "ix://agent-ix/orders/FR-000",
+			),
+		) as Type & { displayName: string; identityFields?: string[] };
+		parent.identity = "ix://agent-ix/orders/FR-002";
+		parent.displayName = "Empty Parent";
+		parent.fields = [];
+		delete parent.identityFields;
+		base.types.push(parent);
+		const find = (document: Document, identity: string) => {
+			const type = document.types.find((entry) => entry.identity === identity);
+			if (!type) throw new Error(`missing type ${identity}`);
+			return type;
+		};
+		find(base, "ix://agent-ix/orders/FR-001").supertypes?.push(parent.identity);
+		const constrained = find(base, "ix://agent-ix/orders/FR-001Note");
+		const constraint = structuredClone(constrained.constraints?.[0]);
+		if (!constraint) throw new Error("missing base constraint");
+		constraint.identity =
+			"ix://agent-ix/orders/constraint/FR-001-note-maxLength-alt";
+		constraint.diagnosticCode = "agent-ix.orders.ORDER_NOTE_MAXLENGTH_ALT";
+		constrained.constraints?.push(constraint);
+		const extended = find(base, "ix://agent-ix/orders/Decimal");
+		const extension = structuredClone(extended.extensions?.[0]);
+		if (!extension) throw new Error("missing base extension");
+		extension.identity = "ix://agent-ix/semantic-core/ext/kernel-scalar-alt";
+		extended.extensions?.push(extension);
+		const admitted = (document: Document) => {
+			const verdict = admitIr({ ir: document }, { schemas: admissionSchemas });
+			expect(verdict.resultState).toBe("success");
+		};
+		admitted(base);
+		const digest = fingerprintIrForTarget(base);
+		for (const [name, reverse] of [
+			["types", (document: Document) => document.types.reverse()],
+			[
+				"constraints",
+				(document: Document) =>
+					find(
+						document,
+						"ix://agent-ix/orders/FR-001Note",
+					).constraints?.reverse(),
+			],
+			[
+				"extensions",
+				(document: Document) =>
+					find(document, "ix://agent-ix/orders/Decimal").extensions?.reverse(),
+			],
+		] as const) {
+			const changed = structuredClone(base);
+			reverse(changed);
+			admitted(changed);
+			expect(fingerprintIrForTarget(changed), name).toBe(digest);
+		}
+		for (const [name, reverse] of [
+			[
+				"fields",
+				(document: Document) =>
+					find(document, "ix://agent-ix/orders/FR-001").fields?.reverse(),
+			],
+			[
+				"supertypes",
+				(document: Document) =>
+					find(document, "ix://agent-ix/orders/FR-001").supertypes?.reverse(),
+			],
+			[
+				"params",
+				(document: Document) =>
+					find(
+						document,
+						"ix://agent-ix/orders/OP-001",
+					).operations?.[0]?.params?.reverse(),
+			],
+		] as const) {
+			const changed = structuredClone(base);
+			reverse(changed);
+			admitted(changed);
+			expect(fingerprintIrForTarget(changed), name).not.toBe(digest);
 		}
 	});
 });

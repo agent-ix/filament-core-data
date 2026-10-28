@@ -16,15 +16,15 @@
  * - the **unextended** RFC 8785 form, every array left in document order. This
  *   is the normalized document's `rfc8785-v1` form and it is what an adapter
  *   answer's `normalized` member carries, including its descriptor.
- * - the **extended** form, which sorts the members of the thirteen container
+ * - the **extended** form, which sorts the members of the eleven container
  *   paths below by their `identity`. This is the
  *   `RFC8785-JCS-with-identity-sorted-sets-v1` that
  *   `docs/semantic-data-system/contracts-v1.md` names for the v1 fingerprint,
  *   and it is what makes two documents differing only in set order carry one
  *   fingerprint.
  *
- * The normalized form and the extended package-lock fingerprint are separate
- * domains. The normalized form is named by FR-145 and carries
+ * The normalized form and the extended TypeScript backend fingerprint are
+ * separate domains. The normalized form is named by FR-145 and carries
  * `canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" }`.
  */
 
@@ -33,13 +33,12 @@ import { createHash } from "node:crypto";
 /**
  * The container paths whose members are a *set* — ordered by their members'
  * identity rather than by position — declared once, as data, so that a
- * fourteenth path is an edit a test can see rather than a scattered change
+ * twelfth path is an edit a test can see rather than a scattered change
  * (FR-069-CON-2). `*` matches one path segment. This list applies to the
  * fingerprint form only; the corpus-comparable form leaves arrays alone.
  */
 export const IDENTITY_SET_PATHS = Object.freeze([
 	"/types",
-	"/types/*/fields",
 	"/types/*/variants",
 	"/types/*/constraints",
 	"/types/*/relationships",
@@ -47,7 +46,6 @@ export const IDENTITY_SET_PATHS = Object.freeze([
 	"/types/*/clauses",
 	"/types/*/extensions",
 	"/types/*/fields/*/extensions",
-	"/types/*/operations/*/params",
 	"/types/*/operations/*/params/*/extensions",
 	"/occurrences",
 	"/extensions",
@@ -273,8 +271,7 @@ export function normalizeIr(document) {
 }
 
 /**
- * The canonical string an adapter answer carries as `normalized`, and the input
- * to the IR fingerprint.
+ * The canonical string an adapter answer carries as `normalized`.
  *
  * It depends on nothing from the admissibility reader: FR-068 and FR-069 do not
  * form a cycle, and this function is measurable against every corpus case
@@ -284,7 +281,7 @@ export function normalizeIrForTarget(document) {
 	return canonicalize(normalizeIr(document), { sets: false });
 }
 
-/** The fingerprint of a document: the digest of its normalized canonical form. */
+/** The fingerprint of the materialized document's identity-sorted-set form. */
 export function fingerprintIrForTarget(document) {
-	return digestOf(normalizeIrForTarget(document));
+	return digestOf(canonicalize(normalizeIr(document), { sets: true }));
 }
