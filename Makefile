@@ -11,7 +11,7 @@
 export POETRY_VIRTUALENVS_IN_PROJECT := true
 # Poetry also honors an inherited active virtual environment. Pin test targets
 # to this checkout so an activated environment cannot redirect their subprocesses.
-test test-all test-node test-python test-rust: export VIRTUAL_ENV := $(CURDIR)/.venv
+test test-all test-node test-python test-rust sysml-pilot-check: export VIRTUAL_ENV := $(CURDIR)/.venv
 
 .PHONY: install
 install:
@@ -50,7 +50,7 @@ python-test-env-check:
 # SYSML_PILOT_CACHE outside this repository. The check fails with provisioning
 # details if either pinned artifact or the gate's jupyter-client is absent.
 .PHONY: sysml-pilot-check
-sysml-pilot-check:
+sysml-pilot-check: python-test-env-check
 	node scripts/check-sysml-pilot.mjs
 
 .PHONY: test-node
@@ -352,7 +352,8 @@ rust: rust-check rust-build rust-clippy rust-test rust-conformance rust-install-
 # target named for another language. The extraction-frontend crate's gates were
 # not in `make test` at any depth.
 .PHONY: test-rust
-test-rust: rust extraction-frontend-test spec-to-targets
+test-rust: python-test-env-check
+	$(MAKE) rust extraction-frontend-test spec-to-targets
 
 .PHONY: rust-deep
 rust-deep: rust-mutate rust-fuzz
