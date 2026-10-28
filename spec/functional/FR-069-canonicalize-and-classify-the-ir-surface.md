@@ -68,6 +68,7 @@ Classification is the half that depends on admissibility, and only for the
 
 - `src/compiler/backends/typescript-v1/canonical.mjs`: `canonicalize(value, { sets })`, `normalizeIr(document)` returning the materialized document, `normalizeIrForTarget(document)` returning the corpus-comparable canonical string, `fingerprintIrForTarget(document)` returning the contract fingerprint, `digestOf(text)` returning `sha256:<64 hex>`, `IDENTITY_SET_PATHS`, `KEY_ORDER`, `MAX_CANONICAL_DEPTH`, and `CanonicalError`
 - `src/compiler/backends/typescript-v1/canonical.d.mts` declaring that surface
+- `test/fixtures/compiler/rfc8785/typescript-identity-set-fingerprint.json`, the TypeScript backend's own fixed input, canonical-byte and SHA-256 vectors for its extended fingerprint domain; these are distinct from FR-048's compiler package-lock vectors
 - `src/compiler/backends/typescript-v1/classify.mjs`: `classifySurface(before, after, { consumerPolicy })` returning `{ classification, changes }`, `CLASSIFICATION_ORDER`, `MODELLED_CHANGES`, and `VARIANT_ADDITION_POLICY`
 - `src/compiler/backends/typescript-v1/classify.d.mts` declaring that surface
 
@@ -113,6 +114,7 @@ Classification is the half that depends on admissibility, and only for the
   requires.
 - `normalizeIrForTarget` SHALL use the unextended form, so that the string an adapter answer carries is the corpus's.
 - `fingerprintIrForTarget` SHALL return `digestOf(canonicalize(normalizeIr(document), { sets: true }))`, so the TypeScript backend fingerprint and CLI `lockFingerprint` preserve authored sequence order while ignoring genuine identity-set permutations. The CLI SHALL use that result without changing FR-048's separately named package-lock fingerprint.
+- The TypeScript fingerprint vector file SHALL publish fixed `expectedBytes` and `sha256` for each literal `input`, using `canonicalize(normalizeIr(input), { sets: true })` as the byte domain. Its `base-out-of-order-sets` and `genuine-sets-permuted` inputs SHALL differ only in the order of `/types` and `/types/*/extensions` and carry identical expected bytes and digests. Its three other inputs SHALL reverse only `fields`, `supertypes`, or `params` from the base and carry three distinct expected byte strings and digests. These synthetic canonicalization inputs need not pass semantic IR admission; the generated-package and CLI obligations are tested separately on admitted documents. The fixed expectations SHALL be read from this file rather than computed by the production canonicalizer under test.
 - `normalizeIrForTarget` SHALL force `nullable` to a literal boolean on every field and every operation parameter, unconditionally on `contractVersion`. `nullable` materializes `true` only where the authored member is the JSON literal `true`; every other value or its absence — `null`, `false`, a number, a string, an array, or an object, or no member at all — materializes `false` (fcd#187).
 - `normalizeIrForTarget` SHALL NOT derive `multiplicity` from `presence` or `presence` from `multiplicity`: both members are schema-required and independently authored under contract `2.0.0` (FR-106-CON-2), so neither is ever materialized from the other, and `normalizeIrForTarget` adds no member beyond the literal `nullable`.
 - `normalizeIrForTarget` SHALL be idempotent, so normalizing a normalized document yields identical bytes.
@@ -257,6 +259,7 @@ Classification is the half that depends on admissibility, and only for the
 | FR-069-AC-19 | `MODELLED_CHANGES` is exported as data, and a rule stated in this requirement but absent from that list fails the module's own contract test. | Test |
 | FR-069-AC-20 | `canonicalize` and `normalizeIrForTarget` run over every corpus case with no admissibility answer computed, demonstrating that canonicalization depends on nothing from FR-068. | Unit |
 | FR-069-AC-21 | The number negative zero canonicalizes to the same bytes as positive zero, and a document differing only in that sign yields one canonical form. | Unit |
+| FR-069-AC-26 | A test reads every `input`, `expectedBytes`, and `sha256` in `test/fixtures/compiler/rfc8785/typescript-identity-set-fingerprint.json`: `canonicalize(normalizeIr(input), { sets: true })` equals the committed `expectedBytes` byte for byte, and `fingerprintIrForTarget(input)` equals the committed `sha256`. The base and genuine-set permutation have equal committed bytes and digest; each ordered-sequence reversal has different committed bytes and digest from the base and from the other reversals. The test does not derive its expected values through `canonical.mjs`, and FR-048's separate package-lock vectors remain byte-identical. | Test |
 
 ## Dependencies
 
