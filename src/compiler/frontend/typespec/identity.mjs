@@ -25,6 +25,12 @@ export const SLOTS = Object.freeze({
 	typeConstraint: ["owner", "keyword"],
 });
 
+/** The artifact-id segment admitted by the Rust identity minter. */
+export function isArtifactIdSegment(value) {
+	const segment = String(value);
+	return /^[A-Za-z0-9._~-]+$/.test(segment) && /[A-Za-z0-9]/.test(segment);
+}
+
 /**
  * Reduces a declaration name to the identity charset: everything outside
  * `[A-Za-z0-9]` becomes `-`, runs collapse, and the ends are trimmed. Two
@@ -50,7 +56,7 @@ export function mintIdentity(packageIdentity, slot, parts) {
 	if (!(slot in SLOTS)) throw new TypeError(`unknown identity slot: ${slot}`);
 	if (slot === "field" || slot === "operation" || slot === "parameter") {
 		const [owner, ...members] = parts.map(String);
-		if (!owner || owner.includes("/"))
+		if (!isArtifactIdSegment(owner))
 			throw new TypeError("owner identity segment is malformed");
 		if (members.some((member) => !/^[A-Za-z][A-Za-z0-9_]*$/.test(member)))
 			throw new TypeError("member name is malformed");

@@ -131,6 +131,11 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
         Ok("ix://agent-ix/docs-service/variant/EN_001-MANUAL-STEP")
     );
     assert_eq!(
+        package.variant_identity("a-b", "Snap_Shot").as_deref(),
+        Ok("ix://agent-ix/docs-service/variant/a-b-Snap-Shot"),
+        "FR-154 names the variant case value as slugged"
+    );
+    assert_eq!(
         package.clause_identity("Snapshot", "immutable").as_deref(),
         Ok("ix://agent-ix/docs-service/Snapshot/immutable")
     );

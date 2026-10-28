@@ -119,8 +119,7 @@ async function identityCases(argv) {
 			if (["field", "operation", "parameter"].includes(slot)) {
 				const [owner, ...members] = parts.map(String);
 				return (
-					!owner ||
-					owner.includes("/") ||
+					!identity.isArtifactIdSegment(owner) ||
 					members.some((member) => !/^[A-Za-z][A-Za-z0-9_]*$/.test(member))
 				);
 			}

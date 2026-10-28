@@ -408,6 +408,42 @@ fn tc_1839_a_clause_state_or_step_name_outside_the_member_name_pattern_is_unslug
     }
 }
 
+#[trace("TC-1347", "FR-095-AC-14")]
+#[test]
+fn colliding_variants_from_hyphenated_and_plain_artifact_ids_report_one_duplicate_identity() {
+    // `b_c` slugs to `b-c`, so these two producer identities collide exactly:
+    // variant/<a-b>-c and variant/<a>-<b-c>.
+    let scratch = tempfile::tempdir().expect("scratch bundle");
+    copy_tree(&fixture("business"), scratch.path());
+    let functional = scratch.path().join("spec/functional");
+    let first = "---\nid: a-b\ntitle: First collision case\nname: FirstCollision\nobject: enumeration\ntype: enumeration\n---\n# First collision case\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| c | First case |\n";
+    let second = "---\nid: a\ntitle: Second collision case\nname: SecondCollision\nobject: enumeration\ntype: enumeration\n---\n# Second collision case\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| b_c | Second case |\n";
+    fs::write(functional.join("a-b-first-collision.md"), first).expect("first enum");
+    fs::write(functional.join("a-second-collision.md"), second).expect("second enum");
+
+    let lowered = lift_at(scratch.path());
+    let duplicates = with_code(&lowered, Code::DuplicateIdentity);
+    assert_eq!(duplicates.len(), 1, "{:?}", lowered.diagnostics);
+    let duplicate = duplicates[0];
+    let blocking: Vec<_> = lowered.diagnostics.iter().filter(|d| d.blocking).collect();
+    assert_eq!(blocking.len(), 1, "{:?}", lowered.diagnostics);
+    assert_eq!(blocking[0].code, duplicate.code);
+    let shared = format!("{PACKAGE}/variant/a-b-c");
+    assert!(duplicate.blocking);
+    assert!(duplicate.message.contains(&shared), "{}", duplicate.message);
+    assert_eq!(duplicate.related.len(), 1, "{duplicate:?}");
+
+    let colliding_variants: Vec<&str> = lowered
+        .types
+        .iter()
+        .filter_map(|ty| ty.variants.as_ref())
+        .flatten()
+        .filter(|variant| variant.identity == shared)
+        .map(|variant| variant.identity.as_str())
+        .collect();
+    assert_eq!(colliding_variants, [shared.as_str(), shared.as_str()]);
+}
+
 #[trace("TC-1839", "FR-095-AC-21")]
 #[test]
 fn tc_1839_an_underscored_state_name_is_its_own_member_name() {

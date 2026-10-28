@@ -37,6 +37,13 @@
 			"identity": "ix://agent-ix/docs-service/variant/Snapshot-Snap-Shot"
 		},
 		{
+			"kind": "refusal",
+			"package": "agent-ix/docs-service",
+			"slot": "field",
+			"parts": ["a b", "created_at"],
+			"refuses": "UNSLUGGABLE_NAME"
+		},
+		{
 			"kind": "identity",
 			"package": "agent-ix/docs-service",
 			"slot": "constraint",
