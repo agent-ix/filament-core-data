@@ -127,6 +127,7 @@ enum TypePositionKind {
     SequenceItems,
     MapValues,
     VariantPayload,
+    TuplePosition,
 }
 
 impl TypePositionKind {
@@ -140,6 +141,7 @@ impl TypePositionKind {
         Self::SequenceItems,
         Self::MapValues,
         Self::VariantPayload,
+        Self::TuplePosition,
     ];
 
     fn missing_message(self) -> &'static str {
@@ -153,6 +155,7 @@ impl TypePositionKind {
             Self::SequenceItems => "a decimal sequence item type carries a decimal policy",
             Self::MapValues => "a decimal map value type carries a decimal policy",
             Self::VariantPayload => "a decimal variant payload type carries a decimal policy",
+            Self::TuplePosition => "a decimal tuple position type carries a decimal policy",
         }
     }
 }
@@ -199,6 +202,7 @@ codes! {
     UNRESOLVED_TYPE_REF => "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
     UNRESOLVED_ELEMENT_TYPE => "agent-ix.semantic-ir.UNRESOLVED_ELEMENT_TYPE",
     UNRESOLVED_VARIANT_PAYLOAD => "agent-ix.semantic-ir.UNRESOLVED_VARIANT_PAYLOAD",
+    UNRESOLVED_POSITION_TYPE => "agent-ix.semantic-ir.UNRESOLVED_POSITION_TYPE",
     UNRESOLVED_OCCURRENCE_DEFINITION => "agent-ix.semantic-ir.UNRESOLVED_OCCURRENCE_DEFINITION",
     ALIAS_CYCLE => "agent-ix.semantic-ir.ALIAS_CYCLE",
     DEPTH_LIMIT_EXCEEDED => "agent-ix.semantic-ir.DEPTH_LIMIT_EXCEEDED",
@@ -709,6 +713,19 @@ impl<'a> Document<'a> {
                     }
                 }
             }
+            if let Some(positions) = definition.get("positions").and_then(Json::as_array) {
+                let positions_at = child(&type_at, "positions");
+                for (member, position) in positions.iter().enumerate() {
+                    if let Some(identity) = position.get("typeRef").and_then(Json::as_str) {
+                        visit(TypePosition {
+                            kind: TypePositionKind::TuplePosition,
+                            identity,
+                            subject: position,
+                            pointer: child(&index(&positions_at, member), "typeRef"),
+                        });
+                    }
+                }
+            }
             if let Some(constraints_items) = definition.get("constraints").and_then(Json::as_array)
             {
                 visit_constraints(
@@ -930,6 +947,7 @@ impl<'a> Document<'a> {
                 ("constraints", "constraints"),
                 ("fields", "fields"),
                 ("variants", "variants"),
+                ("positions", "positions"),
                 ("relationships", "relationships"),
             ] {
                 let _ = at;
@@ -1361,6 +1379,20 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                             child(&variant_at, "payloadType"),
                             UNRESOLVED_VARIANT_PAYLOAD,
                             "the union variant payload type resolves to no declared type",
+                        );
+                    }
+                }
+            }
+        }
+        if let Some(positions) = definition.get("positions").and_then(Json::as_array) {
+            let positions_at = child(&type_at, "positions");
+            for (member, position) in positions.iter().enumerate() {
+                if let Some(type_ref) = position.get("typeRef").and_then(Json::as_str) {
+                    if !special_type_ref(type_ref) && !resolves(&declared, type_ref) {
+                        sink.emit(
+                            child(&index(&positions_at, member), "typeRef"),
+                            UNRESOLVED_POSITION_TYPE,
+                            "the tuple position type resolves to no declared type",
                         );
                     }
                 }
@@ -2479,6 +2511,9 @@ mod tests {
             TypePositionKind::VariantPayload => {
                 r#"{"identity":"ix://acme/pkg/T","kind":"union","variants":[{"payloadType":"ix://quire/native/Decimal"}]}"#
             }
+            TypePositionKind::TuplePosition => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"tuple","positions":[{"typeRef":"ix://quire/native/Decimal"}]}"#
+            }
         };
         parse(&format!(r#"{{"ir":{{"types":[{definition}]}}}}"#)).expect("a type position fixture")
     }
@@ -2500,7 +2535,7 @@ mod tests {
                 kind.missing_message()
             );
         }
-        assert_eq!(TypePositionKind::ALL.len(), 9);
+        assert_eq!(TypePositionKind::ALL.len(), 10);
     }
 
     /// Owner ruling (2026-09-19T15:39:32Z) on FCD #199, superseding R2 of the

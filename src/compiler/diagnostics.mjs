@@ -112,6 +112,7 @@ const COMPILER_CODES = [
 	"BACKEND_NOT_IMPLEMENTED",
 	"INVALID_REQUEST",
 	"UNSUPPORTED_IR_VERSION",
+	"UNSUPPORTED_CONSTRUCT_SHAPE",
 	"BACKEND_CONTRACT_VIOLATION",
 	// The input half of the same defect (FR-131). A frontend that reaches an
 	// out-of-process producer can be told something no input could cause: an exit

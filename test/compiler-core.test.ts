@@ -6598,6 +6598,29 @@ describe("generation backend seam registry codes (FR-063)", () => {
 		expect(result.files).toEqual([]);
 	});
 
+	/** Traces: TC-1882; FR-147-AC-11. */
+	it("fires the unsupported-construct-shape code for a tuple no backend renders", () => {
+		const request = generationRequest();
+		(request as Json).ir = JSON.parse(
+			readFileSync(
+				new URL(
+					"../fixtures/semantic/v1/tuple-union/tuple-union.json",
+					import.meta.url,
+				),
+				"utf8",
+			),
+		);
+		const result = generateTarget(request, {
+			target: "typescript",
+		}) as never as { state: string; diagnostics: Diagnostic[]; files: Json[] };
+		note(result.diagnostics);
+		expect(result.state).toBe("unsupported");
+		expect(codesOf(result.diagnostics)).toContain(
+			DIAGNOSTIC_CODES.UNSUPPORTED_CONSTRUCT_SHAPE.code,
+		);
+		expect(result.files).toEqual([]);
+	});
+
 	/** Traces: TC-751, TC-752; FR-063-AC-8, FR-063-AC-9. */
 	it("fires the backend-contract code for a backend that escapes its output root", () => {
 		const escaping = {

@@ -1240,7 +1240,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 * construct:populations, construct:redefines, construct:subsets,
 	 * construct:supertypes, identity:identified, identity:none, identity:value,
 	 * shape:alias, shape:enumeration, shape:interface, shape:namespace,
-	 * shape:record, shape:sequence, shape:state_machine;
+	 * shape:record, shape:sequence, shape:state_machine, shape:tuple;
 	 */
 	it("TC-1772 every construct kind and model member selects the Rust form the mapping table states", async () => {
 		await runDetectorCase(
@@ -1284,6 +1284,7 @@ describe("TC-725..730 the branch register, the properties and the mutation catal
 	 *
 	 * Branches: unknownPolicy:inert, unknownPolicy:record/preserve,
 	 * unknownPolicy:record/reject, unknownPolicy:record/surface,
+	 * unknownPolicy:tuple,
 	 * unknownPolicy:variants/preserve, unknownPolicy:variants/reject,
 	 * unknownPolicy:variants/surface;
 	 */

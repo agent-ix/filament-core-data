@@ -934,6 +934,13 @@ export function readContractIr(document, options = {}) {
 				variant,
 			),
 		);
+		asArray(definition.positions).forEach((position, index) =>
+			quantityRefused(
+				position.typeRef,
+				`/ir${definitionPointer}/positions/${index}/typeRef`,
+				position,
+			),
+		);
 		if (definition.kind === "sequence")
 			checkCompositeDecimalRef(definition.items, definition);
 		if (definition.kind === "map")
@@ -942,6 +949,8 @@ export function readContractIr(document, options = {}) {
 			checkCompositeDecimalRef(definition.target, definition);
 		for (const variant of asArray(definition.variants))
 			checkCompositeDecimalRef(variant.payloadType, variant);
+		for (const position of asArray(definition.positions))
+			checkCompositeDecimalRef(position.typeRef, position);
 		// Relationships and operations belong to a record among the core kinds;
 		// a construct kind's declaration decides their presence (FR-142).
 		const isRecord =
@@ -952,6 +961,7 @@ export function readContractIr(document, options = {}) {
 		for (const key of [
 			"fields",
 			"variants",
+			"positions",
 			"constraints",
 			"relationships",
 			"operations",
@@ -1157,6 +1167,7 @@ export function readContractIr(document, options = {}) {
 		for (const [label, entries] of [
 			["fields", ownFields],
 			["variants", asArray(definition.variants)],
+			["positions", asArray(definition.positions)],
 			["constraints", asArray(definition.constraints)],
 			["relationships", relationships],
 			["operations", operations],

@@ -81,6 +81,7 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.UNKNOWN_TARGET` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSLUGGABLE_NAME` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_CANONICALIZATION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
+| `agent-ix.compiler.UNSUPPORTED_CONSTRUCT_SHAPE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_DECLARATION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_IR_VERSION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_LOSS` | error | yes | `ix://agent-ix/filament-core-data/compiler` |

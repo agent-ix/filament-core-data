@@ -125,6 +125,9 @@ with it.
 | `UNRESOLVED_FRAME_PATH` | `contracts-v1.md` "Declaration references the operation `modifies` (a field or relationship), `creates` or `deletes` (an object type or process); never an access path" | `2.0.0` only: a `frame` `modifies` entry naming no field or relationship the document declares, or a `creates`/`deletes` entry naming no type the document declares. Resolution ranges over the whole document, never only the owning type or its supertypes (QSpec FR-340, FR-013). |
 | `MULTIPLE_DOMAIN_MEMBERSHIP` | `contracts-v1.md` "a type named by two exclusive memberships raises" | `2.0.0` only: a type named by the `members` of a second type whose construct declaration selects `exclusive_membership`, at that entry. |
 | `INCOMPLETE_FEATURE_ORDER` | `contracts-v1.md` "a field or operation it omits raises" | `2.0.0` only (`constructs.rs`): a `featureOrder` that does not name a field or operation the type declares itself, once per omitted feature. |
+| `INVALID_TUPLE` | `contracts-v1.md` "A tuple that carries a member it never has" | `2.0.0` only (`constructs.rs`): a `tuple` whose identity is not `ix://<package identity>/<Name>` (`^[A-Za-z][A-Za-z0-9_]*$`), at `.../identity`, or that carries `fields`, `identityFields`, `operations`, `supertypes`, `clauses`, `relationships` or `variants`, at the member. |
+| `INVALID_TUPLE_POSITION` | `contracts-v1.md` "a position out of order, with a gap, or typed" | `2.0.0` only (`constructs.rs`): a position whose identity is not `<tuple identity>/p<index>`, at `.../positions/<i>/identity`, or typed `ix://quire/native/Clock`, at `.../typeRef`. |
+| `UNRESOLVED_POSITION_TYPE` | `contracts-v1.md` "naming no declared type raises" | `2.0.0` only (`rules.rs`): a tuple position `typeRef` naming no declared type, at `.../positions/<i>/typeRef`. |
 
 ### The applicability table
 

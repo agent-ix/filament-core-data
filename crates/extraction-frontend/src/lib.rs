@@ -57,7 +57,10 @@ pub use diagnostics::{
 };
 pub use document::{assemble, CONTRACT_VERSION};
 pub use edges::{frontmatter_edges, lower_relationships, Relationship, PART_OF};
-pub use enumeration::{lower_enum, values_rows, Unsatisfied, ValueRow};
+pub use enumeration::{
+    lower_enum, lower_tuple, positions_rows, values_rows, PositionRow, PositionsUnsatisfied,
+    Unsatisfied, ValueRow,
+};
 pub use envelope::{Envelope, ModuleManifest, PackageBlock, SourceBlock};
 pub use extract::{extract, Extracted, Extractions};
 pub use identity::{

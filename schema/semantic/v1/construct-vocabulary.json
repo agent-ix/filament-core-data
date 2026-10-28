@@ -8,7 +8,8 @@
 		"state_machine",
 		"sequence",
 		"namespace",
-		"alias"
+		"alias",
+		"tuple"
 	],
 	"presences": ["required", "optional", "forbidden"],
 	"members": [
@@ -131,6 +132,10 @@
 			"name": "target",
 			"default": "forbidden",
 			"referenceItems": []
+		},
+		{
+			"name": "positions",
+			"default": "forbidden"
 		}
 	],
 	"rules": [
@@ -203,6 +208,11 @@
 		{
 			"shape": "alias",
 			"member": "target",
+			"presence": "required"
+		},
+		{
+			"shape": "tuple",
+			"member": "positions",
 			"presence": "required"
 		}
 	],

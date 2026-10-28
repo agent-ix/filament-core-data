@@ -88,6 +88,9 @@ export const SHAPE_RENDERINGS = Object.freeze({
 	sequence: "record",
 	namespace: "namespace",
 	alias: "alias",
+	// The ordered product of the `positions` (FR-147). No backend renders a
+	// tuple, and the generation seam refuses a document that declares one.
+	tuple: "tuple",
 });
 
 /**
@@ -450,6 +453,28 @@ export function admits(node, member) {
 	return (
 		declaration !== undefined && presenceOf(declaration, member) !== "forbidden"
 	);
+}
+
+/**
+ * The shapes no generation backend renders yet (FR-147): a document that
+ * declares one is refused by the generation seam, never approximated as
+ * another shape (FR-142-CON-2).
+ */
+export const UNRENDERED_SHAPES = Object.freeze(["tuple"]);
+
+/**
+ * The first type of `ir` whose construct has an unrendered shape, as
+ * `{ identity, shape, pointer }`, or `undefined` when there is none.
+ */
+export function firstUnrenderedType(ir) {
+	bindConstructs(ir);
+	const types = list(ir?.types);
+	for (const [position, type] of types.entries()) {
+		const shape = declarationOf(type)?.shape;
+		if (UNRENDERED_SHAPES.includes(shape))
+			return { identity: type.identity, shape, pointer: `/types/${position}` };
+	}
+	return undefined;
 }
 
 /** A type index by identity, for a caller that holds only the document. */

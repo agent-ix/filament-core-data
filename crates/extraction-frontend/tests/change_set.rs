@@ -214,6 +214,7 @@ fn tc_1330_loaders_only_in_bundle_rs_std_fs_only_in_write_rs_resolver_closed_and
         "quire_rs::semantic",
         "crate::bundle",
         "crate::diagnostics",
+        "crate::enumeration",
         "crate::extract",
         "crate::identity",
         "crate::rows",

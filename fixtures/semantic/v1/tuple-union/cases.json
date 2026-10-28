@@ -1,0 +1,218 @@
+{
+	"base": "tuple-union.json",
+	"cases": [
+		{
+			"id": "empty-tuple",
+			"tc": "TC-1874",
+			"ac": "FR-147-AC-3",
+			"set": [["/types/6/positions", []]],
+			"remove": [],
+			"node": "refused",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/6/positions"
+				}
+			]
+		},
+		{
+			"id": "missing-positions",
+			"tc": "TC-1873",
+			"ac": "FR-147-AC-2",
+			"set": [],
+			"remove": ["/types/6/positions"],
+			"node": "refused",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/6"
+				}
+			]
+		},
+		{
+			"id": "positions-on-scalar",
+			"tc": "TC-1874",
+			"ac": "FR-147-AC-3",
+			"set": [
+				[
+					"/types/0/positions",
+					[
+						{
+							"identity": "ix://acme/shapes/Boolean/p0",
+							"typeRef": "ix://acme/shapes/Integer",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/shapes/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/shapes/source"]
+								}
+							}
+						}
+					]
+				]
+			],
+			"remove": [],
+			"node": "refused",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/0/positions"
+				}
+			]
+		},
+		{
+			"id": "position-without-origin",
+			"tc": "TC-1874",
+			"ac": "FR-147-AC-3",
+			"set": [],
+			"remove": ["/types/2/positions/0/origin"],
+			"node": "refused",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/2/positions/0"
+				}
+			]
+		},
+		{
+			"id": "nested-tuple-identity",
+			"tc": "TC-1875",
+			"ac": "FR-147-AC-4",
+			"set": [
+				["/types/3/identity", "ix://acme/shapes/Outer/Swap"],
+				["/types/3/positions/0/identity", "ix://acme/shapes/Outer/Swap/p0"],
+				["/types/3/positions/1/identity", "ix://acme/shapes/Outer/Swap/p1"]
+			],
+			"remove": [],
+			"node": "admits",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_TUPLE",
+					"pointer": "/ir/types/3/identity"
+				}
+			]
+		},
+		{
+			"id": "tuple-with-fields-forbidden",
+			"tc": "TC-1874",
+			"ac": "FR-147-AC-3",
+			"set": [["/types/2/fields", []]],
+			"remove": [],
+			"node": "refused",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/2/fields"
+				}
+			]
+		},
+		{
+			"id": "tuple-with-fields-declared-optional",
+			"tc": "TC-1875",
+			"ac": "FR-147-AC-4",
+			"set": [
+				["/constructs/0/construct/members/fields", "optional"],
+				["/types/2/fields", []]
+			],
+			"remove": [],
+			"node": "admits",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_TUPLE",
+					"pointer": "/ir/types/2/fields"
+				}
+			]
+		},
+		{
+			"id": "position-gap",
+			"tc": "TC-1876",
+			"ac": "FR-147-AC-5",
+			"set": [["/types/2/positions/1/identity", "ix://acme/shapes/Pair/p2"]],
+			"remove": [],
+			"node": "admits",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_TUPLE_POSITION",
+					"pointer": "/ir/types/2/positions/1/identity"
+				}
+			]
+		},
+		{
+			"id": "out-of-order-positions",
+			"tc": "TC-1876",
+			"ac": "FR-147-AC-5",
+			"set": [
+				["/types/2/positions/0/identity", "ix://acme/shapes/Pair/p1"],
+				["/types/2/positions/1/identity", "ix://acme/shapes/Pair/p0"]
+			],
+			"remove": [],
+			"node": "admits",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_TUPLE_POSITION",
+					"pointer": "/ir/types/2/positions/0/identity"
+				},
+				{
+					"code": "agent-ix.semantic-ir.INVALID_TUPLE_POSITION",
+					"pointer": "/ir/types/2/positions/1/identity"
+				}
+			]
+		},
+		{
+			"id": "duplicate-position",
+			"tc": "TC-1876",
+			"ac": "FR-147-AC-5",
+			"set": [["/types/2/positions/1/identity", "ix://acme/shapes/Pair/p0"]],
+			"remove": [],
+			"node": "refused",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.DUPLICATE_IDENTITY",
+					"pointer": "/ir/types/2/positions/1/identity"
+				}
+			]
+		},
+		{
+			"id": "clock-position",
+			"tc": "TC-1877",
+			"ac": "FR-147-AC-6",
+			"set": [["/types/2/positions/1/typeRef", "ix://quire/native/Clock"]],
+			"remove": [],
+			"node": "admits",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_TUPLE_POSITION",
+					"pointer": "/ir/types/2/positions/1/typeRef"
+				}
+			]
+		},
+		{
+			"id": "unadmitted-position-type",
+			"tc": "TC-1877",
+			"ac": "FR-147-AC-6",
+			"set": [["/types/2/positions/1/typeRef", "ix://acme/shapes/Missing"]],
+			"remove": [],
+			"node": "admits",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.UNRESOLVED_POSITION_TYPE",
+					"pointer": "/ir/types/2/positions/1/typeRef"
+				}
+			]
+		},
+		{
+			"id": "unresolved-variant-payload",
+			"tc": "TC-1879",
+			"ac": "FR-147-AC-8",
+			"set": [["/types/4/variants/0/payloadType", "ix://acme/shapes/Missing"]],
+			"remove": [],
+			"node": "admits",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.UNRESOLVED_VARIANT_PAYLOAD",
+					"pointer": "/ir/types/4/variants/0/payloadType"
+				}
+			]
+		}
+	]
+}

@@ -9,7 +9,7 @@ status: normative
 # Rust/Serde backend mapping and declared decisions
 
 Rendered from `src/compiler/backends/rust-serde/mapping-table.json`, which is
-the single machine-readable mapping table. 68 rows across
+the single machine-readable mapping table. 70 rows across
 12 axes. A construct that selects no row and no named refusal is an
 `agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT`; the mapping is total by
 construction, not by claim.
@@ -40,6 +40,7 @@ construction, not by claim.
 | `interface` | `pub trait N { fn op(&mut self, ..) -> R; .. } with pub const PERSISTS: &[&str]` | — | one trait method per operation, holding no state; parameters and the return map through the field-axis rows; the receiver is &self when the operation declares an empty frame | — |
 | `namespace` | `pub struct N; with pub const MEMBERS: &[&str] and pub const VOCABULARY: &[TermMeta]` | — | a unit struct naming the namespace, plus its members' semantic identities and its vocabulary; a namespace has no instance data | — |
 | `alias` | `pub struct N(T);` | `transparent` | the alias kind's newtype over the target's Rust type with try_new; an alias construct is a named type that is transparent over its target | — |
+| `tuple` | `null` | — | no Rust form yet: a tuple value type is refused with UNSUPPORTED_CONSTRUCT, and the generation seam refuses a document declaring one with UNSUPPORTED_CONSTRUCT_SHAPE before this backend runs (FR-147) | `agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT` |
 
 ### identity
 
@@ -102,6 +103,7 @@ construction, not by claim.
 | `[object Object]` | `pub enum N { .. }` | — | serde's own default, under which an unrecognised variant is a deserialization error | — |
 | `[object Object]` | `a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union` | — | a hand-written Serialize and Deserialize that keep the unrecognised tag and, for a union, its payload as a SemanticValue, and round-trip unchanged; validate returns no diagnostic | — |
 | `[object Object]` | `a generated catch-all variant Unknown(String) on an enum, Unknown(UnknownVariant) on a union` | — | as preserve, and validate returns one UNKNOWN_MEMBER_SURFACED for an unrecognised variant | `agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED` |
+| `[object Object]` | `null` | — | refused: a tuple has no Rust form, so no policy applies to it before the construct is refused with UNSUPPORTED_CONSTRUCT | `agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT` |
 | `[object Object]` | `null` | — | inert: a scalar has no members, a sequence and a map admit every element and every key by construction, and an alias (core kind or construct) and a reference are transparent, and an interface and a namespace construct carry no instance data. The declared value is carried verbatim into the type's metadata constant and stated inert in the generated documentation; it is never dropped and never refused | — |
 
 ### defaultKind
