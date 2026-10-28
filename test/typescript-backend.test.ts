@@ -1436,13 +1436,25 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 		}
 	});
 
-	/** Traces: TC-792; FR-067-AC-6. */
+	/** Traces: TC-792; FR-067-AC-6, FR-069-AC-2. */
 	it("TC-792 fingerprints admitted documents by set identity and authored sequence order", () => {
+		const cliSource = readFileSync(generator, "utf8");
+		expect(cliSource).toContain(
+			'import { fingerprintIrForTarget } from "./backends/typescript-v1/canonical.mjs";',
+		);
+		expect(cliSource).toMatch(
+			/lockFingerprint:\s*fingerprintIrForTarget\(ir\)/,
+		);
 		type Type = {
 			identity: string;
 			fields?: unknown[];
 			supertypes?: string[];
 			operations?: { params?: unknown[] }[];
+			constraints?: {
+				identity: string;
+				diagnosticCode: string;
+			}[];
+			extensions?: { identity: string }[];
 		};
 		type Document = { types: Type[] };
 		const base = JSON.parse(
@@ -1470,16 +1482,45 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 			return type;
 		};
 		find(base, "ix://agent-ix/orders/FR-001").supertypes?.push(parent.identity);
+		const constrained = find(base, "ix://agent-ix/orders/FR-001Note");
+		const constraint = structuredClone(constrained.constraints?.[0]);
+		if (!constraint) throw new Error("missing base constraint");
+		constraint.identity =
+			"ix://agent-ix/orders/constraint/FR-001-note-maxLength-alt";
+		constraint.diagnosticCode = "agent-ix.orders.ORDER_NOTE_MAXLENGTH_ALT";
+		constrained.constraints?.push(constraint);
+		const extended = find(base, "ix://agent-ix/orders/Decimal");
+		const extension = structuredClone(extended.extensions?.[0]);
+		if (!extension) throw new Error("missing base extension");
+		extension.identity = "ix://agent-ix/semantic-core/ext/kernel-scalar-alt";
+		extended.extensions?.push(extension);
 		const admitted = (document: Document) => {
 			const verdict = admitIr({ ir: document }, { schemas: admissionSchemas });
 			expect(verdict.resultState).toBe("success");
 		};
 		admitted(base);
 		const digest = fingerprintIrForTarget(base);
-		const setsPermuted = structuredClone(base);
-		setsPermuted.types.reverse();
-		admitted(setsPermuted);
-		expect(fingerprintIrForTarget(setsPermuted)).toBe(digest);
+		for (const [name, reverse] of [
+			["types", (document: Document) => document.types.reverse()],
+			[
+				"constraints",
+				(document: Document) =>
+					find(
+						document,
+						"ix://agent-ix/orders/FR-001Note",
+					).constraints?.reverse(),
+			],
+			[
+				"extensions",
+				(document: Document) =>
+					find(document, "ix://agent-ix/orders/Decimal").extensions?.reverse(),
+			],
+		] as const) {
+			const changed = structuredClone(base);
+			reverse(changed);
+			admitted(changed);
+			expect(fingerprintIrForTarget(changed), name).toBe(digest);
+		}
 		for (const [name, reverse] of [
 			[
 				"fields",
