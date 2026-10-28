@@ -198,10 +198,11 @@ fn tc_723_preserve_type_retains_unknown_members() {
 
     assert_eq!(retained(&envelope.unknown_members, "flag"), &SemanticValue::Bool(true));
 
-    // A `preserve` policy raises no diagnostic; a `surface` policy does.
+    // A `preserve` policy raises no diagnostic; a `surface` policy does, one per
+    // unrecognised variant of the adjacently tagged union (FR-054).
     assert!(envelope.validate().is_empty());
 
-    let surfaced: Payload = serde_json::from_str("{\"other\":1}").expect("a surface union accepts");
+    let surfaced: Payload = serde_json::from_str("{\"kind\":\"other\",\"value\":1}").expect("a surface union accepts");
     assert_eq!(surfaced.validate().len(), 1);
     assert_eq!(
         surfaced.validate()[0].code(),
