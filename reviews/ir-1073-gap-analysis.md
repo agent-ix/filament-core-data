@@ -29,3 +29,9 @@ Plan completion: not assessed
 - Inspected changed tests and existing `test/rust-ci-lane.test.ts`. The changed tests retain numeric result assertions and add explicit interpreter paths; they do not exercise the Make prerequisite.
 - Ran `quoin matrix --repo . --json`. The repository matrix has no criterion specific to IR-1073, which is ticket-scoped rather than a new spec requirement. Existing unrelated untagged criteria were not attributed to this PR.
 - Optional semantic review was not requested.
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | `test/python-test-gate.test.ts` now covers missing Poetry and missing `.venv` across all six test entry points under parallel Make, checks one prerequisite message and no started gates, and checks the positive path with `VIRTUAL_ENV`. The reviewer also ran all six actual Make targets without `.venv` and observed one prerequisite message each. |

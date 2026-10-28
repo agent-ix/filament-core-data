@@ -34,3 +34,10 @@ Reviewed PR #323 at 1a7516f4ed1ee53f1adc5dc3d311a49435b6c53b against IR-1073. Th
 For FND-001, `make -j4 -f Makefile -f /tmp/ir1073-review/parallel.mk test-all` with a delayed failing prerequisite and harmless override of the gate recipes printed `sysml-gate-started` before Make reported `prerequisite-failed`. The ordinary dependency graph has the same sibling relation: `python-test-env-check` and `sysml-pilot-check` are separate prerequisites of `test-all`.
 
 For FND-002, `make -n test-rust` begins with `rust-toolchain-check` and Rust gate commands, with no `python-test-env-check`. `spec-to-targets` invokes `poetry run python3`; `sysml-pilot-check` invokes `poetry run python` directly.
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | At d6a8d2c66854085856afb8831241bfd558339a87, every `test-all` branch has a path through `python-test-env-check`; a real `make -j4 test-all` without `.venv` emits one prerequisite message and starts no gate recipe. |
+| FND-002 | fixed | `sysml-pilot-check` now depends on the prerequisite, and `test-rust` runs its Rust targets through a recursive Make recipe after the prerequisite succeeds; direct invocations without `.venv` emit one prerequisite message. |
