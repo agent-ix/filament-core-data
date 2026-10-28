@@ -17,6 +17,7 @@ export const SLOTS = Object.freeze({
 	type: ["name"],
 	variant: ["owner", "name"],
 	field: ["owner", "name"],
+	parameter: ["owner", "operation", "name"],
 	relationship: ["owner", "verb", "target"],
 	operation: ["owner", "name"],
 	clause: ["owner", "clauseId"],
@@ -37,17 +38,26 @@ export function slug(value) {
 }
 
 /**
- * `ix://<package identity>/<parts joined by />` for a `type`, `field` or
- * `operation` slot — a type definition and a member mint no slot segment of
- * their own, only their owner's identity nested by `/` — and
+ * `ix://<package identity>/<parts joined by />` for a `type`, `field`,
+ * `operation` or `parameter` slot — a type definition and a member mint no
+ * slot segment of their own, only their owner's identity nested by `/`; a
+ * field, operation and parameter member name is preserved verbatim — and
  * `ix://<package identity>/<slot>/<parts joined by ->` for every other slot
  * (`variant`, `relationship`, `clause`, `constraint`), which still mints
  * under its own segment (FR-095 "Node identities").
  */
 export function mintIdentity(packageIdentity, slot, parts) {
 	if (!(slot in SLOTS)) throw new TypeError(`unknown identity slot: ${slot}`);
+	if (slot === "field" || slot === "operation" || slot === "parameter") {
+		const [owner, ...members] = parts.map(String);
+		if (!owner || owner.includes("/"))
+			throw new TypeError("owner identity segment is malformed");
+		if (members.some((member) => !/^[A-Za-z][A-Za-z0-9_]*$/.test(member)))
+			throw new TypeError("member name is malformed");
+		return `ix://${packageIdentity}/${[owner, ...members].join("/")}`;
+	}
 	const slugged = parts.map(slug).filter((part) => part.length > 0);
-	if (slot === "type" || slot === "field" || slot === "operation") {
+	if (slot === "type") {
 		return `ix://${packageIdentity}/${slugged.join("/")}`;
 	}
 	if (slot === "typeConstraint") {

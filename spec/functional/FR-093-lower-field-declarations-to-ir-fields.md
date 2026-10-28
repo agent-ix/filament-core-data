@@ -130,8 +130,8 @@ table of FR-095-AC-16 rather than prose here. The alias can collide with an
 author-named type (an artifact `FR-001Revision` beside `FR-001.revision`), which
 is why FR-095 checks every minted identity and raises `DUPLICATE_IDENTITY`
 rather than assuming injectivity; equal verbatim names are refused first as
-`DUPLICATE_TYPE_NAME`, and distinct names slugging alike as `UNSLUGGABLE_NAME`,
-the contract's three cases in order.
+`DUPLICATE_TYPE_NAME`, and distinct enumeration values slugging alike as
+`UNSLUGGABLE_NAME`, the contract's three cases in order.
 
 ## Constraints
 

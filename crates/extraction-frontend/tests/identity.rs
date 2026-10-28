@@ -87,11 +87,9 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
         "an id carrying a character `semanticIdentity` bars from a segment mints nothing"
     );
     assert_eq!(
-        package
-            .field_identity("Snapshot", "versionNumber")
-            .as_deref(),
-        Ok("ix://agent-ix/docs-service/Snapshot/versionNumber"),
-        "a member's identity is its owner's identity, `/`, and its own name"
+        package.field_identity("FR-001", "created_at").as_deref(),
+        Ok("ix://agent-ix/docs-service/FR-001/created_at"),
+        "a field's member name is preserved under its artifact id"
     );
     assert_eq!(
         package.alias_identity("FR-001", "created_at").as_deref(),
@@ -117,16 +115,16 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
     );
     assert_eq!(
         package
-            .operation_identity("Repository", "find By Id")
+            .operation_identity("RP_001", "find_by_id")
             .as_deref(),
-        Ok("ix://agent-ix/docs-service/Repository/find-By-Id")
+        Ok("ix://agent-ix/docs-service/RP_001/find_by_id")
     );
     assert_eq!(
         package
-            .param_identity("Repository", "findById", "id")
+            .param_identity("RP_001", "find_by_id", "created_at")
             .as_deref(),
-        Ok("ix://agent-ix/docs-service/Repository/findById/id"),
-        "a parameter nests one level deeper than its operation, never under a param/ slot"
+        Ok("ix://agent-ix/docs-service/RP_001/find_by_id/created_at"),
+        "a parameter's member name is preserved one level below its operation"
     );
     assert_eq!(
         package.variant_identity("EN_001", "MANUAL_STEP").as_deref(),
@@ -170,10 +168,23 @@ fn tc_1252_slug_preserves_case_collapses_runs_and_an_all_punctuation_title_is_un
         package.field_identity("Snapshot", "--"),
         Err(Unsluggable {
             name: "--".to_string(),
-            reason: UnsluggableReason::Slug,
+            reason: UnsluggableReason::MemberName,
         }),
-        "an unsluggable segment refuses the whole identity"
+        "a field name must match the member-name pattern"
     );
+    for result in [
+        package.field_identity("Snapshot", "_tmp"),
+        package.operation_identity("Snapshot", "reset all"),
+        package.param_identity("Snapshot", "reset_all", "9value"),
+    ] {
+        assert!(matches!(
+            result,
+            Err(Unsluggable {
+                reason: UnsluggableReason::MemberName,
+                ..
+            })
+        ));
+    }
     let segments: Vec<&str> = NodeKind::ALL.iter().map(|k| k.segment()).collect();
     assert_eq!(
         segments,
@@ -300,6 +311,7 @@ fn rust_identity_case(row: &serde_json::Value) -> serde_json::Value {
             let identity = match slot {
                 "type" => package.type_identity(parts[0]),
                 "field" => package.field_identity(parts[0], parts[1]),
+                "parameter" => package.param_identity(parts[0], parts[1], parts[2]),
                 "variant" => package.variant_identity(parts[0], parts[1]),
                 "relationship" => package.relationship_identity(parts[0], parts[1], parts[2]),
                 "operation" => package.operation_identity(parts[0], parts[1]),
@@ -333,6 +345,7 @@ fn rust_identity_case(row: &serde_json::Value) -> serde_json::Value {
             let refusal = match row["slot"].as_str().expect("slot") {
                 "type" => package.type_identity(parts[0]).err(),
                 "field" => package.field_identity(parts[0], parts[1]).err(),
+                "parameter" => package.param_identity(parts[0], parts[1], parts[2]).err(),
                 "variant" => package.variant_identity(parts[0], parts[1]).err(),
                 "relationship" => package
                     .relationship_identity(parts[0], parts[1], parts[2])
