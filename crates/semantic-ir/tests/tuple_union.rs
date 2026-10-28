@@ -229,3 +229,42 @@ fn tc_1881_a_changed_tuple_or_payload_is_breaking_and_an_origin_change_is_a_patc
         "changed payload"
     );
 }
+
+#[test]
+fn tc_1886_a_clock_payload_is_refused_through_an_alias_and_a_unit_payload_is_not() {
+    // FR-147-AC-15: QSpec FR-322 refuses a Clock payload, pending STD-528.
+    let code = "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER".to_owned();
+    let pointer = "/ir/types/4/variants/0/payloadType".to_owned();
+    let mut direct = base();
+    set(
+        &mut direct,
+        &pointer.replacen("/ir", "", 1),
+        Json::Str("ix://quire/native/Clock".to_owned()),
+    );
+    assert_eq!(observed(direct), vec![(code.clone(), pointer.clone())]);
+
+    let mut aliased = parse(
+        r#"{"identity":"ix://acme/shapes/Tick","displayName":"Tick","kind":"alias","target":"ix://quire/native/Clock","roles":[],"origin":{"generated":{"generatorIdentity":"ix://acme/shapes/case-author","generatorVersion":"1.0.0","inputIdentities":["ix://acme/shapes/source"]}},"constraints":[],"extensions":[],"unknownPolicy":"reject"}"#,
+    )
+    .expect("alias");
+    let mut document = base();
+    if let Json::Object(members) = &mut document {
+        if let Some((_, Json::Array(types))) = members.iter_mut().find(|(k, _)| k == "types") {
+            types.push(std::mem::replace(&mut aliased, Json::Null));
+        }
+    }
+    set(
+        &mut document,
+        "/types/4/variants/0/payloadType",
+        Json::Str("ix://acme/shapes/Tick".to_owned()),
+    );
+    assert_eq!(observed(document), vec![(code, pointer.clone())]);
+
+    let mut unit = base();
+    set(
+        &mut unit,
+        "/types/4/variants/0/payloadType",
+        Json::Str("ix://quire/unit/ms".to_owned()),
+    );
+    assert_eq!(observed(unit), vec![]);
+}

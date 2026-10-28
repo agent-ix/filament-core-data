@@ -175,7 +175,7 @@ describe("FR-147 tuple value types and union variant payloads", () => {
 	});
 
 	/** Traces: TC-1882; FR-147-AC-11. */
-	it("TC-1882 refuses a tuple construct at the generation seam and leaves a tuple-free request unchanged", () => {
+	it("TC-1882 refuses a tuple construct at the generation seam for every target (the tuple-free control is in compiler-core.test.ts)", () => {
 		const request = (ir: Json) => ({
 			contractVersion: "1.0.0",
 			lockFingerprint: `sha256:${"a".repeat(64)}`,
@@ -198,19 +198,99 @@ describe("FR-147 tuple value types and union variant payloads", () => {
 				maxDiagnostics: 1000,
 			},
 		});
-		const manifest = generateTarget(request(base()), {
-			target: "rust",
-			host: createHost({ readRoots: [process.cwd()] }),
-		}) as never as {
-			state: string;
-			files: unknown[];
-			diagnostics: { code: string; blocking: boolean }[];
-		};
-		expect(manifest.state).toBe("unsupported");
-		expect(manifest.files).toEqual([]);
-		const blocking = manifest.diagnostics.filter((d) => d.blocking);
-		expect(blocking.map((d) => d.code)).toEqual([
-			"agent-ix.compiler.UNSUPPORTED_CONSTRUCT_SHAPE",
+		for (const target of [
+			"typescript",
+			"rust",
+			"python-pydantic-v2",
+			"python-dataclass",
+			"json-schema",
+			"sysml-v2-textual",
+		] as const) {
+			const manifest = generateTarget(request(base()), {
+				target,
+				host: createHost({ readRoots: [process.cwd()] }),
+			}) as never as {
+				state: string;
+				files: unknown[];
+				diagnostics: { code: string; blocking: boolean }[];
+			};
+			expect(manifest.state, target).toBe("unsupported");
+			expect(manifest.files, target).toEqual([]);
+			const blocking = manifest.diagnostics.filter((d) => d.blocking);
+			expect(
+				blocking.map((d) => d.code),
+				target,
+			).toEqual(["agent-ix.compiler.UNSUPPORTED_CONSTRUCT_SHAPE"]);
+		}
+	});
+
+	/** Traces: TC-1886; FR-147-AC-15. */
+	it("TC-1886 refuses a Clock variant payload, directly or through an alias, in every TypeScript reader", () => {
+		const clockPointer = "types.4.variants.0.payloadType";
+		const located = (document: Json) => ({
+			node: [...readContractIr(document)].map((d) => ({
+				code: d.code,
+				at: d.message.split(": ")[0],
+			})),
+			independent: readSemanticIr(document).map((d) => ({
+				code: d.code,
+				at: d.path,
+			})),
+		});
+		const direct = base();
+		typeNamed(direct, "Shape").variants[0].payloadType =
+			"ix://quire/native/Clock";
+		expect(validateIrDocument(direct)).toEqual([]);
+		const code = "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER";
+		expect(located(direct)).toEqual({
+			node: [{ code, at: "/ir/types/4/variants/0/payloadType" }],
+			independent: [{ code, at: clockPointer }],
+		});
+
+		const aliased = base();
+		const alias = structuredClone(typeNamed(aliased, "Boolean"));
+		alias.identity = "ix://acme/shapes/Tick";
+		alias.displayName = "Tick";
+		alias.kind = "alias";
+		delete alias.scalar;
+		alias.target = "ix://quire/native/Clock";
+		aliased.types.push(alias);
+		typeNamed(aliased, "Shape").variants[0].payloadType =
+			"ix://acme/shapes/Tick";
+		const seen = located(aliased);
+		expect(seen.node.map((d) => d.code)).toEqual([code]);
+		expect(seen.independent.map((d) => d.code)).toEqual([code]);
+
+		const quantity = base();
+		typeNamed(quantity, "Shape").variants[0].payloadType = "ix://quire/unit/ms";
+		expect(located(quantity)).toEqual({ node: [], independent: [] });
+		expect(
+			typeNamed(base(), "Shape").variants.some(
+				(v: Json) => v.payloadType === undefined,
+			),
+		).toBe(true);
+	});
+
+	/** Traces: TC-1878; FR-147-AC-7. */
+	it("TC-1878 accepts a tuple named at every type position in every TypeScript layer", () => {
+		const document = base();
+		const extra = read("fixtures/semantic/v1/tuple-union/pair-positions.json");
+		document.types.push(...extra.types);
+		expect(validateIrDocument(document)).toEqual([]);
+		expect([...readContractIr(document)]).toEqual([]);
+		expect(readSemanticIr(document)).toEqual([]);
+		expect(
+			extra.types.map((t: Json) => [
+				t.kind,
+				JSON.stringify(t).includes("/Pair"),
+			]),
+		).toEqual([
+			["record", true],
+			["alias", true],
+			["sequence", true],
+			["map", true],
+			["reference", true],
+			["union", true],
 		]);
 	});
 });

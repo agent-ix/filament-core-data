@@ -1,0 +1,202 @@
+{
+	"note": "FR-147-AC-7: types appended to tuple-union.json, each naming the tuple Pair at one type position",
+	"types": [
+		{
+			"identity": "ix://acme/shapes/PairHolder",
+			"displayName": "PairHolder",
+			"kind": "record",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/shapes/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://acme/shapes/source"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://acme/shapes/PairHolder/f",
+					"name": "f",
+					"typeRef": "ix://acme/shapes/Pair",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1,
+						"ordered": false,
+						"unique": false
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/shapes/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/shapes/source"]
+						}
+					}
+				}
+			],
+			"operations": [
+				{
+					"identity": "ix://acme/shapes/PairHolder/op",
+					"name": "op",
+					"params": [
+						{
+							"identity": "ix://acme/shapes/PairHolder/op/p",
+							"name": "p",
+							"typeRef": "ix://acme/shapes/Pair",
+							"multiplicity": {
+								"lower": 1,
+								"upper": 1,
+								"ordered": false,
+								"unique": false
+							},
+							"presence": "required",
+							"nullable": false,
+							"defaultKind": "none",
+							"origin": {
+								"generated": {
+									"generatorIdentity": "ix://acme/shapes/case-author",
+									"generatorVersion": "1.0.0",
+									"inputIdentities": ["ix://acme/shapes/source"]
+								}
+							}
+						}
+					],
+					"returns": {
+						"typeRef": "ix://acme/shapes/Pair",
+						"multiplicity": {
+							"lower": 1,
+							"upper": 1,
+							"ordered": false,
+							"unique": false
+						},
+						"nullable": false
+					},
+					"pre": [],
+					"post": [],
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/shapes/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/shapes/source"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://acme/shapes/PairAlias",
+			"displayName": "PairAlias",
+			"kind": "alias",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/shapes/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://acme/shapes/source"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"target": "ix://acme/shapes/Pair"
+		},
+		{
+			"identity": "ix://acme/shapes/PairSeq",
+			"displayName": "PairSeq",
+			"kind": "sequence",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/shapes/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://acme/shapes/source"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"items": "ix://acme/shapes/Pair"
+		},
+		{
+			"identity": "ix://acme/shapes/PairMap",
+			"displayName": "PairMap",
+			"kind": "map",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/shapes/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://acme/shapes/source"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"keys": "ix://acme/shapes/Integer",
+			"values": "ix://acme/shapes/Pair"
+		},
+		{
+			"identity": "ix://acme/shapes/PairRef",
+			"displayName": "PairRef",
+			"kind": "reference",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/shapes/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://acme/shapes/source"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"target": "ix://acme/shapes/Pair"
+		},
+		{
+			"identity": "ix://acme/shapes/PairPayload",
+			"displayName": "PairPayload",
+			"kind": "union",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/shapes/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": ["ix://acme/shapes/source"]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"variants": [
+				{
+					"identity": "ix://acme/shapes/PairPayload/One",
+					"name": "One",
+					"payloadType": "ix://acme/shapes/Pair",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/shapes/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/shapes/source"]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/shapes/PairPayload/None",
+					"name": "None",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/shapes/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": ["ix://acme/shapes/source"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

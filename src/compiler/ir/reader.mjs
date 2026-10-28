@@ -927,13 +927,20 @@ export function readContractIr(document, options = {}) {
 				`/ir${definitionPointer}/target: a reference names an object and a quantity has no identity`,
 				locusOf(definition),
 			);
-		asArray(definition.variants).forEach((variant, index) =>
+		asArray(definition.variants).forEach((variant, index) => {
 			quantityRefused(
 				variant.payloadType,
 				`/ir${definitionPointer}/variants/${index}/payloadType`,
 				variant,
-			),
-		);
+			);
+			// QSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
+			if (specialOf(variant.payloadType) === "clock")
+				raise(
+					DIAGNOSTIC_CODES.INVALID_CLOCK_MEMBER,
+					`/ir${definitionPointer}/variants/${index}/payloadType: a union variant payload is never a clock`,
+					locusOf(variant),
+				);
+		});
 		asArray(definition.positions).forEach((position, index) =>
 			quantityRefused(
 				position.typeRef,

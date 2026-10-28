@@ -936,12 +936,19 @@ function checkTypeDefinition(
 			path: `${path}.target`,
 			message: "a reference names an object and a quantity has no identity",
 		});
-	asArray(definition.variants).forEach((variant, index) =>
+	asArray(definition.variants).forEach((variant, index) => {
 		refuseMalformed(
 			variant.payloadType,
 			`${path}.variants.${index}.payloadType`,
-		),
-	);
+		);
+		// QSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
+		if (specialKind(types, fields, variant.payloadType) === "clock")
+			diagnostics.push({
+				code: "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+				path: `${path}.variants.${index}.payloadType`,
+				message: "a union variant payload is never a clock",
+			});
+	});
 	const isRecord = isEdgeKind(definition.kind);
 	if (definition.kind === "scalar" && definition.scalar === "number") {
 		diagnostics.push({

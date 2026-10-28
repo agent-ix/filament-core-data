@@ -333,3 +333,78 @@ fn tc_1883_a_payload_row_binding_no_value_is_not_lowered_at_its_row() {
         .collect();
     assert_eq!(lines, vec![20, 22], "{:?}", stray.diagnostics);
 }
+
+#[trace("TC-1883", "FR-147-AC-12")]
+#[test]
+fn tc_1883_a_blank_payload_row_repeating_a_value_is_not_lowered_at_its_row() {
+    let mut docs = documents();
+    docs[1].1 = enum_doc(
+        "Shape",
+        &["| Both | A pair |", "| Empty | Nothing |"],
+        &["| Both | Boolean |", "| Empty | |", "| Empty | |"],
+    );
+    let repeated = lowered(&bundle(&docs));
+    let lines: Vec<usize> = with_code(&repeated, Code::ArtifactNotLowered)
+        .iter()
+        .filter(|d| d.blocking)
+        .filter_map(|d| d.locus.as_ref().map(|l| l.start_line))
+        .collect();
+    assert_eq!(lines, vec![23], "{:?}", repeated.diagnostics);
+
+    // One blank row alone is a nullary case: not stray, nothing blocks.
+    docs[1].1 = enum_doc(
+        "Shape",
+        &["| Both | A pair |", "| Empty | Nothing |"],
+        &["| Both | Boolean |", "| Empty | |"],
+    );
+    let single = lowered(&bundle(&docs));
+    assert!(!is_blocked(&single.diagnostics), "{:?}", single.diagnostics);
+}
+
+#[trace("TC-1883", "FR-147-AC-12")]
+#[test]
+fn tc_1883_an_artifact_without_a_payloads_table_writes_the_members_it_always_wrote() {
+    // The control: with no `## Payloads` table every variant carries exactly
+    // the members the writer wrote before FR-147, and no type carries
+    // `positions`; the same enumeration written beside a payload-bearing
+    // sibling is byte-identical.
+    let alone = lowered(&bundle(&documents()));
+    let mut docs = documents();
+    docs[1].1 = enum_doc("Shape", &["| Empty | Nothing |"], &[]);
+    let without = lowered(&bundle(&docs));
+    for lowered in [&alone, &without] {
+        let types = types_json(lowered);
+        let status = type_named(&types, &format!("{PACKAGE}/Status"));
+        assert!(status.get("positions").is_none());
+        for variant in status["variants"].as_array().expect("variants") {
+            let mut keys: Vec<&str> = variant
+                .as_object()
+                .expect("variant")
+                .keys()
+                .map(String::as_str)
+                .collect();
+            keys.sort_unstable();
+            assert_eq!(keys, ["identity", "name", "origin"], "{variant}");
+        }
+    }
+    let status_of = |lowered: &Lowered| {
+        let types = types_json(lowered);
+        serde_json::to_string(type_named(&types, &format!("{PACKAGE}/Status"))).expect("json")
+    };
+    assert_eq!(status_of(&alone), status_of(&without));
+}
+
+#[trace("TC-1884", "FR-147-AC-13")]
+#[test]
+fn tc_1884_a_position_token_resolving_to_no_type_is_blocking_at_its_row() {
+    let mut docs = documents();
+    docs[0].1 = tuple_doc("Pair", "Pair", &["| p0 | NoSuchType |", "| p1 | Integer |"]);
+    let unresolved = lowered(&bundle(&docs));
+    let found = with_code(&unresolved, Code::UnresolvedTypeToken);
+    assert_eq!(found.len(), 1, "{:?}", unresolved.diagnostics);
+    let locus = found[0].locus.as_ref().expect("a located diagnostic");
+    assert_eq!(locus.path, "spec/functional/Pair.md");
+    assert_eq!(locus.start_line, 14, "the p0 row");
+    assert!(found[0].blocking);
+    assert!(is_blocked(&unresolved.diagnostics));
+}

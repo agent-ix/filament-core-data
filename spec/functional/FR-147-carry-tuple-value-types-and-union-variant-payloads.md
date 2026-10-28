@@ -143,6 +143,13 @@ following, accumulating every defect and reporting each once at its pointer:
 - `INVALID_TUPLE_POSITION` at `…/positions/<i>/typeRef` when the position type
   is `ix://quire/native/Clock` (QSpec FR-322 intake order, step 3: a tuple
   position is never a clock).
+- `INVALID_CLOCK_MEMBER` at `…/variants/<i>/payloadType` when the payload type
+  is `ix://quire/native/Clock`, directly or through an alias that reaches it.
+  This follows QSpec FR-322, which refuses a Clock payload
+  (`unsupported_construct`/`declaration-form`), and is provisional: STD-528
+  rules whether a Clock payload is admitted, and until it does FCD refuses it
+  here and FR-146 no longer lists a variant `payloadType` among the places the
+  reader admits a Clock.
 - `UNRESOLVED_POSITION_TYPE` at `…/positions/<i>/typeRef` when the position type
   resolves to no type of the document and to no native, as
   `UNRESOLVED_VARIANT_PAYLOAD` does for a payload.
@@ -212,10 +219,12 @@ traversal.
 
 The extraction frontend (FR-091 to FR-099) writes both forms.
 
-- An enumeration artifact MAY carry a `## Payloads` table with the columns
-  `Value` and `Payload`, beside the `## Values` table. The engine's `values`
-  reader reads the `Value` and `Description` columns only, so the payload lives
-  in a table of its own, which the engine does not read. A `## Payloads` row
+- The source form for a union variant payload is a `## Payloads` table with the
+  columns `Value` and `Payload`, beside the `## Values` table. This is the
+  stated rule of this requirement, not a workaround: `## Values` keeps the
+  `Value` and `Description` columns the engine's `values` reader reads, and
+  `## Payloads` is the one place an artifact binds a type to a case. No
+  quire-rs change is needed or expected. An enumeration artifact MAY carry it. A `## Payloads` row
   whose `Payload` cell holds a type token binds that token to the variant its
   `Value` cell names, and a variant with no row is nullary. The token SHALL
   lower to a variant whose `payloadType` is the identity the engine's verdict
@@ -236,8 +245,10 @@ The extraction frontend (FR-091 to FR-099) writes both forms.
   not `^[A-Za-z][A-Za-z0-9_]*$` SHALL raise one blocking `ARTIFACT_NOT_LOWERED`
   at the artifact naming the tuple-name rule. A tuple artifact with no
   `## Positions` row SHALL raise one blocking `ARTIFACT_NOT_LOWERED` at the
-  artifact. A `Clock` position is refused by the reader (`INVALID_TUPLE_POSITION`);
-  the frontend's kernel library has no `Clock` scalar, so no `Type` cell resolves to one.
+  artifact. A `Clock` position (`INVALID_TUPLE_POSITION`) and a `Clock` payload
+  (`INVALID_CLOCK_MEMBER`) are refused by the reader, as above; the frontend's
+  kernel library has no `Clock` scalar, so no `Payload` or `Type` cell resolves
+  to one.
 - The lifted tuple is a document the reader decides: a reader diagnostic for it
   surfaces as `INVALID_IR` (FR-096) at the row that produced the node.
 
@@ -250,25 +261,32 @@ The extraction frontend (FR-091 to FR-099) writes both forms.
   bound to its `typeRef`. The reader carries the meaning verbatim and decides
   neither that a `tuple` shape carries the tuple meaning nor the converse; that
   pairing is QSpec's intake check.
-- QSpec FR-322 refuses a `payloadType` of `ix://quire/native/Clock`
-  (`unsupported_construct`/`declaration-form`), which this reader admits as
-  FR-146 does at every other position; a Clock tuple position is refused by
-  both. QSpec's text on whether a `ix://quire/unit/<name>` payload is admitted
-  differs between FR-154's unit paragraph (admitted) and FR-154-AC-25
-  (refused); the reader admits it, as FR-146-AC-2 does, and leaves the refusal
-  to QSpec intake.
-- The vectors `fixtures/semantic/v1/tuple-union/tuple-union.json` mirror the
-  QSpec vectors `proposals/checked-package-v2/model-tuple-union-vectors.json`
-  (`intake_cases` TK-01 to TK-10): QSpec's `ordinal` of a position is the
-  decimal suffix of its position identity.
+- Clock payload (STD-528): QSpec FR-322 refuses a `payloadType` of
+  `ix://quire/native/Clock` (`unsupported_construct`/`declaration-form`), and a
+  tuple position is never a clock. Until STD-528 is ruled FCD follows the
+  FR-322 text: the reader refuses a Clock variant payload with
+  `INVALID_CLOCK_MEMBER` and a Clock tuple position with
+  `INVALID_TUPLE_POSITION`. FR-146 admits a Clock at its other positions and is
+  unchanged there.
+- Unit and nullary payload (STD-527): QSpec's text differs between FR-154's
+  unit paragraph and FR-154-AC-25 on whether a unit payload is admitted. FCD
+  follows the merged QSpec #468 (STD-519): a nullary case is a case with no
+  `payloadType`, which QSpec reads as the empty payload, and the IR invents no
+  unit-valued payload type. An `ix://quire/unit/<name>` payload (a quantity)
+  stays admitted by the reader as FR-146-AC-6 states, and any refusal is
+  QSpec's intake check, pending STD-527.
+- The vectors `fixtures/semantic/v1/tuple-union/tuple-union.json` are FCD's own vectors, modelled on the QSpec vectors
+  `proposals/checked-package-v2/model-tuple-union-vectors.json`: QSpec's
+  `ordinal` of a position is the decimal suffix of its position identity.
 
 ## Constraints
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-147-CON-1 | Every IR reader SHALL return the same schema verdict for each case of the shared vectors, and the Rust reader SHALL return the stated codes and pointers. | Parity | Test |
+| FR-147-CON-1 | Every IR reader SHALL return the same schema verdict for each case of the shared vectors. | Parity | Test |
 | FR-147-CON-2 | Adding this requirement's members SHALL change no byte and no fingerprint of a document that carries none of them. | Compatibility | Test |
 | FR-147-CON-3 | No layer SHALL approximate a tuple as a record, a sequence or a core kind, or sort or drop a tuple's positions. | Integrity | Test |
+| FR-147-CON-4 | The Rust reader SHALL return the stated codes and pointers for each case of the shared vectors. | Parity | Test |
 
 ## Acceptance Criteria
 
@@ -285,9 +303,10 @@ The extraction frontend (FR-091 to FR-099) writes both forms.
 | FR-147-AC-9 | The Rust and Node normalizers and the fingerprinter keep the authored order of `positions` (a tuple of eleven positions keeps `p10` after `p9`), normalizing a normalized document is the identity, the written bytes of a document with no `positions` are unchanged, and `/types/*/positions` is in no identity-set path list. | Test (TC-1880) |
 | FR-147-AC-10 | The classifier reports `breaking` for a tuple that gains a position, loses a position, has its position types swapped, or has one position retyped, `patch` for an unchanged tuple and for a tuple whose only change is an `origin`, and `breaking` for a variant that gains, loses or changes a `payloadType`, in the Rust and Node classifiers alike. | Test (TC-1881) |
 | FR-147-AC-11 | A request whose IR declares a construct of the shape `tuple` is refused for every target by the generation seam with state `unsupported` and one blocking `UNSUPPORTED_CONSTRUCT_SHAPE`, writes no file, and a request with no such construct is unchanged. | Test (TC-1882) |
-| FR-147-AC-12 | An enumeration artifact whose `## Payloads` table has a `Payload` token for a value lowers that value to a variant with `payloadType` and every other value to a variant with none, resolving a native name and a bundle artifact as a `Type` cell is resolved, raises one blocking `UNRESOLVED_TYPE_TOKEN` at the row of an unresolved token and one blocking `ARTIFACT_NOT_LOWERED` at a row naming no value or repeating one, and writes the same bytes as before for an artifact with no `## Payloads` table. | Test (TC-1883) |
+| FR-147-AC-12 | An enumeration artifact whose `## Payloads` table has a `Payload` token for a value lowers that value to a variant with `payloadType` and every other value to a variant with none, reading the `## Payloads` table as the source form of a variant payload (the `## Values` table keeps its `Value` and `Description` columns), resolving a native name and a bundle artifact as a `Type` cell is resolved, raises one blocking `UNRESOLVED_TYPE_TOKEN` at the row of an unresolved token and one blocking `ARTIFACT_NOT_LOWERED` at a row naming no value or repeating one, and writes the same bytes as before for an artifact with no `## Payloads` table. | Test (TC-1883) |
 | FR-147-AC-13 | A tuple artifact lifts to one type with `positions` in table order, identities `<tuple identity>/p<i>` and the origin at the row; a tuple artifact with no row or a non-conforming artifact id raises the blocking `ARTIFACT_NOT_LOWERED` at its artifact, and a position whose token resolves to no type raises the blocking `UNRESOLVED_TYPE_TOKEN` at its row; two runs write identical bytes. | Test (TC-1884) |
 | FR-147-AC-14 | The shared vectors `cases.json` beside `tuple-union.json` record, for every case, the Node reader verdict (refused or admitted) and the Rust reader codes and pointers, and the Node and Rust suites each assert their recorded verdicts. | Test (TC-1885) |
+| FR-147-AC-15 | A union variant whose `payloadType` is `ix://quire/native/Clock`, directly or through an alias of it, raises exactly one `INVALID_CLOCK_MEMBER` at `…/variants/<i>/payloadType` from the Rust reader, the Node reader and the independent TypeScript reader, following QSpec FR-322 pending STD-528, while `ix://quire/unit/<name>` and a nullary variant (no `payloadType`, QSpec #468) raise nothing. | Test (TC-1886) |
 
 ## Dependencies
 

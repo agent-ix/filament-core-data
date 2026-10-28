@@ -266,9 +266,10 @@ pub struct PayloadRow {
     pub column: usize,
 }
 
-/// The rows of `document`'s `## Payloads` table with a non-empty `Payload`
-/// cell, in table order; empty when the document has no such table.
-pub fn payload_rows(document: &Document) -> Vec<PayloadRow> {
+/// Every row of `document`'s `## Payloads` table, in table order, a blank
+/// `Payload` cell included (its `token` is then empty); empty when the
+/// document has no such table.
+fn all_payload_rows(document: &Document) -> Vec<PayloadRow> {
     let Some(table) = first_table(document.raw(), PAYLOADS_SECTION) else {
         return Vec::new();
     };
@@ -281,11 +282,9 @@ pub fn payload_rows(document: &Document) -> Vec<PayloadRow> {
         .rows
         .iter()
         .filter_map(|(line, cells)| {
-            let value = cells.get(value_at)?.trim().to_string();
-            let token = cells.get(payload_at)?.trim().to_string();
-            (!token.is_empty()).then_some(PayloadRow {
-                value,
-                token,
+            Some(PayloadRow {
+                value: cells.get(value_at)?.trim().to_string(),
+                token: cells.get(payload_at)?.trim().to_string(),
                 line: *line,
                 column: TABLE_ROW_COLUMN,
             })
@@ -293,12 +292,22 @@ pub fn payload_rows(document: &Document) -> Vec<PayloadRow> {
         .collect()
 }
 
+/// The rows of `document`'s `## Payloads` table with a non-empty `Payload`
+/// cell, in table order; empty when the document has no such table.
+pub fn payload_rows(document: &Document) -> Vec<PayloadRow> {
+    all_payload_rows(document)
+        .into_iter()
+        .filter(|row| !row.token.is_empty())
+        .collect()
+}
+
 /// The `## Payloads` rows that bind no variant: one naming no `## Values`
-/// row, and every row after the first for one value.
+/// row, and every row after the first for one value, a blank `Payload`
+/// cell (a nullary case) included.
 pub fn stray_payloads(document: &Document, rows: &[ValueRow]) -> Vec<PayloadRow> {
     let mut seen: Vec<String> = Vec::new();
     let mut stray = Vec::new();
-    for payload in payload_rows(document) {
+    for payload in all_payload_rows(document) {
         let known = rows.iter().any(|row| row.value == payload.value);
         if !known || seen.contains(&payload.value) {
             stray.push(payload);

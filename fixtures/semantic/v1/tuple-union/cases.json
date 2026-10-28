@@ -213,6 +213,20 @@
 					"pointer": "/ir/types/4/variants/0/payloadType"
 				}
 			]
+		},
+		{
+			"id": "clock-variant-payload",
+			"tc": "TC-1886",
+			"ac": "FR-147-AC-15",
+			"set": [["/types/4/variants/0/payloadType", "ix://quire/native/Clock"]],
+			"remove": [],
+			"node": "refused",
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+					"pointer": "/ir/types/4/variants/0/payloadType"
+				}
+			]
 		}
 	]
 }

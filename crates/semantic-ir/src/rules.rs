@@ -1374,6 +1374,14 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
             for (member, variant) in variants.iter().enumerate() {
                 if let Some(payload) = variant.get("payloadType").and_then(Json::as_str) {
                     let variant_at = index(&variants_at, member);
+                    // QSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
+                    if document.special_of(payload) == Some(Special::Clock) {
+                        sink.emit(
+                            child(&variant_at, "payloadType"),
+                            INVALID_CLOCK_MEMBER,
+                            "a union variant payload is never a clock",
+                        );
+                    }
                     if !special_type_ref(payload) && !resolves(&declared, payload) {
                         sink.emit(
                             child(&variant_at, "payloadType"),
@@ -2536,6 +2544,63 @@ mod tests {
             );
         }
         assert_eq!(TypePositionKind::ALL.len(), 10);
+    }
+
+    /// FR-147-AC-7: a field, an operation parameter and result, an alias
+    /// target, a sequence `items`, a map `values`, a reference target and a
+    /// variant payload each naming the tuple `Pair` are visited once, and
+    /// every position of every tuple is visited as a `TuplePosition`.
+    ///
+    /// Tracing: TC-1878
+    /// ACs: FR-147-AC-7
+    #[test]
+    fn tc_1878_a_tuple_named_at_every_type_position_is_visited_once() {
+        let base = include_str!("../../../fixtures/semantic/v1/tuple-union/tuple-union.json");
+        let extra = include_str!("../../../fixtures/semantic/v1/tuple-union/pair-positions.json");
+        let mut document = parse(base).expect("base fixture");
+        let extra = parse(extra).expect("positions fixture");
+        let added = extra.get("types").and_then(Json::as_array).expect("types");
+        if let Json::Object(members) = &mut document {
+            if let Some((_, Json::Array(types))) = members.iter_mut().find(|(k, _)| k == "types") {
+                types.extend(added.iter().cloned());
+            }
+        }
+        let bundle = Json::Object(vec![("ir".to_owned(), document)]);
+        let decided = decide(&bundle);
+        assert!(decided.is_empty(), "the document is accepted: {decided:?}");
+        let document = Document::read(&bundle).expect("an IR document");
+        let mut visited: Vec<(TypePositionKind, String)> = Vec::new();
+        document
+            .type_positions(|position| visited.push((position.kind, position.identity.to_owned())));
+        let pair = "ix://acme/shapes/Pair";
+        for kind in [
+            TypePositionKind::FieldType,
+            TypePositionKind::ParameterType,
+            TypePositionKind::OperationReturn,
+            TypePositionKind::AliasTarget,
+            TypePositionKind::SequenceItems,
+            TypePositionKind::MapValues,
+            TypePositionKind::ReferenceTarget,
+            TypePositionKind::VariantPayload,
+        ] {
+            let seen = visited
+                .iter()
+                .filter(|(k, identity)| *k == kind && identity == pair)
+                .count();
+            // Shape.Both and PairPayload.One both carry a Pair payload.
+            let expected = if kind == TypePositionKind::VariantPayload {
+                2
+            } else {
+                1
+            };
+            assert_eq!(seen, expected, "{kind:?} naming Pair");
+        }
+        // Pair, Swap, Nest and Cell: two positions each.
+        let positions = visited
+            .iter()
+            .filter(|(kind, _)| *kind == TypePositionKind::TuplePosition)
+            .count();
+        assert_eq!(positions, 8);
     }
 
     /// Owner ruling (2026-09-19T15:39:32Z) on FCD #199, superseding R2 of the

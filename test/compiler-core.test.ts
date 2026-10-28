@@ -6599,9 +6599,8 @@ describe("generation backend seam registry codes (FR-063)", () => {
 	});
 
 	/** Traces: TC-1882; FR-147-AC-11. */
-	it("fires the unsupported-construct-shape code for a tuple no backend renders", () => {
-		const request = generationRequest();
-		(request as Json).ir = JSON.parse(
+	it("fires the unsupported-construct-shape code for a tuple no backend renders, in every target, and leaves a tuple-free request unchanged", () => {
+		const tuples = JSON.parse(
 			readFileSync(
 				new URL(
 					"../fixtures/semantic/v1/tuple-union/tuple-union.json",
@@ -6610,15 +6609,43 @@ describe("generation backend seam registry codes (FR-063)", () => {
 				"utf8",
 			),
 		);
-		const result = generateTarget(request, {
+		for (const target of [
+			"typescript",
+			"rust",
+			"python-pydantic-v2",
+			"python-dataclass",
+			"json-schema",
+			"sysml-v2-textual",
+		]) {
+			const request = generationRequest();
+			(request as Json).ir = structuredClone(tuples);
+			const result = generateTarget(request, {
+				target,
+			}) as never as {
+				state: string;
+				diagnostics: Diagnostic[];
+				files: Json[];
+			};
+			note(result.diagnostics);
+			expect(result.state, target).toBe("unsupported");
+			expect(
+				result.diagnostics
+					.filter((entry) => entry.blocking)
+					.map((entry) => entry.code),
+				target,
+			).toEqual([DIAGNOSTIC_CODES.UNSUPPORTED_CONSTRUCT_SHAPE.code]);
+			expect(result.files, target).toEqual([]);
+		}
+		// The control: the same request with no tuple construct is not refused.
+		const control = generateTarget(generationRequest(), {
 			target: "typescript",
-		}) as never as { state: string; diagnostics: Diagnostic[]; files: Json[] };
-		note(result.diagnostics);
-		expect(result.state).toBe("unsupported");
-		expect(codesOf(result.diagnostics)).toContain(
+			host: createHost({ readRoots: [process.cwd()] }),
+		}) as never as { state: string; diagnostics: Diagnostic[] };
+		note(control.diagnostics);
+		expect(control.state).toBe("success");
+		expect(codesOf(control.diagnostics)).not.toContain(
 			DIAGNOSTIC_CODES.UNSUPPORTED_CONSTRUCT_SHAPE.code,
 		);
-		expect(result.files).toEqual([]);
 	});
 
 	/** Traces: TC-751, TC-752; FR-063-AC-8, FR-063-AC-9. */
