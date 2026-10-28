@@ -39,6 +39,8 @@ codes! {
     MULTIPLE_DOMAIN_MEMBERSHIP => "agent-ix.semantic-ir.MULTIPLE_DOMAIN_MEMBERSHIP",
     CLAUSE_LANGUAGE_UNCHECKED => "agent-ix.semantic-ir.CLAUSE_LANGUAGE_UNCHECKED",
     INCOMPLETE_FEATURE_ORDER => "agent-ix.semantic-ir.INCOMPLETE_FEATURE_ORDER",
+    INVALID_TUPLE => "agent-ix.semantic-ir.INVALID_TUPLE",
+    INVALID_TUPLE_POSITION => "agent-ix.semantic-ir.INVALID_TUPLE_POSITION",
 }
 
 /// The one clause language a reader checks; every other admitted language is
@@ -229,6 +231,9 @@ pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
                 sink,
             );
         }
+        if declaration.shape == Shape::Tuple {
+            tuple(document, definition, &type_at, sink);
+        }
         if declaration.has_rule(Rule::MembersNotNamespace) {
             members_not_namespace(document, &declarations, definition, &type_at, sink);
         }
@@ -247,6 +252,89 @@ pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
     }
     exclusive_membership(document, &declarations, sink);
     populations(document, sink);
+}
+
+/// The members a tuple value type never carries (QSpec FR-208: a tuple has no
+/// fields, identity fields, operations, supertypes or clauses; FR-147 adds the
+/// relationships and variants no tuple has either).
+const TUPLE_FOREIGN_MEMBERS: [&str; 7] = [
+    "fields",
+    "identityFields",
+    "operations",
+    "supertypes",
+    "clauses",
+    "relationships",
+    "variants",
+];
+
+/// `ix://quire/native/Clock`, which is never a tuple position (QSpec FR-322).
+const CLOCK_TYPE_REF: &str = "ix://quire/native/Clock";
+
+/// Whether `name` is a tuple name: `^[A-Za-z][A-Za-z0-9_]*$`.
+fn is_tuple_name(name: &str) -> bool {
+    let mut characters = name.chars();
+    characters
+        .next()
+        .is_some_and(|first| first.is_ascii_alphabetic())
+        && characters.all(|character| character.is_ascii_alphanumeric() || character == '_')
+}
+
+/// The tuple rules of FR-147 for a type whose declaration has the shape
+/// `tuple`: an owner-nested identity, no member a tuple never carries, and
+/// positions `p0` to `pN-1` in order, none of them a clock. Position types
+/// resolve through the shared type traversal.
+fn tuple(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
+    let identity = identity_of(definition);
+    let package = document
+        .ir
+        .get("package")
+        .and_then(|package| package.get("identity"))
+        .and_then(Json::as_str);
+    if let Some(identity) = identity {
+        let named = package
+            .and_then(|package| identity.strip_prefix(&format!("ix://{package}/")))
+            .is_some_and(is_tuple_name);
+        if !named {
+            sink.emit(
+                child(type_at, "identity"),
+                INVALID_TUPLE,
+                "a tuple identity is ix://<package identity>/<name> with a name matching ^[A-Za-z][A-Za-z0-9_]*$",
+            );
+        }
+    }
+    for member in TUPLE_FOREIGN_MEMBERS {
+        if definition.has(member) {
+            sink.emit(
+                child(type_at, member),
+                INVALID_TUPLE,
+                format!("a tuple carries no {member}"),
+            );
+        }
+    }
+    let positions_at = child(type_at, "positions");
+    let mut seen: HashSet<&str> = HashSet::new();
+    for (ordinal, position) in items(definition, "positions").iter().enumerate() {
+        let position_at = index(&positions_at, ordinal);
+        // A repeated identity is the document-wide DUPLICATE_IDENTITY, the
+        // only refusal for the later position.
+        let repeated = identity_of(position).is_some_and(|named| !seen.insert(named));
+        if let (Some(tuple), Some(named)) = (identity, identity_of(position)) {
+            if !repeated && named != format!("{tuple}/p{ordinal}") {
+                sink.emit(
+                    child(&position_at, "identity"),
+                    INVALID_TUPLE_POSITION,
+                    format!("the position at index {ordinal} has the identity <tuple identity>/p{ordinal}"),
+                );
+            }
+        }
+        if position.get("typeRef").and_then(Json::as_str) == Some(CLOCK_TYPE_REF) {
+            sink.emit(
+                child(&position_at, "typeRef"),
+                INVALID_TUPLE_POSITION,
+                "a tuple position is never a clock",
+            );
+        }
+    }
 }
 
 /// Every field of `definition` and of its transitive supertypes.

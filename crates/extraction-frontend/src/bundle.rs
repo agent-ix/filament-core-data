@@ -332,6 +332,15 @@ impl Bundle {
         self.object_types.get(name)
     }
 
+    /// Whether `document`'s object type declares a construct of the
+    /// `tuple` shape.
+    pub fn is_tuple(&self, document: &Document) -> bool {
+        document
+            .object()
+            .and_then(|object| self.object_type(object)?.construct.as_ref())
+            .is_some_and(|construct| construct.declaration.shape == Shape::Tuple)
+    }
+
     /// Every declared object type, keyed by name.
     pub fn object_types(&self) -> &BTreeMap<String, ObjectType> {
         &self.object_types

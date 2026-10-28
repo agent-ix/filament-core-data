@@ -24,13 +24,14 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use quire_rs::semantic::decl::is_identifier;
-use quire_rs::semantic::{AvailabilityState, SemanticDiagnostic};
+use quire_rs::semantic::{extract_fields, AvailabilityState, SemanticContext, SemanticDiagnostic};
 
 use crate::bundle::{Bundle, Document};
 use crate::diagnostics::{
     message_with_token, Code, Diagnostic, Disposition, Locus, NotLoweredReason,
 };
-use crate::extract::{Extracted, Extractions};
+use crate::enumeration::{payload_rows, positions_rows};
+use crate::extract::{context_for, Extracted, Extractions};
 use crate::identity::PackageIdentity;
 use crate::rows::{field_rows, locate, operation_rows, RowLocus};
 use crate::scalars::KernelScalar;
@@ -197,8 +198,18 @@ pub struct PassOne {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Site {
     Field,
-    Param { operation: String },
-    Returns { operation: String },
+    /// FR-147: the `Payload` cell of one `## Values` row; `field` is the
+    /// row's `Value`.
+    Payload,
+    /// FR-147: the `Type` cell of one `## Positions` row; `field` is
+    /// `p<index>`.
+    Position,
+    Param {
+        operation: String,
+    },
+    Returns {
+        operation: String,
+    },
 }
 
 /// One classified token.
@@ -335,32 +346,38 @@ pub fn pass_two(bundle: &Bundle, extractions: &Extractions, outcomes: &Outcomes)
             .documents()
             .iter()
             .find(|d| d.path() == extracted.path);
-        let mut classify_token = |field: &str, site: Site, target: &str, row: Option<&RowLocus>| {
-            let locus =
-                row.map(|r| Locus::new(&source_identity, &extracted.path, r.line, r.column));
-            let companion = companion_of(extracted, target, row.map(|r| r.line));
-            let resolution = classify(target, companion, bundle, outcomes);
-            if let Resolution::KernelScalar(scalar) = &resolution {
-                out.scalars_used.insert(*scalar);
-            }
-            if let Resolution::Unresolved(unresolved) = &resolution {
-                out.diagnostics.push(unresolved_diagnostic(
-                    unresolved,
-                    target,
-                    &extracted.path,
-                    locus.clone(),
-                    &source_identity,
-                    outcomes,
-                ));
-            }
-            out.resolutions.push(Resolved {
-                artifact: id.clone(),
-                field: field.to_string(),
-                site,
-                locus,
-                resolution,
-            });
-        };
+        let mut classify_token =
+            |field: &str,
+             site: Site,
+             target: &str,
+             row: Option<&RowLocus>,
+             advisory: Option<&SemanticDiagnostic>| {
+                let locus =
+                    row.map(|r| Locus::new(&source_identity, &extracted.path, r.line, r.column));
+                let companion =
+                    advisory.or_else(|| companion_of(extracted, target, row.map(|r| r.line)));
+                let resolution = classify(target, companion, bundle, outcomes);
+                if let Resolution::KernelScalar(scalar) = &resolution {
+                    out.scalars_used.insert(*scalar);
+                }
+                if let Resolution::Unresolved(unresolved) = &resolution {
+                    out.diagnostics.push(unresolved_diagnostic(
+                        unresolved,
+                        target,
+                        &extracted.path,
+                        locus.clone(),
+                        &source_identity,
+                        outcomes,
+                    ));
+                }
+                out.resolutions.push(Resolved {
+                    artifact: id.clone(),
+                    field: field.to_string(),
+                    site,
+                    locus,
+                    resolution,
+                });
+            };
         if let Some(fields) = extracted.extraction.fields.as_deref() {
             let rows = document.map(|d| field_rows(d.raw())).unwrap_or_default();
             for (index, field) in fields.iter().enumerate() {
@@ -370,6 +387,7 @@ pub fn pass_two(bundle: &Bundle, extractions: &Extractions, outcomes: &Outcomes)
                     Site::Field,
                     field.type_ref.target.as_str(),
                     row,
+                    None,
                 );
             }
         }
@@ -390,6 +408,7 @@ pub fn pass_two(bundle: &Bundle, extractions: &Extractions, outcomes: &Outcomes)
                         },
                         param.type_ref.target.as_str(),
                         row,
+                        None,
                     );
                 }
                 if let Some(returns) = &operation.returns {
@@ -407,12 +426,96 @@ pub fn pass_two(bundle: &Bundle, extractions: &Extractions, outcomes: &Outcomes)
                         },
                         returns.target.as_str(),
                         row.as_ref(),
+                        None,
+                    );
+                }
+            }
+        }
+        // FR-147: an enumeration's `Payload` cells and a tuple's `Type`
+        // cells are type tokens, resolved by the engine as a `Type` cell is.
+        if let (Some(document), Some(object_type)) =
+            (document, bundle.object_type(&extracted.object))
+        {
+            let cells = if bundle.is_enumeration(document) {
+                let mut seen: BTreeSet<String> = BTreeSet::new();
+                payload_rows(document)
+                    .into_iter()
+                    .filter(|row| seen.insert(row.value.clone()))
+                    .map(|row| (row.value, Site::Payload, row.token, row.line, row.column))
+                    .collect::<Vec<_>>()
+            } else if bundle.is_tuple(document) {
+                positions_rows(document)
+                    .map(|rows| {
+                        rows.into_iter()
+                            .enumerate()
+                            .map(|(index, row)| {
+                                (
+                                    format!("p{index}"),
+                                    Site::Position,
+                                    row.type_cell,
+                                    row.line,
+                                    row.column,
+                                )
+                            })
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or_default()
+            } else {
+                Vec::new()
+            };
+            if !cells.is_empty() {
+                let context = context_for(bundle, document, object_type);
+                for (field, site, token, line, column) in cells {
+                    let (target, advisory) = engine_target(&token, &context);
+                    let row = RowLocus {
+                        name: field.clone(),
+                        line,
+                        column,
+                    };
+                    classify_token(
+                        &field,
+                        site,
+                        target.as_deref().unwrap_or(token.as_str()),
+                        Some(&row),
+                        advisory.as_ref(),
                     );
                 }
             }
         }
     }
     out
+}
+
+/// What the engine's FR-070 mapping says one type token names: the `target`
+/// of the `TypeRef` it maps the token to, and its `semantic.unresolved-type`
+/// advisory when the target is a placeholder. The token is handed to the
+/// engine as the `Type` cell of a one-row field-declaration table, so the
+/// frontend never resolves a token itself (decision D3); `None` when the
+/// engine refuses the token.
+fn engine_target(
+    token: &str,
+    context: &SemanticContext,
+) -> (Option<String>, Option<SemanticDiagnostic>) {
+    if token.is_empty() {
+        return (None, None);
+    }
+    let cell = token.replace('|', "\\|");
+    let raw = format!(
+        "## {}\n\n| Field | Type | Multiplicity | Constraints |\n|---|---|---|---|\n| value | {cell} | 1 | |\n",
+        crate::rows::PROPERTIES_SECTION
+    );
+    let outcome = extract_fields(&raw, context);
+    let advisory = outcome
+        .diagnostics
+        .iter()
+        .find(|d| d.code == ENGINE_UNRESOLVED_TYPE)
+        .cloned();
+    let target = outcome
+        .fields
+        .as_deref()
+        .and_then(|fields| fields.first())
+        .map(|field| field.type_ref.target.as_str().to_string());
+    (target, advisory)
 }
 
 /// The engine's `semantic.unresolved-type` advisory for the placeholder

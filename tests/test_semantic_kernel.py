@@ -36,6 +36,7 @@ REPO = pathlib.Path(__file__).resolve().parents[1]
 KERNEL_SCHEMAS = REPO / "packages/semantic-core/generated/json-schema"
 BACKEND = REPO / "python_backend"
 
+
 def _bundle_bytes() -> dict[str, bytes]:
     return {
         path.name: path.read_bytes() for path in sorted(KERNEL_SCHEMAS.glob("*.json"))

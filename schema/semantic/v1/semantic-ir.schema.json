@@ -861,6 +861,23 @@
 			},
 			"additionalProperties": false
 		},
+		"position": {
+			"description": "One position of a tuple value type (FR-147): identity <tuple identity>/p<index>, one admitted value type, and no name.",
+			"type": "object",
+			"required": ["identity", "typeRef", "origin"],
+			"properties": {
+				"identity": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"typeRef": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"origin": {
+					"$ref": "common.schema.json#/$defs/origin"
+				}
+			},
+			"additionalProperties": false
+		},
 		"typeDefinition": {
 			"type": "object",
 			"required": [
@@ -1068,6 +1085,13 @@
 					"type": "array",
 					"$ref": "#/$defs/identityList",
 					"minItems": 1
+				},
+				"positions": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/position"
+					},
+					"minItems": 1
 				}
 			},
 			"allOf": [
@@ -1243,7 +1267,8 @@
 							"targetEnd": false,
 							"sourceElement": false,
 							"targetElement": false,
-							"featureOrder": false
+							"featureOrder": false,
+							"positions": false
 						}
 					}
 				}
@@ -1736,7 +1761,8 @@
 						"state_machine",
 						"sequence",
 						"namespace",
-						"alias"
+						"alias",
+						"tuple"
 					]
 				},
 				"members": {
@@ -1769,7 +1795,8 @@
 							"sourceElement",
 							"targetElement",
 							"featureOrder",
-							"target"
+							"target",
+							"positions"
 						]
 					},
 					"additionalProperties": {
@@ -1868,6 +1895,47 @@
 								"type": "object",
 								"properties": {
 									"target": { "const": "forbidden" }
+								}
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"shape": { "const": "tuple" }
+						},
+						"required": ["shape"]
+					},
+					"then": {
+						"type": "object",
+						"properties": {
+							"members": {
+								"type": "object",
+								"required": ["positions"],
+								"properties": {
+									"positions": { "const": "required" }
+								}
+							}
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"shape": { "not": { "const": "tuple" } }
+						},
+						"required": ["shape"]
+					},
+					"then": {
+						"type": "object",
+						"properties": {
+							"members": {
+								"type": "object",
+								"properties": {
+									"positions": { "const": "forbidden" }
 								}
 							}
 						}

@@ -127,6 +127,7 @@ enum TypePositionKind {
     SequenceItems,
     MapValues,
     VariantPayload,
+    TuplePosition,
 }
 
 impl TypePositionKind {
@@ -140,6 +141,7 @@ impl TypePositionKind {
         Self::SequenceItems,
         Self::MapValues,
         Self::VariantPayload,
+        Self::TuplePosition,
     ];
 
     fn missing_message(self) -> &'static str {
@@ -153,6 +155,7 @@ impl TypePositionKind {
             Self::SequenceItems => "a decimal sequence item type carries a decimal policy",
             Self::MapValues => "a decimal map value type carries a decimal policy",
             Self::VariantPayload => "a decimal variant payload type carries a decimal policy",
+            Self::TuplePosition => "a decimal tuple position type carries a decimal policy",
         }
     }
 }
@@ -199,6 +202,7 @@ codes! {
     UNRESOLVED_TYPE_REF => "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
     UNRESOLVED_ELEMENT_TYPE => "agent-ix.semantic-ir.UNRESOLVED_ELEMENT_TYPE",
     UNRESOLVED_VARIANT_PAYLOAD => "agent-ix.semantic-ir.UNRESOLVED_VARIANT_PAYLOAD",
+    UNRESOLVED_POSITION_TYPE => "agent-ix.semantic-ir.UNRESOLVED_POSITION_TYPE",
     UNRESOLVED_OCCURRENCE_DEFINITION => "agent-ix.semantic-ir.UNRESOLVED_OCCURRENCE_DEFINITION",
     ALIAS_CYCLE => "agent-ix.semantic-ir.ALIAS_CYCLE",
     DEPTH_LIMIT_EXCEEDED => "agent-ix.semantic-ir.DEPTH_LIMIT_EXCEEDED",
@@ -709,6 +713,19 @@ impl<'a> Document<'a> {
                     }
                 }
             }
+            if let Some(positions) = definition.get("positions").and_then(Json::as_array) {
+                let positions_at = child(&type_at, "positions");
+                for (member, position) in positions.iter().enumerate() {
+                    if let Some(identity) = position.get("typeRef").and_then(Json::as_str) {
+                        visit(TypePosition {
+                            kind: TypePositionKind::TuplePosition,
+                            identity,
+                            subject: position,
+                            pointer: child(&index(&positions_at, member), "typeRef"),
+                        });
+                    }
+                }
+            }
             if let Some(constraints_items) = definition.get("constraints").and_then(Json::as_array)
             {
                 visit_constraints(
@@ -930,6 +947,7 @@ impl<'a> Document<'a> {
                 ("constraints", "constraints"),
                 ("fields", "fields"),
                 ("variants", "variants"),
+                ("positions", "positions"),
                 ("relationships", "relationships"),
             ] {
                 let _ = at;
@@ -1356,11 +1374,33 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
             for (member, variant) in variants.iter().enumerate() {
                 if let Some(payload) = variant.get("payloadType").and_then(Json::as_str) {
                     let variant_at = index(&variants_at, member);
+                    // QSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
+                    if document.special_of(payload) == Some(Special::Clock) {
+                        sink.emit(
+                            child(&variant_at, "payloadType"),
+                            INVALID_CLOCK_MEMBER,
+                            "a union variant payload is never a clock",
+                        );
+                    }
                     if !special_type_ref(payload) && !resolves(&declared, payload) {
                         sink.emit(
                             child(&variant_at, "payloadType"),
                             UNRESOLVED_VARIANT_PAYLOAD,
                             "the union variant payload type resolves to no declared type",
+                        );
+                    }
+                }
+            }
+        }
+        if let Some(positions) = definition.get("positions").and_then(Json::as_array) {
+            let positions_at = child(&type_at, "positions");
+            for (member, position) in positions.iter().enumerate() {
+                if let Some(type_ref) = position.get("typeRef").and_then(Json::as_str) {
+                    if !special_type_ref(type_ref) && !resolves(&declared, type_ref) {
+                        sink.emit(
+                            child(&index(&positions_at, member), "typeRef"),
+                            UNRESOLVED_POSITION_TYPE,
+                            "the tuple position type resolves to no declared type",
                         );
                     }
                 }
@@ -2479,6 +2519,9 @@ mod tests {
             TypePositionKind::VariantPayload => {
                 r#"{"identity":"ix://acme/pkg/T","kind":"union","variants":[{"payloadType":"ix://quire/native/Decimal"}]}"#
             }
+            TypePositionKind::TuplePosition => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"tuple","positions":[{"typeRef":"ix://quire/native/Decimal"}]}"#
+            }
         };
         parse(&format!(r#"{{"ir":{{"types":[{definition}]}}}}"#)).expect("a type position fixture")
     }
@@ -2500,7 +2543,64 @@ mod tests {
                 kind.missing_message()
             );
         }
-        assert_eq!(TypePositionKind::ALL.len(), 9);
+        assert_eq!(TypePositionKind::ALL.len(), 10);
+    }
+
+    /// FR-147-AC-7: a field, an operation parameter and result, an alias
+    /// target, a sequence `items`, a map `values`, a reference target and a
+    /// variant payload each naming the tuple `Pair` are visited once, and
+    /// every position of every tuple is visited as a `TuplePosition`.
+    ///
+    /// Tracing: TC-1878
+    /// ACs: FR-147-AC-7
+    #[test]
+    fn tc_1878_a_tuple_named_at_every_type_position_is_visited_once() {
+        let base = include_str!("../../../fixtures/semantic/v1/tuple-union/tuple-union.json");
+        let extra = include_str!("../../../fixtures/semantic/v1/tuple-union/pair-positions.json");
+        let mut document = parse(base).expect("base fixture");
+        let extra = parse(extra).expect("positions fixture");
+        let added = extra.get("types").and_then(Json::as_array).expect("types");
+        if let Json::Object(members) = &mut document {
+            if let Some((_, Json::Array(types))) = members.iter_mut().find(|(k, _)| k == "types") {
+                types.extend(added.iter().cloned());
+            }
+        }
+        let bundle = Json::Object(vec![("ir".to_owned(), document)]);
+        let decided = decide(&bundle);
+        assert!(decided.is_empty(), "the document is accepted: {decided:?}");
+        let document = Document::read(&bundle).expect("an IR document");
+        let mut visited: Vec<(TypePositionKind, String)> = Vec::new();
+        document
+            .type_positions(|position| visited.push((position.kind, position.identity.to_owned())));
+        let pair = "ix://acme/shapes/Pair";
+        for kind in [
+            TypePositionKind::FieldType,
+            TypePositionKind::ParameterType,
+            TypePositionKind::OperationReturn,
+            TypePositionKind::AliasTarget,
+            TypePositionKind::SequenceItems,
+            TypePositionKind::MapValues,
+            TypePositionKind::ReferenceTarget,
+            TypePositionKind::VariantPayload,
+        ] {
+            let seen = visited
+                .iter()
+                .filter(|(k, identity)| *k == kind && identity == pair)
+                .count();
+            // Shape.Both and PairPayload.One both carry a Pair payload.
+            let expected = if kind == TypePositionKind::VariantPayload {
+                2
+            } else {
+                1
+            };
+            assert_eq!(seen, expected, "{kind:?} naming Pair");
+        }
+        // Pair, Swap, Nest and Cell: two positions each.
+        let positions = visited
+            .iter()
+            .filter(|(kind, _)| *kind == TypePositionKind::TuplePosition)
+            .count();
+        assert_eq!(positions, 8);
     }
 
     /// Owner ruling (2026-09-19T15:39:32Z) on FCD #199, superseding R2 of the
