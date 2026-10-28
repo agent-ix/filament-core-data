@@ -637,20 +637,24 @@ it("runs the seeded differential fuzz corpus with a minimal disagreement report"
 			"print(json.dumps(answers))",
 		].join("\n");
 		const pythonAnswers = JSON.parse(
-			execFileSync("python3", ["-c", pythonScript], {
-				cwd: pythonRoot,
-				encoding: "utf8",
-				env: {
-					...process.env,
-					AGE_2229_FUZZ_CASES: JSON.stringify(
-						pythonCases.map(({ name, nesting, probes }) => ({
-							name,
-							nesting,
-							probes,
-						})),
-					),
+			execFileSync(
+				resolve(import.meta.dirname, "../.venv/bin/python"),
+				["-c", pythonScript],
+				{
+					cwd: pythonRoot,
+					encoding: "utf8",
+					env: {
+						...process.env,
+						AGE_2229_FUZZ_CASES: JSON.stringify(
+							pythonCases.map(({ name, nesting, probes }) => ({
+								name,
+								nesting,
+								probes,
+							})),
+						),
+					},
 				},
-			}),
+			),
 		) as boolean[];
 		expect(pythonAnswers).toHaveLength(pythonCases.length * 2);
 		for (const [index, answer] of pythonAnswers.entries()) {

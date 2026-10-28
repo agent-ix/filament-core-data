@@ -14,3 +14,14 @@ compatibility, feasibility gates, and the staged non-disruptive roadmap.
 The generated kernel packages under `packages/semantic-kernel/` are the
 supported consumer surface. Their deterministic build and parity gates are
 available through the repository Make targets.
+
+## Running tests locally
+
+Install Poetry and pnpm, then run `make install` from the repository root. This
+creates the repository's `.venv` and installs the Node dependencies. Run
+`make test` for the default test gate or `make test-all` when the Rust toolchain
+is also available. Both commands check for Poetry and an executable
+`.venv/bin/python` before running tests; the Node tests use that interpreter
+for Python subprocesses. The named Node, Python, Rust, and SysML test targets
+use the same prerequisite check. The SysML pilot check also requires the pinned
+pilot and JRE under `SYSML_PILOT_CACHE` and reports any missing artifacts.
