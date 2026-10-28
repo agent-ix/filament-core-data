@@ -137,7 +137,6 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"keys": "ix://acme/shapes/Integer",
 			"values": "ix://acme/shapes/Pair"
 		},
 		{
