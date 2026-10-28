@@ -113,12 +113,13 @@ class Shape(Enum):
     sequence = 'sequence'
     namespace = 'namespace'
     alias = 'alias'
+    tuple = 'tuple'
 
 
 class ConstructDeclaration(Struct):
     identity: Identity
     meaning: Annotated[str, Meta(min_length=1)]
-    members: dict[Literal['fields', 'variants', 'relationships', 'operations', 'clauses', 'supertypes', 'abstract', 'identityFields', 'owner', 'members', 'occurrenceField', 'states', 'transitions', 'steps', 'persists', 'vocabulary', 'direction', 'interfaceType', 'multiplicity', 'declaredType', 'flowDirection', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'featureOrder', 'target'], Members]
+    members: dict[Literal['fields', 'variants', 'relationships', 'operations', 'clauses', 'supertypes', 'abstract', 'identityFields', 'owner', 'members', 'occurrenceField', 'states', 'transitions', 'steps', 'persists', 'vocabulary', 'direction', 'interfaceType', 'multiplicity', 'declaredType', 'flowDirection', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'featureOrder', 'target', 'positions'], Members]
     shape: Shape
     immutable: bool | UnsetType = UNSET
     references: dict[Literal['owner', 'members', 'transitions', 'steps', 'persists', 'interfaceType', 'declaredType', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'target'], ReferencesAdditionalProperty] | UnsetType = (
@@ -288,6 +289,11 @@ class DecimalPolicy38(Struct, tag_field='precision', tag=38):
 
 
 type DecimalPolicy = DecimalPolicy1 | DecimalPolicy2 | DecimalPolicy3 | DecimalPolicy4 | DecimalPolicy5 | DecimalPolicy6 | DecimalPolicy7 | DecimalPolicy8 | DecimalPolicy9 | DecimalPolicy10 | DecimalPolicy11 | DecimalPolicy12 | DecimalPolicy13 | DecimalPolicy14 | DecimalPolicy15 | DecimalPolicy16 | DecimalPolicy17 | DecimalPolicy18 | DecimalPolicy19 | DecimalPolicy20 | DecimalPolicy21 | DecimalPolicy22 | DecimalPolicy23 | DecimalPolicy24 | DecimalPolicy25 | DecimalPolicy26 | DecimalPolicy27 | DecimalPolicy28 | DecimalPolicy29 | DecimalPolicy30 | DecimalPolicy31 | DecimalPolicy32 | DecimalPolicy33 | DecimalPolicy34 | DecimalPolicy35 | DecimalPolicy36 | DecimalPolicy37 | DecimalPolicy38
+
+
+class Term(Struct):
+    dimension: common_schema.SemanticIdentity
+    exponent: str
 
 
 class DefaultKind(Enum):
@@ -536,6 +542,14 @@ class Construct(Struct):
     moduleVersion: common_schema.Semver
 
 
+class Dimension(Struct):
+    base: bool
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Meta(pattern='^[A-Za-z][A-Za-z0-9_]*$')]
+    origin: common_schema.Origin
+    terms: list[Term]
+
+
 class Field(Struct):
     defaultKind: DefaultKind
     identity: common_schema.SemanticIdentity
@@ -551,7 +565,7 @@ class Field(Struct):
     extensions: list[common_schema.Extension] | UnsetType = UNSET
     redefines: common_schema.SemanticIdentity | UnsetType = UNSET
     subsets: IdentityList | UnsetType = UNSET
-    textProfile: common_schema.TextProfile | UnsetType = UNSET
+    textProfile: str | UnsetType = UNSET
     unit: Annotated[str, Meta(min_length=1, pattern='^[!-~]+$')] | UnsetType = UNSET
 
 
@@ -575,6 +589,12 @@ class Population(Struct):
     members: list[common_schema.SemanticIdentity]
     origin: common_schema.Origin
     symmetric: bool | UnsetType = UNSET
+
+
+class Position(Struct):
+    identity: common_schema.SemanticIdentity
+    origin: common_schema.Origin
+    typeRef: common_schema.SemanticIdentity
 
 
 class Relationship(Struct):
@@ -602,7 +622,7 @@ class Step(Struct):
     stepKind: StepKind
 
 
-class Term(Struct):
+class Term1(Struct):
     doc: str
     origin: common_schema.Origin
     term: Annotated[str, Meta(min_length=1)]
@@ -616,6 +636,16 @@ class Transition(Struct):
     to: common_schema.SemanticIdentity
     trigger: common_schema.SemanticIdentity
     guard: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
+
+
+class Unit(Struct):
+    dimension: common_schema.SemanticIdentity
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Meta(pattern='^[A-Za-z][A-Za-z0-9_]*$')]
+    offset: str
+    origin: common_schema.Origin
+    scale: str
+    target: common_schema.SemanticIdentity | UnsetType = UNSET
 
 
 class Variant(Struct):
@@ -670,6 +700,7 @@ class TypeDefinition(Struct):
     operations: list[Operation] | UnsetType = UNSET
     owner: common_schema.SemanticIdentity | UnsetType = UNSET
     persists: IdentityList | UnsetType = UNSET
+    positions: Annotated[list[Position], Meta(min_length=1)] | UnsetType = UNSET
     relationships: list[Relationship] | UnsetType = UNSET
     scalar: Scalar | UnsetType = UNSET
     sourceElement: common_schema.SemanticIdentity | UnsetType = UNSET
@@ -684,7 +715,7 @@ class TypeDefinition(Struct):
     transitions: list[Transition] | UnsetType = UNSET
     values: common_schema.SemanticIdentity | UnsetType = UNSET
     variants: list[Variant] | UnsetType = UNSET
-    vocabulary: list[Term] | UnsetType = UNSET
+    vocabulary: list[Term1] | UnsetType = UNSET
 
 
 class FilamentSemanticIrV1ContractVersion200(Struct):
@@ -696,4 +727,6 @@ class FilamentSemanticIrV1ContractVersion200(Struct):
     package: Package
     source: Source
     types: Annotated[list[TypeDefinition], Meta(min_length=1)]
+    dimensions: list[Dimension] | UnsetType = UNSET
     populations: list[Population] | UnsetType = UNSET
+    units: list[Unit] | UnsetType = UNSET

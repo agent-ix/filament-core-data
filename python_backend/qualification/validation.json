@@ -6,13 +6,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 253,
-			"validatingTypes": 182,
+			"declaredTypes": 257,
+			"validatingTypes": 186,
 			"nonValidatingDeclarations": 71,
-			"exercisedTypes": 74,
-			"unexercisedValidatingTypes": 108,
-			"constraintsExercised": 305,
-			"typesRejectingAnEmptyOrUndeclaredValue": 135,
+			"exercisedTypes": 75,
+			"unexercisedValidatingTypes": 111,
+			"constraintsExercised": 308,
+			"typesRejectingAnEmptyOrUndeclaredValue": 139,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
 				"common_schema.ManifestTarget",
@@ -1163,6 +1163,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Dimension",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "FieldModel",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -1293,6 +1301,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Position",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "ReferencesAdditionalPropertyItem",
 					"exercised": false,
 					"why": "no schema node carries this type's property set"
@@ -1362,6 +1378,14 @@
 				{
 					"module": "semantic_ir_schema",
 					"type": "Term",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Term1",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
@@ -1381,7 +1405,15 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 6
+					"constraintsOnThisType": 7
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Unit",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -1434,13 +1466,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 257,
-			"validatingTypes": 137,
+			"declaredTypes": 261,
+			"validatingTypes": 141,
 			"nonValidatingDeclarations": 120,
-			"exercisedTypes": 74,
-			"unexercisedValidatingTypes": 63,
-			"constraintsExercised": 300,
-			"typesRejectingAnEmptyOrUndeclaredValue": 134,
+			"exercisedTypes": 75,
+			"unexercisedValidatingTypes": 66,
+			"constraintsExercised": 303,
+			"typesRejectingAnEmptyOrUndeclaredValue": 138,
 			"typesAcceptingAnything": [
 				"module_manifest_schema.Defaults",
 				"module_manifest_schema.LintRuleEntry",
@@ -2317,6 +2349,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Dimension",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "FieldModel",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -2429,6 +2469,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Position",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "Relationship",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -2486,6 +2534,14 @@
 				{
 					"module": "semantic_ir_schema",
 					"type": "Term",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Term1",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
@@ -2505,7 +2561,15 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 6
+					"constraintsOnThisType": 7
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Unit",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",
@@ -2586,13 +2650,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 257,
-			"validatingTypes": 137,
+			"declaredTypes": 261,
+			"validatingTypes": 141,
 			"nonValidatingDeclarations": 120,
-			"exercisedTypes": 62,
-			"unexercisedValidatingTypes": 75,
-			"constraintsExercised": 219,
-			"typesRejectingAnEmptyOrUndeclaredValue": 93,
+			"exercisedTypes": 63,
+			"unexercisedValidatingTypes": 78,
+			"constraintsExercised": 222,
+			"typesRejectingAnEmptyOrUndeclaredValue": 97,
 			"typesAcceptingAnything": [
 				"module_manifest_schema.Defaults",
 				"module_manifest_schema.LintRuleEntry",
@@ -3435,6 +3499,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Dimension",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "Field",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -3547,6 +3619,14 @@
 				},
 				{
 					"module": "semantic_ir_schema",
+					"type": "Position",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
 					"type": "Relationship",
 					"exercised": false,
 					"acceptsAConformingValue": false,
@@ -3604,6 +3684,14 @@
 				{
 					"module": "semantic_ir_schema",
 					"type": "Term",
+					"exercised": true,
+					"acceptsAConformingValue": true,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 0
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Term1",
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
@@ -3623,7 +3711,15 @@
 					"exercised": false,
 					"acceptsAConformingValue": false,
 					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 6
+					"constraintsOnThisType": 7
+				},
+				{
+					"module": "semantic_ir_schema",
+					"type": "Unit",
+					"exercised": false,
+					"acceptsAConformingValue": false,
+					"rejectsUndeclaredOrIncomplete": true,
+					"constraintsOnThisType": 1
 				},
 				{
 					"module": "semantic_ir_schema",

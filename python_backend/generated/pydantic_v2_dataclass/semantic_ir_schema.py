@@ -119,13 +119,14 @@ class Shape(Enum):
     sequence = 'sequence'
     namespace = 'namespace'
     alias = 'alias'
+    tuple = 'tuple'
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
 class ConstructDeclaration:
     identity: Identity
     meaning: Annotated[str, Field(min_length=1)]
-    members: dict[Literal['fields', 'variants', 'relationships', 'operations', 'clauses', 'supertypes', 'abstract', 'identityFields', 'owner', 'members', 'occurrenceField', 'states', 'transitions', 'steps', 'persists', 'vocabulary', 'direction', 'interfaceType', 'multiplicity', 'declaredType', 'flowDirection', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'featureOrder', 'target'], Members]
+    members: dict[Literal['fields', 'variants', 'relationships', 'operations', 'clauses', 'supertypes', 'abstract', 'identityFields', 'owner', 'members', 'occurrenceField', 'states', 'transitions', 'steps', 'persists', 'vocabulary', 'direction', 'interfaceType', 'multiplicity', 'declaredType', 'flowDirection', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'featureOrder', 'target', 'positions'], Members]
     shape: Shape
     immutable: bool | None = None
     references: dict[Literal['owner', 'members', 'transitions', 'steps', 'persists', 'interfaceType', 'declaredType', 'sourceEnd', 'targetEnd', 'sourceElement', 'targetElement', 'target'], ReferencesAdditionalProperty] | None = (
@@ -372,6 +373,12 @@ class DecimalPolicy38:
 
 
 type DecimalPolicy = DecimalPolicy1 | DecimalPolicy2 | DecimalPolicy3 | DecimalPolicy4 | DecimalPolicy5 | DecimalPolicy6 | DecimalPolicy7 | DecimalPolicy8 | DecimalPolicy9 | DecimalPolicy10 | DecimalPolicy11 | DecimalPolicy12 | DecimalPolicy13 | DecimalPolicy14 | DecimalPolicy15 | DecimalPolicy16 | DecimalPolicy17 | DecimalPolicy18 | DecimalPolicy19 | DecimalPolicy20 | DecimalPolicy21 | DecimalPolicy22 | DecimalPolicy23 | DecimalPolicy24 | DecimalPolicy25 | DecimalPolicy26 | DecimalPolicy27 | DecimalPolicy28 | DecimalPolicy29 | DecimalPolicy30 | DecimalPolicy31 | DecimalPolicy32 | DecimalPolicy33 | DecimalPolicy34 | DecimalPolicy35 | DecimalPolicy36 | DecimalPolicy37 | DecimalPolicy38
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class Term:
+    dimension: common_schema.SemanticIdentity
+    exponent: str
 
 
 class DefaultKind(Enum):
@@ -638,6 +645,15 @@ class Construct:
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
+class Dimension:
+    base: bool
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Field(pattern='^[A-Za-z][A-Za-z0-9_]*$')]
+    origin: common_schema.Origin
+    terms: list[Term]
+
+
+@dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
 class FieldModel:
     defaultKind: DefaultKind
     identity: common_schema.SemanticIdentity
@@ -653,7 +669,7 @@ class FieldModel:
     extensions: list[common_schema.Extension] | None = None
     redefines: common_schema.SemanticIdentity | None = None
     subsets: IdentityList | None = None
-    textProfile: common_schema.TextProfile | None = None
+    textProfile: str | None = None
     unit: Annotated[str | None, Field(min_length=1, pattern='^[!-~]+$')] = None
 
 
@@ -679,6 +695,13 @@ class Population:
     members: list[common_schema.SemanticIdentity]
     origin: common_schema.Origin
     symmetric: bool | None = None
+
+
+@dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
+class Position:
+    identity: common_schema.SemanticIdentity
+    origin: common_schema.Origin
+    typeRef: common_schema.SemanticIdentity
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
@@ -710,7 +733,7 @@ class Step:
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
-class Term:
+class Term1:
     doc: str
     origin: common_schema.Origin
     term: Annotated[str, Field(min_length=1)]
@@ -725,6 +748,17 @@ class Transition:
     to: common_schema.SemanticIdentity
     trigger: common_schema.SemanticIdentity
     guard: Annotated[str | None, Field(min_length=1)] = None
+
+
+@dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
+class Unit:
+    dimension: common_schema.SemanticIdentity
+    identity: common_schema.SemanticIdentity
+    name: Annotated[str, Field(pattern='^[A-Za-z][A-Za-z0-9_]*$')]
+    offset: str
+    origin: common_schema.Origin
+    scale: str
+    target: common_schema.SemanticIdentity | None = None
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
@@ -782,6 +816,7 @@ class TypeDefinition:
     operations: list[Operation] | None = None
     owner: common_schema.SemanticIdentity | None = None
     persists: IdentityList | None = None
+    positions: Annotated[list[Position] | None, Field(min_length=1)] = None
     relationships: list[Relationship] | None = None
     scalar: Scalar | None = None
     sourceElement: common_schema.SemanticIdentity | None = None
@@ -796,7 +831,7 @@ class TypeDefinition:
     transitions: list[Transition] | None = None
     values: common_schema.SemanticIdentity | None = None
     variants: list[Variant] | None = None
-    vocabulary: list[Term] | None = None
+    vocabulary: list[Term1] | None = None
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))
@@ -809,4 +844,6 @@ class FilamentSemanticIrV1ContractVersion200:
     package: Package
     source: Source
     types: Annotated[list[TypeDefinition], Field(min_length=1)]
+    dimensions: list[Dimension] | None = None
     populations: list[Population] | None = None
+    units: list[Unit] | None = None
