@@ -51,11 +51,11 @@ Behavior.
 - `sourceFiles(package)` SHALL be every file beneath each entry of that package's manifest `sourceRoots`, in ascending code-point order of its package-root-relative `/`-separated path; no other file beneath the package root is a source file.
 - `contentDigest(package)` SHALL be `digest(canonicalize([[path, digest(bytes)], …]))` over `sourceFiles(package)`.
 - `manifestDigest(package)` SHALL be `digest` of that manifest's raw bytes; the same rule SHALL give each mapping's and profile's digest.
-- `source.digest` of an emitted IR document SHALL equal `contentDigest` of its root package.
+- The compiler SHALL NOT include a source digest in an emitted IR document; `contentDigest` remains an input to lock verification and fingerprint computation.
 - `schema-bytes` SHALL be `[[filename, digest(bytes)], …]` over the files of `schema/semantic/v1/` whose name ends `.schema.json`, in ascending code-point order of filename.
 - `fingerprint` SHALL be `digest(canonicalize([schemaBytes, manifestDigest, mappingDigests, profileDigests, resolvedPackages, contractVersion]))`, where `mappingDigests` is the identity-sorted list of `[identity, digest]`, `profileDigests` the name-sorted list of `[name, digest]`, `resolvedPackages` the identity-sorted list of `[identity, version, contentDigest, manifestDigest]`, and no excluded input appears.
 - `resolvedPackages` SHALL carry every resolved package's **manifest** digest as well as its content digest. An imported package can change its exports, its own imports or its profiles without changing a source byte, and that is a change to what was compiled.
-- `package.lockDigest` of an emitted IR document SHALL be `digest` of the raw bytes of the lock the caller supplied, or, where the caller supplied none, of the serialised lock the compile built for itself.
+- The compiler SHALL NOT include a lock digest in an emitted IR document; the lock remains a separate artifact verified by its fingerprint.
 
 ### Building and verifying
 
@@ -87,8 +87,8 @@ Behavior.
 | FR-048-AC-6 | Verifying a lock leaves the lock file byte-unchanged on disk. | Test |
 | FR-048-AC-7 | Two lock builds over the same graph produce identical bytes. | Snapshot |
 | FR-048-AC-8 | `contentDigest` is unchanged when a package's files are enumerated in a different order and changes when any source byte changes; a file beneath the package root but outside `sourceRoots` changes nothing. | Property |
-| FR-048-AC-9 | `source.digest` of a compiled document equals `contentDigest` of its root package, asserted by recomputation. | Test |
-| FR-048-AC-10 | `package.lockDigest` equals the digest of a supplied lock's bytes, and, with no lock supplied, of the lock the compile built. | Test |
+| FR-048-AC-9 | A compiled IR document omits `source.digest` while the lock still records the root package's `contentDigest` for verification. | Test |
+| FR-048-AC-10 | A compiled IR document omits `package.lockDigest` whether the caller supplies a lock or the compiler builds one; lock fingerprint verification still applies. | Test |
 | FR-048-AC-11 | A value nested past `maxDepth` terminates `canonicalize` with the blocking limit diagnostic. | Test |
 
 ## Dependencies

@@ -25,9 +25,8 @@ diagnostic code apiece, and any construct outside the closed keyword set or
 outside that register SHALL refuse generation rather than be approximated.
 
 The `source` and `package` blocks carry the members the contract requires.
-The digests those blocks require are the all-zero placeholder: the kernel
-document records no digest of its own, and a digest recorded here would be a
-copy of a value the bundle already determines.
+The kernel document carries no source, manifest, or lock digest in these
+blocks; those values belong to their source artifacts.
 
 The register is closed for the same reason the keyword set is closed. A lowering
 that silently approximates one construct it has no representation for will
@@ -41,7 +40,7 @@ against the contract owner, in that order.
 
 ## Inputs
 
-- `schema/semantic/v1/semantic-ir.schema.json`, whose root requires `contractVersion`, `source`, `package`, `types`, `occurrences`, and `extensions`, whose `source` requires `identity`, `version`, `dialect`, and `digest`, and whose `package` requires `identity`, `version`, `manifestDigest`, `mappingVersions`, `profileVersions`, and `lockDigest`, all under `additionalProperties: false`
+- `schema/semantic/v1/semantic-ir.schema.json`, whose root requires `contractVersion`, `source`, `package`, `types`, `occurrences`, and `extensions`, whose `source` requires `identity`, `version`, and `dialect`, and whose `package` requires `identity`, `version`, `mappingVersions`, and `profileVersions`, all under `additionalProperties: false`
 - `schema/semantic/v1/common.schema.json#/$defs/frontendDialect`, whose enum is exactly `typespec` and `spec-bundle`; `#/$defs/sha256`, whose pattern is `^sha256:[0-9a-f]{64}$`; `#/$defs/packageIdentity`; and `#/$defs/semver`
 - Every inventory-derived document of `packages/semantic-core/generated/json-schema/` and their gating target `make semantic-core-check`
 - `packages/semantic-core/main.tsp`, the authored source, and `packages/semantic-core/inventory.json`, its declaration inventory
@@ -66,7 +65,7 @@ against the contract owner, in that order.
 
 - `source.identity` SHALL be `ix://agent-ix/semantic-core`, naming the semantic-core bundle the lowering read.
 - `source.dialect` SHALL be `spec-bundle`: the lowering reads the committed JSON Schema bundle, and `common.schema.json#/$defs/frontendDialect` admits exactly `typespec` and `spec-bundle`.
-- `source.digest`, `package.manifestDigest` and `package.lockDigest` SHALL be the all-zero placeholder, `sha256:` followed by sixty-four `0` digits, which `common.schema.json#/$defs/sha256` admits and the schema requires.
+- The emitted `source` SHALL omit `digest`, and the emitted `package` SHALL omit `manifestDigest` and `lockDigest`; the closed schema SHALL reject those members.
 
 ### The package block
 
@@ -131,7 +130,7 @@ against the contract owner, in that order.
 | FR-084-AC-1 | The emitted kernel IR validates against `schema/semantic/v1/semantic-ir.schema.json` at `contractVersion` `2.0.0`, carrying every required member of `source` and `package` and no member `additionalProperties: false` forbids. | Test |
 | FR-084-AC-2 | `source.dialect` is `spec-bundle`, a member of `common.schema.json#/$defs/frontendDialect`. | Test |
 | FR-084-AC-5 | `package.identity` is `agent-ix/semantic-kernel` and matches `common.schema.json#/$defs/packageIdentity`. | Unit |
-| FR-084-AC-6 | `source.digest`, `package.manifestDigest` and `package.lockDigest` are the all-zero placeholder, and `mappingVersions` and `profileVersions` are present as empty arrays. | Test |
+| FR-084-AC-6 | `source.digest`, `package.manifestDigest` and `package.lockDigest` are absent, the schema rejects each when supplied, and `mappingVersions` and `profileVersions` are present as empty arrays. | Test |
 | FR-084-AC-8 | Generating twice from the same bundle on two working directories with differing paths and cleared environments produces identical fingerprints, and no generated file contains a timestamp, host name, or absolute path. | Integration |
 | FR-084-AC-9 | `KERNEL_LOSSES` has exactly two rows and stands in bijection with the rows of `packages/semantic-kernel/losses.json`, which `scripts/build-semantic-kernel.mjs --check` regenerates and compares byte for byte; a test adding a third row without a registered code, and one adding a code without a row, each fail. | Unit |
 | FR-084-AC-10 | Lowering the committed bundle emits exactly one `agent-ix.compiler.KERNEL_UNCONSTRAINED_VALUE` located at `DefaultDecl.json`'s `value`, naming the minted `DefaultDeclValue` identity, and the emitted type carries `kind: "record"`, `fields: []`, `unknownPolicy: "preserve"`. | Test |

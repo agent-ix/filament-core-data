@@ -87,16 +87,16 @@ FR-099-AC-5, and NFR-032's permitted list need no widening and no file under
 - The frontend SHALL set `source.identity` to `ix://<org>/<name>/spec`.
 - The frontend SHALL set `source.dialect` to `spec-bundle`.
 - The frontend SHALL set `source.version` to the `spec.md` frontmatter `version` where present and to `0.0.0` otherwise.
-- The frontend SHALL set `source.digest` to `sha256:<hex>` over the byte sequence formed, for each loaded document in path order under code-point comparison, by the document's bundle-root-relative path bytes, one `0x00` byte, the document's raw bytes, one `0x00` byte.
+- The frontend SHALL omit `source.digest`; loaded documents remain the source for the lifted declarations and their loci.
 
 ### The `package` block
 
 - The frontend SHALL set `package.identity` to `<org>/<name>`.
 - The frontend SHALL set `package.version` to the same value as `source.version`.
-- The frontend SHALL set `package.manifestDigest` to `sha256:<hex>` over the concatenation of the manifest bytes of every loaded module, in module-name order, not only of the module declaring the bundle's object types.
+- The frontend SHALL omit `package.manifestDigest`.
 - The frontend SHALL set `package.mappingVersions` to the one-element list holding the module's `semantic.contract_version`.
 - The frontend SHALL set `package.profileVersions` to `[]`.
-- The frontend SHALL set `package.lockDigest` to `sha256:<hex>` over the lines `<module package>@<module version>:<manifest sha256>`, where `<module package>` is the module's `semantic.package` (for example `agent-ix/spec-objects-business@0.7.0:<sha256>`), one per loaded module, sorted by code point and each terminated by `\n`.
+- The frontend SHALL omit `package.lockDigest`.
 - The frontend SHALL emit `occurrences: []` and top-level `extensions: []`.
 
 ### Node identities
@@ -152,14 +152,14 @@ FR-099-AC-5, and NFR-032's permitted list need no widening and no file under
 |---|---|---|
 | FR-095-AC-1 | The `snapshot-table` fixture lifts with `source.identity` `ix://agent-ix/docs-service/spec`, `source.dialect` `spec-bundle`, and `package.identity` `agent-ix/docs-service`. | Test (TC-1246) |
 | FR-095-AC-2 | A `spec.md` with `version: 2.1.0` yields `source.version` and `package.version` `2.1.0`; one without yields `0.0.0`. | Test (TC-1247) |
-| FR-095-AC-3 | `source.digest` equals a SHA-256 computed by `sha256sum` over the stated path/NUL/bytes/NUL recipe assembled outside the crate, and changing one byte of one document changes it. | Test (TC-1248) |
-| FR-095-AC-4 | `package.manifestDigest` equals the `sha256sum` of every loaded module's manifest bytes concatenated in module-name order, and `lockDigest` equals the `sha256sum` of the sorted `<semantic.package>@<version>:<sha256>\n` lines (`fixture/domain@0.1.0:<sha256>` for the `fixture-domain` module), each computed outside the crate. | Test (TC-1249) |
+| FR-095-AC-3 | The emitted `source` omits `digest`, including when one loaded document changes by one byte. | Test (TC-1248) |
+| FR-095-AC-4 | The emitted `package` omits `manifestDigest` and `lockDigest` for one or multiple loaded modules. | Test (TC-1249) |
 | FR-095-AC-5 | `mappingVersions` is `["1.0.0"]` for the `fixture-domain` module and `profileVersions` is `[]`; `occurrences` and top-level `extensions` are `[]`. | Test (TC-1250) |
 | FR-095-AC-6 | Every identity in the emitted `business` fixture document matches one of two closed shapes and `semanticIdentity`: a type definition, kernel scalar definition, or constrained-field alias is `ix://<org>/<name>/<tail>` with no further `/` in `<tail>`; a field, operation, clause, state, transition or step is `<owner type identity>/<name>` and an operation parameter is `<owner operation identity>/<param>`, nesting under its owner rather than any slot; every other node (`constraint`, `relationship`, `variant`) is `ix://<org>/<name>/<kind>/<tail>` under the closed `NodeKind` list, and no identity occupies a `type/`, `field/`, `operation/`, `param/`, `clause/`, `state/`, `transition/` or `step/` slot of its own, asserted over every node. | Test (TC-1251) |
 | FR-095-AC-7 | `slug("Snap Shot")` is `Snap-Shot`, `slug("A__B--C")` is `A-B-C`, `slug("versionNumber")` is `versionNumber`, `slug("--")` and `slug("_")` are `Unsluggable` (no part is dropped), and an enumeration value reading `_` raises `UNSLUGGABLE_NAME` at that value's locus, blocking; an artifact id is verbatim, so `type_identity("AR_001")` is `AR_001` and `state_identity("SM_001", "placed")` is `SM_001/placed`, while an id carrying a character no segment admits (`Snap Shot`) is `Unsluggable`; an artifact titled `"---"` is not an `Identifier` and fails earlier as `UNNAMEABLE_ARTIFACT` (FR-093), never reaching the slug. | Test (TC-1252) |
 | FR-095-AC-8 | Lifting the same checkout twice from two different working directories and two different `HOME` values yields documents byte-identical to each other and to the committed `expected/` golden. | Test (TC-1253) |
 | FR-095-AC-10 | A pattern scan over the document finds no absolute path, no ISO 8601 timestamp, no hostname, and no username, including when the lift is invoked with an absolute `BUNDLE=` path. | Test (TC-1255) |
-| FR-095-AC-11 | The `objects-extra` module loaded beside the fixture modules yields `manifestDigest` over every loaded manifest concatenated in module-name order, and swapping the order of the caller's module roots does not change it. | Test (TC-1256) |
+| FR-095-AC-11 | With `objects-extra` loaded beside the fixture modules, swapping the order of the caller's module roots leaves the emitted `source` and `package` blocks unchanged; neither block acquires a digest member. | Test (TC-1256) |
 | FR-095-AC-12 | A grep of `crates/extraction-frontend/src/` finds no `git2`, no `Command::new("git")`, no `std::env::var`, no `env!`, and no `option_env!`; planting `env!("CARGO_PKG_VERSION")` in `envelope.rs` fails the gate. | Static (TC-1257) |
 | FR-095-AC-13 | The emitted envelope of every positive fixture passes `agent_ix_semantic_ir::decide` at lift time with zero `INVALID_IR` diagnostics. | Test (TC-1258) |
 | FR-095-AC-14 | Two artifacts titled `Status` and `status` under distinct ids, each carrying a field `id` with `min`, mint distinct type identities from their ids with distinct `<id>/*` field-identity sets and two constraints sharing the one code `…STATUS_ID_MIN`, and a bundle holding both lifts with zero diagnostics about them (the positive half; the `negatives/DUPLICATE_TYPE_NAME` fixture is two documents both titled `Status`, FR-093-AC-13); a bundle holding an artifact with id `FR-001Revision` beside artifact `FR-001` with a constrained field `revision` (the `negatives/DUPLICATE_IDENTITY` fixture, contract case (c)) is refused at the later path with `DUPLICATE_IDENTITY` naming the `FR-001Revision` identity, with the earlier locus in `related`, and no document is written; an artifact whose `displayName` equals a kernel scalar name the bundle uses (the `KERNEL_NAME_SHADOWED` fixture, case (a)) is refused at lift level with `DUPLICATE_TYPE_NAME` before any identity is minted. | Test (TC-1347, TC-1351) |

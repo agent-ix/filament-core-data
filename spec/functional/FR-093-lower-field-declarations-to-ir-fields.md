@@ -138,7 +138,7 @@ the contract's three cases in order.
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-093-CON-1 | The frontend SHALL lower a record as a pure function of the `SemanticExtraction`, the resolutions, and the module roles, with `fields_form` influencing no emitted byte of `types[]` or of the diagnostics (`source.digest` differs between forms by construction, being a digest of the source bytes). | Determinism | Property |
+| FR-093-CON-1 | The frontend SHALL lower a record as a pure function of the `SemanticExtraction`, the resolutions, and the module roles, with `fields_form` influencing no emitted byte of `types[]` or of the diagnostics. | Determinism | Property |
 | FR-093-CON-2 | The frontend SHALL derive no emitted field value from the field's name, the artifact's title, or the file path, other than `origin.source.path`, `identity`, `diagnosticCode`, and — for a constrained field — the alias `identity` and `displayName` its `typeRef` and its constraints' `appliesTo` name. | Correctness | Property |
 | FR-093-CON-3 | The frontend SHALL record every loss it takes as a row in `losses.json`, so that an occurrence of a loss with no row fails the frontend's own test. | Integrity | Test |
 | FR-093-CON-4 | The frontend SHALL agree with `agent_ix_semantic_ir::decide` on `CONSTRAINT_NOT_APPLICABLE` for every (kind, keyword) pair of the RULES.md table, asserted by one contract test that compares the frontend's applicability table with the reader's for the full cross product, and by the reader refusing an `alias` whose `target` is that kind. | Integrity | Test |
@@ -147,7 +147,7 @@ the contract's three cases in order.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-093-AC-1 | Two bundle roots, `fixtures/snapshot-table/` and `fixtures/snapshot-fence/`, each holding `FR-006` at the same relative path `spec/functional/FR-006-snapshot-entity.md` in the table form and the fence form respectively and line-aligned so field origins agree, lift to byte-identical `types[]` and diagnostics; only `source.digest` differs, by construction. | Test (TC-1220) |
+| FR-093-AC-1 | Two bundle roots, `fixtures/snapshot-table/` and `fixtures/snapshot-fence/`, each holding `FR-006` at the same relative path `spec/functional/FR-006-snapshot-entity.md` in the table form and the fence form respectively and line-aligned so field origins agree, lift to byte-identical `types[]` and diagnostics. | Test (TC-1220) |
 | FR-093-AC-2 | The lifted `Snapshot` record carries `roles: ["business:domain-object", "business:entity", "business:persistable"]`, `unknownPolicy: reject`, and seven fields in declaration order before normalization. | Test (TC-1221) |
 | FR-093-AC-3 | `id | UUID | 1 | identity` lowers to `multiplicity {1,1}`, `presence required`, `nullable false`, `defaultKind none`, and the `identity-field` extension; `parent | Snapshot | 0..1` lowers to `{0,1}` and `optional`. | Test (TC-1222) |
 | FR-093-AC-4 | `versionNumber | Integer | 1 | min: 1` emits one `kind: alias` definition `type/FR-006VersionNumber` with `target` `type/Integer`, `roles: []`, `unknownPolicy: reject`, origin at the row, and one `min` constraint with `operands.value: "1"`, `appliesTo` the alias identity, and `diagnosticCode` `agent-ix.docs-service.SNAPSHOT_VERSIONNUMBER_MIN`; the field's `typeRef` is the alias identity, the record's `constraints` is `[]`, and no unconstrained field mints an alias. | Test (TC-1223) |

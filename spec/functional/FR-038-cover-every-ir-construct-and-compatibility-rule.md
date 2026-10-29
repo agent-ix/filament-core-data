@@ -42,7 +42,7 @@ that register, or a written justification for a class that row cannot carry.
 - A `negative` case SHALL violate exactly one contract rule about the construct.
 - A `boundary` case SHALL sit on a declared limit of the construct.
 - An `evolution` case SHALL change the construct across a contract or package version transition.
-- The corpus SHALL carry a `negative` case for each of: an import naming a package the lock does not resolve; a lock package-graph cycle; a mapping naming an identity no declaration owns; a duplicate semantic identity; a `manifestDigest` the manifest no longer hashes to; and an entity-role type the manifest neither exports nor the profile declares an allowed omission.
+- The corpus SHALL carry a `negative` case for each of: an import naming a package the lock does not resolve; a lock package-graph cycle; a mapping naming an identity no declaration owns; a duplicate semantic identity; and an entity-role type the manifest neither exports nor the profile declares an allowed omission.
 - The corpus SHALL carry cases in which nullability and optionality vary independently across all four combinations of `presence` and `nullable`.
 - The corpus SHALL carry a `negative` case in which a union declares a variant whose `payloadType` no type declares.
 - The corpus SHALL carry a `positive` case in which two union variants share one payload type.
@@ -69,7 +69,7 @@ that register, or a written justification for a class that row cannot carry.
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-038-AC-1 | Every construct-register row carries a `positive`, a `negative`, a `boundary`, and an `evolution` case, or declares that class `notApplicable` with a justification; removing a case fails the gate and names the row and the class. | Test |
-| FR-038-AC-2 | The corpus carries a passing negative case for each of unresolved import, package cycle, unknown mapping, duplicate identity, stale manifest digest, and undeclared loss, each at an exact source locus. | Test |
+| FR-038-AC-2 | The corpus carries a passing negative case for each of unresolved import, package cycle, unknown mapping, duplicate identity, and undeclared loss, each at an exact source locus. | Test |
 | FR-038-AC-3 | Four cases realize the four `presence` by `nullable` combinations and the oracle distinguishes all four normalized forms. | Test |
 | FR-038-AC-4 | Direct and mutual recursion are accepted, an alias cycle and a composite relationship cycle are rejected, and a package cycle carries a different diagnostic code from a recursive type graph. | Test |
 | FR-038-AC-5 | Every `documentExpressible` defect row has a reproducing case that fails on a bundle carrying the defect, and every other defect row names the static check that detects it. | Test |

@@ -41,7 +41,7 @@ A generated package that does not carry its own provenance cannot be diagnosed
 after the fact. When a consumer reports that a type is wrong, the first question
 is which compiler, which IR version and which backend produced it; an artifact
 that cannot answer turns a bounded investigation into an unbounded one. The
-generated crates already carry source, package, manifest and lock digests for
+generated crates already carry compiler, IR-version and backend provenance for
 exactly this reason — this requirement generalises the property rather than
 inventing it.
 

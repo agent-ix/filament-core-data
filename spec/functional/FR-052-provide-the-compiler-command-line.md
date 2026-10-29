@@ -66,7 +66,7 @@ code by the same three verbs.
 - `compile` SHALL write a lock to `--write-lock` only when that flag is given.
 - `compile` SHALL NOT modify the file named by `--lock`.
 - `compile` SHALL apply `DEFAULT_LIMITS` where `--limits` is absent, and the file's values where it is present.
-- `inspect` SHALL print a deterministic summary — contract version, package identity and version, source dialect and digest, lock digest, IR fingerprint, and per-kind type counts, followed by one line per type giving identity, kind, and the counts of its fields, constraints, relationships, operations, and clauses — sorted by identity.
+- `inspect` SHALL print a deterministic summary — contract version, package identity and version, source dialect, IR fingerprint, and per-kind type counts, followed by one line per type giving identity, kind, and the counts of its fields, constraints, relationships, operations, and clauses — sorted by identity.
 - `inspect --json` SHALL print the same record as canonical JSON.
 - `inspect` SHALL pass `importedExports` from `--package` where given, and the marker `unknown` otherwise, and SHALL print the suppressions the reader reports.
 - `inspect` SHALL report a document's reader diagnostics rather than failing silently on an invalid document.

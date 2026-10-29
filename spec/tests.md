@@ -314,7 +314,7 @@ computed by `quire matrix` from those trace tags.
 | TC-295 | For every `2.0.0` document whose `nullable` members are all already booleans, `normalized` is byte-identical to the corpus canonical form of the input and adds no member; for any other `2.0.0` document, `normalized` differs only in materializing each such `nullable` as `=== true` | Property | P0 | FR-036-AC-6 |
 | TC-296 | An optional plus required addition classifies `breaking` naming both; the optional addition alone is `additive` under a preserving policy and `conditional` with none | Unit | P0 | FR-036-AC-7 |
 | TC-297 | Every diagnostic the oracle emits validates against the published diagnostic schema and carries `owner`, `blocking`, `causes`, and `related` | Unit | P0 | FR-036-AC-8 |
-| TC-298 | Each of the six package-context rules fires on a bundle supplying its member and stays silent on one that omits it | Unit | P0 | FR-036-AC-9 |
+| TC-298 | Each of the five package-context rules fires on a bundle supplying its member and stays silent on one that omits it | Unit | P0 | FR-036-AC-9 |
 | TC-299 | A schema-decided case yields one diagnostic at the deepest failing instance location and no ancestor location beside it | Unit | P0 | FR-036-AC-10 |
 | TC-300 | Every emitted code has a `diagnostic-codes.json` row citing a contract clause, and the sixteen frozen `reader-cases.json` codes are reused verbatim | Unit | P0 | FR-036-AC-11, FR-036-CON-3 |
 | TC-301 | A value that is not an input bundle returns `invalid` with exactly one `INVALID_DOCUMENT` diagnostic at pointer `""` | Unit | P1 | FR-036-AC-1 |
@@ -331,7 +331,7 @@ computed by `quire matrix` from those trace tags.
 | TC-312 | A `pointerCompatible: false` adapter passes on a different pointer scheme when code, severity, locus, classification, and bytes match, and fails on a wrong locus | Unit | P0 | FR-037-AC-11 |
 | TC-313 | The registry declares the four adapter slots with owning issues, statuses, and the note that supplying a command is the owning issue's obligation | Static | P0 | FR-037-CON-1, FR-037-CON-3 |
 | TC-314 | Every register row carries four case classes or a justified `notApplicable`; removing a case fails and names the row and class | Unit | P0 | FR-038-AC-1 |
-| TC-315 | Unresolved import, package cycle, unknown mapping, duplicate identity, stale manifest digest, and undeclared loss each fail at an exact source locus | Unit | P0 | FR-038-AC-2 |
+| TC-315 | Unresolved import, package cycle, unknown mapping, duplicate identity, and undeclared loss each fail at an exact source locus | Unit | P0 | FR-038-AC-2 |
 | TC-316 | Four cases realize the four `presence` by `nullable` combinations and the oracle distinguishes all four normalized forms | Unit | P0 | FR-038-AC-3 |
 | TC-317 | Direct and mutual recursion are accepted; alias and composite cycles are rejected; a package cycle carries a different code from a recursive type graph | Unit | P0 | FR-038-AC-4 |
 | TC-318 | Every `documentExpressible` defect row has a reproducing case that fails, and every other row names the static check that detects it | Unit | P0 | FR-038-AC-5, US-008-EX-5 |
@@ -438,7 +438,7 @@ computed by `quire matrix` from those trace tags.
 | TC-440 | A property with a TypeSpec default emits `defaultKind: "semantic"` and that `defaultValue`; `@defaultKind("migration")` overrides the kind | Unit | P0 | FR-046-AC-9 |
 | TC-441 | A field typed by a built-in scalar directly mints no package-local definition; its `typeRef` names the kernel scalar's native reference over the closed FR-032 set (gap 1 of FCD #199/#200) | Unit | P0 | FR-046-AC-10 |
 | TC-442 | A property typed by an export of a resolved imported package resolves, and one typed by an unexported type of that package raises | Unit | P0 | FR-046-AC-11 |
-| TC-443 | `source.digest` equals the root package's `contentDigest`, and the `package` block equals the values FR-047 and FR-048 supply, asserted field by field | Unit | P0 | FR-046-AC-12 |
+| TC-443 | The source block omits digest and the package block omits manifestDigest and lockDigest; remaining members equal FR-047 and FR-048 values, asserted field by field | Unit | P0 | FR-046-AC-12 |
 | TC-444 | `occurrences` is the empty array for every fixture package | Unit | P0 | FR-046-AC-13 |
 | TC-445 | Every emitted array is sorted by `identity` under code-point comparison | Property | P0 | FR-046-AC-14 |
 | TC-446 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, and `backends/**` are byte-unchanged from `origin/main` | Static | P0 | FR-046-AC-15 |
@@ -480,8 +480,8 @@ computed by `quire matrix` from those trace tags.
 | TC-482 | Verifying a lock leaves the lock file byte-unchanged on disk | Unit | P0 | FR-048-AC-6 |
 | TC-483 | Two lock builds over the same graph produce identical bytes | Snapshot | P0 | FR-048-AC-7 |
 | TC-484 | `contentDigest` is unchanged when a package's files are enumerated in a different order and changes when any source byte changes | Property | P0 | FR-048-AC-8 |
-| TC-485 | `source.digest` of a compiled document equals `contentDigest` of its root package, asserted by recomputation | Unit | P0 | FR-048-AC-9 |
-| TC-486 | `package.lockDigest` equals the digest of a supplied lock's bytes, and, with no lock supplied, of the lock the compile built | Unit | P0 | FR-048-AC-10 |
+| TC-485 | Compiled IR omits source.digest while the lock retains root package contentDigest for verification | Unit | P0 | FR-048-AC-9 |
+| TC-486 | Compiled IR omits package.lockDigest with both supplied and generated locks; fingerprint verification still applies | Unit | P0 | FR-048-AC-10 |
 | TC-487 | A value nested past `maxDepth` terminates `canonicalize` with the blocking limit diagnostic | Unit | P0 | FR-048-AC-11 |
 | TC-488 | The fingerprint SHALL change for every change to an included input, and stay equal for every change confined to an excluded input | Property | P1 | FR-048-CON-1 |
 | TC-489 | The canonical form SHALL be produced by this repository; no canonical-JSON dependency is added | Static | P1 | FR-048-CON-2 |
@@ -1025,7 +1025,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1217 | An artifact titled String yields one KERNEL_NAME_SHADOWED warning at its frontmatter at the resolve layer, a cell reading String resolves to KernelScalar, and a lift using no String cell is not blocked | Unit | P1 | FR-092-AC-8 |
 | TC-1218 | Over 256 mutated tokens the resolver returns a Resolution and never panics, every Unresolved value maps to exactly one code, and ImportUnsupported(package) is the only string-carrying variant | Property | P1 | FR-092-AC-9, FR-092-CON-1 |
 | TC-1219 | The FR-050 reader and agent_ix_semantic_ir::decide each return zero UNRESOLVED_TYPE_REF over every emitted fixture document, so no typeRef names an undeclared identity | Integration | P1 | FR-092-AC-10 |
-| TC-1220 | The line-aligned snapshot-table and snapshot-fence bundle roots, each holding FR-006 at the same relative path in one form, lift to byte-identical types[] and diagnostics (source.digest differs by construction), so fields_form influences no node byte | Snapshot | P0 | FR-093-AC-1, FR-093-CON-1 |
+| TC-1220 | The line-aligned snapshot-table and snapshot-fence bundle roots lift to byte-identical types[] and diagnostics, so fields_form influences no node byte | Snapshot | P0 | FR-093-AC-1, FR-093-CON-1 |
 | TC-1221 | The lifted Snapshot record carries roles business:domain-object, business:entity, business:persistable, unknownPolicy reject, and seven fields in declaration order | Unit | P1 | FR-093-AC-2 |
 | TC-1222 | The id UUID 1 identity row lowers to {1,1}, required, nullable false, defaultKind none, and the identity-field extension; parent Snapshot 0..1 lowers to {0,1} optional | Unit | P1 | FR-093-AC-3 |
 | TC-1223 | versionNumber Integer 1 min: 1 emits one kind: alias type/SnapshotVersionNumber targeting type/Integer at the row, carrying one min constraint with operands.value 1, appliesTo the alias identity, and diagnosticCode agent-ix.docs-service.SNAPSHOT_VERSIONNUMBER_MIN under the shared rule; the field typeRef is the alias, the record constraints are [], and no unconstrained field mints an alias | Unit | P1 | FR-093-AC-4 |
@@ -1053,14 +1053,14 @@ computed by `quire matrix` from those trace tags.
 | TC-1245 | Every emitted fixture document passes the FR-050 reader and decide with zero UNRESOLVED_RELATIONSHIP_TARGET, UNKNOWN_EDGE_CATEGORY, COMPOSITE_CYCLE, DANGLING_CLAUSE_REF, or MISSING_SOURCE_SPAN | Integration | P1 | FR-094-AC-15 |
 | TC-1246 | The snapshot-table fixture lifts with source.identity ix://agent-ix/docs-service/spec, source.dialect spec-bundle as the only stamped value, and package.identity agent-ix/docs-service | Unit | P0 | FR-095-AC-1, FR-095-CON-3 |
 | TC-1247 | A spec.md with version: 2.1.0 yields source.version and package.version 2.1.0; one without yields 0.0.0 | Unit | P1 | FR-095-AC-2 |
-| TC-1248 | source.digest equals a sha256sum over the path, NUL, bytes, NUL recipe assembled outside the crate, and changing one byte of one document changes it | Unit | P1 | FR-095-AC-3 |
-| TC-1249 | package.manifestDigest equals the sha256sum of every loaded manifest concatenated in module-name order and lockDigest the sha256sum of the sorted semantic.package@version:sha256 lines, each computed outside the crate | Unit | P1 | FR-095-AC-4 |
+| TC-1248 | The emitted source block omits digest, including when one loaded document changes by one byte | Unit | P1 | FR-095-AC-3 |
+| TC-1249 | The emitted package block omits manifestDigest and lockDigest for one or multiple loaded modules | Unit | P1 | FR-095-AC-4 |
 | TC-1250 | mappingVersions is [1.0.0] for the fixture-domain module, profileVersions is [], and occurrences and top-level extensions are [] | Unit | P1 | FR-095-AC-5 |
 | TC-1251 | Every identity in the emitted business fixture document matches the closed slot grammar (type, field, operation, clause, state, transition and step nested under their owner; variant, relationship, constraint under their NodeKind segment) and semanticIdentity, a parameter appears under <Name>/<operation>/<param> and an enumeration member under variant/, and no identity occupies a param/, clause/, state/, transition/ or step/ slot, asserted by regex over every node | Property | P1 | FR-095-AC-6 |
 | TC-1252 | slug("Snap Shot") is Snap-Shot, slug("A__B--C") is A-B-C, slug("versionNumber") is versionNumber, slug("--") and slug("_") are Unsluggable (no part is dropped), and an enumeration value reading _ raises UNSLUGGABLE_NAME at its locus, blocking; an artifact id is verbatim, so type_identity("AR_001") is AR_001 and state_identity("SM_001", "placed") is SM_001/placed, while an id carrying a character no segment admits is Unsluggable; a "---" title fails earlier as UNNAMEABLE_ARTIFACT | Unit | P1 | FR-095-AC-7 |
 | TC-1253 | Lifting one checkout twice from two working directories and two HOME values yields documents byte-identical to each other and to the committed golden | Snapshot | P0 | FR-095-AC-8, FR-095-CON-1 |
 | TC-1255 | A pattern scan over the document finds no absolute path, ISO 8601 timestamp, hostname, or username, including when invoked with an absolute BUNDLE= path | Unit | P1 | FR-095-AC-10 |
-| TC-1256 | The objects-extra module loaded beside the fixture modules yields manifestDigest over every loaded manifest in module-name order, unchanged when the caller's module roots are swapped | Property | P1 | FR-095-AC-11 |
+| TC-1256 | Swapping caller module-root order leaves the source and package blocks unchanged, with no digest members | Property | P1 | FR-095-AC-11 |
 | TC-1257 | grep of src/ finds no git2, no Command::new("git"), no std::env::var, no env!, and no option_env!; planting env!("CARGO_PKG_VERSION") in envelope.rs fails the gate | Static | P1 | FR-095-AC-12, FR-095-CON-2 |
 | TC-1258 | The emitted envelope of every positive fixture passes agent_ix_semantic_ir::decide at lift time with zero INVALID_IR diagnostics | Unit | P1 | FR-095-AC-13 |
 | TC-1259 | Every Code variant, DUPLICATE_IDENTITY included, serialises to a code matching the published pattern and, instantiated with and without a locus, validates as a diagnostic against common.schema.json | Property | P1 | FR-096-AC-1 |
@@ -1101,7 +1101,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1297 | inspect --ir over a lifted document prints one line per type in types order and exits 0; over a document missing contractVersion it prints INVALID_IR naming the reader's SCHEMA_VIOLATION at /ir ("a required member contractVersion is absent") and exits 1 | E2E | P1 | FR-099-AC-3 |
 | TC-1300 | Two lifts of snapshot-table, within one run and across two runs, produce IR and diagnostic bytes identical to each other, to the committed expected/ goldens, and to decide normalized | Snapshot | P0 | NFR-031-AC-1, FR-145-AC-7 |
 | TC-1301 | A lift with the working directory changed, HOME at an empty directory, and TZ, LANG, LC_ALL, and CARGO_TARGET_DIR varied produces bytes identical to the committed golden | Snapshot | P0 | NFR-031-AC-2, FR-145-AC-7 |
-| TC-1302 | The line-aligned snapshot-table and snapshot-fence bundle roots, each holding one copy of FR-006 at the same bundle-relative path, lift to identical types[] and diagnostics bytes; source.digest differs by construction | Snapshot | P0 | NFR-031-AC-3 |
+| TC-1302 | The line-aligned snapshot-table and snapshot-fence bundle roots lift to identical types[] and diagnostics bytes | Snapshot | P0 | NFR-031-AC-3 |
 | TC-1303 | The crate enumerates no directory itself: every document and module arrives through load_repo and load_module_set, whose results are path-sorted (quire-rs walk.rs, TC-473), so enumeration order cannot reach the output | Static | P1 | NFR-031-AC-4 |
 | TC-1304 | No module under src/ references SystemTime, Instant, std::env, env!, option_env!, a hostname API, an RNG, std::net, or Command; std::fs only in write.rs (reads: manifest.yaml per module root, the golden walk, inspect --ir; writes: the atomic outputs), every other module std::fs-free; the gate fails on a planted std::env::var in lower.rs | Static | P0 | NFR-031-AC-5 |
 | TC-1305 | For each of the five limits.json limits, a bundle one past it yields exactly one blocking LIMIT_* diagnostic at the offending document within 512 MiB and 30 s, naming the file's value | Unit | P0 | NFR-031-AC-6 |
@@ -1488,7 +1488,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1209, TC-1228 | legacy free-column table | engine reason `legacy-form` | `ARTIFACT_NOT_LOWERED` disposition `warning` | No record; one non-blocking diagnostic; document written, exit 0 |
 | TC-1228, TC-1260 | legacy free-column table | engine reason other than `legacy-form` (`both-forms`, `missing`) | `ARTIFACT_NOT_LOWERED` disposition `error` | No record; blocking diagnostic; diagnostics sidecar only, exit 1 |
 | TC-1295 | `--module` count | one module root | `lift` | Bundle loaded under exactly that module; exit 0 |
-| TC-1256, TC-1295 | `--module` count | two module roots | `lift` | `manifestDigest` over both in module-name order, independent of argument order |
+| TC-1256, TC-1295 | `--module` count | two module roots | `lift` | source and package blocks unchanged when module arguments swap, without digest members |
 | TC-1296 | `--module` count | zero | `lift` | Exit 2 naming the missing option; no ambient module location is tried |
 | TC-1268, TC-1296 | diagnostic set | at least one blocking, lift not refused | `lift` | Diagnostics sidecar written and nothing else; pre-existing output unchanged; exit 1 |
 | TC-1268, TC-1341 | diagnostic set | non-blocking only | `lift` | Document and two sidecars written, diagnostics reported on stderr, exit 0 |
@@ -1830,7 +1830,6 @@ computed by `quire matrix` from those trace tags.
 | ERR-101 | The lock package graph closes a cycle | Oracle rejects with a package-cycle code distinct from a recursive type graph | TC-315, TC-317 |
 | ERR-063 | A mapping names an identity no declaration owns | Oracle rejects at the mapping's locus | TC-298, TC-315 |
 | ERR-064 | The same semantic identity is declared twice anywhere in the document | Oracle rejects at the second declaration | TC-293, TC-315 |
-| ERR-104 | The IR's `manifestDigest` no longer matches the manifest | Oracle rejects as a stale lock | TC-298, TC-315 |
 | ERR-105 | An entity-role type is neither exported nor declared an allowed omission | Oracle rejects as undeclared loss | TC-298, TC-315 |
 | ERR-106 | An alias chain closes on itself | Oracle emits `ALIAS_CYCLE`, not an unresolved reference or a depth error | TC-292, TC-293 |
 | ERR-107 | A union variant's `payloadType` resolves to nothing | Oracle rejects at that variant's locus | TC-622 |
@@ -2078,7 +2077,7 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-148 | A `spec.md` or artifact beginning with a UTF-8 BOM | FR-091 | TC-1204, TC-1309 | Frontmatter is not recognised and a valid bundle refuses with `BUNDLE_UNIDENTIFIED` or lowers nothing |
 | EC-149 | A module manifest declaring the same object type twice | FR-091 | TC-1202 | The second declaration silently wins, or the module is treated as an empty model rather than refused |
 | EC-150 | Two loaded modules exporting the same type name, or an artifact named like a kernel scalar | FR-092, FR-095 | TC-1213, TC-1217, TC-1256 | The first module on the command line wins and the lift depends on argument order, or the shadowed artifact is silently unreferenceable |
-| EC-151 | A bundle root reached through a symlink | FR-095, NFR-031 | TC-1253, TC-1301 | Bundle-root-relative paths differ between the symlinked and real root, changing `source.digest` and every locus |
+| EC-151 | A bundle root reached through a symlink | FR-095, NFR-031 | TC-1253, TC-1301 | Bundle-root-relative paths differ between the symlinked and real root, changing every locus |
 | EC-152 | A bundle directory that is read-only to the lifting process, or an `--out` pointing inside it | FR-097, FR-098, NFR-032 | TC-1289, TC-1314, TC-1340 | A scratch or temporary file is placed inside the bundle and the lift fails, or writes into the corpus when it can |
 | EC-153 | An engine diagnostic reported at `line` 0 or with no line | FR-091, FR-096 | TC-1331, TC-1345 | A fabricated locus at line 0 fails the schema, or the diagnostic is dropped for lack of one |
 | EC-154 | Two documents whose titles differ only by case (`Status`, `status`) | FR-093, FR-095 | TC-1334, TC-1347 | A lowercasing slug folds two names into one identity set, or a case-only difference is refused as a duplicate name although the shared rule mints two distinct identity sets |
