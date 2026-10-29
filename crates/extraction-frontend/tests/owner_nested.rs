@@ -15,6 +15,7 @@ use ix_trace_rs::trace;
 use serde_json::Value;
 
 const PACKAGE: &str = "ix://agent-ix/orders";
+const FR_001: &str = "spec/functional/FR-001-order.md";
 const SM_001: &str = "spec/functional/SM_001-order-lifecycle.md";
 const PR_001: &str = "spec/functional/PR_001-fulfilment.md";
 
@@ -407,6 +408,42 @@ fn tc_1839_a_clause_state_or_step_name_outside_the_member_name_pattern_is_unslug
     }
 }
 
+#[trace("TC-1347", "FR-095-AC-14")]
+#[test]
+fn colliding_variants_from_hyphenated_and_plain_artifact_ids_report_one_duplicate_identity() {
+    // `b_c` slugs to `b-c`, so these two producer identities collide exactly:
+    // variant/<a-b>-c and variant/<a>-<b-c>.
+    let scratch = tempfile::tempdir().expect("scratch bundle");
+    copy_tree(&fixture("business"), scratch.path());
+    let functional = scratch.path().join("spec/functional");
+    let first = "---\nid: a-b\ntitle: First collision case\nname: FirstCollision\nobject: enumeration\ntype: enumeration\n---\n# First collision case\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| c | First case |\n";
+    let second = "---\nid: a\ntitle: Second collision case\nname: SecondCollision\nobject: enumeration\ntype: enumeration\n---\n# Second collision case\n\n## Values\n\n| Value | Description |\n| --- | --- |\n| b_c | Second case |\n";
+    fs::write(functional.join("a-b-first-collision.md"), first).expect("first enum");
+    fs::write(functional.join("a-second-collision.md"), second).expect("second enum");
+
+    let lowered = lift_at(scratch.path());
+    let duplicates = with_code(&lowered, Code::DuplicateIdentity);
+    assert_eq!(duplicates.len(), 1, "{:?}", lowered.diagnostics);
+    let duplicate = duplicates[0];
+    let blocking: Vec<_> = lowered.diagnostics.iter().filter(|d| d.blocking).collect();
+    assert_eq!(blocking.len(), 1, "{:?}", lowered.diagnostics);
+    assert_eq!(blocking[0].code, duplicate.code);
+    let shared = format!("{PACKAGE}/variant/a-b-c");
+    assert!(duplicate.blocking);
+    assert!(duplicate.message.contains(&shared), "{}", duplicate.message);
+    assert_eq!(duplicate.related.len(), 1, "{duplicate:?}");
+
+    let colliding_variants: Vec<&str> = lowered
+        .types
+        .iter()
+        .filter_map(|ty| ty.variants.as_ref())
+        .flatten()
+        .filter(|variant| variant.identity == shared)
+        .map(|variant| variant.identity.as_str())
+        .collect();
+    assert_eq!(colliding_variants, [shared.as_str(), shared.as_str()]);
+}
+
 #[trace("TC-1839", "FR-095-AC-21")]
 #[test]
 fn tc_1839_an_underscored_state_name_is_its_own_member_name() {
@@ -424,4 +461,105 @@ fn tc_1839_an_underscored_state_name_is_its_own_member_name() {
     let types = types_json(&lowered);
     let machine = type_with_identity(&types, &format!("{PACKAGE}/SM_001"));
     assert!(identities(&machine["states"]).contains(&format!("{PACKAGE}/SM_001/on_hold")));
+}
+
+#[trace("TC-1850", "FR-095-AC-23")]
+#[test]
+fn tc_1850_field_operation_and_parameter_member_names_are_verbatim() {
+    let scratch = tempfile::tempdir().expect("tempdir");
+    copy_tree(&fixture("business"), scratch.path());
+
+    let order_path = scratch.path().join("spec/functional/FR-001-order.md");
+    let order = fs::read_to_string(&order_path).expect("FR-001");
+    let order = order.replace(
+        "| note | String | 0..1 | maxLength: 200 |",
+        "| note | String | 0..1 | maxLength: 200 |\n\
+         | created_at | Decimal(10,2) [USD] | 0..1 | min: 0 |\n\
+         | created__at | String | 0..1 | |",
+    );
+    let order = format!(
+        "{order}\n## Operations\n\n### reset_all\n\n\
+         | Param | Type | Multiplicity | Constraints |\n\
+         |-------|------|--------------|-------------|\n\
+         | created_at | String | 1 | |\n\nReturns: Boolean [1]\n"
+    );
+    fs::write(order_path, order).expect("write edited FR-001");
+
+    let lowered = lift_at(scratch.path());
+    assert!(
+        !is_blocked(&lowered.diagnostics),
+        "{:?}",
+        lowered.diagnostics
+    );
+    let types = types_json(&lowered);
+    let order = type_with_identity(&types, &format!("{PACKAGE}/FR-001"));
+    let field_ids: Vec<_> = order["fields"]
+        .as_array()
+        .expect("fields")
+        .iter()
+        .map(|field| field["identity"].as_str().expect("field identity"))
+        .collect();
+    assert!(field_ids.contains(&format!("{PACKAGE}/FR-001/created_at").as_str()));
+    assert!(field_ids.contains(&format!("{PACKAGE}/FR-001/created__at").as_str()));
+    assert!(
+        types
+            .iter()
+            .any(|ty| ty["identity"] == format!("{PACKAGE}/FR-001Created-at")),
+        "the constrained-field alias keeps its separately specified slug: {types:?}"
+    );
+
+    let operation = order["operations"]
+        .as_array()
+        .expect("operations")
+        .iter()
+        .find(|operation| operation["name"] == "reset_all")
+        .expect("reset_all operation");
+    assert_eq!(operation["identity"], format!("{PACKAGE}/FR-001/reset_all"));
+    assert_eq!(
+        operation["params"][0]["identity"],
+        format!("{PACKAGE}/FR-001/reset_all/created_at")
+    );
+
+    let (bad_member, bad_member_text) = lift_edited_text(FR_001, |text| {
+        text.replace(
+            "| note | String | 0..1 | maxLength: 200 |",
+            "| _tmp | String | 0..1 | maxLength: 200 |",
+        )
+    });
+    let refusal = with_code(&bad_member, Code::UnsluggableName);
+    assert_eq!(refusal.len(), 1, "{:?}", bad_member.diagnostics);
+    assert!(refusal[0].blocking);
+    assert!(refusal[0].message.contains("_tmp"));
+    assert_eq!(
+        refusal[0]
+            .locus
+            .as_ref()
+            .map(|locus| (locus.path.as_str(), locus.start_line)),
+        Some((FR_001, line_of(&bad_member_text, "| _tmp |")))
+    );
+    assert!(bad_member
+        .types
+        .iter()
+        .all(|ty| ty.identity != format!("{PACKAGE}/FR-001")));
+
+    let state_row = "| created_at | Added member |";
+    let (duplicate, duplicate_text) = lift_edited_text(SM_001, |text| {
+        text.replace(
+            "| current | OrderStatus | 1 | |",
+            "| current | OrderStatus | 1 | |\n| created_at | String | 1 | |",
+        )
+        .replace(
+            "| draft | The order is being assembled |",
+            &format!("| draft | The order is being assembled |\n{state_row}"),
+        )
+    });
+    let duplicates = with_code(&duplicate, Code::DuplicateIdentity);
+    assert_eq!(duplicates.len(), 1, "{:?}", duplicate.diagnostics);
+    assert_eq!(
+        duplicates[0]
+            .locus
+            .as_ref()
+            .map(|locus| (locus.path.as_str(), locus.start_line)),
+        Some((SM_001, line_of(&duplicate_text, state_row)))
+    );
 }

@@ -1023,24 +1023,11 @@ fn tc_1228_legacy_form_emits_no_record_and_a_warning_while_both_forms_blocks() {
     );
 }
 
-/// A random identifier per field, distinct *after slugging*.
-///
-/// Distinct names are not enough. The shared identity rule (#87) replaces every
-/// non-alphanumeric run with `-` and trims the ends, so `k` and `k_` are two
-/// names and one identity segment — and the rule refuses that collision rather
-/// than minting a second `k`, which is the behaviour a different case asserts.
-/// Generating over names that collide after slugging made this property assert
-/// that a legitimate refusal is a rename failure, and it failed on whichever
-/// seed happened to produce such a pair.
+/// A random set of distinct valid member names. Field identities retain the
+/// member names verbatim, so distinct names remain distinct even when their
+/// slugs would have collided.
 fn renames(count: usize) -> impl Strategy<Value = Vec<String>> {
     proptest::collection::btree_set("[a-z][A-Za-z0-9_]{0,10}", count)
-        .prop_filter("names must remain distinct once slugged", |set| {
-            let slugs: BTreeSet<String> = set
-                .iter()
-                .filter_map(|name| agent_ix_extraction_frontend::identity::slug(name).ok())
-                .collect();
-            slugs.len() == set.len()
-        })
         .prop_map(|set| set.into_iter().collect())
 }
 
@@ -1338,11 +1325,10 @@ fn tc_1334_status_and_status_collide_and_repeated_or_colliding_constraints_are_d
 
 #[trace("TC-1334", "FR-093-AC-13")]
 #[test]
-fn tc_1334_distinct_names_with_one_slug_refuse_at_field_and_variant_levels() {
+fn tc_1334_distinct_artifact_ids_stay_verbatim_and_variants_still_refuse() {
     // Contract case (b) does not reach the type level: an artifact id is its
-    // identity segment verbatim, so two distinct ids mint two distinct
-    // `type/` identities and neither is refused. Only a name — a field, a
-    // variant — is slugged, and only a slug can fold two names into one.
+    // identity segment verbatim. Enumeration values still use slugs and
+    // refuse a collision.
     let types = tempfile::tempdir().expect("type collision fixture");
     scratch_spec(types.path());
     write_fixture(
@@ -1371,33 +1357,6 @@ fn tc_1334_distinct_names_with_one_slug_refuse_at_field_and_variant_levels() {
         minted.contains(&"ix://agent-ix/identity-collision/FR_001")
             && minted.contains(&"ix://agent-ix/identity-collision/FR__001"),
         "{minted:?}"
-    );
-
-    let fields = tempfile::tempdir().expect("field collision fixture");
-    scratch_spec(fields.path());
-    write_fixture(
-        fields.path(),
-        "spec/functional/FR-001.md",
-        &entity(
-            "FR-001",
-            "Note",
-            "| created_at | String | 1 | |\n| created__at | String | 1 | |\n",
-        ),
-    );
-    let field_lift = lift_at(fields.path(), &[&business_module(), &edge_vocabulary()]);
-    let field_diagnostics = with_code(&field_lift.lowered.diagnostics, Code::UnsluggableName);
-    assert_eq!(
-        field_diagnostics.len(),
-        1,
-        "{:?}",
-        field_lift.lowered.diagnostics
-    );
-    assert_eq!(
-        field_diagnostics[0]
-            .locus
-            .as_ref()
-            .map(|locus| locus.start_line),
-        Some(15)
     );
 
     let variants = tempfile::tempdir().expect("variant collision fixture");

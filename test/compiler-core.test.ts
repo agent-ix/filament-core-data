@@ -1017,6 +1017,9 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		expect(mintIdentity(pkg, "field", ["Artifact", "id"])).toBe(
 			"ix://agent-ix/assurance/Artifact/id",
 		);
+		expect(mintIdentity(pkg, "field", ["FR_001", "created_at"])).toBe(
+			"ix://agent-ix/assurance/FR_001/created_at",
+		);
 		expect(mintIdentity(pkg, "field", ["Artifact", "archive", "reason"])).toBe(
 			"ix://agent-ix/assurance/Artifact/archive/reason",
 		);
@@ -1026,6 +1029,12 @@ describe("semantic vocabulary and identity minting (FR-053)", () => {
 		expect(mintIdentity(pkg, "operation", ["Artifact", "archive"])).toBe(
 			"ix://agent-ix/assurance/Artifact/archive",
 		);
+		expect(mintIdentity(pkg, "operation", ["FR-001", "reset_all"])).toBe(
+			"ix://agent-ix/assurance/FR-001/reset_all",
+		);
+		expect(
+			mintIdentity(pkg, "parameter", ["FR-001", "reset_all", "created_at"]),
+		).toBe("ix://agent-ix/assurance/FR-001/reset_all/created_at");
 		expect(mintIdentity(pkg, "clause", ["Artifact", "not_archived"])).toBe(
 			"ix://agent-ix/assurance/clause/Artifact-not-archived",
 		);

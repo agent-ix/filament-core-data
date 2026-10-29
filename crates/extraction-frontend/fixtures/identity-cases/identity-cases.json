@@ -12,15 +12,22 @@
 			"kind": "identity",
 			"package": "agent-ix/docs-service",
 			"slot": "field",
-			"parts": ["Snapshot", "Snap Shot"],
-			"identity": "ix://agent-ix/docs-service/Snapshot/Snap-Shot"
+			"parts": ["FR-001", "created_at"],
+			"identity": "ix://agent-ix/docs-service/FR-001/created_at"
 		},
 		{
 			"kind": "identity",
 			"package": "agent-ix/docs-service",
 			"slot": "operation",
-			"parts": ["Repository", "find By Id"],
-			"identity": "ix://agent-ix/docs-service/Repository/find-By-Id"
+			"parts": ["RP_001", "find_by_id"],
+			"identity": "ix://agent-ix/docs-service/RP_001/find_by_id"
+		},
+		{
+			"kind": "identity",
+			"package": "agent-ix/docs-service",
+			"slot": "parameter",
+			"parts": ["RP_001", "find_by_id", "created_at"],
+			"identity": "ix://agent-ix/docs-service/RP_001/find_by_id/created_at"
 		},
 		{
 			"kind": "identity",
@@ -28,6 +35,13 @@
 			"slot": "variant",
 			"parts": ["Snapshot", "Snap_Shot"],
 			"identity": "ix://agent-ix/docs-service/variant/Snapshot-Snap-Shot"
+		},
+		{
+			"kind": "refusal",
+			"package": "agent-ix/docs-service",
+			"slot": "field",
+			"parts": ["a b", "created_at"],
+			"refuses": "UNSLUGGABLE_NAME"
 		},
 		{
 			"kind": "identity",
@@ -75,7 +89,14 @@
 			"kind": "refusal",
 			"package": "agent-ix/docs-service",
 			"slot": "field",
-			"parts": ["Snapshot", "--"],
+			"parts": ["FR-001", "_tmp"],
+			"refuses": "UNSLUGGABLE_NAME"
+		},
+		{
+			"kind": "refusal",
+			"package": "agent-ix/docs-service",
+			"slot": "field",
+			"parts": ["Snapshot", "Snap Shot"],
 			"refuses": "UNSLUGGABLE_NAME"
 		}
 	]

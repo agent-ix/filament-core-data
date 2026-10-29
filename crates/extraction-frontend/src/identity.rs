@@ -1,15 +1,16 @@
 //! FR-095 "Node identities": the package identity, the slug, and the
 //! closed list of node-identity patterns.
 //!
-//! Every identity the frontend emits is minted here and nowhere else. An
-//! identity part taken from a source *name* is a case-preserving [`slug`]
-//! (the shared #87 contract); an identity part taken from an artifact *id* is
-//! the id verbatim, through [`id_segment`], because an object id carries
-//! underscores and `semanticIdentity` admits them, so `AR_001` mints
-//! `AR_001`. A name that slugs to the empty string, and an id carrying a
-//! character `semanticIdentity` does not admit, are both [`Unsluggable`],
-//! which the caller raises as `UNSLUGGABLE_NAME` at the declaration's locus,
-//! blocking.
+//! Every identity the frontend emits is minted here and nowhere else. A
+//! non-member identity part taken from a source *name* is a case-preserving
+//! [`slug`] (the shared #87 contract); an identity part taken from an artifact
+//! *id* is the id verbatim, through [`id_segment`], because an object id
+//! carries underscores and `semanticIdentity` admits them, so `AR_001` mints
+//! `AR_001`. Field, operation, operation-parameter, clause, state, transition
+//! and step names are member names and pass through verbatim via
+//! [`member_segment`]. A name that cannot form its required segment is
+//! [`Unsluggable`], which the caller raises as `UNSLUGGABLE_NAME` at the
+//! declaration's locus, blocking.
 //!
 //! A type definition (including a kernel scalar definition and a
 //! constrained-field alias) mints no slot segment: its identity is
@@ -43,7 +44,7 @@ pub enum UnsluggableReason {
     /// The name slugs to the empty string, or an artifact id carries a
     /// character no segment admits.
     Slug,
-    /// A clause, state or step name that is not `^[A-Za-z][A-Za-z0-9_]*$`.
+    /// A member name that is not `^[A-Za-z][A-Za-z0-9_]*$`.
     MemberName,
 }
 
@@ -63,7 +64,7 @@ impl Unsluggable {
                 self.name
             ),
             UnsluggableReason::MemberName => format!(
-                "name `{}` is not a member name; a clause id, state name or step name matches ^[A-Za-z][A-Za-z0-9_]*$",
+                "name `{}` is not a member name; a field, operation, operation parameter, clause id, state name or step name matches ^[A-Za-z][A-Za-z0-9_]*$",
                 self.name
             ),
         };
@@ -127,9 +128,9 @@ pub fn id_segment(id: &str) -> Result<String, Unsluggable> {
     Ok(id.to_string())
 }
 
-/// The member name of a clause, state or step: `name` verbatim, so that the
-/// name equals the last segment of the node's identity, when it matches
-/// `^[A-Za-z][A-Za-z0-9_]*$`; otherwise [`Unsluggable`].
+/// The member name: `name` verbatim, so that it equals the last segment of
+/// the node's identity, when it matches `^[A-Za-z][A-Za-z0-9_]*$`; otherwise
+/// [`Unsluggable`].
 pub fn member_segment(name: &str) -> Result<String, Unsluggable> {
     let mut chars = name.chars();
     let admitted = chars.next().is_some_and(|c| c.is_ascii_alphabetic())
@@ -231,10 +232,14 @@ impl PackageIdentity {
         ))
     }
 
-    /// `<owner type identity>/<field-slug>`: a member's identity is its
-    /// owner's identity, `/`, and its own slugged name.
+    /// `<owner type identity>/<field>`: a member's identity is its owner's
+    /// identity, `/`, and its verbatim member name.
     pub fn field_identity(&self, record: &str, field: &str) -> Result<String, Unsluggable> {
-        Ok(format!("{}/{}", self.type_identity(record)?, slug(field)?))
+        Ok(format!(
+            "{}/{}",
+            self.type_identity(record)?,
+            member_segment(field)?
+        ))
     }
 
     /// The identity of the alias minted for a constrained field: the
@@ -285,15 +290,19 @@ impl PackageIdentity {
         ))
     }
 
-    /// `<owner type identity>/<op-slug>`: an operation is a member of its
+    /// `<owner type identity>/<operation>`: an operation is a member of its
     /// receiver type, the same nesting rule as [`Self::field_identity`].
     pub fn operation_identity(&self, record: &str, op: &str) -> Result<String, Unsluggable> {
-        Ok(format!("{}/{}", self.type_identity(record)?, slug(op)?))
+        Ok(format!(
+            "{}/{}",
+            self.type_identity(record)?,
+            member_segment(op)?
+        ))
     }
 
-    /// `<owner operation identity>/<param-slug>`: an operation parameter
+    /// `<owner operation identity>/<parameter>`: an operation parameter
     /// nests one level deeper than its operation, never under a `param/`
-    /// slot.
+    /// slot, and retains its verbatim member name.
     pub fn param_identity(
         &self,
         record: &str,
@@ -303,7 +312,7 @@ impl PackageIdentity {
         Ok(format!(
             "{}/{}",
             self.operation_identity(record, op)?,
-            slug(param)?
+            member_segment(param)?
         ))
     }
 

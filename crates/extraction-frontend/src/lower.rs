@@ -780,7 +780,6 @@ pub fn lower_record(
     let mut fields = Vec::with_capacity(decls.len());
     let mut aliases = Vec::new();
     let mut codes: BTreeMap<String, Locus> = BTreeMap::new();
-    let mut field_slugs: BTreeMap<String, (String, Locus)> = BTreeMap::new();
     for (index, decl) in decls.iter().enumerate() {
         let locus = locate(rows, index, &decl.name)
             .map(|r| ctx.at(r.line, r.column))
@@ -789,31 +788,6 @@ pub fn lower_record(
             .iter()
             .find(|r| r.artifact == ctx.id && r.site == Site::Field && r.field == decl.name)
             .map(|r| &r.resolution);
-        let field_slug = match slug(&decl.name) {
-            Ok(slug) => slug,
-            Err(unsluggable) => {
-                sink.push(unsluggable.diagnostic(locus.clone()));
-                continue;
-            }
-        };
-        if let Some((first_name, first_locus)) = field_slugs.get(&field_slug) {
-            if first_name != &decl.name {
-                sink.push(
-                    Diagnostic::frontend(
-                        Code::UnsluggableName,
-                        format!(
-                            "field `{}` and earlier field `{first_name}` both slug to `{field_slug}`; no distinct identity segment can be minted",
-                            decl.name
-                        ),
-                        Some(locus.clone()),
-                    )
-                    .with_related(first_locus.clone()),
-                );
-                continue;
-            }
-        } else {
-            field_slugs.insert(field_slug, (decl.name.clone(), locus.clone()));
-        }
         let identity = match ctx.package.field_identity(ctx.id, &decl.name) {
             Ok(identity) => identity,
             Err(unsluggable) => {

@@ -115,18 +115,26 @@ async function identityCases(argv) {
 		).href
 	);
 	const output = rows.map((row) => {
-		const refuse = (parts) =>
-			parts.some((part) => identity.slug(part).length === 0);
+		const refuse = (slot, parts) => {
+			if (["field", "operation", "parameter"].includes(slot)) {
+				const [owner, ...members] = parts.map(String);
+				return (
+					!identity.isArtifactIdSegment(owner) ||
+					members.some((member) => !/^[A-Za-z][A-Za-z0-9_]*$/.test(member))
+				);
+			}
+			return parts.some((part) => identity.slug(part).length === 0);
+		};
 		if (row.kind === "refusal") {
 			return {
 				kind: row.kind,
-				refuses: refuse(row.parts) ? "UNSLUGGABLE_NAME" : null,
+				refuses: refuse(row.slot, row.parts) ? "UNSLUGGABLE_NAME" : null,
 			};
 		}
 		if (row.kind === "identity") {
 			return {
 				kind: row.kind,
-				identity: refuse(row.parts)
+				identity: refuse(row.slot, row.parts)
 					? null
 					: identity.mintIdentity(row.package, row.slot, row.parts),
 			};
