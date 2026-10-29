@@ -29,14 +29,14 @@ compiler and emitter exchange.
 
 - A `semantic-ir-v1` document with a declared schema version
 - Normalized package, type, field, relationship, mapping, profile, and transformation nodes
-- Source and configuration digests plus source-located diagnostics
+- Source-located diagnostics and a versioned source and package envelope
 
 ## Behavior
 
 - The contract SHALL keep the structural source, package metadata, mappings, and build profile as distinct versioned inputs.
 - The IR SHALL retain every source definition's stable semantic identity and source locus.
 - The IR SHALL distinguish absent, explicitly null, defaulted, unknown, unavailable, unsupported, invalid, and lossy states where the source contract distinguishes them.
-- The IR SHALL carry its own version and the exact versions and digests of every input used to construct it.
+- The IR SHALL carry its own version, source identity and version, and package identity and version. Input digests remain with the source artifacts and lock rather than in the IR envelope.
 - The TypeSpec frontend SHALL read the compiled TypeSpec program directly.
 - The frontend SHALL NOT treat emitted JSON Schema as a second authoring source.
 - Current Avro SHALL remain a compatibility representation.

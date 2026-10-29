@@ -1,6 +1,6 @@
 ---
 id: FR-095
-title: "Mint package identity, envelope digests, node identities, and provenance"
+title: "Mint package identity, node identities, and provenance"
 type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-015"
@@ -28,7 +28,7 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/NFR-033"
     type: "constrained_by"
 ---
-# [FR-095] Mint package identity, envelope digests, node identities, and provenance
+# [FR-095] Mint package identity, node identities, and provenance
 
 ## Description
 
