@@ -35,13 +35,13 @@ Emit the package with the official `@typespec/json-schema` emitter, apply and re
 
 ## Subtasks
 
-- [x] `make semantic-core-generate` / `make semantic-core-check`: run `tsp compile` with `seal-object-schemas: true`, apply the normalization (absolute `$id` under the package base; record a no-op when nothing is relative), write `generated/json-schema/*.json` and `toolchain.json` with compiler/emitter/normalization versions and an output digest (TC-261, TC-264, TC-265, TC-266).
+- [x] `make semantic-core-generate` / `make semantic-core-check`: run `tsp compile` with `seal-object-schemas: true`, apply the normalization (absolute `$id` under the package base; record a no-op when nothing is relative), write `generated/json-schema/*.json` (TC-261, TC-264, TC-265, TC-266).
 - [x] Author `fixtures/semantic-core/positive/config-version-field-decls.json` from FR-006 rows (`id` UUID identity, `versionNumber` Integer min 1, `data` JsonObject, `hash` String, `createdAt` Timestamp, `createdBy` String, plus the `overlay` and `parent` RelationDecls and the `immutable` ClauseRef) and validate each element against `FieldDecl.json` with Ajv strict (TC-262, TC-259).
 - [x] Author at least one negative shape fixture per grammar model under `fixtures/semantic-core/negative/` and assert each fails its model schema (TC-263); assert a twelfth keyword is rejected (TC-250).
 
 ## Deliverables
 
-- Committed emitted schemas and `toolchain.json`.
+- Committed emitted schemas.
 - FR-006 and negative fixtures with tests.
 
 ## Notes

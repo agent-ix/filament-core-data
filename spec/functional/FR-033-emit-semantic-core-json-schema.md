@@ -60,4 +60,4 @@ from `data_schema`.
 ## Dependencies
 
 - **Upstream**: [FR-031](./FR-031-define-the-semantic-core-declaration-grammar.md), [FR-032](./FR-032-define-the-kernel-scalar-library.md), issue #31
-- **Downstream**: Quoin issue #293 (`data_schema` by path + digest), issue #11 publication, issue #24 projection backend
+- **Downstream**: Quoin issue #293 (`data_schema` by emitted-schema path), issue #11 publication, issue #24 projection backend
