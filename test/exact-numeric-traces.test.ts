@@ -1230,10 +1230,14 @@ it("compares the Node, Python, and oracle numeric reader verdicts and pointers",
 		writeFileSync(path, `${JSON.stringify(document)}\n`);
 		const node = [...readContractIr(document as never)];
 		const python = JSON.parse(
-			execFileSync("python3", ["tests/semantic_ir_reader.py", "--read", path], {
-				cwd: resolve("."),
-				encoding: "utf8",
-			}),
+			execFileSync(
+				resolve(import.meta.dirname, "../.venv/bin/python"),
+				["tests/semantic_ir_reader.py", "--read", path],
+				{
+					cwd: resolve("."),
+					encoding: "utf8",
+				},
+			),
 		) as { diagnostics: { code: string; message: string; path: string }[] };
 		const oracleResult = oracle.verdict({ ir: document }, []) as {
 			diagnostics: { pointer: string; diagnostic: { code: string } }[];

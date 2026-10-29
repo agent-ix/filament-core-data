@@ -9,6 +9,9 @@
 # prevents the Python adapter launched by the Node matrix from resolving a
 # different interpreter than the explicit Python targets.
 export POETRY_VIRTUALENVS_IN_PROJECT := true
+# Poetry also honors an inherited active virtual environment. Pin test targets
+# to this checkout so an activated environment cannot redirect their subprocesses.
+test test-all test-node test-python test-rust sysml-pilot-check: export VIRTUAL_ENV := $(CURDIR)/.venv
 
 .PHONY: install
 install:
@@ -31,22 +34,29 @@ build:
 # through a target named for another language. `make test-all` is the local
 # everything; each named half is what a CI lane with that toolchain can run.
 .PHONY: test
-test: test-node test-python sysml-pilot-check
+test: python-test-env-check test-node test-python sysml-pilot-check
 
 .PHONY: test-all
-test-all: test-node test-rust test-python sysml-pilot-check
+test-all: python-test-env-check test-node test-rust test-python sysml-pilot-check
+
+.PHONY: python-test-env-check
+python-test-env-check:
+	@{ command -v poetry >/dev/null 2>&1 && test -x "$(CURDIR)/.venv/bin/python"; } || { \
+		echo 'Python test prerequisite missing: install Poetry and run `make install` to create the repository .venv.' >&2; \
+		exit 1; \
+	}
 
 # FR-138-AC-3. The official pilot and JRE are gate-only capabilities stored in
 # SYSML_PILOT_CACHE outside this repository. The check fails with provisioning
 # details if either pinned artifact or the gate's jupyter-client is absent.
 .PHONY: sysml-pilot-check
-sysml-pilot-check:
+sysml-pilot-check: python-test-env-check
 	node scripts/check-sysml-pilot.mjs
 
 .PHONY: test-node
-test-node:
+test-node: python-test-env-check
 	node scripts/run-kernel-typescript-consumer.mjs
-	pnpm run test
+	PATH="$(CURDIR)/.venv/bin:$$PATH" pnpm run test
 
 # The Python half of the suite (issue #23, FR-072). Before this target the
 # repository had no entry point that ran pytest at all: `make test` was vitest
@@ -55,7 +65,7 @@ test-node:
 # tooling — fail with a provisioning message, never skip — needs somewhere to
 # run, so it runs here.
 .PHONY: test-python
-test-python:
+test-python: python-test-env-check
 	poetry run pytest -q
 
 .PHONY: lint
@@ -342,7 +352,8 @@ rust: rust-check rust-build rust-clippy rust-test rust-conformance rust-install-
 # target named for another language. The extraction-frontend crate's gates were
 # not in `make test` at any depth.
 .PHONY: test-rust
-test-rust: rust extraction-frontend-test spec-to-targets
+test-rust: python-test-env-check
+	$(MAKE) rust extraction-frontend-test spec-to-targets
 
 .PHONY: rust-deep
 rust-deep: rust-mutate rust-fuzz

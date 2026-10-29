@@ -1141,6 +1141,7 @@ const TYPE_MEMBERS: &[&str] = &[
     "sourceElement",
     "targetElement",
     "featureOrder",
+    "positions",
 ];
 const TYPE_REQUIRED: &[&str] = &[
     "identity",
@@ -1468,6 +1469,7 @@ fn construct_schema(
     for (name, message) in [
         ("identityFields", "identityFields names at least one field"),
         ("featureOrder", "featureOrder names at least one feature"),
+        ("positions", "a tuple declares at least one position"),
     ] {
         if definition
             .get(name)
@@ -1479,7 +1481,12 @@ fn construct_schema(
     }
 }
 
-/// The shapes of `states`, `transitions`, `steps` and `vocabulary`.
+/// The members of one tuple position (FR-147): an identity, the one type the
+/// position holds, and an origin. A position has no name.
+const POSITION_MEMBERS: &[&str] = &["identity", "typeRef", "origin"];
+
+/// The shapes of `states`, `transitions`, `steps`, `vocabulary` and
+/// `positions`.
 fn construct_lists(definition: &Json, at: &str, f: &mut Findings) {
     let each = |name: &str, f: &mut Findings, check: &dyn Fn(&Json, &str, &mut Findings)| {
         if let Some(items) = definition.get(name) {
@@ -1552,6 +1559,25 @@ fn construct_lists(definition: &Json, at: &str, f: &mut Findings) {
         );
         for name in ["consumes", "emits"] {
             identity_list(step.get(name), &child(step_at, name), name, f);
+        }
+    });
+    each("positions", f, &|position, position_at, f| {
+        if !expect_object(position, position_at, "a position", f) {
+            return;
+        }
+        require_members(position, position_at, POSITION_MEMBERS, f);
+        forbid_extra(position, position_at, POSITION_MEMBERS, f);
+        for name in ["identity", "typeRef"] {
+            expect_shape(
+                position.get(name),
+                &child(position_at, name),
+                is_semantic_identity,
+                "an identity is ix://<owner>/<name>",
+                f,
+            );
+        }
+        if let Some(origin) = position.get("origin") {
+            origin_schema(origin, &child(position_at, "origin"), f);
         }
     });
     each("vocabulary", f, &|term, term_at, f| {

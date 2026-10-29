@@ -24,6 +24,7 @@
  * `backends/rust.mjs`, which consume the frozen FR-041 prototype IR and are a
  * different contract entirely.
  */
+import { firstUnrenderedType } from "../constructs.mjs";
 import {
 	DIAGNOSTIC_CODES,
 	diagnostic,
@@ -357,6 +358,22 @@ export function generateTarget(request, options = {}) {
 			diagnostics: [
 				diagnostic(DIAGNOSTIC_CODES.UNSUPPORTED_IR_VERSION, {
 					message: `backend ${fragment(backend.identity)} does not support contract version ${fragment(irVersion)}; it declares ${backend.supportedIrVersions.join(", ")}`,
+				}),
+			],
+		});
+	}
+
+	// A construct shape no backend renders is refused here, once, for every
+	// target, before any backend generates: a tuple is never approximated as a
+	// record (FR-147, FR-142-CON-2).
+	const unrendered = firstUnrenderedType(request.ir);
+	if (unrendered !== undefined) {
+		return manifest({
+			backendIdentity: backend.identity,
+			state: "unsupported",
+			diagnostics: [
+				diagnostic(DIAGNOSTIC_CODES.UNSUPPORTED_CONSTRUCT_SHAPE, {
+					message: `backend ${fragment(backend.identity)} renders no ${fragment(unrendered.shape)} construct; ${fragment(String(unrendered.identity))} at ${unrendered.pointer} is one`,
 				}),
 			],
 		});

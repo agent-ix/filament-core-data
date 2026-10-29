@@ -75,6 +75,9 @@ vocabulary! {
         Namespace => "namespace",
         /// A named type alias to another document or native type.
         Alias => "alias",
+        /// A closed, identity-free, ordered product of typed positions
+        /// (FR-147).
+        Tuple => "tuple",
     }
 }
 
@@ -149,6 +152,9 @@ vocabulary! {
         FeatureOrder => "featureOrder",
         /// `target`: the document or native type named by an alias.
         Target => "target",
+        /// `positions`: the ordered, nameless, typed positions of a tuple
+        /// (FR-147).
+        Positions => "positions",
     }
 }
 
@@ -208,7 +214,8 @@ impl Member {
             | Member::SourceElement
             | Member::TargetElement
             | Member::FeatureOrder
-            | Member::Target => Presence::Forbidden,
+            | Member::Target
+            | Member::Positions => Presence::Forbidden,
         }
     }
 
@@ -243,7 +250,8 @@ impl Member {
             | Member::Direction
             | Member::Multiplicity
             | Member::FlowDirection
-            | Member::FeatureOrder => None,
+            | Member::FeatureOrder
+            | Member::Positions => None,
         }
     }
 }
@@ -298,6 +306,7 @@ impl Shape {
         match self {
             Shape::Enumeration => Some((Member::Variants, Presence::Required)),
             Shape::Alias => Some((Member::Target, Presence::Required)),
+            Shape::Tuple => Some((Member::Positions, Presence::Required)),
             Shape::Record
             | Shape::Interface
             | Shape::StateMachine

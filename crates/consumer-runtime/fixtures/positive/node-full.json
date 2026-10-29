@@ -9,5 +9,5 @@
 	],
 	"tags": ["a", "b"],
 	"attrs": { "k": "v" },
-	"payload": { "text": "hello" }
+	"payload": { "kind": "text", "value": "hello" }
 }

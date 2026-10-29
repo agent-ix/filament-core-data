@@ -476,6 +476,33 @@
 			"rule": "A unit target names no unit declared by the document.",
 			"citation": "UNRESOLVED_UNIT_REF",
 			"exercisedBy": "test:TC-1845"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_TUPLE",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A tuple whose identity is not owner-nested or that carries a member a tuple never has.",
+			"citation": "A tuple that carries a member it never has",
+			"exercisedBy": "test:TC-1875"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_TUPLE_POSITION",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A tuple position out of order, with a gap, or typed Clock.",
+			"citation": "a position out of order, with a gap, or typed",
+			"exercisedBy": "test:TC-1876"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_POSITION_TYPE",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A tuple position type that resolves to no declared type.",
+			"citation": "naming no declared type raises",
+			"exercisedBy": "test:TC-1877"
 		}
 	]
 }

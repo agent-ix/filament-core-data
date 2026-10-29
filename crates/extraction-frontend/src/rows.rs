@@ -31,7 +31,7 @@ use quire_rs::semantic::OperationDecl;
 
 /// The level-2 heading the engine reads field declarations under
 /// (quire-rs FR-070). Named here only to find the block again.
-const PROPERTIES_SECTION: &str = "Properties";
+pub(crate) const PROPERTIES_SECTION: &str = "Properties";
 /// The fence language of the SysML form.
 const SYSML: &str = "sysml";
 /// Column of a table row's first cell text.

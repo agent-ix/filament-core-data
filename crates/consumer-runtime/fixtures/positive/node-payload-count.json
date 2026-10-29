@@ -3,5 +3,5 @@
 	"label": "labelled",
 	"elapsed": 7,
 	"status": "draft",
-	"payload": { "count": 42 }
+	"payload": { "kind": "count", "value": 42 }
 }

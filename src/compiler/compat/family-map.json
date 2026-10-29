@@ -105,6 +105,10 @@
 			"family": "field",
 			"surface": "semantic"
 		},
+		"tuple": {
+			"family": "type",
+			"surface": "semantic"
+		},
 		"type": {
 			"family": "type",
 			"surface": "semantic"

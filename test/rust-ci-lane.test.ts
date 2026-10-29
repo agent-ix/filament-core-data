@@ -51,9 +51,11 @@ describe("TC-1396..1402 the Rust gates are reachable (NFR-038)", () => {
 	it("names one target that runs the Rust gates, and does not hide them in another toolchain's", () => {
 		const makefile = read("Makefile");
 
-		const testRust = prerequisitesOf(makefile, "test-rust");
-		expect(testRust).toContain("rust");
-		expect(testRust).toContain("extraction-frontend-test");
+		const testRust = recipeOf(makefile, "test-rust").join("\n");
+		expect(testRust).toContain("python-test-env-check");
+		expect(testRust).toContain(
+			"$(MAKE) rust extraction-frontend-test spec-to-targets",
+		);
 
 		const rust = prerequisitesOf(makefile, "rust");
 		for (const gate of [
@@ -75,7 +77,7 @@ describe("TC-1396..1402 the Rust gates are reachable (NFR-038)", () => {
 		expect(testNode).not.toContain("cargo");
 
 		console.log(
-			`TC-1396 measured: make test-rust → ${testRust.join(" ")}; make rust → ${rust.join(" ")}`,
+			`TC-1396 measured: make test-rust → ${testRust}; make rust → ${rust.join(" ")}`,
 		);
 	});
 

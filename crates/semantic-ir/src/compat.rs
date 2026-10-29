@@ -202,6 +202,7 @@ fn compare_type(
     compare_constraints(earlier, later, report);
     compare_fields(before, earlier, after, later, after_bundle, report);
     compare_variants(before, earlier, after, later, report);
+    compare_positions(before, earlier, after, later, report);
     compare_relationships(earlier, later, report);
     compare_operations(before, earlier, after, later, report);
     compare_clauses(earlier, later, report);
@@ -492,6 +493,36 @@ fn compare_variants(
             // "an added enum or union variant as conditional"; open and closed
             // behaviour is consumer policy, not a language default.
             report.note(Classification::Conditional);
+        }
+    }
+}
+
+/// A tuple's positions are an ordered product (FR-147): the shape is the
+/// sequence of position identity and resolved type pairs, so any change of
+/// the count, an identity or a resolved type is breaking.
+fn compare_positions(
+    before_doc: &Document<'_>,
+    earlier: &Json,
+    after_doc: &Document<'_>,
+    later: &Json,
+    report: &mut Report,
+) {
+    let before = members(earlier, "positions");
+    let after = members(later, "positions");
+    if before.len() != after.len() {
+        report.note(Classification::Breaking);
+    }
+    for (earlier_position, later_position) in before.iter().zip(after.iter()) {
+        if identity_of(earlier_position) != identity_of(later_position)
+            || resolved_key(
+                before_doc,
+                earlier_position.get("typeRef").and_then(Json::as_str),
+            ) != resolved_key(
+                after_doc,
+                later_position.get("typeRef").and_then(Json::as_str),
+            )
+        {
+            report.note(Classification::Breaking);
         }
     }
 }

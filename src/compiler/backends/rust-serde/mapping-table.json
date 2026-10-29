@@ -139,6 +139,15 @@
 			"diagnosticCode": null
 		},
 		{
+			"rowKey": "shape:tuple",
+			"axis": "shape",
+			"selector": "tuple",
+			"rustForm": null,
+			"serdeAttributes": [],
+			"mechanism": "no Rust form yet: a tuple value type is refused with UNSUPPORTED_CONSTRUCT, and the generation seam refuses a document declaring one with UNSUPPORTED_CONSTRUCT_SHAPE before this backend runs (FR-147)",
+			"diagnosticCode": "agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT"
+		},
+		{
 			"rowKey": "identity:identified",
 			"axis": "identity",
 			"selector": "identified",
@@ -539,6 +548,18 @@
 			"serdeAttributes": [],
 			"mechanism": "as preserve, and validate returns one UNKNOWN_MEMBER_SURFACED for an unrecognised variant",
 			"diagnosticCode": "agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED"
+		},
+		{
+			"rowKey": "unknownPolicy:tuple",
+			"axis": "unknownPolicy",
+			"selector": {
+				"kind": "shape:tuple",
+				"policy": "any"
+			},
+			"rustForm": null,
+			"serdeAttributes": [],
+			"mechanism": "refused: a tuple has no Rust form, so no policy applies to it before the construct is refused with UNSUPPORTED_CONSTRUCT",
+			"diagnosticCode": "agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT"
 		},
 		{
 			"rowKey": "unknownPolicy:inert",

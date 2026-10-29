@@ -400,6 +400,19 @@ authored order: an entry naming no single own field or operation raises
 `UNRESOLVED_CONSTRUCT_REF`, and a field or operation it omits raises
 `INCOMPLETE_FEATURE_ORDER`. A backend that renders no feature order ignores it.
 
+A construct declaration of the shape `tuple` declares `positions` `required`:
+a tuple value type is an owner-nested type `ix://<package identity>/<Name>`
+whose `positions` are an ordered, non-empty list of `{ identity, typeRef,
+origin }`, the position at index `i` having the identity
+`<tuple identity>/p<i>` and the admitted value type `typeRef`. A tuple that carries a member it never has, or whose identity is not owner-nested, raises
+`INVALID_TUPLE`; a position out of order, with a gap, or typed
+`ix://quire/native/Clock` raises `INVALID_TUPLE_POSITION`; a position type
+naming no declared type raises `UNRESOLVED_POSITION_TYPE`. Positions keep their
+authored order in the normalized and fingerprinted forms. A variant's
+`payloadType` is the single typed payload of that case and a variant without
+one stays nullary. A generation backend that renders no tuple is refused by the
+seam with `UNSUPPORTED_CONSTRUCT_SHAPE`.
+
 A broken construct reference raises `UNRESOLVED_CONSTRUCT_REF` or
 `CONSTRUCT_TARGET_KIND`; a wrong occurrence field raises
 `INVALID_OCCURRENCE_FIELD`; a guard naming no clause raises

@@ -84,7 +84,7 @@ use crate::constructs::{
 };
 use crate::diagnostics::{Code, Diagnostic, Disposition, Locus, NotLoweredReason};
 use crate::edges::{lower_relationships, Relationship};
-use crate::enumeration::{lower_enum, values_rows};
+use crate::enumeration::{lower_enum, lower_tuple, positions_rows, stray_payloads, values_rows};
 use crate::extract::Extractions;
 use crate::identity::{alias_display_name, id_segment, slug, PackageIdentity};
 use crate::limits::{check_bundle, check_extraction, Limits};
@@ -224,6 +224,20 @@ pub struct Field {
 pub struct Variant {
     pub identity: String,
     pub name: String,
+    /// FR-147: the identity of the case's single typed payload; absent on a
+    /// nullary case.
+    #[serde(rename = "payloadType", skip_serializing_if = "Option::is_none")]
+    pub payload_type: Option<String>,
+    pub origin: Origin,
+}
+
+/// `semantic-ir.schema.json#/$defs/position` (FR-147): one position of a
+/// tuple value type.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct Position {
+    pub identity: String,
+    #[serde(rename = "typeRef")]
+    pub type_ref: String,
     pub origin: Origin,
 }
 
@@ -252,6 +266,10 @@ pub struct TypeDefinition {
     pub fields: Option<Vec<Field>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub variants: Option<Vec<Variant>>,
+    /// FR-147: a tuple's positions in table order; absent on every other
+    /// definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub positions: Option<Vec<Position>>,
     /// FR-094: a record's frontmatter edges; absent on scalars and enums.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub relationships: Option<Vec<Relationship>>,
@@ -820,6 +838,7 @@ pub fn lower_record(
                     target: Some(target),
                     fields: None,
                     variants: None,
+                    positions: None,
                     relationships: None,
                     operations: None,
                     clauses: None,
@@ -847,6 +866,7 @@ pub fn lower_record(
             target: None,
             fields: Some(fields),
             variants: None,
+            positions: None,
             // Filled by `lower_bundle`, which holds the document, the registry
             // and the index the three need; a record always carries the three
             // lists, an enumeration or scalar never does.
@@ -1212,13 +1232,39 @@ pub fn lower_bundle(
                 continue;
             }
             match values_rows(document, object_type) {
-                Ok(rows) => lower_enum(
-                    &rows,
-                    extracted.extraction.model.as_ref(),
-                    &artifact_roles,
-                    &ctx,
-                    object,
-                ),
+                Ok(rows) => {
+                    let stray = stray_payloads(document, &rows);
+                    if stray.is_empty() {
+                        lower_enum(
+                            &rows,
+                            &resolutions.resolutions,
+                            extracted.extraction.model.as_ref(),
+                            &artifact_roles,
+                            &ctx,
+                            object,
+                        )
+                    } else {
+                        // FR-147: a payload binds the variant its row names.
+                        Err(LowerError::Blocked(
+                            stray
+                                .into_iter()
+                                .map(|row| {
+                                    Diagnostic::with_disposition(
+                                        Code::ArtifactNotLowered,
+                                        Disposition::NotLowered(NotLoweredReason::Other),
+                                        format!(
+                                            "artifact {} ({}) lowers to no enumeration: its `## Payloads` row `{}` names no `## Values` row or repeats an earlier row",
+                                            document.id(),
+                                            document.path(),
+                                            row.value
+                                        ),
+                                        Some(ctx.at(row.line, row.column)),
+                                    )
+                                })
+                                .collect(),
+                        ))
+                    }
+                }
                 Err(unsatisfied) => {
                     own.push(Diagnostic::with_disposition(
                         Code::ArtifactNotLowered,
@@ -1232,6 +1278,26 @@ pub fn lower_bundle(
                     ));
                     continue;
                 }
+            }
+        } else if declaration.is_some_and(|d| d.shape == Shape::Tuple) {
+            // FR-147: a tuple lowers from its `## Positions` table.
+            if let Some(rule) = unlowered_declaration(declaration, &extracted.extraction) {
+                own.push(refusal(document.id(), document.path(), object, &rule, head));
+                lowered_to_nothing.extend(package.type_identity(document.id()).ok());
+                continue;
+            }
+            match positions_rows(document) {
+                Ok(rows) => lower_tuple(&rows, &resolutions.resolutions, &ctx),
+                Err(unsatisfied) => Err(LowerError::Blocked(vec![Diagnostic::with_disposition(
+                    Code::ArtifactNotLowered,
+                    Disposition::NotLowered(NotLoweredReason::Other),
+                    format!(
+                        "artifact {} ({}) lowers to no tuple: its `## Positions` table is unsatisfied ({unsatisfied})",
+                        document.id(),
+                        document.path()
+                    ),
+                    Some(head.clone()),
+                )])),
             }
         } else {
             let rows = field_rows(document.raw());
@@ -1377,6 +1443,13 @@ fn identities_of(definition: &TypeDefinition) -> Vec<(String, Locus)> {
             .iter()
             .flatten()
             .map(|variant| (variant.identity.clone(), source_locus(&variant.origin))),
+    );
+    out.extend(
+        definition
+            .positions
+            .iter()
+            .flatten()
+            .map(|position| (position.identity.clone(), source_locus(&position.origin))),
     );
     out.extend(
         definition

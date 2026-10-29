@@ -259,14 +259,6 @@ describe("FR-146 independent reader special member policy", () => {
 		}
 		const document = clock();
 		const definition = document.types[0];
-		definition.variants = [
-			{
-				identity: `${definition.identity}/v`,
-				name: "v",
-				payloadType: "ix://quire/native/Clock",
-				origin: origin(),
-			},
-		];
 		definition.constraints = [
 			{
 				keyword: "max",

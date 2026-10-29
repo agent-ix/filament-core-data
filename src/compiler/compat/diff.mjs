@@ -544,6 +544,7 @@ export function diffSemanticContract(request) {
 			newTypes,
 		);
 		diffVariants(previous, next, record, consumerPolicies, evidence);
+		diffPositions(previous, next, record, oldTypes, newTypes);
 		diffConstraints(
 			previous,
 			next,
@@ -895,6 +896,54 @@ function diffFields(
 			);
 		}
 	}
+}
+
+/** Tuple positions are ordered; any count, identity or type change breaks. */
+function diffPositions(previous, next, record, oldTypes, newTypes) {
+	const before = Array.isArray(previous.positions) ? previous.positions : [];
+	const after = Array.isArray(next.positions) ? next.positions : [];
+	if (before.length === 0 && after.length === 0) return;
+	const identity = String(next.identity);
+	if (before.length !== after.length) {
+		record(
+			identity,
+			"tuple",
+			"breaking",
+			`the tuple position count changed from ${before.length} to ${after.length}`,
+		);
+	}
+	const shared = Math.min(before.length, after.length);
+	for (let index = 0; index < shared; index += 1) {
+		const old = before[index];
+		const current = after[index];
+		const oldRef = resolvedRef(old.typeRef, oldTypes);
+		const newRef = resolvedRef(current.typeRef, newTypes);
+		if (
+			String(old.identity) !== String(current.identity) ||
+			oldRef !== newRef
+		) {
+			record(
+				String(current.identity),
+				"tuple",
+				"breaking",
+				`the tuple position ${index} changed identity or type`,
+			);
+		}
+	}
+}
+
+function resolvedRef(ref, types) {
+	const seen = new Set();
+	let current = ref;
+	while (typeof current === "string" && types?.has?.(current)) {
+		if (seen.has(current)) break;
+		seen.add(current);
+		const type = types.get(current);
+		if ((type.kind === "alias" || type.kind === "reference") && type.target) {
+			current = type.target;
+		} else break;
+	}
+	return current;
 }
 
 function diffVariants(previous, next, record, consumerPolicies, evidence) {

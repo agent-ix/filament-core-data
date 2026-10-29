@@ -15,7 +15,7 @@ use std::collections::BTreeMap;
 
 use quire_rs::semantic::{extract_semantic, RequiredSections, SemanticContext, SemanticExtraction};
 
-use crate::bundle::Bundle;
+use crate::bundle::{Bundle, Document, ObjectType};
 use crate::diagnostics::{Code, Diagnostic, Locus};
 
 /// The engine's extraction of one object-typed artifact.
@@ -37,6 +37,26 @@ pub struct Extracted {
 pub struct Extractions {
     pub artifacts: BTreeMap<String, Extracted>,
     pub diagnostics: Vec<Diagnostic>,
+}
+
+/// The engine context `document` is extracted under: its object type's
+/// semantic module, the bundle index, the bundle's source identity and the
+/// object type's body-extraction locators.
+pub(crate) fn context_for(
+    bundle: &Bundle,
+    document: &Document,
+    object_type: &ObjectType,
+) -> SemanticContext {
+    let context = SemanticContext::new(
+        object_type.semantic.clone(),
+        document.path(),
+        bundle.index().clone(),
+    )
+    .with_source_identity(bundle.package().source_identity());
+    match object_type.archetype.body_extraction() {
+        Some(dsl) => context.with_body_extraction(dsl),
+        None => context,
+    }
 }
 
 /// Extract every document whose `object` a loaded module declares.
@@ -63,16 +83,7 @@ pub fn extract(bundle: &Bundle) -> Extractions {
         let required = dsl
             .map(RequiredSections::from_extraction)
             .unwrap_or_default();
-        let context = SemanticContext::new(
-            object_type.semantic.clone(),
-            document.path(),
-            bundle.index().clone(),
-        )
-        .with_source_identity(source_identity.clone());
-        let context = match dsl {
-            Some(dsl) => context.with_body_extraction(dsl),
-            None => context,
-        };
+        let context = context_for(bundle, document, object_type);
         let extraction = extract_semantic(document.raw(), &context, &required);
         for diagnostic in &extraction.diagnostics {
             if diagnostic.code == "agent-ix.semantic-core.MISSING_DECIMAL_POLICY" {

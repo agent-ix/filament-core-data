@@ -11,11 +11,11 @@
 	],
 	"contributions": {
 		"diagnostics.mjs": 20,
-		"mapping-table.json": 74,
+		"mapping-table.json": 76,
 		"names.mjs": 10,
 		"src/compiler/ir/applicability.mjs": 55
 	},
-	"rowCount": 159,
+	"rowCount": 161,
 	"unmetCount": 0,
 	"unreachableCount": 1,
 	"rows": [
@@ -1348,6 +1348,15 @@
 			]
 		},
 		{
+			"branchId": "shape:tuple",
+			"axis": "shape",
+			"vocabulary": "mapping-table.json",
+			"construct": "null — agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT",
+			"cases": [
+				"TC-1772 every construct kind and model member selects the Rust form the mapping table states"
+			]
+		},
+		{
 			"branchId": "support-type:bytes",
 			"axis": "support-type",
 			"vocabulary": "mapping-table.json",
@@ -1418,6 +1427,13 @@
 			"axis": "unknownPolicy",
 			"vocabulary": "mapping-table.json",
 			"construct": "UnknownMembers — agent-ix.rust-backend.UNKNOWN_MEMBER_SURFACED",
+			"cases": ["TC-725 the unknownPolicy rows dispose each kind exactly once"]
+		},
+		{
+			"branchId": "unknownPolicy:tuple",
+			"axis": "unknownPolicy",
+			"vocabulary": "mapping-table.json",
+			"construct": "null — agent-ix.rust-backend.UNSUPPORTED_CONSTRUCT",
 			"cases": ["TC-725 the unknownPolicy rows dispose each kind exactly once"]
 		},
 		{

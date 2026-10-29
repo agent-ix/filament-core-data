@@ -335,7 +335,16 @@ fn clock_and_quantity_are_admitted_at_every_position_but_a_quantity_reference_ta
         let variant = format!(
             r#"{{"identity":"ix://acme/pkg/T","displayName":"T","kind":"union","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","variants":[{{"identity":"ix://acme/pkg/T/v","name":"v","origin":{GENERATED},"payloadType":"{reference}"}}]}}"#
         );
-        assert_eq!(diagnostics("", &[variant]), vec![], "{reference}");
+        // FR-147: a Clock payload is refused (QSpec FR-322, pending STD-528).
+        let expected = if quantity {
+            vec![]
+        } else {
+            vec![(
+                "/ir/types/0/variants/0/payloadType".to_string(),
+                "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
+            )]
+        };
+        assert_eq!(diagnostics("", &[variant]), expected, "{reference}");
         let node = record_with_member("").replace(
             r#""constraints":[]"#,
             &format!(

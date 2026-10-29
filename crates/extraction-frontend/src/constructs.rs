@@ -607,6 +607,7 @@ const fn lowers(member: Member) -> bool {
     match member {
         Member::Fields
         | Member::Variants
+        | Member::Positions
         | Member::Relationships
         | Member::Operations
         | Member::Clauses
@@ -654,6 +655,7 @@ const fn has_source_table(member: Member, model: &ModelDeclarations) -> Option<b
         Member::SourceElement | Member::TargetElement => Some(model.allocation.is_some()),
         Member::Fields
         | Member::Variants
+        | Member::Positions
         | Member::Relationships
         | Member::Operations
         | Member::Clauses
