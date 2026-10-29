@@ -35,7 +35,7 @@ Issue: `agent-ix/filament-core-data#35`. Reviews: SR-037..044 under
 
 - [x] **FR-031:** Grammar declarations in `packages/semantic-core/` with an exact inventory, IR-aligned patterns, closed vocabularies, and reader-enforced cross-property rules.
 - [x] **FR-032:** `kernel-scalars.json` representation table, `unitAllowed`, decimal policy, no `Any`.
-- [x] **FR-033:** Official JSON Schema emission, pinned #31 normalization recorded in `toolchain.json`, FR-006 `FieldDecl[]` fixture, per-model negatives, byte-identical `check`.
+- [x] **FR-033:** Official JSON Schema emission, pinned #31 normalization, FR-006 `FieldDecl[]` fixture, per-model negatives, byte-identical `check`.
 - [x] **FR-034:** `lowering.json`, reference lowerer, identity minting, alias-per-constrained-field, lowered FR-006 document validated by both IR readers.
 
 ### Non-Functional Requirements
@@ -68,7 +68,7 @@ Task-041 -> Task-046 -------------------------/
 
 The grammar lives in `packages/semantic-core/main.tsp` with `tspconfig.yaml`
 selecting `@typespec/json-schema` only. Emitted schemas land in
-`packages/semantic-core/generated/json-schema/` with `toolchain.json`. The
+`packages/semantic-core/generated/json-schema/`. The
 inventory, scalar table, and lowering table are JSON beside the source. The
 compiled-program inventory test uses the TypeSpec compiler API from
 `test/`. Fixtures attach under `fixtures/semantic-core/{positive,negative}/`.
@@ -138,5 +138,5 @@ time ->  Task-041 -> Task-042 -> Task-043 -> Task-045 --\
 
 - Task-042 alone edits `main.tsp` and `inventory.json`; later tasks add JSON tables, fixtures, generated output, and tests.
 - The reader and lowerer are test evidence under `test/`; nothing under `packages/semantic-core/` executes.
-- Regenerate the projection only through `make semantic-core-generate`; commit `generated/` and `toolchain.json` together.
+- Regenerate the projection only through `make semantic-core-generate`; commit `generated/`.
 - Merge sequencing: Tasks 041..046 on `spec/35-semantic-core-l3-grammar`, then `/code-review` and `/gap-analysis`, then the "mergeable" comment and squash merge verified on the tree.
