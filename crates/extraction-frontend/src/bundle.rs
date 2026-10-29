@@ -148,7 +148,7 @@ pub struct ObjectType {
     /// The declaring module's `semantic` block.
     pub semantic: SemanticModule,
     /// The compiled declaration: `body_extraction`, `allowed_links`, `roles`,
-    /// and the reference-form `data_schema` digest.
+    /// and the reference-form `data_schema` (a relative path to the emitted schema).
     pub archetype: CompiledArchetype,
     /// The construct kind the module declares for the object type; `None`
     /// lowers the object type's artifacts to a plain `record`.

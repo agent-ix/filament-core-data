@@ -23,8 +23,9 @@ locale, clock, environment, or network availability.
 
 ## Rationale
 
-Schema digests are consumed at service boundaries and by Quire's `data_schema`
-reference. A schema whose bytes depend on the host cannot be pinned or verified.
+Emitted schemas are consumed at service boundaries and referenced by relative
+path from a module's `data_schema`. A schema whose bytes depend on the host
+makes the same source emit different schemas on different machines.
 
 ## Measurement and Evaluation
 
