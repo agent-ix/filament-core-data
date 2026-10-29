@@ -50,8 +50,8 @@ registries FR-094 reads. `fixture-domain` and `fixture-edges` declare the
 shared edge verbs byte-identically, and every lift loads both.
 
 Byte parity of whole documents between the two frontends is unmeetable by
-construction: envelopes differ (FR-046 stamps `source/typespec` and an FR-048
-lock digest; FR-095 stamps `spec` and a path digest), every `origin` differs,
+construction: envelopes differ (FR-046 stamps `source/typespec` while FR-095
+stamps `spec`), every `origin` differs,
 and FR-046 mints package-local scalars the typed table cannot author. Parity is
 therefore structural, under a projection this requirement owns, over a new
 shared case authored in both dialects with kernel scalars only. The three

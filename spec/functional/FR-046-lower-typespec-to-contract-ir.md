@@ -102,8 +102,8 @@ type's spelling.
 
 ### Envelope, ordering, and origins
 
-- The frontend SHALL set `source.identity` to `ix://<package identity>/source/typespec`, `source.version` to the package version, `source.dialect` to `typespec`, and `source.digest` to the root package's `contentDigest` as FR-048 computes it.
-- The frontend SHALL set the `package` block from the resolved package: `identity`, `version`, `manifestDigest`, `mappingVersions`, `profileVersions`, and `lockDigest`, each supplied by FR-047 and FR-048.
+- The frontend SHALL set `source.identity` to `ix://<package identity>/source/typespec`, `source.version` to the package version, and `source.dialect` to `typespec`; it SHALL omit `source.digest`.
+- The frontend SHALL set the `package` block from the resolved package: `identity`, `version`, `mappingVersions`, and `profileVersions`, each supplied by FR-047 and FR-048; it SHALL omit `package.manifestDigest` and `package.lockDigest`.
 - The frontend SHALL emit `occurrences` as the empty array; occurrences are authored data, never compiled output.
 - The frontend SHALL order `types` by `identity`, and every `fields`, `variants`, `constraints`, `relationships`, `operations`, `clauses`, and `extensions` array by `identity`, under a locale-independent code-point comparison.
 - The frontend SHALL record every `origin` as `{ source: { sourceIdentity, path, startLine, startColumn } }`, where `sourceIdentity` is the document's `source.identity` and `path` is the declaration's file relative to the package root with `/` separators.
@@ -137,7 +137,7 @@ type's spelling.
 | FR-046-AC-9 | A property with a TypeSpec default emits `defaultKind: "semantic"` and that `defaultValue`; `@defaultKind("migration")` overrides the kind; `@defaultKind` without a default raises `DEFAULT_KIND_WITHOUT_VALUE`. | Test |
 | FR-046-AC-10 | A field typed by a built-in scalar directly mints no package-local definition; its `typeRef` names the kernel scalar's native reference over the closed FR-032 set (gap 1 of FCD #199/#200), and the kernel-name table is complete against FR-032 with the rows this frontend cannot reach recorded as such. | Test |
 | FR-046-AC-11 | A property typed by an export of a resolved imported package resolves, and one typed by an unexported type of that package raises `UNRESOLVED_TYPE_REF`. | Test |
-| FR-046-AC-12 | `source.digest` equals the root package's `contentDigest`, and the `package` block equals the values FR-047 and FR-048 supply, asserted field by field. | Test |
+| FR-046-AC-12 | The `source` block has no `digest`, the `package` block has no `manifestDigest` or `lockDigest`, and their remaining members equal the values FR-047 and FR-048 supply, asserted field by field. | Test |
 | FR-046-AC-13 | `occurrences` is the empty array for every fixture package. | Test |
 | FR-046-AC-14 | Every emitted array is sorted by `identity` under code-point comparison, and the order is unchanged when compared against `Intl.Collator` orderings for at least two distinct locales. | Property |
 | FR-046-AC-15 | `src/compiler/ir.mjs`, `compile.mjs`, `identity.mjs`, `emitters/**`, and `backends/**` are byte-unchanged from `origin/main`, and the four committed issue #4 goldens are byte-unchanged. | Analysis |

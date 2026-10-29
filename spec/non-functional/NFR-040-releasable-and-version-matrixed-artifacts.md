@@ -41,7 +41,7 @@ A generated package that does not carry its own provenance cannot be diagnosed
 after the fact. When a consumer reports that a type is wrong, the first question
 is which compiler, which IR version and which backend produced it; an artifact
 that cannot answer turns a bounded investigation into an unbounded one. The
-generated crates already carry source, package, manifest and lock digests for
+generated crates already carry compiler, IR-version and backend provenance for
 exactly this reason — this requirement generalises the property rather than
 inventing it.
 
@@ -69,7 +69,7 @@ a procedure nobody has executed is an assumption.
 ## Verification
 
 Read each published artifact and confirm it names the source identity and
-digest, the compiler version, the IR contract version, the backend identity and
+version, the compiler version, the IR contract version, the backend identity and
 version, and the schema fingerprint it was produced against. Confirm the support
 matrix names only combinations for which a corpus run exists, and that removing
 a combination's evidence removes it from the matrix rather than leaving it
@@ -86,7 +86,7 @@ every release workflow is manually dispatched.
 
 | ID | Criteria | Verification |
 |----|----------|--------------|
-| NFR-040-AC-1 | Every published artifact identifies its source, compiler, IR, backend and schema fingerprints | Inspection |
+| NFR-040-AC-1 | Every published artifact identifies its source identity and version, compiler version, IR contract version, backend identity and version, and schema fingerprint. | Inspection |
 | NFR-040-AC-2 | Every combination the version matrix declares carries a conformance corpus run, and removing a combination's run removes its row | Test |
 | NFR-040-AC-3 | Two builds of one artifact from one source produce identical bytes, so a published artifact can be reproduced rather than trusted | Test |
 | NFR-040-AC-4 | A rollback is rehearsed, and previously published compatible artifacts remain retrievable afterwards | Demonstration |
