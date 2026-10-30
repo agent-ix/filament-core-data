@@ -47,9 +47,6 @@ pub const MODULE_SEMANTIC_BLOCK: &str =
 pub const OUTPUT_MANIFEST: &str =
     include_str!("../../../schema/semantic/v1/output-manifest.schema.json");
 
-/// `package-lock.schema.json`.
-pub const PACKAGE_LOCK: &str = include_str!("../../../schema/semantic/v1/package-lock.schema.json");
-
 /// `package-manifest.schema.json`.
 pub const PACKAGE_MANIFEST: &str =
     include_str!("../../../schema/semantic/v1/package-manifest.schema.json");
@@ -81,7 +78,6 @@ pub const SCHEMAS: &[(&str, &str)] = &[
     ("module-manifest.schema.json", MODULE_MANIFEST),
     ("module-semantic-block.schema.json", MODULE_SEMANTIC_BLOCK),
     ("output-manifest.schema.json", OUTPUT_MANIFEST),
-    ("package-lock.schema.json", PACKAGE_LOCK),
     ("package-manifest.schema.json", PACKAGE_MANIFEST),
     ("profile.schema.json", PROFILE),
     ("representation.schema.json", REPRESENTATION),

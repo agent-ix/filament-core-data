@@ -18,7 +18,6 @@
  * branch or the mutation at fault.
  */
 
-import { createHash } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -89,10 +88,6 @@ export const DEFAULT_PROFILE = Object.freeze({
 	materializationLifetime: "run",
 });
 
-function sha256(text) {
-	return `sha256:${createHash("sha256").update(text, "utf8").digest("hex")}`;
-}
-
 /** The conformance bases, in code-point order of their file name. */
 export function corpusBases(root = ROOT) {
 	const directory = join(root, "conformance", "bases");
@@ -110,7 +105,6 @@ export function corpusBases(root = ROOT) {
 export function requestFor(base) {
 	return {
 		contractVersion: "1.0.0",
-		lockFingerprint: sha256(JSON.stringify(base.bundle.ir)),
 		ir: base.bundle.ir,
 		profile: DEFAULT_PROFILE,
 		mappings: [],

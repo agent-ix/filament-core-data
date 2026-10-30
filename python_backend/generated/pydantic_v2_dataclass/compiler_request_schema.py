@@ -37,7 +37,6 @@ class FilamentCompilerRequestV1:
     contractVersion: Literal['1.0.0']
     ir: semantic_ir_schema.FilamentSemanticIrV1ContractVersion200
     limits: Limits
-    lockFingerprint: common_schema.Sha256
     mappings: list[mapping_schema.FilamentSemanticMappingV1]
     outputRoot: Annotated[
         str,

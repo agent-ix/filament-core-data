@@ -1713,16 +1713,13 @@
 		},
 		"construct": {
 			"type": "object",
-			"required": ["kind", "moduleVersion", "manifestDigest", "construct"],
+			"required": ["kind", "moduleVersion", "construct"],
 			"properties": {
 				"kind": {
 					"$ref": "#/$defs/constructKind"
 				},
 				"moduleVersion": {
 					"$ref": "common.schema.json#/$defs/semver"
-				},
-				"manifestDigest": {
-					"$ref": "common.schema.json#/$defs/sha256"
 				},
 				"construct": {
 					"$ref": "#/$defs/constructDeclaration"

@@ -16,7 +16,6 @@ import {
 	fragment,
 } from "../diagnostics.mjs";
 import { indexJsonPointers, locateJsonPointer } from "../json-locus.mjs";
-import { digest } from "./canonical.mjs";
 import {
 	errorMessage,
 	errorPointer,
@@ -40,7 +39,7 @@ export function relativePosix(root, path) {
 /**
  * Reads one published-schema document.
  *
- * Returns `{ value, text, path, digest, locate, diagnostics }`. On any defect
+ * Returns `{ value, text, path, locate, diagnostics }`. On any defect
  * `value` is `undefined` and `diagnostics` is non-empty; the caller never sees a
  * half-read document.
  */
@@ -164,7 +163,6 @@ export function readDocument(host, options) {
 		value,
 		text,
 		path,
-		digest: digest(text),
 		locate: locus,
 		diagnostics,
 	};

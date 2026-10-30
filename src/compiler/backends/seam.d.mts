@@ -38,7 +38,6 @@ export interface GenerationBackend {
 /** A `compiler-request.schema.json` document. */
 export interface GenerationRequest {
 	contractVersion: string;
-	lockFingerprint: string;
 	ir: ContractIrDocument;
 	profile: Record<string, unknown>;
 	mappings: Record<string, unknown>[];

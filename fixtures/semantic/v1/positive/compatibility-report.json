@@ -1,7 +1,5 @@
 {
 	"contractVersion": "1.0.0",
-	"oldFingerprint": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
-	"newFingerprint": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 	"consumerEvidenceStatus": "current",
 	"changes": [
 		{

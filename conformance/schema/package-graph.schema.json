@@ -1,0 +1,35 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/filament-core-data/conformance/v1/package-graph.schema.json",
+	"title": "Resolved package graph",
+	"type": "object",
+	"required": ["rootPackage", "packages"],
+	"properties": {
+		"rootPackage": { "$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/packageIdentity" },
+		"packages": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"required": ["identity", "version", "imports", "exports"],
+				"properties": {
+					"identity": { "$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/packageIdentity" },
+					"version": { "$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/semver" },
+					"imports": {
+						"type": "array",
+						"items": { "$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/packageIdentity" },
+						"uniqueItems": true
+					},
+					"exports": {
+						"type": "array",
+						"items": { "$ref": "https://schemas.agent-ix.org/filament-core-data/v1/common.schema.json#/$defs/semanticIdentity" },
+						"uniqueItems": true
+					}
+				},
+				"additionalProperties": false
+			}
+		},
+		"profile": { "type": ["string", "null"] },
+		"contractVersion": { "type": "string" }
+	},
+	"additionalProperties": false
+}

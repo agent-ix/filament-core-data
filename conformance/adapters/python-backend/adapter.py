@@ -158,7 +158,7 @@ CONFORMANCE_BASE = "https://schemas.agent-ix.org/filament-core-data/conformance/
 MEMBER_SCHEMAS = {
     "ir": "semantic-ir.schema.json",
     "manifest": "package-manifest.schema.json",
-    "lock": "package-lock.schema.json",
+    "packageGraph": "package-graph.schema.json",
     "profile": "profile.schema.json",
     "consumerPolicy": "consumer-policy.schema.json",
 }
@@ -279,7 +279,7 @@ def schema_diagnostics(bundle: Any) -> list[dict[str, str]]:
         rows.extend(
             _collapse(
                 _flatten(
-                    list(_validator(PUBLISHED_BASE + file).iter_errors(bundle[member]))
+                    list(_validator((CONFORMANCE_BASE if member == "packageGraph" else PUBLISHED_BASE) + file).iter_errors(bundle[member]))
                 ),
                 f"/{member}",
             )
@@ -571,7 +571,7 @@ def _package_context(
     if not isinstance(bundle, dict):
         return out
     manifest = bundle.get("manifest")
-    lock = bundle.get("lock")
+    graph = bundle.get("packageGraph")
     profile = bundle.get("profile")
     policy = bundle.get("consumerPolicy")
 
@@ -594,40 +594,40 @@ def _package_context(
     resolved = {
         package.get("identity")
         for package in reader._objects(
-            lock.get("packages") if isinstance(lock, dict) else None
+            graph.get("packages") if isinstance(graph, dict) else None
         )
     }
-    if isinstance(manifest, dict):
+    if isinstance(manifest, dict) and isinstance(graph, dict):
         for index, imported in enumerate(reader._objects(manifest.get("imports"))):
             if imported.get("packageIdentity") not in resolved:
                 out.append(
                     _row(
                         "UNRESOLVED_IMPORT",
                         f"/manifest/imports/{index}/packageIdentity",
-                        "the lock resolves no package"
+                        "the package graph resolves no package"
                         f" {imported.get('packageIdentity')}",
                     )
                 )
 
-    if isinstance(lock, dict):
+    if isinstance(graph, dict):
         edges = {
             package.get("identity"): [
                 dependency
-                for dependency in (package.get("dependencies") or [])
+                for dependency in (package.get("imports") or [])
                 if isinstance(dependency, str)
             ]
-            for package in reader._objects(lock.get("packages"))
+            for package in reader._objects(graph.get("packages"))
         }
         positions = {
             package.get("identity"): index
-            for index, package in enumerate(reader._objects(lock.get("packages")))
+            for index, package in enumerate(reader._objects(graph.get("packages")))
         }
         for identity in _back_edges(edges):
             out.append(
                 _row(
                     "PACKAGE_CYCLE",
-                    f"/lock/packages/{positions[identity]}/dependencies",
-                    f"the lock package graph closes a cycle at {identity}",
+                    f"/packageGraph/packages/{positions[identity]}/imports",
+                    f"the selected package graph closes a cycle at {identity}",
                 )
             )
 

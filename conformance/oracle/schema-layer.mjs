@@ -27,7 +27,7 @@ const BASE = "https://schemas.agent-ix.org/filament-core-data/v1/";
 export const MEMBER_SCHEMAS = {
 	ir: "semantic-ir.schema.json",
 	manifest: "package-manifest.schema.json",
-	lock: "package-lock.schema.json",
+	packageGraph: "package-graph.schema.json",
 	profile: "profile.schema.json",
 	consumerPolicy: "consumer-policy.schema.json",
 };
@@ -150,7 +150,12 @@ export function schemaDiagnostics(bundle) {
 	for (const [member, file] of Object.entries(MEMBER_SCHEMAS)) {
 		if (bundle[member] === undefined) continue;
 		rows.push(
-			...collapse(validatePublished(file, bundle[member]), `/${member}`),
+			...collapse(
+				member === "packageGraph"
+					? validateConformance(file, bundle[member])
+					: validatePublished(file, bundle[member]),
+				`/${member}`,
+			),
 		);
 	}
 	if (Array.isArray(bundle.mappings)) {

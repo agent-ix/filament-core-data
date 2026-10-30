@@ -26,7 +26,6 @@
  */
 
 import { execFileSync, spawnSync } from "node:child_process";
-import { createHash } from "node:crypto";
 import {
 	cpSync,
 	mkdirSync,
@@ -81,11 +80,6 @@ export function deriveIdentifierDigest(locale, seed, count) {
 		},
 	).trim();
 }
-
-function sha256(text) {
-	return `sha256:${createHash("sha256").update(text, "utf8").digest("hex")}`;
-}
-
 // ---------------------------------------------------------------------------
 // `install-from-artifact` (FR-061)
 // ---------------------------------------------------------------------------
@@ -135,7 +129,6 @@ function consumerContract() {
 function requestForIr(ir, outputRoot) {
 	return {
 		contractVersion: "1.0.0",
-		lockFingerprint: sha256(JSON.stringify(ir)),
 		ir,
 		profile: DEFAULT_PROFILE,
 		mappings: [],
