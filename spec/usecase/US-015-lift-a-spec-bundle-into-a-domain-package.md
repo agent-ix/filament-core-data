@@ -79,7 +79,7 @@ repository's existing Cargo workspace.
 
 ### [US-015-EX-5] A module the compiler cannot read is refused, not emptied
 
-- **Given** a module whose `semantic` block declares a semantic-core version the engine has no vendored bundle for
+- **Given** a module whose `semantic` block declares an unsupported contract version
 - **When** the author lifts a bundle under it
 - **Then** the lift refuses with the module's own refusal code rather than lowering every artifact as an empty record
 
