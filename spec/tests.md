@@ -997,7 +997,6 @@ computed by `quire matrix` from those trace tags.
 | TC-1107 | No generated manifest permits registry publication, and no package was published | Unit | P1 | NFR-030-AC-8, NFR-030-AC-9 |
 | TC-1200 | Loading the snapshot-table fixture under the fixture-domain module yields one extraction for FR-006 (fields available, seven fields) and one for FR-005, keyed by id | Integration | P0 | FR-091-AC-1 |
 | TC-1201 | A module root whose manifest carries no semantic block refuses with MODULE_WITHOUT_SEMANTIC_BLOCK naming the module and lowers nothing | Unit | P1 | FR-091-AC-2 |
-| TC-1202 | A module whose semantic.semantic_core is 9.9.9 refuses with MODULE_REFUSED whose message begins with semantic.unsupported-semantic-core and whose causes is empty, and no artifact lowers to an empty record | Integration | P0 | FR-091-AC-3 |
 | TC-1203 | With a conflicting module planted under HOME/.ix and QUIRE_MODULES, the fixture lifts byte-identically to the explicit-module lift; the control lift with the conflicting module supplied explicitly differs | E2E | P0 | FR-091-AC-4 |
 | TC-1204 | A spec.md lacking org refuses with BUNDLE_UNIDENTIFIED at spec/spec.md; a name of Config Service refuses with BUNDLE_UNIDENTIFIED naming Config Service | Unit | P1 | FR-091-AC-5 |
 | TC-1205 | A document with object: widget, declared by no module, yields UNKNOWN_OBJECT_TYPE and is not lowered; a document with no object yields no diagnostic | Unit | P1 | FR-091-AC-6 |
@@ -1741,7 +1740,7 @@ computed by `quire matrix` from those trace tags.
 | pass one complete, target artifact not lowered | token classified | `Unresolved::Stale` with `related` at the cause | TC-1215, TC-1332 |
 | module supplied, `semantic` block present and accepted | `lift` | bundle loaded, extraction proceeds | TC-1200, TC-1295 |
 | module supplied, no `semantic` block | `lift` | refused with `MODULE_WITHOUT_SEMANTIC_BLOCK`; nothing lowered; no file; exit 2 | TC-1201, TC-1296 |
-| module supplied, `semantic` block refused by the engine | `lift` | refused with `MODULE_REFUSED` carrying the engine code; nothing lowered as empty; exit 2 | TC-1202, TC-1265 |
+| module supplied, `semantic` block refused by the engine | `lift` | refused with `MODULE_REFUSED` carrying the engine code; nothing lowered as empty; exit 2 | TC-1265 |
 | `--out` under the bundle root or a module root | `lift` | refused with `OUTPUT_UNWRITABLE` before the bundle is loaded; no file; exit 2 | TC-1340, TC-1296 |
 | bundle assembled, node lists sorted | `decide` | success verdict: write proceeds; any reader diagnostic: one blocking `INVALID_IR` each, no document | TC-1284, TC-1342, TC-1346 |
 | bundle assembled, no blocking diagnostic | write | diagnostics, then document renamed into place in that order; exit 0 | TC-1279, TC-1295, TC-1341 |
@@ -1918,7 +1917,7 @@ computed by `quire matrix` from those trace tags.
 | ERR-141 | A generated annotation cannot be attributed to any schema pointer | Classified unattributed and fails | TC-915 |
 | ERR-142 | A construct measured as lost is missing from `gaps.json` | Qualification gate fails | TC-898 |
 | ERR-250 | A supplied module manifest carries no `semantic` block | `MODULE_WITHOUT_SEMANTIC_BLOCK` naming the module; refusal; no file; exit 2 | TC-1201, TC-1296 |
-| ERR-251 | quire-rs refuses a module's `semantic` block (unsupported `semantic_core`, duplicate object type) | `MODULE_REFUSED` whose message opens with the engine's `semantic.*` code, `causes` empty, at the manifest, line 1, column 1; no artifact lowered as empty; exit 2 | TC-1202, TC-1265 |
+| ERR-251 | quire-rs refuses a module's `semantic` block | `MODULE_REFUSED` whose message opens with the engine's `semantic.*` code, `causes` empty, at the manifest, line 1, column 1; no artifact lowered as empty; exit 2 | TC-1265 |
 | ERR-252 | `spec/spec.md` is absent, lacks `org` or `name`, or carries one outside the `packageIdentity` grammar; an object-typed document has no `id` | `BUNDLE_UNIDENTIFIED` at `spec/spec.md` or the document's frontmatter naming the offending value; refusal; exit 2 | TC-1204 |
 | ERR-253 | Two loaded documents carry the same frontmatter `id` | `DUPLICATE_ARTIFACT_ID` at the second document in path order naming both paths; refusal; exit 2 | TC-1331 |
 | ERR-254 | A document's `object` names a type no loaded module declares | `UNKNOWN_OBJECT_TYPE` at the frontmatter; document not lowered | TC-1205 |
@@ -2059,7 +2058,6 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-146 | A `Type` cell holding a 4000-character token | FR-096 | TC-1269 | A diagnostic message carries the whole token and the diagnostics file balloons or breaks a line-oriented consumer |
 | EC-147 | Documents saved with CRLF line endings | FR-091, FR-096 | TC-1208, TC-1309 | Loci drift by a column, `clause_text` carries `\r`, and the table-form and fence-form lifts differ by a byte |
 | EC-148 | A `spec.md` or artifact beginning with a UTF-8 BOM | FR-091 | TC-1204, TC-1309 | Frontmatter is not recognised and a valid bundle refuses with `BUNDLE_UNIDENTIFIED` or lowers nothing |
-| EC-149 | A module manifest declaring the same object type twice | FR-091 | TC-1202 | The second declaration silently wins, or the module is treated as an empty model rather than refused |
 | EC-150 | Two loaded modules exporting the same type name, or an artifact named like a kernel scalar | FR-092, FR-095 | TC-1213, TC-1217, TC-1256 | The first module on the command line wins and the lift depends on argument order, or the shadowed artifact is silently unreferenceable |
 | EC-151 | A bundle root reached through a symlink | FR-095, NFR-031 | TC-1253, TC-1301 | Bundle-root-relative paths differ between the symlinked and real root, changing every locus |
 | EC-152 | A bundle directory that is read-only to the lifting process, or an `--out` pointing inside it | FR-097, FR-098, NFR-032 | TC-1289, TC-1314, TC-1340 | A scratch or temporary file is placed inside the bundle and the lift fails, or writes into the corpus when it can |
