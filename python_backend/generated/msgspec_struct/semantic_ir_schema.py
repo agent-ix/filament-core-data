@@ -538,7 +538,6 @@ type Constraint = Constraint1 | Constraint2 | Constraint3 | Constraint4 | Constr
 class Construct(Struct):
     construct: ConstructDeclaration
     kind: ConstructKind
-    manifestDigest: common_schema.Sha256
     moduleVersion: common_schema.Semver
 
 

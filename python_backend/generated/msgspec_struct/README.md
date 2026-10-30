@@ -36,7 +36,7 @@ types. They are reachable as `<module>.<Name>` and are excluded from
 - `Kind` — mapping_schema, module_manifest_schema, representation_schema, semantic_ir_schema
 - `Mapping` — module_manifest_schema, module_semantic_block_schema
 - `Members` — module_manifest_schema, semantic_ir_schema
-- `Package` — package_lock_schema, package_manifest_schema, semantic_ir_schema
+- `Package` — package_manifest_schema, semantic_ir_schema
 - `Role` — module_manifest_schema, semantic_ir_schema
 - `RoundTrip` — profile_schema, representation_schema
 - `Rule` — module_manifest_schema, semantic_ir_schema

@@ -764,27 +764,21 @@ fn tc_1336_no_serde_json_serializer_under_src_and_the_document_write_is_dominate
         "the reader refuses before the document is constructed"
     );
     let write = fs::read_to_string(src.join("write.rs")).expect("write.rs");
-    // The optional digest and the document each consume validated bytes.
+    // The document consumes only validated bytes.
     assert_eq!(
         write.matches("document.bytes()").count(),
-        2,
-        "digest and document each read the validated document bytes"
+        1,
+        "the document reads the validated bytes"
     );
     let arm_at = write
         .find("if let Emission::Document {")
         .expect("the success arm");
-    let digest_arm_at = write
-        .find("if let Some(digest) = &paths.digest")
-        .expect("the optional digest arm");
-    let digest_at = write
-        .find("digest_sidecar_bytes(document.bytes())")
-        .expect("the digest consumes document bytes");
     let document_at = write
         .find("document.bytes().to_vec()")
         .expect("the document file consumes document bytes");
     assert!(
-        arm_at < digest_arm_at && digest_arm_at < digest_at && digest_at < document_at,
-        "both byte reads sit in the success arm, with the optional digest first"
+        arm_at < document_at,
+        "the validated byte read sits in the success arm"
     );
     let normalized_sites: Vec<String> = files
         .iter()

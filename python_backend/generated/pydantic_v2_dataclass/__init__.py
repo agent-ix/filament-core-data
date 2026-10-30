@@ -13,7 +13,6 @@ from .mapping_schema import Base, ConflictPolicy, Correspondence, DecodePolicy, 
 from .module_manifest_schema import AllowedLink, ArchetypeEntry, ArtifactTypeEntry, BodyExtraction, Category1, Column, DataSchema, Defaults, DependsOnItem, DocKind, EdgeTypeEntry, EmitEdge, Example, FilamentModuleManifest, From, GrammarEntry, ImportsAdditionalProperty, IterateOver, LegacyForms, LintRuleEntry, LintRulesRefItem, Locator, Locator1, LocatorAssert, LocatorPrimitive, Nav, ObjectTypeEntry, Pattern, Reference, RoleEntry, SectionPathItem, Semantic, StateSchemas, YieldPattern
 from .module_semantic_block_schema import FilamentModuleManifestSemanticBlockV1
 from .output_manifest_schema import FilamentCompilerOutputManifestV1, File
-from .package_lock_schema import Canonicalization, ExcludedEnum, FilamentSemanticPackageLockV1, IncludedEnum
 from .package_manifest_schema import Capability, Export3, FilamentSemanticPackageManifestV1, Import, Profile, SourceRoot, Visibility
 from .profile_schema import EditDirection, FilamentRepresentationProfileV1, MaterializationLifetime
 from .representation_schema import Avro, BestFitItem, Columnar, Delimited, EnumNumbersAdditionalProperty, FieldNumbersAdditionalProperty, FilamentRepresentationContractV1, Json, Kind3, Locus, Markdown, NonUs, Postgresql, Protobuf, ReservedName, ReservedNumber
@@ -31,7 +30,6 @@ __all__ = [
     "Base",
     "BestFitItem",
     "BodyExtraction",
-    "Canonicalization",
     "Capability",
     "Category1",
     "Change",
@@ -110,7 +108,6 @@ __all__ = [
     "EmitEdge",
     "EnumNumbersAdditionalProperty",
     "Example",
-    "ExcludedEnum",
     "ExecutableGeneratorDependency",
     "Export3",
     "Extension",
@@ -130,7 +127,6 @@ __all__ = [
     "FilamentSemanticContractCommonTypesV1",
     "FilamentSemanticIrV1ContractVersion200",
     "FilamentSemanticMappingV1",
-    "FilamentSemanticPackageLockV1",
     "FilamentSemanticPackageManifestV1",
     "File",
     "FlowDirection",
@@ -144,7 +140,6 @@ __all__ = [
     "IdentityPlane",
     "Import",
     "ImportsAdditionalProperty",
-    "IncludedEnum",
     "InlineClause",
     "IterateOver",
     "Json",
