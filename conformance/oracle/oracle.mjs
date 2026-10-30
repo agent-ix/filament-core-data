@@ -544,7 +544,7 @@ function checkConstraint(constraint, at, types, out, field = undefined) {
 	}
 }
 
-function checkTypeDefinition(definition, at, types, lockExports, out) {
+function checkTypeDefinition(definition, at, types, graphExports, out) {
 	const fields = Array.isArray(definition.fields) ? definition.fields : [];
 	const seenFieldNames = new Set();
 	for (const [i, field] of fields.entries()) {
@@ -680,12 +680,12 @@ function checkTypeDefinition(definition, at, types, lockExports, out) {
 			? relationship.targetEnd
 			: {};
 		const target = String(targetEnd.type);
-		if (!types.has(target) && !lockExports.has(target)) {
+		if (!types.has(target) && !graphExports.has(target)) {
 			out.push(
 				diagnostic(
 					"UNRESOLVED_RELATIONSHIP_TARGET",
 					`${at}/relationships/${i}/targetEnd/type`,
-					`relationship target resolves to neither a document type nor a lock export: ${target}`,
+					`relationship target resolves to neither a document type nor a graph export: ${target}`,
 				),
 			);
 		}
@@ -824,18 +824,18 @@ function checkCompositeCycles(ir, out) {
 	for (const node of edges.keys()) if (!state.has(node)) visit(node, 0);
 }
 
-/* ---------------------------------------------------- package and lock ---- */
+/* ---------------------------------------------------- package graph ---- */
 
 function checkPackageContext(bundle, ir, types, out) {
 	const manifest = bundle.manifest;
-	const lock = bundle.packageGraph;
+	const selectedGraph = bundle.packageGraph;
 	const profile = bundle.profile;
 	const mappings = Array.isArray(bundle.mappings) ? bundle.mappings : [];
 	const policy = bundle.consumerPolicy;
 
-	if (isObject(lock)) {
+	if (isObject(selectedGraph)) {
 		const resolved = new Set(
-			(Array.isArray(lock.packages) ? lock.packages : [])
+			(Array.isArray(selectedGraph.packages) ? selectedGraph.packages : [])
 				.filter(isObject)
 				.map((entry) => entry.identity),
 		);
@@ -856,8 +856,8 @@ function checkPackageContext(bundle, ir, types, out) {
 			}
 		}
 		const graph = new Map();
-		for (const entry of (Array.isArray(lock.packages)
-			? lock.packages
+		for (const entry of (Array.isArray(selectedGraph.packages)
+			? selectedGraph.packages
 			: []
 		).filter(isObject)) {
 			graph.set(
@@ -867,7 +867,7 @@ function checkPackageContext(bundle, ir, types, out) {
 		}
 		const state = new Map();
 		const indexOf = new Map(
-			(Array.isArray(lock.packages) ? lock.packages : [])
+			(Array.isArray(selectedGraph.packages) ? selectedGraph.packages : [])
 				.filter(isObject)
 				.map((entry, index) => [entry.identity, index]),
 		);
@@ -1094,7 +1094,7 @@ export function verdict(bundle, schemaRows = []) {
 
 	const out = [];
 	const { byIdentity } = indexTypes(ir);
-	const lockExports = new Set(
+	const graphExports = new Set(
 		isObject(bundle.manifest) && Array.isArray(bundle.manifest.exports)
 			? bundle.manifest.exports
 					.filter(isObject)
@@ -1127,7 +1127,7 @@ export function verdict(bundle, schemaRows = []) {
 				definition,
 				pointer("ir", "types", t),
 				byIdentity,
-				lockExports,
+				graphExports,
 				out,
 			);
 		}

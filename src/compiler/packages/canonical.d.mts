@@ -9,5 +9,3 @@ export declare function canonicalize(
 	value: unknown,
 	options?: { sets?: Iterable<string> | Set<string>; maxDepth?: number },
 ): string;
-
-export declare function digest(input: string | Uint8Array): string;

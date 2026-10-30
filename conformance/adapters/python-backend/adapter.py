@@ -434,7 +434,7 @@ def supplementary(bundle: Any, ir: Any) -> list[dict[str, str]]:
 
     The shared reader in ``tests/semantic_ir_reader.py`` judges one IR document.
     Half of the contract's cross-field obligations are about the bundle around
-    it — the manifest that exports a type, the lock that resolves an import, the
+    it — the manifest that exports a type, the package graph that resolves an import, the
     profile that permits an omission — and a rule about the bundle cannot be
     stated by a function that only sees the document.
     """
@@ -994,7 +994,7 @@ def answer(case: dict[str, Any]) -> dict[str, Any]:
                 "pointer": pointer("/ir", row["path"]),
                 "message": row["message"],
             }
-            for row in reader.read_semantic_ir(ir, _lock_exports(bundle))
+            for row in reader.read_semantic_ir(ir, _graph_exports(bundle))
             # The shared reader's identity rule sees types only; this adapter
             # decides identity uniqueness over the whole document instead, and
             # two rules for one obligation would report one defect twice.
@@ -1020,7 +1020,7 @@ def answer(case: dict[str, Any]) -> dict[str, Any]:
             or bool(
                 reader.read_semantic_ir(
                     before.get("ir") if isinstance(before, dict) else None,
-                    _lock_exports(before),
+                    _graph_exports(before),
                 )
             )
             or bool(
@@ -1037,7 +1037,7 @@ def answer(case: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def _lock_exports(bundle: Any) -> set[str]:
+def _graph_exports(bundle: Any) -> set[str]:
     """The type identities the package manifest exports, or an empty set."""
     manifest = bundle.get("manifest") if isinstance(bundle, dict) else None
     exports = manifest.get("exports") if isinstance(manifest, dict) else None
