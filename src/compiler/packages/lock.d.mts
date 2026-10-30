@@ -1,47 +1,23 @@
-/** Declarations for the package lock and the v1 fingerprint (FR-048). */
-import type { CompilerDiagnostic } from "../index.d.mts";
 import type { CompilerFileHost } from "../host.d.mts";
 
+/** Repository root derived from this module's location. */
 export declare const REPO_ROOT: string;
+/** The emitted Semantic IR contract version. */
 export declare const CONTRACT_IR_VERSION: "2.0.0";
-
-export declare const CANONICALIZATION: Readonly<{
-	algorithm: string;
-	digest: string;
-	included: string[];
-	excluded: string[];
-}>;
-
-export declare function schemaBytes(
-	host: CompilerFileHost,
-	root?: string,
-): [string, string][];
-
-export declare function sourceFiles(
-	host: CompilerFileHost,
-	packageRoot: string,
-	manifest: Record<string, unknown>,
-): string[];
-
-export declare function contentDigest(
-	host: CompilerFileHost,
-	packageRoot: string,
-	manifest: Record<string, unknown>,
-): string;
-
-export declare function fingerprint(
-	resolution: Record<string, unknown>,
-): string;
-
-export declare function buildLock(
-	resolution: Record<string, unknown>,
-): Record<string, unknown>;
-
-export declare function serializeLock(lock: Record<string, unknown>): string;
-
-export declare function verifyLock(
-	lock: Record<string, unknown>,
-	lockText: string,
-	lockPath: string,
-	resolution: Record<string, unknown>,
-): CompilerDiagnostic[];
+/** Source paths under the declared roots, in stable order. */
+export declare function sourceFiles(host: CompilerFileHost, packageRoot: string, manifest: { sourceRoots: string[] }): string[];
+/** Selected package identities, versions, imports, and exports. */
+export declare function resolvedPackageGraph(resolution: {
+  root: { identity: string };
+  profile?: { name: string };
+  packages: Array<{
+    identity: string;
+    version: string;
+    manifest: { imports?: Array<{ packageIdentity: string }>; exports?: Array<{ typeIdentity: string }> };
+  }>;
+}): {
+  rootPackage: string;
+  contractVersion: "2.0.0";
+  profile: string | null;
+  packages: Array<{ identity: string; version: string; imports: string[]; exports: string[] }>;
+};

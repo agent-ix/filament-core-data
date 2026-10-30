@@ -167,15 +167,13 @@ export interface CompilePackageRequest {
 	profileName?: string;
 	dialect?: "typespec" | "spec-bundle";
 	entrypoint?: string;
-	lockPath?: string;
 	limits?: Record<string, number>;
 	onPhase?: (phase: string) => void;
 }
 
 export interface CompilePackageResult {
 	ir: ContractIrDocument | null;
-	lock?: Record<string, unknown>;
-	lockBytes?: string;
+	packageGraph?: Record<string, unknown>;
 	resolution?: Record<string, unknown>;
 	diagnostics: CompilerDiagnostic[];
 	state: string;
@@ -201,13 +199,10 @@ export declare function readContractIr(
 
 export declare function normalizeIr(document: unknown): string;
 
-export declare function fingerprintIr(document: unknown): string;
-
 export interface IrInspection {
 	contractVersion: string | null;
 	package: Record<string, string | null>;
 	source: Record<string, string | null>;
-	fingerprint: string;
 	typeCount: number;
 	kinds: Record<string, number>;
 	types: {

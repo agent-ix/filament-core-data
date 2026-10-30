@@ -1,5 +1,5 @@
 /**
- * The normalized serialization and the IR fingerprint (FR-050).
+ * The normalized serialization of a Semantic IR document (FR-050).
  *
  * "The same IR" has to be a byte comparison, not a judgement, or the conformance
  * corpus cannot tell a compiler defect from a formatting difference. Two things
@@ -10,7 +10,7 @@
  * independently authored under contract 2.0.0 (FR-059, FR-069), so neither is
  * ever materialized from the other, or from anything, here.
  */
-import { canonicalize, digest } from "../packages/canonical.mjs";
+import { canonicalize } from "../packages/canonical.mjs";
 
 /** The IR arrays whose order carries no meaning and is sorted by identity. */
 export const IDENTITY_SETS = Object.freeze([
@@ -61,22 +61,6 @@ export function normalizeIr(document, options = {}) {
 		}
 	}
 	return canonicalIr(copy, options);
-}
-
-/**
- * `sha256:<hex>` over the normalized serialization.
- *
- * A document nested past `maxDepth` cannot be canonicalised, and this is a
- * published symbol, so the bound surfaces as a value a caller can test rather
- * than as an exception it did not ask for.
- */
-export function fingerprintIr(document, options = {}) {
-	try {
-		return digest(normalizeIr(document, options));
-	} catch (error) {
-		if (error?.name !== "CanonicalLimitError") throw error;
-		return undefined;
-	}
 }
 
 /** The bytes the CLI writes for an IR document: tab-indented JSON, one newline. */

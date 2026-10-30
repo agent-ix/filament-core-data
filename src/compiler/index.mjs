@@ -20,7 +20,7 @@ export { normalizeJsonSchemaForPython } from "./backends/python-schema.mjs";
 export { runFrontend } from "./frontend/seam.mjs";
 export { compilePackage } from "./pipeline.mjs";
 export { readContractIr } from "./ir/reader.mjs";
-export { fingerprintIr, normalizeIr } from "./ir/normalize.mjs";
+export { normalizeIr } from "./ir/normalize.mjs";
 export { inspectIr } from "./inspect.mjs";
 export { diffSemanticContract } from "./compat/diff.mjs";
 export { CONTRACT_IR_VERSION } from "./packages/lock.mjs";

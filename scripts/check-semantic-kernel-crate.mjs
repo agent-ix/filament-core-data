@@ -48,7 +48,6 @@ import {
 	generateRust,
 	readLicense,
 } from "../src/compiler/backends/rust-serde/index.mjs";
-import { fingerprintIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const KERNEL = join(ROOT, "packages/semantic-kernel");
@@ -106,7 +105,6 @@ function kernelRequest() {
 	const ir = readJson(join(KERNEL, "semantic-ir.json"));
 	return {
 		contractVersion: "1.0.0",
-		lockFingerprint: fingerprintIrForTarget(ir),
 		ir,
 		profile: RUST_PROFILE,
 		mappings: [],

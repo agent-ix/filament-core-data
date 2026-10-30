@@ -80,7 +80,6 @@ export const ADMISSIBILITY_CODES = Object.freeze({
 	COMPOSITE_CYCLE: code("COMPOSITE_CYCLE"),
 	UNRESOLVED_IMPORT: code("UNRESOLVED_IMPORT"),
 	PACKAGE_CYCLE: code("PACKAGE_CYCLE"),
-	STALE_LOCK: code("STALE_LOCK"),
 	UNKNOWN_MAPPING_TARGET: code("UNKNOWN_MAPPING_TARGET"),
 	UNDECLARED_LOSS: code("UNDECLARED_LOSS"),
 	UNKNOWN_REQUIRED_EXTENSION: code("UNKNOWN_REQUIRED_EXTENSION"),
@@ -193,7 +192,7 @@ export const DERIVATIONS = Object.freeze({
 	),
 	UNRESOLVED_RELATIONSHIP_TARGET: fromClause(
 		CONTRACTS,
-		"Relationship targets resolve to a document type or a lock",
+		"Relationship targets resolve to a document type or a selected package graph export",
 	),
 	INVALID_RELATIONSHIP_SOURCE: fromClause(
 		CONTRACTS,
@@ -205,14 +204,11 @@ export const DERIVATIONS = Object.freeze({
 		"composite relationship graphs are acyclic",
 	),
 	UNRESOLVED_IMPORT: fromCorpus(
-		"the contract says locks resolve the complete dependency graph; it states no diagnostic for an import the lock omits, so the rule is the corpus's",
+		"the selected package graph records every resolved import",
 	),
 	PACKAGE_CYCLE: fromClause(
 		CONTRACTS,
 		"Package cycles are rejected with every\nlocus.",
-	),
-	STALE_LOCK: fromCorpus(
-		"the contract states what a fingerprint includes and excludes; it states no staleness rule between an IR's recorded manifest digest and the bundle's manifest, so the rule is the corpus's",
 	),
 	UNKNOWN_MAPPING_TARGET: fromCorpus(
 		"the contract says mappings name correspondences; it states no resolution rule for a mapping's sourceType against the document, so the rule is the corpus's",
@@ -250,7 +246,7 @@ export const SCHEMA_FILES = Object.freeze([
 	"schema/semantic/v1/semantic-ir.schema.json",
 	"schema/semantic/v1/common.schema.json",
 	"schema/semantic/v1/package-manifest.schema.json",
-	"schema/semantic/v1/package-lock.schema.json",
+	"conformance/schema/package-graph.schema.json",
 	"schema/semantic/v1/profile.schema.json",
 	"schema/semantic/v1/mapping.schema.json",
 	"schema/semantic/v1/consumer-policy.schema.json",
@@ -1212,25 +1208,25 @@ function widestCollection(value) {
 
 function packageChecks(bundle, ir, types, emit, suppress) {
 	const manifest = bundle.manifest;
-	const lock = bundle.lock;
+	const graph = bundle.packageGraph;
 	const mappings = bundle.mappings;
 	const policy = bundle.consumerPolicy;
 
 	/* unresolved imports */
 	if (!isObject(manifest)) {
 		suppress("unresolved-import", "manifest");
-	} else if (!isObject(lock)) {
-		suppress("unresolved-import", "lock");
+	} else if (!isObject(graph)) {
+		suppress("unresolved-import", "packageGraph");
 	} else {
-		const locked = new Set(
-			(lock.packages ?? []).map((entry) => entry?.identity),
+		const resolved = new Set(
+			(graph.packages ?? []).map((entry) => entry?.identity),
 		);
 		for (const [index, entry] of (manifest.imports ?? []).entries()) {
-			if (!locked.has(entry?.packageIdentity)) {
+			if (!resolved.has(entry?.packageIdentity)) {
 				emit(
 					ADMISSIBILITY_CODES.UNRESOLVED_IMPORT,
 					pointerOf("manifest", "imports", index, "packageIdentity"),
-					"an import names a package the lock resolves",
+					"an import names a package the package graph resolves",
 					{},
 				);
 			}
@@ -1238,22 +1234,10 @@ function packageChecks(bundle, ir, types, emit, suppress) {
 	}
 
 	/* package cycles */
-	if (!isObject(lock)) {
-		suppress("package-cycle", "lock");
+	if (!isObject(graph)) {
+		suppress("package-cycle", "packageGraph");
 	} else {
-		reportPackageCycle(lock, emit);
-	}
-
-	/* stale lock */
-	if (bundle.manifestDigest === undefined) {
-		suppress("stale-lock", "manifestDigest");
-	} else if (bundle.manifestDigest !== ir.package?.manifestDigest) {
-		emit(
-			ADMISSIBILITY_CODES.STALE_LOCK,
-			pointerOf("ir", "package", "manifestDigest"),
-			"the IR names the manifest digest the bundle's manifest hashes to",
-			{},
-		);
+		reportPackageCycle(graph, emit);
 	}
 
 	/* mapping targets */
@@ -1362,9 +1346,9 @@ function compositeCycles(ir, types, emit) {
 	void types;
 }
 
-/** Depth-first search reporting the dependency list that closes a lock cycle. */
-function reportPackageCycle(lock, emit) {
-	const packages = lock.packages ?? [];
+/** Depth-first search reporting an import list that closes a package cycle. */
+function reportPackageCycle(graph, emit) {
+	const packages = graph.packages ?? [];
 	const index = new Map();
 	for (const [position, entry] of packages.entries()) {
 		if (isObject(entry)) index.set(entry.identity, { position, entry });
@@ -1374,14 +1358,14 @@ function reportPackageCycle(lock, emit) {
 	const walk = (identity) => {
 		state.set(identity, "open");
 		const node = index.get(identity);
-		for (const dependency of node?.entry.dependencies ?? []) {
+		for (const dependency of node?.entry.imports ?? []) {
 			if (state.get(dependency) === "open") {
 				if (!reported.has(identity)) {
 					reported.add(identity);
 					emit(
 						ADMISSIBILITY_CODES.PACKAGE_CYCLE,
-						pointerOf("lock", "packages", node.position, "dependencies"),
-						"the lock package graph is acyclic",
+						pointerOf("packageGraph", "packages", node.position, "imports"),
+						"the selected package graph is acyclic",
 						{},
 					);
 				}

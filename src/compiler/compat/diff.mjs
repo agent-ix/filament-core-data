@@ -14,7 +14,6 @@
 import { kindLabel } from "../constructs.mjs";
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../diagnostics.mjs";
 import { familyMap } from "../family-map.mjs";
-import { fingerprintIr } from "../ir/normalize.mjs";
 import { canonicalize } from "../packages/canonical.mjs";
 
 /**
@@ -709,7 +708,7 @@ export function diffSemanticContract(request) {
 			String(after?.source?.identity ?? "ix://agent-ix/unknown/source"),
 			"documentation",
 			"patch",
-			"the two contracts have equal fingerprints",
+			"the two contracts have no classified surface changes",
 		);
 	}
 
@@ -730,8 +729,6 @@ export function diffSemanticContract(request) {
 
 	return {
 		contractVersion: "1.0.0",
-		oldFingerprint: fingerprintIr(before),
-		newFingerprint: fingerprintIr(after),
 		consumerEvidenceStatus: evidence,
 		changes,
 		aggregateDisposition: mostRestrictive(

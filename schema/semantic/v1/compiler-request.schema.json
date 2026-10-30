@@ -5,7 +5,6 @@
 	"type": "object",
 	"required": [
 		"contractVersion",
-		"lockFingerprint",
 		"ir",
 		"profile",
 		"mappings",
@@ -15,7 +14,6 @@
 	],
 	"properties": {
 		"contractVersion": { "const": "1.0.0" },
-		"lockFingerprint": { "$ref": "common.schema.json#/$defs/sha256" },
 		"ir": { "$ref": "semantic-ir.schema.json" },
 		"profile": { "$ref": "profile.schema.json" },
 		"mappings": { "type": "array", "items": { "$ref": "mapping.schema.json" } },
