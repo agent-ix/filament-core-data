@@ -42,6 +42,9 @@ Plan completion: not assessed
 | FND-001 | still-open | The new `/// Trace` syntax is indexed, but the two FR-048 bindings are false under merged PLAT-1205 #327; only FR-084-AC-6 has a valid binder. Revised FR-048-AC-9/10 need implementation and tests in the second code slice. |
 | FND-002 | still-open | FR-048-AC-9 now requires absence of every package content digest, while its tagged test asserts `contentDigest` equality; FR-048-AC-10 now requires no package-lock fingerprint verification, while its tagged test only checks omitted IR.lockDigest and unchanged supplied lock bytes. Remove/reassign those two tags on #326; leave the revised ACs visibly uncovered until the second code slice implements them. |
 
+| FND-001 | deferred | At head 44cb619, FR-084-AC-6 has a valid `/// Trace` binder. FR-048-AC-9/10 are deliberately untagged because merged PLAT-1205 #327 revised them beyond this intermediate slice; the PLAT-1205 second code PR must implement and bind them. |
+| FND-002 | fixed | Head 44cb619 removes FR-048-AC-9 from the first test tag and FR-048-AC-10 from the second; the first retains only FR-046-AC-12, and the second has no Trace tag. No false revised-FR-048 binding remains. |
+
 ## Current verdict
 
-**FAIL** — the current matrix appears green for revised FR-048-AC-9/10 because two new tags are false. Remove or reassign those tags before #326 merges; second PLAT-1205 code work must implement and test the revised criteria.
+**CONDITIONAL** — the false revised-FR-048 bindings are fixed. FR-048-AC-9/10 are visibly untagged pending the second PLAT-1205 code PR; #326 can merge as an intermediate slice after its final gate, without claiming those ACs complete.
