@@ -70,10 +70,45 @@ export function validatePublished(file, value) {
 
 /** Validates against a conformance schema by file name. */
 export function validateConformance(file, value) {
-	return validateAgainst(
+	const errors = validateAgainst(
 		`https://schemas.agent-ix.org/filament-core-data/conformance/v1/${file}`,
 		value,
 	);
+	return file === "package-graph.schema.json" && errors.length === 0
+		? packageGraphOrderErrors(value)
+		: errors;
+}
+
+/** Cross-entry constraints that JSON Schema cannot express by itself. */
+function packageGraphOrderErrors(graph) {
+	const errors = [];
+	const emit = (instancePath, message) =>
+		errors.push({ instancePath, keyword: "order", message, params: {} });
+	const packages = graph.packages;
+	if (
+		packages.filter((entry) => entry.identity === graph.rootPackage).length !==
+		1
+	) {
+		emit("/rootPackage", "root package must appear exactly once");
+	}
+	for (let i = 1; i < packages.length; i += 1) {
+		if (compareCodeUnits(packages[i - 1].identity, packages[i].identity) >= 0) {
+			emit(`/packages/${i}/identity`, "package identities must increase");
+		}
+	}
+	for (const [i, entry] of packages.entries()) {
+		for (const name of ["imports", "exports"]) {
+			for (let j = 1; j < entry[name].length; j += 1) {
+				if (compareCodeUnits(entry[name][j - 1], entry[name][j]) >= 0) {
+					emit(
+						`/packages/${i}/${name}/${j}`,
+						`${name} must increase by identity`,
+					);
+				}
+			}
+		}
+	}
+	return errors;
 }
 
 function message(error) {

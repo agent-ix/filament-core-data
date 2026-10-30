@@ -2875,10 +2875,24 @@ fn package_graph(graph: &Json, at: &str, f: &mut Findings) {
     if let Some(packages) = graph.get("packages") {
         let packages_at = child(at, "packages");
         if expect_array(packages, &packages_at, "packages", f) {
+            let mut root_count = 0;
+            let mut previous_identity: Option<&str> = None;
             for (position, package) in packages.as_array().unwrap_or(&[]).iter().enumerate() {
                 let package_at = index(&packages_at, position);
                 if !expect_object(package, &package_at, "a resolved package", f) {
                     continue;
+                }
+                if let Some(identity) = package.get("identity").and_then(Json::as_str) {
+                    if graph.get("rootPackage").and_then(Json::as_str) == Some(identity) {
+                        root_count += 1;
+                    }
+                    if previous_identity.is_some_and(|previous| previous >= identity) {
+                        f.push(
+                            &child(&package_at, "identity"),
+                            "package identities must increase",
+                        );
+                    }
+                    previous_identity = Some(identity);
                 }
                 let members = &["identity", "version", "imports", "exports"];
                 require_members(package, &package_at, members, f);
@@ -2904,8 +2918,18 @@ fn package_graph(graph: &Json, at: &str, f: &mut Findings) {
                     let values_at = child(&package_at, name);
                     if let Some(values) = package.get(name) {
                         if expect_array(values, &values_at, name, f) {
+                            let mut previous: Option<&str> = None;
                             for (item, value) in values.as_array().unwrap_or(&[]).iter().enumerate()
                             {
+                                if let Some(identity) = value.as_str() {
+                                    if previous.is_some_and(|prior| prior >= identity) {
+                                        f.push(
+                                            &index(&values_at, item),
+                                            format!("{name} must increase by identity"),
+                                        );
+                                    }
+                                    previous = Some(identity);
+                                }
                                 expect_shape(
                                     Some(value),
                                     &index(&values_at, item),
@@ -2917,6 +2941,12 @@ fn package_graph(graph: &Json, at: &str, f: &mut Findings) {
                         }
                     }
                 }
+            }
+            if graph.get("rootPackage").and_then(Json::as_str).is_some() && root_count != 1 {
+                f.push(
+                    &child(at, "rootPackage"),
+                    "root package must appear exactly once",
+                );
             }
         }
     }

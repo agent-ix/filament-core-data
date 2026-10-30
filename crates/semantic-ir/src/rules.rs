@@ -1252,15 +1252,16 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         .filter_map(|definition| definition.get("identity").and_then(Json::as_str))
         .map(str::to_string)
         .collect();
-    let manifest_exports: Vec<String> = document
+    let graph_exports: HashSet<&str> = document
         .bundle
-        .get("manifest")
-        .and_then(|manifest| manifest.get("exports"))
+        .get("packageGraph")
+        .and_then(|graph| graph.get("packages"))
         .and_then(Json::as_array)
         .unwrap_or(&[])
         .iter()
-        .filter_map(|export| export.get("typeIdentity").and_then(Json::as_str))
-        .map(str::to_string)
+        .filter_map(|package| package.get("exports").and_then(Json::as_array))
+        .flatten()
+        .filter_map(Json::as_str)
         .collect();
 
     document.type_positions(|position| {
@@ -1429,8 +1430,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                     .and_then(|end| end.get("type"))
                     .and_then(Json::as_str)
                 {
-                    let resolves = declared.contains(target)
-                        || manifest_exports.iter().any(|identity| identity == target);
+                    let resolves = declared.contains(target) || graph_exports.contains(target);
                     if !resolves {
                         sink.emit(
                             child(
@@ -1438,7 +1438,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                                 "type",
                             ),
                             UNRESOLVED_RELATIONSHIP_TARGET,
-                            "a relationship target resolves to a document type or a manifest export",
+                            "a relationship target resolves to a document type or a selected package graph export",
                         );
                     }
                 }

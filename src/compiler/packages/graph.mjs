@@ -30,18 +30,29 @@ export function sourceFiles(host, packageRoot, manifest) {
 }
 
 /** The selected graph, without a second lock or a derived content identity. */
-export function resolvedPackageGraph(resolution) {
+export function resolvedPackageGraph(
+	resolution,
+	contractVersion = CONTRACT_IR_VERSION,
+) {
 	return {
 		rootPackage: resolution.root.identity,
-		contractVersion: CONTRACT_IR_VERSION,
+		contractVersion,
 		profile: resolution.profile?.name ?? null,
 		packages: [...resolution.packages]
 			.sort((left, right) => byCodePoint(left.identity, right.identity))
 			.map((entry) => ({
 				identity: entry.identity,
 				version: entry.version,
-				imports: [...new Set((entry.manifest.imports ?? []).map((item) => item.packageIdentity))].sort(byCodePoint),
-				exports: [...new Set((entry.manifest.exports ?? []).map((item) => item.typeIdentity))].sort(byCodePoint),
+				imports: [
+					...new Set(
+						(entry.manifest.imports ?? []).map((item) => item.packageIdentity),
+					),
+				].sort(byCodePoint),
+				exports: [
+					...new Set(
+						(entry.manifest.exports ?? []).map((item) => item.typeIdentity),
+					),
+				].sort(byCodePoint),
 			})),
 	};
 }

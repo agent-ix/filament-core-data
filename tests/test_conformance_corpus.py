@@ -13,6 +13,7 @@ It adds no dependency and opens no network connection.
 from __future__ import annotations
 
 import copy
+import importlib.util
 import json
 import pathlib
 import re
@@ -33,6 +34,43 @@ def _read(path: pathlib.Path) -> dict:
 MANIFEST = _read(CONF / "corpus.json")
 CASES = [_read(REPO / row["path"]) for row in MANIFEST["cases"]]
 BASES = {row["id"]: _read(REPO / row["path"]) for row in MANIFEST["bases"]}
+
+
+def test_selected_graph_exports_resolve_relationship_targets() -> None:
+    """Trace: FR-035-AC-1."""
+    path = CONF / "adapters" / "python-backend" / "adapter.py"
+    spec = importlib.util.spec_from_file_location("python_backend_adapter", path)
+    assert spec is not None and spec.loader is not None
+    adapter = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(adapter)
+    bundle = copy.deepcopy(BASES["package-2-0"])
+    definition = next(row for row in bundle["ir"]["types"] if row.get("relationships"))
+    definition["relationships"][0]["targetEnd"]["type"] = "ix://agent-ix/kernel/Text"
+    case = {"caseId": "selected-graph-export", "kind": "validation", "input": bundle}
+    assert adapter.answer(case)["diagnostics"] == []
+    bundle["packageGraph"]["packages"][1]["exports"] = []
+    assert any(
+        row["diagnostic"]["code"]
+        == "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET"
+        for row in adapter.answer(case)["diagnostics"]
+    )
+
+
+def test_selected_graph_rejects_unordered_entries() -> None:
+    """Trace: FR-035-AC-1."""
+    path = CONF / "adapters" / "python-backend" / "adapter.py"
+    spec = importlib.util.spec_from_file_location("python_backend_adapter", path)
+    assert spec is not None and spec.loader is not None
+    adapter = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(adapter)
+    bundle = copy.deepcopy(BASES["package-2-0"])
+    bundle["packageGraph"]["packages"].reverse()
+    assert any(
+        row["pointer"].startswith("/packageGraph/packages/")
+        for row in adapter.schema_diagnostics(bundle)
+    )
+
+
 CODES = _read(CONF / "diagnostic-codes.json")
 DEFECTS = _read(CONF / "defects.json")
 GAPS = _read(CONF / "contract-gaps.json")

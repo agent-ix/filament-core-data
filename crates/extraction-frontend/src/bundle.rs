@@ -254,7 +254,7 @@ impl Bundle {
                 .filter_map(|document| Some((document.frontmatter()?, document.raw()))),
             modules.values(),
         );
-        let manifests = module_manifests(module_roots)?;
+        let module_names = declared_module_names(module_roots)?;
         let active: Vec<(&CompiledArchetype, &SemanticModule)> = registry
             .active_archetypes()
             .filter_map(|archetype| Some((archetype, modules.get(&archetype.module)?)))
@@ -267,7 +267,7 @@ impl Bundle {
                 .map(|raw| {
                     let loaded = Loaded {
                         registry: &registry,
-                        manifests: &manifests,
+                        module_names: &module_names,
                         carriers: &carriers,
                         source_identity: &source_identity,
                     };
@@ -500,7 +500,7 @@ pub(crate) fn parsed_manifest(root: &Path, bytes: &[u8]) -> Result<(String, Mani
 }
 
 /// Module names backed by a loaded manifest, as a construct kind cites them.
-fn module_manifests(module_roots: &[&Path]) -> Result<BTreeSet<String>, Refusal> {
+fn declared_module_names(module_roots: &[&Path]) -> Result<BTreeSet<String>, Refusal> {
     let mut out = BTreeSet::new();
     for root in module_roots {
         let bytes = read_manifest(root)?;
@@ -547,7 +547,7 @@ fn reader_json(value: &serde_json::Value) -> Json {
 /// What a declaration is checked against at load.
 struct Loaded<'a> {
     registry: &'a Registry,
-    manifests: &'a BTreeSet<String>,
+    module_names: &'a BTreeSet<String>,
     carriers: &'a BTreeMap<String, BTreeSet<String>>,
     source_identity: &'a str,
 }
@@ -601,10 +601,12 @@ impl Loaded<'_> {
                 .map(|short| format!("{short}:{role}"))
                 .collect()
         });
-        let (Some(module_version), true) = (
-            self.registry.module_version(module),
-            self.manifests.contains(module),
-        ) else {
+        if !self.module_names.contains(module) {
+            return Err(refuse(
+                "the engine loaded the module without a manifest".to_string(),
+            ));
+        }
+        let Some(module_version) = self.registry.module_version(module) else {
             return Err(refuse(
                 "the engine loaded the module without a manifest version".to_string(),
             ));

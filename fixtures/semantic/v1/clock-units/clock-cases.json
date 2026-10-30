@@ -5870,7 +5870,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -5935,7 +5934,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -6039,7 +6037,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -6287,7 +6284,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -6414,7 +6410,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -6496,7 +6491,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -6601,7 +6595,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -6705,7 +6698,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -6829,7 +6821,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -6916,7 +6907,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -7289,7 +7279,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -7398,7 +7387,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -7508,7 +7496,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -7887,7 +7874,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -7996,7 +7982,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
@@ -8106,7 +8091,6 @@
 						"name": "value_type"
 					},
 					"moduleVersion": "1.0.0",
-					"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 					"construct": {
 						"identity": "none",
 						"shape": "alias",

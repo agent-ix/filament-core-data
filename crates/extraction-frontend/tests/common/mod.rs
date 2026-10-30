@@ -501,22 +501,3 @@ pub fn without(value: &Value, drop: &[&str]) -> Value {
     }
     out
 }
-
-/// `sha256sum` over `bytes`, computed outside the crate (the FR-095 and
-/// FR-097 digest oracles, SR-170 FND-1509).
-pub fn sha256sum(bytes: &[u8]) -> String {
-    let dir = tempfile::tempdir().expect("tempdir");
-    let path = dir.path().join("input");
-    fs::write(&path, bytes).expect("write");
-    let out = Command::new("sha256sum")
-        .arg(&path)
-        .output()
-        .expect("spawn sha256sum");
-    assert!(out.status.success(), "sha256sum failed");
-    String::from_utf8(out.stdout)
-        .expect("utf-8")
-        .split_whitespace()
-        .next()
-        .expect("digest column")
-        .to_string()
-}

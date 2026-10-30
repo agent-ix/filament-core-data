@@ -68,7 +68,10 @@ import { normalizeIr } from "../src/compiler/ir/normalize.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
 import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
 import { canonicalize } from "../src/compiler/packages/canonical.mjs";
-import { resolvedPackageGraph, sourceFiles } from "../src/compiler/packages/graph.mjs";
+import {
+	resolvedPackageGraph,
+	sourceFiles,
+} from "../src/compiler/packages/graph.mjs";
 import {
 	compareVersions,
 	parseConstraint,
@@ -2177,8 +2180,12 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(source).not.toHaveProperty("digest");
 		const graph = compiled.packageGraph as Json;
 		const packages = graph.packages as Json[];
-		expect(packages.some((entry) => entry.identity === "agent-ix/assurance")).toBe(true);
-		expect(packages.every((entry) => !Object.hasOwn(entry, "contentDigest"))).toBe(true);
+		expect(
+			packages.some((entry) => entry.identity === "agent-ix/assurance"),
+		).toBe(true);
+		expect(
+			packages.every((entry) => !Object.hasOwn(entry, "contentDigest")),
+		).toBe(true);
 		expect(block.identity).toBe("agent-ix/assurance");
 		expect(block.version).toBe("1.0.0");
 		expect(block).not.toHaveProperty("manifestDigest");
@@ -2912,9 +2919,9 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 	it("resolves the same direct graph twice", () => {
 		const graph = resolvedPackageGraph(compiled.resolution as never);
 		expect(graph.rootPackage).toBe("agent-ix/assurance");
-		expect(canonicalize(resolvedPackageGraph(compiled.resolution as never))).toBe(
-			canonicalize(graph),
-		);
+		expect(
+			canonicalize(resolvedPackageGraph(compiled.resolution as never)),
+		).toBe(canonicalize(graph));
 		expect(graph.packages.map((entry) => entry.identity)).toEqual(
 			[...graph.packages.map((entry) => entry.identity)].sort(),
 		);
@@ -2922,12 +2929,73 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 
 	/** Trace: FR-048-AC-8. */
 	it("enumerates only declared source paths", () => {
-		const host = newHost([root]);
-		const manifest = readJson(resolve(assurance, "package-manifest.json"));
-		const files = sourceFiles(host, assurance, manifest as never);
-		expect(files.length).toBeGreaterThan(0);
-		expect(files.every((path) => path.startsWith("types/"))).toBe(true);
-		expect(sourceFiles(host, assurance, manifest as never)).toEqual(files);
+		const packageRoot = temp("source-roots");
+		try {
+			mkdirSync(resolve(packageRoot, "types"));
+			writeFileSync(resolve(packageRoot, "types", "z.tsp"), "model Z {}");
+			writeFileSync(resolve(packageRoot, "types", "a.tsp"), "model A {}");
+			writeFileSync(resolve(packageRoot, "outside.tsp"), "model Outside {}");
+			const manifest = { sourceRoots: ["types"] };
+			const ascending = createHost({
+				readRoots: [packageRoot],
+				enumerationOrder: "ascending",
+			});
+			const descending = createHost({
+				readRoots: [packageRoot],
+				enumerationOrder: "descending",
+			});
+			expect(sourceFiles(ascending, packageRoot, manifest)).toEqual([
+				"types/a.tsp",
+				"types/z.tsp",
+			]);
+			expect(sourceFiles(descending, packageRoot, manifest)).toEqual(
+				sourceFiles(ascending, packageRoot, manifest),
+			);
+			expect(sourceFiles(descending, packageRoot, manifest)).not.toContain(
+				"outside.tsp",
+			);
+		} finally {
+			rmSync(packageRoot, { recursive: true, force: true });
+		}
+	});
+
+	/** Trace: FR-048-CON-3. */
+	it("resolves offline through its injected host and selected package graph", () => {
+		const packageRoot = resolve(cases, "diamond/root/root");
+		const registry = resolve(cases, "diamond/registry");
+		const host = createHost({ readRoots: [packageRoot, registry] });
+		const graph = resolvePackageGraph({
+			host,
+			packageRoot,
+			searchPath: [registry],
+		}) as {
+			diagnostics: Diagnostic[];
+			packages: { identity: string; packageRoot: string }[];
+		};
+		expect(graph.diagnostics).toEqual([]);
+		expect(
+			graph.packages.map((entry: { identity: string }) => entry.identity),
+		).toEqual([
+			"agent-ix/core",
+			"agent-ix/left",
+			"agent-ix/right",
+			"agent-ix/root",
+		]);
+		const selectedRoots = graph.packages.map(
+			(entry: { packageRoot: string }) => entry.packageRoot,
+		);
+		for (const path of host.record.reads) {
+			expect(
+				selectedRoots.some((selected: string) =>
+					path.startsWith(`${selected}/`),
+				),
+				path,
+			).toBe(true);
+		}
+		expect(host.record.reads.length).toBeGreaterThan(0);
+		expect(host.record.refusedReads).toEqual([]);
+		expect(host.record.moduleLoads).toEqual([]);
+		expect(host.record.writes).toEqual([]);
 	});
 
 	/** Trace: FR-048-AC-11. */
@@ -3983,12 +4051,12 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		const fieldsForward = normalizeIr(
 			withTwo(["0", "1"], ["ix://a/P", "ix://a/Q"]),
 		);
-		expect(
-			normalizeIr(withTwo(["1", "0"], ["ix://a/P", "ix://a/Q"])),
-		).not.toBe(fieldsForward);
-		expect(
-			normalizeIr(withTwo(["0", "1"], ["ix://a/Q", "ix://a/P"])),
-		).not.toBe(fieldsForward);
+		expect(normalizeIr(withTwo(["1", "0"], ["ix://a/P", "ix://a/Q"]))).not.toBe(
+			fieldsForward,
+		);
+		expect(normalizeIr(withTwo(["0", "1"], ["ix://a/Q", "ix://a/P"]))).not.toBe(
+			fieldsForward,
+		);
 
 		// An operation's `params` are positional (QSpec FR-154, FR-432): a
 		// reversal is a different document, while a parameter's own
@@ -4013,9 +4081,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(normalizeIr(withParams(["a", "z"], ["x", "y"]))).not.toBe(
 			paramsForward,
 		);
-		expect(normalizeIr(withParams(["z", "a"], ["y", "x"]))).toBe(
-			paramsForward,
-		);
+		expect(normalizeIr(withParams(["z", "a"], ["y", "x"]))).toBe(paramsForward);
 
 		const semantic = JSON.parse(JSON.stringify(document)) as never as {
 			types: Json[];

@@ -149,6 +149,30 @@ describe("TC-280..289 the corpus format and provenance (FR-035)", () => {
 		}
 	});
 
+	/** Trace: FR-035-AC-1. */
+	it("resolves a relationship target through the selected imported package graph", () => {
+		const bundle = corpus.loadBase("package-2-0") as Json;
+		const ir = bundle.ir as Json;
+		const types = ir.types as Json[];
+		const relationship = (
+			types.find((type) => Array.isArray(type.relationships))
+				?.relationships as Json[]
+		)[0];
+		(relationship.targetEnd as Json).type = "ix://agent-ix/kernel/Text";
+		expect(schemaDiagnostics(bundle)).toEqual([]);
+		expect(
+			(oracle.verdict(bundle, []) as { diagnostics: unknown[] }).diagnostics,
+		).toEqual([]);
+		const graph = bundle.packageGraph as Json;
+		const packages = graph.packages as Json[];
+		packages[1].exports = [];
+		expect(
+			JSON.stringify(
+				(oracle.verdict(bundle, []) as { diagnostics: Json[] }).diagnostics,
+			),
+		).toContain("UNRESOLVED_RELATIONSHIP_TARGET");
+	});
+
 	it("TC-282 every derivedFrom artifact exists and its quote occurs verbatim", () => {
 		for (const entry of cases) {
 			for (const source of entry.derivedFrom as {

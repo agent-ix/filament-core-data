@@ -876,7 +876,12 @@ function checkPackageContext(bundle, ir, types, out) {
 				out.push(
 					diagnostic(
 						"DEPTH_LIMIT_EXCEEDED",
-						pointer("packageGraph", "packages", indexOf.get(node) ?? 0, "imports"),
+						pointer(
+							"packageGraph",
+							"packages",
+							indexOf.get(node) ?? 0,
+							"imports",
+						),
 						`package graph expansion exceeded the declared depth limit of ${DEPTH_LIMIT}`,
 					),
 				);
@@ -1095,10 +1100,12 @@ export function verdict(bundle, schemaRows = []) {
 	const out = [];
 	const { byIdentity } = indexTypes(ir);
 	const graphExports = new Set(
-		isObject(bundle.manifest) && Array.isArray(bundle.manifest.exports)
-			? bundle.manifest.exports
+		isObject(bundle.packageGraph) && Array.isArray(bundle.packageGraph.packages)
+			? bundle.packageGraph.packages
 					.filter(isObject)
-					.map((entry) => entry.typeIdentity)
+					.flatMap((entry) =>
+						Array.isArray(entry.exports) ? entry.exports : [],
+					)
 			: [],
 	);
 

@@ -11,6 +11,61 @@ use agent_ix_semantic_ir::{
 
 const K2_BOUNDARY: &str =
     include_str!("../../../fixtures/semantic/v1/reader-contract/k2-boundary.json");
+const PACKAGE_BASE: &str = include_str!("../../../conformance/bases/package-2-0.json");
+
+/// Trace: FR-035-AC-1
+#[test]
+fn selected_graph_export_resolves_relationship_target() {
+    let target = "ix://agent-ix/conformance/type/Node";
+    let selected = "ix://agent-ix/kernel/Text";
+    let at = PACKAGE_BASE
+        .find("\"targetEnd\": {")
+        .expect("relationship target");
+    let (prefix, suffix) = PACKAGE_BASE.split_at(at);
+    let input = format!("{prefix}{}", suffix.replacen(target, selected, 1));
+    let bundle = parse(&input).expect("package base");
+    assert!(decide(&bundle).diagnostics.is_empty());
+
+    let graph_at = input.find("\"packageGraph\": {").expect("selected graph");
+    let (prefix, suffix) = input.split_at(graph_at);
+    let missing = format!(
+        "{prefix}{}",
+        suffix.replacen(selected, "ix://agent-ix/kernel/Other", 1)
+    );
+    let verdict = decide(&parse(&missing).expect("missing selected export"));
+    assert!(verdict
+        .diagnostics
+        .iter()
+        .any(|row| { row.code == "agent-ix.semantic-ir.UNRESOLVED_RELATIONSHIP_TARGET" }));
+}
+
+/// Trace: FR-035-AC-1
+#[test]
+fn selected_graph_rejects_missing_root_and_descending_imports() {
+    let graph_at = PACKAGE_BASE
+        .find("\"packageGraph\": {")
+        .expect("selected graph");
+    let (prefix, suffix) = PACKAGE_BASE.split_at(graph_at);
+    for changed in [
+        suffix.replacen(
+            "\"rootPackage\": \"agent-ix/conformance\"",
+            "\"rootPackage\": \"agent-ix/absent\"",
+            1,
+        ),
+        suffix.replacen(
+            "\"imports\": [\"agent-ix/kernel\"]",
+            "\"imports\": [\"agent-ix/kernel\", \"agent-ix/alpha\"]",
+            1,
+        ),
+    ] {
+        let input = format!("{prefix}{changed}");
+        let verdict = decide(&parse(&input).expect("changed selected graph"));
+        assert!(verdict.diagnostics.iter().any(|row| {
+            row.code == "agent-ix.semantic-ir.SCHEMA_VIOLATION"
+                && row.pointer.starts_with("/packageGraph/")
+        }));
+    }
+}
 
 fn diagnostics(document: &str) -> Vec<(&'static str, String)> {
     decide(&parse(&format!(r#"{{"ir":{document}}}"#)).expect("valid JSON"))

@@ -448,7 +448,6 @@ export const DETECTORS = Object.freeze([
 						{
 							kind: keyed,
 							moduleVersion: "1.0.0",
-							manifestDigest: `sha256:${"3".repeat(64)}`,
 							construct: {
 								identity: "identified",
 								shape: "record",
@@ -581,7 +580,6 @@ export const DETECTORS = Object.freeze([
 						{
 							kind: aliasKind,
 							moduleVersion: "1.0.0",
-							manifestDigest: `sha256:${"4".repeat(64)}`,
 							construct: {
 								identity: "none",
 								shape: "alias",
