@@ -283,11 +283,11 @@
 		},
 		{
 			"id": "CR-package",
-			"title": "Package identity, imports, exports, locks, mappings, and declared loss",
+			"title": "Package identity, imports, exports, mappings, and declared loss",
 			"family": "package",
 			"sources": [
 				"schema/semantic/v1/package-manifest.schema.json",
-				"schema/semantic/v1/package-lock.schema.json",
+				"conformance/schema/package-graph.schema.json",
 				"schema/semantic/v1/mapping.schema.json",
 				"schema/semantic/v1/profile.schema.json",
 				"docs/semantic-data-system/contracts-v1.md"

@@ -2636,7 +2636,6 @@
 				"name": "aggregate_root"
 			},
 			"moduleVersion": "0.4.0",
-			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
 			"construct": {
 				"identity": "identified",
 				"shape": "record",
@@ -2659,7 +2658,6 @@
 				"name": "domain"
 			},
 			"moduleVersion": "0.4.0",
-			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
 			"construct": {
 				"identity": "none",
 				"shape": "namespace",
@@ -2685,7 +2683,6 @@
 				"name": "entity"
 			},
 			"moduleVersion": "0.4.0",
-			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
 			"construct": {
 				"identity": "identified",
 				"shape": "record",
@@ -2704,7 +2701,6 @@
 				"name": "enumeration"
 			},
 			"moduleVersion": "0.4.0",
-			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
 			"construct": {
 				"identity": "none",
 				"shape": "enumeration",
@@ -2725,7 +2721,6 @@
 				"name": "event"
 			},
 			"moduleVersion": "0.4.0",
-			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
 			"construct": {
 				"identity": "none",
 				"shape": "record",
@@ -2745,7 +2740,6 @@
 				"name": "nested_entity"
 			},
 			"moduleVersion": "0.4.0",
-			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
 			"construct": {
 				"identity": "identified",
 				"shape": "record",
@@ -2767,7 +2761,6 @@
 				"name": "population"
 			},
 			"moduleVersion": "0.4.0",
-			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
 			"construct": {
 				"identity": "none",
 				"shape": "namespace",
@@ -2783,7 +2776,6 @@
 				"name": "process"
 			},
 			"moduleVersion": "0.4.0",
-			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
 			"construct": {
 				"identity": "identified",
 				"shape": "sequence",
@@ -2805,7 +2797,6 @@
 				"name": "repository"
 			},
 			"moduleVersion": "0.4.0",
-			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
 			"construct": {
 				"identity": "none",
 				"shape": "interface",
@@ -2827,7 +2818,6 @@
 				"name": "state_machine"
 			},
 			"moduleVersion": "0.4.0",
-			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
 			"construct": {
 				"identity": "none",
 				"shape": "state_machine",
@@ -2849,7 +2839,6 @@
 				"name": "value_object"
 			},
 			"moduleVersion": "0.4.0",
-			"manifestDigest": "sha256:cf331ae58c5757479184ef72c9c86ed245f44dab445052bed8d0ed62ac9cf9e2",
 			"construct": {
 				"identity": "value",
 				"shape": "record",

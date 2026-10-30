@@ -86,7 +86,6 @@ type Manifest = {
 function rustRequest(overrides: Record<string, unknown> = {}) {
 	return {
 		contractVersion: "1.0.0",
-		lockFingerprint: `sha256:${"a".repeat(64)}`,
 		ir: readJson("fixtures/semantic/v1/positive/config-version-v2.json"),
 		profile: readJson("fixtures/semantic/v1/positive/profile.json"),
 		mappings: [],

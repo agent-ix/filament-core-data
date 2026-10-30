@@ -20,7 +20,7 @@ const CONSTRAINT_NOT_APPLICABLE: &str = "agent-ix.semantic-ir.CONSTRAINT_NOT_APP
 
 /// The value-type construct the QSpec checked-package vectors write: a record
 /// shape whose meaning is `quire.meaning.model.value-type/v1`.
-const VALUE_TYPE_CONSTRUCT: &str = r#"{"construct":{"identity":"value","meaning":"quire.meaning.model.value-type/v1","members":{},"shape":"record"},"kind":{"module":"acme/pkg","name":"value_type"},"manifestDigest":"sha256:4769687ec63ac998e1ba671267f6305adf8dcaf8c8618329f64232001328b27f","moduleVersion":"1.0.0"}"#;
+const VALUE_TYPE_CONSTRUCT: &str = r#"{"construct":{"identity":"value","meaning":"quire.meaning.model.value-type/v1","members":{},"shape":"record"},"kind":{"module":"acme/pkg","name":"value_type"},"moduleVersion":"1.0.0"}"#;
 
 /// `(pointer, code)` of every diagnostic the validator reports for the
 /// document, schema layer first and rules after, as `decide` runs them.
