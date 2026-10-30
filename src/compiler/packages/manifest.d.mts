@@ -9,7 +9,6 @@ export interface ReadDocumentResult {
 	value?: Record<string, unknown>;
 	text?: string;
 	path?: string;
-	digest?: string;
 	locate?: (pointer: string, prefer?: "value" | "key") => SourceLocus;
 	diagnostics: CompilerDiagnostic[];
 }

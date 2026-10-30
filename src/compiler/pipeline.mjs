@@ -14,7 +14,7 @@ import {
 } from "./diagnostics.mjs";
 import { runFrontend } from "./frontend/seam.mjs";
 import { validateIrDocument } from "./ir/schema.mjs";
-import { resolvedPackageGraph } from "./packages/lock.mjs";
+import { resolvedPackageGraph } from "./packages/graph.mjs";
 import { resolvePackageGraph } from "./packages/resolve.mjs";
 
 /** The phases, in the order `compilePackage` runs them. */

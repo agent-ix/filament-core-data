@@ -36,7 +36,7 @@ import { createHost } from "./host.mjs";
 import { formatInspection, inspectIr, inspectionJson } from "./inspect.mjs";
 import { serializeIr } from "./ir/normalize.mjs";
 import { serializeSemanticIr } from "./ir.mjs";
-import { REPO_ROOT } from "./packages/lock.mjs";
+import { REPO_ROOT } from "./packages/graph.mjs";
 import { compilePackage } from "./pipeline.mjs";
 
 const USAGE = `Usage:

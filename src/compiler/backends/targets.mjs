@@ -10,7 +10,7 @@
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { REPO_ROOT } from "../packages/lock.mjs";
+import { REPO_ROOT } from "../packages/graph.mjs";
 
 export const BACKEND_TARGETS = Object.freeze(
 	JSON.parse(
