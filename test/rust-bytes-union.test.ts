@@ -26,7 +26,7 @@ const scalar = (name: string, kind: string) => ({
 
 const document = {
 	contractVersion: "2.0.0",
-	canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" },
+	canonicalization: { algorithm: "rfc8785-v1" },
 	source: {
 		identity: `${prefix}/source/typespec`,
 		version: "1.0.0",

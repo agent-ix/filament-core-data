@@ -25,7 +25,7 @@
  *
  * The normalized form and the extended TypeScript backend fingerprint are
  * separate domains. The normalized form is named by FR-145 and carries
- * `canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" }`.
+ * `canonicalization: { algorithm: "rfc8785-v1" }`.
  */
 
 /**
@@ -233,7 +233,6 @@ export function normalizeIr(document) {
 	if (copy !== null && typeof copy === "object" && !Array.isArray(copy)) {
 		copy.canonicalization = {
 			algorithm: "rfc8785-v1",
-			digest: "sha256-jcs",
 		};
 	}
 	if (

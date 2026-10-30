@@ -464,6 +464,7 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 		}
 	});
 
+	/** Trace: FR-036-AC-6. TC-295. */
 	it("TC-295 a well-formed 2.0.0 document's normalized form adds no member (fcd#179: contract 1.0.0 deleted, its case class ported to 2.0.0)", () => {
 		// fcd#187: PRES-011..015 author `nullable` as a non-boolean value (`1`,
 		// `"true"`, `null`, `{}`) or omit it, which the oracle's own
@@ -495,6 +496,74 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 			exercised += 1;
 		}
 		expect(exercised).toBeGreaterThan(0);
+	});
+
+	/** Trace: FR-036-AC-6, FR-145-CON-3. TC-295. */
+	it("TC-295 oracle normalization follows the shared supplementary-plane golden", () => {
+		const golden = read(
+			join(
+				REPO,
+				"test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json",
+			),
+		) as Json & { algorithm: string; input: Json; expectedBytes: string };
+		expect(golden.algorithm).toBe("rfc8785-v1");
+		expect(golden).not.toHaveProperty("digest");
+		expect(canonical(golden.input)).toBe(golden.expectedBytes);
+		const expectedWithDescriptor = golden.expectedBytes.replace(
+			/^\{/,
+			'{"canonicalization":{"algorithm":"rfc8785-v1"},',
+		);
+		expect(oracle.normalize(golden.input)).toBe(expectedWithDescriptor);
+	});
+
+	/** Trace: FR-145-AC-2. TC-1831. */
+	it("TC-1831 canonicalization negative cases name the oracle's actual refusal code", () => {
+		const negativeCases = JSON.parse(
+			readFileSync(
+				join(REPO, "fixtures/semantic/v1/negative/cases.json"),
+				"utf8",
+			),
+		) as {
+			id: string;
+			base: string;
+			code: string;
+			remove?: string;
+			set?: { path: string; value: unknown };
+		}[];
+		const canonicalizationCases = negativeCases.filter((entry) =>
+			entry.id.startsWith("ir-canonicalization-"),
+		);
+		expect(canonicalizationCases).toHaveLength(5);
+		for (const entry of canonicalizationCases) {
+			const ir = read(join(REPO, "fixtures/semantic/v1", entry.base));
+			if (entry.remove === "canonicalization") {
+				delete ir.canonicalization;
+			} else if (entry.remove === "canonicalization.algorithm") {
+				delete (ir.canonicalization as Json).algorithm;
+			} else if (entry.set) {
+				const [parent, member] = entry.set.path.split(".");
+				expect(parent, entry.id).toBe("canonicalization");
+				(ir.canonicalization as Json)[member] = entry.set.value;
+			} else {
+				throw new Error(`unsupported canonicalization mutation: ${entry.id}`);
+			}
+			const bundle = { ir };
+			const rows = schemaDiagnostics(bundle) as {
+				pointer: string;
+				message: string;
+			}[];
+			expect(rows.length, entry.id).toBeGreaterThan(0);
+			const verdict = oracle.verdict(bundle, rows) as {
+				resultState: string;
+				diagnostics: { diagnostic: { code: string }; pointer: string }[];
+			};
+			expect(verdict.resultState, entry.id).toBe("invalid");
+			expect(
+				verdict.diagnostics.map(({ diagnostic }) => diagnostic.code),
+				entry.id,
+			).toEqual([entry.code]);
+			expect(verdict.diagnostics[0].pointer, entry.id).toMatch(/^\/ir(?:\/|$)/);
+		}
 	});
 
 	/** Trace: FR-145-CON-3. TC-1833. */

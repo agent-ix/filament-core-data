@@ -844,7 +844,7 @@ export function lowerBundle(documents, options = {}) {
 	return {
 		document: {
 			contractVersion: "2.0.0",
-			canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" },
+			canonicalization: { algorithm: "rfc8785-v1" },
 			source,
 			package: options.package ?? {
 				identity: "agent-ix/semantic-kernel",

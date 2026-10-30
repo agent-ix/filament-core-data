@@ -497,7 +497,7 @@ const IR_OPTIONAL_MEMBERS: &[&str] = &[
     "dimensions",
     "units",
 ];
-const NORMALIZED_CANONICALIZATION_MEMBERS: &[&str] = &["algorithm", "digest"];
+const NORMALIZED_CANONICALIZATION_MEMBERS: &[&str] = &["algorithm"];
 /// The members of one `constructs` entry.
 const CONSTRUCT_ENTRY_MEMBERS: &[&str] = &["kind", "moduleVersion", "construct"];
 /// The `direction` vocabulary of a port.
@@ -802,13 +802,6 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
                 &child(&canonicalization_at, "algorithm"),
                 &["rfc8785-v1"],
                 "the normalized canonicalization algorithm",
-                f,
-            );
-            expect_enum(
-                canonicalization.get("digest"),
-                &child(&canonicalization_at, "digest"),
-                &["sha256-jcs"],
-                "the normalized canonicalization digest domain",
                 f,
             );
         }

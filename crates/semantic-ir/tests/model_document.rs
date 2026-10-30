@@ -11,7 +11,7 @@ use agent_ix_semantic_ir::{decide, json::parse};
 
 const GENERATED: &str = r#"{"generated":{"generatorIdentity":"ix://agent-ix/conformance/generator/case-author","generatorVersion":"1.0.0","inputIdentities":["ix://agent-ix/filament-core-data/source/typespec"]}}"#;
 
-const HEADER: &str = r#""contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"source":{"dialect":"spec-bundle","identity":"ix://acme/pkg/spec","version":"0.0.0"},"package":{"identity":"acme/pkg","mappingVersions":["1.0.0"],"profileVersions":[],"version":"0.0.0"},"occurrences":[],"extensions":[]"#;
+const HEADER: &str = r#""contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1"},"source":{"dialect":"spec-bundle","identity":"ix://acme/pkg/spec","version":"0.0.0"},"package":{"identity":"acme/pkg","mappingVersions":["1.0.0"],"profileVersions":[],"version":"0.0.0"},"occurrences":[],"extensions":[]"#;
 
 const MULTIPLICITY: &str = r#"{"lower":1,"upper":1,"ordered":false,"unique":false}"#;
 

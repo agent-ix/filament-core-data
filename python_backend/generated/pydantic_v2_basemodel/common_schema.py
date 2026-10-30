@@ -29,7 +29,6 @@ class NormalizedCanonicalization(BaseModel):
         extra='forbid',
     )
     algorithm: Literal['rfc8785-v1']
-    digest: Literal['sha256-jcs']
 
 
 class PackageIdentity(RootModel[str]):

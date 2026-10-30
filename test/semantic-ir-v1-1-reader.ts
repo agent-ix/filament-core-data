@@ -1310,7 +1310,6 @@ export function normalize(document: unknown): string {
 	const copy = structuredClone(document) as JsonObject;
 	copy.canonicalization = {
 		algorithm: "rfc8785-v1",
-		digest: "sha256-jcs",
 	};
 	const materialize = (field: JsonObject): void => {
 		field.nullable = field.nullable === true;

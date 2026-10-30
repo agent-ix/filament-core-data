@@ -23,7 +23,6 @@ describe("package revision and unused construct reader contract", () => {
 		const clean = fixture();
 		expect(clean.canonicalization).toEqual({
 			algorithm: "rfc8785-v1",
-			digest: "sha256-jcs",
 		});
 		expect(validateIrDocument(clean)).toEqual([]);
 		expect([...readContractIr(clean)]).toEqual([]);
@@ -36,15 +35,21 @@ describe("package revision and unused construct reader contract", () => {
 			],
 			[
 				(document: ReturnType<typeof fixture>) => {
-					delete document.canonicalization.digest;
+					delete document.canonicalization.algorithm;
 				},
-				"/canonicalization/digest",
+				"/canonicalization/algorithm",
 			],
 			[
 				(document: ReturnType<typeof fixture>) => {
 					document.canonicalization.algorithm = "unknown-v1";
 				},
 				"/canonicalization/algorithm",
+			],
+			[
+				(document: ReturnType<typeof fixture>) => {
+					document.canonicalization.digest = "sha256-jcs";
+				},
+				"/canonicalization/digest",
 			],
 			[
 				(document: ReturnType<typeof fixture>) => {
@@ -63,7 +68,6 @@ describe("package revision and unused construct reader contract", () => {
 		delete authored.canonicalization;
 		expect(JSON.parse(normalizeIr(authored)).canonicalization).toEqual({
 			algorithm: "rfc8785-v1",
-			digest: "sha256-jcs",
 		});
 	});
 
