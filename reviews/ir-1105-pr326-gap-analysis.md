@@ -28,3 +28,20 @@ Plan completion: not assessed
 - `quire matrix --scope . --format json` reports FR-048-AC-9, FR-048-AC-10, and FR-084-AC-6 as `untagged` with zero binders. FR-095-AC-3/4/11 have one Rust test binder each.
 - Manual source check found real TypeScript assertions in `test/compiler-core.test.ts` for absent source/lock digest and retained lock content digest, and `test/semantic-contract.test.ts` for rejection of all three retired fields. The mechanical trace gap may be a TypeScript index limitation; it is not evidence that those tests are absent.
 - Reverse check identified the still-live JSON Schema frontend and two committed IR documents in SR-16477. Optional broad semantic review was not requested.
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-002 | high | New `/// Trace` tags claim revised FR-048-AC-9/10 while the tests assert the opposite lock behavior or omit the required check. | test/compiler-core.test.ts:2184, test/compiler-core.test.ts:2206 |
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | still-open | The new `/// Trace` syntax is indexed, but the two FR-048 bindings are false under merged PLAT-1205 #327; only FR-084-AC-6 has a valid binder. Revised FR-048-AC-9/10 need implementation and tests in the second code slice. |
+| FND-002 | still-open | FR-048-AC-9 now requires absence of every package content digest, while its tagged test asserts `contentDigest` equality; FR-048-AC-10 now requires no package-lock fingerprint verification, while its tagged test only checks omitted IR.lockDigest and unchanged supplied lock bytes. Remove/reassign those two tags on #326; leave the revised ACs visibly uncovered until the second code slice implements them. |
+
+## Current verdict
+
+**FAIL** — the current matrix appears green for revised FR-048-AC-9/10 because two new tags are false. Remove or reassign those tags before #326 merges; second PLAT-1205 code work must implement and test the revised criteria.
