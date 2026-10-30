@@ -595,7 +595,8 @@ describe("TC-1588..1592 cross-language agreement through the corpus (FR-090)", (
 		// fcd#199/#200's review adds IDENT-006, REL-007 and PRES-016 (findings
 		// 12, 9 and 5/R2), landing on 114. That review's H5 adds CONS-008 (an
 		// inline field constraint checked for applicability), landing on 115.
-		expect(report.coverage.totalCases).toBe(115);
+		// PLAT-1205 retires digest-only PKG-006, leaving 114 cases.
+		expect(report.coverage.totalCases).toBe(114);
 	});
 });
 

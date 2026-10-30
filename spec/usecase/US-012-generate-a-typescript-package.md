@@ -27,14 +27,14 @@ decorators, my framework, or my ORM.
 
 ## Context
 
-Issue #19 landed the contract path: a package resolver, a lock and fingerprint,
-a TypeSpec frontend, and a `compile` verb that writes one versioned semantic IR
-document. Issue #20 landed the conformance corpus and the independent oracle
+Issue #19 landed the contract path: a package resolver, a TypeSpec frontend,
+and a `compile` verb that writes one versioned semantic IR document. PLAT-1205
+retired the digest-backed lock and fingerprint in favor of the direct selected
+package graph. Issue #20 landed the conformance corpus and the independent oracle
 that judges implementations against a contract-derived yardstick rather than
 against their own output. `conformance/adapters/registry.json` declares four
-slots and the `typescript-backend` slot names this issue as its owner. Today
-that slot is `unavailable`, so the corpus records 115 unmet rows for it and no
-passes.
+slots and the `typescript-backend` slot names this issue as its owner. The slot
+now answers the 114 authored cases; PLAT-1205 retired digest-only PKG-006.
 
 What exists in the way of TypeScript generation is `emitTypeScript` under
 `src/compiler/backends/typescript.mjs`, promoted by issue #27. It consumes the
@@ -66,7 +66,7 @@ and unrelated; it is not the thing being generated here and does not move.
 
 ### [US-012-EX-1] The corpus judges the backend rather than the backend judging itself
 
-- **Given** the 115-case conformance corpus and its independent oracle
+- **Given** the 114-case conformance corpus and its independent oracle
 - **When** the consumer runs the differential harness
 - **Then** the `typescript-backend` slot answers every case from its own
   computation, its answers are compared only with the oracle's verdict, and a
