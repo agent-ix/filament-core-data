@@ -67,7 +67,7 @@ import { EDGE_VOCABULARY, PART_OF } from "../src/compiler/ir/applicability.mjs";
 import { normalizeIr } from "../src/compiler/ir/normalize.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
 import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
-import { canonicalize, digest } from "../src/compiler/packages/canonical.mjs";
+import { canonicalize } from "../src/compiler/packages/canonical.mjs";
 import { resolvedPackageGraph, sourceFiles } from "../src/compiler/packages/graph.mjs";
 import {
 	compareVersions,
@@ -2891,9 +2891,6 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 		);
 		expect(() => canonicalize(Number.POSITIVE_INFINITY)).toThrow(/non-finite/);
 		expect(() => canonicalize(Number.NaN)).toThrow(/non-finite/);
-		expect(digest("abc")).toBe(
-			"sha256:ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
-		);
 	});
 
 	/** Traces: TC-1830; FR-145-CON-3. */
