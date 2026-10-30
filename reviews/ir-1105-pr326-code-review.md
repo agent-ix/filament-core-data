@@ -37,3 +37,16 @@ Reviewed FCD PR #326 commit 09819d0 against its parent 99ac8ac, with independent
 - Both committed JSON documents list `source.digest`, `package.manifestDigest`, and `package.lockDigest`. `schema/semantic/v1/semantic-ir.schema.json` now sets `additionalProperties: false` on both envelopes without those members.
 - `scripts/check-sysml-pilot.mjs` validates the positive domain fixture before projecting. `make test` and `make test-all` include `sysml-pilot-check`.
 - FR-068's rule table still specifies `STALE_LOCK`; its register-bijection obligation remains. This PR deletes the code from `admit.mjs`, `conformance/diagnostic-codes.json`, the oracle, Rust and Python readers, and the negative case. The separate compiler lock verification in `src/compiler/packages/lock.mjs` remains and does not satisfy the independent semantic-IR admission rule.
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | Head 45b94f1 removes `digest` from `bundleSource()`; default JSON Schema lowering now emits only identity, version and dialect. |
+| FND-002 | fixed | Head 45b94f1 deletes all three retired members from committed `packages/semantic-kernel/semantic-ir.json`. |
+| FND-003 | fixed | Head 45b94f1 deletes all three retired members from the positive SysML domain IR fixture; this concerns fixture admission, not the quarantined SysML backend. |
+| FND-004 | deferred | Merged spec-first PLAT-1205 PR #327 at 895f6de explicitly retires the semantic-IR `STALE_LOCK` rule, code and PKG-006 case in FR-068. The original finding was valid against old main, but that requirement is now retired in the authoritative spec; no code restoration is due in #326. The later PLAT-1205 code slice owns remaining compiler digest-keyed lock removal under revised FR-048. |
+
+## Current verdict
+
+**CONDITIONAL** — FND-001–003 are fixed and FND-004 has an explicit merged spec-first retirement; no open defect in this PR's three-field removal. Final aggregate gate and the later PLAT-1205 code slice remain code-lead work.
