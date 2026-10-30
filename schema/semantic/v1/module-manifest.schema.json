@@ -143,18 +143,13 @@
 		"semantic": {
 			"type": "object",
 			"description": "Optional semantic-module block (quoin FR-070, agent-ix/quoin#293; this repository owns the schema per agent-ix/filament-core-service#21). Versioned independently of manifest_version. Install-time rejections are Quoin's; artifact-time diagnostics are Quire's.",
-			"required": ["contract_version", "semantic_core", "package"],
+			"required": ["contract_version", "package"],
 			"additionalProperties": false,
 			"properties": {
 				"contract_version": {
 					"type": "string",
 					"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
 					"description": "Semantic-module contract version; 1.0.0 for quoin FR-070."
-				},
-				"semantic_core": {
-					"type": "string",
-					"pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-					"description": "Exact @agent-ix/semantic-core version the module compiles against."
 				},
 				"package": {
 					"type": "string",

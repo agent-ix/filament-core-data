@@ -160,7 +160,7 @@ fn tc_1200_snapshot_table_lifts_seven_fields_for_fr_006_and_one_extraction_for_f
     );
     assert_eq!(fr005.fields.as_deref().map(<[_]>::len), Some(2));
     // The only diagnostic is the engine's non-blocking advisory that the `ocl`
-    // clause on FR-006 is carried unchecked (the declared semantic_core).
+    // clause on FR-006 is carried unchecked.
     let messages: Vec<&str> = out.diagnostics.iter().map(|d| d.message.as_str()).collect();
     assert_eq!(
         messages,
@@ -186,31 +186,6 @@ fn tc_1201_module_without_semantic_block_refuses_naming_the_module() {
     assert!(refusal.diagnostic.blocking);
     let locus = refusal.diagnostic.locus.as_ref().expect("module locus");
     assert_eq!(locus.path, "no-semantic/manifest.yaml");
-    assert_eq!((locus.start_line, locus.start_column), (1, 1));
-}
-
-#[trace("TC-1202", "FR-091-AC-3")]
-#[test]
-fn tc_1202_unsupported_semantic_core_refuses_with_the_engine_code_and_lowers_nothing() {
-    let root = fixture("negatives/MODULE_REFUSED");
-    let refusal = Bundle::load(&root, &[&root.join("modules/fixture-domain")])
-        .expect_err("refused rather than loaded as an empty model");
-    assert_eq!(refusal.code(), Code::ModuleRefused);
-    assert!(
-        refusal
-            .diagnostic
-            .message
-            .starts_with("semantic.unsupported-semantic-core: "),
-        "the engine code opens the message: {}",
-        refusal.diagnostic.message
-    );
-    assert!(
-        refusal.diagnostic.causes.is_empty(),
-        "a `semantic.*` code cannot live in `causes` (FR-096 \"Engine diagnostics\")"
-    );
-    assert!(refusal.diagnostic.message.contains("9.9.9"));
-    let locus = refusal.diagnostic.locus.as_ref().expect("manifest locus");
-    assert_eq!(locus.path, "fixture-domain/manifest.yaml");
     assert_eq!((locus.start_line, locus.start_column), (1, 1));
 }
 

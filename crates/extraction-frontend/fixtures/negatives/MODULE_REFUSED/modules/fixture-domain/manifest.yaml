@@ -1,10 +1,9 @@
 manifest_version: 1.0.0
 name: fixture-domain
 version: 0.1.0
-description: A module declaring a semantic-core version the engine embeds no bundle for (FR-091-AC-3)
+description: A module declaring an unsupported semantic contract version
 semantic:
-  contract_version: 1.0.0
-  semantic_core: 9.9.9
+  contract_version: 9.9.9
   package: fixture/domain
   exports:
   - entity

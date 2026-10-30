@@ -134,13 +134,6 @@ class Semantic(BaseModel):
             pattern='^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$',
         ),
     ]
-    semantic_core: Annotated[
-        str,
-        Field(
-            description='Exact @agent-ix/semantic-core version the module compiles against.',
-            pattern='^[0-9]+\\.[0-9]+\\.[0-9]+$',
-        ),
-    ]
     sweep_report: Annotated[
         str | None,
         Field(
