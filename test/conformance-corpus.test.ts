@@ -501,7 +501,10 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 	/** Trace: FR-036-AC-6, FR-145-CON-3. TC-295. */
 	it("TC-295 oracle normalization follows the shared supplementary-plane golden", () => {
 		const golden = read(
-			join(REPO, "test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json"),
+			join(
+				REPO,
+				"test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json",
+			),
 		) as Json & { algorithm: string; input: Json; expectedBytes: string };
 		expect(golden.algorithm).toBe("rfc8785-v1");
 		expect(golden).not.toHaveProperty("digest");
@@ -516,7 +519,10 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 	/** Trace: FR-145-AC-2. TC-1831. */
 	it("TC-1831 canonicalization negative cases name the oracle's actual refusal code", () => {
 		const negativeCases = JSON.parse(
-			readFileSync(join(REPO, "fixtures/semantic/v1/negative/cases.json"), "utf8"),
+			readFileSync(
+				join(REPO, "fixtures/semantic/v1/negative/cases.json"),
+				"utf8",
+			),
 		) as {
 			id: string;
 			base: string;
