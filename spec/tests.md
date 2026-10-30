@@ -1793,7 +1793,7 @@ computed by `quire matrix` from those trace tags.
 | ERR-037 | Constraint keyword unknown or operands malformed for the keyword | Validation fails at the constraint locus | TC-220..222 |
 | ERR-038 | `source.dialect` carries the retired JSON Schema constant on a v1.1 document | Validation fails citing ADR-0005 | TC-228 |
 | ERR-039 | Manifest names a target outside the shared enumeration | Validation fails at the target entry | TC-229 |
-| ERR-040 | Relationship `target` resolves to nothing in the document or lock | Validation fails at the relationship locus | TC-239 |
+| ERR-040 | Relationship `target` resolves to no definition in the document or export in the selected package graph | Validation fails at the relationship locus | TC-239 |
 | ERR-041 | Composite relationship graph contains a cycle | Validation fails at the closing relationship | TC-240 |
 | ERR-042 | Duplicate `clauseId` within one type definition | Validation fails at the second clause | TC-241 |
 | ERR-043 | Constraint keyword applied outside its applicability, or regex fails to compile | Validation fails at the constraint locus | TC-244, TC-245 |
