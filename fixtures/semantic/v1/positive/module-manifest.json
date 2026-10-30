@@ -87,7 +87,6 @@
 	},
 	"semantic": {
 		"contract_version": "1.0.0",
-		"semantic_core": "0.0.1",
 		"package": "agent-ix/example-objects",
 		"exports": ["component"],
 		"imports": {},

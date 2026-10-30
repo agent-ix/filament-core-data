@@ -28,12 +28,6 @@ class FilamentModuleManifestSemanticBlockV1(Struct):
             description="This module's own package identity in the semantic-core package graph."
         ),
     ]
-    semantic_core: Annotated[
-        common_schema.Semver,
-        Meta(
-            description='Exact @agent-ix/semantic-core version the module compiles against.'
-        ),
-    ]
     exports: (
         Annotated[
             list[Export],

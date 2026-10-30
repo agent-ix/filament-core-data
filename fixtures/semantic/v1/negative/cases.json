@@ -234,6 +234,16 @@
 		"code": "agent-ix.semantic-block.MISSING_CONTRACT_VERSION"
 	},
 	{
+		"id": "semantic-block-retired-semantic-core-version",
+		"schema": "module-semantic-block.schema.json",
+		"base": "positive/module-semantic-block.json",
+		"set": {
+			"path": "semantic_core",
+			"value": "0.3.3"
+		},
+		"code": "agent-ix.semantic-block.UNKNOWN_KEY"
+	},
+	{
 		"id": "semantic-block-install-policy-key",
 		"schema": "module-semantic-block.schema.json",
 		"base": "positive/module-semantic-block.json",
@@ -422,5 +432,15 @@
 		"base": "positive/module-manifest.json",
 		"remove": "semantic.package",
 		"code": "agent-ix.module-manifest.MISSING_SEMANTIC_PACKAGE"
+	},
+	{
+		"id": "module-manifest-retired-semantic-core-version",
+		"schema": "module-manifest.schema.json",
+		"base": "positive/module-manifest.json",
+		"set": {
+			"path": "semantic.semantic_core",
+			"value": "0.3.3"
+		},
+		"code": "agent-ix.module-manifest.UNKNOWN_KEY"
 	}
 ]
