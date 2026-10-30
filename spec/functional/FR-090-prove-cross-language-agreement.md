@@ -75,9 +75,7 @@ performs a publication or contacts a registry.
   `UA-serialization-parity`, the four bases, and the one hundred and eleven cases
 - The corpus comparison form `rfc8785-v1`: RFC 8785 object members ordered by
   UTF-16 code unit, no insignificant whitespace, array order preserved, and the
-  normalized document carrying its `canonicalization` descriptor. This is
-  separate from the contract's `RFC8785-JCS-with-identity-sorted-sets-v1`
-  package-lock fingerprint form.
+  normalized document carrying its `canonicalization` descriptor.
 - `conformance/contract-gaps.json` and `conformance/divergences.json`, read as
   the record of what is already known to disagree and with whom
 - Every inventory-derived JSON Schema 2020-12 document under

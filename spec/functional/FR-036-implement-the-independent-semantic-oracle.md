@@ -21,7 +21,7 @@ from no implementation under test.
 
 ## Inputs
 
-- A conformance input bundle (FR-035): `ir`, and optionally `manifest`, `manifestDigest`, `lock`, `profile`, `mappings`, and `consumerPolicy`
+- A conformance input bundle (FR-035): `ir`, and optionally `manifest`, `lock`, `profile`, `mappings`, and `consumerPolicy`
 - The published schemas under `schema/semantic/v1/`
 - `conformance/diagnostic-codes.json`: the corpus diagnostic-code register
 

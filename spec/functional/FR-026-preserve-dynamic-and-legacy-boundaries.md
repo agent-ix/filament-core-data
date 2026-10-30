@@ -24,7 +24,7 @@ invalidating current inputs.
 - A dynamic consumer SHALL validate an uncompiled package through its locked JSON Schema and preserve namespaced unknown data according to the selected profile.
 - A static consumer SHALL expose a finite generated export set.
 - A static consumer SHALL preserve, reject, or surface unknown modules/extensions according to its declared policy.
-- Dynamic and static consumers SHALL use the same package, semantic type, field, profile, mapping, and fingerprint identities.
+- Dynamic and static consumers SHALL use the same package, semantic type, field, profile, mapping, and version identities.
 - Existing Quoin manifests SHALL remain valid under an explicit legacy compatibility profile until the Project 18 advisory and promotion gates pass.
 - Existing Avro artifacts and generated bindings SHALL remain readable through a versioned bridge until all known readers pass the final retirement gate.
 - Legacy adapters SHALL declare source/target versions, preservation, omissions, diagnostics, and retirement prerequisites.
@@ -36,7 +36,7 @@ invalidating current inputs.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-026-AC-1 | One fixture is accepted dynamically and through generated Rust, TypeScript, and Python packages with the same semantic fingerprint. | Test |
+| FR-026-AC-1 | One fixture is accepted dynamically and through generated Rust, TypeScript, and Python packages from the same normalized semantic IR. | Test |
 | FR-026-AC-2 | A static consumer's unknown-module policy preserves, rejects, or surfaces data exactly as its profile declares. | Test |
 | FR-026-AC-4 | Existing Avro positive and negative fixtures cross the bridge without semantic widening. | Test |
 | FR-026-AC-5 | Missing versions, imports, adapters, or contradictory identities fail visibly and emit no empty model. | Test |

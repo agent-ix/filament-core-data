@@ -95,8 +95,8 @@ artefacts rather than asserted in a pull-request description.
 - `src/compiler/compat/family-map.json` SHALL carry that observed-family to report-family map as data, and the implementation SHALL read it rather than restating it.
 - The map SHALL live under `src/compiler/`, which `package.json` `files` ships, rather than under a fixture tree it does not, so an installed package can open it.
 - If an input the table needs is absent — no profile documents, no mapping documents, no reservation registry, no per-target dispositions — then the diff SHALL omit the families that need it rather than classifying them, and SHALL name each omitted family in `requiredGates`.
-- The diff SHALL set `oldFingerprint` and `newFingerprint` from `fingerprintIr` (FR-050) and `retainedBridges` from the bridges the caller declares the new contract still carries.
-- If the two documents have equal fingerprints, then the diff SHALL emit exactly one `documentation` change of disposition `patch`, identified by the new document's `source.identity`, because the report schema requires a non-empty `changes` array.
+- The diff SHALL compare the normalized bytes of `before` and `after` from FR-050 and set `retainedBridges` from the bridges the caller declares the new contract still carries; it SHALL NOT emit old/new fingerprint fields.
+- If the two documents have equal normalized bytes, then the diff SHALL emit exactly one `documentation` change of disposition `patch`, identified by the new document's `source.identity`, because the report schema requires a non-empty `changes` array.
 
 ## Constraints
 
@@ -120,7 +120,7 @@ artefacts rather than asserted in a pull-request description.
 | FR-051-AC-11 | Two runs of the diff over the same inputs produce byte-identical reports. | Snapshot |
 | FR-051-AC-15 | A revision that removes a member, retypes a member, or narrows a closed vocabulary is classified `breaking`; one that adds an optional member or widens a vocabulary is not. | Test |
 | FR-051-AC-16 | A revision changing a type's `supertypes` (added or removed), a field's `subsets`, or a field's `redefines` target is classified `breaking`; one setting `abstract` is `breaking` and one clearing it is `additive`; a population or construct table entry added is `additive`, and one removed or changed is `breaking`; an operation's `frame` changed is classified `breaking`, with the owning operation (`type`), not as a family of its own. | Test (TC-1804) |
-| FR-051-AC-17 | A construct table entry whose `identity`, `shape`, `members`, `rules`, `references`, or `immutable` changed, with `meaning` unchanged, is classified `breaking`; it is never absorbed into the document's own "equal fingerprints" `patch`. | Test (TC-1804) |
+| FR-051-AC-17 | A construct table entry whose `identity`, `shape`, `members`, `rules`, `references`, or `immutable` changed, with `meaning` unchanged, is classified `breaking`; it is never absorbed into the document's own "equal normalized bytes" `patch`. | Test (TC-1804) |
 | FR-051-AC-18 | A revision changing a subject from `float32` to `float64` is `conditional`, from `integer` to `decimal` or `float64` to `float32` is `breaking`, a decimal policy `(5, 2)` to `(7, 3)` is `conditional` and `(5, 2)` to `(5, 3)` is `breaking`, and integer and decimal bounds are compared by exact value, so `"18446744073709551615"` to `"18446744073709551614"` is a tightening. | Test |
 | FR-051-AC-19 | A revision widening an `integer` subject's `max` from `"100"` to `"18446744073709551615"`, one removing the `max` `"18446744073709551615"` of a subject whose `min` is `"0"` (wide to safe), and one tightening a `max` from `"18446744073709551615"` to `"100"` on a subject with `min` `"0"` are each classified `breaking`; widening `max` from `"100"` to `"200"` is classified by the "Scalar domain widened" row. | Test |
 

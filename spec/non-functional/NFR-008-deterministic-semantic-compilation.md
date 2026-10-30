@@ -32,7 +32,7 @@ published APIs.
 
 | Metric | Target | Threshold | Method |
 |---|---|---|---|
-| Normalized fingerprint differences across two clean runs | 0 | 0 | Reproducible-build test |
+| Normalized byte differences across two clean runs | 0 | 0 | Reproducible-build test |
 | Unlocked or network-resolved inputs during locked compilation | 0 | 0 | Sandboxed integration test |
 | Output files absent from the output manifest | 0 | 0 | Manifest reconciliation |
 | Environment-specific absolute paths in retained outputs | 0 | 0 | Static scan |

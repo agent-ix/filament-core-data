@@ -39,7 +39,7 @@ diagnostic at the manifest position that declared it.
 
 ## Outputs
 
-- `src/compiler/packages/manifest.mjs`: `readManifest(host, dir)` returning `{ manifest, text, path, digest, pointers }` or diagnostics
+- `src/compiler/packages/manifest.mjs`: `readManifest(host, dir)` returning `{ manifest, text, path, pointers }` or diagnostics
 - `src/compiler/packages/resolve.mjs`: `resolvePackageGraph(request)` returning `{ root, packages, profile, mappings, exports, sourceFiles, diagnostics }`
 - `src/compiler/json-locus.mjs`: `indexJsonPointers(text)`, `locateJsonPointer(text, pointer, prefer)`, `offsetToPosition(text, offset)`, and `jsonPointer(segments)`
 - `test/fixtures/compiler/packages/**`: the concrete package trees, one per case of `fixtures/semantic/v1/package-graph-cases.json`, which remains the read-only case index they are keyed to
@@ -52,7 +52,7 @@ diagnostic at the manifest position that declared it.
 - The compiler SHALL validate each manifest, mapping, and profile against its published schema before reading any field.
 - If a document fails its schema, then the compiler SHALL raise `agent-ix.compiler.INVALID_MANIFEST`, `agent-ix.compiler.INVALID_MAPPING`, or `agent-ix.compiler.INVALID_PROFILE` for each schema error at the position of the failing JSON pointer, preferring the offending member's key position.
 - Where the exact failing pointer is absent from the document, the compiler SHALL locate the nearest present ancestor pointer, so a diagnostic always lands inside the structure that owns the defect.
-- The compiler SHALL set every locus `path` to the document's package-root-relative `/`-separated path, and `sourceIdentity` to `ix://<owning package identity>/source/manifest`, `.../source/mapping`, `.../source/profile`, or `.../source/lock`.
+- The compiler SHALL set every locus `path` to the document's package-root-relative `/`-separated path, and `sourceIdentity` to `ix://<owning package identity>/source/manifest`, `.../source/mapping`, or `.../source/profile`.
 - Where a document belongs to an imported package, whose file cannot be named by a root-package-relative path, the compiler SHALL set `path` to that document's path relative to its own package root and `sourceIdentity` to that package's identity, so no locus contains `..`.
 
 ### Candidate selection
@@ -61,7 +61,6 @@ diagnostic at the manifest position that declared it.
 - If an import declares any other version-constraint form, then the compiler SHALL raise `agent-ix.compiler.UNSUPPORTED_VERSION_CONSTRAINT` at the constraint's locus rather than interpreting it.
 - The compiler SHALL select, among the candidates satisfying every constraint on one identity, the one with the highest version under semantic-version precedence.
 - Where two candidates share the highest satisfying version, the compiler SHALL select the one from the earlier search directory in the caller's declared order, because that order is a declared input rather than an ambient one.
-- If two selected entries for one package identity carry different content digests, then the compiler SHALL raise `agent-ix.compiler.DIGEST_CONFLICT` naming both digests and both loci.
 - If no search directory supplies a package with an imported identity, then the compiler SHALL raise `agent-ix.compiler.IMPORT_NOT_FOUND` at that import entry's locus.
 - If no candidate for an identity satisfies its constraint, then the compiler SHALL raise `agent-ix.compiler.IMPORT_VERSION_UNSATISFIED` at that import entry's locus, naming the versions found.
 - If two manifests in one graph constrain the same identity and no candidate satisfies both, then the compiler SHALL raise `agent-ix.compiler.IMPORT_VERSION_CONFLICT` once, at the requiring locus that is first in package-identity order, with every other requiring locus as a related locus.
@@ -96,7 +95,7 @@ diagnostic at the manifest position that declared it.
 | FR-047-CON-1 | Resolution SHALL work offline, opening no network connection and reading nothing outside the declared package root and search directories. | Security | Instrumented run |
 | FR-047-CON-2 | A resolved package path SHALL NOT escape its search directory through `..` or a symbolic link; an escape is `agent-ix.compiler.PATH_ESCAPE`, not a resolved package. | Security | Test |
 | FR-047-CON-3 | The resolver SHALL implement version-constraint satisfaction in this repository against the two accepted forms, adding no semver dependency. | Maintainability | Dependency inspection |
-| FR-047-CON-4 | The resolver SHALL NOT execute any file it reads; manifests, mappings, profiles, and locks are data. | Security | Instrumented run |
+| FR-047-CON-4 | The resolver SHALL NOT execute any file it reads; manifests, mappings, and profiles are data. | Security | Instrumented run |
 | FR-047-CON-5 | `fixtures/semantic/v1/package-graph-cases.json` SHALL remain byte-unchanged; it is the read-only case index, and the concrete trees live under `test/fixtures/compiler/packages/**`. | Non-disruption | Branch diff |
 
 ## Acceptance Criteria
@@ -105,7 +104,7 @@ diagnostic at the manifest position that declared it.
 |---|---|---|
 | FR-047-AC-1 | The concrete tree for the `order-independent` case resolves to the same ordered result under both permutations named in the case index. | Property |
 | FR-047-AC-2 | The `version-conflict` tree yields exactly one `IMPORT_VERSION_CONFLICT` naming both requiring loci. | Test |
-| FR-047-AC-3 | The `digest-conflict` tree yields `DIGEST_CONFLICT` naming both digests and both loci. | Test |
+
 | FR-047-AC-4 | The `package-cycle` tree yields exactly one `PACKAGE_CYCLE` naming both import loci and starting at the least package identity, and entering the graph from either package produces the identical message. | Test |
 | FR-047-AC-5 | The `recursive-type-is-not-package-cycle` tree resolves successfully and emits no cycle diagnostic. | Test |
 | FR-047-AC-6 | A manifest failing its schema yields one `INVALID_MANIFEST` per schema error, each at the line and column of the failing pointer's key, verified against hand-computed positions; a mapping and a profile do the same with their own codes. | Test |
@@ -119,6 +118,12 @@ diagnostic at the manifest position that declared it.
 | FR-047-AC-14 | Every locus the resolver emits carries a `sourceIdentity` and a relative `path` free of `..`, including a locus inside an imported package. | Test |
 | FR-047-AC-15 | Exceeding `maxNodes`, `maxInputBytes`, and `maxDepth` each terminates resolution with the corresponding blocking limit diagnostic. | Test |
 | FR-047-AC-16 | Two permutations of the search-path order, where no two directories supply the same identity at the same version, produce identical output. | Property |
+
+## PLAT-1205 retirement
+
+`FR-047-AC-3` and the `DIGEST_CONFLICT` branch are retired with the package
+content digest. Selection remains deterministic from declared identity,
+version constraints, and the ordered search path.
 
 ## Dependencies
 

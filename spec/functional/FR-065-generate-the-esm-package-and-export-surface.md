@@ -34,7 +34,7 @@ type without acquiring the rest and no framework enters the dependency closure.
 - The resolved model of [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md), which `buildModel` produces
 - The rendered declarations of [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md)
 - The rendered validators and the rendered structural-code register of [FR-066](./FR-066-generate-runtime-validators.md)
-- The rendered identity and fingerprint metadata of [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md)
+- The rendered identity and contract metadata of [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md)
 - The admissibility result and any representability loss of [FR-068](./FR-068-decide-and-report-ir-admissibility.md)
 - The IR document's `package.identity` and `package.version`
 - The seven prohibited dependency categories of `schema/semantic/v1/target-contract.schema.json#/properties/prohibitedDependencies`: `ui`, `orm`, `sqlalchemy`, `tauri`, `network-client`, `database-migration`, `application-service`

@@ -123,7 +123,7 @@ obliges honesty about how the agreement was reached.
 - For every case the backend admits, generation SHALL produce a package that typechecks under the generated-package TypeScript configuration of [FR-065](./FR-065-generate-the-esm-package-and-export-surface.md).
 - Every generated package produced from the corpus SHALL be typechecked as one TypeScript program rather than one process per case, so the obligation costs one compilation and not seventy.
 - For a case the backend refuses on representability, generation SHALL emit no file, because the committed `typescript` target contract sets `unsupportedFeaturePolicy` to `fail`.
-- This requirement SHALL NOT claim that a corpus case supplies an instance payload, because `conformance/schema/input-bundle.schema.json` is `additionalProperties: false` over `ir`, `manifest`, `manifestDigest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, and carries no instance of a declared type.
+- This requirement SHALL NOT claim that a corpus case supplies an instance payload, because `conformance/schema/input-bundle.schema.json` is `additionalProperties: false` over `ir`, `manifest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, and carries no instance of a declared type.
 - Instance-level evidence for the generated validators SHALL be the authored instance corpus and its second-validator differential of [FR-066](./FR-066-generate-runtime-validators.md), and this requirement SHALL cite that evidence rather than restate it.
 
 ### Accounting

@@ -189,11 +189,10 @@ traversal.
 ### Normalization and compatibility
 
 - The normalizers (FR-145, FR-097: `normalizeIr`, `sort_node_lists`) and the
-  fingerprinter (FR-069) SHALL keep `positions` in authored order. `positions`
-  is not an identity-sorted set: sorting by identity would put `p10` before
-  `p2`, and the order is the tuple shape. The path `/types/*/positions` is
-  therefore not among the identity-set paths.
-- A document that carries no `positions` SHALL serialize and fingerprint
+  TypeScript normalizer (FR-069) SHALL keep `positions` in authored order. `positions`
+  is an ordered tuple sequence: sorting by identity would put `p10` before
+  `p2` and change the tuple shape.
+- A document that carries no `positions` SHALL serialize
   byte-for-byte as it did before this requirement.
 - The compatibility classifier (FR-025, FR-051) SHALL compare the positions of
   a type of both documents as an ordered sequence, by index: a changed number
@@ -284,7 +283,7 @@ The extraction frontend (FR-091 to FR-099) writes both forms.
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-147-CON-1 | Every IR reader SHALL return the same schema verdict for each case of the shared vectors. | Parity | Test |
-| FR-147-CON-2 | Adding this requirement's members SHALL change no byte and no fingerprint of a document that carries none of them. | Compatibility | Test |
+| FR-147-CON-2 | Adding this requirement's members SHALL change no byte of a document that carries none of them. | Compatibility | Test |
 | FR-147-CON-3 | No layer SHALL approximate a tuple as a record, a sequence or a core kind, or sort or drop a tuple's positions. | Integrity | Test |
 | FR-147-CON-4 | The Rust reader SHALL return the stated codes and pointers for each case of the shared vectors. | Parity | Test |
 
@@ -299,8 +298,8 @@ The extraction frontend (FR-091 to FR-099) writes both forms.
 | FR-147-AC-5 | A position at index 1 with identity `…/p2` (a gap), a pair `p1`, `p0` (out of order), `…/p01`, `…/P1`, `…/p-1` and a position under another tuple's prefix each raise `INVALID_TUPLE_POSITION` at the position's `identity`; two positions both `…/p0` raise exactly one `DUPLICATE_IDENTITY` at the later position's `identity` and no `INVALID_TUPLE_POSITION`. | Test (TC-1876) |
 | FR-147-AC-6 | A position typed `ix://quire/native/Clock` raises `INVALID_TUPLE_POSITION` at its `typeRef`; a position naming no type raises `UNRESOLVED_POSITION_TYPE`; a malformed unit reference raises `UNRESOLVED_TYPE_REF`; a decimal position with no policy raises `DECIMAL_POLICY_MISSING` and one typed by an alias carrying the policy raises nothing; a native, a unit, a record, an enumeration, a union, an alias, a tuple and the tuple itself are accepted. | Test (TC-1877) |
 | FR-147-AC-7 | A field, an operation parameter and result, an alias `target`, a sequence `items`, a map `values`, a reference `target` and a variant `payloadType` naming a tuple are accepted, and each is visited by the type traversal exactly once together with every tuple position (the traversal inventory test counts `TuplePosition`). | Test (TC-1878) |
-| FR-147-AC-8 | A union mixing a nullary variant with payload-bearing variants, and an enumeration none of whose variants carries a payload, are accepted by the Rust and Node readers; a `payloadType` naming no type raises `UNRESOLVED_VARIANT_PAYLOAD`; reordering `variants` leaves the normalized bytes and fingerprint unchanged. | Test (TC-1879) |
-| FR-147-AC-9 | The Rust and Node normalizers and the fingerprinter keep the authored order of `positions` (a tuple of eleven positions keeps `p10` after `p9`), normalizing a normalized document is the identity, the written bytes of a document with no `positions` are unchanged, and `/types/*/positions` is in no identity-set path list. | Test (TC-1880) |
+| FR-147-AC-8 | A union mixing a nullary variant with payload-bearing variants, and an enumeration none of whose variants carries a payload, are accepted by the Rust and Node readers; a `payloadType` naming no type raises `UNRESOLVED_VARIANT_PAYLOAD`; reordering `variants` leaves the normalized bytes unchanged. | Test (TC-1879) |
+| FR-147-AC-9 | The Rust and Node normalizers keep the authored order of `positions` (a tuple of eleven positions keeps `p10` after `p9`), normalizing a normalized document is the identity, the written bytes of a document with no `positions` are unchanged, and `positions` remains an ordered sequence. | Test (TC-1880) |
 | FR-147-AC-10 | The classifier reports `breaking` for a tuple that gains a position, loses a position, has its position types swapped, or has one position retyped, `patch` for an unchanged tuple and for a tuple whose only change is an `origin`, and `breaking` for a variant that gains, loses or changes a `payloadType`, in the Rust and Node classifiers alike. | Test (TC-1881) |
 | FR-147-AC-11 | A request whose IR declares a construct of the shape `tuple` is refused for every target by the generation seam with state `unsupported` and one blocking `UNSUPPORTED_CONSTRUCT_SHAPE`, writes no file, and a request with no such construct is unchanged. | Test (TC-1882) |
 | FR-147-AC-12 | An enumeration artifact whose `## Payloads` table has a `Payload` token for a value lowers that value to a variant with `payloadType` and every other value to a variant with none, reading the `## Payloads` table as the source form of a variant payload (the `## Values` table keeps its `Value` and `Description` columns), resolving a native name and a bundle artifact as a `Type` cell is resolved, raises one blocking `UNRESOLVED_TYPE_TOKEN` at the row of an unresolved token and one blocking `ARTIFACT_NOT_LOWERED` at a row naming no value or repeating one, and writes the same bytes as before for an artifact with no `## Payloads` table. | Test (TC-1883) |
@@ -310,5 +309,5 @@ The extraction frontend (FR-091 to FR-099) writes both forms.
 
 ## Dependencies
 
-- **Upstream**: [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md) (the readers and their code table), [FR-069](./FR-069-canonicalize-and-classify-the-ir-surface.md) (normalized and fingerprint forms), [FR-141](./FR-141-carry-the-model-members-in-the-semantic-ir.md) (the model members this extends), [FR-142](./FR-142-declare-one-construct-per-object-type.md) (the construct vocabulary this extends)
+- **Upstream**: [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md) (the readers and their code table), [FR-069](./FR-069-canonicalize-and-classify-the-ir-surface.md) (normalized form), [FR-141](./FR-141-carry-the-model-members-in-the-semantic-ir.md) (the model members this extends), [FR-142](./FR-142-declare-one-construct-per-object-type.md) (the construct vocabulary this extends)
 - **Referenced**: [FR-051](./FR-051-diff-and-evolve-the-semantic-ir.md) (compatibility), [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md) (refusal of an unsupported construct), [FR-093](./FR-093-lower-field-declarations-to-ir-fields.md) (enumeration artifacts), [FR-097](./FR-097-normalize-validate-and-write-the-lifted-document.md) (the written document), [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md) (the normalizer), [FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md) (Clock and unit positions), QSpec FR-154, FR-208 and FR-322 (domain package intake, the meanings, and the V2 wire shape), QSL FR-120 (finite-domain enumeration of tuples and unions)

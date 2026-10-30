@@ -13,8 +13,8 @@ relationships:
 ## Description
 
 The v1 package contract SHALL define globally namespaced identity, semantic
-version, imports, public exports, profiles, target selections, schema
-fingerprints, and a deterministic resolved lock without conflating these concerns.
+version, imports, public exports, profiles, and target selections without
+conflating these concerns. Cargo.lock is the repository's dependency lock.
 
 ## Inputs
 
@@ -26,7 +26,7 @@ fingerprints, and a deterministic resolved lock without conflating these concern
 
 - Validated package graph
 - Public export surface per profile
-- Fully resolved content-addressed lock suitable for offline compilation
+- Fully resolved package graph suitable for offline compilation
 
 ## Behavior
 
@@ -36,23 +36,28 @@ fingerprints, and a deterministic resolved lock without conflating these concern
 - Exports SHALL reference stable semantic type identities.
 - Exports SHALL NOT expose unselected private definitions.
 - Profiles SHALL select exports, targets, mappings, options, and compatibility posture by name without modifying the underlying definitions.
-- The lock SHALL resolve every import to exact package version, content digest, source identity, and transitive dependency closure.
-- Fingerprints SHALL use a named digest algorithm over a specified canonical byte form.
-- The fingerprint contract SHALL identify every included and excluded input class.
-- Resolution SHALL reject identity/version/digest disagreement, unresolved imports, duplicate stable identities, undeclared cycles, and contradictory profile selections.
+- Resolution SHALL bind every import to an exact package version, source identity, and transitive dependency closure.
+- Resolution SHALL reject identity/version disagreement, unresolved imports, duplicate stable identities, undeclared cycles, and contradictory profile selections.
 - Manifest validation SHALL reject unknown keys except inside a declared namespaced extension container.
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-021-AC-1 | A package graph with compatible imports resolves to one deterministic transitive lock. | Test |
-| FR-021-AC-2 | A version, digest, identity, export, or cycle conflict fails with every conflicting locus identified. | Test |
+| FR-021-AC-1 | A package graph with compatible imports resolves to one deterministic transitive graph. | Test |
+| FR-021-AC-2 | A version, identity, export, or cycle conflict fails with every conflicting locus identified. | Test |
 | FR-021-AC-3 | Selecting a profile changes only its export/target/mapping configuration and does not mutate semantic definitions. | Property |
 | FR-021-AC-4 | Unknown top-level manifest keys fail while namespaced extension data remains explicit and preserved. | Test |
-| FR-021-AC-5 | Dynamic package loading and finite generated export selection derive from the same locked identities. | Analysis |
+| FR-021-AC-5 | Dynamic package loading and finite generated export selection derive from the same resolved identities. | Analysis |
 | FR-021-AC-6 | The shared package contract leaves Quoin registry transport and installation policy to `agent-ix/quoin#293` and #287. | Inspection |
-| FR-021-AC-7 | Equivalent package inputs with different file or object ordering produce one fingerprint, while any included semantic byte change produces a different fingerprint. | Property |
+| FR-021-AC-7 | Equivalent package inputs with different file or object ordering resolve to the same graph; a semantic change that alters an import, export, selected package version, or declared profile changes that graph. | Property |
+
+## PLAT-1205 retirement
+
+The former content-addressed package lock, digest conflict, and graph fingerprint
+criteria were retired because they duplicate repository dependency custody while
+adding a second lock and digest-keyed staleness check. Package identity, version,
+export, graph, and deterministic resolution obligations remain.
 
 ## Dependencies
 

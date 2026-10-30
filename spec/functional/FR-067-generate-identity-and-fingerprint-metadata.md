@@ -1,6 +1,6 @@
 ---
 id: FR-067
-title: "Generate identity and fingerprint metadata"
+title: "Generate identity and contract metadata"
 type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-012"
@@ -16,7 +16,7 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/NFR-024"
     type: "constrained_by"
 ---
-# [FR-067] Generate identity and fingerprint metadata
+# [FR-067] Generate identity and contract metadata
 
 ## Description
 
@@ -33,7 +33,6 @@ without reading a side-car file at run time.
 - The document's top-level `extensions[]` and `occurrences[]`
 - Each type's `identity`, `roles[]`, `unknownPolicy`, and `extensions[]`, and, for a `record`, its `fields[]` with their `identity`, `unit`, and `extensions[]`, and its `relationships[]`
 - The resolved model [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md) builds, which carries the minted TypeScript identifier beside each identity
-- The normalized IR fingerprint, computed by the backend through [FR-069](./FR-069-canonicalize-and-classify-the-ir-surface.md), which the document does not carry because a document cannot contain its own digest
 
 ## Outputs
 
@@ -93,7 +92,6 @@ without reading a side-car file at run time.
 | FR-067-CON-1 | The generated metadata SHALL carry no timestamp, hostname, user, working directory, or tool path the backend itself read. Each is a determinism leak this repository has shipped before, and each is named here so a test can look for it by name rather than by judgement. | Determinism | Static analysis |
 | FR-067-CON-2 | The identity map SHALL be exhaustive over the exported types by construction, so an added export with no identity entry fails the typecheck rather than producing a partial map at run time. | Correctness | Compile |
 | FR-067-CON-3 | The metadata module SHALL NOT import the validator module, so a metadata-only import does not reach the validators. | Portability | Reachable-symbol walk |
-| FR-067-CON-4 | The backend SHALL compute the fingerprint over the normalized document rather than over the file bytes, so a re-serialized document with the same meaning does not change it. | Correctness | Property |
 | FR-067-CON-5 | Identity strings SHALL be copied from the document verbatim, never minted, shortened, or re-cased by the backend, because an identity that moves with a rename is defect DEF-PROTO-008. | Integrity | Test |
 | FR-067-CON-6 | The backend SHALL render every node the IR document carries through this requirement or through another, dropping none without a declared representability loss, because the `typescript` target contract sets `unsupportedFeaturePolicy: "fail"`. | Completeness | Test |
 
@@ -105,7 +103,6 @@ without reading a side-car file at run time.
 | FR-067-AC-2 | The generated field-identity map carries one entry per field of every exported `record`, keyed `<Type>.<field>`. | Test |
 | FR-067-AC-3 | Both identity maps are ordered by key under code-point comparison, and the order is unchanged under `LC_ALL=tr_TR.UTF-8`. | Property |
 | FR-067-AC-4 | A generated package with one type removed from the identity map fails `tsc --noEmit`, and one with an entry for an unexported name fails likewise. | Compile |
-| FR-067-AC-6 | Two admitted documents differing only in object-key order or in the order of genuine identity sets, including `types`, `constraints`, and `extensions`, produce the same generated fingerprint even when those sets arrive out of identity order. Reversing two distinct fields, two distinct supertypes, or two distinct operation parameters in otherwise identical admitted documents changes the generated fingerprint, matching the TypeScript backend CLI `lockFingerprint` over each document's identity-sorted-set canonical bytes. Two documents differing in any semantic value produce different fingerprints. | Property |
 | FR-067-AC-7 | No emitted byte outside a copied `occurrences[].observedAt` value matches a date, time, hostname, user, or absolute-path pattern. | Static |
 | FR-067-AC-8 | Generating the same document twice at different wall-clock times produces byte-identical `identity.ts`. | Snapshot |
 | FR-067-AC-9 | `roles[]` is exposed per type as a readonly array equal to the document's, including the empty array for a type declaring none. | Unit |
@@ -119,6 +116,10 @@ without reading a side-car file at run time.
 | FR-067-AC-19 | For a `2.0.0` document declaring two entities and no other identity-bearing type, `TYPE_IDENTITY_FIELDS` equals the two entities' identity field names, and a document of records emits the map empty. | Unit (TC-1763) |
 | FR-067-AC-20 | Generating the contract `2.0.0` constructs fixture emits each construct map with an entry for exactly the types carrying the member, `OPERATION_CONTRACTS["OrderLifecycle.advance"]` carrying its frame and Quire clauses, `POPULATIONS` naming `OpenOrders`, and the lifted `config-version-table` golden's identity module emits none of them. | Unit (TC-1773) |
 | FR-067-AC-17 | Each type's declared `unknownPolicy` appears in the metadata for all eight kinds, including the `union` declaring `surface` and the `map` declaring `preserve` in the committed bases. | Unit |
+
+## PLAT-1205 retirement
+
+`FR-067-CON-4` and `FR-067-AC-6` are retired with the generated metadata fingerprint and CLI `lockFingerprint`. Direct normalized-byte comparison detects the same differences without maintaining a second digest representation.
 
 ## Dependencies
 

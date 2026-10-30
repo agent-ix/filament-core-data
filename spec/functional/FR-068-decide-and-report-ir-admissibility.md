@@ -45,7 +45,7 @@ generate, not a claim that the document is invalid.
 
 Independence is claimed here and cannot be proved by an import ban alone. An
 import ban is checkable and transcription is not, and
-`conformance/diagnostic-codes.json` marks fifteen of its thirty codes
+`conformance/diagnostic-codes.json` marks some of its codes
 `provenance: "minted"` — spellings the corpus introduced, whose rules no
 published clause states. So this requirement asks for two disclosures instead of
 one assertion: a per-code derivation ledger saying where each rule was read
@@ -56,9 +56,9 @@ not.
 ## Inputs
 
 - A semantic IR document at `contractVersion` `2.0.0`
-- The input bundle members that carry package context: `manifest`, `manifestDigest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, each of which `conformance/schema/input-bundle.schema.json` makes optional, so only `ir` is guaranteed present
+- The input bundle members that carry package context: `manifest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, each of which `conformance/schema/input-bundle.schema.json` makes optional, so only `ir` is guaranteed present
 - `schema/semantic/v1/semantic-ir.schema.json` and `schema/semantic/v1/common.schema.json`
-- `conformance/diagnostic-codes.json`, the corpus's closed register of the thirty codes an admissibility answer may carry, read by a test rather than by the backend
+- `conformance/diagnostic-codes.json`, the corpus's closed register of the registered codes an admissibility answer may carry, read by a test rather than by the backend
 - `docs/semantic-data-system/contracts-v1.md`, the prose contract the rules are read from
 - The declared limits of `schema/semantic/v1/compiler-request.schema.json#/properties/limits`
 
@@ -107,7 +107,6 @@ not.
 | `unit` appears only on a field resolving to a `scalar` | `UNIT_ON_NON_SCALAR` |
 | Every manifest import resolves to a package the lock carries | `UNRESOLVED_IMPORT` |
 | The package import graph is acyclic | `PACKAGE_CYCLE` |
-| The lock agrees with the manifest and the source digests it records | `STALE_LOCK` |
 | A mapping names a target the published target vocabulary declares | `UNKNOWN_MAPPING_TARGET` |
 | A mapping that loses information declares that loss | `UNDECLARED_LOSS` |
 | A `required: true` extension names a capability the consumer policy admits | `UNKNOWN_REQUIRED_EXTENSION` |
@@ -122,7 +121,15 @@ not.
 
 ### Absent inputs and suppression
 
-- Six of the rules above read `manifest`, `lock`, `mappings`, or `consumerPolicy`, and `conformance/schema/input-bundle.schema.json` requires none of them, so a bundle carrying only `ir` cannot decide them.
+- Five of the rules above read `manifest`, `lock`, `mappings`, or `consumerPolicy`, and `conformance/schema/input-bundle.schema.json` requires none of them, so a bundle carrying only `ir` cannot decide them.
+
+### PLAT-1205 retirement
+
+The `STALE_LOCK` cross-field rule and its diagnostic are retired. It compared a
+manifest digest and a lock fingerprint, which constituted the second,
+digest-keyed lock-staleness check retired by PLAT-1205. The remaining package
+context rules still decide identities, imports, exports, and graph cycles from
+their actual bundle members.
 - Where a rule's declared input is absent from the bundle, `admitIr` SHALL record a suppression naming the rule and the missing input, and SHALL emit no diagnostic for that rule.
 - `admitIr` SHALL NOT decide a rule whose input is absent by assuming a value for that input, because a guess that happens to agree is indistinguishable from a decision that was made.
 - `admitIr` SHALL NOT drop a suppression silently, so that a rule which never ran is visible rather than being reported as a rule that passed.
@@ -136,7 +143,7 @@ not.
 - `admitIr` SHALL set a diagnostic's `locus` to the nearest enclosing node's `origin.source`, or to a clause's `sourceSpan` where the failing node is a clause, in each case only where that node carries one and the value satisfies `common.schema.json#/$defs/sourceLocus`.
 - If no enclosing node carries a usable locus, then `admitIr` SHALL emit the diagnostic with no `locus` member.
 - Each diagnostic's `owner` SHALL be the nearest enclosing node's `identity`, and the backend's own identity where no ancestor carries one.
-- `conformance/diagnostic-codes.json` records a code, a deciding layer, a rule and a citation for each of its thirty codes, and records neither a severity nor a locus-derivation rule; no published contract document states either, and `conformance/corpus.mjs` nonetheless keys a diagnostic comparison on `[pointer, code, severity, locus]`.
+- `conformance/diagnostic-codes.json` records a code, a deciding layer, a rule and a citation for each registered code, and records neither a severity nor a locus-derivation rule; no published contract document states either, and `conformance/corpus.mjs` nonetheless keys a diagnostic comparison on `[pointer, code, severity, locus]`.
 - The two rules above SHALL therefore be recorded as this backend's declared reading of an unstated contract, citing `agent-ix/filament-core-data#61`, which records that neither is derivable from any published artifact, rather than presented as a rule the contract states.
 - The locus rule SHALL be applied against the published `sourceLocus` shape as it stands, and `agent-ix/filament-core-data#56` — which records that the published path pattern's traversal and absolute-path guards do not apply past a line terminator — SHALL be cited beside it rather than worked around here.
 
@@ -163,7 +170,7 @@ not.
 - `admit.mjs` SHALL export a `derivations` ledger carrying one entry for every code in its register.
 - Each ledger entry SHALL record whether the rule behind its code was read from a published contract clause or from the corpus's own register.
 - A ledger entry recording a published clause SHALL name the artifact and quote the clause it was read from.
-- A ledger entry recording the corpus register SHALL say so plainly, because `conformance/diagnostic-codes.json` marks fifteen of thirty codes `provenance: "minted"` and a rule read from the yardstick is not a rule read from the contract.
+- A ledger entry recording the corpus register SHALL say so plainly, because `conformance/diagnostic-codes.json` marks some registered codes `provenance: "minted"` and a rule read from the yardstick is not a rule read from the contract.
 - The ledger SHALL be complete over the register, so a code with no entry fails the backend's own contract test.
 - The ledger SHALL be data rather than prose, so that a reviewer counts the two provenances instead of reading for them.
 
@@ -238,7 +245,7 @@ not.
 | FR-068-AC-15 | Over 512 mutated documents the module returns an answer, never throws, and leaves its input byte-unchanged. | Fuzz |
 | FR-068-AC-16 | A run with every environment variable cleared but `PATH` produces an identical answer for every corpus case. | Integration |
 | FR-068-AC-17 | Every diagnostic the module emits carries severity `error` and `blocking` true, and a `locus` exactly when the nearest enclosing node carries a schema-valid `origin.source` or `sourceSpan`; a constructed document whose failing node has no such ancestor yields a diagnostic with no `locus` member. | Test |
-| FR-068-AC-18 | A bundle carrying only `ir` records one suppression for each of the six rules whose input is absent, emits no diagnostic for any of them, and returns the same `resultState` as the same document with those inputs supplied and satisfied. | Test |
+| FR-068-AC-18 | A bundle carrying only `ir` records one suppression for each of the five rules whose input is absent, emits no diagnostic for any of them, and returns the same `resultState` as the same document with those inputs supplied and satisfied. | Test |
 | FR-068-AC-19 | Suppressions contribute no member to `diagnostics`, no change to `resultState`, and no member to the adapter result the harness compares. | Unit |
 | FR-068-AC-20 | The derivation ledger carries one entry per registered code, each naming either a quoted published clause that occurs verbatim in the named artifact or the corpus register; a code with no entry, and a quoted clause that does not occur, each fail the check. | Test |
 | FR-068-AC-21 | The count of ledger entries derived from the corpus register is reported alongside the conformance figures, so a reader sees how much of the rule set was read from the yardstick rather than from the contract. | Analysis |

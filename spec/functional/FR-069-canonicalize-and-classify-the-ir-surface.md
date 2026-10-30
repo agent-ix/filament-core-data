@@ -66,9 +66,8 @@ Classification is the half that depends on admissibility, and only for the
 
 ## Outputs
 
-- `src/compiler/backends/typescript-v1/canonical.mjs`: `canonicalize(value, { sets })`, `normalizeIr(document)` returning the materialized document, `normalizeIrForTarget(document)` returning the corpus-comparable canonical string, `fingerprintIrForTarget(document)` returning the contract fingerprint, `digestOf(text)` returning `sha256:<64 hex>`, `IDENTITY_SET_PATHS`, `KEY_ORDER`, `MAX_CANONICAL_DEPTH`, and `CanonicalError`
+- `src/compiler/backends/typescript-v1/canonical.mjs`: `canonicalize(value)`, `normalizeIr(document)` returning the materialized document, `normalizeIrForTarget(document)` returning the corpus-comparable canonical string, `KEY_ORDER`, `MAX_CANONICAL_DEPTH`, and `CanonicalError`
 - `src/compiler/backends/typescript-v1/canonical.d.mts` declaring that surface
-- `test/fixtures/compiler/rfc8785/typescript-identity-set-fingerprint.json`, the TypeScript backend's own fixed input, canonical-byte and SHA-256 vectors for its extended fingerprint domain; these are distinct from FR-048's compiler package-lock vectors
 - `src/compiler/backends/typescript-v1/classify.mjs`: `classifySurface(before, after, { consumerPolicy })` returning `{ classification, changes }`, `CLASSIFICATION_ORDER`, `MODELLED_CHANGES`, and `VARIANT_ADDITION_POLICY`
 - `src/compiler/backends/typescript-v1/classify.d.mts` declaring that surface
 
@@ -76,53 +75,28 @@ Classification is the half that depends on admissibility, and only for the
 
 ### Canonicalization
 
-- The backend SHALL carry **two** named canonical forms: the normalized
-  document form settled by [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md)
-  and an independently implemented identity-sorted-set fingerprint form. The
-  TypeScript backend's `lockFingerprint` and generated metadata fingerprint
-  SHALL be the SHA-256 of the identity-sorted-set form of the materialized
-  document, including its `canonicalization` descriptor. They are distinct from
-  the compiler package-lock fingerprint of
-  [FR-048](./FR-048-build-and-verify-the-lock-and-fingerprint.md), whose input
-  byte set and algorithm label remain separate.
-- `canonicalize(value, { sets: false })` SHALL implement RFC 8785 JSON
-  Canonicalization Scheme unextended, including UTF-16 code-unit object-key
-  ordering and authored array order; this is the `rfc8785-v1` form a normalized
-  document and an adapter answer's `normalized` member carry.
-- `canonicalize(value, { sets: true })`, also the default when `sets` is
-  omitted, SHALL implement the same scheme extended by sorting only the
-  declared identity-set containers by their `identity` before serialization.
-  This is the separately named `RFC8785-JCS-with-identity-sorted-sets-v1`
-  form, independently implemented by the TypeScript backend, and supplies its
-  fingerprint. `normalizeIrForTarget` remains unextended for the corpus.
-- The normalized-document name `rfc8785-v1` is the sole corpus comparison
-  algorithm label under [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md);
-  corpus fixtures and adapter results SHALL use it and its RFC 8785 UTF-16
-  ordering.
-- `IDENTITY_SET_PATHS`, which applies only when `sets: true`, SHALL be exactly these eleven container paths: `/types`, `/types/*/variants`, `/types/*/constraints`, `/types/*/relationships`, `/types/*/operations`, `/types/*/clauses`, `/types/*/extensions`, `/types/*/fields/*/extensions`, `/types/*/operations/*/params/*/extensions`, `/occurrences`, and `/extensions`. A type's `fields` and `supertypes` and an operation's `params` SHALL retain authored order under both canonical forms; they are ordered sequences under FR-050 and FR-097.
-- `canonicalize` SHALL order object keys by RFC 8785 UTF-16 code unit.
-- Where two members of an identity-sorted container carry the same `identity`, the fingerprint form SHALL order them by the code-point order of their own canonical forms.
-- Where two members remain equal under that tie-break, `canonicalize` SHALL keep their original array order, so the ordering is total on every input.
-- The tie-break SHALL be stated rather than left to the sort's stability, because `DUPLICATE_IDENTITY` is a registered admissibility code, documents carrying duplicate identities therefore exist in the corpus, and the adapter emits `normalized` for those cases as well as for admissible ones.
-- `canonicalize` SHALL drop a key whose value is `undefined` rather than serializing a placeholder for it.
-- `canonicalize` SHALL refuse a non-finite number rather than serializing it, because JSON has no representation for one and a silent substitution would change the document.
-- `canonicalize` SHALL serialize the number negative zero as `0`, following RFC 8785, so that a document differing only in the sign of a zero canonicalizes identically.
-- `canonicalize` SHALL refuse a value nested deeper than the declared depth bound rather than recursing without bound.
-- `canonical.mjs` SHALL publish the `rfc8785-v1` definition and the separately
-  named identity-sorted-set fingerprint definition, with their byte domains
-  kept distinct as [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md)
-  requires.
-- `normalizeIrForTarget` SHALL use the unextended form, so that the string an adapter answer carries is the corpus's.
-- `fingerprintIrForTarget` SHALL return `digestOf(canonicalize(normalizeIr(document), { sets: true }))`, so the TypeScript backend fingerprint and CLI `lockFingerprint` preserve authored sequence order while ignoring genuine identity-set permutations. The CLI SHALL use that result without changing FR-048's separately named package-lock fingerprint.
-- The TypeScript fingerprint vector file SHALL publish fixed `expectedBytes` and `sha256` for each literal `input`, using `canonicalize(normalizeIr(input), { sets: true })` as the byte domain. Its `base-out-of-order-sets` and `genuine-sets-permuted` inputs SHALL differ only in the order of `/types` and `/types/*/extensions` and carry identical expected bytes and digests. Its three other inputs SHALL reverse only `fields`, `supertypes`, or `params` from the base and carry three distinct expected byte strings and digests. These synthetic canonicalization inputs need not pass semantic IR admission; the generated-package and CLI obligations are tested separately on admitted documents. The fixed expectations SHALL be read from this file rather than computed by the production canonicalizer under test.
-- `normalizeIrForTarget` SHALL force `nullable` to a literal boolean on every field and every operation parameter, unconditionally on `contractVersion`. `nullable` materializes `true` only where the authored member is the JSON literal `true`; every other value or its absence — `null`, `false`, a number, a string, an array, or an object, or no member at all — materializes `false` (fcd#187).
-- `normalizeIrForTarget` SHALL NOT derive `multiplicity` from `presence` or `presence` from `multiplicity`: both members are schema-required and independently authored under contract `2.0.0` (FR-106-CON-2), so neither is ever materialized from the other, and `normalizeIrForTarget` adds no member beyond the literal `nullable`.
-- `normalizeIrForTarget` SHALL be idempotent, so normalizing a normalized document yields identical bytes.
-- `normalizeIrForTarget` SHALL leave its argument byte-identical, so a caller's document is never mutated by being canonicalized.
-- `digestOf` SHALL return the SHA-256 of the canonical bytes, prefixed `sha256:`.
-- Canonicalization SHALL read no clock, no environment variable, and no network.
-- Canonicalization SHALL produce identical bytes from any working directory and under any locale.
-- Canonicalization SHALL depend on no member of the admissibility answer, so a document `admitIr` refuses still canonicalizes.
+- The backend SHALL use the `rfc8785-v1` normalized-document form settled by
+  [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md).
+- `canonicalize(value)` SHALL implement RFC 8785 JSON Canonicalization Scheme,
+  including UTF-16 code-unit object-key order and authored array order.
+- `normalizeIrForTarget(document)` SHALL return that canonical byte string for
+  corpus comparison, independently of the compiler's normalization code.
+- `normalizeIrForTarget` SHALL force `nullable` to a literal boolean on every
+  field and operation parameter, unconditionally on `contractVersion`:
+  exactly authored JSON `true` becomes true; all other values and absence become
+  false (fcd#187).
+- `normalizeIrForTarget` SHALL NOT derive `multiplicity` from `presence` or the
+  reverse; both are independently authored and schema-required (FR-106-CON-2).
+- Normalization SHALL be idempotent and SHALL NOT mutate its argument.
+- Canonicalization SHALL drop `undefined` object members, refuse non-finite
+  numbers, serialize negative zero as `0`, and refuse input past its declared
+  depth bound.
+- Canonicalization SHALL read no clock, environment variable, or network and
+  SHALL produce identical bytes from any working directory or locale.
+- Canonicalization SHALL not depend on an admissibility answer, so a document
+  refused by `admitIr` still canonicalizes.
+- Neither the backend nor CLI SHALL publish a `lockFingerprint` or a computed
+  IR digest as a replacement for direct normalized-byte comparison.
 
 ### Classification
 
@@ -226,7 +200,6 @@ Classification is the half that depends on admissibility, and only for the
 |---|---|---|---|
 | FR-069-CON-1 | The canonical form and the classifier are deliberately second implementations beside the compiler's; neither SHALL import the compiler's normalization, canonicalization, or diff module, so agreement between them is evidence rather than a tautology. | Correctness | Static analysis |
 | FR-069-CON-2 | `canonical.mjs` SHALL declare `IDENTITY_SET_PATHS` as data in one place, so a fourteenth container path is a data edit that a test can see rather than a scattered code change. | Maintainability | Test |
-| FR-069-CON-3 | The normalized and fingerprint forms SHALL retain their separate published algorithm labels and byte domains; a local canonicalizer silently substituting one for the other is prohibited. | Integrity | Static analysis |
 | FR-069-CON-4 | `classifySurface` SHALL NOT read the clock, so a report is a function of the two documents alone. | Determinism | Static analysis |
 | FR-069-CON-5 | The backend implementation SHALL NOT change a byte of `schema/semantic/v1/**` or `docs/semantic-data-system/**`; contract changes are authored by the owning specification requirement. | Non-disruption | Change-set diff |
 | FR-069-CON-6 | `canonical.mjs` SHALL declare `IDENTITY_SET_PATHS`, the key-ordering rule, and the selected algorithm label as data in one module, so a later contract revision is a data edit rather than a rewrite of every rule that reads them. | Maintainability | Test |
@@ -237,7 +210,7 @@ Classification is the half that depends on admissibility, and only for the
 | ID | Criteria | Verification |
 |---|---|---|
 | FR-069-AC-1 | With `sets: true` (explicitly and by default), two documents differing only in object key order and permutations of each of the eleven declared identity-keyed containers canonicalize to identical bytes; reversing each of `fields`, `supertypes`, and `params` separately changes the canonical bytes. With `sets: false`, every array retains input order. | Property |
-| FR-069-AC-2 | Two documents differing in any semantic value canonicalize to different bytes. Reversing two distinct fields, two distinct supertypes, or two distinct operation parameters changes both `normalizeIrForTarget` bytes and `fingerprintIrForTarget` digest; permuting object keys changes neither. Permuting each declared genuine identity set leaves `fingerprintIrForTarget` and the CLI `lockFingerprint` unchanged, even when the source document is out of identity order, while `normalizeIrForTarget` preserves the source array order for corpus comparison. The CLI `lockFingerprint` equals `fingerprintIrForTarget` for each reversal, and FR-048's package-lock fingerprint vectors remain byte-identical. | Test |
+| FR-069-AC-2 | Two documents differing in any semantic value or in the order of an ordered sequence canonicalize to different bytes; permuting object keys leaves normalized bytes unchanged. Identity-set order in the source remains visible in corpus-normalized bytes. | Test |
 | FR-069-AC-3 | `normalizeIrForTarget(normalizeIrForTarget(d))` equals `normalizeIrForTarget(d)` for every positive fixture and for every corpus case input. | Property |
 | FR-069-AC-4 | Any document's field gains a literal `nullable` and no other member, gated on no field of the document including `contractVersion`; `normalizeIrForTarget` never derives `multiplicity` from `presence` or `presence` from `multiplicity`; and `nullable` materializes `true` for the input `true`, and `false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member. | Unit |
 | FR-069-AC-5 | Canonicalizing every conformance base and case input produces byte-identical output on a second run, from a different working directory, and under `LC_ALL=tr_TR.UTF-8`. | Integration |
@@ -252,18 +225,19 @@ Classification is the half that depends on admissibility, and only for the
 | FR-069-AC-14 | `canonical.mjs` and `classify.mjs` contain no import of the compiler's normalization, canonicalization, or diff modules, and none of any module under `conformance/`. | Static |
 | FR-069-AC-15 | `pnpm-lock.yaml` gains no entry from this requirement, and neither module imports a package outside the Node standard library. | Analysis |
 | FR-069-AC-22 | `normalizeIrForTarget` reproduces the oracle's `normalized` string byte for byte for all 115 corpus cases, measured with no admissibility answer computed. | Snapshot |
-| FR-069-AC-23 | The `rfc8785-v1` and identity-sorted-set forms differ for a document whose set members are out of identity order, and agree for one already in order; a supplementary-plane key also proves the normalized form uses RFC 8785 UTF-16 ordering. | Unit |
-| FR-069-AC-16 | A document carrying two members with the same `identity` in an identity-sorted container canonicalizes to the same bytes whatever order those two members arrive in, and a document carrying two byte-identical such members canonicalizes without dropping either. | Property |
 | FR-069-AC-17 | A removed field, an added required field, a removed variant, and a removed relationship each classify `breaking`; an added optional field classifies `conditional` with no consumer policy; and an added variant classifies `additive` under a policy admitting unknown members, `breaking` with no policy under the `contract` setting of `VARIANT_ADDITION_POLICY`, and `conditional` with no policy under its default `corpus` setting. | Unit |
 | FR-069-AC-25 | `VARIANT_ADDITION_POLICY` is the only place in the backend that decides how a variant addition with no consumer policy classifies; under `contract` an added variant classifies `breaking` with no policy and `additive` under a policy admitting unknown members; and flipping it changes the answer for the corpus cases `ENUM-004` and `UNION-004` and for no other case. | Static |
 | FR-069-AC-19 | `MODELLED_CHANGES` is exported as data, and a rule stated in this requirement but absent from that list fails the module's own contract test. | Test |
 | FR-069-AC-20 | `canonicalize` and `normalizeIrForTarget` run over every corpus case with no admissibility answer computed, demonstrating that canonicalization depends on nothing from FR-068. | Unit |
 | FR-069-AC-21 | The number negative zero canonicalizes to the same bytes as positive zero, and a document differing only in that sign yields one canonical form. | Unit |
-| FR-069-AC-26 | A test reads every `input`, `expectedBytes`, and `sha256` in `test/fixtures/compiler/rfc8785/typescript-identity-set-fingerprint.json`: `canonicalize(normalizeIr(input), { sets: true })` equals the committed `expectedBytes` byte for byte, and `fingerprintIrForTarget(input)` equals the committed `sha256`. The base and genuine-set permutation have equal committed bytes and digest; each ordered-sequence reversal has different committed bytes and digest from the base and from the other reversals. The test does not derive its expected values through `canonical.mjs`, and FR-048's separate package-lock vectors remain byte-identical. | Test |
+
+## PLAT-1205 retirement
+
+`FR-069-CON-3`, `FR-069-AC-16`, `FR-069-AC-23`, and `FR-069-AC-26` are retired with the generated/CLI IR fingerprint and its identity-sorted-set digest vectors. No separate failure was identified that those values detect beyond direct comparison of the normalized bytes, while they duplicate the document in another representation.
 
 ## Dependencies
 
 - **Upstream**: [FR-025](./FR-025-classify-semantic-and-target-compatibility.md), [FR-063](./FR-063-declare-the-generation-backend-seam.md), [FR-068](./FR-068-decide-and-report-ir-admissibility.md)
 - **Downstream**: [FR-067](./FR-067-generate-identity-and-fingerprint-metadata.md), [FR-070](./FR-070-run-the-typescript-conformance-adapter.md), [FR-071](./FR-071-provide-the-generate-command-and-surface-fixtures.md)
 - **Constrained by**: [NFR-024](../non-functional/NFR-024-portable-deterministic-generated-typescript.md), [NFR-025](../non-functional/NFR-025-non-disruptive-typescript-backend.md)
-- **Settled contract question**: [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md) names `rfc8785-v1` for normalized documents and keeps `RFC8785-JCS-with-identity-sorted-sets-v1` for the package-lock fingerprint. GAP-004's former ambiguity is resolved by that requirement; its set-path list and the normalized supplementary-plane vector remain explicit evidence. GAP-010 (the unknown-policy tightening direction is unordered) is owned by `agent-ix/filament-core-data#25` and moves one rule.
+- **Settled contract question**: [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md) names `rfc8785-v1` for normalized documents. PLAT-1205 retires the second identity-sorted-set fingerprint domain and its fixed digest vectors.

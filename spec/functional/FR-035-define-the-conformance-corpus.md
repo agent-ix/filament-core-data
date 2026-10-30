@@ -43,7 +43,7 @@ the contract clause it was derived from.
 ## Behavior
 
 - An input bundle SHALL carry `ir`, a semantic IR document.
-- An input bundle SHALL admit the optional members `manifest`, `manifestDigest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, each validated against its published v1 schema, so that a case can state a package, lock, mapping, or consumer-policy fact that no IR document carries.
+- An input bundle SHALL admit the optional members `manifest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, each validated against its published v1 schema, so that a case can state a package, mapping, or consumer-policy fact that no IR document carries. The closed bundle schema SHALL reject `manifestDigest`.
 - `conformance/schema/input-bundle.schema.json` SHALL compose the published schemas by reference.
 - `conformance/schema/input-bundle.schema.json` SHALL redefine no field a published schema already defines.
 - A case file SHALL carry `id`, `title`, `family`, `class` (`positive`, `negative`, `boundary`, or `evolution`), `kind` (`document` or `compatibility`), `contractVersion`, `base`, `ops`, `covers`, `decidedBy` (`schema`, `cross-field`, or `compatibility`), `derivedFrom`, `provenance`, and `expected`.
@@ -65,7 +65,7 @@ the contract clause it was derived from.
 - The corpus SHALL NOT delete a case that reproduces a discovered defect after that defect is fixed.
 - If a case that a `defect` register row names is absent, then the corpus gate SHALL fail and name that row.
 - `conformance/README.md` SHALL name the corpus normalized form `rfc8785-v1`: RFC 8785 object keys ordered by UTF-16 code unit, no insignificant whitespace, and array order preserved.
-- `conformance/README.md` SHALL record that `rfc8785-v1` is the normalized-document and `sha256-jcs` digest domain, separate from the contract's `RFC8785-JCS-with-identity-sorted-sets-v1` package-lock fingerprint form.
+- `conformance/README.md` SHALL record that `rfc8785-v1` is the normalized-document canonical byte form; no package-lock fingerprint form is published.
 
 ## Constraints
 
