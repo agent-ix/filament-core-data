@@ -826,7 +826,6 @@ class Construct(BaseModel):
     )
     construct_: Annotated[ConstructDeclaration, Field(alias='construct')]
     kind: ConstructKind
-    manifestDigest: common_schema.Sha256
     moduleVersion: common_schema.Semver
 
 
