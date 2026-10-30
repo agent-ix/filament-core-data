@@ -58,8 +58,9 @@ itself preserves the resulting arrays.
 - A reader SHALL accept a normalized document only when its canonicalization
   descriptor is present, has exactly the `algorithm` member, and names
   `rfc8785-v1`.
-- A reader SHALL produce a located refusal for an unknown, missing, or extra
-  canonicalization descriptor member, including `digest`.
+- A reader SHALL produce a located refusal when the descriptor is absent, its
+  `algorithm` member is absent or unknown, or it carries `digest` or any other
+  extra member.
 - The normalizer SHALL encode object member names using RFC 8785 UTF-16
   code-unit ordering.
 - The normalizer SHALL preserve JSON array order while encoding the normalized
@@ -76,11 +77,14 @@ itself preserves the resulting arrays.
   the implementation SHALL not substitute Unicode scalar-value ordering.
 - The shared golden at
   `test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json` SHALL
-  include a supplementary-plane member name and record `algorithm` and
-  `expectedBytes` together. The FCD semantic
+  include a supplementary-plane member name, record `algorithm` and
+  `expectedBytes` together, and contain no `digest` member. The FCD semantic
   positive fixture is
-  `fixtures/semantic/v1/positive/semantic-ir-v1-1.json`; its refusal mutations are the four `ir-canonicalization-*` cases in
-  `fixtures/semantic/v1/negative/cases.json`.
+  `fixtures/semantic/v1/positive/semantic-ir-v1-1.json`; its five refusal
+  mutations in `fixtures/semantic/v1/negative/cases.json` SHALL cover an
+  unknown algorithm, an absent algorithm, an absent descriptor, `digest`, and
+  another extra member. The obsolete `ir-canonicalization-missing-digest`
+  case SHALL be replaced by `ir-canonicalization-missing-algorithm`.
 
 ## Constraints
 
@@ -92,9 +96,9 @@ itself preserves the resulting arrays.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-145-AC-1 | One FCD contract document names `rfc8785-v1` as the canonicalization carried by a normalized Semantic IR document. | Inspection |
+| FR-145-AC-1 | An FCD contract document and `conformance/README.md` name `rfc8785-v1` as the canonicalization carried by a normalized Semantic IR document and publish the exact one-member descriptor. | Inspection |
 | FR-145-AC-2 | A normalized document contains exactly `{"algorithm":"rfc8785-v1"}` in its canonicalization descriptor; a missing descriptor, missing or unknown algorithm, `digest`, or any other extra descriptor member is refused with a located diagnostic. The published schema and reader contract accept the exact descriptor and reject each mutation. | Test |
-| FR-145-AC-3 | `test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json` contains both U+10000 and U+E000 member names and records the expected RFC 8785 JCS UTF-16 canonical bytes; the extraction frontend and Semantic IR reader consume the same vector and emit no digest sidecar. | Test |
+| FR-145-AC-3 | `test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json` contains both U+10000 and U+E000 member names and records the expected RFC 8785 JCS UTF-16 canonical bytes with no `digest` member; the extraction frontend and Semantic IR reader consume the same vector and emit no digest sidecar. | Test |
 | FR-145-AC-4 | Reordering object members does not change normalized bytes, while changing a semantic value does; array order remains authored and no identity-sorted-set extension is applied to normalized bytes. | Property |
 | FR-145-AC-7 | The FCD semantic reader consumes the shared golden, and extraction frontend tests `TC-1300` and `TC-1301` produce byte-identical normalized output across repeated runs, changed working directories, locales, and target directories. | Integration Test |
 
