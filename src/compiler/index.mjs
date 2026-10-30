@@ -1,7 +1,7 @@
 /**
  * The narrow build interface (FR-041, FR-052).
  *
- * Exactly fourteen symbols: the six issue #27 promoted, and the eight the contract
+ * Exactly thirteen symbols: the six issue #27 promoted, and the seven the contract
  * path adds. Callers reach the compiler through this module, through
  * `cli.mjs`, or through `tsp --emit` against `emitters/semantic-ir`; nothing
  * reaches into the modules behind it, and nothing here imports from `spikes/`.
@@ -20,7 +20,7 @@ export { normalizeJsonSchemaForPython } from "./backends/python-schema.mjs";
 export { runFrontend } from "./frontend/seam.mjs";
 export { compilePackage } from "./pipeline.mjs";
 export { readContractIr } from "./ir/reader.mjs";
-export { fingerprintIr, normalizeIr } from "./ir/normalize.mjs";
+export { normalizeIr } from "./ir/normalize.mjs";
 export { inspectIr } from "./inspect.mjs";
 export { diffSemanticContract } from "./compat/diff.mjs";
-export { CONTRACT_IR_VERSION } from "./packages/lock.mjs";
+export { CONTRACT_IR_VERSION } from "./packages/graph.mjs";

@@ -75,13 +75,6 @@
 		"code": "agent-ix.package.INVALID_EXTENSION"
 	},
 	{
-		"id": "lock-without-canonicalization",
-		"schema": "package-lock.schema.json",
-		"base": "positive/package-lock.json",
-		"remove": "canonicalization",
-		"code": "agent-ix.package.MISSING_CANONICALIZATION"
-	},
-	{
 		"id": "mapping-pure-external-read",
 		"schema": "mapping.schema.json",
 		"base": "positive/mapping.json",

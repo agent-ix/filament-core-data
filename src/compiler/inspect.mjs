@@ -12,7 +12,6 @@
  * quietly skipping the rule.
  */
 import { canonicalize } from "./packages/canonical.mjs";
-import { fingerprintIr } from "./ir/normalize.mjs";
 import { readContractIr } from "./ir/reader.mjs";
 
 function byCodePoint(left, right) {
@@ -39,15 +38,11 @@ export function inspectIr(document, options = {}) {
 		package: {
 			identity: document?.package?.identity ?? null,
 			version: document?.package?.version ?? null,
-			manifestDigest: document?.package?.manifestDigest ?? null,
-			lockDigest: document?.package?.lockDigest ?? null,
 		},
 		source: {
 			identity: document?.source?.identity ?? null,
 			dialect: document?.source?.dialect ?? null,
-			digest: document?.source?.digest ?? null,
 		},
-		fingerprint: fingerprintIr(document),
 		typeCount: types.length,
 		kinds: Object.fromEntries(
 			Object.entries(kinds).sort((left, right) =>
@@ -78,11 +73,7 @@ export function formatInspection(summary) {
 	const lines = [
 		`contract        ${summary.contractVersion}`,
 		`package         ${summary.package.identity} ${summary.package.version}`,
-		`manifest        ${summary.package.manifestDigest}`,
-		`lock            ${summary.package.lockDigest}`,
 		`source          ${summary.source.identity} (${summary.source.dialect})`,
-		`source digest   ${summary.source.digest}`,
-		`fingerprint     ${summary.fingerprint}`,
 		`types           ${summary.typeCount}`,
 	];
 	for (const [kind, total] of Object.entries(summary.kinds)) {

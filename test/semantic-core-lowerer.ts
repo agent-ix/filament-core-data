@@ -4,8 +4,6 @@
  * frontend itself. Imported by tests only.
  */
 
-import { createHash } from "node:crypto";
-
 export type JsonObject = Record<string, unknown>;
 
 type Locus = JsonObject;
@@ -58,7 +56,7 @@ function pascal(name: string): string {
 }
 
 /** Lower one archetype instance to a `contractVersion: "2.0.0"` IR document. */
-export function lower(instance: Instance, sourceBytes: string): JsonObject {
+export function lower(instance: Instance): JsonObject {
 	const [org, repo] = instance.package.split("/");
 	const base = `ix://${org}/${repo}`;
 	const sourceIdentity = String(instance.sourceLocus.sourceIdentity);
@@ -324,15 +322,12 @@ export function lower(instance: Instance, sourceBytes: string): JsonObject {
 			identity: sourceIdentity,
 			version: "1.0.0",
 			dialect: "spec-bundle",
-			digest: `sha256:${createHash("sha256").update(sourceBytes).digest("hex")}`,
 		},
 		package: {
 			identity: instance.package,
 			version: "1.0.0",
-			manifestDigest: `sha256:${"0".repeat(64)}`,
 			mappingVersions: [],
 			profileVersions: [],
-			lockDigest: `sha256:${"0".repeat(64)}`,
 		},
 		types,
 		occurrences: [],

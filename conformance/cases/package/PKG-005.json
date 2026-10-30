@@ -1,6 +1,6 @@
 {
 	"id": "PKG-005",
-	"title": "A lock whose package graph closes a cycle is rejected",
+	"title": "A package graph that closes a cycle is rejected",
 	"family": "package",
 	"class": "negative",
 	"kind": "document",
@@ -9,12 +9,12 @@
 	"ops": [
 		{
 			"op": "test",
-			"path": "/lock/packages/1/dependencies",
+			"path": "/packageGraph/packages/1/imports",
 			"value": []
 		},
 		{
 			"op": "replace",
-			"path": "/lock/packages/1/dependencies",
+			"path": "/packageGraph/packages/1/imports",
 			"value": ["agent-ix/conformance"]
 		}
 	],
@@ -23,8 +23,8 @@
 	"derivedFrom": [
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
-			"locator": "Packages, locks, and fingerprints",
-			"quote": "source identities, and dependencies. Package cycles are rejected with every"
+			"locator": "Packages and canonical documents",
+			"quote": "Package cycles are rejected with every locus."
 		}
 	],
 	"provenance": {
@@ -35,7 +35,7 @@
 		"resultState": "invalid",
 		"diagnostics": [
 			{
-				"pointer": "/lock/packages/1/dependencies",
+				"pointer": "/packageGraph/packages/1/imports",
 				"diagnostic": {
 					"code": "agent-ix.semantic-ir.PACKAGE_CYCLE",
 					"severity": "error",

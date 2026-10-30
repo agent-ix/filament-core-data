@@ -1,5 +1,4 @@
-//! FR-095 "The `source` block" and "The `package` block": every digest is
-//! recomputed outside the crate with `sha256sum`.
+//! FR-095 source and package envelope identity and version checks.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -8,7 +7,6 @@ mod common;
 
 use agent_ix_extraction_frontend::envelope::{self, ModuleManifest};
 use agent_ix_extraction_frontend::{Bundle, Envelope};
-use common::sha256sum;
 use ix_trace_rs::trace;
 use proptest::prelude::*;
 use serde_json::json;
@@ -38,7 +36,6 @@ fn load(root: &Path, roots: &[&Path]) -> (Bundle, Vec<ModuleManifest>) {
     let modules = roots
         .iter()
         .map(|root| {
-            let bytes = fs::read(root.join("manifest.yaml")).expect("manifest.yaml");
             let name = bundle
                 .semantic_modules()
                 .keys()
@@ -47,7 +44,7 @@ fn load(root: &Path, roots: &[&Path]) -> (Bundle, Vec<ModuleManifest>) {
                         .is_some_and(|dir| dir.to_string_lossy() == name.as_str())
                 })
                 .expect("the module root's directory is the module name");
-            ModuleManifest::from_bundle(&bundle, name, bytes).expect("loaded module")
+            ModuleManifest::from_bundle(&bundle, name).expect("loaded module")
         })
         .collect();
     (bundle, modules)
@@ -81,19 +78,6 @@ fn bundle_with_version(dir: &Path, version: Option<&str>) {
         dir.join("spec/functional/FR-005-snapshot-group-entity.md"),
     )
     .expect("copy FR-005");
-}
-
-fn copy_tree(from: &Path, to: &Path) {
-    fs::create_dir_all(to).expect("mkdir");
-    for entry in fs::read_dir(from).expect("read_dir") {
-        let entry = entry.expect("entry");
-        let target = to.join(entry.file_name());
-        if entry.path().is_dir() {
-            copy_tree(&entry.path(), &target);
-        } else {
-            fs::copy(entry.path(), &target).expect("copy");
-        }
-    }
 }
 
 #[trace("TC-1246", "FR-095-AC-1")]
@@ -141,79 +125,41 @@ fn tc_1247_spec_md_version_is_the_source_and_package_version_and_defaults_to_0_0
 
 #[trace("TC-1248", "FR-095-AC-3")]
 #[test]
-fn tc_1248_source_digest_is_sha256sum_over_path_nul_bytes_nul_and_one_byte_flips_it() {
+fn tc_1248_source_omits_digest_when_a_document_changes() {
     let root = fixture("snapshot-table");
-    let (bundle, _) = load(&root, &[&business_module()]);
-    let block = envelope::source_block(&bundle);
+    let (bundle, modules) = load(&root, &[&business_module()]);
+    let source = serde_json::to_value(Envelope::new(&bundle, &modules).source).expect("json");
+    assert_eq!(source.as_object().expect("object").len(), 3);
+    assert!(source.get("digest").is_none());
 
-    // The recipe assembled outside the crate: every loaded document's path
-    // in code-point order, from the bytes on disk.
-    let mut paths: Vec<&str> = bundle.documents().iter().map(|d| d.path()).collect();
-    paths.sort_by(|a, b| a.as_bytes().cmp(b.as_bytes()));
-    assert_eq!(
-        paths,
-        [
-            "spec/functional/FR-005-snapshot-group-entity.md",
-            "spec/functional/FR-006-snapshot-entity.md",
-            "spec/spec.md"
-        ]
-    );
-    let mut recipe = Vec::new();
-    for path in &paths {
-        recipe.extend_from_slice(path.as_bytes());
-        recipe.push(0);
-        recipe.extend_from_slice(&fs::read(root.join(path)).expect("document bytes"));
-        recipe.push(0);
-    }
-    assert_eq!(block.digest, format!("sha256:{}", sha256sum(&recipe)));
-
-    // One byte of one document changes the digest.
     let scratch = tempfile::tempdir().expect("tempdir");
-    copy_tree(&root, scratch.path());
-    let target = scratch
+    bundle_with_version(scratch.path(), None);
+    let path = scratch
         .path()
         .join("spec/functional/FR-005-snapshot-group-entity.md");
-    let mut bytes = fs::read(&target).expect("read");
-    let last = bytes.len() - 1;
-    // The trailing newline becomes a space: still a document, one byte off.
-    assert_eq!(bytes[last], b'\n');
-    bytes[last] = b' ';
-    fs::write(&target, &bytes).expect("write");
-    let (changed, _) = load(scratch.path(), &[&business_module()]);
-    let changed = envelope::source_block(&changed);
-    assert_ne!(changed.digest, block.digest);
-    assert_eq!(changed.identity, block.identity);
+    let mut bytes = fs::read(&path).expect("read");
+    bytes.push(b' ');
+    fs::write(&path, bytes).expect("write");
+    let (changed, modules) = load(scratch.path(), &[&business_module()]);
+    let changed = serde_json::to_value(Envelope::new(&changed, &modules).source).expect("json");
+    assert_eq!(changed, source);
 }
 
 #[trace("TC-1249", "FR-095-AC-4")]
 #[test]
-fn tc_1249_manifest_digest_and_lock_digest_equal_sha256sum_computed_outside_the_crate() {
-    let (bundle, modules) = load_table();
-    let block = envelope::package_block(&bundle, &modules);
-
-    let manifest = fs::read(business_module().join("manifest.yaml")).expect("manifest");
-    let manifest_hex = sha256sum(&manifest);
-    assert_eq!(block.manifest_digest, format!("sha256:{manifest_hex}"));
-
-    let lines = format!("fixture/domain@0.1.0:{manifest_hex}\n");
-    assert_eq!(
-        block.lock_digest,
-        format!("sha256:{}", sha256sum(lines.as_bytes()))
-    );
-
-    // With two modules the lines sort by code point, whatever the caller's order.
-    let (bundle, modules) = load(
-        &fixture("snapshot-table"),
-        &[&business_module(), &extra_module()],
-    );
-    let block = envelope::package_block(&bundle, &modules);
-    let extra_hex = sha256sum(&fs::read(extra_module().join("manifest.yaml")).expect("manifest"));
-    let lines =
-        format!("agent-ix/objects-extra@0.1.0:{extra_hex}\nfixture/domain@0.1.0:{manifest_hex}\n");
-    assert_eq!(
-        block.lock_digest,
-        format!("sha256:{}", sha256sum(lines.as_bytes()))
-    );
+fn tc_1249_package_omits_digests_with_one_or_two_modules() {
+    for roots in [
+        vec![business_module()],
+        vec![business_module(), extra_module()],
+    ] {
+        let refs: Vec<&Path> = roots.iter().map(PathBuf::as_path).collect();
+        let (bundle, modules) = load(&fixture("snapshot-table"), &refs);
+        let package = serde_json::to_value(Envelope::new(&bundle, &modules).package).expect("json");
+        let package = package.as_object().expect("object");
+        assert_eq!(package.len(), 4);
+        assert!(!package.contains_key("manifestDigest"));
+        assert!(!package.contains_key("lockDigest"));
+    }
 }
 
 #[trace("TC-1250", "FR-095-AC-5")]
@@ -235,43 +181,25 @@ fn tc_1250_mapping_versions_is_the_contract_version_and_every_other_list_is_empt
     keys.sort();
     assert_eq!(
         keys,
-        [
-            "identity",
-            "lockDigest",
-            "manifestDigest",
-            "mappingVersions",
-            "profileVersions",
-            "version"
-        ],
+        ["identity", "mappingVersions", "profileVersions", "version"],
         "exactly the members semantic-ir.schema.json#/properties/package requires"
     );
 }
 
 #[trace("TC-1256", "FR-095-AC-11")]
 #[test]
-fn tc_1256_manifest_digest_covers_both_manifests_in_name_order_whatever_the_root_order() {
+fn tc_1256_package_versions_ignore_module_root_order() {
     let root = fixture("snapshot-table");
     let (bundle, forward) = load(&root, &[&business_module(), &extra_module()]);
     let (_, backward) = load(&root, &[&extra_module(), &business_module()]);
     let block = envelope::package_block(&bundle, &forward);
     assert_eq!(block, envelope::package_block(&bundle, &backward));
-
-    let mut concat = fs::read(business_module().join("manifest.yaml")).expect("business");
-    concat.extend(fs::read(extra_module().join("manifest.yaml")).expect("objects-extra"));
-    assert_eq!(
-        block.manifest_digest,
-        format!("sha256:{}", sha256sum(&concat)),
-        "fixture-domain sorts before objects-extra"
-    );
-    let single = envelope::package_block(&bundle, &forward[..1]);
-    assert_ne!(single.manifest_digest, block.manifest_digest);
-
+    assert_eq!(block.mapping_versions, ["1.0.0"]);
+    assert_eq!(block.profile_versions, [] as [&str; 0]);
     let names: Vec<String> = bundle.semantic_modules().keys().cloned().collect();
     assert_eq!(names, ["fixture-domain", "objects-extra"]);
     assert!(bundle.object_type("widget").is_some());
 
-    // Property: any permutation of the caller's module list yields the same
-    // package block.
     proptest!(ProptestConfig::with_cases(64), |(order in Just(forward.clone()).prop_shuffle())| {
         prop_assert_eq!(envelope::package_block(&bundle, &order), block.clone());
     });

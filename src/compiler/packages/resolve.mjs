@@ -21,8 +21,7 @@ import {
 	diagnostic,
 	fragment,
 } from "../diagnostics.mjs";
-import { canonicalize, digest } from "./canonical.mjs";
-import { contentDigest, schemaBytes } from "./lock.mjs";
+import { sourceFiles } from "./graph.mjs";
 import { readDocument } from "./manifest.mjs";
 
 const SEMVER =
@@ -195,7 +194,6 @@ function discoverCandidates(host, searchPath, limits, diagnostics) {
 				packageRoot,
 				manifest: read.value,
 				manifestText: read.text,
-				manifestDigest: read.digest,
 				locate: read.locate,
 				manifestPath: read.path,
 			};
@@ -204,35 +202,8 @@ function discoverCandidates(host, searchPath, limits, diagnostics) {
 				candidates.set(key, entry);
 				continue;
 			}
-			let existingDigest;
-			let currentDigest;
-			try {
-				existingDigest = contentDigest(
-					host,
-					existing.packageRoot,
-					existing.manifest,
-				);
-				currentDigest = contentDigest(host, packageRoot, read.value);
-			} catch {
-				// A candidate whose sources cannot be read is reported when it is
-				// selected, at the manifest that declared the root; comparing two
-				// digests one of which does not exist would report the wrong defect.
-				continue;
-			}
-			if (existingDigest !== currentDigest) {
-				// Sorted, so the message does not depend on which directory the host
-				// happened to enumerate first.
-				const [first, second] = [existingDigest, currentDigest].sort(
-					byCodePoint,
-				);
-				diagnostics.push(
-					diagnostic(DIAGNOSTIC_CODES.DIGEST_CONFLICT, {
-						message: `${fragment(key)} resolves to two different content digests: ${first} and ${second}`,
-						locus: existing.locate("/package"),
-						related: [read.locate("/package")],
-					}),
-				);
-			}
+			// The caller's declared search-path order breaks an identity/version
+			// tie. The first candidate is already selected.
 		}
 	}
 	return { candidates, rejected };
@@ -357,7 +328,6 @@ export function resolvePackageGraph(request) {
 		packageRoot: resolve(packageRoot),
 		manifest: rootRead.value,
 		manifestText: rootRead.text,
-		manifestDigest: rootRead.digest,
 		locate: rootRead.locate,
 		manifestPath: rootRead.path,
 	};
@@ -601,14 +571,12 @@ export function resolvePackageGraph(request) {
 		// representation profile that `profile.schema.json` describes is a
 		// separate document, and the manifest carries no path for it. The
 		// convention this compiler implements is `profiles/<name>.json` beside the
-		// manifest. Where a package declares none, the build profile's own
-		// declaration is what the fingerprint covers.
+		// manifest.
 		const profileDocumentPath = resolve(
 			packageRoot,
 			"profiles",
 			`${profile.name}.json`,
 		);
-		let profileDigest = digest(canonicalize(profile));
 		let profileDocument;
 		if (host.exists(profileDocumentPath)) {
 			const read = readDocument(host, {
@@ -621,7 +589,6 @@ export function resolvePackageGraph(request) {
 				limits,
 			});
 			if (read.value) {
-				profileDigest = read.digest;
 				profileDocument = read.value;
 			} else {
 				diagnostics.push(...read.diagnostics);
@@ -630,7 +597,6 @@ export function resolvePackageGraph(request) {
 		profiles.push({
 			name: profile.name,
 			version: profile.version,
-			digest: profileDigest,
 			declaration: profile,
 			document: profileDocument,
 		});
@@ -673,7 +639,6 @@ export function resolvePackageGraph(request) {
 			mappings.push({
 				identity,
 				version: read.value.version,
-				digest: read.digest,
 				document: read.value,
 				locate: read.locate,
 			});
@@ -702,12 +667,11 @@ export function resolvePackageGraph(request) {
 
 	/**
 	 * A source root the declared roots refuse, or a document too deep to
-	 * canonicalise, is a diagnostic at the manifest that declared it — never a
-	 * package that quietly digests nothing.
+	 * enumerate, is a diagnostic at the manifest that declared it.
 	 */
-	const digestOf = (entry) => {
+	const filesOf = (entry) => {
 		try {
-			return contentDigest(host, entry.packageRoot, entry.manifest);
+			return sourceFiles(host, entry.packageRoot, entry.manifest);
 		} catch (error) {
 			diagnostics.push(
 				diagnostic(
@@ -720,7 +684,7 @@ export function resolvePackageGraph(request) {
 					},
 				),
 			);
-			return undefined;
+			return [];
 		}
 	};
 
@@ -729,7 +693,7 @@ export function resolvePackageGraph(request) {
 		.map((entry) => ({
 			identity: entry.identity,
 			version: entry.versionText,
-			contentDigest: digestOf(entry),
+			sourceFiles: filesOf(entry),
 			sourceIdentity: sourceIdentityFor(entry.identity, "typespec"),
 			dependencies: [
 				...new Set(
@@ -737,11 +701,7 @@ export function resolvePackageGraph(request) {
 				),
 			].sort(byCodePoint),
 			packageRoot: entry.packageRoot,
-			// Every resolved package's manifest is an input the fingerprint covers.
-			// Carrying only the root's would let an imported package change its
-			// exports, its imports or its profiles without moving the fingerprint.
 			manifest: entry.manifest,
-			manifestDigest: entry.manifestDigest,
 			manifestPath: entry.manifestPath,
 		}));
 
@@ -753,7 +713,6 @@ export function resolvePackageGraph(request) {
 			identity: rootIdentity,
 			packageRoot: resolve(packageRoot),
 			manifest: rootRead.value,
-			manifestDigest: rootRead.digest,
 			locate: rootRead.locate,
 		},
 		packages,
@@ -766,7 +725,6 @@ export function resolvePackageGraph(request) {
 				.filter(([, value]) => value.owner !== rootIdentity)
 				.map(([identity]) => identity),
 		),
-		schemaBytes: schemaBytes(host),
 		diagnostics,
 	};
 }

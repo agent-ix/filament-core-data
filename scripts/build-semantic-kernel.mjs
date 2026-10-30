@@ -38,7 +38,6 @@ import {
 	readLicense,
 } from "../src/compiler/backends/rust-serde/index.mjs";
 import { biomeFormatter } from "../src/compiler/backends/format.mjs";
-import { fingerprintIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { checkKernelBundle } from "../src/compiler/frontend/json-schema/bundle.mjs";
 import { lowerBundle } from "../src/compiler/frontend/json-schema/lower.mjs";
@@ -100,8 +99,6 @@ function main(argv) {
 		return;
 	}
 
-	const lockFingerprint = fingerprintIrForTarget(lowered.document);
-
 	/** @type {[string, string][]} */
 	const artifacts = [
 		["semantic-ir.json", serialize(lowered.document)],
@@ -132,7 +129,6 @@ function main(argv) {
 	// be a second contract, and the corpus judges only the first.
 	const tsRequest = {
 		contractVersion: "1.0.0",
-		lockFingerprint,
 		ir: lowered.document,
 		profile: readJson(join(ROOT, "fixtures/semantic/v1/positive/profile.json")),
 		mappings: [],
@@ -192,7 +188,6 @@ function main(argv) {
 	// of a branch being added there (FR-086-CON-1).
 	const rustRequest = {
 		contractVersion: "1.0.0",
-		lockFingerprint,
 		ir: lowered.document,
 		profile: RUST_PROFILE,
 		mappings: [],

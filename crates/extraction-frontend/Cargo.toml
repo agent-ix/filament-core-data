@@ -34,10 +34,10 @@ quire-rs = { git = "https://github.com/agent-ix/quire-rs", rev = "da10e4c2ea502b
 agent-ix-semantic-ir = { path = "../semantic-ir" }
 serde = { workspace = true }
 serde_json = { workspace = true }
-sha2 = "=0.10.9"
 clap = { version = "=4.6.6", features = ["derive"] }
 
 [dev-dependencies]
+sha2 = "=0.10.9"
 ix-trace-rs = { git = "https://github.com/agent-ix/ix-trace-rs", tag = "v0.1.1" }
 tempfile = "=3.27.0"
 proptest = "=1.11.0"

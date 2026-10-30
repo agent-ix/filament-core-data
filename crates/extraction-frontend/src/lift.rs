@@ -83,7 +83,7 @@ fn manifests(bundle: &Bundle, module_roots: &[&Path]) -> Result<Vec<ModuleManife
         .map(|root| {
             let bytes = read_manifest(root)?;
             let (name, _) = parsed_manifest(root, &bytes)?;
-            ModuleManifest::from_bundle(bundle, &name, bytes).ok_or_else(|| {
+            ModuleManifest::from_bundle(bundle, &name).ok_or_else(|| {
                 Refusal::new(Diagnostic::frontend(
                     Code::ModuleRefused,
                     format!(

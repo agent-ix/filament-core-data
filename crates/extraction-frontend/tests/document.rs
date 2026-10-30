@@ -19,8 +19,8 @@ use agent_ix_semantic_ir::json::parse as parse_json;
 use agent_ix_semantic_ir::normalize::normalized;
 use agent_ix_semantic_ir::{decide, ResultState};
 use common::{
-    bundle_fixtures, business_module, collator_order, edge_vocabulary, fingerprint_ir,
-    lift_fixture, normalize_ir, positive_lifts, workspace_dir,
+    bundle_fixtures, business_module, collator_order, edge_vocabulary, lift_fixture, normalize_ir,
+    positive_lifts, workspace_dir,
 };
 use ix_trace_rs::trace;
 use proptest::prelude::*;
@@ -46,13 +46,12 @@ fn assembled(name: &str) -> Value {
     let modules: Vec<ModuleManifest> = roots
         .iter()
         .map(|root| {
-            let bytes = fs::read(root.join("manifest.yaml")).expect("manifest");
             let dir = root
                 .file_name()
                 .expect("dir")
                 .to_string_lossy()
                 .into_owned();
-            ModuleManifest::from_bundle(&bundle, &dir, bytes).expect("loaded")
+            ModuleManifest::from_bundle(&bundle, &dir).expect("loaded")
         })
         .collect();
     let extractions = extract(&bundle);
@@ -496,8 +495,7 @@ fn tc_1276_a_lift_with_two_supertypes_writes_supertypes_and_fields_in_authored_o
 /// End to end: an operation authored with parameters `zeta`, `alpha` is
 /// written with `params` in that order, a fixed point of FR-050
 /// `normalizeIr` and the reader's canonical form, and reversing them changes
-/// both the normalized bytes and the production `fingerprintIr` (read through
-/// node).
+/// the normalized bytes.
 #[trace("TC-1276", "FR-097-AC-4")]
 #[test]
 fn tc_1276_a_lift_with_two_operation_params_writes_them_in_authored_order() {
@@ -551,7 +549,6 @@ fn tc_1276_a_lift_with_two_operation_params_writes_them_in_authored_order() {
     let reversed_bytes = serde_json::to_vec(&reversed).expect("json");
     assert_eq!(params_of(&reversed), ["alpha", "zeta"]);
     assert_ne!(normalize_ir(&reversed_bytes), normalize_ir(bytes));
-    assert_ne!(fingerprint_ir(&reversed_bytes), fingerprint_ir(bytes));
 }
 
 #[trace("TC-1276", "FR-097-AC-4")]
@@ -764,27 +761,21 @@ fn tc_1336_no_serde_json_serializer_under_src_and_the_document_write_is_dominate
         "the reader refuses before the document is constructed"
     );
     let write = fs::read_to_string(src.join("write.rs")).expect("write.rs");
-    // The optional digest and the document each consume validated bytes.
+    // The document consumes only validated bytes.
     assert_eq!(
         write.matches("document.bytes()").count(),
-        2,
-        "digest and document each read the validated document bytes"
+        1,
+        "the document reads the validated bytes"
     );
     let arm_at = write
         .find("if let Emission::Document {")
         .expect("the success arm");
-    let digest_arm_at = write
-        .find("if let Some(digest) = &paths.digest")
-        .expect("the optional digest arm");
-    let digest_at = write
-        .find("digest_sidecar_bytes(document.bytes())")
-        .expect("the digest consumes document bytes");
     let document_at = write
         .find("document.bytes().to_vec()")
         .expect("the document file consumes document bytes");
     assert!(
-        arm_at < digest_arm_at && digest_arm_at < digest_at && digest_at < document_at,
-        "both byte reads sit in the success arm, with the optional digest first"
+        arm_at < document_at,
+        "the validated byte read sits in the success arm"
     );
     let normalized_sites: Vec<String> = files
         .iter()

@@ -93,7 +93,5 @@ class FilamentSemanticCompatibilityReportV1(BaseModel):
     changes: Annotated[list[Change], Field(min_length=1)]
     consumerEvidenceStatus: ConsumerEvidenceStatus
     contractVersion: Literal['1.0.0']
-    newFingerprint: common_schema.Sha256
-    oldFingerprint: common_schema.Sha256
     requiredGates: list[RequiredGate]
     retainedBridges: list[RetainedBridge]

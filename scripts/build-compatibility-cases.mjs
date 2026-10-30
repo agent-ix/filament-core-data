@@ -20,7 +20,6 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputDir = resolve(root, "test/fixtures/compiler/compatibility/cases");
 const PKG = "agent-ix/assurance";
 const SOURCE = `ix://${PKG}/source/typespec`;
-const DIGEST = `sha256:${"0".repeat(64)}`;
 
 function origin(path = "types/main.tsp", line = 1) {
 	return {
@@ -73,15 +72,12 @@ function base() {
 			identity: SOURCE,
 			version: "1.0.0",
 			dialect: "typespec",
-			digest: DIGEST,
 		},
 		package: {
 			identity: PKG,
 			version: "1.0.0",
-			manifestDigest: DIGEST,
 			mappingVersions: [],
 			profileVersions: ["1.0.0"],
-			lockDigest: DIGEST,
 		},
 		types: [
 			{

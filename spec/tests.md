@@ -702,7 +702,7 @@ computed by `quire matrix` from those trace tags.
 | TC-836 | The generated import graph names no prohibited-category identifier, every specifier is relative, and the generated manifest declares no dependency block | Static | P0 | NFR-024-AC-5, NFR-024-AC-6 |
 | TC-837 | Generated source carries no `any`, cast, or suppression, no backend module reads a clock, environment, cwd, filesystem, or socket, and none calls `localeCompare` | Static | P0 | NFR-024-AC-7, NFR-024-AC-8, NFR-024-AC-9 |
 | TC-838 | Every generated file carries the AGPL-3.0-or-later SPDX header, is a formatter no-op, and the package typechecks under `strict` with `exactOptionalPropertyTypes`, and the single-type reachable-symbol set matches the committed fixture | Compile | P0 | NFR-024-AC-10, NFR-024-AC-11, NFR-024-AC-12, NFR-024-AC-13 |
-| TC-842 | The narrow interface exports exactly fifteen symbols | Snapshot | P0 | NFR-025-AC-5 |
+| TC-842 | The narrow interface exports the exact thirteen-symbol set named by NFR-025-AC-5 | Snapshot | P0 | NFR-025-AC-5 |
 | TC-843 | `npm pack --dry-run` lists the added `src/compiler/` modules as source and no generated-package or fixture file | Analysis | P0 | NFR-025-AC-8 |
 | TC-844 | Every generated manifest and added source file declares AGPL-3.0-or-later | Integration | P0 | NFR-025-AC-9 |
 | TC-645 | Every structural kind maps to its declared Rust form | Unit | P0 | FR-054-AC-1, FR-054-CON-1 |

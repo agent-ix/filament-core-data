@@ -290,30 +290,6 @@
 			"reviewBy": "2026-12-31"
 		},
 		{
-			"id": "DIV-028",
-			"case": "PKG-006",
-			"adapter": "compiler-frontend",
-			"code": "agent-ix.semantic-ir.STALE_LOCK",
-			"owner": "the issue #19 compiler frontend",
-			"owningIssue": "agent-ix/filament-core-data#19",
-			"severity": "medium",
-			"verdict": "implementation-defect",
-			"rationale": "The corpus decides a lock that no longer matches the graph from the bundle's `manifest`, `lock` and `mappings` members. `readContractIr` takes the IR document alone and never sees them, so no reading of this case can raise the code. The compiler's counterpart is `agent-ix.compiler.STALE_LOCK`, and where it exists it is reachable only through `resolvePackageGraph` (`src/compiler/packages/resolve.mjs:313`), which reads a package tree from a filesystem host rather than an in-memory bundle. The compiler exposes no bundle-level entry point the corpus can call, which is the defect; the adapter does not materialise a package tree per case, because that would measure a filesystem loader rather than the frontend. A second, independent disagreement rides along: where the compiler does carry the rule it names it under `agent-ix.compiler.*`, not `agent-ix.semantic-ir.*`, and the contract's \"Code namespaces are frontend-owned\" clause is silent on which namespace owns package resolution.",
-			"reviewBy": "2026-12-31"
-		},
-		{
-			"id": "DIV-029",
-			"case": "PKG-006",
-			"adapter": "compiler-frontend",
-			"code": "result-state",
-			"owner": "the issue #19 compiler frontend",
-			"owningIssue": "agent-ix/filament-core-data#19",
-			"severity": "medium",
-			"verdict": "implementation-defect",
-			"rationale": "The case is a consequence of the diagnostic divergence registered for the same case: with no blocking diagnostic raised, `hasBlocking` decides `success` where the corpus expects `invalid`. The package-level inputs the case turns on never reach the reader.",
-			"reviewBy": "2026-12-31"
-		},
-		{
 			"id": "DIV-030",
 			"case": "PKG-007",
 			"adapter": "compiler-frontend",

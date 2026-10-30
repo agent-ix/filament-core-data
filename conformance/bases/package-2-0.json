@@ -9,16 +9,13 @@
 		"source": {
 			"identity": "ix://agent-ix/filament-core-data/source/typespec",
 			"version": "1.0.0",
-			"dialect": "typespec",
-			"digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+			"dialect": "typespec"
 		},
 		"package": {
 			"identity": "agent-ix/conformance",
 			"version": "1.0.0",
-			"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
 			"mappingVersions": ["1.0.0"],
-			"profileVersions": ["1.0.0"],
-			"lockDigest": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+			"profileVersions": ["1.0.0"]
 		},
 		"types": [
 			{
@@ -744,46 +741,23 @@
 		"mappings": ["ix://agent-ix/conformance/mapping/root-json"],
 		"extensions": []
 	},
-	"manifestDigest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
-	"lock": {
-		"contractVersion": "1.0.0",
+	"packageGraph": {
 		"rootPackage": "agent-ix/conformance",
-		"fingerprint": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
-		"canonicalization": {
-			"algorithm": "RFC8785-JCS-with-identity-sorted-sets-v1",
-			"digest": "sha256",
-			"included": [
-				"schema-bytes",
-				"manifest",
-				"mappings",
-				"profiles",
-				"resolved-packages",
-				"compiler-contract-version"
-			],
-			"excluded": [
-				"object-order",
-				"set-order",
-				"source-path",
-				"working-directory",
-				"timestamp",
-				"hostname",
-				"locale"
-			]
-		},
 		"packages": [
 			{
 				"identity": "agent-ix/conformance",
 				"version": "1.0.0",
-				"contentDigest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
-				"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
-				"dependencies": ["agent-ix/kernel"]
+				"imports": ["agent-ix/kernel"],
+				"exports": [
+					"ix://agent-ix/conformance/type/Node",
+					"ix://agent-ix/conformance/type/Root"
+				]
 			},
 			{
 				"identity": "agent-ix/kernel",
 				"version": "1.0.0",
-				"contentDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-				"sourceIdentity": "ix://agent-ix/filament-core-data/source/typespec",
-				"dependencies": []
+				"imports": [],
+				"exports": ["ix://agent-ix/kernel/Text"]
 			}
 		]
 	},

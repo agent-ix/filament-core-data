@@ -24,7 +24,6 @@ import {
 	generateTarget,
 	selectBackend,
 } from "./backends/seam.mjs";
-import { fingerprintIrForTarget } from "./backends/typescript-v1/canonical.mjs";
 import { emitTypeScriptPackage } from "./backends/typescript-v1/emit.mjs";
 import { ContractRefusalError, diffSemanticContract } from "./compat/diff.mjs";
 import { compileSemanticIr } from "./compile.mjs";
@@ -37,14 +36,14 @@ import { createHost } from "./host.mjs";
 import { formatInspection, inspectIr, inspectionJson } from "./inspect.mjs";
 import { serializeIr } from "./ir/normalize.mjs";
 import { serializeSemanticIr } from "./ir.mjs";
-import { REPO_ROOT, serializeLock } from "./packages/lock.mjs";
+import { REPO_ROOT } from "./packages/graph.mjs";
 import { compilePackage } from "./pipeline.mjs";
 
 const USAGE = `Usage:
   node src/compiler/cli.mjs emit-ir --entrypoint <path> [--generator <id>] [--base-dir <path>] --out <path>
   node src/compiler/cli.mjs compile --package <dir> [--package-path <dir>]... [--profile <name>]
                                     [--dialect <dialect>] [--entrypoint <relative path>]
-                                    [--lock <file>] [--write-lock <file>] [--limits <file>]
+                                    [--limits <file>]
                                     --out <file> [--diagnostics <file>]
   node src/compiler/cli.mjs inspect --ir <file> [--json] [--package <dir>]
   node src/compiler/cli.mjs diff --old <ir> --new <ir> --out <file>
@@ -67,8 +66,6 @@ const FLAGS = {
 			"profile",
 			"dialect",
 			"entrypoint",
-			"lock",
-			"write-lock",
 			"limits",
 			"out",
 			"diagnostics",
@@ -201,9 +198,7 @@ async function compile(options) {
 			packageRoot,
 			...searchPath,
 			REPO_ROOT,
-			...[options.lock, options.limits]
-				.filter(Boolean)
-				.map((path) => dirname(resolve(path))),
+			...[options.limits].filter(Boolean).map((path) => dirname(resolve(path))),
 		],
 	});
 	const result = await compilePackage({
@@ -213,7 +208,6 @@ async function compile(options) {
 		profileName: options.profile,
 		dialect: options.dialect ?? "typespec",
 		entrypoint: options.entrypoint ?? "main.tsp",
-		lockPath: options.lock ? resolve(options.lock) : undefined,
 		limits,
 	});
 	const diagnostics = sortDiagnostics(result.diagnostics);
@@ -231,9 +225,6 @@ async function compile(options) {
 	}
 	if (hasBlocking(diagnostics) || !result.ir) return 1;
 	writeAtomic(options.out, serializeIr(result.ir));
-	if (options["write-lock"]) {
-		writeAtomic(options["write-lock"], serializeLock(result.lock));
-	}
 	return 0;
 }
 
@@ -363,7 +354,6 @@ async function generate(options) {
 
 	const request = {
 		contractVersion: "1.0.0",
-		lockFingerprint: fingerprintIrForTarget(ir),
 		ir,
 		profile,
 		mappings: [],

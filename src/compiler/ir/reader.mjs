@@ -1210,7 +1210,7 @@ export function readContractIr(document, options = {}) {
 		checkDefinition(definition, definitionIndex);
 	}
 
-	// A document too deep to canonicalise cannot be fingerprinted, so the bound
+	// A document too deep to canonicalise cannot be normalized, so the bound
 	// is checked here, where it is a diagnostic rather than an exception. The
 	// depth is measured directly rather than by calling the canonicaliser, which
 	// would make the reader and the normalizer import each other.

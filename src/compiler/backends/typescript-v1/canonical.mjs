@@ -28,8 +28,6 @@
  * `canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" }`.
  */
 
-import { createHash } from "node:crypto";
-
 /**
  * The container paths whose members are a *set* — ordered by their members'
  * identity rather than by position — declared once, as data, so that a
@@ -208,11 +206,6 @@ export function canonicalize(value, { sets = true } = {}) {
 	return render(value, [], 0, sets);
 }
 
-/** `sha256:<64 lowercase hex>` over the UTF-8 bytes of `text`. */
-export function digestOf(text) {
-	return `sha256:${createHash("sha256").update(text, "utf8").digest("hex")}`;
-}
-
 /**
  * Materialize a field's `nullable` as a literal boolean, so that two documents
  * that differ only in which of them was written down carry one canonical form.
@@ -279,9 +272,4 @@ export function normalizeIr(document) {
  */
 export function normalizeIrForTarget(document) {
 	return canonicalize(normalizeIr(document), { sets: false });
-}
-
-/** The fingerprint of the materialized document's identity-sorted-set form. */
-export function fingerprintIrForTarget(document) {
-	return digestOf(canonicalize(normalizeIr(document), { sets: true }));
 }

@@ -9,11 +9,10 @@
  * the key ordering, the traversal, and one addition the algorithm's name
  * declares: arrays the caller marks as *identity-keyed sets* are sorted by their
  * members' `identity` before serialisation, because a set's order carries no
- * meaning and must not reach the fingerprint.
+ * meaning and must not affect the canonical bytes.
  *
  * Every other array's order is meaningful and is preserved.
  */
-import { createHash } from "node:crypto";
 import { DEFAULT_LIMITS, DIAGNOSTIC_CODES } from "../diagnostics.mjs";
 
 export class CanonicalLimitError extends Error {
@@ -99,10 +98,4 @@ export function canonicalize(value, options = {}) {
 	};
 
 	return walk(value, "", 0);
-}
-
-/** `sha256:<64 lowercase hex>`, the digest form `common.schema.json` declares. */
-export function digest(input) {
-	const bytes = typeof input === "string" ? Buffer.from(input, "utf8") : input;
-	return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
 }

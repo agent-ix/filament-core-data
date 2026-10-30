@@ -318,21 +318,6 @@ pub fn normalize_ir(bytes: &[u8]) -> Vec<u8> {
     run.stdout
 }
 
-/// `fingerprintIr` of `src/compiler/ir/normalize.mjs` over the JSON on
-/// stdin: the production FR-050 fingerprint of a document.
-pub fn fingerprint_ir(bytes: &[u8]) -> String {
-    let script = format!(
-        "const fs=require('fs');const {{pathToFileURL}}=require('url');\
-         import(pathToFileURL({:?}).href).then(m=>{{\
-         const doc=JSON.parse(fs.readFileSync(0,'utf8'));\
-         process.stdout.write(m.fingerprintIr(doc));}}).catch(e=>{{console.error(e);process.exit(3);}});",
-        workspace_dir().join("src/compiler/ir/normalize.mjs").to_string_lossy()
-    );
-    let run = run_node(&["-e", &script], bytes, None).expect("node runs");
-    assert_eq!(run.status, 0, "fingerprintIr failed: {}", run.stderr);
-    String::from_utf8(run.stdout).expect("utf-8 fingerprint")
-}
-
 /// `node src/compiler/cli.mjs inspect --ir <path> --json`: the exit status
 /// and the parsed summary.
 pub fn inspect(path: &Path) -> (i32, Value) {
@@ -515,23 +500,4 @@ pub fn without(value: &Value, drop: &[&str]) -> Value {
         }
     }
     out
-}
-
-/// `sha256sum` over `bytes`, computed outside the crate (the FR-095 and
-/// FR-097 digest oracles, SR-170 FND-1509).
-pub fn sha256sum(bytes: &[u8]) -> String {
-    let dir = tempfile::tempdir().expect("tempdir");
-    let path = dir.path().join("input");
-    fs::write(&path, bytes).expect("write");
-    let out = Command::new("sha256sum")
-        .arg(&path)
-        .output()
-        .expect("spawn sha256sum");
-    assert!(out.status.success(), "sha256sum failed");
-    String::from_utf8(out.stdout)
-        .expect("utf-8")
-        .split_whitespace()
-        .next()
-        .expect("digest column")
-        .to_string()
 }

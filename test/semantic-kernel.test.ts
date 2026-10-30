@@ -51,7 +51,6 @@ import {
 } from "../src/compiler/backends/rust-serde/cli.mjs";
 import { generateRust } from "../src/compiler/backends/rust-serde/index.mjs";
 import type { GenerationRequest } from "../src/compiler/backends/seam.d.mts";
-import { fingerprintIrForTarget } from "../src/compiler/backends/typescript-v1/canonical.mjs";
 import { typescriptBackend } from "../src/compiler/backends/typescript-v1/index.mjs";
 import { DIAGNOSTIC_CODES } from "../src/compiler/diagnostics.mjs";
 import { checkKernelBundle } from "../src/compiler/frontend/json-schema/bundle.mjs";
@@ -292,7 +291,7 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 	/**
 	 * `read()` returns `Record<string, unknown>`, so spreading it into an
 	 * object literal cannot carry named properties like `contractVersion`,
-	 * `lockFingerprint` or `limits` into the result's type — they are present
+	 * `limits` into the result's type — they are present
 	 * on the parsed fixture at runtime, just invisible to the type checker
 	 * through an untyped spread. Reading each member explicitly, with a narrow
 	 * cast from the `unknown` `read()` already declares, states the
@@ -304,7 +303,6 @@ describe("TC-1046..1060 the generated language trees (FR-085, FR-086)", () => {
 		);
 		return {
 			contractVersion: compilerRequest.contractVersion as string,
-			lockFingerprint: compilerRequest.lockFingerprint as string,
 			ir: read("packages/semantic-kernel/semantic-ir.json"),
 			profile: read("fixtures/semantic/v1/positive/profile.json"),
 			mappings: [],
@@ -597,7 +595,8 @@ describe("TC-1588..1592 cross-language agreement through the corpus (FR-090)", (
 		// fcd#199/#200's review adds IDENT-006, REL-007 and PRES-016 (findings
 		// 12, 9 and 5/R2), landing on 114. That review's H5 adds CONS-008 (an
 		// inline field constraint checked for applicability), landing on 115.
-		expect(report.coverage.totalCases).toBe(115);
+		// PLAT-1205 retires digest-only PKG-006, leaving 114 cases.
+		expect(report.coverage.totalCases).toBe(114);
 	});
 });
 
@@ -770,7 +769,6 @@ describe("TC-1048..1057 the kernel Rust crate and its measured gates (FR-086)", 
 		const generated = generateRust(
 			{
 				contractVersion: "1.0.0",
-				lockFingerprint: fingerprintIrForTarget(ir),
 				ir,
 				profile: RUST_PROFILE,
 				mappings: [],

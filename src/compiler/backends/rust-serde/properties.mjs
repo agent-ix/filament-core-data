@@ -13,7 +13,6 @@
  * from the code under test agrees with every mutation of that code.
  */
 
-import { createHash } from "node:crypto";
 import { readMappingTable } from "./branches.mjs";
 import { emitCrate } from "./crate.mjs";
 import { describeDegradation, scanDegradation } from "./degradation.mjs";
@@ -63,7 +62,6 @@ const LIMITS = Object.freeze({
 export function requestForIr(ir, outputRoot = "generated", profile = PROFILE) {
 	return {
 		contractVersion: "1.0.0",
-		lockFingerprint: `sha256:${createHash("sha256").update(JSON.stringify(ir), "utf8").digest("hex")}`,
 		ir,
 		profile,
 		mappings: [],

@@ -158,7 +158,7 @@ CONFORMANCE_BASE = "https://schemas.agent-ix.org/filament-core-data/conformance/
 MEMBER_SCHEMAS = {
     "ir": "semantic-ir.schema.json",
     "manifest": "package-manifest.schema.json",
-    "lock": "package-lock.schema.json",
+    "packageGraph": "package-graph.schema.json",
     "profile": "profile.schema.json",
     "consumerPolicy": "consumer-policy.schema.json",
 }
@@ -250,6 +250,40 @@ def _collapse(errors: list[Any], prefix: str) -> list[dict[str, str]]:
     ]
 
 
+def _graph_order_rows(graph: dict[str, Any]) -> list[dict[str, str]]:
+    """Cross-entry constraints that the closed JSON Schema cannot express."""
+    packages = graph["packages"]
+    rows: list[dict[str, str]] = []
+    if sum(package["identity"] == graph["rootPackage"] for package in packages) != 1:
+        rows.append(
+            {
+                "pointer": "/packageGraph/rootPackage",
+                "message": "root package must appear exactly once",
+            }
+        )
+    for index in range(1, len(packages)):
+        if packages[index - 1]["identity"] >= packages[index]["identity"]:
+            rows.append(
+                {
+                    "pointer": f"/packageGraph/packages/{index}/identity",
+                    "message": "package identities must increase",
+                }
+            )
+    for index, package in enumerate(packages):
+        for name in ("imports", "exports"):
+            values = package[name]
+            for position in range(1, len(values)):
+                if values[position - 1] >= values[position]:
+                    at = f"/packageGraph/packages/{index}/{name}/{position}"
+                    rows.append(
+                        {
+                            "pointer": at,
+                            "message": f"{name} must increase by identity",
+                        }
+                    )
+    return rows
+
+
 def schema_diagnostics(bundle: Any) -> list[dict[str, str]]:
     """The schema layer's rows over one input bundle, collapsed and ordered.
 
@@ -276,14 +310,22 @@ def schema_diagnostics(bundle: Any) -> list[dict[str, str]]:
     for member, file in MEMBER_SCHEMAS.items():
         if bundle.get(member) is None:
             continue
+        errors = _flatten(
+            list(
+                _validator(
+                    (CONFORMANCE_BASE if member == "packageGraph" else PUBLISHED_BASE)
+                    + file
+                ).iter_errors(bundle[member])
+            )
+        )
         rows.extend(
             _collapse(
-                _flatten(
-                    list(_validator(PUBLISHED_BASE + file).iter_errors(bundle[member]))
-                ),
+                errors,
                 f"/{member}",
             )
         )
+        if member == "packageGraph" and not errors:
+            rows.extend(_graph_order_rows(bundle[member]))
     ir = bundle.get("ir")
     if isinstance(ir, dict) and not any(
         row["pointer"].startswith("/ir") for row in rows
@@ -434,7 +476,7 @@ def supplementary(bundle: Any, ir: Any) -> list[dict[str, str]]:
 
     The shared reader in ``tests/semantic_ir_reader.py`` judges one IR document.
     Half of the contract's cross-field obligations are about the bundle around
-    it — the manifest that exports a type, the lock that resolves an import, the
+    it — the selected graph that exports a type and resolves an import, the
     profile that permits an omission — and a rule about the bundle cannot be
     stated by a function that only sees the document.
     """
@@ -571,7 +613,7 @@ def _package_context(
     if not isinstance(bundle, dict):
         return out
     manifest = bundle.get("manifest")
-    lock = bundle.get("lock")
+    graph = bundle.get("packageGraph")
     profile = bundle.get("profile")
     policy = bundle.get("consumerPolicy")
 
@@ -594,53 +636,42 @@ def _package_context(
     resolved = {
         package.get("identity")
         for package in reader._objects(
-            lock.get("packages") if isinstance(lock, dict) else None
+            graph.get("packages") if isinstance(graph, dict) else None
         )
     }
-    if isinstance(manifest, dict):
+    if isinstance(manifest, dict) and isinstance(graph, dict):
         for index, imported in enumerate(reader._objects(manifest.get("imports"))):
             if imported.get("packageIdentity") not in resolved:
                 out.append(
                     _row(
                         "UNRESOLVED_IMPORT",
                         f"/manifest/imports/{index}/packageIdentity",
-                        "the lock resolves no package"
+                        "the package graph resolves no package"
                         f" {imported.get('packageIdentity')}",
                     )
                 )
 
-    if isinstance(lock, dict):
+    if isinstance(graph, dict):
         edges = {
             package.get("identity"): [
                 dependency
-                for dependency in (package.get("dependencies") or [])
+                for dependency in (package.get("imports") or [])
                 if isinstance(dependency, str)
             ]
-            for package in reader._objects(lock.get("packages"))
+            for package in reader._objects(graph.get("packages"))
         }
         positions = {
             package.get("identity"): index
-            for index, package in enumerate(reader._objects(lock.get("packages")))
+            for index, package in enumerate(reader._objects(graph.get("packages")))
         }
         for identity in _back_edges(edges):
             out.append(
                 _row(
                     "PACKAGE_CYCLE",
-                    f"/lock/packages/{positions[identity]}/dependencies",
-                    f"the lock package graph closes a cycle at {identity}",
+                    f"/packageGraph/packages/{positions[identity]}/imports",
+                    f"the selected package graph closes a cycle at {identity}",
                 )
             )
-
-    declared = ir.get("package") if isinstance(ir.get("package"), dict) else {}
-    stated = bundle.get("manifestDigest")
-    if isinstance(stated, str) and declared.get("manifestDigest") != stated:
-        out.append(
-            _row(
-                "STALE_LOCK",
-                "/ir/package/manifestDigest",
-                "the IR names a manifest digest the bundle's manifest does not carry",
-            )
-        )
 
     owned = set(types) | {identity for identity, _ in _all_identities(ir)}
     for index, mapping in enumerate(reader._objects(bundle.get("mappings"))):
@@ -1005,7 +1036,7 @@ def answer(case: dict[str, Any]) -> dict[str, Any]:
                 "pointer": pointer("/ir", row["path"]),
                 "message": row["message"],
             }
-            for row in reader.read_semantic_ir(ir, _lock_exports(bundle))
+            for row in reader.read_semantic_ir(ir, _graph_exports(bundle))
             # The shared reader's identity rule sees types only; this adapter
             # decides identity uniqueness over the whole document instead, and
             # two rules for one obligation would report one defect twice.
@@ -1031,7 +1062,7 @@ def answer(case: dict[str, Any]) -> dict[str, Any]:
             or bool(
                 reader.read_semantic_ir(
                     before.get("ir") if isinstance(before, dict) else None,
-                    _lock_exports(before),
+                    _graph_exports(before),
                 )
             )
             or bool(
@@ -1048,16 +1079,18 @@ def answer(case: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def _lock_exports(bundle: Any) -> set[str]:
-    """The type identities the package manifest exports, or an empty set."""
-    manifest = bundle.get("manifest") if isinstance(bundle, dict) else None
-    exports = manifest.get("exports") if isinstance(manifest, dict) else None
-    if not isinstance(exports, list):
+def _graph_exports(bundle: Any) -> set[str]:
+    """The selected package graph's exported type identities."""
+    graph = bundle.get("packageGraph") if isinstance(bundle, dict) else None
+    packages = graph.get("packages") if isinstance(graph, dict) else None
+    if not isinstance(packages, list):
         return set()
     return {
-        entry["typeIdentity"]
-        for entry in exports
-        if isinstance(entry, dict) and isinstance(entry.get("typeIdentity"), str)
+        identity
+        for package in packages
+        if isinstance(package, dict)
+        for identity in (package.get("exports") or [])
+        if isinstance(identity, str)
     }
 
 

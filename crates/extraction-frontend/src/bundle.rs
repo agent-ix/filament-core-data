@@ -28,7 +28,6 @@ use quire_rs::CompiledArchetype;
 use quire_rs::{LoadedDocument, Registry};
 
 use crate::diagnostics::{Code, Diagnostic, Locus};
-use crate::envelope::sha256_prefixed;
 use crate::lower::module_short_name;
 use crate::write::{read_manifest, MANIFEST};
 
@@ -169,8 +168,6 @@ pub struct Construct {
     pub kind: ConstructKind,
     /// The declaring module's manifest `version`.
     pub module_version: String,
-    /// `sha256:<hex>` over the declaring module's manifest bytes.
-    pub manifest_digest: String,
     /// The declaration, each referenced role spelled as the IR role
     /// `<module short name>:<role>` of every module whose object types
     /// carry it.
@@ -257,7 +254,7 @@ impl Bundle {
                 .filter_map(|document| Some((document.frontmatter()?, document.raw()))),
             modules.values(),
         );
-        let manifests = module_manifests(module_roots)?;
+        let module_names = declared_module_names(module_roots)?;
         let active: Vec<(&CompiledArchetype, &SemanticModule)> = registry
             .active_archetypes()
             .filter_map(|archetype| Some((archetype, modules.get(&archetype.module)?)))
@@ -270,7 +267,7 @@ impl Bundle {
                 .map(|raw| {
                     let loaded = Loaded {
                         registry: &registry,
-                        manifests: &manifests,
+                        module_names: &module_names,
                         carriers: &carriers,
                         source_identity: &source_identity,
                     };
@@ -502,21 +499,13 @@ pub(crate) fn parsed_manifest(root: &Path, bytes: &[u8]) -> Result<(String, Mani
     Ok((name, manifest))
 }
 
-/// One module's manifest as a construct kind cites it.
-struct ModuleManifest {
-    digest: String,
-}
-
-/// The manifest of every module root, keyed by module name; the first root
-/// naming a module wins, as it does in the registry.
-fn module_manifests(module_roots: &[&Path]) -> Result<BTreeMap<String, ModuleManifest>, Refusal> {
-    let mut out = BTreeMap::new();
+/// Module names backed by a loaded manifest, as a construct kind cites them.
+fn declared_module_names(module_roots: &[&Path]) -> Result<BTreeSet<String>, Refusal> {
+    let mut out = BTreeSet::new();
     for root in module_roots {
         let bytes = read_manifest(root)?;
         let (name, _) = parsed_manifest(root, &bytes)?;
-        out.entry(name).or_insert(ModuleManifest {
-            digest: sha256_prefixed(&bytes),
-        });
+        out.insert(name);
     }
     Ok(out)
 }
@@ -558,7 +547,7 @@ fn reader_json(value: &serde_json::Value) -> Json {
 /// What a declaration is checked against at load.
 struct Loaded<'a> {
     registry: &'a Registry,
-    manifests: &'a BTreeMap<String, ModuleManifest>,
+    module_names: &'a BTreeSet<String>,
     carriers: &'a BTreeMap<String, BTreeSet<String>>,
     source_identity: &'a str,
 }
@@ -612,10 +601,12 @@ impl Loaded<'_> {
                 .map(|short| format!("{short}:{role}"))
                 .collect()
         });
-        let (Some(module_version), Some(manifest)) = (
-            self.registry.module_version(module),
-            self.manifests.get(module),
-        ) else {
+        if !self.module_names.contains(module) {
+            return Err(refuse(
+                "the engine loaded the module without a manifest".to_string(),
+            ));
+        }
+        let Some(module_version) = self.registry.module_version(module) else {
             return Err(refuse(
                 "the engine loaded the module without a manifest version".to_string(),
             ));
@@ -626,7 +617,6 @@ impl Loaded<'_> {
                 name: object.clone(),
             },
             module_version: module_version.to_string(),
-            manifest_digest: manifest.digest.clone(),
             declaration,
         })
     }

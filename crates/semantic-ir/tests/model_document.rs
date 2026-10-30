@@ -11,7 +11,7 @@ use agent_ix_semantic_ir::{decide, json::parse};
 
 const GENERATED: &str = r#"{"generated":{"generatorIdentity":"ix://agent-ix/conformance/generator/case-author","generatorVersion":"1.0.0","inputIdentities":["ix://agent-ix/filament-core-data/source/typespec"]}}"#;
 
-const HEADER: &str = r#""contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"source":{"dialect":"spec-bundle","digest":"sha256:ea98d2dccb8b5d16936209f232e1d8115d404f519f0d110a8f9207190d83bbcf","identity":"ix://acme/pkg/spec","version":"0.0.0"},"package":{"identity":"acme/pkg","lockDigest":"sha256:8b58fb1a6b5d597159c1f0b28c6a2088e5d5eb15665d3add2414c72025e0adc5","manifestDigest":"sha256:c13bc6a59950fbb3338deaec4a8b6975b4815aef8e1756c8262e8b43452de5a6","mappingVersions":["1.0.0"],"profileVersions":[],"version":"0.0.0"},"occurrences":[],"extensions":[]"#;
+const HEADER: &str = r#""contractVersion":"2.0.0","canonicalization":{"algorithm":"rfc8785-v1","digest":"sha256-jcs"},"source":{"dialect":"spec-bundle","identity":"ix://acme/pkg/spec","version":"0.0.0"},"package":{"identity":"acme/pkg","mappingVersions":["1.0.0"],"profileVersions":[],"version":"0.0.0"},"occurrences":[],"extensions":[]"#;
 
 const MULTIPLICITY: &str = r#"{"lower":1,"upper":1,"ordered":false,"unique":false}"#;
 
@@ -20,7 +20,7 @@ const CONSTRAINT_NOT_APPLICABLE: &str = "agent-ix.semantic-ir.CONSTRAINT_NOT_APP
 
 /// The value-type construct the QSpec checked-package vectors write: a record
 /// shape whose meaning is `quire.meaning.model.value-type/v1`.
-const VALUE_TYPE_CONSTRUCT: &str = r#"{"construct":{"identity":"value","meaning":"quire.meaning.model.value-type/v1","members":{},"shape":"record"},"kind":{"module":"acme/pkg","name":"value_type"},"manifestDigest":"sha256:4769687ec63ac998e1ba671267f6305adf8dcaf8c8618329f64232001328b27f","moduleVersion":"1.0.0"}"#;
+const VALUE_TYPE_CONSTRUCT: &str = r#"{"construct":{"identity":"value","meaning":"quire.meaning.model.value-type/v1","members":{},"shape":"record"},"kind":{"module":"acme/pkg","name":"value_type"},"moduleVersion":"1.0.0"}"#;
 
 /// `(pointer, code)` of every diagnostic the validator reports for the
 /// document, schema layer first and rules after, as `decide` runs them.

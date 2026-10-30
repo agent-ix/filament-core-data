@@ -12,18 +12,15 @@
 		"source": {
 			"identity": "ix://agent-ix/assurance/source/typespec",
 			"version": "1.0.0",
-			"dialect": "typespec",
-			"digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+			"dialect": "typespec"
 		},
 		"package": {
 			"identity": "agent-ix/assurance",
 			"version": "1.0.0",
-			"manifestDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
 			"mappingVersions": [],
 			"profileVersions": [
 				"1.0.0"
-			],
-			"lockDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+			]
 		},
 		"types": [
 			{
@@ -346,18 +343,15 @@
 		"source": {
 			"identity": "ix://agent-ix/assurance/source/typespec",
 			"version": "1.0.0",
-			"dialect": "typespec",
-			"digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+			"dialect": "typespec"
 		},
 		"package": {
 			"identity": "agent-ix/assurance",
 			"version": "1.0.0",
-			"manifestDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
 			"mappingVersions": [],
 			"profileVersions": [
 				"1.0.0"
-			],
-			"lockDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+			]
 		},
 		"types": [
 			{

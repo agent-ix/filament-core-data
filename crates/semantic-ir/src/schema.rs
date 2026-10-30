@@ -3,7 +3,7 @@
 //! This module decides `conformance/schema/input-bundle.schema.json` and the
 //! published v1 schemas it composes — `semantic-ir.schema.json`,
 //! `common.schema.json`, `package-manifest.schema.json`,
-//! `package-lock.schema.json`, `profile.schema.json`, `mapping.schema.json`
+//! `profile.schema.json`, `mapping.schema.json`
 //! and `consumer-policy.schema.json` — by walking the instance rather than by
 //! interpreting the schema documents at run time.
 //!
@@ -160,18 +160,6 @@ fn is_package_revision(text: &str) -> bool {
         || (!text.is_empty()
             && text.chars().all(|c| c.is_ascii_digit())
             && (text.len() == 1 || !text.starts_with('0')))
-}
-
-fn is_sha256(text: &str) -> bool {
-    match text.strip_prefix("sha256:") {
-        Some(rest) => {
-            rest.len() == 64
-                && rest
-                    .chars()
-                    .all(|c| c.is_ascii_digit() || ('a'..='f').contains(&c))
-        }
-        None => false,
-    }
 }
 
 fn is_package_identity(text: &str) -> bool {
@@ -450,8 +438,7 @@ fn decimal_policy_schema(policy: &Json, at: &str, f: &mut Findings) {
 const BUNDLE_MEMBERS: &[&str] = &[
     "ir",
     "manifest",
-    "manifestDigest",
-    "lock",
+    "packageGraph",
     "profile",
     "mappings",
     "consumerPolicy",
@@ -466,15 +453,8 @@ fn bundle_schema(bundle: &Json, f: &mut Findings) {
     if let Some(manifest) = bundle.get("manifest") {
         package_manifest(manifest, "/manifest", f);
     }
-    expect_shape(
-        bundle.get("manifestDigest"),
-        "/manifestDigest",
-        is_sha256,
-        "a digest is sha256:<64 lower-case hex digits>",
-        f,
-    );
-    if let Some(lock) = bundle.get("lock") {
-        package_lock(lock, "/lock", f);
+    if let Some(graph) = bundle.get("packageGraph") {
+        package_graph(graph, "/packageGraph", f);
     }
     if let Some(profile) = bundle.get("profile") {
         profile_schema(profile, "/profile", f);
@@ -519,7 +499,7 @@ const IR_OPTIONAL_MEMBERS: &[&str] = &[
 ];
 const NORMALIZED_CANONICALIZATION_MEMBERS: &[&str] = &["algorithm", "digest"];
 /// The members of one `constructs` entry.
-const CONSTRUCT_ENTRY_MEMBERS: &[&str] = &["kind", "moduleVersion", "manifestDigest", "construct"];
+const CONSTRUCT_ENTRY_MEMBERS: &[&str] = &["kind", "moduleVersion", "construct"];
 /// The `direction` vocabulary of a port.
 const DIRECTIONS: &[&str] = &["in", "out", "inout"];
 /// The `flowDirection` vocabulary of a connection.
@@ -607,13 +587,6 @@ fn constructs_schema<'a>(constructs: &'a Json, at: &str, f: &mut Findings) -> Co
             &child(&entry_at, "moduleVersion"),
             is_semver,
             "a module version is a semantic version",
-            f,
-        );
-        expect_shape(
-            entry.get("manifestDigest"),
-            &child(&entry_at, "manifestDigest"),
-            is_sha256,
-            "a digest is sha256:<64 lower-case hex digits>",
             f,
         );
         let construct_at = child(&entry_at, "construct");
@@ -1003,7 +976,7 @@ fn population_schema(
     }
 }
 
-const SOURCE_MEMBERS: &[&str] = &["identity", "version", "dialect", "digest"];
+const SOURCE_MEMBERS: &[&str] = &["identity", "version", "dialect"];
 
 fn ir_source(source: &Json, at: &str, f: &mut Findings) {
     if !expect_object(source, at, "the source envelope", f) {
@@ -1025,13 +998,6 @@ fn ir_source(source: &Json, at: &str, f: &mut Findings) {
         "a revision is SemVer or a canonical non-negative integer string",
         f,
     );
-    expect_shape(
-        source.get("digest"),
-        &child(at, "digest"),
-        is_sha256,
-        "a digest is sha256:<64 lower-case hex digits>",
-        f,
-    );
     if let Some(dialect) = source.get("dialect") {
         let dialect_at = child(at, "dialect");
         let text = dialect.as_str().unwrap_or("");
@@ -1044,14 +1010,7 @@ fn ir_source(source: &Json, at: &str, f: &mut Findings) {
     }
 }
 
-const PACKAGE_MEMBERS: &[&str] = &[
-    "identity",
-    "version",
-    "manifestDigest",
-    "mappingVersions",
-    "profileVersions",
-    "lockDigest",
-];
+const PACKAGE_MEMBERS: &[&str] = &["identity", "version", "mappingVersions", "profileVersions"];
 
 fn ir_package(package: &Json, at: &str, f: &mut Findings) {
     if !expect_object(package, at, "the package envelope", f) {
@@ -1073,15 +1032,6 @@ fn ir_package(package: &Json, at: &str, f: &mut Findings) {
         "a revision is SemVer or a canonical non-negative integer string",
         f,
     );
-    for name in ["manifestDigest", "lockDigest"] {
-        expect_shape(
-            package.get(name),
-            &child(at, name),
-            is_sha256,
-            "a digest is sha256:<64 lower-case hex digits>",
-            f,
-        );
-    }
     for name in ["mappingVersions", "profileVersions"] {
         if let Some(versions) = package.get(name) {
             let versions_at = child(at, name);
@@ -2904,90 +2854,47 @@ fn manifest_targets(targets: Option<&Json>, at: &str, f: &mut Findings) {
 }
 
 // ---------------------------------------------------------------------------
-// package-lock.schema.json
+// conformance/schema/package-graph.schema.json
 // ---------------------------------------------------------------------------
 
-const LOCK_MEMBERS: &[&str] = &[
-    "contractVersion",
-    "rootPackage",
-    "fingerprint",
-    "canonicalization",
-    "packages",
-];
+const GRAPH_MEMBERS: &[&str] = &["rootPackage", "packages"];
 
-fn package_lock(lock: &Json, at: &str, f: &mut Findings) {
-    if !expect_object(lock, at, "a package lock", f) {
+fn package_graph(graph: &Json, at: &str, f: &mut Findings) {
+    if !expect_object(graph, at, "a resolved package graph", f) {
         return;
     }
-    require_members(lock, at, LOCK_MEMBERS, f);
-    forbid_extra(lock, at, LOCK_MEMBERS, f);
-    expect_enum(
-        lock.get("contractVersion"),
-        &child(at, "contractVersion"),
-        &["1.0.0"],
-        "a lock contractVersion",
-        f,
-    );
+    require_members(graph, at, &["rootPackage", "packages"], f);
+    forbid_extra(graph, at, GRAPH_MEMBERS, f);
     expect_shape(
-        lock.get("rootPackage"),
+        graph.get("rootPackage"),
         &child(at, "rootPackage"),
         is_package_identity,
         "a package identity is <owner>/<name>",
         f,
     );
-    expect_shape(
-        lock.get("fingerprint"),
-        &child(at, "fingerprint"),
-        is_sha256,
-        "a digest is sha256:<64 lower-case hex digits>",
-        f,
-    );
-    if let Some(canonicalization) = lock.get("canonicalization") {
-        let canonicalization_at = child(at, "canonicalization");
-        if expect_object(
-            canonicalization,
-            &canonicalization_at,
-            "a canonicalization",
-            f,
-        ) {
-            let members = &["algorithm", "digest", "included", "excluded"];
-            require_members(canonicalization, &canonicalization_at, members, f);
-            forbid_extra(canonicalization, &canonicalization_at, members, f);
-            expect_enum(
-                canonicalization.get("algorithm"),
-                &child(&canonicalization_at, "algorithm"),
-                &["RFC8785-JCS-with-identity-sorted-sets-v1"],
-                "the canonicalization algorithm",
-                f,
-            );
-            expect_enum(
-                canonicalization.get("digest"),
-                &child(&canonicalization_at, "digest"),
-                &["sha256"],
-                "the canonicalization digest",
-                f,
-            );
-        }
-    }
-    if let Some(packages) = lock.get("packages") {
+    if let Some(packages) = graph.get("packages") {
         let packages_at = child(at, "packages");
         if expect_array(packages, &packages_at, "packages", f) {
-            let items = packages.as_array().unwrap_or(&[]);
-            if items.is_empty() {
-                f.push(&packages_at, "a lock resolves at least one package");
-            }
-            for (position, package) in items.iter().enumerate() {
+            let mut root_count = 0;
+            let mut previous_identity: Option<&str> = None;
+            for (position, package) in packages.as_array().unwrap_or(&[]).iter().enumerate() {
                 let package_at = index(&packages_at, position);
                 if !expect_object(package, &package_at, "a resolved package", f) {
                     continue;
                 }
-                let members = &[
-                    "identity",
-                    "version",
-                    "contentDigest",
-                    "sourceIdentity",
-                    "dependencies",
-                ];
+                if let Some(identity) = package.get("identity").and_then(Json::as_str) {
+                    if graph.get("rootPackage").and_then(Json::as_str) == Some(identity) {
+                        root_count += 1;
+                    }
+                    if previous_identity.is_some_and(|previous| previous >= identity) {
+                        f.push(
+                            &child(&package_at, "identity"),
+                            "package identities must increase",
+                        );
+                    }
+                    previous_identity = Some(identity);
+                }
+                let members = &["identity", "version", "imports", "exports"];
                 require_members(package, &package_at, members, f);
                 forbid_extra(package, &package_at, members, f);
                 expect_shape(
@@ -3004,36 +2911,42 @@ fn package_lock(lock: &Json, at: &str, f: &mut Findings) {
                     "a version is SemVer",
                     f,
                 );
-                expect_shape(
-                    package.get("contentDigest"),
-                    &child(&package_at, "contentDigest"),
-                    is_sha256,
-                    "a digest is sha256:<64 lower-case hex digits>",
-                    f,
-                );
-                expect_shape(
-                    package.get("sourceIdentity"),
-                    &child(&package_at, "sourceIdentity"),
-                    is_semantic_identity,
-                    "an identity is ix://<owner>/<name>",
-                    f,
-                );
-                if let Some(dependencies) = package.get("dependencies") {
-                    let dependencies_at = child(&package_at, "dependencies");
-                    if expect_array(dependencies, &dependencies_at, "dependencies", f) {
-                        for (edge, dependency) in
-                            dependencies.as_array().unwrap_or(&[]).iter().enumerate()
-                        {
-                            expect_shape(
-                                Some(dependency),
-                                &index(&dependencies_at, edge),
-                                is_package_identity,
-                                "a package identity is <owner>/<name>",
-                                f,
-                            );
+                for (name, shape) in [
+                    ("imports", is_package_identity as fn(&str) -> bool),
+                    ("exports", is_semantic_identity as fn(&str) -> bool),
+                ] {
+                    let values_at = child(&package_at, name);
+                    if let Some(values) = package.get(name) {
+                        if expect_array(values, &values_at, name, f) {
+                            let mut previous: Option<&str> = None;
+                            for (item, value) in values.as_array().unwrap_or(&[]).iter().enumerate()
+                            {
+                                if let Some(identity) = value.as_str() {
+                                    if previous.is_some_and(|prior| prior >= identity) {
+                                        f.push(
+                                            &index(&values_at, item),
+                                            format!("{name} must increase by identity"),
+                                        );
+                                    }
+                                    previous = Some(identity);
+                                }
+                                expect_shape(
+                                    Some(value),
+                                    &index(&values_at, item),
+                                    shape,
+                                    "an import or export identity",
+                                    f,
+                                );
+                            }
                         }
                     }
                 }
+            }
+            if graph.get("rootPackage").and_then(Json::as_str).is_some() && root_count != 1 {
+                f.push(
+                    &child(at, "rootPackage"),
+                    "root package must appear exactly once",
+                );
             }
         }
     }

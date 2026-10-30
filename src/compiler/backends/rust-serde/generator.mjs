@@ -451,15 +451,12 @@ export function generateDocument(seed, index) {
 			identity: "ix://agent-ix/filament-core-data/source/typespec",
 			version: "1.0.0",
 			dialect: "typespec",
-			digest: `sha256:${"0".repeat(64)}`,
 		},
 		package: {
 			identity: `agent-ix/generated-${index}`,
 			version: "1.0.0",
-			manifestDigest: `sha256:${"1".repeat(64)}`,
 			mappingVersions: ["1.0.0"],
 			profileVersions: ["1.0.0"],
-			lockDigest: `sha256:${"2".repeat(64)}`,
 		},
 		types,
 		occurrences: [

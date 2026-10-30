@@ -10,7 +10,7 @@
 import { resolve } from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
-import { REPO_ROOT } from "./packages/lock.mjs";
+import { REPO_ROOT } from "./packages/graph.mjs";
 
 const SCHEMA_BASE = "https://schemas.agent-ix.org/filament-core-data/v1/";
 

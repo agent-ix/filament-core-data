@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -69,18 +68,12 @@ const VOCABULARY_IR: JsonObject = {
 		identity: "ix://agent-ix/filament-core-data/source/core",
 		version: "1.0.0",
 		dialect: "typespec",
-		digest:
-			"sha256:0000000000000000000000000000000000000000000000000000000000000000",
 	},
 	package: {
 		identity: "agent-ix/assurance",
 		version: "1.0.0",
-		manifestDigest:
-			"sha256:1111111111111111111111111111111111111111111111111111111111111111",
 		mappingVersions: ["1.0.0"],
 		profileVersions: ["1.0.0"],
-		lockDigest:
-			"sha256:2222222222222222222222222222222222222222222222222222222222222222",
 	},
 	types: [
 		{
@@ -443,14 +436,6 @@ const orderIndependentArrays = new Set([
 	"sourceRoots",
 	"targets",
 ]);
-const excludedFingerprintKeys = new Set([
-	"hostname",
-	"locale",
-	"sourcePath",
-	"timestamp",
-	"workingDirectory",
-]);
-
 function canonical(value: unknown, parentKey = ""): string {
 	if (Array.isArray(value)) {
 		const children = value.map((child) => canonical(child));
@@ -459,16 +444,11 @@ function canonical(value: unknown, parentKey = ""): string {
 	}
 	if (value !== null && typeof value === "object") {
 		return `{${Object.entries(value as JsonObject)
-			.filter(([key]) => !excludedFingerprintKeys.has(key))
 			.sort(([left], [right]) => left.localeCompare(right))
 			.map(([key, child]) => `${JSON.stringify(key)}:${canonical(child, key)}`)
 			.join(",")}}`;
 	}
 	return JSON.stringify(value);
-}
-
-function fingerprint(value: unknown): string {
-	return `sha256:${createHash("sha256").update(canonical(value)).digest("hex")}`;
 }
 
 function walkStrings(value: unknown, visit: (text: string) => void): void {
@@ -534,7 +514,6 @@ describe("semantic package contract v1", () => {
 			"module-manifest.schema.json",
 			"module-semantic-block.schema.json",
 			"output-manifest.schema.json",
-			"package-lock.schema.json",
 			"package-manifest.schema.json",
 			"profile.schema.json",
 			"representation.schema.json",
@@ -649,6 +628,22 @@ describe("semantic package contract v1", () => {
 		expect(reference?.target).toBe(artifact?.identity);
 	});
 
+	/// Trace: FR-019-AC-2, FR-084-AC-6
+	it("rejects retired digest members in the source and package envelopes", () => {
+		for (const [section, name] of [
+			["source", "digest"],
+			["package", "manifestDigest"],
+			["package", "lockDigest"],
+		] as const) {
+			const ir = clone(VOCABULARY_IR);
+			object(ir[section], section)[name] = `sha256:${"0".repeat(64)}`;
+			expect(
+				validates("semantic-ir.schema.json", ir),
+				`${section}.${name}`,
+			).toBe(false);
+		}
+	});
+
 	/** Traces: TC-133, TC-140, TC-142, TC-144, TC-147, TC-149, TC-151, TC-152, TC-157, TC-162, TC-175, TC-183, TC-193, TC-200. */
 	it("rejects the adverse corpus with stable code families and no empty success", () => {
 		const cases = array(readJson("negative/cases.json"), "negative cases");
@@ -683,17 +678,7 @@ describe("semantic package contract v1", () => {
 			readJson("positive/package-manifest.json"),
 			"manifest",
 		);
-		const lock = object(readJson("positive/package-lock.json"), "lock");
 		expect(validates("package-manifest.schema.json", manifest)).toBe(true);
-		expect(validates("package-lock.schema.json", lock)).toBe(true);
-		const reordered = clone({ manifest, lock });
-		array(object(reordered.lock, "lock").packages, "packages").reverse();
-		object(reordered.manifest, "manifest").sourcePath = "/different/checkout";
-		expect(fingerprint(reordered)).toBe(fingerprint({ manifest, lock }));
-		const changed = clone({ manifest, lock });
-		object(object(changed.manifest, "manifest").package, "package").version =
-			"1.0.1";
-		expect(fingerprint(changed)).not.toBe(fingerprint({ manifest, lock }));
 		const irBefore = canonical(clone(VOCABULARY_IR));
 		const alternateProfile = clone(array(manifest.profiles, "profiles")[0]);
 		object(alternateProfile, "profile").targets = ["typescript"];
@@ -1094,24 +1079,13 @@ describe("semantic package contract v1", () => {
 			array(object(clone(VOCABULARY_IR), "IR").occurrences, "occurrences")[0],
 			"occurrence",
 		).value;
-		expect(fingerprint(sharedValue)).toBe(
-			fingerprint(JSON.parse(JSON.stringify(sharedValue))),
+		expect(canonical(sharedValue)).toBe(
+			canonical(JSON.parse(JSON.stringify(sharedValue))),
 		);
 	});
 
 	/** Traces: TC-177, TC-178, TC-179, TC-180. */
 	it("is reproducible, path-independent, and resolvable offline", () => {
-		const allInputs = {
-			schemas: schemas.map(({ name, value }) => ({ name, value })),
-			ir: clone(VOCABULARY_IR),
-			manifest: readJson("positive/package-manifest.json"),
-			lock: readJson("positive/package-lock.json"),
-		};
-		const first = fingerprint(allInputs);
-		const secondInput = clone(allInputs);
-		secondInput.schemas.reverse();
-		object(secondInput, "inputs").workingDirectory = "/private/tmp/other";
-		expect(fingerprint(secondInput)).toBe(first);
 		for (const { name, value } of schemas) {
 			for (const ref of collectRefs(value)) {
 				expect(ref, `${name} remote ref`).not.toMatch(/^https?:\/\//);
@@ -1273,7 +1247,6 @@ describe("semantic package contract v1", () => {
 				"module-manifest.schema.json",
 				readJson("positive/module-manifest.json"),
 			],
-			["package-lock.schema.json", readJson("positive/package-lock.json")],
 			["mapping.schema.json", readJson("positive/mapping.json")],
 			["profile.schema.json", readJson("positive/profile.json")],
 			[

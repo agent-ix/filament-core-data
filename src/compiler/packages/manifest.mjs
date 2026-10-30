@@ -1,7 +1,7 @@
 /**
  * Reading and locating the JSON inputs of a compile (FR-047).
  *
- * Every manifest, mapping, profile, and lock is untrusted data, so it is
+ * Every manifest, mapping, and profile is untrusted data, so it is
  * schema-validated before any field is read, and every defect is reported at the
  * position in the file that declared it. That second half is why this module
  * keeps the raw text alongside the parsed value: `JSON.parse` throws positions
@@ -16,7 +16,6 @@ import {
 	fragment,
 } from "../diagnostics.mjs";
 import { indexJsonPointers, locateJsonPointer } from "../json-locus.mjs";
-import { digest } from "./canonical.mjs";
 import {
 	errorMessage,
 	errorPointer,
@@ -26,8 +25,8 @@ import {
 /**
  * POSIX form of `path` relative to `root`; never absolute, never `..`-bearing.
  *
- * A caller may name a lock or a limits file anywhere, and `sourceLocus.path`
- * forbids `..` outright, so a document outside the root is named by its own file
+ * A caller may name a limits file anywhere, and `sourceLocus.path` forbids
+ * `..` outright, so a document outside the root is named by its own file
  * name. A locus the schema rejects is worse than a coarser one.
  */
 export function relativePosix(root, path) {
@@ -40,7 +39,7 @@ export function relativePosix(root, path) {
 /**
  * Reads one published-schema document.
  *
- * Returns `{ value, text, path, digest, locate, diagnostics }`. On any defect
+ * Returns `{ value, text, path, locate, diagnostics }`. On any defect
  * `value` is `undefined` and `diagnostics` is non-empty; the caller never sees a
  * half-read document.
  */
@@ -164,7 +163,6 @@ export function readDocument(host, options) {
 		value,
 		text,
 		path,
-		digest: digest(text),
 		locate: locus,
 		diagnostics,
 	};

@@ -149,6 +149,30 @@ describe("TC-280..289 the corpus format and provenance (FR-035)", () => {
 		}
 	});
 
+	/** Trace: FR-035-AC-1. */
+	it("resolves a relationship target through the selected imported package graph", () => {
+		const bundle = corpus.loadBase("package-2-0") as Json;
+		const ir = bundle.ir as Json;
+		const types = ir.types as Json[];
+		const relationship = (
+			types.find((type) => Array.isArray(type.relationships))
+				?.relationships as Json[]
+		)[0];
+		(relationship.targetEnd as Json).type = "ix://agent-ix/kernel/Text";
+		expect(schemaDiagnostics(bundle)).toEqual([]);
+		expect(
+			(oracle.verdict(bundle, []) as { diagnostics: unknown[] }).diagnostics,
+		).toEqual([]);
+		const graph = bundle.packageGraph as Json;
+		const packages = graph.packages as Json[];
+		packages[1].exports = [];
+		expect(
+			JSON.stringify(
+				(oracle.verdict(bundle, []) as { diagnostics: Json[] }).diagnostics,
+			),
+		).toContain("UNRESOLVED_RELATIONSHIP_TARGET");
+	});
+
 	it("TC-282 every derivedFrom artifact exists and its quote occurs verbatim", () => {
 		for (const entry of cases) {
 			for (const source of entry.derivedFrom as {
@@ -559,7 +583,6 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 		const expected: Record<string, string> = {
 			"PKG-002": "agent-ix.semantic-ir.UNRESOLVED_IMPORT",
 			"PKG-005": "agent-ix.semantic-ir.PACKAGE_CYCLE",
-			"PKG-006": "agent-ix.semantic-ir.STALE_LOCK",
 			"PKG-007": "agent-ix.semantic-ir.UNKNOWN_MAPPING_TARGET",
 			"PKG-008": "agent-ix.semantic-ir.UNDECLARED_LOSS",
 			"EXT-002": "agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION",
@@ -1247,11 +1270,10 @@ describe("TC-314..319 and TC-622..401 the construct register and the defect regi
 		).toEqual([]);
 	});
 
-	it("TC-315 the six package negatives fail at an exact source or bundle locus", () => {
+	it("TC-315 the five package negatives fail at an exact source or bundle locus", () => {
 		for (const id of [
 			"PKG-002",
 			"PKG-005",
-			"PKG-006",
 			"PKG-007",
 			"PKG-008",
 			"IDENT-002",
@@ -1263,7 +1285,7 @@ describe("TC-314..319 and TC-622..401 the construct register and the defect regi
 			expect(verdict.resultState, id).toBe("invalid");
 			expect(verdict.diagnostics.length, id).toBe(1);
 			expect(verdict.diagnostics[0].pointer, id).toMatch(
-				/^\/(ir|lock|manifest|mappings)\//,
+				/^\/(ir|packageGraph|manifest|mappings)\//,
 			);
 		}
 	});

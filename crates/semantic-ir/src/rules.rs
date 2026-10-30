@@ -222,7 +222,6 @@ codes! {
     COMPOSITE_CYCLE => "agent-ix.semantic-ir.COMPOSITE_CYCLE",
     UNRESOLVED_IMPORT => "agent-ix.semantic-ir.UNRESOLVED_IMPORT",
     PACKAGE_CYCLE => "agent-ix.semantic-ir.PACKAGE_CYCLE",
-    STALE_LOCK => "agent-ix.semantic-ir.STALE_LOCK",
     UNKNOWN_MAPPING_TARGET => "agent-ix.semantic-ir.UNKNOWN_MAPPING_TARGET",
     UNDECLARED_LOSS => "agent-ix.semantic-ir.UNDECLARED_LOSS",
     UNKNOWN_REQUIRED_EXTENSION => "agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION",
@@ -1253,15 +1252,16 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         .filter_map(|definition| definition.get("identity").and_then(Json::as_str))
         .map(str::to_string)
         .collect();
-    let manifest_exports: Vec<String> = document
+    let graph_exports: HashSet<&str> = document
         .bundle
-        .get("manifest")
-        .and_then(|manifest| manifest.get("exports"))
+        .get("packageGraph")
+        .and_then(|graph| graph.get("packages"))
         .and_then(Json::as_array)
         .unwrap_or(&[])
         .iter()
-        .filter_map(|export| export.get("typeIdentity").and_then(Json::as_str))
-        .map(str::to_string)
+        .filter_map(|package| package.get("exports").and_then(Json::as_array))
+        .flatten()
+        .filter_map(Json::as_str)
         .collect();
 
     document.type_positions(|position| {
@@ -1430,8 +1430,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                     .and_then(|end| end.get("type"))
                     .and_then(Json::as_str)
                 {
-                    let resolves = declared.contains(target)
-                        || manifest_exports.iter().any(|identity| identity == target);
+                    let resolves = declared.contains(target) || graph_exports.contains(target);
                     if !resolves {
                         sink.emit(
                             child(
@@ -1439,7 +1438,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                                 "type",
                             ),
                             UNRESOLVED_RELATIONSHIP_TARGET,
-                            "a relationship target resolves to a document type or a manifest export",
+                            "a relationship target resolves to a document type or a selected package graph export",
                         );
                     }
                 }
@@ -2250,10 +2249,10 @@ fn composite_walk(
 fn package_context(document: &Document<'_>, sink: &mut Sink<'_>) {
     let bundle = document.bundle;
     let manifest = bundle.get("manifest");
-    let lock = bundle.get("lock");
+    let graph = bundle.get("packageGraph");
 
-    if let (Some(manifest), Some(lock)) = (manifest, lock) {
-        let resolved: Vec<&str> = lock
+    if let (Some(manifest), Some(graph)) = (manifest, graph) {
+        let resolved: Vec<&str> = graph
             .get("packages")
             .and_then(Json::as_array)
             .unwrap_or(&[])
@@ -2267,7 +2266,7 @@ fn package_context(document: &Document<'_>, sink: &mut Sink<'_>) {
                         sink.emit(
                             child(&index("/manifest/imports", position), "packageIdentity"),
                             UNRESOLVED_IMPORT,
-                            "the lock resolves the complete dependency graph and does not resolve this import",
+                            "the selected package graph does not resolve this import",
                         );
                     }
                 }
@@ -2275,30 +2274,13 @@ fn package_context(document: &Document<'_>, sink: &mut Sink<'_>) {
         }
     }
 
-    if let Some(lock) = lock {
-        if let Some(pointer) = package_cycle(lock) {
+    if let Some(graph) = graph {
+        if let Some(pointer) = package_cycle(graph) {
             sink.emit(
                 pointer,
                 PACKAGE_CYCLE,
                 "package cycles are rejected; recursive type graphs are not package cycles",
             );
-        }
-    }
-
-    if let Some(stated) = bundle.get("manifestDigest").and_then(Json::as_str) {
-        let named = document
-            .ir
-            .get("package")
-            .and_then(|package| package.get("manifestDigest"))
-            .and_then(Json::as_str);
-        if let Some(named) = named {
-            if named != stated {
-                sink.emit(
-                    "/ir/package/manifestDigest".to_string(),
-                    STALE_LOCK,
-                    "the IR names a manifest digest the bundle's manifest does not hash to",
-                );
-            }
         }
     }
 
@@ -2407,8 +2389,8 @@ fn package_context(document: &Document<'_>, sink: &mut Sink<'_>) {
     }
 }
 
-fn package_cycle(lock: &Json) -> Option<String> {
-    let packages = lock.get("packages").and_then(Json::as_array)?;
+fn package_cycle(graph: &Json) -> Option<String> {
+    let packages = graph.get("packages").and_then(Json::as_array)?;
     let mut by_identity: HashMap<&str, usize> = HashMap::with_capacity(packages.len());
     for (position, package) in packages.iter().enumerate() {
         let identity = package.get("identity").and_then(Json::as_str).unwrap_or("");
@@ -2439,7 +2421,7 @@ fn package_walk(
     while let Some(&mut (at, ref mut next_dependency)) = path.last_mut() {
         let dependencies = packages
             .get(at)
-            .and_then(|package| package.get("dependencies"))
+            .and_then(|package| package.get("imports"))
             .and_then(Json::as_array)
             .unwrap_or(&[]);
         let Some(dependency) = dependencies.get(*next_dependency) else {
@@ -2453,7 +2435,7 @@ fn package_walk(
         };
         match colour[next] {
             Colour::Grey => {
-                return Some(child(&index("/lock/packages", at), "dependencies"));
+                return Some(child(&index("/packageGraph/packages", at), "imports"));
             }
             Colour::White => {
                 colour[next] = Colour::Grey;

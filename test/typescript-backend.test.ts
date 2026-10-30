@@ -23,7 +23,6 @@ import {
 import {
 	CanonicalError,
 	canonicalize as canonicalizeForTarget,
-	fingerprintIrForTarget,
 	IDENTITY_SET_PATHS,
 	normalizeIr as normalizeIrForFingerprint,
 	normalizeIrForTarget,
@@ -38,6 +37,9 @@ import { auditRenderedNodes } from "../src/compiler/backends/typescript-v1/metad
 import { buildModel } from "../src/compiler/backends/typescript-v1/model.mjs";
 import { reachableSymbols } from "../src/compiler/backends/typescript-v1/package-layout.mjs";
 import { createHost } from "../src/compiler/host.mjs";
+
+const normalizedSetBytes = (document: unknown) =>
+	canonicalizeForTarget(normalizeIrForFingerprint(document), { sets: true });
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fixture = resolve(root, "test/fixtures/backends/typescript");
@@ -55,22 +57,6 @@ const SLASH = "/";
 // file binds no row at all.
 const RELATIVE_IMPORT = /from "([^"]+)"/g;
 const IDENTITY_PREFIX = ["ix:", SLASH, SLASH].join("");
-function exportedCompilerSymbols(source: string): string[] {
-	const names: string[] = [];
-	for (const line of source.split("\n")) {
-		if (!line.startsWith("export {")) continue;
-		const body = line.slice("export {".length, line.indexOf("}"));
-		for (const entry of body.split(",")) {
-			const name = entry
-				.trim()
-				.split(/\s+as\s+/)
-				.at(-1);
-			if (name) names.push(name);
-		}
-	}
-	return names.sort();
-}
-
 /** Tar bytes with the five intentionally nondeterministic header members zeroed. */
 function normalizeTarMetadata(tarball: Buffer): Buffer {
 	const tar = Buffer.from(gunzipSync(tarball));
@@ -1323,12 +1309,12 @@ describe("FR-069 canonicalization: nullable materialization (fcd#187)", () => {
 
 describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 	/** Traces: TC-1871; FR-069-AC-26. */
-	it("TC-1871 matches every committed canonical byte and digest vector", () => {
+	it("TC-1871 matches every committed canonical byte vector", () => {
 		const fixture = JSON.parse(
 			readFileSync(
 				resolve(
 					root,
-					"test/fixtures/compiler/rfc8785/typescript-identity-set-fingerprint.json",
+					"test/fixtures/compiler/rfc8785/typescript-identity-set-canonical.json",
 				),
 				"utf8",
 			),
@@ -1337,7 +1323,6 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 				id: string;
 				input: unknown;
 				expectedBytes: string;
-				sha256: string;
 			}[];
 		};
 		expect(fixture.vectors.map(({ id }) => id)).toEqual([
@@ -1354,18 +1339,14 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 				}),
 				row.id,
 			).toBe(row.expectedBytes);
-			expect(fingerprintIrForTarget(row.input), row.id).toBe(row.sha256);
 		}
 		const [base, permuted, ...reversed] = fixture.vectors;
 		expect(permuted.expectedBytes).toBe(base.expectedBytes);
-		expect(permuted.sha256).toBe(base.sha256);
 		expect(
 			new Set(reversed.map(({ expectedBytes }) => expectedBytes)).size,
 		).toBe(3);
-		expect(new Set(reversed.map(({ sha256 }) => sha256)).size).toBe(3);
 		for (const row of reversed) {
 			expect(row.expectedBytes).not.toBe(base.expectedBytes);
-			expect(row.sha256).not.toBe(base.sha256);
 			expect(normalizeIrForTarget(row.input)).not.toBe(
 				normalizeIrForTarget(base.input),
 			);
@@ -1416,7 +1397,7 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 			extensions: pair(),
 		};
 		const expectedBytes = canonicalizeForTarget(base);
-		const expectedDigest = fingerprintIrForTarget(base);
+		const expectedDigest = normalizedSetBytes(base);
 		for (const path of expectedPaths) {
 			const changed = structuredClone(base);
 			let value: unknown = changed;
@@ -1429,7 +1410,7 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 			if (!Array.isArray(value)) throw new Error(`missing set at ${path}`);
 			value.reverse();
 			expect(canonicalizeForTarget(changed), path).toBe(expectedBytes);
-			expect(fingerprintIrForTarget(changed), path).toBe(expectedDigest);
+			expect(normalizedSetBytes(changed), path).toBe(expectedDigest);
 			expect(normalizeIrForTarget(changed), path).not.toBe(
 				normalizeIrForTarget(base),
 			);
@@ -1437,14 +1418,9 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 	});
 
 	/** Traces: TC-792; FR-067-AC-6, FR-069-AC-2. */
-	it("TC-792 fingerprints admitted documents by set identity and authored sequence order", () => {
+	it("TC-792 compares admitted documents by canonical bytes by set identity and authored sequence order", () => {
 		const cliSource = readFileSync(generator, "utf8");
-		expect(cliSource).toContain(
-			'import { fingerprintIrForTarget } from "./backends/typescript-v1/canonical.mjs";',
-		);
-		expect(cliSource).toMatch(
-			/lockFingerprint:\s*fingerprintIrForTarget\(ir\)/,
-		);
+		expect(cliSource).not.toContain("lockFingerprint");
 		type Type = {
 			identity: string;
 			fields?: unknown[];
@@ -1499,7 +1475,7 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 			expect(verdict.resultState).toBe("success");
 		};
 		admitted(base);
-		const digest = fingerprintIrForTarget(base);
+		const digest = normalizedSetBytes(base);
 		for (const [name, reverse] of [
 			["types", (document: Document) => document.types.reverse()],
 			[
@@ -1519,7 +1495,7 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 			const changed = structuredClone(base);
 			reverse(changed);
 			admitted(changed);
-			expect(fingerprintIrForTarget(changed), name).toBe(digest);
+			expect(normalizedSetBytes(changed), name).toBe(digest);
 		}
 		for (const [name, reverse] of [
 			[
@@ -1544,7 +1520,7 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 			const changed = structuredClone(base);
 			reverse(changed);
 			admitted(changed);
-			expect(fingerprintIrForTarget(changed), name).not.toBe(digest);
+			expect(normalizedSetBytes(changed), name).not.toBe(digest);
 		}
 	});
 });
@@ -1713,17 +1689,39 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 	// `files` allowlist, so `npm pack` sweeps the whole tree — `test/fixtures/`
 	// and `generated/` included — and the case could only fail (#226).
 
-	/** Part of TC-842 (NFR-025-AC-5). */
-	it("keeps the narrow compiler surface at fourteen exports", () => {
-		const names = exportedCompilerSymbols(
-			readFileSync(resolve(root, "src/compiler/index.mjs"), "utf8"),
-		);
-		expect(names).toHaveLength(14);
-		expect(
-			exportedCompilerSymbols('export { one, two } from "./x.mjs";'),
-		).toHaveLength(2);
-		expect(
-			exportedCompilerSymbols('export { one, two, three } from "./x.mjs";'),
-		).toHaveLength(3);
+	/** Trace: TC-842, NFR-025-AC-5. */
+	it("keeps the exact thirteen-symbol compiler surface", async () => {
+		const expected = [
+			"CONTRACT_IR_VERSION",
+			"SEMANTIC_IR_SCHEMA_VERSION",
+			"buildSemanticIr",
+			"compilePackage",
+			"compileSemanticIr",
+			"diffSemanticContract",
+			"emitRust",
+			"emitTypeScript",
+			"inspectIr",
+			"normalizeIr",
+			"normalizeJsonSchemaForPython",
+			"readContractIr",
+			"runFrontend",
+		];
+		const names = Object.keys(await import("../src/compiler/index.mjs")).sort();
+		expect(names).toEqual(expected);
+		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-compiler-exports-"));
+		try {
+			const module = resolve(scratch, "added.mjs");
+			writeFileSync(
+				module,
+				`export * from ${JSON.stringify(pathToFileURL(resolve(root, "src/compiler/index.mjs")).href)};\nexport const injected = 1;\n`,
+			);
+			const added = Object.keys(
+				await import(/* @vite-ignore */ pathToFileURL(module).href),
+			).sort();
+			expect(added).toContain("injected");
+			expect(added).not.toEqual(expected);
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
 	});
 });

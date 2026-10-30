@@ -30,7 +30,7 @@ const HOME_ROOT = resolve(dirname(SELF), "..");
  * so a refusal is a failure rather than a manifest nobody reads
  * (SR-170 FND-1500). The request is built exactly as `cli.mjs` `requestFor`
  * builds one — its exported `BACKEND`, `DEFAULT_PROFILE` and `DEFAULT_LIMITS`,
- * `mappings: []`, and a `lockFingerprint` over the document.
+ * `mappings: []`, without a derived document digest.
  */
 async function rustGenerate(argv) {
 	const ir = flag(argv, "--ir");
@@ -39,7 +39,6 @@ async function rustGenerate(argv) {
 		throw new Error("rust-generate requires --ir <file> and --out <dir>");
 	}
 	const outputRoot = flag(argv, "--output-root") ?? "lifted";
-	const { createHash } = await import("node:crypto");
 	const backend = await import(
 		pathToFileURL(
 			join(HOME_ROOT, "src", "compiler", "backends", "rust-serde", "index.mjs"),
@@ -53,7 +52,6 @@ async function rustGenerate(argv) {
 	const document = JSON.parse(readFileSync(resolve(ir), "utf8"));
 	const request = {
 		contractVersion: "1.0.0",
-		lockFingerprint: `sha256:${createHash("sha256").update(JSON.stringify(document), "utf8").digest("hex")}`,
 		ir: document,
 		profile: cli.DEFAULT_PROFILE,
 		mappings: [],

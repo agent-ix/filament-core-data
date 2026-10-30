@@ -95,10 +95,6 @@ fn construct_entry(construct: &Construct) -> Result<Value, serde_json::Error> {
         "moduleVersion".to_string(),
         Value::String(construct.module_version.clone()),
     );
-    entry.insert(
-        "manifestDigest".to_string(),
-        Value::String(construct.manifest_digest.clone()),
-    );
     entry.insert("construct".to_string(), declaration);
     Ok(Value::Object(entry))
 }

@@ -126,10 +126,10 @@ fn tc_701_every_case_matches_its_authored_expectation() {
     // `sourceEnd.type` names a type other than the one declaring it,
     // finding 9), landing on 113. That review adds 1 more still: PRES-016
     // (a single-valued field declaring `ordered`, finding 5/R2), landing on
-    // 114. That review's H5 (finding 2's inline field.constraints check had no
-    // test in any reader) adds CONS-008 (an inline field constraint checked
-    // for applicability the same as a type-level one), landing on 115.
-    assert_eq!(cases.len(), 115, "the corpus declares 115 cases");
+    // 114. That review's H5 adds CONS-008 (inline field constraint
+    // applicability), landing on 115. PLAT-1205 retires digest-only PKG-006,
+    // leaving 114 authored cases.
+    assert_eq!(cases.len(), 114, "the corpus declares 114 cases");
     let mut failures: Vec<String> = Vec::new();
     for case in &cases {
         let verdict = decide(&case.bundle);

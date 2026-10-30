@@ -1,6 +1,6 @@
 {
 	"id": "PKG-003",
-	"title": "A lock resolving the schema minimum of one package is accepted",
+	"title": "A package graph resolving the schema minimum of one package is accepted",
 	"family": "package",
 	"class": "boundary",
 	"kind": "document",
@@ -9,12 +9,12 @@
 	"ops": [
 		{
 			"op": "test",
-			"path": "/lock/packages/1/identity",
+			"path": "/packageGraph/packages/1/identity",
 			"value": "agent-ix/kernel"
 		},
 		{
 			"op": "remove",
-			"path": "/lock/packages/1"
+			"path": "/packageGraph/packages/1"
 		},
 		{
 			"op": "test",
@@ -32,12 +32,12 @@
 		},
 		{
 			"op": "test",
-			"path": "/lock/packages/0/dependencies",
+			"path": "/packageGraph/packages/0/imports",
 			"value": ["agent-ix/kernel"]
 		},
 		{
 			"op": "replace",
-			"path": "/lock/packages/0/dependencies",
+			"path": "/packageGraph/packages/0/imports",
 			"value": []
 		}
 	],
@@ -46,8 +46,8 @@
 	"derivedFrom": [
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
-			"locator": "Packages, locks, and fingerprints",
-			"quote": "source identities, and dependencies. Package cycles are rejected with every"
+			"locator": "Packages and canonical documents",
+			"quote": "Package cycles are rejected with every locus."
 		}
 	],
 	"provenance": {

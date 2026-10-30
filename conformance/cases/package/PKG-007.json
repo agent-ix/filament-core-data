@@ -23,8 +23,8 @@
 	"derivedFrom": [
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
-			"locator": "Packages, locks, and fingerprints",
-			"quote": "source identities, and dependencies. Package cycles are rejected with every"
+			"locator": "Packages and canonical documents",
+			"quote": "Package cycles are rejected with every locus."
 		}
 	],
 	"provenance": {

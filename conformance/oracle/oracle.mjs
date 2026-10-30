@@ -544,7 +544,7 @@ function checkConstraint(constraint, at, types, out, field = undefined) {
 	}
 }
 
-function checkTypeDefinition(definition, at, types, lockExports, out) {
+function checkTypeDefinition(definition, at, types, graphExports, out) {
 	const fields = Array.isArray(definition.fields) ? definition.fields : [];
 	const seenFieldNames = new Set();
 	for (const [i, field] of fields.entries()) {
@@ -680,12 +680,12 @@ function checkTypeDefinition(definition, at, types, lockExports, out) {
 			? relationship.targetEnd
 			: {};
 		const target = String(targetEnd.type);
-		if (!types.has(target) && !lockExports.has(target)) {
+		if (!types.has(target) && !graphExports.has(target)) {
 			out.push(
 				diagnostic(
 					"UNRESOLVED_RELATIONSHIP_TARGET",
 					`${at}/relationships/${i}/targetEnd/type`,
-					`relationship target resolves to neither a document type nor a lock export: ${target}`,
+					`relationship target resolves to neither a document type nor a graph export: ${target}`,
 				),
 			);
 		}
@@ -824,18 +824,18 @@ function checkCompositeCycles(ir, out) {
 	for (const node of edges.keys()) if (!state.has(node)) visit(node, 0);
 }
 
-/* ---------------------------------------------------- package and lock ---- */
+/* ---------------------------------------------------- package graph ---- */
 
 function checkPackageContext(bundle, ir, types, out) {
 	const manifest = bundle.manifest;
-	const lock = bundle.lock;
+	const selectedGraph = bundle.packageGraph;
 	const profile = bundle.profile;
 	const mappings = Array.isArray(bundle.mappings) ? bundle.mappings : [];
 	const policy = bundle.consumerPolicy;
 
-	if (isObject(lock)) {
+	if (isObject(selectedGraph)) {
 		const resolved = new Set(
-			(Array.isArray(lock.packages) ? lock.packages : [])
+			(Array.isArray(selectedGraph.packages) ? selectedGraph.packages : [])
 				.filter(isObject)
 				.map((entry) => entry.identity),
 		);
@@ -849,25 +849,25 @@ function checkPackageContext(bundle, ir, types, out) {
 						diagnostic(
 							"UNRESOLVED_IMPORT",
 							pointer("manifest", "imports", i, "packageIdentity"),
-							`import ${String(entry.packageIdentity)} is not resolved by the lock`,
+							`import ${String(entry.packageIdentity)} is not resolved by the package graph`,
 						),
 					);
 				}
 			}
 		}
 		const graph = new Map();
-		for (const entry of (Array.isArray(lock.packages)
-			? lock.packages
+		for (const entry of (Array.isArray(selectedGraph.packages)
+			? selectedGraph.packages
 			: []
 		).filter(isObject)) {
 			graph.set(
 				entry.identity,
-				Array.isArray(entry.dependencies) ? entry.dependencies : [],
+				Array.isArray(entry.imports) ? entry.imports : [],
 			);
 		}
 		const state = new Map();
 		const indexOf = new Map(
-			(Array.isArray(lock.packages) ? lock.packages : [])
+			(Array.isArray(selectedGraph.packages) ? selectedGraph.packages : [])
 				.filter(isObject)
 				.map((entry, index) => [entry.identity, index]),
 		);
@@ -876,7 +876,12 @@ function checkPackageContext(bundle, ir, types, out) {
 				out.push(
 					diagnostic(
 						"DEPTH_LIMIT_EXCEEDED",
-						pointer("lock", "packages", indexOf.get(node) ?? 0, "dependencies"),
+						pointer(
+							"packageGraph",
+							"packages",
+							indexOf.get(node) ?? 0,
+							"imports",
+						),
 						`package graph expansion exceeded the declared depth limit of ${DEPTH_LIMIT}`,
 					),
 				);
@@ -890,10 +895,10 @@ function checkPackageContext(bundle, ir, types, out) {
 						diagnostic(
 							"PACKAGE_CYCLE",
 							pointer(
-								"lock",
+								"packageGraph",
 								"packages",
 								indexOf.get(node) ?? 0,
-								"dependencies",
+								"imports",
 							),
 							`the package graph closes a cycle at ${dependency}`,
 						),
@@ -905,18 +910,6 @@ function checkPackageContext(bundle, ir, types, out) {
 			state.set(node, "done");
 		};
 		for (const node of graph.keys()) if (!state.has(node)) visit(node, 0);
-	}
-
-	if (typeof bundle.manifestDigest === "string" && isObject(ir.package)) {
-		if (ir.package.manifestDigest !== bundle.manifestDigest) {
-			out.push(
-				diagnostic(
-					"STALE_LOCK",
-					pointer("ir", "package", "manifestDigest"),
-					`the IR names manifest digest ${String(ir.package.manifestDigest)} but the manifest hashes to ${bundle.manifestDigest}`,
-				),
-			);
-		}
 	}
 
 	const declaredIdentities = mappings.length > 0 ? identitySet(ir) : undefined;
@@ -1106,11 +1099,13 @@ export function verdict(bundle, schemaRows = []) {
 
 	const out = [];
 	const { byIdentity } = indexTypes(ir);
-	const lockExports = new Set(
-		isObject(bundle.manifest) && Array.isArray(bundle.manifest.exports)
-			? bundle.manifest.exports
+	const graphExports = new Set(
+		isObject(bundle.packageGraph) && Array.isArray(bundle.packageGraph.packages)
+			? bundle.packageGraph.packages
 					.filter(isObject)
-					.map((entry) => entry.typeIdentity)
+					.flatMap((entry) =>
+						Array.isArray(entry.exports) ? entry.exports : [],
+					)
 			: [],
 	);
 
@@ -1139,7 +1134,7 @@ export function verdict(bundle, schemaRows = []) {
 				definition,
 				pointer("ir", "types", t),
 				byIdentity,
-				lockExports,
+				graphExports,
 				out,
 			);
 		}

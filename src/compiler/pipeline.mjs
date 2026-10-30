@@ -2,33 +2,25 @@
  * `compilePackage`: the five-phase orchestration behind the `compile` verb
  * (FR-052).
  *
- * The phase order is stated here, in one place, and asserted by a test that
- * records which phases ran. Ordering matters for a reason that is easy to lose:
- * the lock is built and verified *before* the frontend runs, so a compile
- * against a stale lock reports the staleness rather than producing a document
- * whose `lockDigest` names inputs it did not use.
+ * The phase order is stated here and asserted by a test.
  *
  * A blocking diagnostic in any phase stops the next one. Returning a document
  * assembled from half a resolution would be worse than returning none.
  */
-import { resolve } from "node:path";
 import {
 	applyDiagnosticLimit,
 	DEFAULT_LIMITS,
-	DIAGNOSTIC_CODES,
 	hasBlocking,
 } from "./diagnostics.mjs";
 import { runFrontend } from "./frontend/seam.mjs";
 import { validateIrDocument } from "./ir/schema.mjs";
-import { digest } from "./packages/canonical.mjs";
-import { buildLock, serializeLock, verifyLock } from "./packages/lock.mjs";
-import { readDocument } from "./packages/manifest.mjs";
+import { resolvedPackageGraph } from "./packages/graph.mjs";
 import { resolvePackageGraph } from "./packages/resolve.mjs";
 
 /** The phases, in the order `compilePackage` runs them. */
 export const PHASES = Object.freeze([
 	"resolve",
-	"lock",
+	"graph",
 	"frontend",
 	"validate",
 	"assemble",
@@ -38,8 +30,8 @@ export const PHASES = Object.freeze([
  * Compiles one package.
  *
  * `request` is `{ host, packageRoot, searchPath, profileName, dialect,
- * entrypoint, lockPath, limits, onPhase }`. Returns
- * `{ ir, lock, diagnostics, state, phases }`, where `state` is a `resultState`
+ * entrypoint, limits, onPhase }`. Returns
+ * `{ ir, packageGraph, diagnostics, state, phases }`, where `state` is a `resultState`
  * of `common.schema.json` and `ir` is `null` whenever any diagnostic blocks.
  */
 export async function compilePackage(request) {
@@ -50,7 +42,6 @@ export async function compilePackage(request) {
 		profileName,
 		dialect = "typespec",
 		entrypoint = "main.tsp",
-		lockPath,
 		limits = DEFAULT_LIMITS,
 		// The injected extraction producer (ADR-0006). Passed through rather than
 		// reached for, exactly as the generation seam passes `format` through to a
@@ -67,7 +58,7 @@ export async function compilePackage(request) {
 	const report = () => applyDiagnosticLimit(diagnostics, limits.maxDiagnostics);
 	const stop = (state) => ({
 		ir: null,
-		lock: undefined,
+		packageGraph: undefined,
 		diagnostics: report(),
 		state,
 		phases,
@@ -85,41 +76,15 @@ export async function compilePackage(request) {
 	diagnostics.push(...(resolution.diagnostics ?? []));
 	if (!resolution.root || hasBlocking(diagnostics)) return stop("invalid");
 
-	phases.push("lock");
-	onPhase("lock");
-	const lock = buildLock(resolution);
-	const lockBytes = serializeLock(lock);
-	let lockDigest = digest(lockBytes);
-	if (lockPath) {
-		const read = readDocument(host, {
-			host,
-			absolutePath: resolve(lockPath),
-			packageRoot,
-			schemaName: "package-lock.schema.json",
-			// A lock that is not a lock is not a *stale* lock: `STALE_LOCK` says the
-			// inputs moved, which is a different thing for a caller to act on.
-			entry: DIAGNOSTIC_CODES.UNSUPPORTED_CANONICALIZATION,
-			sourceIdentity: `ix://${resolution.root.identity}/source/lock`,
-			limits,
-		});
-		if (!read.value) {
-			diagnostics.push(...read.diagnostics);
-			return stop("invalid");
-		}
-		diagnostics.push(
-			...verifyLock(read.value, read.text, read.path, resolution),
-		);
-		lockDigest = read.digest;
-		if (hasBlocking(diagnostics)) return stop("invalid");
-	}
+	phases.push("graph");
+	onPhase("graph");
+	const packageGraph = resolvedPackageGraph(resolution);
 
 	resolution.packageBlock = {
 		identity: resolution.root.identity,
 		version: resolution.root.version,
-		manifestDigest: resolution.root.manifestDigest,
 		mappingVersions: resolution.mappings.map((mapping) => mapping.version),
 		profileVersions: resolution.profiles.map((profile) => profile.version),
-		lockDigest,
 	};
 
 	phases.push("frontend");
@@ -149,8 +114,7 @@ export async function compilePackage(request) {
 	onPhase("assemble");
 	return {
 		ir: result.ir,
-		lock,
-		lockBytes,
+		packageGraph,
 		resolution,
 		diagnostics: report(),
 		state: diagnostics.length > 0 ? "partial" : "success",

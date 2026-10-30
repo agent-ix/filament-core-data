@@ -106,7 +106,6 @@ function pythonRequest(
 ) {
 	return {
 		contractVersion: "1.0.0",
-		lockFingerprint: `sha256:${"a".repeat(64)}`,
 		ir: readJson(document),
 		profile: readJson("fixtures/semantic/v1/positive/profile.json"),
 		mappings: [],

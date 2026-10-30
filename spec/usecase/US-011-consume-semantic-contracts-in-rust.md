@@ -59,9 +59,10 @@ engine behind the Rust `regex` crate — has no lookahead. Recorded as GAP-002,
 owned by this issue. Whatever a Rust consumer is handed for that field, it must
 not be a bare `String` that quietly validates nothing.
 
-The corpus and oracle from issue #20 already exist and already declare a
-`rust-backend` slot, currently answering all 115 cases `unavailable`. This story
-is about filling it with something whose agreement is worth reading.
+The corpus and oracle from issue #20 already exist and declare a `rust-backend`
+slot. PLAT-1205 retired digest-only PKG-006, leaving 114 authored cases; the
+slot now answers those cases through the Rust reader. This story is about
+agreement whose evidence is worth reading.
 
 ## Acceptance Examples (Illustrative)
 

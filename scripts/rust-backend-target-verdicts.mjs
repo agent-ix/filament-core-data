@@ -104,15 +104,12 @@ export const VERDICT_IR = Object.freeze({
 		identity: "ix://agent-ix/filament-core-data/source/typespec",
 		version: "1.0.0",
 		dialect: "typespec",
-		digest: `sha256:${"0".repeat(64)}`,
 	},
 	package: {
 		identity: "agent-ix/verdicts",
 		version: "1.0.0",
-		manifestDigest: `sha256:${"1".repeat(64)}`,
 		mappingVersions: ["1.0.0"],
 		profileVersions: ["1.0.0"],
-		lockDigest: `sha256:${"2".repeat(64)}`,
 	},
 	types: [
 		{

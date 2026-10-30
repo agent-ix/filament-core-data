@@ -44,13 +44,13 @@ manifest and it is not sent to any registry.
 | Metric | Target | Threshold | Method |
 |---|---|---|---|
 | Packages published by this work | 0 | 0 | Registry inspection |
-| Symbols exported by `src/compiler/index.mjs` | 15 | 15 | Export-set test |
+| Symbols exported by `src/compiler/index.mjs` | 13 | 13 | Export-set test |
 | Downstream repositories changed | 0 | 0 | Inspection |
 | Added package manifests without an AGPL-3.0-or-later declaration | 0 | 0 | Licence inspection |
 
 ## Verification
 
-Assert the narrow build interface still exports exactly fifteen symbols.
+Assert the narrow build interface still exports exactly the thirteen named symbols.
 Inspect every added manifest for the licence and confirm no registry
 publication occurred.
 
@@ -58,7 +58,7 @@ publication occurred.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-025-AC-5 | `src/compiler/index.mjs` exports exactly fifteen symbols, and adding a sixteenth fails the export-set test. | Unit |
+| NFR-025-AC-5 | `src/compiler/index.mjs` exports exactly `buildSemanticIr`, `SEMANTIC_IR_SCHEMA_VERSION`, `compileSemanticIr`, `emitTypeScript`, `emitRust`, `normalizeJsonSchemaForPython`, `runFrontend`, `compilePackage`, `readContractIr`, `normalizeIr`, `inspectIr`, `diffSemanticContract`, and `CONTRACT_IR_VERSION`; adding or removing any symbol fails the export-set test. | Unit |
 | NFR-025-AC-8 | No file this work generates is written under a path this repository publishes, and `npm pack --dry-run` over this repository lists no generated-package file. | Analysis |
 | NFR-025-AC-9 | Every generated `package.json` and every added source file declares AGPL-3.0-or-later. | Static |
 
@@ -71,3 +71,10 @@ publication occurred.
 - **Constrains**: [FR-063](../functional/FR-063-declare-the-generation-backend-seam.md),
   [FR-070](../functional/FR-070-run-the-typescript-conformance-adapter.md),
   [FR-071](../functional/FR-071-provide-the-generate-command-and-surface-fixtures.md)
+
+## PLAT-1205 retirement
+
+The pre-retirement `src/compiler/index.mjs` exported fourteen symbols even though
+this requirement previously stated fifteen. PLAT-1205 removes only the
+digest-derived `fingerprintIr` export. The thirteen symbols above are the exact
+surviving interface; every other pre-retirement export remains.

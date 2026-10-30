@@ -143,7 +143,6 @@ export async function run(request) {
 		packageRoots: resolution.packages.map((entry) => entry.packageRoot),
 		sourceIdentity: resolution.root.sourceIdentity,
 		packageVersion: resolution.root.version,
-		sourceDigest: resolution.root.contentDigest,
 		packageBlock: resolution.packageBlock,
 		importedExports: resolution.importedExports,
 		limits,
