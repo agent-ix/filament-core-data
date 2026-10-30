@@ -57,22 +57,6 @@ const SLASH = "/";
 // file binds no row at all.
 const RELATIVE_IMPORT = /from "([^"]+)"/g;
 const IDENTITY_PREFIX = ["ix:", SLASH, SLASH].join("");
-function exportedCompilerSymbols(source: string): string[] {
-	const names: string[] = [];
-	for (const line of source.split("\n")) {
-		if (!line.startsWith("export {")) continue;
-		const body = line.slice("export {".length, line.indexOf("}"));
-		for (const entry of body.split(",")) {
-			const name = entry
-				.trim()
-				.split(/\s+as\s+/)
-				.at(-1);
-			if (name) names.push(name);
-		}
-	}
-	return names.sort();
-}
-
 /** Tar bytes with the five intentionally nondeterministic header members zeroed. */
 function normalizeTarMetadata(tarball: Buffer): Buffer {
 	const tar = Buffer.from(gunzipSync(tarball));
@@ -1706,11 +1690,8 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 	// and `generated/` included — and the case could only fail (#226).
 
 	/** Trace: TC-842, NFR-025-AC-5. */
-	it("keeps the exact thirteen-symbol compiler surface", () => {
-		const names = exportedCompilerSymbols(
-			readFileSync(resolve(root, "src/compiler/index.mjs"), "utf8"),
-		);
-		expect(names).toEqual([
+	it("keeps the exact thirteen-symbol compiler surface", async () => {
+		const expected = [
 			"CONTRACT_IR_VERSION",
 			"SEMANTIC_IR_SCHEMA_VERSION",
 			"buildSemanticIr",
@@ -1724,12 +1705,23 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 			"normalizeJsonSchemaForPython",
 			"readContractIr",
 			"runFrontend",
-		]);
-		expect(
-			exportedCompilerSymbols('export { one, two } from "./x.mjs";'),
-		).toHaveLength(2);
-		expect(
-			exportedCompilerSymbols('export { one, two, three } from "./x.mjs";'),
-		).toHaveLength(3);
+		];
+		const names = Object.keys(await import("../src/compiler/index.mjs")).sort();
+		expect(names).toEqual(expected);
+		const scratch = mkdtempSync(resolve(tmpdir(), "fcd-compiler-exports-"));
+		try {
+			const module = resolve(scratch, "added.mjs");
+			writeFileSync(
+				module,
+				`export * from ${JSON.stringify(pathToFileURL(resolve(root, "src/compiler/index.mjs")).href)};\nexport const injected = 1;\n`,
+			);
+			const added = Object.keys(
+				await import(/* @vite-ignore */ pathToFileURL(module).href),
+			).sort();
+			expect(added).toContain("injected");
+			expect(added).not.toEqual(expected);
+		} finally {
+			rmSync(scratch, { recursive: true, force: true });
+		}
 	});
 });
