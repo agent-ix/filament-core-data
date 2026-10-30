@@ -438,11 +438,11 @@ Recursive type graphs are preserved and are not package cycles. The compiler
 does not mint a second package lock or digest-keyed staleness check.
 
 A normalized Semantic IR document carries
-`canonicalization: {"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`.
+`canonicalization: {"algorithm":"rfc8785-v1"}`.
 `rfc8785-v1` is RFC 8785 JSON Canonicalization Scheme: object member names use
 RFC 8785 UTF-16 code-unit ordering, numbers and strings use RFC 8785 spelling,
-and arrays retain their supplied order. The `digest` member is an existing
-algorithm-domain label, not a digest value. Producers and consumers compare
+and arrays retain their supplied order. The descriptor has no `digest` member;
+normalized documents carrying one are refused. Producers and consumers compare
 normalized bytes directly; no document digest sidecar is emitted.
 
 ## Mappings and profiles

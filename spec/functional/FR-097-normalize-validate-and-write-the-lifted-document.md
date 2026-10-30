@@ -47,7 +47,7 @@ formatter, each of which the reader already owns. The document form is
 `rfc8785-v1`, as [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md)
 settles for every normalized document. It is RFC 8785 JCS, including UTF-16
 code-unit object-key ordering. The normalized document also carries
-`{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`, so neither FCD nor QSL intake infers
+`{"algorithm":"rfc8785-v1"}`, so neither FCD nor QSL intake infers
 the algorithm from observed bytes. FR-046 imposes the semantic node-list order
 before serialization, so FR-050 `normalizeIr` of the emitted document is the
 identity on its bytes. FR-050's node reader is the second, cross-language reader
@@ -80,9 +80,9 @@ in the test suite.
 - The frontend SHALL sort every node list — `types`, and within each type `variants`, `constraints`, `relationships`, `operations`, `clauses`, and `extensions`, within each field and each operation parameter `extensions`, and the top-level `occurrences` and `extensions` — by `identity` under a locale-independent code-point comparison before calling `decide`; these are exactly the sets FR-050's `normalizeIr` declares (`IDENTITY_SETS`). A type's `fields` and `supertypes` and an operation's `params` are ordered sequences, not sets: the frontend SHALL keep their assembled (authored) order, because the positional signature and parameter checks of QSpec FR-154 and the declaration-order binder record of QSpec FR-432 read `params` order, and because the effective field order of QSpec FR-208-AC-18 and the authored-order retention of QSpec FR-154-AC-32 read it; a field or parameter is still keyed by `identity`, and a field's or parameter's own `extensions` remain a set.
 - The frontend SHALL obtain the written bytes as `agent_ix_semantic_ir::normalize::normalized(&{"ir": <document>})` over the sorted document and from no other serializer.
 - The frontend SHALL carry the exact
-  `canonicalization: {"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`
+  `canonicalization: {"algorithm":"rfc8785-v1"}`
   descriptor in the normalized document and SHALL include that descriptor in
-  the published canonical bytes. The `digest` member names the historical algorithm domain, not a written digest value.
+  the published canonical bytes. The descriptor names the canonical byte algorithm and carries no digest domain or value.
 - The frontend SHALL materialize `multiplicity`, `presence`, and `nullable` on every field and operation parameter before serialization, so that `normalized` adds no member and the written bytes re-parse to the assembled value.
 - The frontend SHALL NOT link the `jsonschema` crate.
 - The frontend SHALL NOT implement a JSON canonicalizer, an object-member ordering, or a number formatter of its own.
