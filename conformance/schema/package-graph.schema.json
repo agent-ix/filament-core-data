@@ -27,9 +27,7 @@
 				},
 				"additionalProperties": false
 			}
-		},
-		"profile": { "type": ["string", "null"] },
-		"contractVersion": { "type": "string" }
+		}
 	},
 	"additionalProperties": false
 }

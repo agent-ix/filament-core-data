@@ -41,10 +41,15 @@ describe("direct resolved package graph", () => {
 		]);
 		expect(graph.packages[0].imports).toEqual(["acme/z"]);
 		expect(graph.packages[1].exports).toEqual(["ix://acme/z/Type"]);
-		expect(validateConformance("package-graph.schema.json", graph)).toEqual([]);
+		const conformanceGraph = {
+			rootPackage: graph.rootPackage,
+			packages: graph.packages,
+		};
+		expect(validateConformance("package-graph.schema.json", conformanceGraph)).toEqual([]);
+		expect(validateConformance("package-graph.schema.json", graph)).not.toEqual([]);
 		expect(
 			validateConformance("package-graph.schema.json", {
-				...graph,
+				...conformanceGraph,
 				fingerprint: `sha256:${"0".repeat(64)}`,
 			}),
 		).not.toEqual([]);

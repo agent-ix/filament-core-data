@@ -1,6 +1,6 @@
 {
 	"id": "PKG-002",
-	"title": "An import the lock does not resolve is rejected",
+	"title": "An import the package graph does not resolve is rejected",
 	"family": "package",
 	"class": "negative",
 	"kind": "document",
@@ -23,8 +23,8 @@
 	"derivedFrom": [
 		{
 			"artifact": "docs/semantic-data-system/contracts-v1.md",
-			"locator": "Packages, locks, and fingerprints",
-			"quote": "source identities, and dependencies. Package cycles are rejected with every"
+			"locator": "Packages and canonical documents",
+			"quote": "Package cycles are rejected with every locus."
 		}
 	],
 	"provenance": {
@@ -39,7 +39,7 @@
 				"diagnostic": {
 					"code": "agent-ix.semantic-ir.UNRESOLVED_IMPORT",
 					"severity": "error",
-					"message": "the lock resolves the complete dependency graph and does not resolve this import",
+					"message": "the package graph resolves the complete dependency graph and does not resolve this import",
 					"owner": "ix://agent-ix/filament-core-data/conformance/oracle",
 					"blocking": true,
 					"causes": [],

@@ -499,9 +499,7 @@ pub(crate) fn parsed_manifest(root: &Path, bytes: &[u8]) -> Result<(String, Mani
     Ok((name, manifest))
 }
 
-/// One module's manifest as a construct kind cites it.
-/// The manifest of every module root, keyed by module name; the first root
-/// naming a module wins, as it does in the registry.
+/// Module names backed by a loaded manifest, as a construct kind cites them.
 fn module_manifests(module_roots: &[&Path]) -> Result<BTreeSet<String>, Refusal> {
     let mut out = BTreeSet::new();
     for root in module_roots {

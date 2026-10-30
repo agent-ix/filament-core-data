@@ -260,7 +260,7 @@
 				"fixtures/semantic/v1/negative/reader-cases.json"
 			],
 			"rule": "A relationship target that is neither a document type nor a manifest export.",
-			"citation": "parses clause text. Relationship targets resolve to a document type or a lock",
+			"citation": "Relationship targets resolve to a document type or a selected package graph",
 			"exercisedBy": "case"
 		},
 		{
@@ -292,8 +292,8 @@
 			"provenance": "minted",
 			"decidedBy": "cross-field",
 			"sources": ["docs/semantic-data-system/contracts-v1.md"],
-			"rule": "An import naming a package the lock does not resolve.",
-			"citation": "Locks resolve the complete dependency graph to exact versions, content digests,",
+			"rule": "An import naming a package the selected graph does not resolve.",
+			"citation": "Resolution binds the complete dependency graph to exact versions, source",
 			"exercisedBy": "case"
 		},
 		{
@@ -301,8 +301,8 @@
 			"provenance": "minted",
 			"decidedBy": "cross-field",
 			"sources": ["docs/semantic-data-system/contracts-v1.md"],
-			"rule": "A lock package graph that closes a cycle.",
-			"citation": "source identities, and dependencies. Package cycles are rejected with every",
+			"rule": "A selected package graph that closes a cycle.",
+			"citation": "Package cycles are rejected with every locus.",
 			"exercisedBy": "case"
 		},
 		{

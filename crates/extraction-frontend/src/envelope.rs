@@ -9,7 +9,6 @@
 use std::collections::BTreeSet;
 
 use serde::Serialize;
-use sha2::{Digest, Sha256};
 
 use crate::bundle::{Bundle, Document};
 use crate::identity::PackageIdentity;
@@ -81,15 +80,6 @@ impl Envelope {
             extensions: Vec::new(),
         }
     }
-}
-
-/// `sha256:<hex>` over `bytes`.
-pub fn sha256_prefixed(bytes: &[u8]) -> String {
-    format!("sha256:{}", hex(bytes))
-}
-
-fn hex(bytes: &[u8]) -> String {
-    format!("{:x}", Sha256::digest(bytes))
 }
 
 /// `spec.md` frontmatter `version`, or `0.0.0` (FR-095-AC-2).

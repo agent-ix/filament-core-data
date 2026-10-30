@@ -318,21 +318,6 @@ pub fn normalize_ir(bytes: &[u8]) -> Vec<u8> {
     run.stdout
 }
 
-/// `fingerprintIr` of `src/compiler/ir/normalize.mjs` over the JSON on
-/// stdin: the production FR-050 fingerprint of a document.
-pub fn fingerprint_ir(bytes: &[u8]) -> String {
-    let script = format!(
-        "const fs=require('fs');const {{pathToFileURL}}=require('url');\
-         import(pathToFileURL({:?}).href).then(m=>{{\
-         const doc=JSON.parse(fs.readFileSync(0,'utf8'));\
-         process.stdout.write(m.fingerprintIr(doc));}}).catch(e=>{{console.error(e);process.exit(3);}});",
-        workspace_dir().join("src/compiler/ir/normalize.mjs").to_string_lossy()
-    );
-    let run = run_node(&["-e", &script], bytes, None).expect("node runs");
-    assert_eq!(run.status, 0, "fingerprintIr failed: {}", run.stderr);
-    String::from_utf8(run.stdout).expect("utf-8 fingerprint")
-}
-
 /// `node src/compiler/cli.mjs inspect --ir <path> --json`: the exit status
 /// and the parsed summary.
 pub fn inspect(path: &Path) -> (i32, Value) {

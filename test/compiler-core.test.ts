@@ -2175,15 +2175,10 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		const source = (compiled.ir as Json).source as Json;
 		const block = (compiled.ir as Json).package as Json;
 		expect(source).not.toHaveProperty("digest");
-		const resolution = compiled.resolution as never as {
-			root: { contentDigest: string };
-		};
-		const lock = compiled.lock as Json;
-		const packages = lock.packages as Json[];
-		expect(
-			packages.find((entry) => entry.identity === "agent-ix/assurance")
-				?.contentDigest,
-		).toBe(resolution.root.contentDigest);
+		const graph = compiled.packageGraph as Json;
+		const packages = graph.packages as Json[];
+		expect(packages.some((entry) => entry.identity === "agent-ix/assurance")).toBe(true);
+		expect(packages.every((entry) => !Object.hasOwn(entry, "contentDigest"))).toBe(true);
 		expect(block.identity).toBe("agent-ix/assurance");
 		expect(block.version).toBe("1.0.0");
 		expect(block).not.toHaveProperty("manifestDigest");
@@ -2191,34 +2186,6 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(block.mappingVersions).toEqual([]);
 		expect(block).not.toHaveProperty("lockDigest");
 	});
-
-	it("omits the package lock digest with a generated or supplied lock", async () => {
-		const built = (compiled.ir as Json).package as Json;
-		expect(built).not.toHaveProperty("lockDigest");
-
-		const directory = temp("lock");
-		const lockPath = resolve(directory, "package-lock.json");
-		try {
-			const lockBytes = serializeLock(compiled.lock as never);
-			writeFileSync(lockPath, lockBytes);
-			const result = await compilePackage({
-				host: newHost([root, directory]),
-				packageRoot: assurance,
-				searchPath: [],
-				profileName: "default",
-				entrypoint: "types/main.tsp",
-				lockPath,
-			});
-			note(result.diagnostics as never);
-			expect(result.ir).not.toBeNull();
-			expect((result.ir as Json).package as Json).not.toHaveProperty(
-				"lockDigest",
-			);
-			expect(read(lockPath)).toBe(lockBytes);
-		} finally {
-			rmSync(directory, { recursive: true, force: true });
-		}
-	}, 60000);
 
 	/** Traces: TC-444; FR-046-AC-13. */
 	it("emits occurrences as the empty array", () => {
@@ -5706,13 +5673,13 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 	}, 60000);
 
 	/** Traces: TC-558, TC-563; FR-052-AC-12, FR-052-CON-1. */
-	it("declares exactly fourteen symbols that the typecheck sees", async () => {
+	it("declares exactly thirteen symbols that the typecheck sees", async () => {
 		const index = (await import("../src/compiler/index.mjs")) as Record<
 			string,
 			unknown
 		>;
 		const exported = Object.keys(index).sort();
-		expect(exported).toHaveLength(14);
+		expect(exported).toHaveLength(13);
 		expect(exported).toEqual([
 			"CONTRACT_IR_VERSION",
 			"SEMANTIC_IR_SCHEMA_VERSION",

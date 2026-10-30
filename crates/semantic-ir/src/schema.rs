@@ -162,18 +162,6 @@ fn is_package_revision(text: &str) -> bool {
             && (text.len() == 1 || !text.starts_with('0')))
 }
 
-fn is_sha256(text: &str) -> bool {
-    match text.strip_prefix("sha256:") {
-        Some(rest) => {
-            rest.len() == 64
-                && rest
-                    .chars()
-                    .all(|c| c.is_ascii_digit() || ('a'..='f').contains(&c))
-        }
-        None => false,
-    }
-}
-
 fn is_package_identity(text: &str) -> bool {
     let (owner, name) = match text.split_once('/') {
         Some(parts) => parts,
@@ -2869,7 +2857,7 @@ fn manifest_targets(targets: Option<&Json>, at: &str, f: &mut Findings) {
 // conformance/schema/package-graph.schema.json
 // ---------------------------------------------------------------------------
 
-const GRAPH_MEMBERS: &[&str] = &["rootPackage", "packages", "profile", "contractVersion"];
+const GRAPH_MEMBERS: &[&str] = &["rootPackage", "packages"];
 
 fn package_graph(graph: &Json, at: &str, f: &mut Findings) {
     if !expect_object(graph, at, "a resolved package graph", f) {
@@ -2884,23 +2872,6 @@ fn package_graph(graph: &Json, at: &str, f: &mut Findings) {
         "a package identity is <owner>/<name>",
         f,
     );
-    if let Some(version) = graph.get("contractVersion") {
-        expect_shape(
-            Some(version),
-            &child(at, "contractVersion"),
-            is_semver,
-            "a version is SemVer",
-            f,
-        );
-    }
-    if let Some(profile) = graph.get("profile") {
-        if !matches!(profile, Json::Null | Json::Str(_)) {
-            f.push(
-                &child(at, "profile"),
-                "a selected profile is a string or null",
-            );
-        }
-    }
     if let Some(packages) = graph.get("packages") {
         let packages_at = child(at, "packages");
         if expect_array(packages, &packages_at, "packages", f) {
@@ -2927,8 +2898,8 @@ fn package_graph(graph: &Json, at: &str, f: &mut Findings) {
                     f,
                 );
                 for (name, shape) in [
-                    ("imports", is_package_identity as fn(&Json) -> bool),
-                    ("exports", is_semantic_identity as fn(&Json) -> bool),
+                    ("imports", is_package_identity as fn(&str) -> bool),
+                    ("exports", is_semantic_identity as fn(&str) -> bool),
                 ] {
                     let values_at = child(&package_at, name);
                     if let Some(values) = package.get(name) {

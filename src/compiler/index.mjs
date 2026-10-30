@@ -1,7 +1,7 @@
 /**
  * The narrow build interface (FR-041, FR-052).
  *
- * Exactly fourteen symbols: the six issue #27 promoted, and the eight the contract
+ * Exactly thirteen symbols: the six issue #27 promoted, and the seven the contract
  * path adds. Callers reach the compiler through this module, through
  * `cli.mjs`, or through `tsp --emit` against `emitters/semantic-ir`; nothing
  * reaches into the modules behind it, and nothing here imports from `spikes/`.

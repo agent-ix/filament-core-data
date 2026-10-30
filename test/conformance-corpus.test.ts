@@ -1261,7 +1261,7 @@ describe("TC-314..319 and TC-622..401 the construct register and the defect regi
 			expect(verdict.resultState, id).toBe("invalid");
 			expect(verdict.diagnostics.length, id).toBe(1);
 			expect(verdict.diagnostics[0].pointer, id).toMatch(
-				/^\/(ir|lock|manifest|mappings)\//,
+				/^\/(ir|packageGraph|manifest|mappings)\//,
 			);
 		}
 	});
