@@ -2181,7 +2181,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		).toEqual([]);
 	}, 60000);
 
-	/** Traces: TC-443, TC-485; FR-046-AC-12, FR-048-AC-9. */
+	/// Trace: FR-046-AC-12, FR-048-AC-9
 	it("stamps the envelope from the resolution", () => {
 		const source = (compiled.ir as Json).source as Json;
 		const block = (compiled.ir as Json).package as Json;
@@ -2203,7 +2203,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		expect(block).not.toHaveProperty("lockDigest");
 	});
 
-	/** Traces: TC-486; FR-048-AC-10. */
+	/// Trace: FR-048-AC-10
 	it("omits the package lock digest with a generated or supplied lock", async () => {
 		const built = (compiled.ir as Json).package as Json;
 		expect(built).not.toHaveProperty("lockDigest");

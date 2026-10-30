@@ -592,7 +592,6 @@ function bundleSource(documents) {
 		identity: "ix://agent-ix/semantic-core",
 		version,
 		dialect: "spec-bundle",
-		digest: `sha256:${"0".repeat(64)}`,
 	};
 }
 

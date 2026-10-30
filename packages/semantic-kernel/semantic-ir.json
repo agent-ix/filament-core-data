@@ -7,16 +7,13 @@
 	"source": {
 		"identity": "ix://agent-ix/semantic-core",
 		"version": "0.3.3",
-		"dialect": "spec-bundle",
-		"digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+		"dialect": "spec-bundle"
 	},
 	"package": {
 		"identity": "agent-ix/semantic-kernel",
 		"version": "0.3.1",
-		"manifestDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
 		"mappingVersions": [],
-		"profileVersions": [],
-		"lockDigest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+		"profileVersions": []
 	},
 	"occurrences": [],
 	"extensions": [],

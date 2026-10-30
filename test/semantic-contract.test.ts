@@ -643,7 +643,7 @@ describe("semantic package contract v1", () => {
 		expect(reference?.target).toBe(artifact?.identity);
 	});
 
-	/** Traces: FR-019-AC-2, FR-084-AC-6. */
+	/// Trace: FR-019-AC-2, FR-084-AC-6
 	it("rejects retired digest members in the source and package envelopes", () => {
 		for (const [section, name] of [
 			["source", "digest"],
