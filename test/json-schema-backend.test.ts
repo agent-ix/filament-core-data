@@ -49,7 +49,6 @@ describe("TC-1362 JSON Schema output for the lifted ConfigVersion", () => {
 		const manifest = generateTarget(
 			{
 				contractVersion: "1.0.0",
-				lockFingerprint: `sha256:${"a".repeat(64)}`,
 				ir,
 				profile: JSON.parse(readFileSync(profile, "utf8")),
 				mappings: [],

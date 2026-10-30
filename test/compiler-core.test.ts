@@ -64,20 +64,11 @@ import { VOCABULARY } from "../src/compiler/frontend/typespec/lib/lib.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 import { formatInspection, inspectIr } from "../src/compiler/inspect.mjs";
 import { EDGE_VOCABULARY, PART_OF } from "../src/compiler/ir/applicability.mjs";
-import { fingerprintIr, normalizeIr } from "../src/compiler/ir/normalize.mjs";
+import { normalizeIr } from "../src/compiler/ir/normalize.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
 import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
 import { canonicalize, digest } from "../src/compiler/packages/canonical.mjs";
-import {
-	buildLock,
-	CANONICALIZATION,
-	contentDigest,
-	fingerprint,
-	schemaBytes,
-	serializeLock,
-	sourceFiles,
-	verifyLock,
-} from "../src/compiler/packages/lock.mjs";
+import { resolvedPackageGraph, sourceFiles } from "../src/compiler/packages/lock.mjs";
 import {
 	compareVersions,
 	parseConstraint,
@@ -236,7 +227,6 @@ async function compileFixture(
 		searchPath?: string[];
 		profileName?: string;
 		entrypoint?: string;
-		lockPath?: string;
 		limits?: Json;
 		host?: ReturnType<typeof createHost>;
 	} = {},
@@ -248,7 +238,6 @@ async function compileFixture(
 		searchPath: options.searchPath ?? [],
 		profileName: options.profileName,
 		entrypoint: options.entrypoint ?? "types/main.tsp",
-		lockPath: options.lockPath,
 		limits: options.limits as never,
 	});
 	note(result.diagnostics as never);
@@ -2333,8 +2322,8 @@ describe("package graph resolution (FR-047)", () => {
 		expect(forward.packages.map((entry) => entry.identity)).toEqual(
 			backward.packages.map((entry) => entry.identity),
 		);
-		expect(buildLock(forward as never).fingerprint).toBe(
-			buildLock(backward as never).fingerprint,
+		expect(canonicalize(resolvedPackageGraph(forward as never))).toBe(
+			canonicalize(resolvedPackageGraph(backward as never)),
 		);
 	});
 
@@ -2349,21 +2338,6 @@ describe("package graph resolution (FR-047)", () => {
 		expect(conflicts).toHaveLength(1);
 		expect(conflicts[0].locus).toBeDefined();
 		expect(conflicts[0].related.length).toBeGreaterThan(0);
-	});
-
-	/** Traces: TC-458; FR-047-AC-3. */
-	it("reports a digest conflict naming both digests and both loci", () => {
-		const result = resolveCase("digest-conflict/root/root", [
-			"digest-conflict/registry-a",
-			"digest-conflict/registry-b",
-		]);
-		const conflicts = result.diagnostics.filter(
-			(entry) => entry.code === DIAGNOSTIC_CODES.DIGEST_CONFLICT.code,
-		);
-		expect(conflicts).toHaveLength(1);
-		expect(conflicts[0].message.match(/sha256:[0-9a-f]{64}/g)).toHaveLength(2);
-		expect(conflicts[0].locus).toBeDefined();
-		expect(conflicts[0].related).toHaveLength(1);
 	});
 
 	/** Traces: TC-459, TC-616; FR-047-AC-4. */
@@ -2937,271 +2911,30 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 		);
 	});
 
-	/** Traces: TC-478, TC-488; FR-048-AC-2, FR-048-CON-1. */
-	it("leaves the fingerprint unchanged for every excluded input", () => {
-		const resolution = compiled.resolution as never as Json;
-		const before = fingerprint(resolution as never);
-		// Object key order.
-		const reordered = JSON.parse(
-			JSON.stringify(resolution, Object.keys(resolution as Json).reverse()),
-		) as Json;
-		expect(canonicalize({ b: 1, a: 2 }) === canonicalize({ a: 2, b: 1 })).toBe(
-			true,
+	/** Trace: FR-048-AC-4, FR-048-AC-7. */
+	it("resolves the same direct graph twice", () => {
+		const graph = resolvedPackageGraph(compiled.resolution as never);
+		expect(graph.rootPackage).toBe("agent-ix/assurance");
+		expect(canonicalize(resolvedPackageGraph(compiled.resolution as never))).toBe(
+			canonicalize(graph),
 		);
-		expect(reordered).toBeDefined();
-		// Identity-keyed set order.
-		expect(
-			canonicalize(
-				{ types: [{ identity: "b" }, { identity: "a" }] },
-				{
-					sets: ["/types"],
-				},
-			),
-		).toBe(
-			canonicalize(
-				{ types: [{ identity: "a" }, { identity: "b" }] },
-				{
-					sets: ["/types"],
-				},
-			),
+		expect(graph.packages.map((entry) => entry.identity)).toEqual(
+			[...graph.packages.map((entry) => entry.identity)].sort(),
 		);
-		// Locale. (The working directory is varied for real in TC-574, which runs
-		// the CLI as a subprocess from another directory; the test runner's
-		// workers cannot change their own cwd.)
-		const savedLang = process.env.LANG;
-		try {
-			process.env.LANG = "tr_TR.UTF-8";
-			expect(fingerprint(resolution as never)).toBe(before);
-		} finally {
-			if (savedLang === undefined) delete process.env.LANG;
-			else process.env.LANG = savedLang;
-		}
 	});
 
-	/** Traces: TC-479; FR-048-AC-3. */
-	it("changes the fingerprint for every included input", () => {
-		const resolution = JSON.parse(
-			JSON.stringify({
-				schemaBytes: (compiled.resolution as never as Json).schemaBytes,
-				root: { manifestDigest: "sha256:" + "1".repeat(64) },
-				mappings: [
-					{
-						identity: "ix://a/b/mapping/m",
-						digest: "sha256:" + "2".repeat(64),
-					},
-				],
-				profiles: [{ name: "default", digest: "sha256:" + "3".repeat(64) }],
-				packages: [
-					{
-						identity: "agent-ix/x",
-						version: "1.0.0",
-						contentDigest: `sha256:${"4".repeat(64)}`,
-						manifestDigest: `sha256:${"5".repeat(64)}`,
-					},
-				],
-			}),
-		) as never as Json;
-		const base = fingerprint(resolution as never);
-		const mutate = (change: (value: Json) => void) => {
-			const copy = JSON.parse(JSON.stringify(resolution)) as Json;
-			change(copy);
-			return fingerprint(copy as never);
-		};
-		expect(
-			mutate((value) => {
-				(value.root as Json).manifestDigest = `sha256:${"9".repeat(64)}`;
-			}),
-		).not.toBe(base);
-		expect(
-			mutate((value) => {
-				(value.mappings as Json[])[0].digest = `sha256:${"9".repeat(64)}`;
-			}),
-		).not.toBe(base);
-		expect(
-			mutate((value) => {
-				(value.profiles as Json[])[0].digest = `sha256:${"9".repeat(64)}`;
-			}),
-		).not.toBe(base);
-		expect(
-			mutate((value) => {
-				(value.packages as Json[])[0].version = "2.0.0";
-			}),
-		).not.toBe(base);
-		expect(
-			mutate((value) => {
-				(value.packages as Json[])[0].contentDigest =
-					`sha256:${"9".repeat(64)}`;
-			}),
-		).not.toBe(base);
-		expect(
-			mutate((value) => {
-				(value.schemaBytes as unknown[])[0] = ["moved.schema.json", "sha256:0"];
-			}),
-		).not.toBe(base);
-	});
-
-	/** Trace: FR-145-AC-5. TC-480, TC-483; FR-048-AC-4, FR-048-AC-7. */
-	it("builds a schema-valid lock, twice identically", () => {
-		const lock = buildLock(compiled.resolution as never);
-		expect(
-			schemaValidators(newHost([root])).errors(
-				"package-lock.schema.json",
-				lock,
-			),
-		).toEqual([]);
-		expect(lock.canonicalization).toEqual({
-			algorithm: CANONICALIZATION.algorithm,
-			digest: CANONICALIZATION.digest,
-			included: [...CANONICALIZATION.included],
-			excluded: [...CANONICALIZATION.excluded],
-		});
-		// Two builds agree, and the fingerprint the lock carries is the one
-		// `fingerprint()` computes from the resolution — so the comparison is not
-		// one pure call against another.
-		expect(serializeLock(buildLock(compiled.resolution as never))).toBe(
-			serializeLock(lock),
-		);
-		expect(lock.fingerprint).toBe(fingerprint(compiled.resolution as never));
-		expect(String(lock.fingerprint)).toMatch(/^sha256:[0-9a-f]{64}$/);
-	});
-
-	/** Traces: TC-481, TC-482, TC-490, TC-613; FR-048-AC-5, FR-048-AC-6, FR-048-CON-3. */
-	it("reports every lock defect at its locus, naming both values, without rewriting the lock", () => {
-		const resolution = compiled.resolution as never as Json;
-		const lock = buildLock(resolution as never);
-		const text = serializeLock(lock);
-		const fresh = verifyLock(
-			lock,
-			text,
-			"package-lock.json",
-			resolution as never,
-		);
-		note(fresh as never);
-		expect(fresh).toEqual([]);
-
-		const stale = JSON.parse(text) as Json;
-		stale.fingerprint = `sha256:${"9".repeat(64)}`;
-		const staleDiagnostics = verifyLock(
-			stale,
-			JSON.stringify(stale, null, "\t"),
-			"package-lock.json",
-			resolution as never,
-		);
-		note(staleDiagnostics as never);
-		expect(codesOf(staleDiagnostics as never)).toContain(
-			DIAGNOSTIC_CODES.STALE_LOCK.code,
-		);
-		expect(
-			(staleDiagnostics as never as Diagnostic[])[0].message.match(
-				/sha256:[0-9a-f]{64}/g,
-			),
-		).toHaveLength(2);
-
-		const movedPackage = JSON.parse(text) as Json;
-		(movedPackage.packages as Json[])[0].contentDigest =
-			`sha256:${"8".repeat(64)}`;
-		const packageDiagnostics = verifyLock(
-			movedPackage,
-			JSON.stringify(movedPackage, null, "\t"),
-			"package-lock.json",
-			resolution as never,
-		);
-		note(packageDiagnostics as never);
-		expect(codesOf(packageDiagnostics as never)).toContain(
-			DIAGNOSTIC_CODES.STALE_LOCK_PACKAGE.code,
-		);
-
-		const missing = JSON.parse(text) as Json;
-		missing.packages = [];
-		const graphDiagnostics = verifyLock(
-			missing,
-			JSON.stringify(missing, null, "\t"),
-			"package-lock.json",
-			resolution as never,
-		);
-		note(graphDiagnostics as never);
-		expect(codesOf(graphDiagnostics as never)).toContain(
-			DIAGNOSTIC_CODES.LOCK_GRAPH_MISMATCH.code,
-		);
-
-		const otherAlgorithm = JSON.parse(text) as Json;
-		(otherAlgorithm.canonicalization as Json).algorithm = "invented-v2";
-		const algorithmDiagnostics = verifyLock(
-			otherAlgorithm,
-			JSON.stringify(otherAlgorithm, null, "\t"),
-			"package-lock.json",
-			resolution as never,
-		);
-		note(algorithmDiagnostics as never);
-		expect(codesOf(algorithmDiagnostics as never)).toEqual([
-			DIAGNOSTIC_CODES.UNSUPPORTED_CANONICALIZATION.code,
-		]);
-
-		// Verification never rewrites what it checks.
-		expect(serializeLock(lock)).toBe(text);
-	});
-
-	/** Traces: TC-484; FR-048-AC-8. */
-	it("digests the declared source files and nothing else", () => {
+	/** Trace: FR-048-AC-8. */
+	it("enumerates only declared source paths", () => {
 		const host = newHost([root]);
 		const manifest = readJson(resolve(assurance, "package-manifest.json"));
 		const files = sourceFiles(host, assurance, manifest as never);
 		expect(files.length).toBeGreaterThan(0);
-		for (const path of files) expect(path.startsWith("types/")).toBe(true);
-		const before = contentDigest(host, assurance, manifest as never);
-		// A file beneath the package root but outside `sourceRoots` changes nothing.
-		const scratch = resolve(assurance, "NOTES.tmp");
-		try {
-			writeFileSync(scratch, "not a source file\n");
-			expect(contentDigest(newHost([root]), assurance, manifest as never)).toBe(
-				before,
-			);
-		} finally {
-			rmSync(scratch, { force: true });
-		}
-		// Enumeration order does not matter; the host sorts.
-		const descending = createHost({
-			readRoots: [root],
-			enumerationOrder: "descending",
-		});
-		expect(contentDigest(descending, assurance, manifest as never)).toBe(
-			before,
-		);
-		expect(schemaBytes(host).length).toBeGreaterThan(5);
+		expect(files.every((path) => path.startsWith("types/"))).toBe(true);
+		expect(sourceFiles(host, assurance, manifest as never)).toEqual(files);
 	});
 
-	/** Traces: TC-486; FR-048-AC-10. */
-	it("takes the lock digest from the supplied lock, or from the one it built", async () => {
-		const built = (compiled.ir as Json).package as Json;
-		expect(built.lockDigest).toBe(
-			digest(serializeLock(compiled.lock as never)),
-		);
-
-		const directory = temp("lock");
-		const lockPath = resolve(directory, "package-lock.json");
-		try {
-			writeFileSync(lockPath, serializeLock(compiled.lock as never));
-			const host = newHost([root, directory]);
-			const result = await compilePackage({
-				host,
-				packageRoot: assurance,
-				searchPath: [],
-				profileName: "default",
-				entrypoint: "types/main.tsp",
-				lockPath,
-			});
-			note(result.diagnostics as never);
-			expect(result.ir).not.toBeNull();
-			expect(((result.ir as Json).package as Json).lockDigest).toBe(
-				digest(read(lockPath)),
-			);
-		} finally {
-			rmSync(directory, { recursive: true, force: true });
-		}
-	}, 60000);
-
-	/** Traces: TC-487, TC-491; FR-048-AC-11, FR-048-CON-4. */
-	it("bounds canonicalisation and defines every digest by its byte set", () => {
+	/** Trace: FR-048-AC-11. */
+	it("bounds canonicalization depth", () => {
 		const deep: Json = {};
 		let cursor = deep;
 		for (let level = 0; level < 200; level += 1) {
@@ -3209,13 +2942,6 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 			cursor = cursor.child as Json;
 		}
 		expect(() => canonicalize(deep)).toThrow(/maxDepth/);
-		// Every digest the lock module produces is a function of named bytes:
-		// recomputing from the same bytes gives the same value.
-		const host = newHost([root]);
-		const manifest = readJson(resolve(assurance, "package-manifest.json"));
-		expect(contentDigest(host, assurance, manifest as never)).toBe(
-			contentDigest(newHost([root]), assurance, manifest as never),
-		);
 	});
 
 	/** Traces: TC-489; FR-048-CON-2. */
@@ -3858,7 +3584,6 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			generateTarget(
 				{
 					contractVersion: "1.0.0",
-					lockFingerprint: `sha256:${"a".repeat(64)}`,
 					ir:
 						typeof document === "string"
 							? readJson(resolve(root, document))
@@ -4138,9 +3863,6 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 
 		// The normalized and fingerprinted layers.
 		expect(normalizeIr(record as never)).not.toBe(normalizeIr(scalar as never));
-		expect(fingerprintIr(record as never)).not.toBe(
-			fingerprintIr(scalar as never),
-		);
 
 		// The compatibility layer names the change on that identity.
 		const report = diffSemanticContract({
@@ -4169,7 +3891,6 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			const manifest = generateTarget(
 				{
 					contractVersion: "1.0.0",
-					lockFingerprint: `sha256:${"a".repeat(64)}`,
 					ir: document,
 					profile: readJson(
 						resolve(root, "fixtures/semantic/v1/positive/profile.json"),
@@ -4236,7 +3957,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		const document = JSON.parse(JSON.stringify(compiled.ir)) as never as {
 			types: Json[];
 		};
-		const base = fingerprintIr(document);
+		const base = normalizeIr(document);
 		const reordered = JSON.parse(JSON.stringify(document)) as never as {
 			types: Json[];
 		};
@@ -4246,7 +3967,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 				if (Array.isArray(type[set])) (type[set] as Json[]).reverse();
 			}
 		}
-		expect(fingerprintIr(reordered)).toBe(base);
+		expect(normalizeIr(reordered)).toBe(base);
 
 		// `fields` and `supertypes` are ordered sequences (QSpec FR-154-AC-32),
 		// so reordering either is a different document.
@@ -4262,14 +3983,14 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			type.supertypes = supers.map((identity) => ({ identity }));
 			return doc;
 		};
-		const fieldsForward = fingerprintIr(
+		const fieldsForward = normalizeIr(
 			withTwo(["0", "1"], ["ix://a/P", "ix://a/Q"]),
 		);
 		expect(
-			fingerprintIr(withTwo(["1", "0"], ["ix://a/P", "ix://a/Q"])),
+			normalizeIr(withTwo(["1", "0"], ["ix://a/P", "ix://a/Q"])),
 		).not.toBe(fieldsForward);
 		expect(
-			fingerprintIr(withTwo(["0", "1"], ["ix://a/Q", "ix://a/P"])),
+			normalizeIr(withTwo(["0", "1"], ["ix://a/Q", "ix://a/P"])),
 		).not.toBe(fieldsForward);
 
 		// An operation's `params` are positional (QSpec FR-154, FR-432): a
@@ -4291,11 +4012,11 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			];
 			return doc;
 		};
-		const paramsForward = fingerprintIr(withParams(["z", "a"], ["x", "y"]));
-		expect(fingerprintIr(withParams(["a", "z"], ["x", "y"]))).not.toBe(
+		const paramsForward = normalizeIr(withParams(["z", "a"], ["x", "y"]));
+		expect(normalizeIr(withParams(["a", "z"], ["x", "y"]))).not.toBe(
 			paramsForward,
 		);
-		expect(fingerprintIr(withParams(["z", "a"], ["y", "x"]))).toBe(
+		expect(normalizeIr(withParams(["z", "a"], ["y", "x"]))).toBe(
 			paramsForward,
 		);
 
@@ -4306,7 +4027,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			(type) => type.identity === "ix://agent-ix/assurance/Artifact",
 		) as Json;
 		(artifact.fields as Json[])[0].nullable = true;
-		expect(fingerprintIr(semantic)).not.toBe(base);
+		expect(normalizeIr(semantic)).not.toBe(base);
 	});
 
 	/** Traces: TC-517; FR-050-AC-8. */
@@ -4555,8 +4276,6 @@ describe("compatibility (FR-051)", () => {
 			changes: { family: string; disposition: string; identity: string }[];
 			aggregateDisposition: string;
 			requiredGates: string[];
-			oldFingerprint: string;
-			newFingerprint: string;
 		};
 	};
 	const reportOfPair = (oldDocument: unknown, newDocument: unknown) =>
@@ -5157,8 +4876,6 @@ describe("compatibility (FR-051)", () => {
 		}) as never as {
 			changes: { family: string; identity: string }[];
 			aggregateDisposition: string;
-			oldFingerprint: string;
-			newFingerprint: string;
 		};
 		expect(report.changes).toHaveLength(1);
 		expect(report.changes[0].family).toBe("documentation");
@@ -5166,7 +4883,8 @@ describe("compatibility (FR-051)", () => {
 			((compiled.ir as Json).source as Json).identity,
 		);
 		expect(report.aggregateDisposition).toBe("patch");
-		expect(report.oldFingerprint).toBe(report.newFingerprint);
+		expect(report).not.toHaveProperty("oldFingerprint");
+		expect(report).not.toHaveProperty("newFingerprint");
 	});
 
 	/** Traces: TC-537, TC-568; FR-051-AC-11, NFR-019-AC-2. */
@@ -5189,7 +4907,6 @@ describe("compatibility (FR-051)", () => {
 		expect(summary.package.identity).toBe(
 			((compiled.ir as Json).package as Json).identity,
 		);
-		expect(summary.fingerprint).toBe(fingerprintIr(compiled.ir));
 	});
 
 	/** Traces: TC-543; FR-051-CON-2. */
@@ -5272,7 +4989,6 @@ describe("compatibility (FR-051)", () => {
 			constructs: {
 				kind: { module: string; name: string };
 				moduleVersion: string;
-				manifestDigest: string;
 				construct: {
 					identity: string;
 					shape: string;
@@ -5420,8 +5136,6 @@ describe("compatibility (FR-051)", () => {
 			{
 				kind: { module: "agent-ix/assurance", name: "entity" },
 				moduleVersion: "1.0.0",
-				manifestDigest:
-					"sha256:0000000000000000000000000000000000000000000000000000000000000000",
 				construct: {
 					identity: "identified",
 					shape: "record",
@@ -5724,61 +5438,6 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 		}
 	}, 120000);
 
-	/** Traces: TC-550, TC-551; FR-052-AC-4, FR-052-AC-5. */
-	it("refuses a stale lock without touching it, and writes one only when asked", () => {
-		const directory = temp("lock-cli");
-		try {
-			const lockPath = resolve(directory, "package-lock.json");
-			const written = resolve(directory, "written-lock.json");
-			const out = resolve(directory, "ir.json");
-			expect(
-				runCli([
-					"compile",
-					"--package",
-					assurance,
-					"--profile",
-					"default",
-					"--entrypoint",
-					"types/main.tsp",
-					"--out",
-					out,
-					"--write-lock",
-					written,
-				]).status,
-			).toBe(0);
-			expect(
-				schemaValidators(newHost([root])).errors(
-					"package-lock.schema.json",
-					readJson(written),
-				),
-			).toEqual([]);
-
-			const stale = readJson(written);
-			stale.fingerprint = `sha256:${"9".repeat(64)}`;
-			const staleText = `${JSON.stringify(stale, null, "\t")}\n`;
-			writeFileSync(lockPath, staleText);
-			const failed = runCliAllowingFailure([
-				"compile",
-				"--package",
-				assurance,
-				"--profile",
-				"default",
-				"--entrypoint",
-				"types/main.tsp",
-				"--lock",
-				lockPath,
-				"--out",
-				resolve(directory, "stale.json"),
-			]);
-			expect(failed.status).toBe(1);
-			expect(read(lockPath)).toBe(staleText);
-			expect(failed.stderr).toContain("STALE_LOCK");
-			expect(existsSync(resolve(directory, "stale.json"))).toBe(false);
-		} finally {
-			rmSync(directory, { recursive: true, force: true });
-		}
-	}, 180000);
-
 	/** Traces: TC-552; FR-052-AC-6. */
 	it("refuses to guess between two declared profiles", () => {
 		const directory = temp("ambiguous");
@@ -5834,11 +5493,9 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 				assurance,
 			]);
 			const record = JSON.parse(json.stdout) as never as {
-				fingerprint: string;
 				typeCount: number;
 			};
 			expect(json.stdout.trim()).toBe(canonicalize(record));
-			expect(record.fingerprint).toBe(fingerprintIr(readJson(out)));
 			expect(String(record.typeCount)).toBe(
 				String((readJson(out) as never as { types: Json[] }).types.length),
 			);
@@ -6035,7 +5692,6 @@ describe("pipeline, commands, and the narrow interface (FR-052)", () => {
 			"diffSemanticContract",
 			"emitRust",
 			"emitTypeScript",
-			"fingerprintIr",
 			"inspectIr",
 			"normalizeIr",
 			"normalizeJsonSchemaForPython",
@@ -6475,7 +6131,6 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 describe("generation backend seam registry codes (FR-063)", () => {
 	const generationRequest = (overrides: Json = {}): Json => ({
 		contractVersion: "1.0.0",
-		lockFingerprint: `sha256:${"a".repeat(64)}`,
 		ir: readJson(
 			resolve(
 				root,

@@ -8,7 +8,6 @@ import { generateTarget } from "../src/compiler/backends/seam.mjs";
 import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 import {
-	fingerprintIr,
 	IDENTITY_SETS,
 	normalizeIr,
 } from "../src/compiler/ir/normalize.mjs";
@@ -122,11 +121,11 @@ describe("FR-147 tuple value types and union variant payloads", () => {
 		const pair = typeNamed(swapped, "Pair");
 		pair.positions[0].typeRef = "ix://acme/shapes/Integer";
 		pair.positions[1].typeRef = "ix://acme/shapes/Boolean";
-		expect(fingerprintIr(swapped)).not.toBe(fingerprintIr(base()));
+		expect(normalizeIr(swapped)).not.toBe(normalizeIr(base()));
 		const reordered = base();
 		typeNamed(reordered, "Shape").variants.reverse();
 		expect(normalizeIr(reordered)).toBe(normalizeIr(base()));
-		expect(fingerprintIr(reordered)).toBe(fingerprintIr(base()));
+		expect(normalizeIr(reordered)).toBe(normalizeIr(base()));
 	});
 
 	/** Traces: TC-1881; FR-147-AC-10. */
@@ -178,7 +177,6 @@ describe("FR-147 tuple value types and union variant payloads", () => {
 	it("TC-1882 refuses a tuple construct at the generation seam for every target (the tuple-free control is in compiler-core.test.ts)", () => {
 		const request = (ir: Json) => ({
 			contractVersion: "1.0.0",
-			lockFingerprint: `sha256:${"a".repeat(64)}`,
 			ir,
 			profile: read("fixtures/semantic/v1/positive/profile.json"),
 			mappings: [],

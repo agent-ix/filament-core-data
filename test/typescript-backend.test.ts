@@ -23,7 +23,6 @@ import {
 import {
 	CanonicalError,
 	canonicalize as canonicalizeForTarget,
-	fingerprintIrForTarget,
 	IDENTITY_SET_PATHS,
 	normalizeIr as normalizeIrForFingerprint,
 	normalizeIrForTarget,
@@ -38,6 +37,9 @@ import { auditRenderedNodes } from "../src/compiler/backends/typescript-v1/metad
 import { buildModel } from "../src/compiler/backends/typescript-v1/model.mjs";
 import { reachableSymbols } from "../src/compiler/backends/typescript-v1/package-layout.mjs";
 import { createHost } from "../src/compiler/host.mjs";
+
+const normalizedSetBytes = (document: unknown) =>
+	canonicalizeForTarget(normalizeIrForFingerprint(document), { sets: true });
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const fixture = resolve(root, "test/fixtures/backends/typescript");
@@ -1323,12 +1325,12 @@ describe("FR-069 canonicalization: nullable materialization (fcd#187)", () => {
 
 describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 	/** Traces: TC-1871; FR-069-AC-26. */
-	it("TC-1871 matches every committed canonical byte and digest vector", () => {
+	it("TC-1871 matches every committed canonical byte vector", () => {
 		const fixture = JSON.parse(
 			readFileSync(
 				resolve(
 					root,
-					"test/fixtures/compiler/rfc8785/typescript-identity-set-fingerprint.json",
+					"test/fixtures/compiler/rfc8785/typescript-identity-set-canonical.json",
 				),
 				"utf8",
 			),
@@ -1337,7 +1339,6 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 				id: string;
 				input: unknown;
 				expectedBytes: string;
-				sha256: string;
 			}[];
 		};
 		expect(fixture.vectors.map(({ id }) => id)).toEqual([
@@ -1354,18 +1355,14 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 				}),
 				row.id,
 			).toBe(row.expectedBytes);
-			expect(fingerprintIrForTarget(row.input), row.id).toBe(row.sha256);
 		}
 		const [base, permuted, ...reversed] = fixture.vectors;
 		expect(permuted.expectedBytes).toBe(base.expectedBytes);
-		expect(permuted.sha256).toBe(base.sha256);
 		expect(
 			new Set(reversed.map(({ expectedBytes }) => expectedBytes)).size,
 		).toBe(3);
-		expect(new Set(reversed.map(({ sha256 }) => sha256)).size).toBe(3);
 		for (const row of reversed) {
 			expect(row.expectedBytes).not.toBe(base.expectedBytes);
-			expect(row.sha256).not.toBe(base.sha256);
 			expect(normalizeIrForTarget(row.input)).not.toBe(
 				normalizeIrForTarget(base.input),
 			);
@@ -1416,7 +1413,7 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 			extensions: pair(),
 		};
 		const expectedBytes = canonicalizeForTarget(base);
-		const expectedDigest = fingerprintIrForTarget(base);
+		const expectedDigest = normalizedSetBytes(base);
 		for (const path of expectedPaths) {
 			const changed = structuredClone(base);
 			let value: unknown = changed;
@@ -1429,7 +1426,7 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 			if (!Array.isArray(value)) throw new Error(`missing set at ${path}`);
 			value.reverse();
 			expect(canonicalizeForTarget(changed), path).toBe(expectedBytes);
-			expect(fingerprintIrForTarget(changed), path).toBe(expectedDigest);
+			expect(normalizedSetBytes(changed), path).toBe(expectedDigest);
 			expect(normalizeIrForTarget(changed), path).not.toBe(
 				normalizeIrForTarget(base),
 			);
@@ -1437,14 +1434,9 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 	});
 
 	/** Traces: TC-792; FR-067-AC-6, FR-069-AC-2. */
-	it("TC-792 fingerprints admitted documents by set identity and authored sequence order", () => {
+	it("TC-792 compares admitted documents by canonical bytes by set identity and authored sequence order", () => {
 		const cliSource = readFileSync(generator, "utf8");
-		expect(cliSource).toContain(
-			'import { fingerprintIrForTarget } from "./backends/typescript-v1/canonical.mjs";',
-		);
-		expect(cliSource).toMatch(
-			/lockFingerprint:\s*fingerprintIrForTarget\(ir\)/,
-		);
+		expect(cliSource).not.toContain("lockFingerprint");
 		type Type = {
 			identity: string;
 			fields?: unknown[];
@@ -1499,7 +1491,7 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 			expect(verdict.resultState).toBe("success");
 		};
 		admitted(base);
-		const digest = fingerprintIrForTarget(base);
+		const digest = normalizedSetBytes(base);
 		for (const [name, reverse] of [
 			["types", (document: Document) => document.types.reverse()],
 			[
@@ -1519,7 +1511,7 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 			const changed = structuredClone(base);
 			reverse(changed);
 			admitted(changed);
-			expect(fingerprintIrForTarget(changed), name).toBe(digest);
+			expect(normalizedSetBytes(changed), name).toBe(digest);
 		}
 		for (const [name, reverse] of [
 			[
@@ -1544,7 +1536,7 @@ describe("FR-069 TypeScript identity-sorted-set fingerprint", () => {
 			const changed = structuredClone(base);
 			reverse(changed);
 			admitted(changed);
-			expect(fingerprintIrForTarget(changed), name).not.toBe(digest);
+			expect(normalizedSetBytes(changed), name).not.toBe(digest);
 		}
 	});
 });

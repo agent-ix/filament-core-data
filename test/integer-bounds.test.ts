@@ -179,7 +179,6 @@ describe("FR-050-AC-14 integer bounds as canonical decimal strings", () => {
 		const generated = rustBackend.generate(
 			{
 				contractVersion: "1.0.0",
-				lockFingerprint: `sha256:${"a".repeat(64)}`,
 				ir: withBound("9223372036854775807"),
 				profile: JSON.parse(
 					readFileSync(

@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -443,14 +442,6 @@ const orderIndependentArrays = new Set([
 	"sourceRoots",
 	"targets",
 ]);
-const excludedFingerprintKeys = new Set([
-	"hostname",
-	"locale",
-	"sourcePath",
-	"timestamp",
-	"workingDirectory",
-]);
-
 function canonical(value: unknown, parentKey = ""): string {
 	if (Array.isArray(value)) {
 		const children = value.map((child) => canonical(child));
@@ -459,16 +450,11 @@ function canonical(value: unknown, parentKey = ""): string {
 	}
 	if (value !== null && typeof value === "object") {
 		return `{${Object.entries(value as JsonObject)
-			.filter(([key]) => !excludedFingerprintKeys.has(key))
 			.sort(([left], [right]) => left.localeCompare(right))
 			.map(([key, child]) => `${JSON.stringify(key)}:${canonical(child, key)}`)
 			.join(",")}}`;
 	}
 	return JSON.stringify(value);
-}
-
-function fingerprint(value: unknown): string {
-	return `sha256:${createHash("sha256").update(canonical(value)).digest("hex")}`;
 }
 
 function walkStrings(value: unknown, visit: (text: string) => void): void {
@@ -534,7 +520,6 @@ describe("semantic package contract v1", () => {
 			"module-manifest.schema.json",
 			"module-semantic-block.schema.json",
 			"output-manifest.schema.json",
-			"package-lock.schema.json",
 			"package-manifest.schema.json",
 			"profile.schema.json",
 			"representation.schema.json",
@@ -683,17 +668,7 @@ describe("semantic package contract v1", () => {
 			readJson("positive/package-manifest.json"),
 			"manifest",
 		);
-		const lock = object(readJson("positive/package-lock.json"), "lock");
 		expect(validates("package-manifest.schema.json", manifest)).toBe(true);
-		expect(validates("package-lock.schema.json", lock)).toBe(true);
-		const reordered = clone({ manifest, lock });
-		array(object(reordered.lock, "lock").packages, "packages").reverse();
-		object(reordered.manifest, "manifest").sourcePath = "/different/checkout";
-		expect(fingerprint(reordered)).toBe(fingerprint({ manifest, lock }));
-		const changed = clone({ manifest, lock });
-		object(object(changed.manifest, "manifest").package, "package").version =
-			"1.0.1";
-		expect(fingerprint(changed)).not.toBe(fingerprint({ manifest, lock }));
 		const irBefore = canonical(clone(VOCABULARY_IR));
 		const alternateProfile = clone(array(manifest.profiles, "profiles")[0]);
 		object(alternateProfile, "profile").targets = ["typescript"];
@@ -1094,24 +1069,13 @@ describe("semantic package contract v1", () => {
 			array(object(clone(VOCABULARY_IR), "IR").occurrences, "occurrences")[0],
 			"occurrence",
 		).value;
-		expect(fingerprint(sharedValue)).toBe(
-			fingerprint(JSON.parse(JSON.stringify(sharedValue))),
+		expect(canonical(sharedValue)).toBe(
+			canonical(JSON.parse(JSON.stringify(sharedValue))),
 		);
 	});
 
 	/** Traces: TC-177, TC-178, TC-179, TC-180. */
 	it("is reproducible, path-independent, and resolvable offline", () => {
-		const allInputs = {
-			schemas: schemas.map(({ name, value }) => ({ name, value })),
-			ir: clone(VOCABULARY_IR),
-			manifest: readJson("positive/package-manifest.json"),
-			lock: readJson("positive/package-lock.json"),
-		};
-		const first = fingerprint(allInputs);
-		const secondInput = clone(allInputs);
-		secondInput.schemas.reverse();
-		object(secondInput, "inputs").workingDirectory = "/private/tmp/other";
-		expect(fingerprint(secondInput)).toBe(first);
 		for (const { name, value } of schemas) {
 			for (const ref of collectRefs(value)) {
 				expect(ref, `${name} remote ref`).not.toMatch(/^https?:\/\//);
@@ -1273,7 +1237,6 @@ describe("semantic package contract v1", () => {
 				"module-manifest.schema.json",
 				readJson("positive/module-manifest.json"),
 			],
-			["package-lock.schema.json", readJson("positive/package-lock.json")],
 			["mapping.schema.json", readJson("positive/mapping.json")],
 			["profile.schema.json", readJson("positive/profile.json")],
 			[

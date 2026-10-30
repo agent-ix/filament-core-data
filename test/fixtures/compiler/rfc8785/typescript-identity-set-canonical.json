@@ -1,6 +1,5 @@
 {
 	"algorithm": "RFC8785-JCS-with-identity-sorted-sets-v1",
-	"digest": "sha256",
 	"vectors": [
 		{
 			"id": "base-out-of-order-sets",
@@ -48,8 +47,7 @@
 					}
 				]
 			},
-			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}",
-			"sha256": "sha256:495ddf939260afe222bf8e4ccb8842ddaee74fa65ff3d9f5d2513142301e646d"
+			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
 		},
 		{
 			"id": "genuine-sets-permuted",
@@ -97,8 +95,7 @@
 					}
 				]
 			},
-			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}",
-			"sha256": "sha256:495ddf939260afe222bf8e4ccb8842ddaee74fa65ff3d9f5d2513142301e646d"
+			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
 		},
 		{
 			"id": "fields-reversed",
@@ -146,8 +143,7 @@
 					}
 				]
 			},
-			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f2\",\"nullable\":false},{\"identity\":\"f1\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}",
-			"sha256": "sha256:f790f9b3cbf06f0d9cae387dbb2035871a1b3e364f304e4d9f70d52f1fa2baca"
+			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f2\",\"nullable\":false},{\"identity\":\"f1\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
 		},
 		{
 			"id": "supertypes-reversed",
@@ -195,8 +191,7 @@
 					}
 				]
 			},
-			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s2\",\"s1\"]},{\"identity\":\"b\"}]}",
-			"sha256": "sha256:a62d90850ccb003c85fdbd2eaa67b6486ef76b451d5c1437be21f669029fa44f"
+			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s2\",\"s1\"]},{\"identity\":\"b\"}]}"
 		},
 		{
 			"id": "params-reversed",
@@ -244,8 +239,7 @@
 					}
 				]
 			},
-			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p2\",\"nullable\":false},{\"identity\":\"p1\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}",
-			"sha256": "sha256:254aa036193f367f0957c060730ac48b7a0c82ff70488b390222c09733d27f6e"
+			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p2\",\"nullable\":false},{\"identity\":\"p1\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
 		}
 	]
 }

@@ -986,7 +986,6 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
         json!({
             "kind": { "module": "acme/spec-objects-systems", "name": name },
             "moduleVersion": "0.1.0",
-            "manifestDigest": format!("sha256:{}", "0".repeat(64)),
             "construct": construct
         })
     };
@@ -2921,7 +2920,6 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
     );
     let document = read_json(&request.out);
     let manifest = fs::read(business_module().join("manifest.yaml")).expect("manifest");
-    let digest = format!("sha256:{}", common::sha256sum(&manifest));
     let declared_version = String::from_utf8_lossy(&manifest)
         .lines()
         .find_map(|line| line.strip_prefix("version:"))
@@ -2945,7 +2943,7 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
     for entry in entries {
         assert_eq!(entry["kind"]["module"], BUSINESS, "{entry}");
         assert_eq!(entry["moduleVersion"], declared_version.as_str(), "{entry}");
-        assert_eq!(entry["manifestDigest"], digest.as_str(), "{entry}");
+        assert!(entry.get("manifestDigest").is_none(), "{entry}");
     }
     let entry = |name: &str| {
         entries
