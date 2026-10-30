@@ -40,7 +40,6 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.DECIMAL_PRECISION_EXCEEDS_BASE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DEFAULT_KIND_WITHOUT_VALUE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DIAGNOSTIC_LIMIT_REACHED` | warning | no | `ix://agent-ix/filament-core-data/compiler` |
-| `agent-ix.compiler.DIGEST_CONFLICT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DUPLICATE_DECORATOR` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.DUPLICATE_EXPORT` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.EDGE_CATEGORY_MISMATCH` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
@@ -65,13 +64,10 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.LIMIT_MAX_DEPTH` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LIMIT_MAX_INPUT_BYTES` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.LIMIT_MAX_NODES` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
-| `agent-ix.compiler.LOCK_GRAPH_MISMATCH` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.MULTIPLICITY_CONTRADICTS_OPTIONALITY` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.PACKAGE_CYCLE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.PATH_ESCAPE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.SOURCE_OUTSIDE_PACKAGE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
-| `agent-ix.compiler.STALE_LOCK` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
-| `agent-ix.compiler.STALE_LOCK_PACKAGE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.TYPESPEC_COMPILE_ERROR` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNDECLARED_LOSS` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNKNOWN_CONTRACT_VERSION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
@@ -80,7 +76,6 @@ blocking code carries severity `error`; nothing is a blocking `info`.
 | `agent-ix.compiler.UNKNOWN_PROFILE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNKNOWN_TARGET` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSLUGGABLE_NAME` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
-| `agent-ix.compiler.UNSUPPORTED_CANONICALIZATION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_CONSTRUCT_SHAPE` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_DECLARATION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |
 | `agent-ix.compiler.UNSUPPORTED_IR_VERSION` | error | yes | `ix://agent-ix/filament-core-data/compiler` |

@@ -32,16 +32,16 @@ published APIs.
 
 | Metric | Target | Threshold | Method |
 |---|---|---|---|
-| Normalized fingerprint differences across two clean runs | 0 | 0 | Reproducible-build test |
+| Normalized byte differences across two clean runs | 0 | 0 | Reproducible-build test |
 | Unlocked or network-resolved inputs during locked compilation | 0 | 0 | Sandboxed integration test |
 | Output files absent from the output manifest | 0 | 0 | Manifest reconciliation |
 | Environment-specific absolute paths in retained outputs | 0 | 0 | Static scan |
 
 ## Verification
 
-Run the same locked conformance corpus twice in isolated directories with varied
+Run the same conformance corpus twice in isolated directories with varied
 locale, working path, and process ordering; compare canonical file inventories,
-content digests, diagnostics, and package manifests.
+canonical file bytes, diagnostics, and package manifests.
 
 ## Dependencies
 

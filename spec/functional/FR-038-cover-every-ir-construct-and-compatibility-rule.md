@@ -22,9 +22,9 @@ that register, or a written justification for a class that row cannot carry.
 ## Inputs
 
 - The IR node set of `semantic-ir.schema.json` and `common.schema.json`
-- The package, lock, mapping, profile, and consumer-policy contracts of `schema/semantic/v1/`
+- The package, mapping, profile, and consumer-policy contracts of `schema/semantic/v1/`
 - The compatibility dispositions of FR-025 and `compatibility-report.schema.json`
-- The issue #19 acceptance criteria as they stand in the issue at the time the register row is authored: invalid imports, cycles, unknown mappings, duplicate identities, stale locks, unsupported loss, recursion, discriminators, nullability versus optionality, version transitions, provenance, and source loci
+- The issue #19 acceptance criteria as they stand in the issue at the time the register row is authored, excluding the digest-keyed stale-lock criterion retired by PLAT-1205: invalid imports, cycles, unknown mappings, duplicate identities, unsupported loss, recursion, discriminators, nullability versus optionality, version transitions, provenance, and source loci
 
 ## Outputs
 
@@ -42,7 +42,7 @@ that register, or a written justification for a class that row cannot carry.
 - A `negative` case SHALL violate exactly one contract rule about the construct.
 - A `boundary` case SHALL sit on a declared limit of the construct.
 - An `evolution` case SHALL change the construct across a contract or package version transition.
-- The corpus SHALL carry a `negative` case for each of: an import naming a package the lock does not resolve; a lock package-graph cycle; a mapping naming an identity no declaration owns; a duplicate semantic identity; and an entity-role type the manifest neither exports nor the profile declares an allowed omission.
+- The corpus SHALL carry a `negative` case for each of: an import naming a package the resolved graph does not contain; a package-graph cycle; a mapping naming an identity no declaration owns; a duplicate semantic identity; and an entity-role type the manifest neither exports nor the profile declares an allowed omission.
 - The corpus SHALL carry cases in which nullability and optionality vary independently across all four combinations of `presence` and `nullable`.
 - The corpus SHALL carry a `negative` case in which a union declares a variant whose `payloadType` no type declares.
 - The corpus SHALL carry a `positive` case in which two union variants share one payload type.

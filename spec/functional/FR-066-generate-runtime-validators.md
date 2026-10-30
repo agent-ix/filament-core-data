@@ -180,7 +180,7 @@ contract itself rather than against an erased TypeScript type.
 
 ### The instance corpus and the differential check
 
-- The conformance corpus carries no instance payloads: `conformance/schema/input-bundle.schema.json` is `additionalProperties: false` over `ir`, `manifest`, `manifestDigest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, so a corpus case supplies a contract *document* and never an instance of a declared type. This requirement SHALL therefore author its own instance corpus rather than claim one that does not exist.
+- The conformance corpus carries no instance payloads: `conformance/schema/input-bundle.schema.json` is `additionalProperties: false` over `ir`, `manifest`, `packageGraph`, `profile`, `mappings`, and `consumerPolicy`, so a corpus case supplies a contract *document* and never an instance of a declared type. This requirement SHALL therefore author its own instance corpus rather than claim one that does not exist.
 - The repository SHALL carry an authored instance corpus under `test/fixtures/backends/typescript/instances/`, each case naming the IR document it is validated against, the semantic identity of the type under test, the payload, and the expected verdict.
 - A case whose expected verdict is a rejection SHALL additionally name the expected RFC 6901 pointer and the expected code.
 - Every instance case SHALL be authored from the published contract and from the IR document it names, and SHALL NOT be recorded from a run of the generated validator, because an expectation minted by the implementation under test is not evidence — the discipline `provenance.blessedFromRun` states for the conformance corpus applies here unchanged.

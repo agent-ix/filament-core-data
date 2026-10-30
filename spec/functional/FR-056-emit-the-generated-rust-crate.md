@@ -24,14 +24,14 @@ relationships:
 
 The Rust backend SHALL emit one complete, self-contained Rust crate from a
 compiler request, carrying a finite static export surface, the source and
-request fingerprints it was generated from, and an output manifest naming every
+request identities it was generated from, and an output manifest naming every
 file it wrote, so that what a consumer builds is traceable to the exact contract
 it came from.
 
 ## Inputs
 
 - A `compiler-request.schema.json` document, whose sealed member set is
-  `contractVersion`, `lockFingerprint`, `ir`, `profile`, `mappings`, `backend`,
+  `contractVersion`, `ir`, `profile`, `mappings`, `backend`,
   `outputRoot`, and `limits`
 - The mapping model from
   [FR-054](./FR-054-map-the-semantic-ir-to-rust-serde-declarations.md) and the
@@ -40,8 +40,8 @@ it came from.
 - The diagnostic registry of
   [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md),
   which every refusal below is addressed through
-- The lock fingerprint from
-  [FR-048](./FR-048-build-and-verify-the-lock-and-fingerprint.md)
+- The resolved package identities and versions from
+  [FR-047](./FR-047-resolve-the-package-graph.md)
 - The repository `LICENSE` and `THIRD-PARTY-NOTICES.md`
 
 ## Outputs

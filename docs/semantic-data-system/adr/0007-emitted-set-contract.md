@@ -71,8 +71,8 @@ specification SHALL name where each one lands in that target:
    coded.
 4. **Semantic identity** — identity, kind, roles, extensions and relationships,
    per type and per field.
-5. **Provenance** — source identity and digest, package identity and version,
-   contract version, generator identity, and fingerprint.
+5. **Provenance** — source identity, package identity and version,
+   contract version, and generator identity.
 
 Nothing above requires a particular file, module or directory. A target that
 carries a concept in its type system rather than in a separate artifact

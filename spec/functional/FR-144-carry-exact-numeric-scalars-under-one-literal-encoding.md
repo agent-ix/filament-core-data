@@ -71,7 +71,7 @@ two kinds of place"), so QSL intake and the FCD readers agree by construction:
   also limits float values (see "Exact numbers").
 - No other JSON number may lack an exact RFC 8785 spelling, because the FR-050
   canonical form writes every number through its nearest binary64 double, and
-  a document holding such a number would fingerprint as a different value.
+  a document holding such a number would normalize as a different value.
 
 ## Inputs
 

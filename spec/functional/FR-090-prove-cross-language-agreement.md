@@ -75,9 +75,7 @@ performs a publication or contacts a registry.
   `UA-serialization-parity`, the four bases, and the one hundred and eleven cases
 - The corpus comparison form `rfc8785-v1`: RFC 8785 object members ordered by
   UTF-16 code unit, no insignificant whitespace, array order preserved, and the
-  normalized document carrying its `canonicalization` descriptor. This is
-  separate from the contract's `RFC8785-JCS-with-identity-sorted-sets-v1`
-  package-lock fingerprint form.
+  normalized document carrying its `canonicalization` descriptor.
 - `conformance/contract-gaps.json` and `conformance/divergences.json`, read as
   the record of what is already known to disagree and with whom
 - Every inventory-derived JSON Schema 2020-12 document under
@@ -174,9 +172,8 @@ following, and a disagreement on any one is a disagreement:
   `multiplicity` including `ordered` and `unique`, and its target identity —
   SHALL be read and written identically across the four.
 
-- Comparison SHALL be under `rfc8785-v1` and SHALL NOT claim to be under
-  `RFC8785-JCS-with-identity-sorted-sets-v1`; the two forms have separate
-  byte-domain definitions under [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md).
+- Comparison SHALL be under the `rfc8785-v1` normalized-document byte form
+  defined by [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md).
 - Byte identity SHALL be asserted only where a package retained the source
   bytes, following the retained-bytes rule
   [FR-061](./FR-061-consume-the-generated-crate.md) states; everywhere else the

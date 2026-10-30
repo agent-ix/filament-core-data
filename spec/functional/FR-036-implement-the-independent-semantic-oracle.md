@@ -21,7 +21,7 @@ from no implementation under test.
 
 ## Inputs
 
-- A conformance input bundle (FR-035): `ir`, and optionally `manifest`, `manifestDigest`, `lock`, `profile`, `mappings`, and `consumerPolicy`
+- A conformance input bundle (FR-035): `ir`, and optionally `manifest`, `packageGraph`, `profile`, `mappings`, and `consumerPolicy`
 - The published schemas under `schema/semantic/v1/`
 - `conformance/diagnostic-codes.json`: the corpus diagnostic-code register
 
@@ -35,12 +35,12 @@ from no implementation under test.
 
 ## Behavior
 
-- The oracle SHALL validate each present bundle member against its published v1 schema with a JSON Schema 2020-12 implementation pinned in `devDependencies`.
+- The oracle SHALL validate each present bundle member against its published schema with a JSON Schema 2020-12 implementation pinned in `devDependencies`.
 - The oracle SHALL report a schema violation as one diagnostic per distinct failing instance location, discarding any location that is a strict prefix of another reported location, so that one violation inside a `oneOf` or `allOf` cascade yields one diagnostic at the deepest failing node.
 - The oracle SHALL return only the schema layer's diagnostics when that layer produced any, so that a schema-decided case is decided once.
 - The oracle SHALL decide the cross-field rules the schema cannot express: presence derived from multiplicity; `ordered` and `unique` only on a collection; `unit` only where `typeRef` resolves through aliases to a scalar; the closed constraint keyword vocabulary with its per-keyword operand types and applicability table; a `pattern` operand that compiles under ECMA-262; clause id uniqueness per type; a `sourceSpan` on a source-originated clause; `pre` and `post` binding to a declared `clauseId`; relationship target resolution to a document type or a manifest export; the declared edge-category set; acyclic composite relationship graphs; and duplicate field and parameter names.
 - The oracle SHALL decide the rules that no reader in this repository decides at the merge base of this branch: document-wide identity uniqueness across types, fields, variants, constraints, relationships, operations, clauses, and occurrences; alias cycles; `occurrences[].definition` resolution; `union` variant `payloadType` resolution; and `sequence.items` and `map.values` resolution.
-- The oracle SHALL decide the package-context rules when the bundle supplies the member each needs: an import the lock does not resolve; a cycle in the lock's package graph; a mapping naming an identity no declaration owns; an entity-role type that the manifest neither exports nor the profile declares an allowed omission; and a `required: true` extension whose identity the consumer policy does not list while that policy rejects unknown extensions.
+- The oracle SHALL decide the package-context rules when the bundle supplies the member each needs: an import the package graph does not resolve; a cycle in the package graph; a mapping naming an identity no declaration owns; an entity-role type that the manifest neither exports nor the profile declares an allowed omission; and a `required: true` extension whose identity the consumer policy does not list while that policy rejects unknown extensions.
 - The oracle SHALL emit no diagnostic for a package-context rule whose bundle member is absent, so that a document-only case is decided by the document rules alone.
 - The oracle SHALL reuse verbatim every diagnostic code that `fixtures/semantic/v1/negative/reader-cases.json` already froze.
 - The oracle SHALL mint a new diagnostic code only with a `conformance/diagnostic-codes.json` row naming the contract clause that obliges the rule.
@@ -50,7 +50,7 @@ from no implementation under test.
 - The oracle SHALL order diagnostics by `pointer` under a code-point comparison, then by `code`, then by `message`, then by the canonical form of the diagnostic, so that no two diagnostics tie.
 - The oracle SHALL apply no locale-sensitive comparison when it orders diagnostics or sorts object keys.
 - The oracle SHALL compute `normalized` as the FR-027 normalized serialization in the `rfc8785-v1` corpus form, materializing `nullable` as a literal boolean on every field and operation parameter and the `canonicalization` descriptor `{ "algorithm": "rfc8785-v1", "digest": "sha256-jcs" }`. `nullable` materializes `true` only where the authored member is the JSON literal `true`; every other value or its absence — `null`, `false`, a number, a string, an array, or an object, or no member at all — materializes `false` (fcd#187), matching the rule FR-050, FR-059, FR-069 and FR-145 state for the four adapters, so a schema-invalid document's `normalized` stays comparable across the oracle and every adapter. `multiplicity` and `presence` are schema-required and independently authored (FR-027, FR-106); the oracle never materializes either.
-- The oracle SHALL detect a cycle in an alias chain, a composite relationship graph, and a lock package graph before any depth bound applies.
+- The oracle SHALL detect a cycle in an alias chain, a composite relationship graph, and a selected package graph before any depth bound applies.
 - The oracle SHALL report each detected cycle under that cycle's own diagnostic code.
 - The oracle SHALL bound acyclic reference expansion, composite-relationship expansion, and package-graph expansion at the finite depth the corpus manifest declares as `depthLimit` (256), a configuration the corpus is authored under and not a limit of the contract, and emit `agent-ix.semantic-ir.DEPTH_LIMIT_EXCEEDED` at the node that exceeds it. The oracle keeps that bound for a composite or package ring too: a ring longer than 256 types reports `DEPTH_LIMIT_EXCEEDED` at the node that reaches depth 257, where the Rust reader (FR-059) reports the cycle whatever its length (`contracts-v1.md`, "Safety and reproducibility").
 - The oracle SHALL classify a pair of bundles for a `compatibility` case over the IR surface only, as `patch`, `additive`, `conditional`, `breaking`, `unknown`, or `invalid`, taking a required field addition, any removal, a resolved-type change, a nullability change, a structural-kind change, a stable identity change, and an unknown-policy tightening as `breaking`; a constraint relaxation as `additive`; a constraint tightening and an added enum or union variant as `conditional`; a display-name or documentation-only change as `patch`; and an unclassifiable change as `unknown`.

@@ -1,6 +1,6 @@
 ---
 id: FR-048
-title: "Build and verify the package lock and the v1 fingerprint"
+title: "Canonicalize resolved package data"
 type: FR
 relationships:
   - target: "ix://agent-ix/filament-core-data/US-010"
@@ -12,87 +12,76 @@ relationships:
   - target: "ix://agent-ix/filament-core-data/NFR-019"
     type: "constrained_by"
 ---
-# [FR-048] Build and verify the package lock and the v1 fingerprint
+# [FR-048] Canonicalize resolved package data
 
 ## Description
 
-The compiler SHALL account for the exact inputs a compile consumed, by building
-a package lock from the resolved graph and by verifying a supplied lock against
-it, so that a compile either proves it used the inputs the lock names or reports
-precisely which of them moved. The two obligations are stated separately under
-Behavior.
+The compiler SHALL canonicalize the resolved package graph and its declared
+source files for deterministic inspection and compilation. Cargo.lock is the
+repository dependency lock; this compiler SHALL NOT mint or verify a second
+package lock, content digest, or fingerprint.
 
 ## Inputs
 
-- A resolved package graph from FR-047, carrying each package's selected source files
-- An optional existing `package-lock.json`, valid against `schema/semantic/v1/package-lock.schema.json`
-- The compiler contract version string, `2.0.0`
-- The published schema bytes named below
+- The resolved package graph from FR-047 and each package's declared source roots
+- The compiler contract version and the published structural schemas
 
 ## Outputs
 
-- `src/compiler/packages/canonical.mjs`: `canonicalize(value, { sets, maxDepth })`, the `RFC8785-JCS-with-identity-sorted-sets-v1` byte form, and `digest(bytes)` returning `sha256:<64 hex>`
-- `src/compiler/packages/lock.mjs`: `buildLock(resolution)`, `verifyLock(lock, lockText, resolution)`, `contentDigest(files)`, and `fingerprint(resolution)`
-- `test/fixtures/compiler/rfc8785/vectors.json`: the RFC 8785 §3.2 string, number, and key-ordering vectors transcribed from the RFC text, with their expected canonical bytes
-- A lock document whose `canonicalization.included` is `["schema-bytes", "manifest", "mappings", "profiles", "resolved-packages", "compiler-contract-version"]` and whose `excluded` is `["object-order", "set-order", "source-path", "working-directory", "timestamp", "hostname", "locale"]`
+- `src/compiler/packages/canonical.mjs`: `canonicalize(value, { sets, maxDepth })`,
+  the RFC 8785 byte form, with the declared identity-set ordering
+- A deterministic, directly inspectable resolved package graph
+- `test/fixtures/compiler/rfc8785/vectors.json`, with expected canonical bytes
 
 ## Behavior
 
-### Canonicalization
-
-- `canonicalize` SHALL serialise objects with keys sorted by UTF-16 code unit as RFC 8785 requires.
-- `canonicalize` SHALL serialise numbers in the RFC 8785 form.
-- `canonicalize` SHALL escape strings as RFC 8785 requires.
-- `canonicalize` SHALL sort every array whose path the caller names in `sets` by its members' `identity` before serialising it, and SHALL preserve the order of every other array.
-- If a value nests more deeply than `maxDepth`, then `canonicalize` SHALL raise the blocking `maxDepth` limit diagnostic rather than recursing.
-
-### The digested byte sets
-
-- `sourceFiles(package)` SHALL be every file beneath each entry of that package's manifest `sourceRoots`, in ascending code-point order of its package-root-relative `/`-separated path; no other file beneath the package root is a source file.
-- `contentDigest(package)` SHALL be `digest(canonicalize([[path, digest(bytes)], …]))` over `sourceFiles(package)`.
-- `manifestDigest(package)` SHALL be `digest` of that manifest's raw bytes; the same rule SHALL give each mapping's and profile's digest.
-- The compiler SHALL NOT include a source digest in an emitted IR document; `contentDigest` remains an input to lock verification and fingerprint computation.
-- `schema-bytes` SHALL be `[[filename, digest(bytes)], …]` over the files of `schema/semantic/v1/` whose name ends `.schema.json`, in ascending code-point order of filename.
-- `fingerprint` SHALL be `digest(canonicalize([schemaBytes, manifestDigest, mappingDigests, profileDigests, resolvedPackages, contractVersion]))`, where `mappingDigests` is the identity-sorted list of `[identity, digest]`, `profileDigests` the name-sorted list of `[name, digest]`, `resolvedPackages` the identity-sorted list of `[identity, version, contentDigest, manifestDigest]`, and no excluded input appears.
-- `resolvedPackages` SHALL carry every resolved package's **manifest** digest as well as its content digest. An imported package can change its exports, its own imports or its profiles without changing a source byte, and that is a change to what was compiled.
-- The compiler SHALL NOT include a lock digest in an emitted IR document; the lock remains a separate artifact verified by its fingerprint.
-
-### Building and verifying
-
-- The compiler SHALL emit `packages` sorted by package identity, and each entry's `dependencies` sorted by identity, under code-point comparison.
-- If a supplied lock's `fingerprint` differs from the computed fingerprint, then the compiler SHALL raise `agent-ix.compiler.STALE_LOCK` at the lock's `fingerprint` locus, naming both fingerprints.
-- If a supplied lock names a package whose resolved `contentDigest` differs, then the compiler SHALL raise `agent-ix.compiler.STALE_LOCK_PACKAGE` at that package entry's locus, naming both digests.
-- If a supplied lock omits a resolved package, or names a package the graph does not resolve, then the compiler SHALL raise `agent-ix.compiler.LOCK_GRAPH_MISMATCH` at the lock's `packages` locus, naming the identity.
-- If a supplied lock's `canonicalization` block does not equal the algorithm this requirement names, then the compiler SHALL raise `agent-ix.compiler.UNSUPPORTED_CANONICALIZATION` at that block's locus.
-- The compiler SHALL NOT rewrite a supplied lock as a side effect of verifying it; writing a lock is an explicit command.
+- `canonicalize` SHALL serialise objects with keys sorted by UTF-16 code unit,
+  numbers in RFC 8785 form, and escaped strings as RFC 8785 requires.
+- `canonicalize` SHALL sort each array whose path is named in `sets` by identity
+  and preserve every other array's order.
+- A value deeper than `maxDepth` SHALL raise the blocking limit diagnostic.
+- `sourceFiles(package)` SHALL enumerate only files beneath the package's
+  manifest `sourceRoots`, sorted by package-root-relative path in code-point order.
+- The compiler SHALL emit resolved packages sorted by identity and each package's
+  dependencies sorted by identity.
+- The compiler SHALL NOT write or require `package-lock.json`,
+  `manifestDigest`, `contentDigest`, `lockFingerprint`, or an equivalent
+  computed digest as package-resolution evidence.
 
 ## Constraints
 
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
-| FR-048-CON-1 | The fingerprint SHALL change for every change to an included input, and stay equal for every change confined to an excluded input. | Correctness | Property test |
 | FR-048-CON-2 | The canonical form SHALL be produced by this repository; no canonical-JSON dependency is added. | Maintainability | Dependency inspection |
-| FR-048-CON-3 | The lock verifier SHALL work offline, reading no file the resolution did not already name. | Security | Instrumented run |
-| FR-048-CON-4 | Every digest this requirement defines SHALL be defined by its byte set, not by its name, so two implementations cannot disagree about what was hashed. | Determinism | Inspection |
+| FR-048-CON-3 | Package resolution SHALL work offline and read only files named by its injected host and selected graph. | Security | Instrumented run |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-048-AC-1 | `canonicalize` reproduces every vector in `test/fixtures/compiler/rfc8785/vectors.json` for string escaping, number formatting, and key ordering. | Test |
-| FR-048-AC-2 | Permuting object key order, permuting a declared identity-keyed set, changing the working directory, and changing the host locale each leave the fingerprint unchanged. | Property |
-| FR-048-AC-3 | Changing one byte of a source file, of the root manifest, of an *imported package's* manifest, of a mapping, of a profile, of a resolved package version, of a published schema file, and of the contract version each changes the fingerprint. | Property |
-| FR-048-AC-4 | A built lock validates against `package-lock.schema.json`, and its `canonicalization` block equals the algorithm named here. | Test |
-| FR-048-AC-5 | `STALE_LOCK`, `STALE_LOCK_PACKAGE`, `LOCK_GRAPH_MISMATCH`, and `UNSUPPORTED_CANONICALIZATION` each fire on a fixture, each at the declared locus, each naming both values it compared. | Test |
-| FR-048-AC-6 | Verifying a lock leaves the lock file byte-unchanged on disk. | Test |
-| FR-048-AC-7 | Two lock builds over the same graph produce identical bytes. | Snapshot |
-| FR-048-AC-8 | `contentDigest` is unchanged when a package's files are enumerated in a different order and changes when any source byte changes; a file beneath the package root but outside `sourceRoots` changes nothing. | Property |
-| FR-048-AC-9 | A compiled IR document omits `source.digest` while the lock still records the root package's `contentDigest` for verification. | Test |
-| FR-048-AC-10 | A compiled IR document omits `package.lockDigest` whether the caller supplies a lock or the compiler builds one; lock fingerprint verification still applies. | Test |
+| FR-048-AC-1 | `canonicalize` reproduces every string, number, and key-order vector in `test/fixtures/compiler/rfc8785/vectors.json`. | Test |
+| FR-048-AC-2 | Permuting object keys or a declared identity set, changing working directory, or changing host locale leaves canonical graph bytes unchanged; changing an ordered sequence changes them. | Property |
+| FR-048-AC-3 | Changing an import changes that package entry's `imports`; changing an export changes its `exports`; changing a selected package version changes its `version`; changing profile selection changes the graph's selected `profile`; and changing compiler contract version changes the graph's `contractVersion`. Each change alters the canonical resolved-graph bytes while unchanged inputs leave those bytes equal. | Property |
+| FR-048-AC-4 | The resolved graph contains every selected package exactly once and names its selected version and dependencies in identity order. | Test |
+| FR-048-AC-6 | Package resolution does not create or rewrite a second lock file. | Test |
+| FR-048-AC-7 | Two resolutions of the same graph produce identical canonical bytes. | Test |
+| FR-048-AC-8 | `sourceFiles` enumerates the same paths regardless of filesystem order and excludes files outside `sourceRoots`. | Property |
+| FR-048-AC-9 | A compiled IR omits `source.digest` and every package content digest. | Test |
+| FR-048-AC-10 | A compiled IR omits `package.lockDigest`, and compilation has no package-lock fingerprint verification. | Test |
 | FR-048-AC-11 | A value nested past `maxDepth` terminates `canonicalize` with the blocking limit diagnostic. | Test |
+
+## PLAT-1205 retirement
+
+The earlier `FR-048-CON-1`, `FR-048-CON-4`, and `FR-048-AC-5` obligations,
+including `STALE_LOCK`, `STALE_LOCK_PACKAGE`, `LOCK_GRAPH_MISMATCH`, and
+`UNSUPPORTED_CANONICALIZATION`, are explicitly retired. The former
+`contentDigest`, manifest digest, schema-byte digest, and lock fingerprint
+algorithm was a digest-keyed second lock whose freshness checks duplicated
+Cargo.lock. The remaining criteria above retain graph completeness, offline
+resolution, canonical byte determinism, and absence checks.
 
 ## Dependencies
 
 - **Upstream**: [FR-047](./FR-047-resolve-the-package-graph.md), [FR-021](./FR-021-define-package-graphs-exports-and-locks.md)
-- **Downstream**: [FR-046](./FR-046-lower-typespec-to-contract-ir.md), [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md), [FR-051](./FR-051-diff-and-evolve-the-semantic-ir.md), [FR-052](./FR-052-provide-the-compiler-command-line.md)
+- **Downstream**: [FR-046](./FR-046-lower-typespec-to-contract-ir.md), [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md), [FR-052](./FR-052-provide-the-compiler-command-line.md)
 - **Constrained by**: [NFR-019](../non-functional/NFR-019-deterministic-contract-compilation.md)

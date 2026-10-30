@@ -29,10 +29,12 @@ implementer of the thing it checks is not an oracle.
 ## An input bundle
 
 A case's input is a bundle, not a bare IR document: `ir` plus, when the case
-needs them, `manifest`, `manifestDigest`, `lock`, `profile`, `mappings`, and
-`consumerPolicy`. Each member is validated by its own published v1 schema.
+needs them, `manifest`, `packageGraph`, `profile`, `mappings`, and
+`consumerPolicy`. Each member is validated by its published schema.
+`packageGraph` carries selected package identities, versions, imports, and
+exports directly; the bundle carries no second lock or digest proof.
 Without the bundle there is no way to state an unresolved import, a package
-cycle, a stale manifest digest, an unknown mapping, or undeclared loss, because
+cycle, an unknown mapping, or undeclared loss, because
 no semantic IR document carries any of those facts.
 
 ## Case shape and provenance
@@ -75,12 +77,9 @@ change prevents a compatible promotion.
 The normalized form is `rfc8785-v1`: RFC 8785 object keys ordered by
 UTF-16 code unit, no insignificant whitespace, and array order preserved.
 Normalized documents carry `{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`.
-The `digest` member names the domain; the computed value is recorded as
-`sha256-jcs:<64 lowercase hexadecimal digits>`. The supplementary-plane
-golden and its expected metadata live at
-`test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json`. The form
-is separate from the contract's
-`RFC8785-JCS-with-identity-sorted-sets-v1` package-lock fingerprint form.
+The `digest` member is an existing algorithm-domain label, not a digest value.
+The supplementary-plane golden and its expected metadata live at
+`test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json`. The corpus publishes no package-lock fingerprint form.
 
 ## Versioning
 

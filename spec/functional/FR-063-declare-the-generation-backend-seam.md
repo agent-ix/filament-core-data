@@ -36,7 +36,7 @@ a guess in either direction.
 
 ## Inputs
 
-- A `compiler-request.schema.json` document: `{ contractVersion, lockFingerprint, ir, profile, mappings, backend, outputRoot, limits }`
+- A `compiler-request.schema.json` document: `{ contractVersion, ir, profile, mappings, backend, outputRoot, limits }`
 - The closed `target` vocabulary of `schema/semantic/v1/common.schema.json`: `json-schema`, `rust`, `typescript`, `python-pydantic-v2`, `python-dataclass`
 - `schema/semantic/v1/output-manifest.schema.json` and `schema/semantic/v1/target-contract.schema.json`
 - The committed `typescript` and `json-schema` rows of `fixtures/semantic/v1/positive/target-contracts.json`, read as the qualification each implemented backend must satisfy

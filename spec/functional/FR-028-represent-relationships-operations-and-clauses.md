@@ -38,7 +38,7 @@ identity and origin rather than prose.
 - The IR SHALL NOT validate verbs against a module registry, because verb vocabularies are module-owned.
 - The `target` value SHALL be a semantic identity.
 - The IR validator SHALL NOT accept a display name or file path as a relationship target.
-- The IR validator SHALL resolve `target` to a type definition in the same document or to an export of a package named in the document's lock.
+- The IR validator SHALL resolve `target` to a type definition in the same document or to an export of a package named in the selected package graph.
 - If a `target` does not resolve, then IR validation SHALL fail at the relationship with its locus.
 - A relationship MAY target its own type definition (self-reference).
 - The IR validator SHALL reject a `composite: true` relationship graph that contains a cycle, including a composite self-reference, at the first relationship that closes the cycle.
@@ -81,7 +81,7 @@ identity and origin rather than prose.
 | FR-028-AC-6 | A clause with `language: acme:tla` validates; a bare unknown language such as `tla` fails. | Test |
 | FR-028-AC-7 | `relationships[]` or `operations[]` on a non-record type definition fails validation. | Test |
 | FR-028-AC-8 | The config-service FR-006 `overlay` relationship and an `## Invariants` `ocl` fence are expressed in `fixtures/semantic/v1/positive/config-version-v2.json` with zero declared loss. | Analysis |
-| FR-028-AC-9 | A relationship whose `target` resolves to no type definition or lock export fails validation with the relationship's locus. | Test |
+| FR-028-AC-9 | A relationship whose `target` resolves to no type definition or selected package graph export fails validation with the relationship's locus. | Test |
 | FR-028-AC-10 | A composite cycle (including a composite self-reference) fails validation at the closing relationship; a non-composite self-reference validates. | Test |
 | FR-028-AC-11 | Two clauses with the same `clauseId` in one type definition fail validation. | Test |
 | FR-028-AC-12 | The IR `category` set equals the quire-rs FR-040 `EdgeCategory` registry in a contract test. | Test |
@@ -89,5 +89,5 @@ identity and origin rather than prose.
 
 ## Dependencies
 
-- **Upstream**: [FR-027](./FR-027-declare-field-multiplicity-and-units.md), [FR-020](./FR-020-define-semantic-type-system-and-identity.md), [FR-021](./FR-021-define-package-graphs-exports-and-locks.md) (lock exports for target resolution), [FR-025](./FR-025-classify-semantic-and-target-compatibility.md), FR-040 edge vocabulary (`ix://agent-ix/quire-rs/FR-040`)
+- **Upstream**: [FR-027](./FR-027-declare-field-multiplicity-and-units.md), [FR-020](./FR-020-define-semantic-type-system-and-identity.md), [FR-021](./FR-021-define-package-graphs-exports-and-locks.md) (selected package graph exports for target resolution), [FR-025](./FR-025-classify-semantic-and-target-compatibility.md), FR-040 edge vocabulary (`ix://agent-ix/quire-rs/FR-040`)
 - **Downstream**: semantic-core grammar (issue #35), extraction frontend (issue #36), `agent-ix/quire-contract-ir#52`

@@ -31,7 +31,7 @@ breaking schema changes consistently.
 
 ## Outputs
 
-- Repeat-generation fingerprints and diffs
+- Repeat-generation byte comparisons and diffs
 - Native compile/consumer results
 - Cross-language golden compatibility results
 - Compatibility classifications and performance measurements
@@ -51,7 +51,7 @@ breaking schema changes consistently.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-017-AC-1 | Two clean generations from unchanged inputs have the same normalized fingerprint and zero unexplained byte differences. | Property (TC-113) |
+| FR-017-AC-1 | Two clean generations from unchanged inputs have identical normalized bytes and zero unexplained byte differences. | Property (TC-113) |
 | FR-017-AC-2 | Rust, TypeScript, and Python outputs compile and their consumers construct the shared valid fixture. | Test (TC-114) |
 | FR-017-AC-3 | Valid and invalid golden fixtures receive equivalent cross-language and JSON Schema dispositions, with any target exception explicit. | Test (TC-115) |
 | FR-017-AC-4 | Cross-package references remain resolvable after generation and compatibility examples classify as patch, additive, or breaking. | Test (TC-116..TC-117) |

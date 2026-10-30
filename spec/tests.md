@@ -137,7 +137,7 @@ computed by `quire matrix` from those trace tags.
 | TC-110 | Protobuf mapping disposition agrees with official output or names each mismatch | Static | P0 | FR-016-AC-3 |
 | TC-111 | Arrow projection declares authority, flattening, recursion loss, and provenance | Analysis | P0 | FR-016-AC-4 |
 | TC-112 | Markdown mapping declares locations and preservation without rendering ownership | Analysis | P0 | FR-016-AC-4 |
-| TC-113 | Two clean generations have one normalized fingerprint and no unexplained diff | Property | P0 | FR-017-AC-1, NFR-006 |
+| TC-113 | Two clean generations have identical normalized bytes and no unexplained diff | Property | P0 | FR-017-AC-1, NFR-006 |
 | TC-114 | Native Rust, TypeScript, and Python consumers compile and construct the shared valid fixture | Static | P0 | FR-017-AC-2 |
 | TC-115 | Applicable targets agree on valid and invalid golden fixture dispositions | Static | P0 | FR-017-AC-3 |
 | TC-116 | Generated cross-package references resolve in every native package | Static | P0 | FR-017-AC-4 |
@@ -165,11 +165,11 @@ computed by `quire matrix` from those trace tags.
 | TC-138 | Generated-name and source-path renames preserve stable semantic identities | Property | P0 | FR-020-AC-4, FR-020-CON-1 |
 | TC-139 | Recursive references and namespaced extensions preserve graph identity | Property | P0 | FR-020-AC-5 |
 | TC-140 | Open and closed unknown values never become known zero/default values | Unit | P0 | FR-020-AC-6, FR-020-CON-2 |
-| TC-141 | Compatible package graphs resolve to one order-independent transitive lock | Property | P0 | FR-021-AC-1 |
-| TC-142 | Identity, version, digest, export, and cycle conflicts report every locus | Unit | P0 | FR-021-AC-2 |
+| TC-141 | Compatible package graphs resolve to one deterministic identity-ordered graph without writing a second lock | Property | P0 | FR-021-AC-1 |
+| TC-142 | Identity, version, export, and cycle conflicts report every locus | Unit | P0 | FR-021-AC-2 |
 | TC-143 | Profile selection never mutates semantic definitions | Property | P0 | FR-021-AC-3 |
 | TC-144 | Unknown manifest keys fail while namespaced extension keys preserve | Unit | P0 | FR-021-AC-4 |
-| TC-145 | Dynamic and static consumption share one locked identity graph | Analysis | P0 | FR-021-AC-5 |
+| TC-145 | Dynamic and static consumption share one resolved identity graph | Analysis | P0 | FR-021-AC-5 |
 | TC-146 | Shared package contract excludes Quoin registry transport and install policy | Static | P0 | FR-021-AC-6 |
 | TC-147 | Exports, targets, mappings, and profile options validate independently | Unit | P0 | FR-022-AC-1 |
 | TC-148 | Every transformation kind has distinct required fields and semantics | Static | P0 | FR-022-AC-2 |
@@ -195,12 +195,12 @@ computed by `quire matrix` from those trace tags.
 | TC-168 | Authority and loss changes can break identical structural schemas | Unit | P0 | FR-025-AC-4 |
 | TC-169 | Unknown and stale consumers remain visible and block promotion | Unit | P0 | FR-025-AC-5 |
 | TC-170 | Avro readers remain compatibility inputs until their retirement gate | Static | P0 | FR-025-AC-6 |
-| TC-171 | Dynamic and generated consumers agree on one fixture and fingerprint | Integration | P0 | FR-026-AC-1 |
+| TC-171 | Dynamic and generated consumers agree on one fixture and normalized IR | Integration | P0 | FR-026-AC-1 |
 | TC-172 | Static consumers apply preserve/reject/surface unknown-module policy exactly | Unit | P0 | FR-026-AC-2 |
 | TC-174 | Existing Avro positive and negative fixtures cross the bridge without widening | Integration | P0 | FR-026-AC-4 |
 | TC-175 | Missing versions, imports, adapters, and identity conflicts emit no empty model | Unit | P0 | FR-026-AC-5 |
 | TC-176 | Quire, Quoin, module, compiler, and consumer ownership remains allocated | Static | P0 | FR-026-AC-6 |
-| TC-177 | Two isolated locked contract-normalization passes have byte-identical normalized fingerprints | Property | P0 | NFR-008 |
+| TC-177 | Two isolated locked contract-normalization passes have byte-identical normalized documents | Property | P0 | NFR-008 |
 | TC-178 | Locked contract validation resolves only declared local inputs and refuses undeclared acquisition | Integration | P0 | NFR-008 |
 | TC-179 | Every emitted file is reconciled by exactly one output-manifest entry | Static | P0 | NFR-008 |
 | TC-180 | Retained output contains no environment-specific absolute path | Static | P0 | NFR-008 |
@@ -224,7 +224,6 @@ computed by `quire matrix` from those trace tags.
 | TC-198 | Every compiler, publication, enforcement, database, migration, and retirement action retains its own gate | Static | P0 | NFR-012, NFR-012-AC-2 |
 | TC-199 | Owner records the v1 structural-source decision before merge | Manual | P0 | NFR-012-AC-1 |
 | TC-200 | Independent adapters and backends share stable diagnostic codes and causal envelopes | Unit | P0 | FR-024-AC-7 |
-| TC-201 | Fingerprints ignore excluded ordering but change for every included semantic-byte change | Property | P0 | FR-021-AC-7 |
 | TC-202 | Oversized and cyclic hostile inputs terminate at declared resource limits | Fuzz | P0 | NFR-010 |
 | TC-203 | A `0..1` field with `presence: optional` authored explicitly validates and re-serializes byte-identically; the same field with `presence` omitted fails validation | Property | P0 | FR-027-AC-1, FR-020-AC-7, US-006-EX-1 |
 | TC-204 | A `1..*` field preserves `ordered` and `unique` flags | Unit | P0 | FR-027-AC-2 |
@@ -258,7 +257,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1803 | The Python reader materializes `nullable: true` only for the input `true`, and `nullable: false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member (fcd#187) | Unit | P0 | FR-020-AC-7 |
 | TC-237 | `ordered: true` or `unique: true` on a `1..1` field fails at the field locus | Unit | P0 | FR-027-AC-8 |
 | TC-238 | Multiplicity narrowing classifies breaking; widening classifies additive | Unit | P0 | FR-027-AC-9 |
-| TC-239 | A relationship `target` resolving to no type definition or lock export fails at the relationship locus | Unit | P0 | FR-028-AC-9 |
+| TC-239 | A relationship `target` resolving to no type definition or selected package graph export fails at the relationship locus | Unit | P0 | FR-028-AC-9 |
 | TC-240 | A composite cycle or composite self-reference fails at the closing relationship; a non-composite self-reference validates | Unit | P0 | FR-028-AC-10 |
 | TC-241 | Two clauses sharing a `clauseId` in one type definition fail validation | Unit | P0 | FR-028-AC-11 |
 | TC-242 | The IR `category` enumeration equals the quire-rs FR-040 `EdgeCategory` registry | Integration | P0 | FR-028-AC-12 |
@@ -453,7 +452,6 @@ computed by `quire matrix` from those trace tags.
 | TC-455 | The lowering SHALL be a pure function of the compiled program and the resolved package, reading no clock, environment variable, hostname | Static | P1 | FR-046-CON-5 |
 | TC-456 | The concrete tree for the `order-independent` case resolves to the same ordered result under both permutations named in the case index | Property | P0 | FR-047-AC-1 |
 | TC-457 | The `version-conflict` tree yields exactly one `IMPORT_VERSION_CONFLICT` naming both requiring loci | Unit | P0 | FR-047-AC-2 |
-| TC-458 | The `digest-conflict` tree yields `DIGEST_CONFLICT` naming both digests and both loci | Unit | P0 | FR-047-AC-3 |
 | TC-459 | The `package-cycle` tree yields exactly one `PACKAGE_CYCLE` naming both import loci and starting at the least package identity | Unit | P0 | FR-047-AC-4 |
 | TC-460 | The `recursive-type-is-not-package-cycle` tree resolves successfully and emits no cycle diagnostic | Unit | P0 | FR-047-AC-5 |
 | TC-461 | A manifest failing its schema yields one `INVALID_MANIFEST` per schema error, each at the line and column of the failing pointer's key | Unit | P0 | FR-047-AC-6 |
@@ -472,21 +470,18 @@ computed by `quire matrix` from those trace tags.
 | TC-474 | The resolver SHALL implement version-constraint satisfaction in this repository against the two accepted forms, adding no semver dependency | Static | P1 | FR-047-CON-3 |
 | TC-475 | The resolver SHALL NOT execute any file it reads; manifests, mappings, profiles, and locks are data | Integration | P1 | FR-047-CON-4 |
 | TC-476 | `fixtures/semantic/v1/package-graph-cases.json` SHALL remain byte-unchanged; it is the read-only case index | Static | P1 | FR-047-CON-5 |
-| TC-477 | `canonicalize` reproduces every vector in `test/fixtures/compiler/rfc8785/vectors.json` for string escaping, number formatting, and key ordering | Unit | P0 | FR-048-AC-1, FR-145-AC-5 |
-| TC-478 | Permuting object key order, permuting a declared identity-keyed set, changing the working directory | Property | P0 | FR-048-AC-2 |
-| TC-479 | Changing one byte of a source file, of a manifest, of a mapping, of a profile, of a resolved package version, of a published schema file | Property | P0 | FR-048-AC-3 |
-| TC-480 | A built lock validates against `package-lock.schema.json`, and its `canonicalization` block equals the algorithm named here | Unit | P0 | FR-048-AC-4, FR-145-AC-5 |
-| TC-481 | `STALE_LOCK`, `STALE_LOCK_PACKAGE`, `LOCK_GRAPH_MISMATCH`, and `UNSUPPORTED_CANONICALIZATION` each fire on a fixture, each at the declared locus | Unit | P0 | FR-048-AC-5 |
-| TC-482 | Verifying a lock leaves the lock file byte-unchanged on disk | Unit | P0 | FR-048-AC-6 |
-| TC-483 | Two lock builds over the same graph produce identical bytes | Snapshot | P0 | FR-048-AC-7 |
-| TC-484 | `contentDigest` is unchanged when a package's files are enumerated in a different order and changes when any source byte changes | Property | P0 | FR-048-AC-8 |
-| TC-485 | Compiled IR omits source.digest while the lock retains root package contentDigest for verification | Unit | P0 | FR-048-AC-9 |
-| TC-486 | Compiled IR omits package.lockDigest with both supplied and generated locks; fingerprint verification still applies | Unit | P0 | FR-048-AC-10 |
+| TC-477 | `canonicalize` reproduces every vector in `test/fixtures/compiler/rfc8785/vectors.json` for string escaping, number formatting, and key ordering | Unit | P0 | FR-048-AC-1 |
+| TC-478 | Permuting object keys or a declared identity set, cwd, or locale leaves canonical graph bytes unchanged; changing an ordered sequence changes them | Property | P0 | FR-048-AC-2 |
+| TC-479 | Changing an import, export, selected package version, profile selection, or contract version changes the canonical resolved graph | Property | P0 | FR-048-AC-3 |
+| TC-480 | The resolved graph names every selected package exactly once with selected version and dependencies in identity order | Unit | P0 | FR-048-AC-4 |
+| TC-482 | Package resolution creates or rewrites no second lock file | Unit | P0 | FR-048-AC-6 |
+| TC-483 | Two resolutions of the same graph produce identical canonical bytes | Snapshot | P0 | FR-048-AC-7 |
+| TC-484 | `sourceFiles` is unchanged when a package's files are enumerated in a different order and excludes files outside `sourceRoots` | Property | P0 | FR-048-AC-8 |
+| TC-485 | Compiled IR omits source.digest and every package content digest | Unit | P0 | FR-048-AC-9 |
+| TC-486 | Compiled IR omits package.lockDigest and package-lock fingerprint verification | Unit | P0 | FR-048-AC-10 |
 | TC-487 | A value nested past `maxDepth` terminates `canonicalize` with the blocking limit diagnostic | Unit | P0 | FR-048-AC-11 |
-| TC-488 | The fingerprint SHALL change for every change to an included input, and stay equal for every change confined to an excluded input | Property | P1 | FR-048-CON-1 |
 | TC-489 | The canonical form SHALL be produced by this repository; no canonical-JSON dependency is added | Static | P1 | FR-048-CON-2 |
-| TC-490 | The lock verifier SHALL work offline, reading no file the resolution did not already name | Integration | P1 | FR-048-CON-3 |
-| TC-491 | Every digest this requirement defines SHALL be defined by its byte set, not by its name, so two implementations cannot disagree about what was hashed | Static | P1 | FR-048-CON-4 |
+| TC-490 | Package resolution works offline and reads only files named by its injected host and selected graph | Integration | P1 | FR-048-CON-3 |
 | TC-492 | Every entry of `DIAGNOSTIC_CODES` matches the code pattern and validates as a `diagnostic` against `common.schema.json` when instantiated | Unit | P0 | FR-049-AC-1 |
 | TC-493 | The set of codes named under `src/compiler/` equals the registry set, extracted statically from `DIAGNOSTIC_CODES` member accesses | Static | P0 | FR-049-AC-2 |
 | TC-494 | Every registry code is emitted by at least one test case in the suite, asserted by a coverage set collected at run time | Unit | P0 | FR-049-AC-3 |
@@ -511,7 +506,7 @@ computed by `quire matrix` from those trace tags.
 | TC-513 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/` | Static | P0 | FR-050-AC-4 |
 | TC-514 | `normalizeIr` materializes `multiplicity`, `presence`, and `nullable` on every `2.0.0` field and operation parameter | Unit | P0 | FR-050-AC-5 |
 | TC-515 | `normalizeIr(normalizeIr(d))` equals `normalizeIr(d)` for every positive fixture and for generated documents | Property | P0 | FR-050-AC-6 |
-| TC-516 | Two documents differing only in object key order and in identity-keyed array order have the same `fingerprintIr` | Property | P0 | FR-050-AC-7 |
+| TC-516 | Two documents differing only in object-key order have equal normalized bytes; changed semantic values or ordered sequences do not | Property | P0 | FR-050-AC-7 |
 | TC-517 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer | Unit | P0 | FR-050-AC-8 |
 | TC-518 | A document whose alias chain is cyclic, one whose composite relationships are cyclic, one exceeding `maxNodes` | Unit | P0 | FR-050-AC-9 |
 | TC-519 | `INVALID_IR` diagnostics name the failing instance pointer, verified against a hand-computed pointer for a malformed fixture | Unit | P0 | FR-050-AC-10 |
@@ -537,8 +532,6 @@ computed by `quire matrix` from those trace tags.
 | TC-547 | `emit-ir` over the spike entrypoint reproduces the committed golden `spikes/typespec-feasibility/generated/custom/semantic-ir.json` byte for byte | Snapshot | P0 | FR-052-AC-1 |
 | TC-548 | `compile` over the fixture package writes a valid `2.0.0` document and exits `0`; running it twice produces identical IR and diagnostic bytes | Integration | P0 | FR-052-AC-2 |
 | TC-549 | `compile` over a fixture with a blocking defect exits `1`, leaves a fresh `--out` absent, leaves a pre-existing `--out` byte-unchanged | Integration | P0 | FR-052-AC-3 |
-| TC-550 | `compile` with `--lock` pointing at a stale lock exits `1` and leaves the lock file byte-unchanged | Integration | P0 | FR-052-AC-4 |
-| TC-551 | `compile --write-lock` produces a lock validating against its schema; omitting the flag writes no lock | Integration | P0 | FR-052-AC-5 |
 | TC-552 | A manifest with two profiles and no `--profile` yields `AMBIGUOUS_PROFILE` and exit `1` | Unit | P0 | FR-052-AC-6 |
 | TC-553 | `inspect` output is byte-identical across two runs and lists every type sorted by identity with its five node counts | Snapshot | P0 | FR-052-AC-7 |
 | TC-554 | `inspect --json` output parses, is canonical, and carries the same values as the text form | Unit | P0 | FR-052-AC-8 |
@@ -552,7 +545,7 @@ computed by `quire matrix` from those trace tags.
 | TC-563 | The narrow interface SHALL export exactly the six FR-041 symbols plus the nine named here | Unit | P1 | FR-052-CON-1 |
 | TC-565 | The CLI SHALL read no environment variable to decide behavior; every input is a flag or a file | Static | P1 | FR-052-CON-3 |
 | TC-566 | The CLI SHALL be the one place that constructs the injected host, passing it down to every module below it | Static | P1 | FR-052-CON-4 |
-| TC-567 | Two `compile` runs over the same package produce identical IR, lock, and diagnostic bytes | Unit | P0 | NFR-019-AC-1 |
+| TC-567 | Two `compile` runs over the same package produce identical IR and diagnostic bytes | Unit | P0 | NFR-019-AC-1 |
 | TC-568 | Two `inspect` runs and two `diff` runs produce identical bytes | Unit | P0 | NFR-019-AC-2 |
 | TC-569 | No module in scope references `Date`, `Date.now`, `process.env`, `process.cwd`, `process.platform`, `os.hostname`, `Math.random`, `localeCompare` | Static | P0 | NFR-019-AC-3 |
 | TC-570 | Two permutations of the search-path order that select the same packages produce identical output | Unit | P0 | NFR-019-AC-4 |
@@ -591,7 +584,6 @@ computed by `quire matrix` from those trace tags.
 | TC-609 | Every registry code fires at least once across the fixture corpus | Unit | P0 | FR-049-AC-3 |
 | TC-610 | A manifest that is not JSON at all yields `INVALID_MANIFEST` at line 1 | Unit | P1 | FR-047-AC-6 |
 | TC-611 | An IR document at an unknown `contractVersion` is refused with a pointer | Unit | P1 | FR-050-AC-10 |
-| TC-613 | A lock moves from fresh to stale by a source byte and by a manifest byte | Unit | P1 | FR-048-AC-5 |
 | TC-614 | A package with one type and no imports compiles | Unit | P2 | FR-046-AC-1 |
 | TC-615 | A diamond import graph resolves each package once | Unit | P1 | FR-047-AC-1, FR-047-AC-16 |
 | TC-616 | Two cycles sharing an edge yield two diagnostics and no duplicate | Unit | P1 | FR-047-AC-4 |
@@ -664,8 +656,7 @@ computed by `quire matrix` from those trace tags.
 | TC-788 | The generated field-identity map carries one entry per field of every exported record, keyed `<Type>.<field>` | Unit | P0 | FR-067-AC-2 |
 | TC-789 | Both identity maps are ordered by key under code-point comparison and keep that order under `LC_ALL=tr_TR.UTF-8` | Property | P0 | FR-067-AC-3 |
 | TC-790 | A package with a type missing from the identity map, and one with an entry for an unexported name, each fail `tsc --noEmit` | Compile | P0 | FR-067-AC-4, FR-067-CON-2 |
-| TC-791 | The fingerprint is computed over the normalized document rather than the file bytes, and the generated identity module exposes each document's occurrences, document-level extensions, and field units byte-equal to the document | Unit | P0 | FR-067-AC-14, FR-067-CON-4 |
-| TC-792 | Admitted documents with permuted types, constraints, or extensions share the TypeScript fingerprint; reversing distinct fields, supertypes, or operation parameters changes it; and the CLI `lockFingerprint` uses the same backend fingerprint function | Property | P0 | FR-067-AC-6 |
+| TC-791 | the generated identity module exposes each document's occurrences, document-level extensions, and field units byte-equal to the document | Unit | P0 | FR-067-AC-14 |
 | TC-793 | No emitted byte matches a date, time, hostname, user, or absolute-path pattern, and two runs at different wall-clock times agree | Static | P0 | FR-067-AC-7, FR-067-AC-8, FR-067-CON-1 |
 | TC-794 | Roles, relationship descriptors, per-type and per-field extension descriptors, and each type's `unknownPolicy` are exposed per type; a metadata-only import retains no validator symbol; a `displayName` rename moves no identity; and the metadata module typechecks | Unit | P0 | FR-067-AC-9, FR-067-AC-10, FR-067-AC-12, FR-067-AC-13, FR-067-AC-15, FR-067-AC-17, FR-067-CON-3 |
 | TC-795 | Every positive fixture and every conformance base yields `resultState` `success` with zero diagnostics, and a bundle carrying only `ir` records one suppression per absent-input rule, emits no diagnostic for any of them, and returns the same result state | Integration | P0 | FR-068-AC-1, FR-068-AC-18, FR-068-AC-19, FR-068-CON-8 |
@@ -679,23 +670,22 @@ computed by `quire matrix` from those trace tags.
 | TC-803 | `REFERENCE_POLICY` at `strict` yields `UNRESOLVED_TYPE_REF` at the reference target pointer and at `open` yields none, with no other line of the backend differing between the runs | Unit | P0 | FR-068-AC-12, FR-068-CON-3 |
 | TC-804 | `admit.mjs` and `loss.mjs` import no compiler reader, schema layer, applicability table, or diff module, and nothing under `conformance/`, and edit no corpus file | Static | P0 | FR-068-AC-13, FR-068-CON-1, FR-068-CON-4 |
 | TC-805 | Each of the four declared limits returns a bounded answer without throwing, the depth bound is the declared 256 rather than the compiler's `DEFAULT_LIMITS`, and 512 mutated documents leave the input byte-unchanged and never throw | Fuzz | P0 | FR-068-AC-14, FR-068-AC-15, FR-068-AC-22, FR-068-CON-5, FR-068-CON-6 |
-| TC-806 | Two documents differing only in object key order and in the eleven identity-keyed containers canonicalize alike, reversing fields, supertypes, or parameters changes canonical bytes, and two members sharing one `identity` canonicalize to one form whatever order they arrive in | Property | P0 | FR-069-AC-1, FR-069-AC-2, FR-069-AC-16 |
-| TC-1871 | Every TypeScript backend fingerprint vector's committed canonical bytes and SHA-256 digest match the independent backend, genuine set permutations retain the same digest, and each ordered-sequence reversal changes it | Test | P0 | FR-069-AC-26 |
+| TC-806 | Object-key permutations preserve normalized bytes; permuting distinct members of any array changes them, including identity-keyed containers and ordered sequences | Property | P0 | FR-069-AC-1, FR-069-AC-2 |
 | TC-807 | `normalizeIrForTarget` is idempotent over every positive fixture and every generated document | Property | P0 | FR-069-AC-3 |
-| TC-808 | A `2.0.0` field gains a literal `nullable` and no other member; `multiplicity` and `presence` are never derived from one another, and a document not carrying `contractVersion` `2.0.0` gains no member at all; `nullable` materializes `true` only for the input `true`, and `false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member (fcd#187) | Unit | P0 | FR-069-AC-4 |
+| TC-808 | Every field and operation parameter gains literal `nullable` regardless of `contractVersion`; `multiplicity` and `presence` are never derived from one another; only authored `true` materializes true (fcd#187) | Unit | P0 | FR-069-AC-4 |
 | TC-809 | Canonicalizing every conformance base and case input is byte-identical on a second run, from another working directory, and under `LC_ALL=tr_TR.UTF-8` | Integration | P0 | FR-069-AC-5 |
 | TC-810 | A non-finite number and a value past the depth bound are each refused with a named error, negative zero canonicalizes as positive zero, and canonicalization leaves its argument byte-identical | Unit | P0 | FR-069-AC-6, FR-069-AC-7, FR-069-AC-21, FR-069-CON-5 |
 | TC-811 | Each declared classification rule fires on a constructed pair at a hand-computed pointer — a removed field, an added required field, a removed variant and a removed relationship `breaking`; an added optional field `conditional` with no consumer policy and `additive` under one admitting unknown members; an added variant `additive` under such a policy and, with none, `breaking` under the `contract` setting of `VARIANT_ADDITION_POLICY` and `conditional` under its default `corpus` setting, with the constant read in exactly one place — and a rule absent from the exported `MODELLED_CHANGES` data fails the module's contract test | Unit | P0 | FR-069-AC-8, FR-069-AC-17, FR-069-AC-19, FR-069-AC-25, FR-069-CON-7 |
 | TC-812 | A mixed pair aggregates to the most restrictive classification, an inadmissible side on either end aggregates `invalid`, and an unmodelled change aggregates `unknown` rather than `patch` | Unit | P0 | FR-069-AC-9, FR-069-AC-10, FR-069-AC-11 |
 | TC-813 | An added optional field classifies `conditional` with no policy and `additive` under a policy admitting unknown members, a contract-version move classifies `additive` only when its down-projection round-trips, and the twenty-five corpus compatibility cases agree with the oracle or report a divergence | Integration | P0 | FR-069-AC-12, FR-069-AC-13, FR-069-AC-18 |
-| TC-814 | Neither module imports the compiler's normalization, canonicalization, diff or evolution module nor anything under `conformance/`, declares `IDENTITY_SET_PATHS` and the key-ordering rule once as data, retains the GAP-004 citation, canonicalizes every case with no admissibility answer computed, reads no clock, and adds no lockfile entry | Static | P0 | FR-069-AC-14, FR-069-AC-15, FR-069-AC-20, FR-069-CON-1, FR-069-CON-2, FR-069-CON-3, FR-069-CON-4, FR-069-CON-6 |
-| TC-815 | `make conformance` runs the `typescript-backend` command over all 115 cases with no adapter, unknown-case, duplicate-answer or missing-answer problem, and the harness reports 115 matched cases and zero unsuppressed divergences for the slot | Integration | P0 | FR-070-AC-1, FR-070-AC-11 |
+| TC-814 | Neither module imports the compiler's normalization, canonicalization, diff or evolution module nor anything under `conformance/`, declares the key-ordering rule once as data, canonicalizes every case with no admissibility answer computed, reads no clock, and adds no lockfile entry | Static | P0 | FR-069-AC-14, FR-069-AC-15, FR-069-AC-20, FR-069-CON-1, FR-069-CON-4, FR-069-CON-6 |
+| TC-815 | `make conformance` runs the `typescript-backend` command over all 114 cases with no adapter, unknown-case, duplicate-answer or missing-answer problem, and the harness reports 114 matched cases and zero unsuppressed divergences for the slot | Integration | P0 | FR-070-AC-1, FR-070-AC-11 |
 | TC-816 | Every document the adapter emits validates against `conformance/schema/adapter-result.schema.json` | Integration | P0 | FR-070-AC-2 |
-| TC-817 | The adapter answers `support: "supported"` for all 115 cases and `unavailable` for none | Integration | P0 | FR-070-AC-3 |
+| TC-817 | The adapter answers `support: "supported"` for all 114 cases and `unavailable` for none | Integration | P0 | FR-070-AC-3 |
 | TC-818 | The measured match, failure and divergence counts are recorded with the command that produced them and read from the regenerated coverage account rather than restated, and the first-run divergence count is measured before the first fix and never remeasured | Analysis | P0 | FR-070-AC-4, FR-070-AC-17, FR-070-CON-6, FR-070-CON-8 |
 | TC-819 | Neither the adapter nor any module it reaches references `oracleVerdict`, `compare`, or the oracle's own modules, and the harness starts it as a process rather than importing it | Static | P0 | FR-070-AC-5, FR-070-CON-1, FR-070-CON-5 |
 | TC-820 | Substituting the oracle's answer for the backend's makes a deliberately seeded backend defect invisible, showing the independence constraint is load-bearing | Integration | P0 | FR-070-AC-6 |
-| TC-821 | Two adapter runs from different working directories and under `LC_ALL=tr_TR.UTF-8` are byte-identical; the coverage account in the run report records `matched` 115 and `unmet` 0 for this slot, and a total exactly 115 lower than at this change's base commit; and no criterion of the requirement names a whole-corpus absolute | Test | P0 | FR-070-AC-7, FR-070-AC-8, FR-070-AC-20, FR-070-CON-7 |
+| TC-821 | Two adapter runs from different working directories and under `LC_ALL=tr_TR.UTF-8` are byte-identical; the coverage account in the run report records `matched` 114 and `unmet` 0 for this slot, and a total exactly 114 lower than at this change's base commit; and no criterion of the requirement names a whole-corpus absolute | Test | P0 | FR-070-AC-7, FR-070-AC-8, FR-070-AC-20, FR-070-CON-7 |
 | TC-822 | The ten named corpus paths, `conformance/divergences.json`, the three sibling registry rows and the Rust inventory component are byte-unchanged, and no corpus file is edited to make the backend agree | Analysis | P0 | FR-070-AC-9, FR-070-AC-14, FR-070-AC-18, FR-070-CON-2 |
 | TC-823 | Every admitted case generates a package and all of them typecheck as one compiler program, and a case refused on representability emits no file and names the construct; instance-level acceptance and rejection are FR-066's authored corpus, because the conformance corpus supplies no payloads | Compile | P0 | FR-070-AC-10, FR-070-AC-12 |
 | TC-824 | A seeded disagreement is registered as a divergence with an owner and a verdict and fails once unreproduced, the inventory discharges only the conformance clause, and nothing is published | Integration | P0 | FR-070-AC-13, FR-070-AC-15, FR-070-AC-16, FR-070-CON-3, FR-070-CON-4 |
@@ -844,7 +834,7 @@ computed by `quire matrix` from those trace tags.
 | TC-880 | A refused request writes no file and spawns no process, asserted by an instrumented spawn and an instrumented writer | Unit | P0 | FR-075-AC-8 |
 | TC-881 | The malicious-schema regression corpus refuses every document and generates nothing, covering each key, each refused ref shape, and each prohibited option | Unit | P0 | FR-075-AC-9 |
 | TC-882 | Refusal codes are unique, complete, and each raisable, and the entry point calls both guards before any other work | Unit | P0 | FR-075-AC-10, FR-075-AC-11, FR-075-CON-1 |
-| TC-883 | Two generations of the same prepared input set into fresh scratch roots yield byte-identical file maps and an identical fingerprint | Integration | P0 | FR-076-AC-1 |
+| TC-883 | Two generations of the same prepared input set into fresh scratch roots yield byte-identical file maps and identical bytes | Integration | P0 | FR-076-AC-1 |
 | TC-884 | No generated file contains a date, a time, an absolute path from the generating host, a user name, or a hostname | Integration | P0 | FR-076-AC-2 |
 | TC-885 | A refused schema raises before any subprocess is spawned, asserted by an instrumented spawn counter reading zero | Unit | P0 | FR-076-AC-3 |
 | TC-886 | A timed-out generation terminates the subprocess, names the timeout, removes the scratch root, and leaves the output directory unchanged; the scratch root is absent after every outcome | Integration | P0 | FR-076-AC-4, FR-076-AC-13 |
@@ -1078,7 +1068,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1271 | extraction-frontend-diagnostics.md lists every code (27, DUPLICATE_IDENTITY included) with severity, blocking, and owner, and regenerating it from the enum reproduces the committed file byte for byte | Snapshot | P1 | FR-096-AC-13 |
 | TC-1272 | The set of fixtures/negatives/<CODE>/ directories FR-098 lists equals the set of Code variants, negatives/DUPLICATE_IDENTITY included, so every registry code has one fixture or one named constructing test | Static | P1 | FR-096-AC-14 |
 | TC-1273 | Cargo.toml names agent-ix-semantic-ir under [dependencies] with path = "../semantic-ir" and no jsonschema; agent-ix-semantic-ir appears on that one manifest line only; cargo tree lists no direct jsonschema edge, lists agent-ix-semantic-ir as a direct edge, and every jsonschema line sits under quire-rs | Static | P0 | FR-097-AC-1, FR-097-CON-1 |
-| TC-1274 | A fault-injected document missing unknownPolicy on one type yields exactly one blocking INVALID_IR naming that type's instance pointer, and no document or fingerprint file is written | Unit | P1 | FR-097-AC-2 |
+| TC-1274 | A fault-injected document missing unknownPolicy on one type yields exactly one blocking INVALID_IR naming that type's instance pointer, and no document is written | Unit | P1 | FR-097-AC-2 |
 | TC-1275 | The bytes written for snapshot-table equal decide({"ir": doc}).normalized and the committed expected/semantic-ir.json; parsing them and calling normalized again reproduces them | Snapshot | P1 | FR-097-AC-3 |
 | TC-1276 | Every node list in the written document is sorted by identity under code-point order and equals the code-point sort computed in node under LC_ALL en_US.UTF-8 and de_DE.UTF-8; an Intl.Collator disagrees on at least one emitted list, which is why it is not the reference | Property | P1 | FR-097-AC-4 |
 | TC-1277 | node -e importing src/compiler/ir/normalize.mjs and applying FR-050 normalizeIr to every emitted fixture document returns the emitted bytes unchanged | Integration | P1 | FR-097-AC-5 |
@@ -1172,7 +1162,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1407 | A dialect registered unimplemented is refused with FRONTEND_NOT_IMPLEMENTED naming its owner, over a synthetic registration rather than whichever dialect is unbuilt today | Unit | P1 | FR-131-AC-6 |
 | TC-1408 | No module under src/compiler/frontend/ imports a process-starting built-in, and extraction.mjs is unreachable from the frontend seam | Unit | P0 | FR-131-AC-7, FR-131-CON-1, FR-131-CON-2 |
 | TC-1409 | A request supplying no producer raises rather than returning a diagnostic | Unit | P1 | FR-131-AC-8 |
-| TC-1586 | One markdown bundle lifted by the extraction producer generates files in every declared target, and all five targets report the same IR fingerprint from that single lift | Integration | P0 | FR-131-AC-9 |
+| TC-1586 | One markdown bundle lifted by the extraction producer generates files in every declared target, and all five targets receive the same normalized IR bytes from that single lift | Integration | P0 | FR-131-AC-9 |
 | TC-1410 | No change-set gate resolves a range end against main, origin/main or HEAD, and every one reads both ends from the shared sentinel helper | Analysis | P0 | NFR-039-AC-1, NFR-039-AC-5 |
 | TC-1411 | A gate whose sentinels are absent from history fails naming what it could not locate, and a commit landing after a change's range does not enter that range even when it touches a prohibited path | Unit | P0 | NFR-039-AC-2, NFR-039-AC-3 |
 | TC-1412 | A gate comparing a historical hunk reads the other side at that hunk's own commit, so a later change editing those lines leaves it green | Analysis | P1 | NFR-039-AC-4 |
@@ -1185,7 +1175,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1419 | Every typeRef to the minted construct renders the resolved identifier and none renders the reserved one; every affected semantic identity is byte-unchanged | Unit | P0 | FR-133-AC-3, FR-133-AC-7, FR-133-CON-1 |
 | TC-1420 | A pair the rule does not cover still raises NAME_COLLISION naming both identities and writes no file | Unit | P1 | FR-133-AC-4 |
 | TC-1421 | Over arbitrary minted and reserved names, no two distinct constructs share one generated identifier, and the register carries the resolution bound to a case | Property | P1 | FR-133-AC-5, FR-133-AC-6, FR-133-CON-2 |
-| TC-1422 | Every published artifact identifies its source, compiler, IR, backend and schema fingerprints, and two builds from one source produce identical bytes | Integration | P0 | NFR-040-AC-1, NFR-040-AC-3 |
+| TC-1422 | Every published artifact identifies its source, compiler, IR, backend and schema versions, and two builds from one source produce identical bytes | Integration | P0 | NFR-040-AC-1, NFR-040-AC-3 |
 | TC-1423 | Every combination the version matrix declares carries a conformance corpus run, and removing a run removes its row | Analysis | P0 | NFR-040-AC-2 |
 | TC-1424 | A rehearsed rollback leaves previously published compatible artifacts retrievable; no artifact reaches a public registry and every release workflow is manually dispatched | Manual | P0 | NFR-040-AC-4, NFR-040-AC-5 |
 | TC-1425 | An install-from-artifact consumer exists per generated language and builds against the published artifact; the first supported version and its canaries are named by a recorded decision | Integration | P1 | NFR-040-AC-6, NFR-040-AC-7 |
@@ -1228,7 +1218,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1550 | A node with no mapping produces a diagnostic and no silently truncated file is written | Unit | P0 | FR-138-AC-6 |
 | TC-1551 | The target declares a one-way round trip and no module of this repository reads a .sysml file | Static | P1 | FR-138-AC-7, FR-138-CON-2 |
 | TC-1552 | A default of a number, string, boolean, null and array each round-trips through the IR without narrowing to an object | Unit | P0 | FR-139-AC-1 |
-| TC-1553 | An unconstrained value and a zero-field record produce distinct IR documents and distinct generated declarations, and compare unequal at every layer: the IR node, the normalized bytes, the fingerprint, the compatibility report, the JSON Schema declaration and the Rust declaration; the spec-bundle lift emits the `any` scalar | Unit | P0 | FR-139-AC-2, FR-139-CON-1 |
+| TC-1553 | An unconstrained value and a zero-field record produce distinct IR documents and distinct generated declarations, and compare unequal at every layer: the IR node, the normalized bytes, the compatibility report, the JSON Schema declaration and the Rust declaration; the spec-bundle lift emits the `any` scalar | Unit | P0 | FR-139-AC-2, FR-139-CON-1 |
 | TC-1554 | Every document valid under the prior contract version validates byte-unchanged under the revised one | Integration | P0 | FR-139-AC-3, FR-139-CON-2 |
 | TC-1555 | A prior-version reader refuses a document carrying the new declaration with the published later-revision diagnostic and never reads it as a record | Unit | P0 | FR-139-AC-4 |
 | TC-1556 | A backend unable to carry the declaration records a named loss naming the construct and its locus, and emits no narrowed substitute | Unit | P0 | FR-139-AC-5, FR-139-CON-3 |
@@ -1308,7 +1298,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1787 | No business construct kind name appears as a string literal in `src/`, `crates/*/src` or `python_backend/` outside fixtures, goldens, generated code and tests, a name that is also a core shape term counting as that shape; a planted `kind.name === "entity"` fails the gate | Unit | P0 | FR-142-AC-7 |
 | TC-1788 | Reading a construct declaration refuses an unknown identity, an unknown member, a rule whose member presence is undeclared, a reference to a forbidden member, a wildcard or repeated role, a reference on a non-reference member, a repeated rule, an unknown declaration member and a missing required member at their pointers, and reads a declaration without `references` and `rules` and with each flag at its default | Unit | P0 | FR-142-AC-12, FR-142-AC-14 |
 | TC-1789 | A type's or a population's kind with no `constructs` entry, an unused entry outside the recognized `quire.meaning.model.population/v1` meaning, a duplicate entry, a `2.0.0` document without `constructs`, a wildcard role and an undeclared rule presence each refuse with `SCHEMA_VIOLATION`; widening admitted roles admits a reference its former roles refused, and removing the role from the target type refuses it; a `sourceElement` resolved through FR-152's operation fallback is checked by the same role admission, against the role of the operation's owning type | Unit | P0 | FR-142-AC-9 |
-| TC-1790 | The `business` fixture lifts with one `constructs` entry per used kind carrying the module version, the manifest digest and the manifest declaration with roles qualified `business:<role>`, read through the one manifest seam | Integration | P0 | FR-143-AC-7 |
+| TC-1790 | The `business` fixture lifts with one `constructs` entry per used kind carrying module version and the manifest declaration with roles qualified `business:<role>`, read through the one manifest seam | Integration | P0 | FR-143-AC-7 |
 | TC-1791 | A systems `port` kind carrying `owner`, `direction`, `interfaceType` and `multiplicity`, and a `connection` carrying `flowDirection` and two ends, read clean in the Rust and Node readers and render by shape and identity; a `direction` outside `in`/`out`/`inout`, a missing required member and an owner without the admitted role refuse | Unit | P0 | FR-142-AC-10 |
 | TC-1792 | A manifest declaration missing `meaning`, naming a member or rule outside the vocabulary, selecting a rule whose member presence it does not declare, admitting `*`, or referencing an undeclared role yields one blocking diagnostic naming the module and object type, and no artifact of that type lowers | Unit | P0 | FR-143-AC-8 |
 | TC-1793 | A `featureOrder` naming its type's own fields and operations each once reads clean; an omitted operation raises `INCOMPLETE_FEATURE_ORDER`, another type's operation `UNRESOLVED_CONSTRUCT_REF`, and a repeated entry, an empty order, an order the declaration forbids and a missing required order `SCHEMA_VIOLATION` | Unit | P0 | FR-142-AC-13 |
@@ -1325,7 +1315,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1589 | An adapter declared unavailable records zero matched and every case unmet, never agreement | Integration | P0 | FR-090-CON-1 |
 | TC-1590 | The corpus unmet total is the sum of the unavailable slots times the case total | Unit | P0 | FR-090-CON-1 |
 | TC-1591 | The corpus reports how much of the agreement claim four of four declared slots actually cover | Unit | P0 | FR-090-CON-1 |
-| TC-1592 | The corpus run exits clean over all 115 cases | Integration | P0 | FR-090-CON-1 |
+| TC-1592 | The corpus run exits clean over all 114 cases | Integration | P0 | FR-090-CON-1 |
 | TC-1805 | Two fields whose `typeRef`s name each other, with `unit` on one, do not overflow the stack; `decide` returns, the cycle resolves to no scalar and each field's `typeRef` is reported unresolved | Unit | P0 | FR-059-AC-11 |
 | TC-1806 | `ordered`/`unique` are required on every multiplicity and are never refused by the reader: `true`/`true` on a field whose upper bound is at most one, the mandatory `false`/`false` pair on that same shape, and `ordered`/`unique` on an actual collection all decide with no diagnostic | Unit | P0 | FR-027-AC-8 |
 | TC-1807 | The Rust reader's `NATIVE_SCALARS` carries the names and `irScalar` mapping of `packages/semantic-core/kernel-scalars.json` and, beside them, the model document's `Text` (scalar `string`) and FR-146's `Clock` (no IR scalar) | Unit | P1 | FR-032-AC-3, FR-146-AC-1 |
@@ -1347,8 +1337,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1824 | A text field and a scalar-string type carry a closed-set `textProfile`; other values and kinds are refused | Unit | P1 | FR-141-AC-11 |
 | TC-1825 | An integer value site is a canonical integer string at every magnitude within the i128 ceiling, and a non-canonical spelling or a JSON number is refused | Unit | P1 | FR-050-AC-14, FR-144-AC-2 |
 | TC-1826 | The generated Rust field matrix compiles and deserializes float32 and float64 scalar and collection fields, a nullable float, bounded integer and enum values, and a semantic default | Unit | P0 | FR-144-AC-3, FR-144-AC-7, FR-144-AC-13, FR-144-AC-18 |
-| TC-1827 | The shared supplementary-plane golden has RFC 8785 UTF-16 member ordering and the expected SHA-256 digest; the extraction frontend digest sidecar uses the exact written document bytes and changes after a one-byte mutation | Integration | P0 | FR-145-AC-3, FR-145-AC-7, FR-145-CON-3 |
-| TC-1828 | The digest sidecar is published before the document, and a failed document replacement leaves no temporary files | Unit | P0 | FR-145-CON-2 |
+| TC-1827 | The shared supplementary-plane golden has RFC 8785 UTF-16 member ordering; the extraction frontend and Semantic IR reader consume the same canonical bytes and emit no digest sidecar | Integration | P0 | FR-145-AC-3, FR-145-AC-7, FR-145-CON-3 |
 | TC-1829 | The Python and TypeScript normalized forms use RFC 8785 binary64 spelling at the fixed/exponent boundaries, including 1e-7 | Unit | P0 | FR-145-CON-3 |
 | TC-1830 | The Python, compiler, TypeScript backend, and second TypeScript reader canonicalizers reject unpaired UTF-16 surrogates in member names and values while accepting a supplementary-plane pair | Unit | P0 | FR-145-CON-3 |
 | TC-1831 | The published reader contract accepts the exact normalized canonicalization descriptor and refuses missing, unknown, or extra members with a located diagnostic; normalization materializes the exact descriptor | Unit | P0 | FR-145-AC-2 |
@@ -1368,7 +1357,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1845 | Each unresolved reference and each dimension and unit graph defect, mis-minted unit and dimension identities included, refuses exactly one diagnostic at its stated pointer; a cycle, or a term-graph strongly connected component, is reported once at its lowest-index member; several defects are all reported; duplicate unit names refuse DUPLICATE_IDENTITY; a unitless dimension is accepted | Unit | P0 | FR-146-AC-4, FR-146-CON-1 |
 | TC-1846 | Non-canonical rational and exponent spellings refuse exactly INVALID_OPERAND, a JSON number refuses exactly SCHEMA_VIOLATION, an out-of-i128 numerator refuses exactly INTEGER_OUTSIDE_I128, and canonical spellings are accepted | Unit | P1 | FR-146-AC-5, FR-146-CON-1 |
 | TC-1847 | ix://quire/unit/ms on a field, parameter, result, alias target, sequence items, map values and variant payload is accepted with or without document units; as a reference target (directly or through an alias), or malformed, it refuses exactly UNRESOLVED_TYPE_REF, and as a constraint appliesTo it is accepted (TC-1868); a unit-typed field breaking every shape member refuses exactly one INVALID_QUANTITY_MEMBER per member and none of the overlapping older codes or constraint rules, while INVALID_MULTIPLICITY still fires | Unit | P0 | FR-146-AC-6, FR-146-CON-1 |
-| TC-1848 | Construct valid old/new IR documents with dimension, unit and dimensionEquivalences entries: additions yield one type/semantic additive entry at the new identity; removals yield one type/semantic breaking entry at the old identity; dimension/unit renames and equivalence-pair changes yield old-identity breaking plus new-identity additive entries and aggregate breaking, with no identity-family entry; each changed dimension base/terms, unit dimension/target/scale/offset and same-identity equivalence rootScale yields one type/semantic breaking entry at that identity. Assert the three graph map entries and that unit still means the FR-027 field annotation; reordered arrays change normalized bytes/fingerprint while positive fixture bytes and fingerprints remain stable | Unit | P0 | FR-146-AC-7, FR-146-CON-2 |
+| TC-1848 | Construct valid old/new IR documents with dimension, unit and dimensionEquivalences entries: additions yield one type/semantic additive entry at the new identity; removals yield one type/semantic breaking entry at the old identity; dimension/unit renames and equivalence-pair changes yield old-identity breaking plus new-identity additive entries and aggregate breaking, with no identity-family entry; each changed dimension base/terms, unit dimension/target/scale/offset and same-identity equivalence rootScale yields one type/semantic breaking entry at that identity. Assert the three graph map entries and that unit still means the FR-027 field annotation; reordered arrays change normalized bytes while positive fixture bytes remain stable | Unit | P0 | FR-146-AC-7, FR-146-CON-2 |
 | TC-1849 | Every generation backend generates the clock and unit-typed documents with no UNDECLARED_LOSS and every file written; a member named by allowedOmissions gets one DECLARED_LOSS; a clock field of an omitted type and clock or unit-typed parameters and results of an omitted operation or type raise no loss of their own beside the owner's DECLARED_LOSS; an inherited clock field is generated unless named; dimensions and units generate nothing; the JSON Schema and rust-serde native lists carry Clock | Integration | P1 | FR-146-AC-8 |
 | TC-1850 | Field created_at, operation reset_all and its parameter created_at of FR-001 mint FR-001/created_at, FR-001/reset_all and FR-001/reset_all/created_at on the Rust and Node minters and in the shared identity table; fields created_at and created__at of one record mint two identities; a field _tmp raises one blocking UNSLUGGABLE_NAME at its row and FR-001 lifts to no definition; a field and a state created_at of one machine raise DUPLICATE_IDENTITY at the state; the alias is FR-001Created-at | Unit | P0 | FR-095-AC-23 |
 | TC-1851 | The TypeSpec frontend mints model properties created_at and created__at, operation reset_all and its parameter created_at verbatim with no diagnostic, and a property _tmp raises one agent-ix.compiler.UNSLUGGABLE_NAME at its locus with no identity | Unit | P0 | FR-053-AC-16 |
@@ -1398,8 +1387,8 @@ computed by `quire matrix` from those trace tags.
 | TC-1876 | A position at index 1 with identity `…/p2` (a gap), a pair `p1`, `p0` (out of order), `…/p01`, `…/P1`, `…/p-1` and a position under another tuple's prefix each raise `INVALID_TUPLE_POSITION` at the position's `identity`; two positions both `…/p0` raise exactly one `DUPLICATE_IDENTITY` at the later position's `identity` and no `INVALID_TUPLE_POSITION`. | Unit | P0 | FR-147-AC-5 |
 | TC-1877 | A position typed `ix://quire/native/Clock` raises `INVALID_TUPLE_POSITION` at its `typeRef`; a position naming no type raises `UNRESOLVED_POSITION_TYPE`; a malformed unit reference raises `UNRESOLVED_TYPE_REF`; a decimal position with no policy raises `DECIMAL_POLICY_MISSING` and one typed by an alias carrying the policy raises nothing; a native, a unit, a record, an enumeration, a union, an alias, a tuple and the tuple itself are accepted. | Unit | P0 | FR-147-AC-6 |
 | TC-1878 | A field, an operation parameter and result, an alias `target`, a sequence `items`, a map `values`, a reference `target` and a variant `payloadType` naming a tuple are accepted, and each is visited by the type traversal exactly once together with every tuple position (the traversal inventory test counts `TuplePosition`). | Unit | P0 | FR-147-AC-7 |
-| TC-1879 | A union mixing a nullary variant with payload-bearing variants, and an enumeration none of whose variants carries a payload, are accepted by the Rust and Node readers; a `payloadType` naming no type raises `UNRESOLVED_VARIANT_PAYLOAD`; reordering `variants` leaves the normalized bytes and fingerprint unchanged. | Unit | P0 | FR-147-AC-8 |
-| TC-1880 | The Rust and Node normalizers and the fingerprinter keep the authored order of `positions` (a tuple of eleven positions keeps `p10` after `p9`), normalizing a normalized document is the identity, the written bytes of a document with no `positions` are unchanged, and `/types/*/positions` is in no identity-set path list. | Unit | P0 | FR-147-AC-9 |
+| TC-1879 | A union mixing a nullary variant with payload-bearing variants, and an enumeration none of whose variants carries a payload, are accepted by the Rust and Node readers; a `payloadType` naming no type raises `UNRESOLVED_VARIANT_PAYLOAD`; reordering `variants` leaves the normalized bytes unchanged. | Unit | P0 | FR-147-AC-8 |
+| TC-1880 | The Rust and Node normalizers and the TypeScript normalizer keep the authored order of `positions` (a tuple of eleven positions keeps `p10` after `p9`), normalizing a normalized document is the identity, the written bytes of a document with no `positions` are unchanged, and `positions` stays in authored order. | Unit | P0 | FR-147-AC-9 |
 | TC-1881 | The classifier reports `breaking` for a tuple that gains a position, loses a position, has its position types swapped, or has one position retyped, `patch` for an unchanged tuple and for a tuple whose only change is an `origin`, and `breaking` for a variant that gains, loses or changes a `payloadType`, in the Rust and Node classifiers alike. | Unit | P0 | FR-147-AC-10 |
 | TC-1882 | A request whose IR declares a construct of the shape `tuple` is refused for every target by the generation seam with state `unsupported` and one blocking `UNSUPPORTED_CONSTRUCT_SHAPE`, writes no file, and a request with no such construct is unchanged. | Unit | P0 | FR-147-AC-11 |
 | TC-1883 | An enumeration artifact whose `## Payloads` table (the source form of a variant payload) has a type token for a value lowers that value to a variant with `payloadType` and every other value to a variant with none, resolving a native name, a `Quantity<u>` and a bundle artifact as a `Type` cell is resolved, raises one blocking `UNRESOLVED_TYPE_TOKEN` at the row of an unresolved token, and writes the same bytes as before for an artifact with no `## Payloads` table. | Unit | P0 | FR-147-AC-12 |
@@ -1463,7 +1452,7 @@ computed by `quire matrix` from those trace tags.
 | TC-760 | field multiplicity | `upper` absent / `upper` = 1 / `upper` > 1 | rendered property type | Absent or greater than one renders a readonly array; exactly one renders a scalar property |
 | TC-784 | `defaultKind` | `none` / `semantic` / `representation` / `migration` | property absent at validation | Only a `semantic` default is applied; the other two belong to the representation layer |
 | TC-817, TC-822 | adapter answer | `supported` / `unsupported` / `unavailable` | registry `status` and the case's own `unsupportedBy` | An available slot must answer `supported`; every other answer must be declared or the run fails |
-| TC-803 | `REFERENCE_POLICY` | `strict` / `open` | a `reference` target no type, import, or lock export supplies | `UNRESOLVED_TYPE_REF` or no diagnostic; the constant is the only line that differs between the runs |
+| TC-803 | `REFERENCE_POLICY` | `strict` / `open` | a `reference` target no type, import, or selected package graph export supplies | `UNRESOLVED_TYPE_REF` or no diagnostic; the constant is the only line that differs between the runs |
 | TC-779 | field presence and member state | `required` / `optional` | absent / `null` / explicitly `undefined` / a conforming value | Six accept-or-reject decisions; absent and explicitly `undefined` never collapse into one another |
 | TC-782 | `unknownPolicy` against structural kind | `preserve` / `reject` / `surface` | `record` / `union` / `map` | Only a `record` carries a validation effect; the other kinds record the policy in metadata and validate identically |
 | TC-781 | constraint subject after alias resolution | `string` / `bytes` / `integer` / `number` / `duration` | `minLength` / `maxLength` / `min` / `max` | Length counts code points for a `string` and decoded octets for `bytes`; an ordering keyword on a `duration` is a representability loss |
@@ -1698,9 +1687,6 @@ computed by `quire matrix` from those trace tags.
 | normative | successor ADR is accepted | historical with one current successor | TC-004 |
 | historical chain | a successor points to its predecessor | validation failure | TC-053 |
 | blocked migration | all named gates pass and a human promotes it | eligible for later implementation | TC-037 |
-| fresh lock | a source byte changes | `STALE_LOCK_PACKAGE` at the package entry locus | TC-481, TC-613 |
-| fresh lock | a manifest byte changes | `STALE_LOCK` at the fingerprint locus | TC-481 |
-| resolved graph | a package is added or removed | `LOCK_GRAPH_MISMATCH` naming the identity | TC-481 |
 | pinned input | pre-sign-off refresh finds no contract-affecting drift | evidence remains current | TC-058, TC-075 |
 | pinned input | pre-sign-off refresh finds contract-affecting drift | affected evidence invalid until refreshed | TC-058, TC-075 |
 | suspected consumer | source evidence confirms consumer | known consumer with revised confidence | TC-087 |
@@ -1709,8 +1695,8 @@ computed by `quire matrix` from those trace tags.
 | TypeSpec candidate | official emitter defect found | partial with tracked defect | TC-128 |
 | provisional ADR-0004 | owner records the decision | historical; ADR-0005 normative | TC-121, TC-122, TC-129 |
 | proposed v1 contract | owner records the structural-source decision (ADR-0005) | contract becomes eligible for merge, not implementation | TC-130, TC-199 |
-| unlocked package graph | successful deterministic resolution | immutable transitive lock | TC-141..142 |
-| locked package graph | any identity/version/digest conflict | failed resolution with all loci | TC-142 |
+| package graph | successful deterministic resolution | immutable resolved graph | TC-141 |
+| package graph | any identity/version conflict | failed resolution with all loci | TC-142 |
 | known extension capability | no-op dynamic/static processing | payload preserved according to profile | TC-144, TC-194 |
 | unknown required capability | load or compile attempt | explicit unsupported diagnostic and no target output | TC-193 |
 | legacy manifest | later human enforcement promotion | native v1 validation may become required in the later ticket | TC-198 |
@@ -1758,8 +1744,8 @@ computed by `quire matrix` from those trace tags.
 | module supplied, `semantic` block refused by the engine | `lift` | refused with `MODULE_REFUSED` carrying the engine code; nothing lowered as empty; exit 2 | TC-1202, TC-1265 |
 | `--out` under the bundle root or a module root | `lift` | refused with `OUTPUT_UNWRITABLE` before the bundle is loaded; no file; exit 2 | TC-1340, TC-1296 |
 | bundle assembled, node lists sorted | `decide` | success verdict: write proceeds; any reader diagnostic: one blocking `INVALID_IR` each, no document | TC-1284, TC-1342, TC-1346 |
-| bundle assembled, no blocking diagnostic | write | diagnostics, fingerprint, then document renamed into place in that order; exit 0 | TC-1279, TC-1295, TC-1341 |
-| bundle assembled, at least one blocking diagnostic | write | diagnostics sidecar written; no temporary file left; pre-existing document and fingerprint byte-unchanged; exit 1 | TC-1268, TC-1281 |
+| bundle assembled, no blocking diagnostic | write | diagnostics, then document renamed into place in that order; exit 0 | TC-1279, TC-1295, TC-1341 |
+| bundle assembled, at least one blocking diagnostic | write | diagnostics sidecar written; no temporary file left; pre-existing document byte-unchanged; exit 1 | TC-1268, TC-1281 |
 | bundle assembled, output directory absent or unwritable | write | `OUTPUT_UNWRITABLE` naming the path; nothing written; exit 2 | TC-1282 |
 | written document | `inspect --ir` | one line per type in `types` order; exit 0 | TC-1297 |
 | document missing `contractVersion` | `inspect --ir` | `INVALID_IR` printed (reader's schema layer rejects at `/ir`, naming the absent `contractVersion` member); exit 1 | TC-1297 |
@@ -1790,7 +1776,7 @@ computed by `quire matrix` from those trace tags.
 | ERR-020 | Report marks a partial/failing P0 result as pass | Recommendation validation fails | TC-119..120, TC-126 |
 | ERR-021 | Spike attempts publication or canonical replacement | Isolation gate fails before merge | TC-123..124 |
 | ERR-022 | Structural-source or semantic-IR version is unknown | Source-located diagnostic and zero target output | TC-133 |
-| ERR-023 | Package graph has unresolved import, duplicate identity, cycle, version, or digest conflict | Resolution fails and lists every conflicting locus | TC-142 |
+| ERR-023 | Package graph has unresolved import, duplicate identity, cycle, or version conflict | Resolution fails and lists every conflicting locus | TC-142 |
 | ERR-024 | Manifest uses an unknown non-namespaced key | Manifest validation fails | TC-144 |
 | ERR-025 | Mapping claims lossless behavior but omits a semantic identity | Qualification fails as undeclared loss | TC-149 |
 | ERR-026 | Bidirectional mapping violates a get/put law | Lens qualification fails | TC-150 |
@@ -1807,7 +1793,7 @@ computed by `quire matrix` from those trace tags.
 | ERR-037 | Constraint keyword unknown or operands malformed for the keyword | Validation fails at the constraint locus | TC-220..222 |
 | ERR-038 | `source.dialect` carries the retired JSON Schema constant on a v1.1 document | Validation fails citing ADR-0005 | TC-228 |
 | ERR-039 | Manifest names a target outside the shared enumeration | Validation fails at the target entry | TC-229 |
-| ERR-040 | Relationship `target` resolves to nothing in the document or lock | Validation fails at the relationship locus | TC-239 |
+| ERR-040 | Relationship `target` resolves to no definition in the document or export in the selected package graph | Validation fails at the relationship locus | TC-239 |
 | ERR-041 | Composite relationship graph contains a cycle | Validation fails at the closing relationship | TC-240 |
 | ERR-042 | Duplicate `clauseId` within one type definition | Validation fails at the second clause | TC-241 |
 | ERR-043 | Constraint keyword applied outside its applicability, or regex fails to compile | Validation fails at the constraint locus | TC-244, TC-245 |
@@ -1826,8 +1812,8 @@ computed by `quire matrix` from those trace tags.
 | ERR-058 | No committed `Cargo.lock` while the runner is in `--check` mode | The runner exits non-zero naming the missing lockfile | TC-374 |
 | ERR-059 | The branch changes a path the isolation allowlist does not cover | TC-123/TC-124 fail naming the path | TC-379, TC-390 |
 | ERR-060 | The declarations in `index.d.mts` drift from `index.mjs` | `tsc --noEmit` fails | TC-344 |
-| ERR-061 | An import names a package the lock does not resolve | Oracle rejects at the import's locus | TC-298, TC-315 |
-| ERR-101 | The lock package graph closes a cycle | Oracle rejects with a package-cycle code distinct from a recursive type graph | TC-315, TC-317 |
+| ERR-061 | An import names a package the selected package graph does not resolve | Oracle rejects at the import's locus | TC-298, TC-315 |
+| ERR-101 | The selected package graph closes a cycle | Oracle rejects with a package-cycle code distinct from a recursive type graph | TC-315, TC-317 |
 | ERR-063 | A mapping names an identity no declaration owns | Oracle rejects at the mapping's locus | TC-298, TC-315 |
 | ERR-064 | The same semantic identity is declared twice anywhere in the document | Oracle rejects at the second declaration | TC-293, TC-315 |
 | ERR-105 | An entity-role type is neither exported nor declared an allowed omission | Oracle rejects as undeclared loss | TC-298, TC-315 |
@@ -1859,7 +1845,6 @@ computed by `quire matrix` from those trace tags.
 | ERR-080 | An imported package identity is supplied by no search directory | `IMPORT_NOT_FOUND` at the import entry locus | TC-463 |
 | ERR-081 | No candidate for an identity satisfies its constraint | `IMPORT_VERSION_UNSATISFIED` naming the versions found | TC-463 |
 | ERR-082 | Two manifests constrain one identity and no candidate satisfies both | One `IMPORT_VERSION_CONFLICT` naming every requiring locus | TC-457 |
-| ERR-083 | Two selected entries for one identity carry different digests | `DIGEST_CONFLICT` naming both digests and both loci | TC-458 |
 | ERR-084 | An import names an absent, private, or uncapable export | `IMPORT_EXPORT_MISSING`, `IMPORT_EXPORT_PRIVATE`, or `IMPORT_CAPABILITY_MISSING` | TC-463 |
 | ERR-085 | The import graph contains a cycle | One `PACKAGE_CYCLE` per back edge, starting at the least identity | TC-459, TC-616 |
 | ERR-086 | A type identity is exported twice in one graph | `DUPLICATE_EXPORT` at the second declaring locus | TC-465 |
@@ -1867,7 +1852,6 @@ computed by `quire matrix` from those trace tags.
 | ERR-088 | A resolved or imported path escapes its declared root | `PATH_ESCAPE`, no read | TC-467, TC-581 |
 | ERR-089 | A selected profile names an unknown profile, mapping, or target | `UNKNOWN_PROFILE`, `UNKNOWN_MAPPING`, or `UNKNOWN_TARGET` | TC-464 |
 | ERR-090 | A strict profile selects a mapping declaring lossy preservation | `UNDECLARED_LOSS` at the mapping locus | TC-464 |
-| ERR-091 | A supplied lock's fingerprint, package digest, graph, or canonicalization disagrees | `STALE_LOCK`, `STALE_LOCK_PACKAGE`, `LOCK_GRAPH_MISMATCH`, or `UNSUPPORTED_CANONICALIZATION` | TC-481, TC-613 |
 | ERR-092 | A module asks for a diagnostic code the registry does not declare | `diagnostic` throws; it is a compiler defect, not an input defect | TC-492 |
 | ERR-093 | The diagnostic count exceeds `maxDiagnostics` after sorting | Truncation plus the non-blocking `DIAGNOSTIC_LIMIT_REACHED` | TC-499, TC-505, TC-605 |
 | ERR-094 | An emitted or read IR document fails its published schema | Blocking `INVALID_IR` naming the pointer, no file written | TC-517, TC-519, TC-611 |
@@ -1890,7 +1874,7 @@ computed by `quire matrix` from those trace tags.
 | ERR-155 | An undeclared member reaches a type declaring `unknownPolicy: "reject"` | Rejection with a pointer at that member | TC-782 |
 | ERR-156 | A value nests past the generated validator's declared depth limit | The exceeded-depth code; the validator terminates rather than exhausting the stack | TC-785 |
 | ERR-157 | A document is both alias-cyclic and past the depth bound | `ALIAS_CYCLE`, never `DEPTH_LIMIT_EXCEEDED`; the cycle is the more specific fact | TC-798 |
-| ERR-158 | A `reference` target resolves to no document type, no import, and no lock export | `UNRESOLVED_TYPE_REF` at `/ir/types/<index>/target` under `REFERENCE_POLICY` `strict` | TC-803 |
+| ERR-158 | A `reference` target resolves to no document type, no import, and no selected package graph export | `UNRESOLVED_TYPE_REF` at `/ir/types/<index>/target` under `REFERENCE_POLICY` `strict` | TC-803 |
 | ERR-159 | A canonicalization input carries a non-finite number or exceeds the depth bound | A named refusal rather than a serialized value | TC-810 |
 | ERR-160 | A compatibility pair carries a change the classification rules do not model | Aggregate `unknown`, never `patch` | TC-812 |
 | ERR-161 | An available adapter slot answers `unavailable`, or answers an undeclared `unsupported` | The harness records a problem and the run fails | TC-817 |
@@ -1902,7 +1886,7 @@ computed by `quire matrix` from those trace tags.
 | ERR-138 | A `bytes` value is outside the Bytes wire form of FR-032 (not canonical padded base64), or its decoded length exceeds a `maxLength` | Rejected with that constraint's own `diagnosticCode`, the length counted in decoded octets | TC-781 |
 | ERR-139 | An `integer` subject receives a non-integral, non-finite, or above-`Number.MAX_SAFE_INTEGER` value | Rejected with its own structural code rather than silently truncated | TC-781 |
 | ERR-140 | A validated input carries a getter that throws, an inherited accessor for a declared member, or a `Symbol.toPrimitive` coercion | A returned rejection, never a thrown exception and never a coerced accept | TC-785 |
-| ERR-141 | An admissibility rule's declared input — a manifest, a lock, a mapping, or a consumer policy — is absent from the bundle | A recorded suppression, never a diagnostic and never a silent pass | TC-795 |
+| ERR-141 | An admissibility rule's declared input — a manifest, a package graph, a mapping, or a consumer policy — is absent from the bundle | A recorded suppression, never a diagnostic and never a silent pass | TC-795 |
 | ERR-142 | The injected formatter exits non-zero during a generation | No file written and a blocking diagnostic naming the formatter | TC-827 |
 | ERR-143 | A generated identifier collides with the exported discriminant constant or with another identity's minted identifier | One blocking `IDENTIFIER_COLLISION` naming both, raised while the model is built and before a file map exists | TC-764 |
 | ERR-114 | A construct selects no mapping row and no named refusal; an `enum` variant carries a `payloadType` | `UNSUPPORTED_CONSTRUCT` or `PAYLOAD_ON_ENUM_VARIANT`, zero files | TC-650, TC-656 |
@@ -2011,7 +1995,7 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-041 | The promotion is landed alongside a package publication or consumer move | NFR-018 | TC-390, TC-396 | A later compiler defect cannot be backed out without a consumer migration |
 | EC-042 | A backend writes files, so a package ticket must edit the backend to change layout | FR-042 | TC-352 | Layout policy leaks into the generator and each target ticket forks it |
 | EC-068 | The Python adapter's forbidden-key list is narrowed to make a schema pass | FR-043 | TC-362, TC-363 | Caller-controlled Python reaches the generated models |
-| EC-044 | The host's ICU data orders type ids differently from the minting host | NFR-017, FR-041 | TC-342, TC-385 | Every downstream golden and the retained fingerprint flip on a different host |
+| EC-044 | The host's ICU data orders type ids differently from the minting host | NFR-017, FR-041 | TC-342, TC-385 | Every downstream golden and the retained bytes flip on a different host |
 | EC-045 | The compiler is invoked from a directory other than the repository root | NFR-017, FR-041 | TC-341, TC-386 | Absolute host paths are written into the IR with every gate green |
 | EC-046 | The retained evidence records the minting host's own tool versions | NFR-017, FR-044 | TC-370, TC-389 | The gate can only ever pass on one workstation (issue #42) |
 | EC-047 | A base-model chain in the IR forms a cycle | FR-042 | TC-354 | The backend recurses until the stack is exhausted |
@@ -2034,12 +2018,12 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-071 | A `displayName` that is a TypeScript reserved word | FR-064 | TC-764 | The generated module does not parse, or the mangling differs between two runs |
 | EC-072 | A field named `__proto__` or `constructor` | FR-066 | TC-779, TC-782 | Prototype pollution, or an own-property test that reads an inherited member as if it were declared |
 | EC-073 | A `pattern` regex that is valid ECMA-262 and backtracks catastrophically | FR-066, NFR-020 | TC-781, TC-785 | A generated validator hangs on an input the contract admits |
-| EC-074 | A `reference` whose target no type, import, or lock export supplies (GAP-011) | FR-068 | TC-803 | The backend rules on an open contract question instead of citing it and moving with the answer |
+| EC-074 | A `reference` whose target no type, import, or selected package graph export supplies (GAP-011) | FR-068 | TC-803 | The backend rules on an open contract question instead of citing it and moving with the answer |
 | EC-075 | A document that is admissible and unrepresentable | FR-065, FR-068 | TC-802, TC-774 | An unrepresentable construct is emitted as `unknown` and the refusal never reaches the caller |
 | EC-077 | A package declaring one type, and a package declaring a thousand | FR-064, FR-065 | TC-755, TC-766 | The single-type path is never exercised and the large path exhausts a bound unnoticed |
 | EC-078 | A generated identifier collides with the generated discriminant constant | FR-064 | TC-758, TC-764 | The discriminated union stops narrowing and `tsc` accepts an unhandled variant |
 | EC-080 | The adapter and the oracle agree because the adapter asked the oracle | FR-070 | TC-819, TC-820 | A perfect pass rate that measures nothing and hides every shared defect |
-| EC-081 | A document declares two type definitions carrying the same `identity`, so identity-sorted set ordering is not a total order, while the adapter must still emit a `normalized` string for that case | FR-069 | TC-806 | Two runs canonicalize one document two ways and the byte comparison the whole slot rests on becomes non-deterministic |
+| EC-081 | A document declares two type definitions carrying the same `identity`, while the adapter must still emit a deterministic `normalized` string | FR-069 | TC-806 | Canonicalization changes bytes across identical runs, invalidating the corpus comparison |
 | EC-082 | `unknownPolicy` is declared on a kind that has no unknown members — a `union` at `surface` and a `map` at `preserve`, both carried by the committed conformance bases | FR-064, FR-066, FR-067, FR-068 | TC-762, TC-782, TC-802, TC-794 | A policy with no meaning is rendered as a validation rule, or is dropped without a declared loss under a `fail` policy |
 | EC-083 | A record declaring `preserve` widens its interface enough that the four presence and nullability forms stop being distinguishable under `exactOptionalPropertyTypes` | FR-064, FR-066 | TC-782 | The optional-versus-null distinction the package exists to carry dissolves at exactly the types that carry unknown data |
 | EC-084 | A `reference` target names an identity an imported package legitimately exports, and the case supplies no `importedExports` to resolve it against | FR-068 | TC-795, TC-803 | The policy constant answers a question it was never given the input to decide, and GAP-011 acquires a third reading nobody recorded |
@@ -2070,7 +2054,7 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-141 | A bundle whose every document is a requirement, use-case, or review artifact with no `object` | FR-091 | TC-1205 | Non-domain artifacts are lowered as records, or each raises a diagnostic on a valid bundle |
 | EC-142 | An artifact whose typed `## Properties` table has a header row and zero body rows, and a `domain` with no `## Properties` at all | FR-093 | TC-1221, TC-1335, TC-1309 | A record with no fields is confused with `fields` `unavailable`, or the lowering panics on an empty list |
 | EC-143 | A field whose target is the declaring record itself (`parent ConfigVersion 0..1`) | FR-092, FR-093 | TC-1222, TC-1245 | Pass two reports the self-reference `Stale` because its own record's outcome is read before pass one completes |
-| EC-144 | Two records each declaring a `contains` frontmatter edge to the other | FR-094, FR-097 | TC-1342 | A schema-valid document with a composite cycle is written and fingerprinted before the reader sees it |
+| EC-144 | Two records each declaring a `contains` frontmatter edge to the other | FR-094, FR-097 | TC-1342 | A schema-valid document with a composite cycle is written before the reader sees it |
 | EC-145 | An artifact whose title is entirely punctuation and slugs to the empty string | FR-095 | TC-1252 | An identity ending in `/field/-name` is minted and passes the pattern by accident |
 | EC-146 | A `Type` cell holding a 4000-character token | FR-096 | TC-1269 | A diagnostic message carries the whole token and the diagnostics file balloons or breaks a line-oriented consumer |
 | EC-147 | Documents saved with CRLF line endings | FR-091, FR-096 | TC-1208, TC-1309 | Loci drift by a column, `clause_text` carries `\r`, and the table-form and fence-form lifts differ by a byte |

@@ -46,9 +46,7 @@ validator (the `jsonschema` crate), an RFC 8785 writer, and an ECMAScript number
 formatter, each of which the reader already owns. The document form is
 `rfc8785-v1`, as [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md)
 settles for every normalized document. It is RFC 8785 JCS, including UTF-16
-code-unit object-key ordering; it is not the identity-sorted-set extension of
-FR-048, which belongs to the package-lock fingerprint. The normalized document
-also carries
+code-unit object-key ordering. The normalized document also carries
 `{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`, so neither FCD nor QSL intake infers
 the algorithm from observed bytes. FR-046 imposes the semantic node-list order
 before serialization, so FR-050 `normalizeIr` of the emitted document is the
@@ -84,11 +82,11 @@ in the test suite.
 - The frontend SHALL carry the exact
   `canonicalization: {"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`
   descriptor in the normalized document and SHALL include that descriptor in
-  the bytes whose SHA-256 value is recorded under the `sha256-jcs` domain.
+  the published canonical bytes. The `digest` member names the historical algorithm domain, not a written digest value.
 - The frontend SHALL materialize `multiplicity`, `presence`, and `nullable` on every field and operation parameter before serialization, so that `normalized` adds no member and the written bytes re-parse to the assembled value.
 - The frontend SHALL NOT link the `jsonschema` crate.
 - The frontend SHALL NOT implement a JSON canonicalizer, an object-member ordering, or a number formatter of its own.
-- The frontend SHALL NOT apply the identity-sorted-set extension of FR-048 to the written bytes.
+- The frontend SHALL preserve the authored order of every array in the canonical serializer, after sorting the declared semantic sets at lift time.
 
 ### Determinism
 

@@ -15,7 +15,7 @@ publish a package, change a consumer, or alter the current Avro contract.
 
 The v1 structural source is TypeSpec, per
 [ADR-0005](adr/0005-typespec-structural-source.md). Package metadata, mappings,
-build profiles, locks, and compatibility evidence are separate versioned inputs
+build profiles and compatibility evidence are separate versioned inputs
 because a structural type language cannot express all of their concerns. The
 TypeSpec frontend normalizes the compiled program and these inputs into
 `semantic-ir-v1`. The IR is the versioned compiler exchange boundary, not a
@@ -29,7 +29,7 @@ batches, CSV/TSV files, and generated language objects are representations or
 projections selected for concrete boundaries.
 
 ```text
-structural source + package + mappings + profile + lock
+structural source + package + mappings + profile
                          |
                     semantic IR
                          |
@@ -50,11 +50,11 @@ All identifiers below are rooted at
 | `package-manifest.schema.json` | Package identity/version, sources, imports, exports, named profiles, targets, and mappings |
 | `module-semantic-block.schema.json` | The filament module manifest's optional `semantic` block (quoin FR-070): contract version, semantic-core version, package identity, exports, imports, targets, and mappings, all by $ref to this contract's own $defs |
 | `module-manifest.schema.json` | The filament-core-service module manifest (FR-035): identity, navigation, dependencies, archetypes, object types, grammars, artifact types, doc kinds, state schemas, lint rules, the mergeable edge-type and role registries, and the optional `semantic` block. Moved here from agent-ix/filament-core-service; fcs consumes it as a published contract like any other consumer. Its `semantic` property is not yet expressed as a $ref to `module-semantic-block.schema.json` above — the two overlap in shape but unifying them is a separate, deliberate change, not something this move made |
-| `package-lock.schema.json` | Exact transitive closure, content/source identities, canonicalization, and fingerprint |
+| `package-lock.schema.json` | Retired by PLAT-1205; Cargo.lock is the repository dependency lock. Conformance package facts use the separate digest-free `conformance/schema/package-graph.schema.json` |
 | `mapping.schema.json` | Correspondences plus typed codec/lens/projection/extraction/rendering/aggregation/enrichment/materialization behavior |
 | `profile.schema.json` | Authority, edit direction, round trip, unknown policy, omissions, enrichment, and lifetime |
 | `representation.schema.json` | Markdown, JSON, PostgreSQL, Protobuf, Avro, Arrow/Parquet, CSV, and TSV refinements |
-| `compiler-request.schema.json` | Locked compiler input and backend capability boundary |
+| `compiler-request.schema.json` | Compiler input and backend capability boundary |
 | `output-manifest.schema.json` | Complete emitted-file inventory, result state, and diagnostics |
 | `target-contract.schema.json` | Rust, TypeScript, Python, and JSON Schema API/runtime expectations and backend qualification |
 | `compatibility-report.schema.json` | Per-change and aggregate compatibility dispositions, consumers, evidence, and gates |
@@ -101,7 +101,7 @@ A record type definition carries first-class `relationships[]` (category,
 bound by `clauseId`), and any type definition carries `clauses[]`
 (`language` of `quire`, `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique
 per type; opaque `text`; `sourceSpan` when source-originated). The IR never
-parses clause text. Relationship targets resolve to a document type or a lock
+parses clause text. Relationship targets resolve to a document type or a selected package graph
 export; composite relationship graphs are acyclic. The same rule governs a
 `reference`-kind definition's `target`, and for both kinds a third source
 resolves: an export named by a declared manifest import. A target resolving to
@@ -365,7 +365,7 @@ exception stated below.
 
 A document using a module construct kind carries a `constructs` table with
 one entry per kind used by a type or population: `kind`, `moduleVersion`,
-`manifestDigest` and the `construct` declaration. An unused declaration
+and the `construct` declaration. An unused declaration
 carrying the recognized meaning `quire.meaning.model.population/v1` is admitted
 and preserved, independently of its kind name, for a package that declares a population
 construct before any type uses it. Every other unused kind is refused. Every declaration is checked
@@ -408,7 +408,7 @@ origin }`, the position at index `i` having the identity
 `INVALID_TUPLE`; a position out of order, with a gap, or typed
 `ix://quire/native/Clock` raises `INVALID_TUPLE_POSITION`; a position type
 naming no declared type raises `UNRESOLVED_POSITION_TYPE`. Positions keep their
-authored order in the normalized and fingerprinted forms. A variant's
+authored order in the normalized form. A variant's
 `payloadType` is the single typed payload of that case and a variant without
 one stays nullary. A generation backend that renders no tuple is refused by the
 seam with `UNSUPPORTED_CONSTRUCT_SHAPE`.
@@ -424,7 +424,7 @@ through aliases, to scalar `datetime`. A backend dispatches a construct on its
 shape and identity, renders its name from `kind.name`, and never renders a
 construct it cannot represent as a record.
 
-## Packages, locks, and fingerprints
+## Packages and canonical documents
 
 A package identity is opaque `owner/name`, independent of registry URL or
 checkout path. Imports name compatible versions and required exports or
@@ -432,27 +432,18 @@ capabilities. Exports refer to stable semantic identities; profiles select
 public exports, targets, mappings, options, and compatibility posture without
 mutating definitions.
 
-Locks resolve the complete dependency graph to exact versions, content digests,
-source identities, and dependencies. Package cycles are rejected with every
-locus. Recursive type graphs are preserved and are not package cycles.
-
-The v1 fingerprint uses SHA-256 over a named
-`RFC8785-JCS-with-identity-sorted-sets-v1` canonical byte form. It includes
-schema bytes, manifest, mappings, profiles, resolved packages, and compiler
-contract version. Object ordering and semantically-set ordering are normalized.
-Source path, working directory, timestamp, hostname, and locale are excluded.
-Every included semantic byte change changes the fingerprint; excluded ordering
-does not.
+Resolution binds the complete dependency graph to exact versions, source
+identities, and dependencies. Package cycles are rejected with every locus.
+Recursive type graphs are preserved and are not package cycles. The compiler
+does not mint a second package lock or digest-keyed staleness check.
 
 A normalized Semantic IR document carries
 `canonicalization: {"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`.
 `rfc8785-v1` is RFC 8785 JSON Canonicalization Scheme: object member names use
 RFC 8785 UTF-16 code-unit ordering, numbers and strings use RFC 8785 spelling,
-and arrays retain their supplied order. The `digest` member names the domain;
-the FCD producer value is SHA-256 over those exact bytes, represented in its
-digest sidecar as `sha256-jcs:<64 lowercase hexadecimal digits>`. This is a
-separate byte domain from the identity-sorted-set fingerprint above; a reader
-does not infer either algorithm from observed ordering.
+and arrays retain their supplied order. The `digest` member is an existing
+algorithm-domain label, not a digest value. Producers and consumers compare
+normalized bytes directly; no document digest sidecar is emitted.
 
 ## Mappings and profiles
 
@@ -497,7 +488,7 @@ compatibility gate. Describing a format does not select it.
 
 ## Compiler and generated targets
 
-The compiler request contains the complete locked IR, selected profile,
+The compiler request contains the complete IR, selected profile,
 mappings, backend identity/version/features/options, and a relative output root.
 The output manifest reconciles every emitted file to its media type and
 semantic identities. Invalid, unsupported, or unavailable results emit zero
@@ -510,7 +501,7 @@ target. They never degrade to `any`, generic maps, or empty models.
 
 Rust exposes native structs, enums, newtypes, unions, Serde behavior, and
 framework-neutral validation. TypeScript pairs static types with runtime
-validation from the same lock. Python uses qualified generation for Pydantic v2
+validation from the same normalized IR. Python uses qualified generation for Pydantic v2
 and standard dataclasses through a governed schema adapter; authored decorators
 or custom `@` tags are not a schema language. Generated semantic packages
 exclude UI, ORM, SQLAlchemy, Tauri, network clients, database migrations, and
@@ -540,7 +531,7 @@ reserved Protobuf name or number is breaking and invalid.
 ## Dynamic and legacy consumers
 
 Dynamic validation and finite generated exports share package, type, field,
-profile, mapping, and fingerprint identities. Static consumers declare whether
+profile and mapping identities. Static consumers declare whether
 unknown modules and extensions are preserved, rejected, or surfaced.
 
 The Avro bridge and the legacy manifest profile are compatibility

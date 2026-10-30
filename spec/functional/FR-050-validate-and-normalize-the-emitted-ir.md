@@ -26,7 +26,7 @@ relationships:
 
 The compiler SHALL validate every IR document it emits or reads against the
 published schema and against the cross-field rules the schema cannot express,
-and SHALL define one normalized serialization and fingerprint over it, so that
+and SHALL define one normalized serialization of it, so that
 "the same IR" is a byte comparison rather than a judgement.
 
 ## Inputs
@@ -40,7 +40,7 @@ and SHALL define one normalized serialization and fingerprint over it, so that
 ## Outputs
 
 - `src/compiler/ir/reader.mjs`: `readContractIr(document, { importedExports, limits })` returning diagnostics
-- `src/compiler/ir/normalize.mjs`: `canonicalIr(document)` and `normalizeIr(document)` returning strings, and `fingerprintIr(document)` returning `sha256:<64 hex>`
+- `src/compiler/ir/normalize.mjs`: `canonicalIr(document)` and `normalizeIr(document)` returning strings
 - `src/compiler/ir/schema.mjs`: `validateIrDocument(document)` returning schema diagnostics
 - `src/compiler/ir/applicability.mjs`: the one constraint applicability table the frontend and the reader share
 - `src/compiler/schema-validate.mjs`: the compiled published-schema set, keyed by repository root
@@ -169,7 +169,6 @@ valid instance data.
 
 - `canonicalIr` SHALL be the FR-048 canonical byte form of the document, with `types`, `variants`, `constraints`, `relationships`, `operations`, `clauses`, and `extensions` declared as identity-keyed sets.
 - `normalizeIr` SHALL materialize `nullable` as a literal boolean on every field and every operation parameter before canonicalising. `nullable` materializes `true` only where the authored member is the JSON literal `true`; every other value or its absence — `null`, `false`, a number, a string, an array, or an object, or no member at all — materializes `false` (fcd#187). `multiplicity` and `presence` are schema-required and independently authored (FR-027, FR-106); `normalizeIr` SHALL NOT derive either from the other or from anything else, and SHALL run this materialization unconditionally, gating on no field of the document including `contractVersion`.
-- `fingerprintIr` SHALL be `digest` of `normalizeIr`'s output.
 - The compiler SHALL validate its own emitted document before writing it.
 - If that validation fails, then the compiler SHALL treat the failure as a blocking diagnostic rather than writing an invalid document.
 
@@ -192,7 +191,7 @@ valid instance data.
 | FR-050-AC-4 | `src/compiler/ir/reader.mjs` imports no module under `test/` or `tests/`, matching FR-050-CON-1; any edit to `test/semantic-ir-v1-1-reader.ts` or `tests/semantic_ir_reader.py` stays within what FR-050-CON-2 permits. | Analysis |
 | FR-050-AC-5 | `normalizeIr` materializes `nullable` as a literal boolean on every field and operation parameter, unconditionally on `contractVersion`, and never derives `multiplicity` from `presence` or `presence` from `multiplicity`; `nullable` materializes `true` for the input `true`, and `false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member. | Test |
 | FR-050-AC-6 | `normalizeIr(normalizeIr(d))` equals `normalizeIr(d)` for every positive fixture and for generated documents. | Property |
-| FR-050-AC-7 | Two documents differing only in object key order and in the order of identity-keyed sets (not a type's `fields` or `supertypes` or an operation's `params`, which are ordered sequences) have the same `fingerprintIr`; two differing in any semantic value, or only in the order of a type's `fields`, `supertypes` or an operation's `params`, do not. | Property |
+| FR-050-AC-7 | Two documents differing only in object key order and in the order of identity-keyed sets (not a type's `fields` or `supertypes` or an operation's `params`, which are ordered sequences) have equal normalized bytes; two differing in any semantic value, or only in the order of a type's `fields`, `supertypes` or an operation's `params`, do not. | Property |
 | FR-050-AC-8 | An emitted document that fails validation is not written, and the failure is a blocking diagnostic naming the failing pointer. | Test |
 | FR-050-AC-9 | A document whose alias chain is cyclic, one whose composite relationships are cyclic, one exceeding `maxNodes`, and one exceeding `maxDepth` each produce a diagnostic and terminate. | Test |
 | FR-050-AC-10 | `INVALID_IR` diagnostics name the failing instance pointer, verified against a hand-computed pointer for a malformed fixture. | Test |

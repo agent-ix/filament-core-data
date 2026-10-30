@@ -31,7 +31,7 @@ code by the same three verbs.
 
 ## Inputs
 
-- `compile --package <dir> [--package-path <dir>]... [--profile <name>] [--lock <file>] [--write-lock <file>] --out <file> [--diagnostics <file>] [--dialect <dialect>] [--limits <file>]`
+- `compile --package <dir> [--package-path <dir>]... [--profile <name>] --out <file> [--diagnostics <file>] [--dialect <dialect>] [--limits <file>]`
 - `inspect --ir <file> [--json] [--package <dir>]`
 - `diff --old <ir> --new <ir> --out <file> [--old-profile <file>] [--new-profile <file>] [--consumer-policy <file>]... [--consumer-evidence <status>] [--target-result <target>=<disposition>]...`
 - A `--limits` file valid against `schema/semantic/v1/compiler-request.schema.json#/properties/limits`
@@ -41,7 +41,7 @@ code by the same three verbs.
 - The extended `src/compiler/cli.mjs`
 - `src/compiler/pipeline.mjs`: `compilePackage(request)`, the orchestration behind the `compile` verb
 - `src/compiler/inspect.mjs`: `inspectIr(document, { importedExports })`, `formatInspection(summary)`, and `inspectionJson(summary)`
-- An extended `src/compiler/index.mjs` narrow interface, adding `runFrontend`, `compilePackage`, `readContractIr`, `normalizeIr`, `fingerprintIr`, `inspectIr`, `diffSemanticContract`, `readIrAsContract`, and `CONTRACT_IR_VERSION`
+- An extended `src/compiler/index.mjs` narrow interface, adding `runFrontend`, `compilePackage`, `readContractIr`, `normalizeIr`, `inspectIr`, `diffSemanticContract`, `readIrAsContract`, and `CONTRACT_IR_VERSION`
 - An extended `src/compiler/index.d.mts` declaring every added symbol
 - `make compiler-compile`, `make compiler-inspect`, and `make compiler-diff` targets
 
@@ -49,9 +49,9 @@ code by the same three verbs.
 
 ### The pipeline
 
-- `compilePackage` SHALL run five phases in this order: resolve the package graph (FR-047); build the lock and, where one is supplied, verify it (FR-048); run the selected frontend through the seam (FR-045); validate the emitted document (FR-050); write the outputs.
+- `compilePackage` SHALL run five phases in this order: resolve the package graph (FR-047); canonicalize the resolved package data (FR-048); run the selected frontend through the seam (FR-045); validate the emitted document (FR-050); write the outputs.
 - If a phase produces a blocking diagnostic, then `compilePackage` SHALL stop before the next phase and return the diagnostics accumulated so far.
-- `compilePackage` SHALL return `{ ir, lock, diagnostics, state }`, where `state` is a `resultState` of `common.schema.json` and `ir` is `null` whenever any diagnostic is blocking.
+- `compilePackage` SHALL return `{ ir, diagnostics, state }`, where `state` is a `resultState` of `common.schema.json` and `ir` is `null` whenever any diagnostic is blocking.
 - `compilePackage` SHALL live in `src/compiler/pipeline.mjs`, not in the frozen `src/compiler/compile.mjs`.
 
 ### The commands
@@ -63,10 +63,8 @@ code by the same three verbs.
 - `compile` SHALL write sorted diagnostics as a JSON array to `--diagnostics` when given, and to standard error as one line per diagnostic otherwise.
 - `compile` SHALL default `--dialect` to `typespec` and `--profile` to the manifest's single profile.
 - If the manifest declares more than one profile and the caller names none, then `compile` SHALL raise `agent-ix.compiler.AMBIGUOUS_PROFILE`.
-- `compile` SHALL write a lock to `--write-lock` only when that flag is given.
-- `compile` SHALL NOT modify the file named by `--lock`.
 - `compile` SHALL apply `DEFAULT_LIMITS` where `--limits` is absent, and the file's values where it is present.
-- `inspect` SHALL print a deterministic summary — contract version, package identity and version, source dialect, IR fingerprint, and per-kind type counts, followed by one line per type giving identity, kind, and the counts of its fields, constraints, relationships, operations, and clauses — sorted by identity.
+- `inspect` SHALL print a deterministic summary — contract version, package identity and version, source dialect and per-kind type counts, followed by one line per type giving identity, kind, and the counts of its fields, constraints, relationships, operations, and clauses — sorted by identity.
 - `inspect --json` SHALL print the same record as canonical JSON.
 - `inspect` SHALL pass `importedExports` from `--package` where given, and the marker `unknown` otherwise, and SHALL print the suppressions the reader reports.
 - `inspect` SHALL report a document's reader diagnostics rather than failing silently on an invalid document.
@@ -93,8 +91,6 @@ code by the same three verbs.
 | FR-052-AC-1 | `emit-ir` over the spike entrypoint reproduces the committed golden `spikes/typespec-feasibility/generated/custom/semantic-ir.json` byte for byte. | Snapshot |
 | FR-052-AC-2 | `compile` over the fixture package writes a valid `2.0.0` document and exits `0`; running it twice produces identical IR and diagnostic bytes. | Integration |
 | FR-052-AC-3 | `compile` over a fixture with a blocking defect exits `1`, leaves a fresh `--out` absent, leaves a pre-existing `--out` byte-unchanged, and writes the sorted diagnostics to `--diagnostics`. | Integration |
-| FR-052-AC-4 | `compile` with `--lock` pointing at a stale lock exits `1` and leaves the lock file byte-unchanged. | Integration |
-| FR-052-AC-5 | `compile --write-lock` produces a lock validating against its schema; omitting the flag writes no lock. | Integration |
 | FR-052-AC-6 | A manifest with two profiles and no `--profile` yields `AMBIGUOUS_PROFILE` and exit `1`. | Unit |
 | FR-052-AC-7 | `inspect` output is byte-identical across two runs and lists every type sorted by identity with its five node counts. | Snapshot |
 | FR-052-AC-8 | `inspect --json` output parses, is canonical, and carries the same values as the text form. | Unit |
@@ -104,8 +100,12 @@ code by the same three verbs.
 | FR-052-AC-12 | The narrow interface declares fifteen symbols that `tsc --noEmit` checks, and a deliberate drift between `index.d.mts` and `index.mjs` fails the typecheck. | Compile |
 | FR-052-AC-13 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-unchanged from `origin/main`, and no dependency was added. | Analysis |
 | FR-052-AC-14 | A compile with every environment variable cleared but `PATH` produces identical output. | Integration |
-| FR-052-AC-15 | `compilePackage` runs its five phases in the declared order and stops at the first blocking phase, asserted by an instrumented phase recorder. | Unit |
+| FR-052-AC-15 | `compilePackage` runs its five phases in the declared order and stops at the first blocking phase, asserted by an instrumented phase recorder; `compiler-request.schema.json` has no `lockFingerprint` required or property member and refuses a request carrying it. | Unit |
 | FR-052-AC-16 | Every path the CLI creates during a fixture compile is a caller-named path or its `.tmp` sibling. | Integration |
+
+## PLAT-1205 retirement
+
+`FR-052-AC-4` and `FR-052-AC-5` are retired with `--lock`, `--write-lock`, and digest-keyed lock verification. A package graph is resolved and canonicalized in memory; Cargo.lock remains the repository dependency lock.
 
 ## Dependencies
 
