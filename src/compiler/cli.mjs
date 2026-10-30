@@ -198,9 +198,7 @@ async function compile(options) {
 			packageRoot,
 			...searchPath,
 			REPO_ROOT,
-			...[options.limits]
-				.filter(Boolean)
-				.map((path) => dirname(resolve(path))),
+			...[options.limits].filter(Boolean).map((path) => dirname(resolve(path))),
 		],
 	});
 	const result = await compilePackage({

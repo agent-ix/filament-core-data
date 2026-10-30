@@ -1705,12 +1705,26 @@ describe("TC-834..844 TypeScript backend non-disruption", () => {
 	// `files` allowlist, so `npm pack` sweeps the whole tree — `test/fixtures/`
 	// and `generated/` included — and the case could only fail (#226).
 
-	/** Part of TC-842 (NFR-025-AC-5). */
-	it("keeps the narrow compiler surface at fourteen exports", () => {
+	/** Trace: TC-842, NFR-025-AC-5. */
+	it("keeps the exact thirteen-symbol compiler surface", () => {
 		const names = exportedCompilerSymbols(
 			readFileSync(resolve(root, "src/compiler/index.mjs"), "utf8"),
 		);
-		expect(names).toHaveLength(14);
+		expect(names).toEqual([
+			"CONTRACT_IR_VERSION",
+			"SEMANTIC_IR_SCHEMA_VERSION",
+			"buildSemanticIr",
+			"compilePackage",
+			"compileSemanticIr",
+			"diffSemanticContract",
+			"emitRust",
+			"emitTypeScript",
+			"inspectIr",
+			"normalizeIr",
+			"normalizeJsonSchemaForPython",
+			"readContractIr",
+			"runFrontend",
+		]);
 		expect(
 			exportedCompilerSymbols('export { one, two } from "./x.mjs";'),
 		).toHaveLength(2);

@@ -6,13 +6,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 257,
-			"validatingTypes": 186,
-			"nonValidatingDeclarations": 71,
-			"exercisedTypes": 75,
+			"declaredTypes": 252,
+			"validatingTypes": 183,
+			"nonValidatingDeclarations": 69,
+			"exercisedTypes": 72,
 			"unexercisedValidatingTypes": 111,
-			"constraintsExercised": 308,
-			"typesRejectingAnEmptyOrUndeclaredValue": 139,
+			"constraintsExercised": 302,
+			"typesRejectingAnEmptyOrUndeclaredValue": 136,
 			"typesAcceptingAnything": [
 				"common_schema.FilamentSemanticContractCommonTypesV1",
 				"common_schema.ManifestTarget",
@@ -566,30 +566,6 @@
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 3
-				},
-				{
-					"module": "package_lock_schema",
-					"type": "Canonicalization",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 4
-				},
-				{
-					"module": "package_lock_schema",
-					"type": "FilamentSemanticPackageLockV1",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 2
-				},
-				{
-					"module": "package_lock_schema",
-					"type": "Package",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
 				},
 				{
 					"module": "package_manifest_schema",
@@ -1466,13 +1442,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 261,
-			"validatingTypes": 141,
-			"nonValidatingDeclarations": 120,
-			"exercisedTypes": 75,
+			"declaredTypes": 256,
+			"validatingTypes": 138,
+			"nonValidatingDeclarations": 118,
+			"exercisedTypes": 72,
 			"unexercisedValidatingTypes": 66,
-			"constraintsExercised": 303,
-			"typesRejectingAnEmptyOrUndeclaredValue": 138,
+			"constraintsExercised": 297,
+			"typesRejectingAnEmptyOrUndeclaredValue": 135,
 			"typesAcceptingAnything": [
 				"module_manifest_schema.Defaults",
 				"module_manifest_schema.LintRuleEntry",
@@ -1818,30 +1794,6 @@
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 3
-				},
-				{
-					"module": "package_lock_schema",
-					"type": "Canonicalization",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 4
-				},
-				{
-					"module": "package_lock_schema",
-					"type": "FilamentSemanticPackageLockV1",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 2
-				},
-				{
-					"module": "package_lock_schema",
-					"type": "Package",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
 				},
 				{
 					"module": "package_manifest_schema",
@@ -2650,13 +2602,13 @@
 			"verdict": "qualified-with-conditions",
 			"runtimeValidation": "validating",
 			"coverage": "runtime",
-			"declaredTypes": 261,
-			"validatingTypes": 141,
-			"nonValidatingDeclarations": 120,
-			"exercisedTypes": 63,
+			"declaredTypes": 256,
+			"validatingTypes": 138,
+			"nonValidatingDeclarations": 118,
+			"exercisedTypes": 60,
 			"unexercisedValidatingTypes": 78,
-			"constraintsExercised": 222,
-			"typesRejectingAnEmptyOrUndeclaredValue": 97,
+			"constraintsExercised": 216,
+			"typesRejectingAnEmptyOrUndeclaredValue": 94,
 			"typesAcceptingAnything": [
 				"module_manifest_schema.Defaults",
 				"module_manifest_schema.LintRuleEntry",
@@ -3044,30 +2996,6 @@
 					"acceptsAConformingValue": true,
 					"rejectsUndeclaredOrIncomplete": true,
 					"constraintsOnThisType": 3
-				},
-				{
-					"module": "package_lock_schema",
-					"type": "Canonicalization",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 4
-				},
-				{
-					"module": "package_lock_schema",
-					"type": "FilamentSemanticPackageLockV1",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 2
-				},
-				{
-					"module": "package_lock_schema",
-					"type": "Package",
-					"exercised": true,
-					"acceptsAConformingValue": true,
-					"rejectsUndeclaredOrIncomplete": true,
-					"constraintsOnThisType": 0
 				},
 				{
 					"module": "package_manifest_schema",

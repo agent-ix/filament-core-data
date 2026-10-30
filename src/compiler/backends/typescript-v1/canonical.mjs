@@ -28,7 +28,6 @@
  * `canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" }`.
  */
 
-
 /**
  * The container paths whose members are a *set* — ordered by their members'
  * identity rather than by position — declared once, as data, so that a

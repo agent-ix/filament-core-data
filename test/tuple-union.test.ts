@@ -7,10 +7,7 @@ import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
 import { generateTarget } from "../src/compiler/backends/seam.mjs";
 import { diffSemanticContract } from "../src/compiler/compat/diff.mjs";
 import { createHost } from "../src/compiler/host.mjs";
-import {
-	IDENTITY_SETS,
-	normalizeIr,
-} from "../src/compiler/ir/normalize.mjs";
+import { IDENTITY_SETS, normalizeIr } from "../src/compiler/ir/normalize.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
 import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
 import { readSemanticIr } from "./semantic-ir-v1-1-reader.js";
