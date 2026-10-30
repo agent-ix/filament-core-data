@@ -115,7 +115,7 @@ artefacts rather than asserted in a pull-request description.
 | FR-051-AC-2 | Every family the report schema declares is produced by at least one such case, every observed family in the case index maps to a declared report family through `family-map.json`, and constructed FR-146 dimension, unit-definition and dimension-equivalence graph pairs exercise the three map entries to `type`/`semantic`; the distinct FR-027 field observation `unit` maps to `field`/`semantic`. Additions, removals, graph-specific identity changes and unchanged-identity member changes yield the entries and dispositions the classification rules specify. | Test |
 | FR-051-AC-3 | The `target-disagreement` case yields the most restrictive of its `targetResults`. | Test |
 | FR-051-AC-4 | A diff run with no profile, mapping, reservation, or target-result inputs omits the `profile`, `authority`, `mapping`, `protobuf-reservation`, and `generated-api` families and names them in `requiredGates`. | Test |
-| FR-051-AC-5 | Every produced report validates against `compatibility-report.schema.json`. | Test |
+| FR-051-AC-5 | Every produced report validates against `compatibility-report.schema.json`, whose required and property sets omit `oldFingerprint` and `newFingerprint`; reports carrying either member are refused. | Test |
 | FR-051-AC-6 | Diffing a document against itself yields one `patch` change identified by `source.identity` and an aggregate of `patch`. | Test |
 | FR-051-AC-11 | Two runs of the diff over the same inputs produce byte-identical reports. | Snapshot |
 | FR-051-AC-15 | A revision that removes a member, retypes a member, or narrows a closed vocabulary is classified `breaking`; one that adds an optional member or widens a vocabulary is not. | Test |

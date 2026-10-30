@@ -100,7 +100,7 @@ code by the same three verbs.
 | FR-052-AC-12 | The narrow interface declares fifteen symbols that `tsc --noEmit` checks, and a deliberate drift between `index.d.mts` and `index.mjs` fails the typecheck. | Compile |
 | FR-052-AC-13 | `package.json` `exports`, `main`, `module`, `types`, and `files` are byte-unchanged from `origin/main`, and no dependency was added. | Analysis |
 | FR-052-AC-14 | A compile with every environment variable cleared but `PATH` produces identical output. | Integration |
-| FR-052-AC-15 | `compilePackage` runs its five phases in the declared order and stops at the first blocking phase, asserted by an instrumented phase recorder. | Unit |
+| FR-052-AC-15 | `compilePackage` runs its five phases in the declared order and stops at the first blocking phase, asserted by an instrumented phase recorder; `compiler-request.schema.json` has no `lockFingerprint` required or property member and refuses a request carrying it. | Unit |
 | FR-052-AC-16 | Every path the CLI creates during a fixture compile is a caller-named path or its `.tmp` sibling. | Integration |
 
 ## PLAT-1205 retirement

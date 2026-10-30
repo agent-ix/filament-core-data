@@ -52,7 +52,7 @@ Canonicalization reads nothing from admissibility: it takes a JSON value and
 returns bytes, and it is defined for a document `admitIr` would refuse. So
 [FR-068](./FR-068-decide-and-report-ir-admissibility.md) and this requirement do
 not form a dependency cycle, and `canonical.mjs` can be built and measured
-against all 115 corpus `normalized` strings before `admit.mjs` exists.
+against all 114 corpus `normalized` strings before `admit.mjs` exists.
 Classification is the half that depends on admissibility, and only for the
 `invalid` arm.
 
@@ -199,17 +199,16 @@ Classification is the half that depends on admissibility, and only for the
 | ID | Constraint | Type | Validation |
 |---|---|---|---|
 | FR-069-CON-1 | The canonical form and the classifier are deliberately second implementations beside the compiler's; neither SHALL import the compiler's normalization, canonicalization, or diff module, so agreement between them is evidence rather than a tautology. | Correctness | Static analysis |
-| FR-069-CON-2 | `canonical.mjs` SHALL declare `IDENTITY_SET_PATHS` as data in one place, so a fourteenth container path is a data edit that a test can see rather than a scattered code change. | Maintainability | Test |
 | FR-069-CON-4 | `classifySurface` SHALL NOT read the clock, so a report is a function of the two documents alone. | Determinism | Static analysis |
 | FR-069-CON-5 | The backend implementation SHALL NOT change a byte of `schema/semantic/v1/**` or `docs/semantic-data-system/**`; contract changes are authored by the owning specification requirement. | Non-disruption | Change-set diff |
-| FR-069-CON-6 | `canonical.mjs` SHALL declare `IDENTITY_SET_PATHS`, the key-ordering rule, and the selected algorithm label as data in one module, so a later contract revision is a data edit rather than a rewrite of every rule that reads them. | Maintainability | Test |
+| FR-069-CON-6 | `canonical.mjs` SHALL declare the RFC 8785 key-ordering rule and `rfc8785-v1` algorithm label in one module. | Maintainability | Test |
 | FR-069-CON-7 | `MODELLED_CHANGES` SHALL NOT be narrowed to make a corpus case agree; a rule the backend models and the oracle does not is reported as a divergence for the owner. | Integrity | Test |
 
 ## Acceptance Criteria
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-069-AC-1 | With `sets: true` (explicitly and by default), two documents differing only in object key order and permutations of each of the eleven declared identity-keyed containers canonicalize to identical bytes; reversing each of `fields`, `supertypes`, and `params` separately changes the canonical bytes. With `sets: false`, every array retains input order. | Property |
+| FR-069-AC-1 | Two documents differing only in object key order canonicalize to identical bytes; permuting any array, including `types` and `extensions`, whose members differ changes the canonical bytes. | Property |
 | FR-069-AC-2 | Two documents differing in any semantic value or in the order of an ordered sequence canonicalize to different bytes; permuting object keys leaves normalized bytes unchanged. Identity-set order in the source remains visible in corpus-normalized bytes. | Test |
 | FR-069-AC-3 | `normalizeIrForTarget(normalizeIrForTarget(d))` equals `normalizeIrForTarget(d)` for every positive fixture and for every corpus case input. | Property |
 | FR-069-AC-4 | Any document's field gains a literal `nullable` and no other member, gated on no field of the document including `contractVersion`; `normalizeIrForTarget` never derives `multiplicity` from `presence` or `presence` from `multiplicity`; and `nullable` materializes `true` for the input `true`, and `false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member. | Unit |
@@ -224,7 +223,7 @@ Classification is the half that depends on admissibility, and only for the
 | FR-069-AC-13 | The twenty-four `kind: "compatibility"` cases of the conformance corpus receive the classification the oracle records for them, and a divergence is reported rather than absorbed. | Integration |
 | FR-069-AC-14 | `canonical.mjs` and `classify.mjs` contain no import of the compiler's normalization, canonicalization, or diff modules, and none of any module under `conformance/`. | Static |
 | FR-069-AC-15 | `pnpm-lock.yaml` gains no entry from this requirement, and neither module imports a package outside the Node standard library. | Analysis |
-| FR-069-AC-22 | `normalizeIrForTarget` reproduces the oracle's `normalized` string byte for byte for all 115 corpus cases, measured with no admissibility answer computed. | Snapshot |
+| FR-069-AC-22 | `normalizeIrForTarget` reproduces the oracle's `normalized` string byte for byte for all 114 corpus cases, measured with no admissibility answer computed. | Snapshot |
 | FR-069-AC-17 | A removed field, an added required field, a removed variant, and a removed relationship each classify `breaking`; an added optional field classifies `conditional` with no consumer policy; and an added variant classifies `additive` under a policy admitting unknown members, `breaking` with no policy under the `contract` setting of `VARIANT_ADDITION_POLICY`, and `conditional` with no policy under its default `corpus` setting. | Unit |
 | FR-069-AC-25 | `VARIANT_ADDITION_POLICY` is the only place in the backend that decides how a variant addition with no consumer policy classifies; under `contract` an added variant classifies `breaking` with no policy and `additive` under a policy admitting unknown members; and flipping it changes the answer for the corpus cases `ENUM-004` and `UNION-004` and for no other case. | Static |
 | FR-069-AC-19 | `MODELLED_CHANGES` is exported as data, and a rule stated in this requirement but absent from that list fails the module's own contract test. | Test |
@@ -233,7 +232,7 @@ Classification is the half that depends on admissibility, and only for the
 
 ## PLAT-1205 retirement
 
-`FR-069-CON-3`, `FR-069-AC-16`, `FR-069-AC-23`, and `FR-069-AC-26` are retired with the generated/CLI IR fingerprint and its identity-sorted-set digest vectors. No separate failure was identified that those values detect beyond direct comparison of the normalized bytes, while they duplicate the document in another representation.
+`FR-069-CON-2`, `FR-069-CON-3`, `FR-069-AC-16`, `FR-069-AC-23`, and `FR-069-AC-26` are retired with the generated/CLI IR fingerprint and its identity-sorted-set digest vectors. No separate failure was identified that those values detect beyond direct comparison of the normalized bytes, while they duplicate the document in another representation.
 
 ## Dependencies
 

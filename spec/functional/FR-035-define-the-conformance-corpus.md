@@ -43,7 +43,7 @@ the contract clause it was derived from.
 ## Behavior
 
 - An input bundle SHALL carry `ir`, a semantic IR document.
-- An input bundle SHALL admit the optional members `manifest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, each validated against its published v1 schema, so that a case can state a package, mapping, or consumer-policy fact that no IR document carries. The closed bundle schema SHALL reject `manifestDigest`.
+- An input bundle SHALL admit the optional members `manifest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, each validated against its published v1 schema, so that a case can state a package, mapping, or consumer-policy fact that no IR document carries. The closed bundle schema SHALL reject `manifestDigest`. The optional `lock` is a conformance-only graph fixture supplying selected package identities, versions, exports, and dependency edges to cross-field cases; it is not a compiler input, generated lock, or freshness proof. Its schema remains published solely for these conformance fixtures.
 - `conformance/schema/input-bundle.schema.json` SHALL compose the published schemas by reference.
 - `conformance/schema/input-bundle.schema.json` SHALL redefine no field a published schema already defines.
 - A case file SHALL carry `id`, `title`, `family`, `class` (`positive`, `negative`, `boundary`, or `evolution`), `kind` (`document` or `compatibility`), `contractVersion`, `base`, `ops`, `covers`, `decidedBy` (`schema`, `cross-field`, or `compatibility`), `derivedFrom`, `provenance`, and `expected`.
@@ -79,7 +79,7 @@ the contract clause it was derived from.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-035-AC-1 | Every case file validates against `corpus-case.schema.json`, every base against `input-bundle.schema.json`, and `corpus.json` against `corpus-manifest.schema.json`. | Test |
+| FR-035-AC-1 | Every case file validates against `corpus-case.schema.json`, every base against `input-bundle.schema.json`, and `corpus.json` against `corpus-manifest.schema.json`; the optional conformance-only `lock` validates against `package-lock.schema.json` and is never passed as a compiler lock or digest oracle. | Test |
 | FR-035-AC-2 | Every base bundle validates against the published schemas it composes and yields zero oracle diagnostics. | Test |
 | FR-035-AC-3 | Every case carries at least one `derivedFrom` entry whose `artifact` path exists and whose `quote` occurs verbatim in that artifact; a quote that no longer occurs fails the gate. | Test |
 | FR-035-AC-5 | No case sets `provenance.blessedFromRun` to `true`. | Test |

@@ -61,7 +61,7 @@ author.
   `rustfmt.toml`, and `.cargo/config.toml` at the repository root
 - A `command` and `status` on the registry's `rust-backend` slot
 - The regenerated `conformance/coverage.json`, whose `rust-backend` row and
-  `unmetCases` total move from 115 unmet to 115 matched. That file is not a
+  `unmetCases` total move from 114 unmet to 114 matched. That file is not a
   yardstick: `conformance/README.md` declares it generated on every run and
   never hand-edited, and FR-039 makes it a report *about* the adapters. Filling
   the slot the corpus declares is what moves it, so leaving it stale would
@@ -198,7 +198,7 @@ author.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-059-AC-1 | `make rust-conformance` runs the `rust-backend` adapter as a process against the committed registry and reports 115 matched, 0 unmet, 0 failed, with the harness exit code 0. | Test (TC-698) |
+| FR-059-AC-1 | `make rust-conformance` runs the `rust-backend` adapter as a process against the committed registry and reports 114 matched, 0 unmet, 0 failed, with the harness exit code 0. | Test (TC-698) |
 | FR-059-AC-2 | The adapter emits exactly one schema-valid adapter-result per manifest case; omitting one case is reported as `missing-answer`, and answering one twice as `duplicate-answer`. | Test (TC-699) |
 | FR-059-AC-3 | The adapter's `normalized` string is byte-identical to the oracle's for every case, including the ones the schema layer decides invalid. | Test (TC-700) |
 | FR-059-AC-4 | The adapter's diagnostic codes and severities equal the oracle's, in order, for every negative and boundary case. | Test (TC-701) |

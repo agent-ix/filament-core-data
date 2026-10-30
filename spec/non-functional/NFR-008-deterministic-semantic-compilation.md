@@ -39,9 +39,9 @@ published APIs.
 
 ## Verification
 
-Run the same locked conformance corpus twice in isolated directories with varied
+Run the same conformance corpus twice in isolated directories with varied
 locale, working path, and process ordering; compare canonical file inventories,
-content digests, diagnostics, and package manifests.
+canonical file bytes, diagnostics, and package manifests.
 
 ## Dependencies
 

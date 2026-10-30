@@ -61,7 +61,7 @@ package lock, content digest, or fingerprint.
 |---|---|---|
 | FR-048-AC-1 | `canonicalize` reproduces every string, number, and key-order vector in `test/fixtures/compiler/rfc8785/vectors.json`. | Test |
 | FR-048-AC-2 | Permuting object keys or a declared identity set, changing working directory, or changing host locale leaves canonical graph bytes unchanged; changing an ordered sequence changes them. | Property |
-| FR-048-AC-3 | Changing an import, export, selected package version, profile selection, or contract version changes the canonical resolved graph where that fact is represented. | Property |
+| FR-048-AC-3 | Changing an import changes that package entry's `imports`; changing an export changes its `exports`; changing a selected package version changes its `version`; changing profile selection changes the graph's selected `profile`; and changing compiler contract version changes the graph's `contractVersion`. Each change alters the canonical resolved-graph bytes while unchanged inputs leave those bytes equal. | Property |
 | FR-048-AC-4 | The resolved graph contains every selected package exactly once and names its selected version and dependencies in identity order. | Test |
 | FR-048-AC-6 | Package resolution does not create or rewrite a second lock file. | Test |
 | FR-048-AC-7 | Two resolutions of the same graph produce identical canonical bytes. | Test |

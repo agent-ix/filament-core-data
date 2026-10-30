@@ -172,9 +172,8 @@ following, and a disagreement on any one is a disagreement:
   `multiplicity` including `ordered` and `unique`, and its target identity —
   SHALL be read and written identically across the four.
 
-- Comparison SHALL be under `rfc8785-v1` and SHALL NOT claim to be under
-  `RFC8785-JCS-with-identity-sorted-sets-v1`; the two forms have separate
-  byte-domain definitions under [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md).
+- Comparison SHALL be under the `rfc8785-v1` normalized-document byte form
+  defined by [FR-145](./FR-145-name-the-normalized-ir-canonicalization.md).
 - Byte identity SHALL be asserted only where a package retained the source
   bytes, following the retained-bytes rule
   [FR-061](./FR-061-consume-the-generated-crate.md) states; everywhere else the

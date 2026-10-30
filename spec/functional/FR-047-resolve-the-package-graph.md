@@ -104,7 +104,6 @@ diagnostic at the manifest position that declared it.
 |---|---|---|
 | FR-047-AC-1 | The concrete tree for the `order-independent` case resolves to the same ordered result under both permutations named in the case index. | Property |
 | FR-047-AC-2 | The `version-conflict` tree yields exactly one `IMPORT_VERSION_CONFLICT` naming both requiring loci. | Test |
-
 | FR-047-AC-4 | The `package-cycle` tree yields exactly one `PACKAGE_CYCLE` naming both import loci and starting at the least package identity, and entering the graph from either package produces the identical message. | Test |
 | FR-047-AC-5 | The `recursive-type-is-not-package-cycle` tree resolves successfully and emits no cycle diagnostic. | Test |
 | FR-047-AC-6 | A manifest failing its schema yields one `INVALID_MANIFEST` per schema error, each at the line and column of the failing pointer's key, verified against hand-computed positions; a mapping and a profile do the same with their own codes. | Test |

@@ -123,18 +123,22 @@ not.
 
 - Five of the rules above read `manifest`, `lock`, `mappings`, or `consumerPolicy`, and `conformance/schema/input-bundle.schema.json` requires none of them, so a bundle carrying only `ir` cannot decide them.
 
+- Where a rule's declared input is absent from the bundle, `admitIr` SHALL record a suppression naming the rule and the missing input, and SHALL emit no diagnostic for that rule.
+- `admitIr` SHALL NOT decide a rule whose input is absent by assuming a value for that input, because a guess that happens to agree is indistinguishable from a decision that was made.
+- `admitIr` SHALL NOT drop a suppression silently, so that a rule which never ran is visible rather than being reported as a rule that passed.
+- The suppressions channel SHALL be separate from `diagnostics`, so that a suppression contributes nothing to `resultState` and nothing to the adapter's comparison with the oracle.
+- This mirrors the `suppressions` channel `src/compiler/ir/reader.mjs` already carries, and the shape is copied deliberately while the implementation is not.
+
 ### PLAT-1205 retirement
 
 The `STALE_LOCK` cross-field rule and its diagnostic are retired. It compared a
 manifest digest and a lock fingerprint, which constituted the second,
 digest-keyed lock-staleness check retired by PLAT-1205. The remaining package
 context rules still decide identities, imports, exports, and graph cycles from
-their actual bundle members.
-- Where a rule's declared input is absent from the bundle, `admitIr` SHALL record a suppression naming the rule and the missing input, and SHALL emit no diagnostic for that rule.
-- `admitIr` SHALL NOT decide a rule whose input is absent by assuming a value for that input, because a guess that happens to agree is indistinguishable from a decision that was made.
-- `admitIr` SHALL NOT drop a suppression silently, so that a rule which never ran is visible rather than being reported as a rule that passed.
-- The suppressions channel SHALL be separate from `diagnostics`, so that a suppression contributes nothing to `resultState` and nothing to the adapter's comparison with the oracle.
-- This mirrors the `suppressions` channel `src/compiler/ir/reader.mjs` already carries, and the shape is copied deliberately while the implementation is not.
+their actual bundle members. Remove the `STALE_LOCK` code from
+`conformance/diagnostic-codes.json`, its derivation-ledger entry, and the
+`PKG-006` case and case file from the corpus. Recalculate published case counts
+and adapter expectations from the remaining case index.
 
 ### Severity, locus, and owner
 
