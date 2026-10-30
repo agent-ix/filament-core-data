@@ -25,9 +25,7 @@ relationships:
 The normalized Semantic IR document SHALL identify the canonicalization that
 produced its bytes, so a reader knows how to compare normalized documents
 without inferring an algorithm from member order. The descriptor is
-`{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}` under the published
-`2.0.0` wire. Its `digest` member is an algorithm-domain label, not a digest
-value or a requirement to emit a digest sidecar. The writer SHALL emit no
+`{"algorithm":"rfc8785-v1"}` under the published `2.0.0` wire. The writer SHALL emit no
 sidecar or computed digest as a substitute for direct normalized-byte comparison.
 
 `rfc8785-v1` names RFC 8785 JSON Canonicalization Scheme: UTF-16 code-unit
@@ -45,23 +43,24 @@ itself preserves the resulting arrays.
 ## Outputs
 
 - A normalized Semantic IR document carrying the exact
-  `canonicalization: {"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`
+  `canonicalization: {"algorithm":"rfc8785-v1"}`
   descriptor
 - Canonical bytes in the `rfc8785-v1` domain
 
 ## Behavior
 
-- The normalizer SHALL materialize the exact two-member descriptor
-  `{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}` before schema
+- The normalizer SHALL materialize the exact one-member descriptor
+  `{"algorithm":"rfc8785-v1"}` before schema
   validation and publication.
 - The published `semantic-ir.schema.json` SHALL require and validate that
   descriptor; a pre-normalization authoring value that omits it is not admitted
   as a normalized document.
 - A reader SHALL accept a normalized document only when its canonicalization
-  descriptor is present, has exactly the `algorithm` and `digest` members, and
-  names `rfc8785-v1` and `sha256-jcs`, respectively.
-- A reader SHALL produce a located refusal for an unknown, missing, or extra
-  canonicalization descriptor member.
+  descriptor is present, has exactly the `algorithm` member, and names
+  `rfc8785-v1`.
+- A reader SHALL produce a located refusal when the descriptor is absent, its
+  `algorithm` member is absent or unknown, or it carries `digest` or any other
+  extra member.
 - The normalizer SHALL encode object member names using RFC 8785 UTF-16
   code-unit ordering.
 - The normalizer SHALL preserve JSON array order while encoding the normalized
@@ -78,11 +77,14 @@ itself preserves the resulting arrays.
   the implementation SHALL not substitute Unicode scalar-value ordering.
 - The shared golden at
   `test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json` SHALL
-  include a supplementary-plane member name and record `algorithm`, `digest`,
-  `expectedBytes` together. The FCD semantic
+  include a supplementary-plane member name, record `algorithm` and
+  `expectedBytes` together, and contain no `digest` member. The FCD semantic
   positive fixture is
-  `fixtures/semantic/v1/positive/semantic-ir-v1-1.json`; its refusal mutations are the four `ir-canonicalization-*` cases in
-  `fixtures/semantic/v1/negative/cases.json`.
+  `fixtures/semantic/v1/positive/semantic-ir-v1-1.json`; its five refusal
+  mutations in `fixtures/semantic/v1/negative/cases.json` SHALL cover an
+  unknown algorithm, an absent algorithm, an absent descriptor, `digest`, and
+  another extra member. The obsolete `ir-canonicalization-missing-digest`
+  case SHALL be replaced by `ir-canonicalization-missing-algorithm`.
 
 ## Constraints
 
@@ -94,15 +96,15 @@ itself preserves the resulting arrays.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-145-AC-1 | One FCD contract document names `rfc8785-v1` as the canonicalization carried by a normalized Semantic IR document. | Inspection |
-| FR-145-AC-2 | A normalized document contains exactly `{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}` in its canonicalization descriptor; a missing, unknown, or extra descriptor member is refused with a located diagnostic. The published schema and reader contract accept the exact descriptor and reject each mutation. | Test |
-| FR-145-AC-3 | `test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json` contains both U+10000 and U+E000 member names and records the expected RFC 8785 JCS UTF-16 canonical bytes; the extraction frontend and Semantic IR reader consume the same vector and emit no digest sidecar. | Test |
+| FR-145-AC-1 | An FCD contract document and `conformance/README.md` name `rfc8785-v1` as the canonicalization carried by a normalized Semantic IR document and publish the exact one-member descriptor. | Inspection |
+| FR-145-AC-2 | A normalized document contains exactly `{"algorithm":"rfc8785-v1"}` in its canonicalization descriptor; a missing descriptor, missing or unknown algorithm, `digest`, or any other extra descriptor member is refused with a located diagnostic. The published schema and reader contract accept the exact descriptor and reject each mutation. | Test |
+| FR-145-AC-3 | `test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json` contains both U+10000 and U+E000 member names and records the expected RFC 8785 JCS UTF-16 canonical bytes with no `digest` member; the extraction frontend and Semantic IR reader consume the same vector and emit no digest sidecar. | Test |
 | FR-145-AC-4 | Reordering object members does not change normalized bytes, while changing a semantic value does; array order remains authored and no identity-sorted-set extension is applied to normalized bytes. | Property |
 | FR-145-AC-7 | The FCD semantic reader consumes the shared golden, and extraction frontend tests `TC-1300` and `TC-1301` produce byte-identical normalized output across repeated runs, changed working directories, locales, and target directories. | Integration Test |
 
 ## PLAT-1205 retirement
 
-`FR-145-CON-1`, `FR-145-CON-2`, and `FR-145-AC-5` are retired with the package-lock fingerprint and document digest sidecar. The algorithm-domain label remains part of the existing wire so canonical bytes can be interpreted consistently; it carries no digest value.
+`FR-145-CON-1`, `FR-145-CON-2`, and `FR-145-AC-5` were retired with the package-lock fingerprint and document digest sidecar. PLAT-1205 also retires the `digest` algorithm-domain member from the normalized-document descriptor while preserving `FR-145-AC-2` and its exact-shape and located-refusal obligations. The `algorithm` label remains so canonical bytes can be interpreted consistently.
 
 ## Dependencies
 

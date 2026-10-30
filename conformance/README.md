@@ -76,8 +76,9 @@ change prevents a compatible promotion.
 
 The normalized form is `rfc8785-v1`: RFC 8785 object keys ordered by
 UTF-16 code unit, no insignificant whitespace, and array order preserved.
-Normalized documents carry `{"algorithm":"rfc8785-v1","digest":"sha256-jcs"}`.
-The `digest` member is an existing algorithm-domain label, not a digest value.
+Normalized documents carry exactly `{"algorithm":"rfc8785-v1"}` in their
+`canonicalization` descriptor. A `digest` or any other extra descriptor member
+is refused.
 The supplementary-plane golden and its expected metadata live at
 `test/fixtures/compiler/rfc8785/normalized-supplementary-plane.json`. The corpus publishes no package-lock fingerprint form.
 
