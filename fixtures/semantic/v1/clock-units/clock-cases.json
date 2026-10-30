@@ -4,8 +4,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -71,8 +70,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -143,8 +141,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -215,8 +212,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -288,8 +284,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -361,8 +356,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -437,8 +431,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -510,8 +503,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -600,8 +592,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -667,8 +658,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -796,8 +786,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -841,8 +830,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -942,8 +930,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1080,8 +1067,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1125,8 +1111,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1187,8 +1172,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1232,8 +1216,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1277,8 +1260,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1340,8 +1322,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1465,8 +1446,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1567,8 +1547,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1638,8 +1617,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1709,8 +1687,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1785,8 +1762,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1895,8 +1871,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -1957,8 +1932,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2036,8 +2010,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2115,8 +2088,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2177,8 +2149,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2244,8 +2215,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2329,8 +2299,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2396,8 +2365,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2463,8 +2431,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2530,8 +2497,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2597,8 +2563,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2664,8 +2629,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2709,8 +2673,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2810,8 +2773,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -2942,8 +2904,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3046,8 +3007,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3091,8 +3051,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3136,8 +3095,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3194,8 +3152,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3269,8 +3226,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3319,8 +3275,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3386,8 +3341,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3436,8 +3390,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3486,8 +3439,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3548,8 +3500,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3610,8 +3561,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3689,8 +3639,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3757,8 +3706,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3824,8 +3772,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3891,8 +3838,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -3958,8 +3904,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4025,8 +3970,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4092,8 +4036,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4159,8 +4102,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4264,8 +4206,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4357,8 +4298,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4424,8 +4364,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4529,8 +4468,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4622,8 +4560,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4689,8 +4626,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4794,8 +4730,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4887,8 +4822,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -4954,8 +4888,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5059,8 +4992,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5152,8 +5084,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5219,8 +5150,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5324,8 +5254,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5417,8 +5346,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5489,8 +5417,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5561,8 +5488,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5633,8 +5559,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5705,8 +5630,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5777,8 +5701,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5849,8 +5772,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -5913,8 +5835,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -6016,8 +5937,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -6173,8 +6093,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -6263,8 +6182,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -6389,8 +6307,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -6470,8 +6387,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -6574,8 +6490,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -6677,8 +6592,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -6800,8 +6714,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -6886,8 +6799,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -6989,8 +6901,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -7078,8 +6989,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -7168,8 +7078,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -7258,8 +7167,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -7366,8 +7274,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -7475,8 +7382,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -7584,8 +7490,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -7673,8 +7578,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -7763,8 +7667,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -7853,8 +7756,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -7961,8 +7863,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -8070,8 +7971,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",
@@ -8179,8 +8079,7 @@
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
-				"algorithm": "rfc8785-v1",
-				"digest": "sha256-jcs"
+				"algorithm": "rfc8785-v1"
 			},
 			"source": {
 				"identity": "ix://test/orders/source",

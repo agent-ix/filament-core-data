@@ -887,7 +887,6 @@ def normalize(document: Any) -> str:
     copy_ = copy.deepcopy(document)
     copy_["canonicalization"] = {
         "algorithm": "rfc8785-v1",
-        "digest": "sha256-jcs",
     }
 
     def materialize(field: dict[str, Any]) -> None:

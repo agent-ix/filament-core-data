@@ -34,10 +34,20 @@
 		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
 	},
 	{
-		"id": "ir-canonicalization-missing-digest",
+		"id": "ir-canonicalization-missing-algorithm",
 		"schema": "semantic-ir.schema.json",
 		"base": "positive/semantic-ir-v1-1.json",
-		"remove": "canonicalization.digest",
+		"remove": "canonicalization.algorithm",
+		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
+	},
+	{
+		"id": "ir-canonicalization-digest-present",
+		"schema": "semantic-ir.schema.json",
+		"base": "positive/semantic-ir-v1-1.json",
+		"set": {
+			"path": "canonicalization.digest",
+			"value": "sha256-jcs"
+		},
 		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
 	},
 	{

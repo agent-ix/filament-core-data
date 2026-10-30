@@ -48,7 +48,7 @@ pub fn assemble(
     );
     members.insert(
         "canonicalization".to_string(),
-        serde_json::json!({"algorithm": "rfc8785-v1", "digest": "sha256-jcs"}),
+        serde_json::json!({"algorithm": "rfc8785-v1"}),
     );
     members.insert("source".to_string(), to_value(&envelope.source));
     members.insert("package".to_string(), to_value(&envelope.package));

@@ -26,7 +26,6 @@ class FrontendDialect(Enum):
 
 class NormalizedCanonicalization(Struct):
     algorithm: Literal['rfc8785-v1']
-    digest: Literal['sha256-jcs']
 
 
 type PackageIdentity = Annotated[

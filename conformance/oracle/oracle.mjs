@@ -1052,7 +1052,7 @@ function materializeNullable(definition) {
 export function normalize(ir) {
 	if (!isObject(ir)) return canonical(ir);
 	const cloned = structuredClone(ir);
-	cloned.canonicalization = { algorithm: "rfc8785-v1", digest: "sha256-jcs" };
+	cloned.canonicalization = { algorithm: "rfc8785-v1" };
 	for (const definition of Array.isArray(cloned.types) ? cloned.types : []) {
 		if (isObject(definition)) materializeNullable(definition);
 	}

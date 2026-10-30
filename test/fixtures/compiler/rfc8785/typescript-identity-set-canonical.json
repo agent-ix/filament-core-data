@@ -47,7 +47,7 @@
 					}
 				]
 			},
-			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
+			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
 		},
 		{
 			"id": "genuine-sets-permuted",
@@ -95,7 +95,7 @@
 					}
 				]
 			},
-			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
+			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
 		},
 		{
 			"id": "fields-reversed",
@@ -143,7 +143,7 @@
 					}
 				]
 			},
-			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f2\",\"nullable\":false},{\"identity\":\"f1\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
+			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f2\",\"nullable\":false},{\"identity\":\"f1\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
 		},
 		{
 			"id": "supertypes-reversed",
@@ -191,7 +191,7 @@
 					}
 				]
 			},
-			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s2\",\"s1\"]},{\"identity\":\"b\"}]}"
+			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p1\",\"nullable\":false},{\"identity\":\"p2\",\"nullable\":false}]}],\"supertypes\":[\"s2\",\"s1\"]},{\"identity\":\"b\"}]}"
 		},
 		{
 			"id": "params-reversed",
@@ -239,7 +239,7 @@
 					}
 				]
 			},
-			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\",\"digest\":\"sha256-jcs\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p2\",\"nullable\":false},{\"identity\":\"p1\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
+			"expectedBytes": "{\"canonicalization\":{\"algorithm\":\"rfc8785-v1\"},\"types\":[{\"extensions\":[{\"identity\":\"x\"},{\"identity\":\"y\"}],\"fields\":[{\"identity\":\"f1\",\"nullable\":false},{\"identity\":\"f2\",\"nullable\":false}],\"identity\":\"a\",\"operations\":[{\"identity\":\"op\",\"params\":[{\"identity\":\"p2\",\"nullable\":false},{\"identity\":\"p1\",\"nullable\":false}]}],\"supertypes\":[\"s1\",\"s2\"]},{\"identity\":\"b\"}]}"
 		}
 	]
 }

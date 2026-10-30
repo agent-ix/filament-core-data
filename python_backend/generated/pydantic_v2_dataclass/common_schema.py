@@ -28,7 +28,6 @@ class FrontendDialect(Enum):
 @dataclass(config=ConfigDict(extra='forbid'))
 class NormalizedCanonicalization:
     algorithm: Literal['rfc8785-v1']
-    digest: Literal['sha256-jcs']
 
 
 type PackageIdentity = Annotated[

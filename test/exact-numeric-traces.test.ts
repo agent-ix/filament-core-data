@@ -277,7 +277,7 @@ function numericIr(): any {
 	}
 	return {
 		contractVersion: "2.0.0",
-		canonicalization: { algorithm: "rfc8785-v1", digest: "sha256-jcs" },
+		canonicalization: { algorithm: "rfc8785-v1" },
 		source: {
 			identity: "ix://agent-ix/exact-numeric/source/test",
 			version: "1.0.0",

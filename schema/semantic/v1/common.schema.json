@@ -13,10 +13,9 @@
 		},
 		"normalizedCanonicalization": {
 			"type": "object",
-			"required": ["algorithm", "digest"],
+			"required": ["algorithm"],
 			"properties": {
-				"algorithm": { "const": "rfc8785-v1" },
-				"digest": { "const": "sha256-jcs" }
+				"algorithm": { "const": "rfc8785-v1" }
 			},
 			"additionalProperties": false
 		},
