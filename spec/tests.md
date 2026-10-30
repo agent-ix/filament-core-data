@@ -257,7 +257,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1803 | The Python reader materializes `nullable: true` only for the input `true`, and `nullable: false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member (fcd#187) | Unit | P0 | FR-020-AC-7 |
 | TC-237 | `ordered: true` or `unique: true` on a `1..1` field fails at the field locus | Unit | P0 | FR-027-AC-8 |
 | TC-238 | Multiplicity narrowing classifies breaking; widening classifies additive | Unit | P0 | FR-027-AC-9 |
-| TC-239 | A relationship `target` resolving to no type definition or lock export fails at the relationship locus | Unit | P0 | FR-028-AC-9 |
+| TC-239 | A relationship `target` resolving to no type definition or selected package graph export fails at the relationship locus | Unit | P0 | FR-028-AC-9 |
 | TC-240 | A composite cycle or composite self-reference fails at the closing relationship; a non-composite self-reference validates | Unit | P0 | FR-028-AC-10 |
 | TC-241 | Two clauses sharing a `clauseId` in one type definition fail validation | Unit | P0 | FR-028-AC-11 |
 | TC-242 | The IR `category` enumeration equals the quire-rs FR-040 `EdgeCategory` registry | Integration | P0 | FR-028-AC-12 |
@@ -545,7 +545,7 @@ computed by `quire matrix` from those trace tags.
 | TC-563 | The narrow interface SHALL export exactly the six FR-041 symbols plus the nine named here | Unit | P1 | FR-052-CON-1 |
 | TC-565 | The CLI SHALL read no environment variable to decide behavior; every input is a flag or a file | Static | P1 | FR-052-CON-3 |
 | TC-566 | The CLI SHALL be the one place that constructs the injected host, passing it down to every module below it | Static | P1 | FR-052-CON-4 |
-| TC-567 | Two `compile` runs over the same package produce identical IR, lock, and diagnostic bytes | Unit | P0 | NFR-019-AC-1 |
+| TC-567 | Two `compile` runs over the same package produce identical IR and diagnostic bytes | Unit | P0 | NFR-019-AC-1 |
 | TC-568 | Two `inspect` runs and two `diff` runs produce identical bytes | Unit | P0 | NFR-019-AC-2 |
 | TC-569 | No module in scope references `Date`, `Date.now`, `process.env`, `process.cwd`, `process.platform`, `os.hostname`, `Math.random`, `localeCompare` | Static | P0 | NFR-019-AC-3 |
 | TC-570 | Two permutations of the search-path order that select the same packages produce identical output | Unit | P0 | NFR-019-AC-4 |
@@ -685,7 +685,7 @@ computed by `quire matrix` from those trace tags.
 | TC-818 | The measured match, failure and divergence counts are recorded with the command that produced them and read from the regenerated coverage account rather than restated, and the first-run divergence count is measured before the first fix and never remeasured | Analysis | P0 | FR-070-AC-4, FR-070-AC-17, FR-070-CON-6, FR-070-CON-8 |
 | TC-819 | Neither the adapter nor any module it reaches references `oracleVerdict`, `compare`, or the oracle's own modules, and the harness starts it as a process rather than importing it | Static | P0 | FR-070-AC-5, FR-070-CON-1, FR-070-CON-5 |
 | TC-820 | Substituting the oracle's answer for the backend's makes a deliberately seeded backend defect invisible, showing the independence constraint is load-bearing | Integration | P0 | FR-070-AC-6 |
-| TC-821 | Two adapter runs from different working directories and under `LC_ALL=tr_TR.UTF-8` are byte-identical; the coverage account in the run report records `matched` 114 and `unmet` 0 for this slot, and a total exactly 115 lower than at this change's base commit; and no criterion of the requirement names a whole-corpus absolute | Test | P0 | FR-070-AC-7, FR-070-AC-8, FR-070-AC-20, FR-070-CON-7 |
+| TC-821 | Two adapter runs from different working directories and under `LC_ALL=tr_TR.UTF-8` are byte-identical; the coverage account in the run report records `matched` 114 and `unmet` 0 for this slot, and a total exactly 114 lower than at this change's base commit; and no criterion of the requirement names a whole-corpus absolute | Test | P0 | FR-070-AC-7, FR-070-AC-8, FR-070-AC-20, FR-070-CON-7 |
 | TC-822 | The ten named corpus paths, `conformance/divergences.json`, the three sibling registry rows and the Rust inventory component are byte-unchanged, and no corpus file is edited to make the backend agree | Analysis | P0 | FR-070-AC-9, FR-070-AC-14, FR-070-AC-18, FR-070-CON-2 |
 | TC-823 | Every admitted case generates a package and all of them typecheck as one compiler program, and a case refused on representability emits no file and names the construct; instance-level acceptance and rejection are FR-066's authored corpus, because the conformance corpus supplies no payloads | Compile | P0 | FR-070-AC-10, FR-070-AC-12 |
 | TC-824 | A seeded disagreement is registered as a divergence with an owner and a verdict and fails once unreproduced, the inventory discharges only the conformance clause, and nothing is published | Integration | P0 | FR-070-AC-13, FR-070-AC-15, FR-070-AC-16, FR-070-CON-3, FR-070-CON-4 |
@@ -1452,7 +1452,7 @@ computed by `quire matrix` from those trace tags.
 | TC-760 | field multiplicity | `upper` absent / `upper` = 1 / `upper` > 1 | rendered property type | Absent or greater than one renders a readonly array; exactly one renders a scalar property |
 | TC-784 | `defaultKind` | `none` / `semantic` / `representation` / `migration` | property absent at validation | Only a `semantic` default is applied; the other two belong to the representation layer |
 | TC-817, TC-822 | adapter answer | `supported` / `unsupported` / `unavailable` | registry `status` and the case's own `unsupportedBy` | An available slot must answer `supported`; every other answer must be declared or the run fails |
-| TC-803 | `REFERENCE_POLICY` | `strict` / `open` | a `reference` target no type, import, or lock export supplies | `UNRESOLVED_TYPE_REF` or no diagnostic; the constant is the only line that differs between the runs |
+| TC-803 | `REFERENCE_POLICY` | `strict` / `open` | a `reference` target no type, import, or selected package graph export supplies | `UNRESOLVED_TYPE_REF` or no diagnostic; the constant is the only line that differs between the runs |
 | TC-779 | field presence and member state | `required` / `optional` | absent / `null` / explicitly `undefined` / a conforming value | Six accept-or-reject decisions; absent and explicitly `undefined` never collapse into one another |
 | TC-782 | `unknownPolicy` against structural kind | `preserve` / `reject` / `surface` | `record` / `union` / `map` | Only a `record` carries a validation effect; the other kinds record the policy in metadata and validate identically |
 | TC-781 | constraint subject after alias resolution | `string` / `bytes` / `integer` / `number` / `duration` | `minLength` / `maxLength` / `min` / `max` | Length counts code points for a `string` and decoded octets for `bytes`; an ordering keyword on a `duration` is a representability loss |
@@ -1812,8 +1812,8 @@ computed by `quire matrix` from those trace tags.
 | ERR-058 | No committed `Cargo.lock` while the runner is in `--check` mode | The runner exits non-zero naming the missing lockfile | TC-374 |
 | ERR-059 | The branch changes a path the isolation allowlist does not cover | TC-123/TC-124 fail naming the path | TC-379, TC-390 |
 | ERR-060 | The declarations in `index.d.mts` drift from `index.mjs` | `tsc --noEmit` fails | TC-344 |
-| ERR-061 | An import names a package the lock does not resolve | Oracle rejects at the import's locus | TC-298, TC-315 |
-| ERR-101 | The lock package graph closes a cycle | Oracle rejects with a package-cycle code distinct from a recursive type graph | TC-315, TC-317 |
+| ERR-061 | An import names a package the selected package graph does not resolve | Oracle rejects at the import's locus | TC-298, TC-315 |
+| ERR-101 | The selected package graph closes a cycle | Oracle rejects with a package-cycle code distinct from a recursive type graph | TC-315, TC-317 |
 | ERR-063 | A mapping names an identity no declaration owns | Oracle rejects at the mapping's locus | TC-298, TC-315 |
 | ERR-064 | The same semantic identity is declared twice anywhere in the document | Oracle rejects at the second declaration | TC-293, TC-315 |
 | ERR-105 | An entity-role type is neither exported nor declared an allowed omission | Oracle rejects as undeclared loss | TC-298, TC-315 |
@@ -1874,7 +1874,7 @@ computed by `quire matrix` from those trace tags.
 | ERR-155 | An undeclared member reaches a type declaring `unknownPolicy: "reject"` | Rejection with a pointer at that member | TC-782 |
 | ERR-156 | A value nests past the generated validator's declared depth limit | The exceeded-depth code; the validator terminates rather than exhausting the stack | TC-785 |
 | ERR-157 | A document is both alias-cyclic and past the depth bound | `ALIAS_CYCLE`, never `DEPTH_LIMIT_EXCEEDED`; the cycle is the more specific fact | TC-798 |
-| ERR-158 | A `reference` target resolves to no document type, no import, and no lock export | `UNRESOLVED_TYPE_REF` at `/ir/types/<index>/target` under `REFERENCE_POLICY` `strict` | TC-803 |
+| ERR-158 | A `reference` target resolves to no document type, no import, and no selected package graph export | `UNRESOLVED_TYPE_REF` at `/ir/types/<index>/target` under `REFERENCE_POLICY` `strict` | TC-803 |
 | ERR-159 | A canonicalization input carries a non-finite number or exceeds the depth bound | A named refusal rather than a serialized value | TC-810 |
 | ERR-160 | A compatibility pair carries a change the classification rules do not model | Aggregate `unknown`, never `patch` | TC-812 |
 | ERR-161 | An available adapter slot answers `unavailable`, or answers an undeclared `unsupported` | The harness records a problem and the run fails | TC-817 |
@@ -1886,7 +1886,7 @@ computed by `quire matrix` from those trace tags.
 | ERR-138 | A `bytes` value is outside the Bytes wire form of FR-032 (not canonical padded base64), or its decoded length exceeds a `maxLength` | Rejected with that constraint's own `diagnosticCode`, the length counted in decoded octets | TC-781 |
 | ERR-139 | An `integer` subject receives a non-integral, non-finite, or above-`Number.MAX_SAFE_INTEGER` value | Rejected with its own structural code rather than silently truncated | TC-781 |
 | ERR-140 | A validated input carries a getter that throws, an inherited accessor for a declared member, or a `Symbol.toPrimitive` coercion | A returned rejection, never a thrown exception and never a coerced accept | TC-785 |
-| ERR-141 | An admissibility rule's declared input — a manifest, a lock, a mapping, or a consumer policy — is absent from the bundle | A recorded suppression, never a diagnostic and never a silent pass | TC-795 |
+| ERR-141 | An admissibility rule's declared input — a manifest, a package graph, a mapping, or a consumer policy — is absent from the bundle | A recorded suppression, never a diagnostic and never a silent pass | TC-795 |
 | ERR-142 | The injected formatter exits non-zero during a generation | No file written and a blocking diagnostic naming the formatter | TC-827 |
 | ERR-143 | A generated identifier collides with the exported discriminant constant or with another identity's minted identifier | One blocking `IDENTIFIER_COLLISION` naming both, raised while the model is built and before a file map exists | TC-764 |
 | ERR-114 | A construct selects no mapping row and no named refusal; an `enum` variant carries a `payloadType` | `UNSUPPORTED_CONSTRUCT` or `PAYLOAD_ON_ENUM_VARIANT`, zero files | TC-650, TC-656 |
@@ -2018,7 +2018,7 @@ Issue #20's 62 cases (TC-280..341) are fully mapped and pass. No open mapping ga
 | EC-071 | A `displayName` that is a TypeScript reserved word | FR-064 | TC-764 | The generated module does not parse, or the mangling differs between two runs |
 | EC-072 | A field named `__proto__` or `constructor` | FR-066 | TC-779, TC-782 | Prototype pollution, or an own-property test that reads an inherited member as if it were declared |
 | EC-073 | A `pattern` regex that is valid ECMA-262 and backtracks catastrophically | FR-066, NFR-020 | TC-781, TC-785 | A generated validator hangs on an input the contract admits |
-| EC-074 | A `reference` whose target no type, import, or lock export supplies (GAP-011) | FR-068 | TC-803 | The backend rules on an open contract question instead of citing it and moving with the answer |
+| EC-074 | A `reference` whose target no type, import, or selected package graph export supplies (GAP-011) | FR-068 | TC-803 | The backend rules on an open contract question instead of citing it and moving with the answer |
 | EC-075 | A document that is admissible and unrepresentable | FR-065, FR-068 | TC-802, TC-774 | An unrepresentable construct is emitted as `unknown` and the refusal never reaches the caller |
 | EC-077 | A package declaring one type, and a package declaring a thousand | FR-064, FR-065 | TC-755, TC-766 | The single-type path is never exercised and the large path exhausts a bound unnoticed |
 | EC-078 | A generated identifier collides with the generated discriminant constant | FR-064 | TC-758, TC-764 | The discriminated union stops narrowing and `tsc` accepts an unhandled variant |

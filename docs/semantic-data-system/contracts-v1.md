@@ -50,7 +50,7 @@ All identifiers below are rooted at
 | `package-manifest.schema.json` | Package identity/version, sources, imports, exports, named profiles, targets, and mappings |
 | `module-semantic-block.schema.json` | The filament module manifest's optional `semantic` block (quoin FR-070): contract version, semantic-core version, package identity, exports, imports, targets, and mappings, all by $ref to this contract's own $defs |
 | `module-manifest.schema.json` | The filament-core-service module manifest (FR-035): identity, navigation, dependencies, archetypes, object types, grammars, artifact types, doc kinds, state schemas, lint rules, the mergeable edge-type and role registries, and the optional `semantic` block. Moved here from agent-ix/filament-core-service; fcs consumes it as a published contract like any other consumer. Its `semantic` property is not yet expressed as a $ref to `module-semantic-block.schema.json` above — the two overlap in shape but unifying them is a separate, deliberate change, not something this move made |
-| `package-lock.schema.json` | Conformance-only fixture schema for selected package identities, versions, exports, and graph edges; PLAT-1205 retires it as a compiler lock or digest/freshness contract. Cargo.lock is the repository dependency lock |
+| `package-lock.schema.json` | Retired by PLAT-1205; Cargo.lock is the repository dependency lock. Conformance package facts use the separate digest-free `conformance/schema/package-graph.schema.json` |
 | `mapping.schema.json` | Correspondences plus typed codec/lens/projection/extraction/rendering/aggregation/enrichment/materialization behavior |
 | `profile.schema.json` | Authority, edit direction, round trip, unknown policy, omissions, enrichment, and lifetime |
 | `representation.schema.json` | Markdown, JSON, PostgreSQL, Protobuf, Avro, Arrow/Parquet, CSV, and TSV refinements |
@@ -101,7 +101,7 @@ A record type definition carries first-class `relationships[]` (category,
 bound by `clauseId`), and any type definition carries `clauses[]`
 (`language` of `quire`, `ocl`, `sysml`, `fretish`, or `<ns>:<name>`; `clauseId` unique
 per type; opaque `text`; `sourceSpan` when source-originated). The IR never
-parses clause text. Relationship targets resolve to a document type or a lock
+parses clause text. Relationship targets resolve to a document type or a selected package graph
 export; composite relationship graphs are acyclic. The same rule governs a
 `reference`-kind definition's `target`, and for both kinds a third source
 resolves: an export named by a declared manifest import. A target resolving to
@@ -488,7 +488,7 @@ compatibility gate. Describing a format does not select it.
 
 ## Compiler and generated targets
 
-The compiler request contains the complete locked IR, selected profile,
+The compiler request contains the complete IR, selected profile,
 mappings, backend identity/version/features/options, and a relative output root.
 The output manifest reconciles every emitted file to its media type and
 semantic identities. Invalid, unsupported, or unavailable results emit zero
@@ -501,7 +501,7 @@ target. They never degrade to `any`, generic maps, or empty models.
 
 Rust exposes native structs, enums, newtypes, unions, Serde behavior, and
 framework-neutral validation. TypeScript pairs static types with runtime
-validation from the same lock. Python uses qualified generation for Pydantic v2
+validation from the same normalized IR. Python uses qualified generation for Pydantic v2
 and standard dataclasses through a governed schema adapter; authored decorators
 or custom `@` tags are not a schema language. Generated semantic packages
 exclude UI, ORM, SQLAlchemy, Tauri, network clients, database migrations, and

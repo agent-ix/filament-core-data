@@ -42,7 +42,7 @@ independent-corpus design exists to prevent.
 
 Agreement is stated here as an obligation and not only as a threshold row. A
 requirement that says only "record a disagreement" is satisfied by an adapter
-that disagrees with every case and records 115 disagreements, and a promotion
+that disagrees with every case and records 114 disagreements, and a promotion
 threshold left `proposed` cannot close that hole because a proposed threshold
 gates nothing. So this requirement obliges the agreement itself, and separately
 obliges honesty about how the agreement was reached.
@@ -123,13 +123,13 @@ obliges honesty about how the agreement was reached.
 - For every case the backend admits, generation SHALL produce a package that typechecks under the generated-package TypeScript configuration of [FR-065](./FR-065-generate-the-esm-package-and-export-surface.md).
 - Every generated package produced from the corpus SHALL be typechecked as one TypeScript program rather than one process per case, so the obligation costs one compilation and not seventy.
 - For a case the backend refuses on representability, generation SHALL emit no file, because the committed `typescript` target contract sets `unsupportedFeaturePolicy` to `fail`.
-- This requirement SHALL NOT claim that a corpus case supplies an instance payload, because `conformance/schema/input-bundle.schema.json` is `additionalProperties: false` over `ir`, `manifest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, and carries no instance of a declared type.
+- This requirement SHALL NOT claim that a corpus case supplies an instance payload, because `conformance/schema/input-bundle.schema.json` is `additionalProperties: false` over `ir`, `manifest`, `packageGraph`, `profile`, `mappings`, and `consumerPolicy`, and carries no instance of a declared type.
 - Instance-level evidence for the generated validators SHALL be the authored instance corpus and its second-validator differential of [FR-066](./FR-066-generate-runtime-validators.md), and this requirement SHALL cite that evidence rather than restate it.
 
 ### Accounting
 
-- The coverage account in the run report SHALL record the `typescript-backend` row's `unmet` falling from 115 to 0 and its `matched` rising to 115.
-- The coverage account in the run report SHALL record a corpus-wide `unmetCases` total 115 lower than the total the account reported at this change's base commit.
+- The coverage account in the run report SHALL record the `typescript-backend` row's `unmet` falling from 114 to 0 and its `matched` rising to 114.
+- The coverage account in the run report SHALL record a corpus-wide `unmetCases` total 114 lower than the total the account reported at this change's base commit.
 - No acceptance criterion of this requirement SHALL name a whole-corpus absolute, because the coverage account carries one row per adapter and issues #21 and #23 each flip their own row in the same window, so an absolute encodes a merge order that nobody controls and fails the branch that merges second for work it did not do.
 - `docs/semantic-data-system/compiler-diagnostics.md` and the `spec/tests.md` execution summary are machine-generated or shared with issues #21 and #23, and on rebase they SHALL be regenerated from the rebased tree rather than merged hunk by hunk.
 - `agent-ix/filament-core-data#63` records that three concurrent backend tickets each regenerate the shared artifacts and asks for a reconciliation owner, and this requirement SHALL cite it rather than assume a merge order.
@@ -164,7 +164,7 @@ obliges honesty about how the agreement was reached.
 | FR-070-AC-5 | The adapter source, and the transitive module set it imports, contain no reference to `oracleVerdict`, `compare`, `conformance/oracle/oracle.mjs`, `conformance/oracle/schema-layer.mjs`, or `conformance/corpus.mjs`. | Static |
 | FR-070-AC-6 | Replacing the backend's admissibility answer with the oracle's makes at least one deliberately seeded backend defect invisible, demonstrating that the independence constraint is load-bearing. | Test |
 | FR-070-AC-7 | Two consecutive adapter runs, one from a different working directory and one under `LC_ALL=tr_TR.UTF-8`, produce byte-identical output. | Integration |
-| FR-070-AC-8 | The coverage account in a fresh run report has a `typescript-backend` row recording `matched` 114 and `unmet` 0, and a corpus-wide `unmetCases` total exactly 115 lower than the total the account reported at this change's base commit. | Test |
+| FR-070-AC-8 | The coverage account in a fresh run report has a `typescript-backend` row recording `matched` 114 and `unmet` 0, and a corpus-wide `unmetCases` total exactly 114 lower than the total the account reported at this change's base commit. | Test |
 | FR-070-AC-9 | `conformance/cases/**`, `conformance/bases/**`, `conformance/oracle/**`, `conformance/runner/**`, `conformance/corpus.json`, `conformance/thresholds.json`, `conformance/defects.json`, `conformance/contract-gaps.json`, `conformance/diagnostic-codes.json`, `conformance/mutations.json`, and `conformance/divergences.json` are byte-unchanged in this change's own path set. | Analysis |
 | FR-070-AC-10 | Every case the backend admits generates a package, and all of those packages typecheck as one program under the generated-package configuration with no error. | Compile |
 | FR-070-AC-11 | The harness reports 114 matched cases and zero unsuppressed divergences for the `typescript-backend` slot, and a single seeded backend defect reduces the matched count. | Integration |

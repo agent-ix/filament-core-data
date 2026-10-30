@@ -29,8 +29,10 @@ implementer of the thing it checks is not an oracle.
 ## An input bundle
 
 A case's input is a bundle, not a bare IR document: `ir` plus, when the case
-needs them, `manifest`, `lock`, `profile`, `mappings`, and
-`consumerPolicy`. Each member is validated by its own published v1 schema.
+needs them, `manifest`, `packageGraph`, `profile`, `mappings`, and
+`consumerPolicy`. Each member is validated by its published schema.
+`packageGraph` carries selected package identities, versions, imports, and
+exports directly; the bundle carries no second lock or digest proof.
 Without the bundle there is no way to state an unresolved import, a package
 cycle, an unknown mapping, or undeclared loss, because
 no semantic IR document carries any of those facts.

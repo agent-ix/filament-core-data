@@ -35,7 +35,7 @@ the contract clause it was derived from.
 ## Outputs
 
 - `conformance/corpus.json`: the corpus manifest — `corpusVersion`, targeted `contractVersions`, the construct register, the base index, and the case index
-- `conformance/schema/input-bundle.schema.json`, `corpus-case.schema.json`, `corpus-manifest.schema.json`, `adapter-result.schema.json`
+- `conformance/schema/input-bundle.schema.json`, `package-graph.schema.json`, `corpus-case.schema.json`, `corpus-manifest.schema.json`, `adapter-result.schema.json`
 - `conformance/bases/<base-id>.json`: the shared, contract-valid input bundles
 - `conformance/cases/<family>/<case-id>.json`: one file per case
 - `conformance/README.md`: the versioning, minimization, canonical-form, and provenance rules in prose
@@ -43,8 +43,12 @@ the contract clause it was derived from.
 ## Behavior
 
 - An input bundle SHALL carry `ir`, a semantic IR document.
-- An input bundle SHALL admit the optional members `manifest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, each validated against its published v1 schema, so that a case can state a package, mapping, or consumer-policy fact that no IR document carries. The closed bundle schema SHALL reject `manifestDigest`. The optional `lock` is a conformance-only graph fixture supplying selected package identities, versions, exports, and dependency edges to cross-field cases; it is not a compiler input, generated lock, or freshness proof. Its schema remains published solely for these conformance fixtures.
+- An input bundle SHALL admit optional `manifest`, `packageGraph`, `profile`, `mappings`, and `consumerPolicy` members, each validated against its published schema.
+- The closed bundle schema SHALL reject `manifestDigest` and `lock`.
+- `packageGraph` SHALL carry `rootPackage` and an identity-ordered `packages` array; each entry carries only `identity`, `version`, `imports`, and `exports`. `rootPackage`, entry identities, and imports use package identities; exports use semantic identities. The root appears exactly once among the package entries. Imports and exports are ordered by identity.
+- The package graph SHALL carry no digest, fingerprint, canonicalization descriptor, lock member, or computed freshness claim.
 - `conformance/schema/input-bundle.schema.json` SHALL compose the published schemas by reference.
+- `conformance/schema/input-bundle.schema.json` SHALL validate `packageGraph` against `conformance/schema/package-graph.schema.json`, a closed conformance graph schema with the exact members above. Neither conformance schema references the retired `schema/semantic/v1/package-lock.schema.json`.
 - `conformance/schema/input-bundle.schema.json` SHALL redefine no field a published schema already defines.
 - A case file SHALL carry `id`, `title`, `family`, `class` (`positive`, `negative`, `boundary`, or `evolution`), `kind` (`document` or `compatibility`), `contractVersion`, `base`, `ops`, `covers`, `decidedBy` (`schema`, `cross-field`, or `compatibility`), `derivedFrom`, `provenance`, and `expected`.
 - A case file SHALL admit the optional member `unsupportedBy`.
@@ -79,7 +83,7 @@ the contract clause it was derived from.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-035-AC-1 | Every case file validates against `corpus-case.schema.json`, every base against `input-bundle.schema.json`, and `corpus.json` against `corpus-manifest.schema.json`; the optional conformance-only `lock` validates against `package-lock.schema.json` and is never passed as a compiler lock or digest oracle. | Test |
+| FR-035-AC-1 | Every case file validates against `corpus-case.schema.json`, every base against `input-bundle.schema.json`, and `corpus.json` against `corpus-manifest.schema.json`; the optional `packageGraph` validates against `conformance/schema/package-graph.schema.json`; `lock`, `manifestDigest`, `fingerprint`, `contentDigest`, and a canonicalization digest are refused in the graph or bundle. | Test |
 | FR-035-AC-2 | Every base bundle validates against the published schemas it composes and yields zero oracle diagnostics. | Test |
 | FR-035-AC-3 | Every case carries at least one `derivedFrom` entry whose `artifact` path exists and whose `quote` occurs verbatim in that artifact; a quote that no longer occurs fails the gate. | Test |
 | FR-035-AC-5 | No case sets `provenance.blessedFromRun` to `true`. | Test |

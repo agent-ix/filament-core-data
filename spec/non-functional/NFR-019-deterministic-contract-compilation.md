@@ -21,7 +21,7 @@ relationships:
 
 ## Statement
 
-The contract compiler SHALL produce byte-identical IR, lock, diagnostic,
+The contract compiler SHALL produce byte-identical IR, diagnostic,
 inspection, and compatibility-report output for identical inputs on the pinned
 toolchain, with every host-varying input — working directory, locale, clock,
 hostname, environment, path separator, file-system enumeration order, and
@@ -56,7 +56,7 @@ simulated path separator — rather than only repeating the run.
 | Metric | Target | Threshold | Method |
 |---|---|---|---|
 | Byte difference between two `compile` runs over the same package | 0 | 0 | Repeat-run comparison |
-| Byte difference between two `inspect`, `diff`, and lock-build runs | 0 | 0 | Repeat-run comparison |
+| Byte difference between two `inspect` and `diff` runs | 0 | 0 | Repeat-run comparison |
 | Byte difference across a changed working directory, `TZ`, `LANG`, and `LC_ALL` | 0 | 0 | Varied-environment run |
 | Ambient inputs read without an explicit parameter (cwd, locale, clock, hostname, environment) | 0 | 0 | Purity and parameterisation tests |
 | Output difference across two search-path permutations that select the same packages | 0 | 0 | Permutation test |
@@ -71,7 +71,7 @@ simulated path separator — rather than only repeating the run.
 
 ## Verification
 
-Compile, inspect, diff, and build the lock twice over the same fixture package
+Compile, inspect, and diff twice over the same fixture package
 and compare bytes; repeat with a different working directory and with `TZ`,
 `LANG`, and `LC_ALL` set to values a second host would carry; permute the
 search-path order and the injected enumeration order and compare; sort the
@@ -88,7 +88,7 @@ paths; inspect `package.json` and `pnpm-lock.yaml`.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| NFR-019-AC-1 | Two `compile` runs over the same package produce identical IR, lock, and diagnostic bytes. | Test |
+| NFR-019-AC-1 | Two `compile` runs over the same package produce identical IR and diagnostic bytes. | Test |
 | NFR-019-AC-2 | Two `inspect` runs and two `diff` runs produce identical bytes. | Test |
 | NFR-019-AC-3 | No module in scope — that is, everything below `cli.mjs` — references `Date`, `Date.now`, `process.env`, `process.cwd`, `process.platform`, `os.hostname`, `Math.random`, `localeCompare`, `toLocaleString`, `Intl`, or `path.sep`, and none but `host.mjs`, `dialects.mjs`, `family-map.mjs` and `schema-validate.mjs` references `node:fs`. | Analysis |
 | NFR-019-AC-4 | Two permutations of the search-path order that select the same packages produce identical output. | Test |

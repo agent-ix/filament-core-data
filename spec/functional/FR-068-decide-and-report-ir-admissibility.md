@@ -56,7 +56,7 @@ not.
 ## Inputs
 
 - A semantic IR document at `contractVersion` `2.0.0`
-- The input bundle members that carry package context: `manifest`, `lock`, `profile`, `mappings`, and `consumerPolicy`, each of which `conformance/schema/input-bundle.schema.json` makes optional, so only `ir` is guaranteed present
+- The input bundle members that carry package context: `manifest`, `packageGraph`, `profile`, `mappings`, and `consumerPolicy`, each of which `conformance/schema/input-bundle.schema.json` makes optional, so only `ir` is guaranteed present
 - `schema/semantic/v1/semantic-ir.schema.json` and `schema/semantic/v1/common.schema.json`
 - `conformance/diagnostic-codes.json`, the corpus's closed register of the registered codes an admissibility answer may carry, read by a test rather than by the backend
 - `docs/semantic-data-system/contracts-v1.md`, the prose contract the rules are read from
@@ -100,12 +100,12 @@ not.
 | A constraint keyword applies to the scalar its subject resolves to | `CONSTRAINT_NOT_APPLICABLE` |
 | A bound operand is typed and ranged for its resolved scalar | `INVALID_OPERAND` |
 | A `pattern` regex compiles under ECMA-262 | `INVALID_PATTERN` |
-| A relationship target resolves to a document type or a lock export | `UNRESOLVED_RELATIONSHIP_TARGET` |
+| A relationship target resolves to a document type or a selected package graph export | `UNRESOLVED_RELATIONSHIP_TARGET` |
 | A relationship's `sourceEnd.type`, where present, names the type declaring the relationship | `INVALID_RELATIONSHIP_SOURCE` |
 | The graph of `composite: true` relationships is acyclic | `COMPOSITE_CYCLE` |
 | `multiplicity.upper`, where present, is not less than `lower` | `INVALID_MULTIPLICITY` |
 | `unit` appears only on a field resolving to a `scalar` | `UNIT_ON_NON_SCALAR` |
-| Every manifest import resolves to a package the lock carries | `UNRESOLVED_IMPORT` |
+| Every manifest import resolves to a package the selected package graph carries | `UNRESOLVED_IMPORT` |
 | The package import graph is acyclic | `PACKAGE_CYCLE` |
 | A mapping names a target the published target vocabulary declares | `UNKNOWN_MAPPING_TARGET` |
 | A mapping that loses information declares that loss | `UNDECLARED_LOSS` |
@@ -121,7 +121,7 @@ not.
 
 ### Absent inputs and suppression
 
-- Five of the rules above read `manifest`, `lock`, `mappings`, or `consumerPolicy`, and `conformance/schema/input-bundle.schema.json` requires none of them, so a bundle carrying only `ir` cannot decide them.
+- Five of the rules above read `manifest`, `packageGraph`, `mappings`, or `consumerPolicy`, and `conformance/schema/input-bundle.schema.json` requires none of them, so a bundle carrying only `ir` cannot decide them.
 
 - Where a rule's declared input is absent from the bundle, `admitIr` SHALL record a suppression naming the rule and the missing input, and SHALL emit no diagnostic for that rule.
 - `admitIr` SHALL NOT decide a rule whose input is absent by assuming a value for that input, because a guess that happens to agree is indistinguishable from a decision that was made.
@@ -200,8 +200,8 @@ and adapter expectations from the remaining case index.
 - The default SHALL be recorded as conformance with the corpus's published reading, which cases REF-001..004 pin, rather than as a ruling on the contract.
 - `docs/semantic-data-system/contracts-v1.md` states a resolution rule for relationship targets and none for a `reference` target; that gap is `conformance/contract-gaps.json` GAP-011, and this requirement SHALL NOT settle it.
 - The GAP-011 row names `agent-ix/filament-core-data#9` as its owner and that issue is closed, so no live ticket can decide it today; `agent-ix/filament-core-data#59` records exactly that and asks for a live owner, and this requirement SHALL cite the gap row together with #59 rather than describe #9 as a pending decision.
-- A `reference` target may name an identity an imported package exports rather than one the document declares, so resolution can depend on the imported-export set the bundle's `lock` and `manifest` carry.
-- Where the bundle carries no `lock` and no `manifest`, `REFERENCE_POLICY` SHALL treat the imported-export set as unknown, and `admitIr` SHALL decide the reference against the document's own declarations alone under the `strict` default while recording a suppression naming the missing input.
+- A `reference` target may name an identity an imported package exports rather than one the document declares, so resolution can depend on the imported-export set the bundle's `packageGraph` and `manifest` carry.
+- Where the bundle carries no `packageGraph` and no `manifest`, `REFERENCE_POLICY` SHALL treat the imported-export set as unknown, and `admitIr` SHALL decide the reference against the document's own declarations alone under the `strict` default while recording a suppression naming the missing input.
 - When a live owner settles GAP-011, changing this backend to the settled reading SHALL be one edit to `REFERENCE_POLICY`, requiring no change elsewhere in the backend.
 
 ### Independence, bounds, and purity

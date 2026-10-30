@@ -82,7 +82,7 @@ author.
   `rust-backend`, whose rationale is that a Rust reader cannot compile the locus
   pattern; [FR-057](./FR-057-enforce-constraints-in-generated-rust.md) answers
   that pattern exactly, so the licence is not exercised and the adapter's
-  matched count is 115 of 115.
+  matched count is 114 of 114.
 - The adapter SHALL exit 0 and SHALL write nothing but the JSON array to
   stdout. It SHALL write every diagnostic of its own to stderr.
 - If the adapter cannot decide a case, then it SHALL emit
@@ -174,7 +174,7 @@ author.
   The difference SHALL NOT be made to disappear by changing a case, a base, an
   expected verdict, the thresholds, or the oracle.
 - The adapter's reading of a `reference`-kind `target` that no type declares, no
-  import names, and no lock export carries is the oracle's reading. That reading
+  import names, and no selected package graph export carries is the oracle's reading. That reading
   is *not* settled by the contract; it is GAP-011, whose register row names
   issue #9, which is closed; issue #59 carries the reassignment. This requirement SHALL record that the adopted
   reading stands until a live contract ticket reopens it, and SHALL NOT decide
@@ -210,13 +210,13 @@ author.
 | FR-059-AC-10 | Each of the five `target-verdicts.json` cases is decided by the generated crate exactly as its `rust` verdict states, including `unknown-preservable-extension` accepted and `unknown-required-capability` rejected, and each for the defect the case names rather than for an incidental one. The comparison is on the verdict alone: the fixture's `diagnosticCode` values are in an `agent-ix.conformance` namespace no registry closes, and the backend reports that rather than minting a code to match it (issue #69). | Test (TC-707) |
 | FR-059-AC-11 | The reader returns a diagnostic and does not panic over at least 4096 mutated documents, run under a panic hook that fails the test; a truncated stdout, a non-UTF-8 byte, and an induced panic each surface as an adapter failure and never as a short corpus. | Test (TC-708) |
 | FR-059-AC-12 | The changed-path set under `conformance/` for this branch is exactly `adapters/registry.json` and `coverage.json`; the coverage diff touches only the `rust-backend` adapter row and the `unmetCases` total, leaving `unmetAreas` and every other adapter's row byte-identical; and every other file under `conformance/` is byte-identical to the pre-change baseline. | Analysis (TC-709) |
-| FR-059-AC-13 | Removing the adapter command from the registry returns the slot to 115 unmet rows and zero passes, so a missing adapter can never read as agreement. | Test (TC-710) |
+| FR-059-AC-13 | Removing the adapter command from the registry returns the slot to 114 unmet rows and zero passes, so a missing adapter can never read as agreement. | Test (TC-710) |
 | FR-059-AC-14 | `docs/semantic-data-system/rust-backend.md` records the GAP-011 dependency with the closed owner named and the adopted reading stated, records GAP-002 as answered by FR-057 with its register closure filed as issue #59, and records the unspent divergence budget; and `conformance/divergences.json` is byte-unchanged. | Inspection (TC-710) |
 | FR-059-AC-15 | The ECMAScript number formatter agrees with Node's `JSON.stringify` on a declared set of at least 512 values covering the exponent thresholds, negative zero, trailing zeros, integral floats, and the extremes of `f64`. | Test (TC-700) |
 | FR-059-AC-16 | The reader's `normalized` materializes `nullable: true` for the input `true`, and `nullable: false` for each of `1`, `"true"`, `null`, `{}`, and an absent `nullable` member. | Test (TC-1802) |
 | FR-059-AC-17 | On a thread with a 256 KiB stack, the reader reads an array nest and an object nest each 1,000,000 levels deep under the default limits, clones and compares each, writes each in the corpus comparison form and the document form, formats each with `Debug`, and drops each; an input of 1,000,000 unclosed arrays and one with a trailing `]` each refuse as malformed. `Debug` output equals a derived `Debug`'s in both the compact and the `{:#?}` form. | Test (TC-1820) |
 | FR-059-AC-18 | A read with `max_depth` set to 2 refuses `[[[0]]]` with a typed depth refusal naming 2 at the byte of the value it refuses, and reads it with `max_depth` 3 and with none; a read with `max_bytes` set to 4 refuses `[1,2]` with a typed byte refusal naming 4 and reads it at 5; malformed input is a typed malformed refusal. | Test (TC-1820) |
-| FR-059-AC-19 | A ring of 300 composite relationships and a ring of 100,000, each over record types, are reported as one `COMPOSITE_CYCLE`, and a chain of the same lengths that does not close is not; a ring of 300 and of 100,000 packages in a lock is reported as a package cycle and a chain is not; the 100,000 cases run on a 512 KiB stack. | Test (TC-1821) |
+| FR-059-AC-19 | A ring of 300 composite relationships and a ring of 100,000, each over record types, are reported as one `COMPOSITE_CYCLE`, and a chain of the same lengths that does not close is not; a ring of 300 and of 100,000 packages in the selected package graph is reported as a package cycle and a chain is not; the 100,000 cases run on a 512 KiB stack. | Test (TC-1821) |
 | FR-059-AC-20 | With no depth limit configured, an acyclic alias chain of 100,000 links resolves and walks on a 512 KiB stack and a chain of 300 yields no `DEPTH_LIMIT_EXCEEDED`; with `alias_depth` 256 the chain of 100,000 fails to resolve, its walk is over the limit, and the chain of 300 yields `DEPTH_LIMIT_EXCEEDED`. | Test (TC-1821) |
 | FR-059-AC-21 | On a 512 KiB stack, `decide` returns `invalid` for a bundle holding a value nested 1,000,000 levels deep at a member the schema does not admit, with a diagnostic at that type and a `normalized` form longer than twice the depth. | Test (TC-1822) |
 
