@@ -4,7 +4,7 @@
 use agent_ix_semantic_ir::json::{parse, to_canonical_string, Json};
 use agent_ix_semantic_ir::schema;
 
-/// Trace: FR-145-AC-3, TC-1827.
+/// Trace: FR-145-AC-3, FR-145-AC-7, FR-145-CON-3, TC-1827.
 #[test]
 fn shared_supplementary_plane_golden_uses_utf16_order_without_digest() {
     let golden = parse(include_str!(

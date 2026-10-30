@@ -21,7 +21,7 @@
 			"path": "canonicalization.algorithm",
 			"value": "codepoint-v0"
 		},
-		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
+		"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION"
 	},
 	{
 		"id": "ir-canonicalization-extra-member",
@@ -31,14 +31,14 @@
 			"path": "canonicalization.extra",
 			"value": true
 		},
-		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
+		"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION"
 	},
 	{
 		"id": "ir-canonicalization-missing-algorithm",
 		"schema": "semantic-ir.schema.json",
 		"base": "positive/semantic-ir-v1-1.json",
 		"remove": "canonicalization.algorithm",
-		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
+		"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION"
 	},
 	{
 		"id": "ir-canonicalization-digest-present",
@@ -48,14 +48,14 @@
 			"path": "canonicalization.digest",
 			"value": "sha256-jcs"
 		},
-		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
+		"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION"
 	},
 	{
 		"id": "ir-canonicalization-missing-descriptor",
 		"schema": "semantic-ir.schema.json",
 		"base": "positive/semantic-ir-v1-1.json",
 		"remove": "canonicalization",
-		"code": "agent-ix.semantic-ir.INVALID_CANONICALIZATION"
+		"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION"
 	},
 	{
 		"id": "ir-unnamespaced-role",
