@@ -2182,21 +2182,55 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 	}, 60000);
 
 	/** Traces: TC-443, TC-485; FR-046-AC-12, FR-048-AC-9. */
-	it("stamps the envelope from the resolution and the digests", () => {
-		const resolution = compiled.resolution as never as {
-			root: { contentDigest: string; manifestDigest: string };
-			profiles: { version: string }[];
-		};
+	it("stamps the envelope from the resolution", () => {
 		const source = (compiled.ir as Json).source as Json;
 		const block = (compiled.ir as Json).package as Json;
-		expect(source.digest).toBe(resolution.root.contentDigest);
+		expect(source).not.toHaveProperty("digest");
+		const resolution = compiled.resolution as never as {
+			root: { contentDigest: string };
+		};
+		const lock = compiled.lock as Json;
+		const packages = lock.packages as Json[];
+		expect(
+			packages.find((entry) => entry.identity === "agent-ix/assurance")
+				?.contentDigest,
+		).toBe(resolution.root.contentDigest);
 		expect(block.identity).toBe("agent-ix/assurance");
 		expect(block.version).toBe("1.0.0");
-		expect(block.manifestDigest).toBe(resolution.root.manifestDigest);
+		expect(block).not.toHaveProperty("manifestDigest");
 		expect(block.profileVersions).toEqual(["1.0.0"]);
 		expect(block.mappingVersions).toEqual([]);
-		expect(String(block.lockDigest)).toMatch(/^sha256:[0-9a-f]{64}$/);
+		expect(block).not.toHaveProperty("lockDigest");
 	});
+
+	/** Traces: TC-486; FR-048-AC-10. */
+	it("omits the package lock digest with a generated or supplied lock", async () => {
+		const built = (compiled.ir as Json).package as Json;
+		expect(built).not.toHaveProperty("lockDigest");
+
+		const directory = temp("lock");
+		const lockPath = resolve(directory, "package-lock.json");
+		try {
+			const lockBytes = serializeLock(compiled.lock as never);
+			writeFileSync(lockPath, lockBytes);
+			const result = await compilePackage({
+				host: newHost([root, directory]),
+				packageRoot: assurance,
+				searchPath: [],
+				profileName: "default",
+				entrypoint: "types/main.tsp",
+				lockPath,
+			});
+			note(result.diagnostics as never);
+			expect(result.ir).not.toBeNull();
+			expect((result.ir as Json).package as Json).not.toHaveProperty(
+				"lockDigest",
+			);
+			expect(read(lockPath)).toBe(lockBytes);
+		} finally {
+			rmSync(directory, { recursive: true, force: true });
+		}
+	}, 60000);
 
 	/** Traces: TC-444; FR-046-AC-13. */
 	it("emits occurrences as the empty array", () => {
@@ -3169,36 +3203,6 @@ describe("canonicalization, digests, and the lock (FR-048)", () => {
 		);
 		expect(schemaBytes(host).length).toBeGreaterThan(5);
 	});
-
-	/** Traces: TC-486; FR-048-AC-10. */
-	it("takes the lock digest from the supplied lock, or from the one it built", async () => {
-		const built = (compiled.ir as Json).package as Json;
-		expect(built.lockDigest).toBe(
-			digest(serializeLock(compiled.lock as never)),
-		);
-
-		const directory = temp("lock");
-		const lockPath = resolve(directory, "package-lock.json");
-		try {
-			writeFileSync(lockPath, serializeLock(compiled.lock as never));
-			const host = newHost([root, directory]);
-			const result = await compilePackage({
-				host,
-				packageRoot: assurance,
-				searchPath: [],
-				profileName: "default",
-				entrypoint: "types/main.tsp",
-				lockPath,
-			});
-			note(result.diagnostics as never);
-			expect(result.ir).not.toBeNull();
-			expect(((result.ir as Json).package as Json).lockDigest).toBe(
-				digest(read(lockPath)),
-			);
-		} finally {
-			rmSync(directory, { recursive: true, force: true });
-		}
-	}, 60000);
 
 	/** Traces: TC-487, TC-491; FR-048-AC-11, FR-048-CON-4. */
 	it("bounds canonicalisation and defines every digest by its byte set", () => {
@@ -6448,7 +6452,6 @@ describe("the remaining reader and resolver rules (FR-049 coverage)", () => {
 				packageRoots: [],
 				sourceIdentity: "ix://agent-ix/elsewhere/source/typespec",
 				packageVersion: "1.0.0",
-				sourceDigest: `sha256:${"0".repeat(64)}`,
 				packageBlock: {},
 			});
 			note(lowered.diagnostics as never);

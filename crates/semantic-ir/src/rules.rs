@@ -2285,23 +2285,6 @@ fn package_context(document: &Document<'_>, sink: &mut Sink<'_>) {
         }
     }
 
-    if let Some(stated) = bundle.get("manifestDigest").and_then(Json::as_str) {
-        let named = document
-            .ir
-            .get("package")
-            .and_then(|package| package.get("manifestDigest"))
-            .and_then(Json::as_str);
-        if let Some(named) = named {
-            if named != stated {
-                sink.emit(
-                    "/ir/package/manifestDigest".to_string(),
-                    STALE_LOCK,
-                    "the IR names a manifest digest the bundle's manifest does not hash to",
-                );
-            }
-        }
-    }
-
     if let Some(mappings) = bundle.get("mappings").and_then(Json::as_array) {
         let declared = document.declared_identities();
         for (position, mapping) in mappings.iter().enumerate() {

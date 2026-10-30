@@ -23,9 +23,7 @@ use agent_ix_extraction_frontend::write::OutputPaths;
 use agent_ix_extraction_frontend::LiftOutcome;
 use agent_ix_semantic_ir::json::parse as parse_json;
 use agent_ix_semantic_ir::{decide, ResultState};
-use common::{
-    declared_module_roots, first_difference, fixture, lift_fixture, read_json, scratch_dir,
-};
+use common::{declared_module_roots, first_difference, fixture, lift_fixture, scratch_dir};
 use ix_trace_rs::trace;
 use serde_json::Value;
 
@@ -320,18 +318,9 @@ fn tc_1301_a_lift_under_a_changed_cwd_empty_home_and_varied_tz_lang_lc_all_and_t
     assert_all_identical(&runs, TABLE);
 }
 
-/// `value` with `source.digest` blanked, so two documents that differ
-/// only there compare equal.
-fn without_digest(value: &Value) -> Value {
-    let mut value = value.clone();
-    value["source"]["digest"] = Value::Null;
-    value
-}
-
 #[trace("TC-1302", "NFR-031-AC-3")]
 #[test]
-fn tc_1302_the_table_and_fence_roots_lift_to_identical_types_and_diagnostics_bytes_differing_only_in_source_digest(
-) {
+fn tc_1302_the_table_and_fence_roots_lift_to_identical_document_and_diagnostics_bytes() {
     const RELATIVE: &str = "spec/functional/FR-006-snapshot-entity.md";
     // Both roots hold one copy of FR-006 at the same bundle-relative
     // path, line-aligned: the file has the same line count in both.
@@ -390,35 +379,6 @@ fn tc_1302_the_table_and_fence_roots_lift_to_identical_types_and_diagnostics_byt
         "the comparison is over lowered types, not two empty lists"
     );
 
-    // Only `source.digest` differs, by construction.
-    let table_digest = table_doc["source"]["digest"].as_str().expect("digest");
-    let fence_digest = fence_doc["source"]["digest"].as_str().expect("digest");
-    assert_ne!(
-        table_digest, fence_digest,
-        "source.digest differs by construction"
-    );
-    assert_eq!(
-        without_digest(&table_doc),
-        without_digest(&fence_doc),
-        "nothing besides source.digest differs"
-    );
-    let golden_table = read_json(&fixture(TABLE).join("expected/semantic-ir.json"));
-    assert_eq!(
-        golden_table["source"]["digest"].as_str(),
-        Some(table_digest)
-    );
-    let differing = table
-        .document
-        .iter()
-        .zip(&fence.document)
-        .filter(|(a, b)| a != b)
-        .count()
-        + table.document.len().abs_diff(fence.document.len());
-    assert!(
-        differing <= table_digest.len(),
-        "{differing} differing document bytes, all within the digest"
-    );
-    eprintln!(
-        "{TABLE} vs {FENCE}: 0 differing types[] bytes, 0 differing diagnostics bytes, {differing} differing document bytes (source.digest)"
-    );
+    assert_bytes("document: table vs fence", &table.document, &fence.document);
+    assert_eq!(table_doc, fence_doc);
 }

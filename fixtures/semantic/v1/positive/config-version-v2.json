@@ -7,16 +7,13 @@
 	"source": {
 		"identity": "ix://agent-ix/config-service/spec",
 		"version": "1.0.0",
-		"dialect": "spec-bundle",
-		"digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+		"dialect": "spec-bundle"
 	},
 	"package": {
 		"identity": "agent-ix/config-service",
 		"version": "1.0.0",
-		"manifestDigest": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
 		"mappingVersions": ["1.0.0"],
-		"profileVersions": ["1.0.0"],
-		"lockDigest": "sha256:5555555555555555555555555555555555555555555555555555555555555555"
+		"profileVersions": ["1.0.0"]
 	},
 	"types": [
 		{

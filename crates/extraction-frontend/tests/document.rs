@@ -46,13 +46,12 @@ fn assembled(name: &str) -> Value {
     let modules: Vec<ModuleManifest> = roots
         .iter()
         .map(|root| {
-            let bytes = fs::read(root.join("manifest.yaml")).expect("manifest");
             let dir = root
                 .file_name()
                 .expect("dir")
                 .to_string_lossy()
                 .into_owned();
-            ModuleManifest::from_bundle(&bundle, &dir, bytes).expect("loaded")
+            ModuleManifest::from_bundle(&bundle, &dir).expect("loaded")
         })
         .collect();
     let extractions = extract(&bundle);

@@ -907,18 +907,6 @@ function checkPackageContext(bundle, ir, types, out) {
 		for (const node of graph.keys()) if (!state.has(node)) visit(node, 0);
 	}
 
-	if (typeof bundle.manifestDigest === "string" && isObject(ir.package)) {
-		if (ir.package.manifestDigest !== bundle.manifestDigest) {
-			out.push(
-				diagnostic(
-					"STALE_LOCK",
-					pointer("ir", "package", "manifestDigest"),
-					`the IR names manifest digest ${String(ir.package.manifestDigest)} but the manifest hashes to ${bundle.manifestDigest}`,
-				),
-			);
-		}
-	}
-
 	const declaredIdentities = mappings.length > 0 ? identitySet(ir) : undefined;
 	for (const [m, mapping] of mappings.entries()) {
 		if (!isObject(mapping)) continue;

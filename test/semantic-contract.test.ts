@@ -69,18 +69,12 @@ const VOCABULARY_IR: JsonObject = {
 		identity: "ix://agent-ix/filament-core-data/source/core",
 		version: "1.0.0",
 		dialect: "typespec",
-		digest:
-			"sha256:0000000000000000000000000000000000000000000000000000000000000000",
 	},
 	package: {
 		identity: "agent-ix/assurance",
 		version: "1.0.0",
-		manifestDigest:
-			"sha256:1111111111111111111111111111111111111111111111111111111111111111",
 		mappingVersions: ["1.0.0"],
 		profileVersions: ["1.0.0"],
-		lockDigest:
-			"sha256:2222222222222222222222222222222222222222222222222222222222222222",
 	},
 	types: [
 		{
@@ -647,6 +641,22 @@ describe("semantic package contract v1", () => {
 		).toBe(artifact?.identity);
 		const reference = types.find((type) => type.kind === "reference");
 		expect(reference?.target).toBe(artifact?.identity);
+	});
+
+	/** Traces: FR-019-AC-2, FR-084-AC-6. */
+	it("rejects retired digest members in the source and package envelopes", () => {
+		for (const [section, name] of [
+			["source", "digest"],
+			["package", "manifestDigest"],
+			["package", "lockDigest"],
+		] as const) {
+			const ir = clone(VOCABULARY_IR);
+			object(ir[section], section)[name] = `sha256:${"0".repeat(64)}`;
+			expect(
+				validates("semantic-ir.schema.json", ir),
+				`${section}.${name}`,
+			).toBe(false);
+		}
 	});
 
 	/** Traces: TC-133, TC-140, TC-142, TC-144, TC-147, TC-149, TC-151, TC-152, TC-157, TC-162, TC-175, TC-183, TC-193, TC-200. */

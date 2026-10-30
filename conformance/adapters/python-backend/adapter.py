@@ -631,17 +631,6 @@ def _package_context(
                 )
             )
 
-    declared = ir.get("package") if isinstance(ir.get("package"), dict) else {}
-    stated = bundle.get("manifestDigest")
-    if isinstance(stated, str) and declared.get("manifestDigest") != stated:
-        out.append(
-            _row(
-                "STALE_LOCK",
-                "/ir/package/manifestDigest",
-                "the IR names a manifest digest the bundle's manifest does not carry",
-            )
-        )
-
     owned = set(types) | {identity for identity, _ in _all_identities(ir)}
     for index, mapping in enumerate(reader._objects(bundle.get("mappings"))):
         for member in ("sourceType", "targetType"):

@@ -159,7 +159,7 @@ export function buildLock(resolution) {
 	};
 }
 
-/** The serialised form a lock is written and digested as. */
+/** The serialised form written for a lock. */
 export function serializeLock(lock) {
 	return `${JSON.stringify(lock, null, "\t")}\n`;
 }

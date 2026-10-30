@@ -10,14 +10,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -134,14 +131,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -196,14 +190,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -312,14 +303,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -428,14 +416,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -544,14 +529,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -660,14 +642,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -780,14 +759,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -913,14 +889,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -1056,14 +1029,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -1159,14 +1129,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -1257,14 +1224,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -1369,14 +1333,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -1467,14 +1428,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -1565,14 +1523,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -1663,14 +1618,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -1774,14 +1726,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -1899,14 +1848,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -2002,14 +1948,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -2100,14 +2043,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -2198,14 +2138,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -2296,14 +2233,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -2394,14 +2328,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -2492,14 +2423,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -2590,14 +2518,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -2688,14 +2613,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -2786,14 +2708,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -2884,14 +2803,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -2982,14 +2898,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -3075,14 +2988,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},
@@ -3168,14 +3078,11 @@
 			"source": {
 				"identity": "ix://test/orders/source",
 				"version": "1",
-				"dialect": "spec-bundle",
-				"digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+				"dialect": "spec-bundle"
 			},
 			"package": {
 				"identity": "acme/config",
 				"version": "1",
-				"manifestDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				"lockDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 				"mappingVersions": ["1.0.0"],
 				"profileVersions": []
 			},

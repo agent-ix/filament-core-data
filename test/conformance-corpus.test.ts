@@ -559,7 +559,6 @@ describe("TC-290..301 the oracle (FR-036)", () => {
 		const expected: Record<string, string> = {
 			"PKG-002": "agent-ix.semantic-ir.UNRESOLVED_IMPORT",
 			"PKG-005": "agent-ix.semantic-ir.PACKAGE_CYCLE",
-			"PKG-006": "agent-ix.semantic-ir.STALE_LOCK",
 			"PKG-007": "agent-ix.semantic-ir.UNKNOWN_MAPPING_TARGET",
 			"PKG-008": "agent-ix.semantic-ir.UNDECLARED_LOSS",
 			"EXT-002": "agent-ix.semantic-ir.UNKNOWN_REQUIRED_EXTENSION",
@@ -1247,11 +1246,10 @@ describe("TC-314..319 and TC-622..401 the construct register and the defect regi
 		).toEqual([]);
 	});
 
-	it("TC-315 the six package negatives fail at an exact source or bundle locus", () => {
+	it("TC-315 the five package negatives fail at an exact source or bundle locus", () => {
 		for (const id of [
 			"PKG-002",
 			"PKG-005",
-			"PKG-006",
 			"PKG-007",
 			"PKG-008",
 			"IDENT-002",

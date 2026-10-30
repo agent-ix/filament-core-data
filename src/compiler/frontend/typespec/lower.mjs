@@ -1567,7 +1567,6 @@ export function lowerProgram(options) {
 			identity: sourceIdentity,
 			version: options.packageVersion,
 			dialect: "typespec",
-			digest: options.sourceDigest,
 		},
 		package: options.packageBlock,
 		constructs: [],

@@ -43,15 +43,12 @@ const SOURCE = {
 	identity: "ix://agent-ix/age-2229-regressions/source",
 	version: "1.0.0",
 	dialect: "spec-bundle",
-	digest: `sha256:${"1".repeat(64)}`,
 };
 const PACKAGE = {
 	identity: "agent-ix/age-2229-regressions",
 	version: "1.0.0",
-	manifestDigest: `sha256:${"2".repeat(64)}`,
 	mappingVersions: ["1.0.0"],
 	profileVersions: ["1.0.0"],
-	lockDigest: `sha256:${"3".repeat(64)}`,
 };
 let moduleNonce = 0;
 

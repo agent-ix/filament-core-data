@@ -19,7 +19,7 @@
  *   a clause's `sourceSpan` where the failing node is a clause.
  *
  * `conformance/diagnostic-codes.json` records a rule and a citation for each of
- * its thirty codes and records neither a severity nor a locus derivation, while
+ * its registered codes and records neither a severity nor a locus derivation, while
  * `conformance/corpus.mjs` keys its diagnostic comparison on
  * `[pointer, code, severity, locus]`. That gap is filed as
  * `agent-ix/filament-core-data#61`. The published `sourceLocus` shape is used
@@ -51,7 +51,7 @@ function code(name) {
 }
 
 /**
- * The closed admissibility register. Twenty-eight codes, spelled here and nowhere
+ * The closed admissibility register, spelled here and nowhere
  * else, standing in exact bijection with the `agent-ix.semantic-ir.` half of
  * `conformance/diagnostic-codes.json` — asserted in both directions by a test.
  */
@@ -80,7 +80,6 @@ export const ADMISSIBILITY_CODES = Object.freeze({
 	COMPOSITE_CYCLE: code("COMPOSITE_CYCLE"),
 	UNRESOLVED_IMPORT: code("UNRESOLVED_IMPORT"),
 	PACKAGE_CYCLE: code("PACKAGE_CYCLE"),
-	STALE_LOCK: code("STALE_LOCK"),
 	UNKNOWN_MAPPING_TARGET: code("UNKNOWN_MAPPING_TARGET"),
 	UNDECLARED_LOSS: code("UNDECLARED_LOSS"),
 	UNKNOWN_REQUIRED_EXTENSION: code("UNKNOWN_REQUIRED_EXTENSION"),
@@ -210,9 +209,6 @@ export const DERIVATIONS = Object.freeze({
 	PACKAGE_CYCLE: fromClause(
 		CONTRACTS,
 		"Package cycles are rejected with every\nlocus.",
-	),
-	STALE_LOCK: fromCorpus(
-		"the contract states what a fingerprint includes and excludes; it states no staleness rule between an IR's recorded manifest digest and the bundle's manifest, so the rule is the corpus's",
 	),
 	UNKNOWN_MAPPING_TARGET: fromCorpus(
 		"the contract says mappings name correspondences; it states no resolution rule for a mapping's sourceType against the document, so the rule is the corpus's",
@@ -1242,18 +1238,6 @@ function packageChecks(bundle, ir, types, emit, suppress) {
 		suppress("package-cycle", "lock");
 	} else {
 		reportPackageCycle(lock, emit);
-	}
-
-	/* stale lock */
-	if (bundle.manifestDigest === undefined) {
-		suppress("stale-lock", "manifestDigest");
-	} else if (bundle.manifestDigest !== ir.package?.manifestDigest) {
-		emit(
-			ADMISSIBILITY_CODES.STALE_LOCK,
-			pointerOf("ir", "package", "manifestDigest"),
-			"the IR names the manifest digest the bundle's manifest hashes to",
-			{},
-		);
 	}
 
 	/* mapping targets */

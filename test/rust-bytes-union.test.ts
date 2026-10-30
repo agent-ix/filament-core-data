@@ -31,15 +31,12 @@ const document = {
 		identity: `${prefix}/source/typespec`,
 		version: "1.0.0",
 		dialect: "typespec",
-		digest: `sha256:${"0".repeat(64)}`,
 	},
 	package: {
 		identity: "agent-ix/detector",
 		version: "1.0.0",
-		manifestDigest: `sha256:${"1".repeat(64)}`,
 		mappingVersions: ["1.0.0"],
 		profileVersions: ["1.0.0"],
-		lockDigest: `sha256:${"2".repeat(64)}`,
 	},
 	types: [
 		scalar("Blob", "bytes"),

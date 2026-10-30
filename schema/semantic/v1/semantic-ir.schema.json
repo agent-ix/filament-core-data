@@ -22,7 +22,7 @@
 		},
 		"source": {
 			"type": "object",
-			"required": ["identity", "version", "dialect", "digest"],
+			"required": ["identity", "version", "dialect"],
 			"properties": {
 				"identity": {
 					"$ref": "common.schema.json#/$defs/semanticIdentity"
@@ -32,32 +32,19 @@
 				},
 				"dialect": {
 					"$ref": "common.schema.json#/$defs/frontendDialect"
-				},
-				"digest": {
-					"$ref": "common.schema.json#/$defs/sha256"
 				}
 			},
 			"additionalProperties": false
 		},
 		"package": {
 			"type": "object",
-			"required": [
-				"identity",
-				"version",
-				"manifestDigest",
-				"mappingVersions",
-				"profileVersions",
-				"lockDigest"
-			],
+			"required": ["identity", "version", "mappingVersions", "profileVersions"],
 			"properties": {
 				"identity": {
 					"$ref": "common.schema.json#/$defs/packageIdentity"
 				},
 				"version": {
 					"$ref": "#/$defs/packageRevision"
-				},
-				"manifestDigest": {
-					"$ref": "common.schema.json#/$defs/sha256"
 				},
 				"mappingVersions": {
 					"type": "array",
@@ -70,9 +57,6 @@
 					"items": {
 						"$ref": "common.schema.json#/$defs/semver"
 					}
-				},
-				"lockDigest": {
-					"$ref": "common.schema.json#/$defs/sha256"
 				}
 			},
 			"additionalProperties": false

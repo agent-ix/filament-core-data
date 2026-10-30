@@ -256,14 +256,11 @@ function residueOf(document) {
 	if (isObject(copy.source)) {
 		delete copy.source.identity;
 		delete copy.source.version;
-		delete copy.source.digest;
 		delete copy.source.dialect;
 	}
 	if (isObject(copy.package)) {
 		delete copy.package.identity;
 		delete copy.package.version;
-		delete copy.package.manifestDigest;
-		delete copy.package.lockDigest;
 		delete copy.package.mappingVersions;
 		delete copy.package.profileVersions;
 	}
@@ -413,16 +410,13 @@ function classifyEnvelope(before, after, record) {
 			"source-identity-changed",
 		);
 	}
-	if (
-		beforeSource.version !== afterSource.version ||
-		beforeSource.digest !== afterSource.digest
-	) {
+	if (beforeSource.version !== afterSource.version) {
 		// ARCH-008 Patch: "Documentation, metadata, or generator correction with
 		// identical accepted values and meaning."
 		record(
 			"patch",
 			"/source",
-			"the source version or digest changed",
+			"the source version changed",
 			"source-provenance-changed",
 		);
 	}
@@ -439,15 +433,13 @@ function classifyEnvelope(before, after, record) {
 	}
 	if (
 		beforePackage.version !== afterPackage.version ||
-		beforePackage.manifestDigest !== afterPackage.manifestDigest ||
-		beforePackage.lockDigest !== afterPackage.lockDigest ||
 		!sameBytes(beforePackage.mappingVersions, afterPackage.mappingVersions) ||
 		!sameBytes(beforePackage.profileVersions, afterPackage.profileVersions)
 	) {
 		record(
 			"patch",
 			"/package",
-			"the package version, digests, or mapping and profile versions changed",
+			"the package version or mapping and profile versions changed",
 			"package-provenance-changed",
 		);
 	}

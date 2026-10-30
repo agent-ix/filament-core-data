@@ -1003,7 +1003,7 @@ fn population_schema(
     }
 }
 
-const SOURCE_MEMBERS: &[&str] = &["identity", "version", "dialect", "digest"];
+const SOURCE_MEMBERS: &[&str] = &["identity", "version", "dialect"];
 
 fn ir_source(source: &Json, at: &str, f: &mut Findings) {
     if !expect_object(source, at, "the source envelope", f) {
@@ -1025,13 +1025,6 @@ fn ir_source(source: &Json, at: &str, f: &mut Findings) {
         "a revision is SemVer or a canonical non-negative integer string",
         f,
     );
-    expect_shape(
-        source.get("digest"),
-        &child(at, "digest"),
-        is_sha256,
-        "a digest is sha256:<64 lower-case hex digits>",
-        f,
-    );
     if let Some(dialect) = source.get("dialect") {
         let dialect_at = child(at, "dialect");
         let text = dialect.as_str().unwrap_or("");
@@ -1044,14 +1037,7 @@ fn ir_source(source: &Json, at: &str, f: &mut Findings) {
     }
 }
 
-const PACKAGE_MEMBERS: &[&str] = &[
-    "identity",
-    "version",
-    "manifestDigest",
-    "mappingVersions",
-    "profileVersions",
-    "lockDigest",
-];
+const PACKAGE_MEMBERS: &[&str] = &["identity", "version", "mappingVersions", "profileVersions"];
 
 fn ir_package(package: &Json, at: &str, f: &mut Findings) {
     if !expect_object(package, at, "the package envelope", f) {
@@ -1073,15 +1059,6 @@ fn ir_package(package: &Json, at: &str, f: &mut Findings) {
         "a revision is SemVer or a canonical non-negative integer string",
         f,
     );
-    for name in ["manifestDigest", "lockDigest"] {
-        expect_shape(
-            package.get(name),
-            &child(at, name),
-            is_sha256,
-            "a digest is sha256:<64 lower-case hex digits>",
-            f,
-        );
-    }
     for name in ["mappingVersions", "profileVersions"] {
         if let Some(versions) = package.get(name) {
             let versions_at = child(at, name);

@@ -445,8 +445,6 @@ class Scalar(Enum):
 
 class Package(Struct):
     identity: common_schema.PackageIdentity
-    lockDigest: common_schema.Sha256
-    manifestDigest: common_schema.Sha256
     mappingVersions: list[common_schema.Semver]
     profileVersions: list[common_schema.Semver]
     version: PackageRevision
@@ -454,7 +452,6 @@ class Package(Struct):
 
 class Source(Struct):
     dialect: common_schema.FrontendDialect
-    digest: common_schema.Sha256
     identity: common_schema.SemanticIdentity
     version: PackageRevision
 

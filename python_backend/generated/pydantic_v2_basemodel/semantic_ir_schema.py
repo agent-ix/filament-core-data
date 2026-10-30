@@ -696,8 +696,6 @@ class Package(BaseModel):
         extra='forbid',
     )
     identity: common_schema.PackageIdentity
-    lockDigest: common_schema.Sha256
-    manifestDigest: common_schema.Sha256
     mappingVersions: list[common_schema.Semver]
     profileVersions: list[common_schema.Semver]
     version: PackageRevision
@@ -708,7 +706,6 @@ class Source(BaseModel):
         extra='forbid',
     )
     dialect: common_schema.FrontendDialect
-    digest: common_schema.Sha256
     identity: common_schema.SemanticIdentity
     version: PackageRevision
 

@@ -688,12 +688,6 @@
 			"class": "negative"
 		},
 		{
-			"id": "PKG-006",
-			"path": "conformance/cases/package/PKG-006.json",
-			"family": "package",
-			"class": "negative"
-		},
-		{
 			"id": "PKG-007",
 			"path": "conformance/cases/package/PKG-007.json",
 			"family": "package",

@@ -858,7 +858,7 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 			resolve(fixtureDir, "positive/config-version-field-decls.json"),
 			"utf8",
 		);
-		return lower(JSON.parse(bytes) as Instance, bytes);
+		return lower(JSON.parse(bytes) as Instance);
 	}
 
 	function committedLowered(): JsonObject {
@@ -1009,7 +1009,7 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 			],
 		};
 		expect(readDeclarations(instance)).toEqual([]);
-		const document = lower(instance, "enum");
+		const document = lower(instance);
 		const validate = irAjv.getSchema(
 			"https://schemas.agent-ix.org/filament-core-data/v1/semantic-ir.schema.json",
 		);
@@ -1157,7 +1157,7 @@ describe("FR-034 lowering table, reference lowerer, and lowered fixture (Task-04
 			},
 		});
 		expect(readDeclarations(instance)).toEqual([]);
-		const document = lower(instance, "decimal");
+		const document = lower(instance);
 		const entity = object(
 			array(document.types, "types")
 				.map((v) => object(v, "type"))

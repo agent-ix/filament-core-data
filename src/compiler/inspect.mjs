@@ -39,13 +39,10 @@ export function inspectIr(document, options = {}) {
 		package: {
 			identity: document?.package?.identity ?? null,
 			version: document?.package?.version ?? null,
-			manifestDigest: document?.package?.manifestDigest ?? null,
-			lockDigest: document?.package?.lockDigest ?? null,
 		},
 		source: {
 			identity: document?.source?.identity ?? null,
 			dialect: document?.source?.dialect ?? null,
-			digest: document?.source?.digest ?? null,
 		},
 		fingerprint: fingerprintIr(document),
 		typeCount: types.length,
@@ -78,10 +75,7 @@ export function formatInspection(summary) {
 	const lines = [
 		`contract        ${summary.contractVersion}`,
 		`package         ${summary.package.identity} ${summary.package.version}`,
-		`manifest        ${summary.package.manifestDigest}`,
-		`lock            ${summary.package.lockDigest}`,
 		`source          ${summary.source.identity} (${summary.source.dialect})`,
-		`source digest   ${summary.source.digest}`,
 		`fingerprint     ${summary.fingerprint}`,
 		`types           ${summary.typeCount}`,
 	];

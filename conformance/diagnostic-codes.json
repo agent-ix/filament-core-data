@@ -306,15 +306,6 @@
 			"exercisedBy": "case"
 		},
 		{
-			"code": "agent-ix.semantic-ir.STALE_LOCK",
-			"provenance": "minted",
-			"decidedBy": "cross-field",
-			"sources": ["docs/semantic-data-system/contracts-v1.md"],
-			"rule": "An IR naming a manifest digest the bundle's manifest does not hash to.",
-			"citation": "It includes\nschema bytes, manifest, mappings, profiles, resolved packages, and compiler",
-			"exercisedBy": "case"
-		},
-		{
 			"code": "agent-ix.semantic-ir.UNKNOWN_MAPPING_TARGET",
 			"provenance": "minted",
 			"decidedBy": "cross-field",

@@ -6,7 +6,7 @@
  * records which phases ran. Ordering matters for a reason that is easy to lose:
  * the lock is built and verified *before* the frontend runs, so a compile
  * against a stale lock reports the staleness rather than producing a document
- * whose `lockDigest` names inputs it did not use.
+ * assembled from inputs it did not use.
  *
  * A blocking diagnostic in any phase stops the next one. Returning a document
  * assembled from half a resolution would be worse than returning none.
@@ -20,7 +20,6 @@ import {
 } from "./diagnostics.mjs";
 import { runFrontend } from "./frontend/seam.mjs";
 import { validateIrDocument } from "./ir/schema.mjs";
-import { digest } from "./packages/canonical.mjs";
 import { buildLock, serializeLock, verifyLock } from "./packages/lock.mjs";
 import { readDocument } from "./packages/manifest.mjs";
 import { resolvePackageGraph } from "./packages/resolve.mjs";
@@ -89,7 +88,6 @@ export async function compilePackage(request) {
 	onPhase("lock");
 	const lock = buildLock(resolution);
 	const lockBytes = serializeLock(lock);
-	let lockDigest = digest(lockBytes);
 	if (lockPath) {
 		const read = readDocument(host, {
 			host,
@@ -109,17 +107,14 @@ export async function compilePackage(request) {
 		diagnostics.push(
 			...verifyLock(read.value, read.text, read.path, resolution),
 		);
-		lockDigest = read.digest;
 		if (hasBlocking(diagnostics)) return stop("invalid");
 	}
 
 	resolution.packageBlock = {
 		identity: resolution.root.identity,
 		version: resolution.root.version,
-		manifestDigest: resolution.root.manifestDigest,
 		mappingVersions: resolution.mappings.map((mapping) => mapping.version),
 		profileVersions: resolution.profiles.map((profile) => profile.version),
-		lockDigest,
 	};
 
 	phases.push("frontend");
