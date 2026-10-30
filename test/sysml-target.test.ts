@@ -139,7 +139,6 @@ describe("SysML v2 textual target", () => {
 		const ir = numericDocument();
 		const request = {
 			contractVersion: "1.0.0",
-			lockFingerprint: `sha256:${"a".repeat(64)}`,
 			ir,
 			profile: {
 				contractVersion: "1.0.0",
