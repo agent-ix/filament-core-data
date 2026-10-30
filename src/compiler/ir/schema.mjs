@@ -9,7 +9,7 @@
  */
 import { DIAGNOSTIC_CODES, diagnostic, fragment } from "../diagnostics.mjs";
 import { repositoryHost } from "../host.mjs";
-import { REPO_ROOT } from "../packages/lock.mjs";
+import { REPO_ROOT } from "../packages/graph.mjs";
 import {
 	errorMessage,
 	errorPointer,

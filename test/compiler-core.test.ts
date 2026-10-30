@@ -68,7 +68,7 @@ import { normalizeIr } from "../src/compiler/ir/normalize.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
 import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
 import { canonicalize, digest } from "../src/compiler/packages/canonical.mjs";
-import { resolvedPackageGraph, sourceFiles } from "../src/compiler/packages/lock.mjs";
+import { resolvedPackageGraph, sourceFiles } from "../src/compiler/packages/graph.mjs";
 import {
 	compareVersions,
 	parseConstraint,

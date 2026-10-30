@@ -21,7 +21,7 @@ import {
 	diagnostic,
 	fragment,
 } from "../diagnostics.mjs";
-import { sourceFiles } from "./lock.mjs";
+import { sourceFiles } from "./graph.mjs";
 import { readDocument } from "./manifest.mjs";
 
 const SEMVER =

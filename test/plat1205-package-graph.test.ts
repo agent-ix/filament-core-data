@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { validateConformance } from "../conformance/oracle/schema-layer.mjs";
 import { createHost } from "../src/compiler/host.mjs";
-import { resolvedPackageGraph } from "../src/compiler/packages/lock.mjs";
+import { resolvedPackageGraph } from "../src/compiler/packages/graph.mjs";
 import { compilePackage } from "../src/compiler/pipeline.mjs";
 
 const repository = resolve(import.meta.dirname, "..");
