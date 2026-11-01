@@ -1906,11 +1906,9 @@ fn field_rules(
         // FR-148: presence `optional` with multiplicity [1, 1] on a field of
         // option value type would be Option<Option<T>>.
         if field.get("presence").and_then(Json::as_str) == Some("optional")
-            && field.get("multiplicity").is_some_and(|m| {
-                m.get("lower").and_then(Json::as_i64) == Some(1)
-                    && m.get("upper").and_then(Json::as_i64) == Some(1)
-            })
-            && type_ref.is_some_and(|identity| is_option_type(document, identity))
+            && document
+                .member_option(field)
+                .is_some_and(|option| option.spelling == OptionSpelling::Type)
         {
             sink.emit(
                 child(&field_at, "presence"),
