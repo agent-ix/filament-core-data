@@ -2,13 +2,18 @@
 // Copyright (C) 2026 Agent IX
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
 import { generateTarget } from "../src/compiler/backends/seam.mjs";
+import { schemaValidators } from "../src/compiler/schema-validate.mjs";
+import { repositoryHost } from "../src/compiler/host.mjs";
 import { createHost } from "../src/compiler/host.mjs";
 import { readContractIr } from "../src/compiler/ir/reader.mjs";
+import { readSemanticIr } from "./semantic-ir-v1-1-reader";
 import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
 
 // FR-148 over the QSpec vectors
@@ -299,6 +304,197 @@ describe("FR-148 option value types", () => {
 			}
 		}
 		expect(seen).toBe(33);
+	});
+
+	/** Traces: TC-1896; FR-148-AC-9, FR-148-AC-3, FR-148-AC-4, FR-148-AC-5. */
+	it("TC-1896 cross-reader OP-01..OP-41 verdicts agree by reference", () => {
+		// OP-01..08 describe eight types of the same admitted document. The
+		// Rust accessor gate checks their meanings; verdict-only readers read
+		// that document once rather than claim eight accessor executions.
+		const rows = [
+			{ name: "OP-01..OP-08", expected: { admitted: true }, patch: [] },
+			...cases,
+		];
+		const ajv = new Ajv2020({
+			allErrors: true,
+			strict: true,
+			strictRequired: false,
+		});
+		addFormats(ajv);
+		const schemaRoot = resolve("schema/semantic/v1");
+		for (const name of readdirSync(schemaRoot).filter((name) =>
+			name.endsWith(".schema.json"),
+		))
+			ajv.addSchema(
+				JSON.parse(readFileSync(resolve(schemaRoot, name), "utf8")),
+			);
+		const validate = ajv.getSchema(
+			"https://schemas.agent-ix.org/filament-core-data/v1/semantic-ir.schema.json",
+		);
+		if (!validate) throw new Error("missing published IR schema");
+		const nodeSchema = schemaValidators(repositoryHost(process.cwd()));
+		// Conditional schema errors repeat the owning member at its ancestors.
+		// Keep every distinct leaf, so any second independent defect fails.
+		const leaves = (paths: string[]): string[] =>
+			[...new Set(paths)]
+				.filter(
+					(path, _, all) => !all.some((other) => other.startsWith(`${path}/`)),
+				)
+				.sort();
+		const ajvPaths = (errors: any[]): string[] =>
+			leaves(
+				errors.map((error) =>
+					error.keyword === "additionalProperties"
+						? `${error.instancePath}/${error.params.additionalProperty}`
+						: error.instancePath,
+				),
+			);
+		const documents = rows.map((entry: Json) => irOf(patched(entry)));
+		// A unique source locus per authored node lets the production compiler
+		// envelope retain its native source location while evidence readers
+		// report document paths. No diagnostics ABI is invented by this gate.
+		const locate = (node: any, path: string): void => {
+			if (!node || typeof node !== "object") return;
+			if (node.origin)
+				node.origin = {
+					source: {
+						sourceIdentity: SOURCE,
+						path: path.slice(1),
+						startLine: 1,
+						startColumn: 1,
+					},
+				};
+			for (const [key, child] of Object.entries(node))
+				if (key !== "origin") locate(child, `${path}/${key}`);
+		};
+		documents.forEach((document: Json) => locate(document, ""));
+		const python = JSON.parse(
+			execFileSync(
+				process.env.PYTHON ?? ".venv/bin/python",
+				["tests/option_vector_reader.py"],
+				{
+					input: JSON.stringify(documents),
+					encoding: "utf8",
+					maxBuffer: 16 * 1024 * 1024,
+				},
+			),
+		) as Json[];
+		const failures: string[] = [];
+		rows.forEach((entry: Json, index: number) => {
+			const document = documents[index];
+			const schema = validateIrDocument(document);
+			const tsSchema = validate(document) ? [] : [...(validate.errors ?? [])];
+			const refused = entry.expected.refused;
+			let pointer: string | undefined;
+			if (refused) {
+				const [collection, row, ...rest] = refused.at.slice(1).split("/");
+				if (collection === "constraints")
+					pointer = `/types/0/constraints/${row}`;
+				else {
+					const identity = patched(entry)[collection][Number(row)].node;
+					pointer = `/types/${document.types.findIndex((type: Json) => type.identity === identity)}/${rest.join("/")}`;
+				}
+			}
+			if (SCHEMA_ROWS.includes(entry.name)) {
+				let value: any = document;
+				for (const part of (pointer as string).slice(1).split("/"))
+					value = value?.[part];
+				const at =
+					value === undefined
+						? pointer?.slice(0, pointer.lastIndexOf("/"))
+						: pointer;
+				for (const [reader, paths] of [
+					[
+						"Node",
+						ajvPaths(nodeSchema.errors("semantic-ir.schema.json", document)),
+					],
+					["TypeScript", ajvPaths(tsSchema)],
+					["Python", leaves(python[index].schemaPaths)],
+				] as const)
+					if (JSON.stringify(paths) !== JSON.stringify([at]))
+						failures.push(
+							`${entry.name} ${reader}: schema locations ${JSON.stringify(paths)}, expected ${at}`,
+						);
+				if (
+					!schema.length ||
+					schema.some(
+						(d: Json) =>
+							d.code !== "agent-ix.compiler.INVALID_IR" ||
+							d.severity !== "error" ||
+							!d.blocking,
+					)
+				)
+					failures.push(`${entry.name}: schema envelope`);
+				// Each reader's published pipeline stops at a schema refusal;
+				// applying semantic rules to an invalid shape invents diagnostics.
+				return;
+			}
+			const code = !refused
+				? undefined
+				: entry.name === "OP-17"
+					? "UNRESOLVED_OPTION_INNER"
+					: ["OP-18", "OP-19", "OP-41"].includes(entry.name)
+						? "INVALID_OPTION_PRESENCE"
+						: ["OP-21", "OP-22", "OP-24"].includes(entry.name)
+							? "UNRESOLVED_TYPE_REF"
+							: entry.name === "OP-40"
+								? "CONSTRAINT_NOT_APPLICABLE"
+								: "INVALID_OPTION_INNER";
+			const expected = code ? [`agent-ix.semantic-ir.${code}`] : [];
+			const node = [...readContractIr(document, { importedExports: [] })];
+			const ts = readSemanticIr(document);
+			for (const [reader, found] of [
+				["Node", node],
+				["TypeScript", ts],
+				["Python", python[index].diagnostics],
+			] as const) {
+				if (
+					JSON.stringify(found.map((d: Json) => d.code)) !==
+					JSON.stringify(expected)
+				)
+					failures.push(`${entry.name} ${reader}: ${JSON.stringify(found)}`);
+			}
+			if (pointer) {
+				const path = pointer.slice(1).replaceAll("/", ".");
+				for (const [reader, found] of [
+					["TypeScript", ts],
+					["Python", python[index].diagnostics],
+				] as const)
+					if (
+						JSON.stringify(found.map((d: Json) => d.path)) !==
+						JSON.stringify([path])
+					)
+						failures.push(`${entry.name} ${reader}: expected path ${path}`);
+				let owner: Json = document;
+				let locus: Json | undefined;
+				for (const part of pointer.slice(1).split("/")) {
+					owner = owner?.[part];
+					if (owner?.origin?.source) locus = owner.origin.source;
+				}
+				if (
+					node.length !== 1 ||
+					JSON.stringify(node[0].locus) !== JSON.stringify(locus) ||
+					node[0].severity !== "error" ||
+					!node[0].blocking
+				)
+					failures.push(
+						`${entry.name} Node: expected located blocking error at ${pointer}`,
+					);
+			}
+			if (schema.length || tsSchema.length || python[index].schemaPaths.length)
+				failures.push(`${entry.name}: unexpected schema refusal`);
+		});
+		expect(
+			[...vectors.field_type_cases, ...cases]
+				.map((entry: Json) => entry.name)
+				.sort(),
+		).toEqual(
+			Array.from(
+				{ length: 41 },
+				(_, i) => `OP-${String(i + 1).padStart(2, "0")}`,
+			).sort(),
+		);
+		expect(failures).toEqual([]);
 	});
 
 	/** Traces: TC-1893; FR-148-AC-1. */
