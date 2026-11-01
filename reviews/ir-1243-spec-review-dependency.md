@@ -124,3 +124,44 @@ inspection grounds the native envelopes; the parent also supplied the
 coder's observed raw AJV member-plus-ancestor cardinality. New implementation
 coverage is pending and must expand TC-1896 before code delivery. This
 review does not count the old shape-only test as full AC-9 evidence.
+
+## Disposition Round 1
+
+Reviewed fix `80a558ba0a326bd4d8a835f5ff281cb03ef0d00c` against the initial
+head. This section supersedes the initial overall-PR conditional status;
+initial findings, excerpts and review history above remain unchanged.
+
+This method had no findings to disposition. The fix introduces no new
+defect in its scope. SR-16482 FND-001 is now fixed, so the prior cross-reference
+to the overall conditional gate no longer blocks this method or the PR.
+
+## Final Verdict
+
+**PASS** — round 1 closes the sole finding; no new findings. The native
+multi-error diagnostic envelope is preserved, every raw schema error is
+checked, canonical mapping is constrained to the same violation, and extra
+distinct violations fail. No diagnostic cardinality ABI, code, expected path,
+cause, severity/blocking rule, vector scope or generator ownership is weakened.
+The changed Markdown validates; no runtime/build evidence is claimed.
+
+### Round 1 examined scope
+
+```yaml
+scope:
+- id: FR-148-AC-9
+  path: spec/functional/FR-148-carry-option-value-types-in-the-semantic-ir.md
+  role: examined
+  excerpt: each rejection row yields exactly one mapped canonical vector result for the code and located
+    member required by AC-2 to AC-5, without requiring a single raw native diagnostic.
+- id: FR-148-AC-9 native diagnostic mapping
+  path: spec/functional/FR-148-carry-option-value-types-in-the-semantic-ir.md
+  role: examined
+  excerpt: The gate retains and checks every native schema diagnostic, normalizes only documented duplicate
+    or ancestor representations of the same violation, and fails on any extra distinct violation; semantic
+    refusals retain their existing codes and locations.
+- id: TC-1896
+  path: spec/tests.md
+  role: examined
+  excerpt: Every native schema diagnostic is retained and checked; only documented duplicate or ancestor
+    representations of the same violation normalize, and any extra distinct violation fails.
+```
