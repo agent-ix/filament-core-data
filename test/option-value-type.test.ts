@@ -338,8 +338,20 @@ describe("FR-148 option value types", () => {
 			["required", "additionalProperties"].includes(error.keyword)
 				? `${error.instancePath}/${error.params.missingProperty ?? error.params.additionalProperty}`
 				: error.instancePath;
-		const ajvPaths = (errors: any[], document: Json): string[] =>
+		// A false property forbids its entire subtree. Descendant shape
+		// errors describe that same foreign member, not additional violations.
+		// Distinct siblings and false properties remain separate results.
+		const forbiddenOwners = (paths: string[], forbidden: string[]): string[] =>
 			distinct(
+				paths.map(
+					(path) =>
+						forbidden
+							.filter((owner) => path === owner || path.startsWith(`${owner}/`))
+							.sort((a, b) => a.length - b.length)[0] ?? path,
+				),
+			);
+		const ajvPaths = (errors: any[], document: Json): string[] =>
+			forbiddenOwners(
 				errors
 					// Only AJV's conditional wrapper repeats its child violation. Other
 					// ancestor defects are independent and must survive normalization.
@@ -365,8 +377,20 @@ describe("FR-148 option value types", () => {
 							? error.instancePath
 							: nativePointer(error);
 					}),
+				errors
+					.filter((error) => error.keyword === "false schema")
+					.map(nativePointer),
 			);
 		const documents = rows.map((entry: Json) => irOf(patched(entry)));
+		// A normalization control, not an additional QSpec row: two equally
+		// valued forbidden properties must remain two distinct violations.
+		const siblingControl = irOf(vectors.domain_package);
+		const siblingOwner = siblingControl.types.findIndex(
+			(type: Json) => type.kind === "option",
+		);
+		siblingControl.types[siblingOwner].fields = [];
+		siblingControl.types[siblingOwner].operations = [];
+		documents.push(siblingControl);
 		// A unique source locus per authored node lets the production compiler
 		// envelope retain its native source location while evidence readers
 		// report document paths. No diagnostics ABI is invented by this gate.
@@ -429,7 +453,13 @@ describe("FR-148 option value types", () => {
 						),
 					],
 					["TypeScript", ajvPaths(tsSchema, document)],
-					["Python", distinct(python[index].schemaPaths)],
+					[
+						"Python",
+						forbiddenOwners(
+							python[index].schemaPaths,
+							python[index].forbiddenPaths,
+						),
+					],
 				] as const)
 					if (JSON.stringify(paths) !== JSON.stringify([at]))
 						failures.push(
@@ -518,6 +548,33 @@ describe("FR-148 option value types", () => {
 			if (schema.length || tsSchema.length || python[index].schemaPaths.length)
 				failures.push(`${entry.name}: unexpected schema refusal`);
 		});
+		validate(siblingControl);
+		const siblingPaths = [
+			`/types/${siblingOwner}/fields`,
+			`/types/${siblingOwner}/operations`,
+		];
+		for (const [reader, paths] of [
+			[
+				"Node",
+				ajvPaths(
+					nodeSchema.errors("semantic-ir.schema.json", siblingControl),
+					siblingControl,
+				),
+			],
+			["TypeScript", ajvPaths([...(validate.errors ?? [])], siblingControl)],
+			[
+				"Python",
+				forbiddenOwners(
+					python[rows.length].schemaPaths,
+					python[rows.length].forbiddenPaths,
+				),
+			],
+		] as const)
+			expect(
+				paths,
+				`${reader}: distinct equal-valued forbidden properties survive`,
+			).toEqual(siblingPaths);
+
 		expect(
 			[...vectors.field_type_cases, ...cases]
 				.map((entry: Json) => entry.name)

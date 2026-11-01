@@ -9,47 +9,86 @@ from typing import Any
 from semantic_ir_reader import _schema_validator, read_semantic_ir
 
 
-def schema_paths(error: Any) -> list[str]:
-    """Retain paths from nested schema alternatives, including required-member loci."""
+def schema_at(root: Any, path: list[Any]) -> Any:
+    """Follow the published schema's local refs along a validator schema path."""
+    schema = root
+    for part in path:
+        while isinstance(schema, dict) and "$ref" in schema:
+            reference = schema["$ref"]
+            if not reference.startswith("#/"):
+                raise ValueError(
+                    f"unexpected non-local false-property ref: {reference}"
+                )
+            schema = root
+            for token in reference[2:].split("/"):
+                schema = schema[token.replace("~1", "/").replace("~0", "~")]
+        schema = schema[part]
+    return schema
+
+
+def schema_findings(error: Any, document: Any, root: Any) -> list[tuple[str, bool]]:
+    """Retain all original schema findings and recover false-property locations.
+
+    jsonschema omits the property name from a Boolean-false error's instance
+    and schema paths. Identify every matching forbidden property from the
+    published schema and the containing instance, never from a vector's answer.
+    Equal values can identify several properties; all remain findings.
+    """
     if error.context:
-        return [path for child in error.context for path in schema_paths(child)]
+        return [
+            finding
+            for child in error.context
+            for finding in schema_findings(child, document, root)
+        ]
     parts = list(error.absolute_path)
-    schema = list(error.absolute_schema_path)
-    # Boolean-false properties retain the containing instance path in
-    # jsonschema; the published schema identifies the refused member.
-    if error.schema is False and len(schema) >= 2 and schema[-2] == "properties":
-        parts.append(schema[-1])
-    # Missing option.inner is located at the definition in the Rust mapping.
-    # Other missing members keep their own distinct locus rather than being
-    # hidden by an ancestor error for the expected violation.
+    schema_path = list(error.absolute_schema_path)
+    pointer = "/" + "/".join(str(part) for part in parts)
+    if error.schema is False:
+        properties = schema_at(root, schema_path)
+        owner = document
+        for part in parts:
+            owner = owner[part]
+        if not isinstance(properties, dict) or not isinstance(owner, dict):
+            raise ValueError("false property has no containing schema/instance object")
+        matches = [
+            (f"{pointer}/{name}", True)
+            for name, schema in properties.items()
+            if schema is False and name in owner and owner[name] == error.instance
+        ]
+        if not matches:
+            raise ValueError("false property cannot be located in its published schema")
+        return matches
     if error.validator == "required":
         missing = [name for name in error.validator_value if name not in error.instance]
         return [
-            "/"
-            + "/".join(
-                str(part)
-                for part in (
-                    parts
+            (
+                (
+                    pointer
                     if name == "inner" and error.instance.get("kind") == "option"
-                    else [*parts, name]
-                )
+                    else f"{pointer}/{name}"
+                ),
+                False,
             )
             for name in missing
         ]
-    return ["/" + "/".join(str(part) for part in parts)]
+    return [(pointer, False)]
 
 
 def main() -> None:
-    """Return schema paths and independent cross-field findings for each document."""
+    """Return schema findings and independent cross-field diagnostics per document."""
     validator = _schema_validator()
     verdicts = []
     for document in json.load(sys.stdin):
         errors = list(validator.iter_errors(document))
+        findings = [
+            finding
+            for error in errors
+            for finding in schema_findings(error, document, validator.schema)
+        ]
         verdicts.append(
             {
-                "schemaPaths": [
-                    path for error in errors for path in schema_paths(error)
-                ],
+                "schemaPaths": [path for path, _ in findings],
+                "forbiddenPaths": [path for path, forbidden in findings if forbidden],
                 "diagnostics": [] if errors else read_semantic_ir(document),
             }
         )

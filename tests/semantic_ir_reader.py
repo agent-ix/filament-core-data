@@ -127,6 +127,7 @@ class TypeIndex(dict[str, dict[str, Any]]):
     """A document's types by identity, aware of which construct kinds are aliases."""
 
     alias_kinds: frozenset[tuple[Any, Any]] = frozenset()
+    construct_shapes: dict[tuple[Any, Any], str]
 
 
 def type_index(document: dict[str, Any]) -> TypeIndex:
@@ -145,6 +146,15 @@ def type_index(document: dict[str, Any]) -> TypeIndex:
         and isinstance(entry.get("construct"), dict)
         and entry["construct"].get("shape") == "alias"
     )
+    index.construct_shapes = {
+        (entry["kind"].get("module"), entry["kind"].get("name")): entry["construct"][
+            "shape"
+        ]
+        for entry in _objects(document.get("constructs"))
+        if isinstance(entry.get("kind"), dict)
+        and isinstance(entry.get("construct"), dict)
+        and isinstance(entry["construct"].get("shape"), str)
+    }
     return index
 
 
@@ -157,6 +167,75 @@ def _is_alias(types: dict[str, dict[str, Any]], definition: dict[str, Any]) -> b
         return False
     alias_kinds = getattr(types, "alias_kinds", frozenset())
     return (kind.get("module"), kind.get("name")) in alias_kinds
+
+
+def _option_target(
+    types: dict[str, dict[str, Any]], reference: Any
+) -> tuple[str, dict[str, Any] | None] | None:
+    """Follow only type aliases, terminating on cycles without a depth cap."""
+    visited = set()
+    while isinstance(reference, str) and reference not in visited:
+        visited.add(reference)
+        node = types.get(reference)
+        if node is None or not _is_alias(types, node):
+            return reference, node
+        reference = node.get("target")
+    return None
+
+
+def _check_option_inner(
+    definition: dict[str, Any],
+    path: str,
+    types: dict[str, dict[str, Any]],
+    out: list[dict[str, str]],
+) -> None:
+    """FR-148: an option's inner is a resolved, non-option value type."""
+    inner = definition.get("inner")
+    if not isinstance(inner, str):
+        return  # The published schema owns inner's shape.
+    terminal = _option_target(types, inner)
+    reference, node = terminal if terminal else (None, None)
+    kind = node.get("kind") if node else None
+    shape = None
+    if isinstance(kind, dict):
+        shape = getattr(types, "construct_shapes", {}).get(
+            (kind.get("module"), kind.get("name"))
+        )
+    code = None
+    if (
+        inner.startswith(NATIVE_PREFIX) and _native_scalar(inner) is None
+    ) or reference == "ix://quire/native/Clock":
+        code = "INVALID_OPTION_INNER"
+    elif _native_scalar(inner) is not None:
+        return
+    elif inner.startswith("ix://quire/unit/"):
+        parts = inner.removeprefix("ix://quire/unit/").split("/")
+        if not (
+            parts
+            and re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", parts[-1])
+            and all(
+                re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*|[a-z0-9][a-z0-9._-]*", part)
+                for part in parts[:-1]
+            )
+        ):
+            code = "UNRESOLVED_TYPE_REF"
+    elif inner not in types:
+        code = "UNRESOLVED_OPTION_INNER"
+    elif kind == "option" or shape in {
+        "namespace",
+        "state_machine",
+        "interface",
+        "sequence",
+    }:
+        code = "INVALID_OPTION_INNER"
+    if code:
+        out.append(
+            _diag(
+                f"agent-ix.semantic-ir.{code}",
+                f"{path}.inner",
+                "an option inner must name a non-option value type",
+            )
+        )
 
 
 def resolve_kind(
@@ -339,6 +418,24 @@ def _check_field(
     fields: dict[str, dict[str, Any]],
     out: list[dict[str, str]],
 ) -> None:
+    terminal = _option_target(types, field.get("typeRef"))
+    multiplicity = field.get("multiplicity")
+    if (
+        field.get("presence") == "optional"
+        and isinstance(multiplicity, dict)
+        and multiplicity.get("lower") == 1
+        and multiplicity.get("upper") == 1
+        and terminal
+        and terminal[1]
+        and terminal[1].get("kind") == "option"
+    ):
+        out.append(
+            _diag(
+                "agent-ix.semantic-ir.INVALID_OPTION_PRESENCE",
+                f"{path}.presence",
+                "optional presence on a single option would nest options",
+            )
+        )
     resolved = resolve_kind(types, fields, field.get("typeRef"), allow_field=False)
     if resolved is None:
         out.append(
@@ -558,6 +655,18 @@ def _check_type(
     exports: set[str],
     out: list[dict[str, str]],
 ) -> None:
+    if definition.get("kind") == "option":
+        _check_option_inner(definition, path, types, out)
+    if definition.get("kind") == "reference":
+        terminal = _option_target(types, definition.get("target"))
+        if terminal and terminal[1] and terminal[1].get("kind") == "option":
+            out.append(
+                _diag(
+                    "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+                    f"{path}.target",
+                    "a reference cannot name an option value type",
+                )
+            )
     is_record = _is_edge_kind(definition.get("kind"))
     for index, field in enumerate(_objects(definition.get("fields"))):
         _check_field(field, f"{path}.fields.{index}", version, types, fields, out)

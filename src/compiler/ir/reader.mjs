@@ -16,6 +16,7 @@ import { checkUnitGraph, rationalOperand } from "./unit-graph.mjs";
  */
 import {
 	bindConstructs,
+	declarationOf,
 	CONSTRUCT_VOCABULARY,
 	constructOnlyMembers,
 	isAliasShaped,
@@ -257,6 +258,18 @@ export function resolveKind(
 		scalar:
 			typeof definition.scalar === "string" ? definition.scalar : undefined,
 	};
+}
+
+/** The terminal type/identity of a type-only alias walk; cycles terminate. */
+function optionTarget(types, reference) {
+	const seen = new Set();
+	while (typeof reference === "string" && !seen.has(reference)) {
+		seen.add(reference);
+		const node = types.get(reference);
+		if (!node || !isAliasShaped(node)) return { reference, node };
+		reference = node.target;
+	}
+	return undefined;
 }
 
 /**
@@ -572,6 +585,17 @@ export function readContractIr(document, options = {}) {
 			else checkMultiplicity(field.multiplicity, field);
 			return;
 		}
+		if (
+			field.presence === "optional" &&
+			field.multiplicity?.lower === 1 &&
+			field.multiplicity?.upper === 1 &&
+			optionTarget(types, field.typeRef)?.node?.kind === "option"
+		)
+			raise(
+				DIAGNOSTIC_CODES.INVALID_OPTION_PRESENCE,
+				`/ir${fieldPointer}/presence: an optional single-valued field of option type would nest options`,
+				locusOf(field),
+			);
 		const resolved = resolveKind(
 			types,
 			fields,
@@ -869,6 +893,46 @@ export function readContractIr(document, options = {}) {
 
 	const checkDefinition = (definition, definitionIndex) => {
 		const definitionPointer = `/types/${definitionIndex}`;
+		if (definition.kind === "option" && typeof definition.inner === "string") {
+			const inner = definition.inner;
+			const target = optionTarget(types, inner);
+			let code;
+			if (
+				(inner.startsWith(NATIVE_PREFIX) &&
+					nativeScalar(inner) === undefined) ||
+				specialOf(inner) === "clock"
+			)
+				code = DIAGNOSTIC_CODES.INVALID_OPTION_INNER;
+			else if (
+				nativeScalar(inner) !== undefined ||
+				inner.startsWith(quantityPrefix)
+			) {
+				// Malformed unit references are refused by the type-position pass.
+			} else if (!types.has(inner))
+				code = DIAGNOSTIC_CODES.UNRESOLVED_OPTION_INNER;
+			else if (
+				target?.node?.kind === "option" ||
+				["namespace", "state_machine", "interface", "sequence"].includes(
+					declarationOf(target?.node)?.shape,
+				)
+			)
+				code = DIAGNOSTIC_CODES.INVALID_OPTION_INNER;
+			if (code)
+				raise(
+					code,
+					`/ir${definitionPointer}/inner: an option inner names a non-option value type`,
+					locusOf(definition),
+				);
+		}
+		if (
+			definition.kind === "reference" &&
+			optionTarget(types, definition.target)?.node?.kind === "option"
+		)
+			raise(
+				DIAGNOSTIC_CODES.UNRESOLVED_TYPE_REF,
+				`/ir${definitionPointer}/target: a reference cannot target an option value type`,
+				locusOf(definition),
+			);
 		const resolvedSelf = resolveKind(
 			types,
 			fields,
@@ -912,7 +976,7 @@ export function readContractIr(document, options = {}) {
 					locusOf(owner),
 				);
 		};
-		for (const member of ["target", "items", "values"])
+		for (const member of ["target", "items", "values", "inner"])
 			quantityRefused(
 				definition[member],
 				`/ir${definitionPointer}/${member}`,
