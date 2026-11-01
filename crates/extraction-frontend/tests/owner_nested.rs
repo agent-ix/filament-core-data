@@ -410,7 +410,8 @@ fn tc_1839_a_clause_state_or_step_name_outside_the_member_name_pattern_is_unslug
 
 #[trace("TC-1347", "FR-095-AC-14")]
 #[test]
-fn tc_1347_colliding_variants_from_hyphenated_and_plain_artifact_ids_report_one_duplicate_identity() {
+fn tc_1347_colliding_variants_from_hyphenated_and_plain_artifact_ids_report_one_duplicate_identity()
+{
     // `b_c` slugs to `b-c`, so these two producer identities collide exactly:
     // variant/<a-b>-c and variant/<a>-<b-c>.
     let scratch = tempfile::tempdir().expect("scratch bundle");
