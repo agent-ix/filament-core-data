@@ -3042,13 +3042,13 @@ mod tests {
             if position > 0 {
                 text.push(',');
             }
-            let dependencies = if position + 1 < count || closed {
+            let imports = if position + 1 < count || closed {
                 format!(r#""ix://acme/pkg{}""#, (position + 1) % count)
             } else {
                 String::new()
             };
             text.push_str(&format!(
-                r#"{{"identity":"ix://acme/pkg{position}","dependencies":[{dependencies}]}}"#
+                r#"{{"identity":"ix://acme/pkg{position}","imports":[{imports}]}}"#
             ));
         }
         text.push_str("]}");
