@@ -309,6 +309,34 @@ function quantityReference(reference: unknown): boolean {
 	);
 }
 
+const constructShapes = new WeakMap<
+	Map<string, JsonObject>,
+	Map<string, string>
+>();
+function optionShape(
+	types: Map<string, JsonObject>,
+	node: JsonObject,
+): string | undefined {
+	const kind = node.kind;
+	return isObject(kind)
+		? constructShapes.get(types)?.get(JSON.stringify([kind.module, kind.name]))
+		: undefined;
+}
+
+function optionLeaf(
+	types: Map<string, JsonObject>,
+	reference: unknown,
+): { reference: string; node?: JsonObject } | undefined {
+	const visited = new Set<string>();
+	while (typeof reference === "string" && !visited.has(reference)) {
+		visited.add(reference);
+		const node = types.get(reference);
+		if (!node || !isAliasDefinition(node)) return { reference, node };
+		reference = node.target;
+	}
+	return undefined;
+}
+
 const constructAliases = new WeakSet<JsonObject>();
 function isAliasDefinition(definition: JsonObject): boolean {
 	return definition.kind === "alias" || constructAliases.has(definition);
@@ -734,6 +762,18 @@ function checkField(
 			);
 		return;
 	}
+	if (
+		field.presence === "optional" &&
+		isObject(field.multiplicity) &&
+		field.multiplicity.lower === 1 &&
+		field.multiplicity.upper === 1 &&
+		optionLeaf(types, field.typeRef)?.node?.kind === "option"
+	)
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.INVALID_OPTION_PRESENCE",
+			path: `${path}.presence`,
+			message: "optional presence on a single option would nest options",
+		});
 	const resolved = resolveKind(types, field.typeRef);
 	if (!resolved) {
 		diagnostics.push({
@@ -913,6 +953,45 @@ function checkTypeDefinition(
 	lockExports: Set<string>,
 	diagnostics: Diagnostic[],
 ): void {
+	if (definition.kind === "option" && typeof definition.inner === "string") {
+		const inner = definition.inner;
+		const terminal = optionLeaf(types, inner);
+		let code: string | undefined;
+		if (
+			(inner.startsWith(NATIVE_PREFIX) && nativeScalar(inner) === undefined) ||
+			specialKind(types, fields, inner) === "clock"
+		)
+			code = "INVALID_OPTION_INNER";
+		else if (
+			nativeScalar(inner) !== undefined ||
+			inner.startsWith(QUANTITY_REFERENCE)
+		) {
+			// The type-position pass owns malformed unit references.
+		} else if (!types.has(inner)) code = "UNRESOLVED_OPTION_INNER";
+		else if (
+			terminal?.node?.kind === "option" ||
+			(terminal?.node &&
+				["namespace", "state_machine", "interface", "sequence"].includes(
+					optionShape(types, terminal.node) ?? "",
+				))
+		)
+			code = "INVALID_OPTION_INNER";
+		if (code)
+			diagnostics.push({
+				code: `agent-ix.semantic-ir.${code}`,
+				path: `${path}.inner`,
+				message: "an option inner must name a non-option value type",
+			});
+	}
+	if (
+		definition.kind === "reference" &&
+		optionLeaf(types, definition.target)?.node?.kind === "option"
+	)
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+			path: `${path}.target`,
+			message: "a reference cannot name an option value type",
+		});
 	const refuseMalformed = (reference: unknown, at: string) => {
 		if (
 			typeof reference === "string" &&
@@ -925,7 +1004,7 @@ function checkTypeDefinition(
 				message: "a quantity type reference must be well formed",
 			});
 	};
-	for (const member of ["target", "items", "values"])
+	for (const member of ["target", "items", "values", "inner"])
 		refuseMalformed(definition[member], `${path}.${member}`);
 	if (
 		definition.kind === "reference" &&
@@ -1222,8 +1301,11 @@ export function readSemanticIr(
 	// A type whose construct kind declares the alias shape is an alias, as a
 	// core `alias` is (FR-142): both reach a clock or unit for FR-146.
 	const aliasKinds = new Set<string>();
+	const shapes = new Map<string, string>();
 	for (const entry of asArray(document.constructs)) {
 		const shape = isObject(entry.construct) ? entry.construct.shape : undefined;
+		if (typeof shape === "string" && isObject(entry.kind))
+			shapes.set(JSON.stringify([entry.kind.module, entry.kind.name]), shape);
 		if (shape === "alias" && isObject(entry.kind))
 			aliasKinds.add(JSON.stringify([entry.kind.module, entry.kind.name]));
 	}
@@ -1250,6 +1332,7 @@ export function readSemanticIr(
 			}
 		}
 	}
+	constructShapes.set(types, shapes);
 	const exports = new Set(lockExports);
 	let index = 0;
 	for (const definition of asArray(document.types)) {
