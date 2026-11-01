@@ -306,7 +306,7 @@ describe("FR-148 option value types", () => {
 		expect(seen).toBe(33);
 	});
 
-	/** Traces: TC-1896; FR-148-AC-9, FR-148-AC-3, FR-148-AC-4, FR-148-AC-5. */
+	/** Trace: FR-148-AC-9, FR-148-AC-3, FR-148-AC-4, FR-148-AC-5. */
 	it("TC-1896 cross-reader OP-01..OP-41 verdicts agree by reference", () => {
 		// OP-01..08 describe eight types of the same admitted document. The
 		// Rust accessor gate checks their meanings; verdict-only readers read
