@@ -494,6 +494,33 @@
 			"rule": "A tuple position type that resolves to no declared type.",
 			"citation": "naming no declared type raises",
 			"exercisedBy": "test:TC-1877"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_OPTION_INNER",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "An option value type whose inner names an option, a clock or a non-value type.",
+			"citation": "INVALID_OPTION_INNER",
+			"exercisedBy": "test:TC-1889"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_OPTION_INNER",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "An option value type whose inner names no declared type.",
+			"citation": "UNRESOLVED_OPTION_INNER",
+			"exercisedBy": "test:TC-1889"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_OPTION_PRESENCE",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A field of option type with presence optional and multiplicity [1, 1].",
+			"citation": "INVALID_OPTION_PRESENCE",
+			"exercisedBy": "test:TC-1890"
 		}
 	]
 }

@@ -110,6 +110,25 @@ pub enum Resolved<'a> {
     Native(&'static str),
 }
 
+/// How an `Option<T>` member was written (FR-148): the two spellings are one
+/// type and differ in reach only.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum OptionSpelling {
+    /// The member's `typeRef` names an option value type.
+    Type,
+    /// The member has presence `optional`.
+    Presence,
+}
+
+/// The `Option<T>` a member is: `T`'s type reference and its spelling.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct MemberOption<'a> {
+    /// The type reference of `T`.
+    pub inner: &'a str,
+    /// Which spelling wrote the option.
+    pub spelling: OptionSpelling,
+}
+
 /// Every place in the IR where a reference to a type can occur.
 ///
 /// Keep this list as the single inventory used by [`Document::type_positions`]
@@ -128,6 +147,7 @@ enum TypePositionKind {
     MapValues,
     VariantPayload,
     TuplePosition,
+    OptionInner,
 }
 
 impl TypePositionKind {
@@ -142,6 +162,7 @@ impl TypePositionKind {
         Self::MapValues,
         Self::VariantPayload,
         Self::TuplePosition,
+        Self::OptionInner,
     ];
 
     fn missing_message(self) -> &'static str {
@@ -156,6 +177,7 @@ impl TypePositionKind {
             Self::MapValues => "a decimal map value type carries a decimal policy",
             Self::VariantPayload => "a decimal variant payload type carries a decimal policy",
             Self::TuplePosition => "a decimal tuple position type carries a decimal policy",
+            Self::OptionInner => "a decimal option inner type carries a decimal policy",
         }
     }
 }
@@ -203,6 +225,9 @@ codes! {
     UNRESOLVED_ELEMENT_TYPE => "agent-ix.semantic-ir.UNRESOLVED_ELEMENT_TYPE",
     UNRESOLVED_VARIANT_PAYLOAD => "agent-ix.semantic-ir.UNRESOLVED_VARIANT_PAYLOAD",
     UNRESOLVED_POSITION_TYPE => "agent-ix.semantic-ir.UNRESOLVED_POSITION_TYPE",
+    INVALID_OPTION_INNER => "agent-ix.semantic-ir.INVALID_OPTION_INNER",
+    UNRESOLVED_OPTION_INNER => "agent-ix.semantic-ir.UNRESOLVED_OPTION_INNER",
+    INVALID_OPTION_PRESENCE => "agent-ix.semantic-ir.INVALID_OPTION_PRESENCE",
     UNRESOLVED_OCCURRENCE_DEFINITION => "agent-ix.semantic-ir.UNRESOLVED_OCCURRENCE_DEFINITION",
     ALIAS_CYCLE => "agent-ix.semantic-ir.ALIAS_CYCLE",
     DEPTH_LIMIT_EXCEEDED => "agent-ix.semantic-ir.DEPTH_LIMIT_EXCEEDED",
@@ -696,6 +721,16 @@ impl<'a> Document<'a> {
                         });
                     }
                 }
+                Some("option") => {
+                    if let Some(identity) = definition.get("inner").and_then(Json::as_str) {
+                        visit(TypePosition {
+                            kind: TypePositionKind::OptionInner,
+                            identity,
+                            subject: definition,
+                            pointer: child(&type_at, "inner"),
+                        });
+                    }
+                }
                 _ => {}
             }
 
@@ -802,6 +837,51 @@ impl<'a> Document<'a> {
             Cached::Native(scalar) => Some(Resolved::Native(scalar)),
             Cached::Node(position) => self.types.get(position).map(Resolved::Node),
         }
+    }
+
+    /// The `inner` type reference of the option value type `identity` names,
+    /// directly or through an alias chain (FR-148); `None` when it names no
+    /// option value type.
+    pub fn option_inner(&self, identity: &str) -> Option<&'a str> {
+        match self.resolve(identity) {
+            Some(Resolved::Node(node))
+                if node.get("kind").and_then(Json::as_str) == Some("option") =>
+            {
+                node.get("inner").and_then(Json::as_str)
+            }
+            _ => None,
+        }
+    }
+
+    /// The `Option<T>` a cardinality-one field or parameter is (FR-148,
+    /// QSpec FR-154 "Presence and option"): a member of option value type
+    /// with presence `required`, or a member of any other type with presence
+    /// `optional`, at multiplicity `[1, 1]`, is the same `Option<T>`; the
+    /// result names `T` and the spelling that wrote it. A member of a
+    /// collection multiplicity, or of no option, is `None`: its option, if
+    /// any, wraps or is wrapped by the collection and is read from
+    /// [`Document::option_inner`] and the member's own presence.
+    pub fn member_option(&self, member: &'a Json) -> Option<MemberOption<'a>> {
+        let one = member.get("multiplicity").is_some_and(|multiplicity| {
+            multiplicity.get("lower").and_then(Json::as_i64) == Some(1)
+                && multiplicity.get("upper").and_then(Json::as_i64) == Some(1)
+        });
+        let type_ref = member.get("typeRef").and_then(Json::as_str)?;
+        if !one {
+            return None;
+        }
+        if let Some(inner) = self.option_inner(type_ref) {
+            return Some(MemberOption {
+                inner,
+                spelling: OptionSpelling::Type,
+            });
+        }
+        (member.get("presence").and_then(Json::as_str) == Some("optional")).then_some(
+            MemberOption {
+                inner: type_ref,
+                spelling: OptionSpelling::Presence,
+            },
+        )
     }
 
     /// Whether `identity` is a clock or a well-formed quantity type
@@ -1346,6 +1426,12 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                         UNRESOLVED_TYPE_REF,
                         "a reference names an object and a quantity has no identity",
                     );
+                } else if !is_alias && is_option_type(document, target) {
+                    sink.emit(
+                        child(&type_at, "target"),
+                        UNRESOLVED_TYPE_REF,
+                        "a reference names an object and an option value type is not one",
+                    );
                 } else if is_alias {
                     match walk_alias(document, definition, &mut alias_memo) {
                         Walk::Cycle => sink.emit(
@@ -1362,6 +1448,9 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                     }
                 }
             }
+        }
+        if kind == "option" {
+            option_inner(document, &declared, definition, &type_at, sink);
         }
         if kind == "sequence" {
             check_element(document, &declared, definition, "items", &type_at, sink);
@@ -1534,6 +1623,74 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
                     }
                 }
             }
+        }
+    }
+}
+
+/// Whether `identity` names an option value type, directly or through an
+/// alias chain (FR-148).
+fn is_option_type(document: &Document<'_>, identity: &str) -> bool {
+    matches!(
+        document.resolve(identity),
+        Some(Resolved::Node(node)) if node.get("kind").and_then(Json::as_str) == Some("option")
+    )
+}
+
+/// The option value type rules of FR-148 for one definition of kind `option`
+/// whose `inner` is a string identity (a non-identity is the schema's): a
+/// native name outside the library, `Clock` (directly or through an alias),
+/// another option value type (directly, through an alias, or itself) and a
+/// node that is no value type are `INVALID_OPTION_INNER`; an identity
+/// naming no node is `UNRESOLVED_OPTION_INNER`. Reports at `inner`.
+fn option_inner(
+    document: &Document<'_>,
+    declared: &HashSet<String>,
+    definition: &Json,
+    type_at: &str,
+    sink: &mut Sink<'_>,
+) {
+    let Some(inner) = definition.get("inner").and_then(Json::as_str) else {
+        return;
+    };
+    let at = child(type_at, "inner");
+    if inner.starts_with(NATIVE_PREFIX) && native_scalar(inner).is_none() && inner != CLOCK_TYPE_REF
+    {
+        sink.emit(
+            at,
+            INVALID_OPTION_INNER,
+            "an option inner names a native value type of the library",
+        );
+    } else if document.special_of(inner) == Some(Special::Clock) {
+        sink.emit(
+            at,
+            INVALID_OPTION_INNER,
+            "an option inner is never a clock: a clock place is optional by presence alone",
+        );
+    } else if special_type_ref(inner) || native_scalar(inner).is_some() {
+        // A quantity or a native scalar: a well-formed unit is admitted and
+        // a malformed one is the type-position traversal's.
+    } else if !resolves(declared, inner) {
+        sink.emit(
+            at,
+            UNRESOLVED_OPTION_INNER,
+            "the option inner resolves to no declared type",
+        );
+    } else if is_option_type(document, inner) {
+        sink.emit(
+            at,
+            INVALID_OPTION_INNER,
+            "an option inner never names an option value type: Option<Option<T>> has no spelling",
+        );
+    } else if let Some(Resolved::Node(node)) = document.resolve(inner) {
+        if matches!(
+            crate::constructs::shape_of(document, node),
+            Some(Shape::Namespace | Shape::StateMachine | Shape::Interface | Shape::Sequence)
+        ) {
+            sink.emit(
+                at,
+                INVALID_OPTION_INNER,
+                "an option inner names a value type, not a namespace, state machine, interface or process",
+            );
         }
     }
 }
@@ -1745,6 +1902,21 @@ fn field_rules(
                     );
                 }
             }
+        }
+        // FR-148: presence `optional` with multiplicity [1, 1] on a field of
+        // option value type would be Option<Option<T>>.
+        if field.get("presence").and_then(Json::as_str) == Some("optional")
+            && field.get("multiplicity").is_some_and(|m| {
+                m.get("lower").and_then(Json::as_i64) == Some(1)
+                    && m.get("upper").and_then(Json::as_i64) == Some(1)
+            })
+            && type_ref.is_some_and(|identity| is_option_type(document, identity))
+        {
+            sink.emit(
+                child(&field_at, "presence"),
+                INVALID_OPTION_PRESENCE,
+                "presence optional on a field of option value type with multiplicity [1, 1] is Option<Option<T>>",
+            );
         }
         if type_ref.is_some_and(|identity| document.special_of(identity).is_some()) {
             continue;
@@ -2005,7 +2177,9 @@ fn constraint_rules(
             }
             Resolved::Native(scalar) => ("scalar", scalar),
         };
-        if !applies_to(keyword, kind, scalar) {
+        // An option value type carries no constraint and none applies to it
+        // (FR-148); the table's catch-all admission does not extend to it.
+        if kind == "option" || !applies_to(keyword, kind, scalar) {
             sink.emit(
                 constraint_at.to_string(),
                 CONSTRAINT_NOT_APPLICABLE,
@@ -2504,6 +2678,9 @@ mod tests {
             TypePositionKind::TuplePosition => {
                 r#"{"identity":"ix://acme/pkg/T","kind":"tuple","positions":[{"typeRef":"ix://quire/native/Decimal"}]}"#
             }
+            TypePositionKind::OptionInner => {
+                r#"{"identity":"ix://acme/pkg/T","kind":"option","inner":"ix://quire/native/Decimal"}"#
+            }
         };
         parse(&format!(r#"{{"ir":{{"types":[{definition}]}}}}"#)).expect("a type position fixture")
     }
@@ -2525,7 +2702,7 @@ mod tests {
                 kind.missing_message()
             );
         }
-        assert_eq!(TypePositionKind::ALL.len(), 10);
+        assert_eq!(TypePositionKind::ALL.len(), 11);
     }
 
     /// FR-147-AC-7: a field, an operation parameter and result, an alias

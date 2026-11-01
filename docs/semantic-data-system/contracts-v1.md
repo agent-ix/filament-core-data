@@ -413,6 +413,16 @@ authored order in the normalized form. A variant's
 one stays nullary. A generation backend that renders no tuple is refused by the
 seam with `UNSUPPORTED_CONSTRUCT_SHAPE`.
 
+An option value type (FR-148, QSpec FR-154 "Option value types") is a type
+definition of the core `kind` `option` with exactly one `inner`, a type
+identity, denoting `Option<T>`. An option inner that names an option, a clock or a
+non-value type raises `INVALID_OPTION_INNER`; an inner naming no declared type raises
+`UNRESOLVED_OPTION_INNER`; a field of option type with presence optional and
+multiplicity `[1, 1]` raises `INVALID_OPTION_PRESENCE`. A missing or malformed
+`inner`, or a member an option never carries, is `SCHEMA_VIOLATION`. No
+generation backend renders an option, and the seam refuses it with
+`UNSUPPORTED_CONSTRUCT_SHAPE`.
+
 A broken construct reference raises `UNRESOLVED_CONSTRUCT_REF` or
 `CONSTRUCT_TARGET_KIND`; a wrong occurrence field raises
 `INVALID_OCCURRENCE_FIELD`; a guard naming no clause raises

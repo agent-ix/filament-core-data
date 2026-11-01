@@ -127,6 +127,9 @@ with it.
 | `INVALID_TUPLE` | `contracts-v1.md` "A tuple that carries a member it never has" | `2.0.0` only (`constructs.rs`): a `tuple` whose identity is not `ix://<package identity>/<Name>` (`^[A-Za-z][A-Za-z0-9_]*$`), at `.../identity`, or that carries `fields`, `identityFields`, `operations`, `supertypes`, `clauses`, `relationships` or `variants`, at the member. |
 | `INVALID_TUPLE_POSITION` | `contracts-v1.md` "a position out of order, with a gap, or typed" | `2.0.0` only (`constructs.rs`): a position whose identity is not `<tuple identity>/p<index>`, at `.../positions/<i>/identity`, or typed `ix://quire/native/Clock`, at `.../typeRef`. |
 | `UNRESOLVED_POSITION_TYPE` | `contracts-v1.md` "naming no declared type raises" | `2.0.0` only (`rules.rs`): a tuple position `typeRef` naming no declared type, at `.../positions/<i>/typeRef`. |
+| `INVALID_OPTION_INNER` | `contracts-v1.md` "raises `INVALID_OPTION_INNER`" | An option value type (`kind` `option`) whose `inner` names a native name outside the kernel library, `ix://quire/native/Clock` or an alias of it, an option value type (directly, through an alias, or itself) or a namespace, state machine, interface or process, at `.../inner` (`rules.rs`; QSpec FR-154-AC-40). |
+| `UNRESOLVED_OPTION_INNER` | `contracts-v1.md` "`UNRESOLVED_OPTION_INNER`" | An option value type whose `inner` is a package identity naming no declared type, at `.../inner` (QSpec FR-154-AC-41). |
+| `INVALID_OPTION_PRESENCE` | `contracts-v1.md` "`INVALID_OPTION_PRESENCE`" | A field typed by an option value type (directly or through an alias) with presence `optional` and multiplicity `[1, 1]`, which would be `Option<Option<T>>`, at `.../presence` (QSpec FR-154-AC-40). |
 
 ### The applicability table
 

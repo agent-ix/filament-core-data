@@ -421,6 +421,7 @@ class Kind(Enum):
     sequence = 'sequence'
     map = 'map'
     reference = 'reference'
+    option = 'option'
 
 
 type Role = Annotated[
@@ -688,6 +689,7 @@ class TypeDefinition(Struct):
     identityFields: (
         Annotated[list[common_schema.SemanticIdentity], Meta(min_length=1)] | UnsetType
     ) = UNSET
+    inner: common_schema.SemanticIdentity | UnsetType = UNSET
     interfaceType: common_schema.SemanticIdentity | UnsetType = UNSET
     items: common_schema.SemanticIdentity | UnsetType = UNSET
     members: IdentityList | UnsetType = UNSET

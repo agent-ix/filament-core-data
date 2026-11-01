@@ -219,6 +219,7 @@ const CORE_KINDS: &[&str] = &[
     "sequence",
     "map",
     "reference",
+    "option",
 ];
 const STEP_KINDS: &[&str] = &["command", "event", "decision", "compensation", "wait"];
 const UNKNOWN_POLICIES: &[&str] = &["preserve", "reject", "surface"];
@@ -1085,6 +1086,7 @@ const TYPE_MEMBERS: &[&str] = &[
     "targetElement",
     "featureOrder",
     "positions",
+    "inner",
 ];
 const TYPE_REQUIRED: &[&str] = &[
     "identity",
@@ -1180,6 +1182,7 @@ fn type_definition(definition: &Json, at: &str, table: &mut ConstructTable<'_>, 
         "alias" | "reference" => Some(("an", "target")),
         "sequence" => Some(("a", "items")),
         "map" => Some(("a", "values")),
+        "option" => Some(("an", "inner")),
         _ => None,
     };
     if let Some((article, member)) = required {
@@ -1190,6 +1193,7 @@ fn type_definition(definition: &Json, at: &str, table: &mut ConstructTable<'_>, 
             );
         }
     }
+    option_schema(definition, at, kind, f);
     match construct {
         Some((module, name)) => match table.position(module, name) {
             Some(found) => {
@@ -1421,6 +1425,61 @@ fn construct_schema(
         {
             f.push(&child(at, name), message);
         }
+    }
+}
+
+/// The members an option value type never carries (FR-148, QSpec FR-154
+/// "Option value types"): it has exactly one `inner`, a type identity.
+/// `target` and `positions` are refused by the construct-member rule that
+/// every core kind shares.
+const OPTION_FOREIGN_MEMBERS: &[&str] = &[
+    "fields",
+    "supertypes",
+    "items",
+    "values",
+    "variants",
+    "clauses",
+    "operations",
+    "relationships",
+];
+
+/// The shape of the core kind `option` and of its `inner` member (FR-148).
+/// A well-formed identity that names no type, a nested option and a clock
+/// are decided by the rule layer, not here.
+fn option_schema(definition: &Json, at: &str, kind: &str, f: &mut Findings) {
+    if kind != "option" {
+        if definition.has("inner") {
+            f.push(
+                &child(at, "inner"),
+                "inner is carried by an option type only",
+            );
+        }
+        return;
+    }
+    expect_shape(
+        definition.get("inner"),
+        &child(at, "inner"),
+        is_semantic_identity,
+        "an option inner is one type identity ix://<owner>/<name>",
+        f,
+    );
+    for name in OPTION_FOREIGN_MEMBERS {
+        if definition.has(name) {
+            f.push(
+                &child(at, name),
+                format!("an option type carries no {name}, only inner"),
+            );
+        }
+    }
+    if definition
+        .get("constraints")
+        .and_then(Json::as_array)
+        .is_some_and(|constraints| !constraints.is_empty())
+    {
+        f.push(
+            &child(at, "constraints"),
+            "an option type carries no constraints",
+        );
     }
 }
 
