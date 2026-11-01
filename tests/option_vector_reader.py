@@ -11,16 +11,32 @@ from semantic_ir_reader import _schema_validator, read_semantic_ir
 
 def schema_paths(error: Any) -> list[str]:
     """Retain paths from nested schema alternatives, including required-member loci."""
+    if error.context:
+        return [path for child in error.context for path in schema_paths(child)]
     parts = list(error.absolute_path)
     schema = list(error.absolute_schema_path)
-    # jsonschema's boolean-false subschema reports its containing object's
-    # instance path; the schema property identifies the refused member.
+    # Boolean-false properties retain the containing instance path in
+    # jsonschema; the published schema identifies the refused member.
     if error.schema is False and len(schema) >= 2 and schema[-2] == "properties":
         parts.append(schema[-1])
-    paths = ["/" + "/".join(str(part) for part in parts)]
-    for child in error.context:
-        paths.extend(schema_paths(child))
-    return paths
+    # Missing option.inner is located at the definition in the Rust mapping.
+    # Other missing members keep their own distinct locus rather than being
+    # hidden by an ancestor error for the expected violation.
+    if error.validator == "required":
+        missing = [name for name in error.validator_value if name not in error.instance]
+        return [
+            "/"
+            + "/".join(
+                str(part)
+                for part in (
+                    parts
+                    if name == "inner" and error.instance.get("kind") == "option"
+                    else [*parts, name]
+                )
+            )
+            for name in missing
+        ]
+    return ["/" + "/".join(str(part) for part in parts)]
 
 
 def main() -> None:

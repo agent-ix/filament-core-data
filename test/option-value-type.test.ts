@@ -333,21 +333,38 @@ describe("FR-148 option value types", () => {
 		);
 		if (!validate) throw new Error("missing published IR schema");
 		const nodeSchema = schemaValidators(repositoryHost(process.cwd()));
-		// Conditional schema errors repeat the owning member at its ancestors.
-		// Keep every distinct leaf, so any second independent defect fails.
-		const leaves = (paths: string[]): string[] =>
-			[...new Set(paths)]
-				.filter(
-					(path, _, all) => !all.some((other) => other.startsWith(`${path}/`)),
-				)
-				.sort();
-		const ajvPaths = (errors: any[]): string[] =>
-			leaves(
-				errors.map((error) =>
-					error.keyword === "additionalProperties"
-						? `${error.instancePath}/${error.params.additionalProperty}`
-						: error.instancePath,
-				),
+		const distinct = (paths: string[]): string[] => [...new Set(paths)].sort();
+		const nativePointer = (error: any): string =>
+			["required", "additionalProperties"].includes(error.keyword)
+				? `${error.instancePath}/${error.params.missingProperty ?? error.params.additionalProperty}`
+				: error.instancePath;
+		const ajvPaths = (errors: any[], document: Json): string[] =>
+			distinct(
+				errors
+					// Only AJV's conditional wrapper repeats its child violation. Other
+					// ancestor defects are independent and must survive normalization.
+					.filter(
+						(error) =>
+							!(
+								error.keyword === "if" &&
+								error.params.failingKeyword === "then" &&
+								errors.some(
+									(child) =>
+										child !== error &&
+										nativePointer(child).startsWith(`${error.instancePath}/`),
+								)
+							),
+					)
+					.map((error) => {
+						let owner: any = document;
+						for (const part of error.instancePath.slice(1).split("/"))
+							owner = owner?.[part];
+						return error.keyword === "required" &&
+							error.params.missingProperty === "inner" &&
+							owner?.kind === "option"
+							? error.instancePath
+							: nativePointer(error);
+					}),
 			);
 		const documents = rows.map((entry: Json) => irOf(patched(entry)));
 		// A unique source locus per authored node lets the production compiler
@@ -406,10 +423,13 @@ describe("FR-148 option value types", () => {
 				for (const [reader, paths] of [
 					[
 						"Node",
-						ajvPaths(nodeSchema.errors("semantic-ir.schema.json", document)),
+						ajvPaths(
+							nodeSchema.errors("semantic-ir.schema.json", document),
+							document,
+						),
 					],
-					["TypeScript", ajvPaths(tsSchema)],
-					["Python", leaves(python[index].schemaPaths)],
+					["TypeScript", ajvPaths(tsSchema, document)],
+					["Python", distinct(python[index].schemaPaths)],
 				] as const)
 					if (JSON.stringify(paths) !== JSON.stringify([at]))
 						failures.push(
@@ -425,6 +445,20 @@ describe("FR-148 option value types", () => {
 					)
 				)
 					failures.push(`${entry.name}: schema envelope`);
+				const originalErrors = nodeSchema.errors(
+					"semantic-ir.schema.json",
+					document,
+				);
+				if (
+					schema.length !== originalErrors.length ||
+					schema.some(
+						(diagnostic: Json, n: number) =>
+							!diagnostic.message.startsWith(
+								`${nativePointer(originalErrors[n])} `,
+							),
+					)
+				)
+					failures.push(`${entry.name}: native schema pointer lost`);
 				// Each reader's published pipeline stops at a schema refusal;
 				// applying semantic rules to an invalid shape invents diagnostics.
 				return;
