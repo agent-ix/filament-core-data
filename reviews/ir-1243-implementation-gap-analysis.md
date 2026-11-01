@@ -113,3 +113,13 @@ scope:
   excerpt: No layer SHALL approximate an option as its `inner`, a nullable member
     or an optional field.
 ```
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | Round 1: commit 70c82d330a3e056174e3069ee8984d023d287f9c changes the cross-reader test comment to supported `Trace:`. Computed matrix now binds FR-148-AC-9 to the real cross-reader test at test/option-value-type.test.ts:310. No behavioral assertions changed. |
+
+## Current verdict
+
+PASS — sole finding fixed; no new findings in the scoped disposition delta. Parent owns final aggregate qualification.
