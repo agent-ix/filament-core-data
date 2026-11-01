@@ -106,12 +106,15 @@ pub const FIELD_EXTENSION_VERSION: &str = "1.0.0";
 // ---------------------------------------------------------------------------
 
 /// `typeDefinition.kind` as this frontend emits it: `alias` is minted for a
-/// constrained field; a module-declared construct kind is emitted for an
-/// artifact whose object type declares one (FR-143).
+/// constrained field; `option` is the option value type of FR-148 (one
+/// `inner` type reference); a module-declared construct kind is emitted for
+/// an artifact whose object type declares one (FR-143).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Kind {
     Record,
     Alias,
+    /// FR-148: the option value type `Option<T>`; carries `inner`.
+    Option,
     /// `{module, name}`: the construct kind the artifact's object type
     /// declares.
     Construct(ConstructKind),
@@ -122,6 +125,7 @@ impl Serialize for Kind {
         match self {
             Kind::Record => serializer.serialize_str("record"),
             Kind::Alias => serializer.serialize_str("alias"),
+            Kind::Option => serializer.serialize_str("option"),
             Kind::Construct(kind) => kind.serialize(serializer),
         }
     }
@@ -262,6 +266,10 @@ pub struct TypeDefinition {
     /// `map` kind.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub target: Option<String>,
+    /// FR-148: the one type reference an option value type wraps; absent on
+    /// every other definition.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub inner: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fields: Option<Vec<Field>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -283,6 +291,17 @@ pub struct TypeDefinition {
     /// scalar, record or alias.
     #[serde(flatten)]
     pub construct: ConstructMembers,
+}
+
+impl TypeDefinition {
+    /// FR-148: the `inner` type reference of an option value type; `None`
+    /// for every other definition.
+    pub fn option_inner(&self) -> Option<&str> {
+        match self.kind {
+            Kind::Option => self.inner.as_deref(),
+            _ => None,
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -499,6 +518,8 @@ enum IrKind {
     Sequence,
     Map,
     Reference,
+    /// FR-148: an option value type, which no constraint keyword applies to.
+    Option,
     /// A construct kind whose declared shape is `enumeration`.
     Enumeration,
     /// A construct kind of any other shape, which no constraint keyword
@@ -517,6 +538,7 @@ impl IrKind {
             "sequence" => IrKind::Sequence,
             "map" => IrKind::Map,
             "reference" => IrKind::Reference,
+            "option" => IrKind::Option,
             "enumeration" => IrKind::Enumeration,
             "construct" => IrKind::Construct,
             _ => return None,
@@ -836,6 +858,7 @@ pub fn lower_record(
                     scalar: None,
                     decimal,
                     target: Some(target),
+                    inner: None,
                     fields: None,
                     variants: None,
                     positions: None,
@@ -864,6 +887,7 @@ pub fn lower_record(
             scalar: None,
             decimal: None,
             target: None,
+            inner: None,
             fields: Some(fields),
             variants: None,
             positions: None,

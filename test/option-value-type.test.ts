@@ -1,0 +1,388 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Agent IX
+
+import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+import { rustBackend } from "../src/compiler/backends/rust-serde/backend.mjs";
+import { generateTarget } from "../src/compiler/backends/seam.mjs";
+import { createHost } from "../src/compiler/host.mjs";
+import { readContractIr } from "../src/compiler/ir/reader.mjs";
+import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
+
+// FR-148 over the QSpec vectors
+// `proposals/checked-package-v2/model-option-type-vectors.json` (OP-01 to
+// OP-41), read from the QSpec repository at a git ref and never copied:
+// QSPEC_REPO (default the sibling quire-specification checkout) and
+// QSPEC_OPTION_VECTORS_REF (default the merging commit fa6be9cd).
+
+type Json = Record<string, any>;
+
+const FILE = "proposals/checked-package-v2/model-option-type-vectors.json";
+// The sibling checkout of the main FCD clone, found through the git common
+// directory so a linked worktree resolves the same repository.
+const common = execFileSync("git", ["rev-parse", "--git-common-dir"], {
+	encoding: "utf8",
+}).trim();
+const repo = resolve(
+	process.env.QSPEC_REPO ?? resolve(common, "..", "..", "quire-specification"),
+);
+const ref = process.env.QSPEC_OPTION_VECTORS_REF ?? "fa6be9cd";
+const vectors = JSON.parse(
+	execFileSync("git", ["-C", repo, "show", `${ref}:${FILE}`], {
+		encoding: "utf8",
+	}),
+) as Json;
+
+const SOURCE = "ix://acme/optionals/source";
+const MODEL = "agent-ix/quire-model";
+const origin = () => ({
+	generated: {
+		generatorIdentity: "ix://acme/optionals/vector-author",
+		generatorVersion: "1.0.0",
+		inputIdentities: [SOURCE],
+	},
+});
+const leaf = (identity: string) => identity.split("/").pop() as string;
+const once = { lower: 1, upper: 1, ordered: false, unique: true };
+
+function patch(document: Json, operations: Json[]): void {
+	for (const operation of operations) {
+		const path = (operation.path as string)
+			.split("/")
+			.slice(1)
+			.map((token) => token.replace(/~1/g, "/").replace(/~0/g, "~"));
+		const last = path.pop() as string;
+		let node = document;
+		for (const token of path) node = node[token];
+		if (Array.isArray(node)) {
+			if (operation.op === "add")
+				last === "-"
+					? node.push(operation.value)
+					: node.splice(Number(last), 0, operation.value);
+			else node[Number(last)] = operation.value;
+		} else if (operation.op === "remove") delete node[last];
+		else node[last] = operation.value;
+	}
+}
+
+const field = (owner: string, source: Json) => ({
+	identity: `${owner}/${source.name}`,
+	name: source.name,
+	typeRef: source.typeRef,
+	presence: source.presence,
+	nullable: false,
+	defaultKind: "none",
+	multiplicity: {
+		lower: Number(source.multiplicity.lower),
+		upper: Number(source.multiplicity.upper),
+		ordered: source.multiplicity.ordered,
+		unique: source.multiplicity.unique,
+	},
+	origin: origin(),
+});
+
+const operation = (owner: string, source: Json) => ({
+	identity: `${owner}/${source.name}`,
+	name: source.name,
+	params: (source.params ?? []).map((param: Json) => ({
+		identity: `${owner}/${source.name}/${param.name}`,
+		name: param.name,
+		typeRef: param.typeRef,
+		presence: "required",
+		nullable: false,
+		defaultKind: "none",
+		multiplicity: once,
+		origin: origin(),
+	})),
+	pre: [],
+	post: [],
+	origin: origin(),
+	...(source.returns
+		? {
+				returns: {
+					typeRef: source.returns.typeRef,
+					multiplicity: once,
+					nullable: false,
+				},
+			}
+		: {}),
+});
+
+const constraint = (source: Json) => ({
+	identity: source.identity,
+	keyword: source.keyword,
+	operands: source.operands,
+	appliesTo: source.appliesTo,
+	diagnosticCode: "agent-ix.semantic-ir.INVALID_OPERAND",
+	origin: origin(),
+});
+
+const definition = (node: string, kind: unknown, extra: Json): Json => ({
+	identity: node,
+	displayName: leaf(node),
+	kind,
+	roles: [],
+	origin: origin(),
+	constraints: [],
+	extensions: [],
+	unknownPolicy: "reject",
+	...extra,
+});
+
+/** The QSpec `domain_package` projection as a `2.0.0` Semantic IR. */
+function irOf(projection: Json): Json {
+	const list = (name: string): Json[] => projection[name] ?? [];
+	const types: Json[] = [];
+	const constructs: Json[] = [];
+	for (const e of list("record_types"))
+		types.push(
+			definition(e.node, "record", {
+				fields: e.fields.map((f: Json) => field(e.node, f)),
+			}),
+		);
+	for (const e of list("option_types")) {
+		const extra: Json = {};
+		for (const [name, value] of Object.entries(e)) {
+			if (name === "node") continue;
+			extra[name] =
+				name === "fields"
+					? (value as Json[]).map((f) => field(e.node, f))
+					: name === "operations"
+						? (value as Json[]).map((o) => operation(e.node, o))
+						: name === "constraints"
+							? (value as Json[]).map(constraint)
+							: value;
+		}
+		types.push(definition(e.node, "option", extra));
+	}
+	for (const e of list("aliases"))
+		types.push(definition(e.node, "alias", { target: e.target }));
+	for (const e of list("sequence_types"))
+		types.push(definition(e.node, "sequence", { items: e.items }));
+	for (const e of list("map_types"))
+		types.push(definition(e.node, "map", { values: e.values }));
+	const tuple = { module: MODEL, name: "tuple_value_type" };
+	for (const e of list("tuple_types"))
+		types.push(
+			definition(e.node, tuple, {
+				positions: e.positions.map((p: Json) => ({
+					identity: `${e.node}/p${p.ordinal}`,
+					typeRef: p.typeRef,
+					origin: origin(),
+				})),
+			}),
+		);
+	if (list("tuple_types").length)
+		constructs.push({
+			kind: tuple,
+			moduleVersion: "1.0.0",
+			construct: {
+				identity: "none",
+				shape: "tuple",
+				members: {
+					positions: "required",
+					fields: "forbidden",
+					operations: "forbidden",
+				},
+				references: {},
+				rules: [],
+				meaning: "quire.meaning.model.tuple-value-type/v1",
+			},
+		});
+	for (const e of list("variant_types"))
+		types.push(
+			definition(e.node, "union", {
+				variants: e.cases.map((c: Json) => ({
+					identity: `${e.node}/${c.name}`,
+					name: c.name,
+					...(c.payloadType ? { payloadType: c.payloadType } : {}),
+					origin: origin(),
+				})),
+			}),
+		);
+	for (const e of list("reference_types"))
+		types.push(definition(e.node, "reference", { target: e.target }));
+	const namespace = { module: MODEL, name: "namespace" };
+	for (const e of list("namespaces"))
+		types.push(definition(e.node, namespace, {}));
+	if (list("namespaces").length)
+		constructs.push({
+			kind: namespace,
+			moduleVersion: "1.0.0",
+			construct: {
+				identity: "none",
+				shape: "namespace",
+				members: { members: "optional" },
+				references: {},
+				rules: [],
+				meaning: "quire.meaning.model.namespace/v1",
+			},
+		});
+	for (const e of list("object_types"))
+		types.push(
+			definition(e.node, "record", {
+				fields: e.fields.map((f: Json) => field(e.node, f)),
+				operations: (e.operations ?? []).map((o: Json) => operation(e.node, o)),
+			}),
+		);
+	const top = list("constraints").map(constraint);
+	if (top.length) types[0].constraints = top;
+	return {
+		contractVersion: "2.0.0",
+		canonicalization: { algorithm: "rfc8785-v1" },
+		source: { identity: SOURCE, version: "1", dialect: "spec-bundle" },
+		package: {
+			identity: projection.identity,
+			version: "1",
+			mappingVersions: ["1.0.0"],
+			profileVersions: [],
+		},
+		constructs,
+		types,
+		occurrences: [],
+		extensions: [],
+	};
+}
+
+const codes = (document: Json): string[] => [
+	...validateIrDocument(document).map(() => "schema"),
+	...[...readContractIr(document)].map(
+		(d) => d.code.split(".").pop() as string,
+	),
+];
+
+const cases = vectors.intake_cases as Json[];
+const patched = (entry: Json): Json => {
+	const projection = structuredClone(vectors.domain_package);
+	patch(projection, entry.patch);
+	return projection;
+};
+
+/**
+ * The vectors whose refusal is a shape defect the published schema decides:
+ * the Node layer refuses these. The rest (nesting, Clock, unresolved or
+ * non-value `inner`, presence, reference, native-name and constraint rows)
+ * are decided by the Rust reader (FR-148-AC-3 to AC-5), as FR-147 leaves its
+ * tuple construct rules to the Rust reader.
+ */
+const SCHEMA_ROWS = [
+	"OP-23",
+	"OP-25",
+	"OP-26",
+	"OP-27",
+	"OP-28",
+	"OP-29",
+	"OP-30",
+	"OP-31",
+	"OP-32",
+	"OP-34",
+	"OP-35",
+	"OP-36",
+	"OP-37",
+	"OP-38",
+	"OP-39",
+];
+
+describe("FR-148 option value types", () => {
+	/** Traces: TC-1896; FR-148-AC-9. */
+	it("TC-1896 admits OP-09, OP-10 and OP-20 and refuses every schema-shape vector in the Node layer", () => {
+		let seen = 0;
+		for (const entry of cases) {
+			const ir = irOf(patched(entry));
+			seen += 1;
+			if (entry.expected.admitted) {
+				expect(codes(ir), entry.name).toEqual([]);
+			} else if (SCHEMA_ROWS.includes(entry.name)) {
+				expect(validateIrDocument(ir).length, entry.name).toBeGreaterThan(0);
+			}
+		}
+		expect(seen).toBe(33);
+	});
+
+	/** Traces: TC-1893; FR-148-AC-1. */
+	it("TC-1893 names option in the schema kind enumeration and refuses a kind outside it", () => {
+		const schema = JSON.parse(
+			readFileSync(
+				new URL(
+					"../schema/semantic/v1/semantic-ir.schema.json",
+					import.meta.url,
+				),
+				"utf8",
+			),
+		) as Json;
+		expect(schema.$defs.typeDefinition.properties.kind.anyOf[0].enum).toEqual([
+			"scalar",
+			"record",
+			"enum",
+			"union",
+			"alias",
+			"sequence",
+			"map",
+			"reference",
+			"option",
+		]);
+		const ir = irOf(vectors.domain_package);
+		expect(codes(ir)).toEqual([]);
+		const option = ir.types.find((type: Json) => type.kind === "option");
+		option.kind = "optional";
+		expect(validateIrDocument(ir).length).toBeGreaterThan(0);
+	});
+
+	/** Traces: TC-1895; FR-148-AC-8. */
+	it("TC-1895 refuses an option value type at the generation seam for every target", () => {
+		const request = (ir: Json) => ({
+			contractVersion: "1.0.0",
+			ir,
+			profile: JSON.parse(
+				readFileSync(
+					new URL(
+						"../fixtures/semantic/v1/positive/profile.json",
+						import.meta.url,
+					),
+					"utf8",
+				),
+			),
+			mappings: [],
+			backend: {
+				identity: rustBackend.identity,
+				version: rustBackend.version,
+				supportedIrVersions: [...rustBackend.supportedIrVersions],
+				supportedFeatures: [...rustBackend.supportedFeatures],
+				options: {},
+			},
+			outputRoot: "generated/rust",
+			limits: {
+				maxInputBytes: 33554432,
+				maxDepth: 256,
+				maxNodes: 1000000,
+				maxCollectionItems: 100000,
+				maxDiagnostics: 1000,
+			},
+		});
+		for (const target of [
+			"typescript",
+			"rust",
+			"python-pydantic-v2",
+			"python-dataclass",
+			"json-schema",
+			"sysml-v2-textual",
+		] as const) {
+			const manifest = generateTarget(request(irOf(vectors.domain_package)), {
+				target,
+				host: createHost({ readRoots: [process.cwd()] }),
+			}) as never as {
+				state: string;
+				files: unknown[];
+				diagnostics: { code: string; blocking: boolean }[];
+			};
+			expect(manifest.state, target).toBe("unsupported");
+			expect(manifest.files, target).toEqual([]);
+			expect(
+				manifest.diagnostics.filter((d) => d.blocking).map((d) => d.code),
+				target,
+			).toEqual(["agent-ix.compiler.UNSUPPORTED_CONSTRUCT_SHAPE"]);
+		}
+	});
+});

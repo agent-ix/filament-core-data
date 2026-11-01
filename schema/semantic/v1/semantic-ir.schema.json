@@ -893,7 +893,8 @@
 								"alias",
 								"sequence",
 								"map",
-								"reference"
+								"reference",
+								"option"
 							]
 						},
 						{
@@ -1076,6 +1077,9 @@
 						"$ref": "#/$defs/position"
 					},
 					"minItems": 1
+				},
+				"inner": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
 				}
 			},
 			"allOf": [
@@ -1112,7 +1116,7 @@
 						"type": "object",
 						"properties": {
 							"kind": {
-								"enum": ["scalar", "record", "enum", "union", "sequence", "map"]
+								"enum": ["scalar", "record", "enum", "union", "sequence", "map", "option"]
 							}
 						},
 						"required": ["kind"]
@@ -1199,6 +1203,48 @@
 						"type": "object",
 						"properties": {
 							"kind": {
+								"const": "option"
+							}
+						},
+						"required": ["kind"]
+					},
+					"then": {
+						"type": "object",
+						"required": ["inner"],
+						"properties": {
+							"fields": false,
+							"supertypes": false,
+							"items": false,
+							"values": false,
+							"variants": false,
+							"positions": false,
+							"clauses": false,
+							"constraints": { "type": "array", "maxItems": 0 }
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"not": { "const": "option" }
+							}
+						},
+						"required": ["kind"]
+					},
+					"then": {
+						"type": "object",
+						"properties": {
+							"inner": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
 								"enum": [
 									"scalar",
 									"enum",
@@ -1206,7 +1252,8 @@
 									"alias",
 									"sequence",
 									"map",
-									"reference"
+									"reference",
+									"option"
 								]
 							}
 						},

@@ -93,6 +93,7 @@ const CONTRACT_KINDS_BEFORE_CONSTRUCTS = [
 	"sequence",
 	"map",
 	"reference",
+	"option",
 ];
 
 /**

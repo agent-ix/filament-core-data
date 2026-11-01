@@ -463,6 +463,13 @@ export function admits(node, member) {
 export const UNRENDERED_SHAPES = Object.freeze(["tuple"]);
 
 /**
+ * The core kinds no generation backend renders yet (FR-148): an option value
+ * type is refused by the generation seam like an unrendered shape, never
+ * approximated as its `inner` or as a nullable member.
+ */
+export const UNRENDERED_KINDS = Object.freeze(["option"]);
+
+/**
  * The first type of `ir` whose construct has an unrendered shape, as
  * `{ identity, shape, pointer }`, or `undefined` when there is none.
  */
@@ -473,6 +480,12 @@ export function firstUnrenderedType(ir) {
 		const shape = declarationOf(type)?.shape;
 		if (UNRENDERED_SHAPES.includes(shape))
 			return { identity: type.identity, shape, pointer: `/types/${position}` };
+		if (UNRENDERED_KINDS.includes(type?.kind))
+			return {
+				identity: type.identity,
+				shape: type.kind,
+				pointer: `/types/${position}`,
+			};
 	}
 	return undefined;
 }

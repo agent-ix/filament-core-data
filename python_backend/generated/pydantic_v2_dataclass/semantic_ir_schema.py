@@ -512,6 +512,7 @@ class Kind(Enum):
     sequence = 'sequence'
     map = 'map'
     reference = 'reference'
+    option = 'option'
 
 
 type Role = Annotated[
@@ -804,6 +805,7 @@ class TypeDefinition:
     identityFields: Annotated[
         list[common_schema.SemanticIdentity] | None, Field(min_length=1)
     ] = None
+    inner: common_schema.SemanticIdentity | None = None
     interfaceType: common_schema.SemanticIdentity | None = None
     items: common_schema.SemanticIdentity | None = None
     members: IdentityList | None = None
