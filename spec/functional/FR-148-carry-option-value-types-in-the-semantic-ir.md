@@ -15,6 +15,8 @@ relationships:
     type: "references"
   - target: "ix://agent-ix/filament-core-data/FR-097"
     type: "references"
+  - target: "ix://agent-ix/filament-core-data/FR-079"
+    type: "references"
   - target: "ix://agent-ix/quire-specification/FR-154"
     type: "references"
   - target: "ix://agent-ix/quire-specification/FR-322"
@@ -54,16 +56,23 @@ through. It does not derive the checked-package `composite_type`/`option` node
   `option`
 - The vectors OP-01 to OP-41 of QSpec
   `proposals/checked-package-v2/model-option-type-vectors.json`, read from the
-  QSpec repository at a git ref and never copied
+  QSpec repository at git ref `fa6be9cd` or later and never copied
 
 ## Outputs
 
 - The schema shape below, published in `schema/semantic/v1/semantic-ir.schema.json`
-- The reader verdicts below, from the Rust reader
+- The reader verdicts below, independently from the Rust reader
   (`agent_ix_semantic_ir::decide`), which every lift of the extraction frontend
-  passes through (FR-097), and, for the shape rows, from the published schema every IR reader
-  applies; the Node reader decides no further rule, as for FR-147's tuple
-  construct rules; each refusal a typed, located diagnostic
+  passes through (FR-097), the Node `readContractIr`, the independent TypeScript
+  reader `test/semantic-ir-v1-1-reader.ts` and the Python reader
+  `tests/semantic_ir_reader.py`; each applies the published schema for the shape
+  rows and the semantic rules below, and each refusal is a typed, located
+  diagnostic in its existing public envelope. Reader independence remains
+  governed by FR-050-CON-1 and CON-2.
+- The option-bearing generated Python surfaces
+  `python_backend/generated/<profile-id>/semantic_ir_schema.py`, regenerated
+  through the existing generation route and checked under
+  [FR-079-CON-2](./FR-079-emit-the-python-package-layout.md), rather than hand-edited
 - The accessors `Document::option_inner`, `Document::member_option` and
   `TypeDefinition::option_inner`
 
@@ -151,9 +160,10 @@ through. It does not derive the checked-package `composite_type`/`option` node
 | FR-148-AC-6 | `Document::option_inner` and `Document::member_option` read the field and operation types of vectors OP-01 to OP-08 as `Option<Integer>` for `a`, `b`, `g` and the operation parameter and result, `Option<Quantity<ms>>` for `c`, `Sequence<Option<Integer>>[0, 3]` for `d`, `Option<Sequence<Integer>[0, 3]>` for `e` and an option over the record for `f`; `a` and `b` name the same `T` through the two spellings (QSpec FR-322-AC-298). | Test (TC-1892) |
 | FR-148-AC-7 | The extraction frontend's `Kind::Option` serializes as `option`, its `TypeDefinition` carries `inner` and exposes it through `option_inner`, and a definition of any other kind exposes none. | Test (TC-1894) |
 | FR-148-AC-8 | A generation request whose IR declares an option value type is refused for every target by the generation seam with state `unsupported` and one blocking `UNSUPPORTED_CONSTRUCT_SHAPE`, and a request with none is unchanged. | Test (TC-1895) |
-| FR-148-AC-9 | The published schema, applied by the Node layer, admits the documents of AC-1 and refuses each shape row of AC-2 (vectors OP-23, OP-25 to OP-32 and OP-34 to OP-39). | Test (TC-1896) |
+| FR-148-AC-9 | For every vector OP-01 to OP-41 read by ref from the QSpec input above, the Node `readContractIr`, independent TypeScript reader and Python reader agree with the existing Rust reader on the corresponding semantic IR document: OP-01 to OP-10 and OP-20 are accepted with no diagnostic; each rejection row yields exactly one mapped canonical vector result for the code and located member required by AC-2 to AC-5, without requiring a single raw native diagnostic. The gate documents the mapping from each existing reader envelope to the Rust vector mapping, preserving each vector's expected path and cause, each reader's published ABI, and original code and path plus severity and blocking status where exposed. For the schema shape rows OP-23, OP-25 to OP-32 and OP-34 to OP-39, the compiler's `INVALID_IR` envelope is mapped using its original schema errors and pointers to the evidence readers' `SCHEMA_VIOLATION`, rather than synthesizing a matching result. The gate retains and checks every native schema diagnostic, normalizes only documented duplicate or ancestor representations of the same violation, and fails on any extra distinct violation; semantic refusals retain their existing codes and locations. | Test |
 
 ## Dependencies
 
 - **Upstream**: [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md) (the readers and their code table), [FR-141](./FR-141-carry-the-model-members-in-the-semantic-ir.md) (the model members this extends)
 - **Referenced**: [FR-097](./FR-097-normalize-validate-and-write-the-lifted-document.md) (validation at lift time), [FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md) (Clock and quantity references), [FR-147](./FR-147-carry-tuple-value-types-and-union-variant-payloads.md) (tuple positions and variant payloads), QSpec FR-154 and FR-322
+- **Generated Python surfaces**: [FR-079](./FR-079-emit-the-python-package-layout.md) (the existing regeneration and `--check` obligation, including CON-2)
