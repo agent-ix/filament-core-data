@@ -78,6 +78,10 @@ const NATIVE_SCALARS: &[(&str, &str)] = &[
     // bounds `minLength`/`maxLength` and its profile the `format`
     // `text-profile:<profile>`. It is not an FR-032 kernel scalar.
     ("Text", "string"),
+    // The model document's rational name (QSpec FR-056, FR-146 "The native
+    // set"): scalar `string`, instance form the canonical rational string.
+    // It is not an FR-032 kernel scalar and carries no `decimal` policy.
+    ("Rational", "string"),
 ];
 
 /// The `irScalar` value a native type reference names, when `identity` is
@@ -2934,10 +2938,11 @@ mod tests {
         // `Text` is the model document's name (QSpec FR-056), not a kernel
         // scalar, so the library holds every native name but that one.
         assert!(!scalars.iter().any(|(name, _)| name == "Text"));
+        assert!(!scalars.iter().any(|(name, _)| name == "Rational"));
         assert_eq!(
-            scalars.len() + 1,
+            scalars.len() + 2,
             NATIVE_SCALARS.len(),
-            "this crate's copy declares the canonical library and Text"
+            "this crate's copy declares the canonical library, Text and Rational"
         );
         for (name, definition) in scalars {
             let canonical_scalar = definition
@@ -2951,6 +2956,71 @@ mod tests {
                 "{name} maps to {canonical_scalar} in kernel-scalars.json"
             );
         }
+    }
+
+    /// A bare `ix://quire/native/Rational` field, operation parameter and
+    /// operation result each resolve (scalar `string`, no `decimal` policy):
+    /// the validator raises no `UNRESOLVED_TYPE_REF` for them (QSpec
+    /// FR-056-AC-43, TC-897 step 8).
+    ///
+    /// Tracing: TC-1842
+    /// ACs: FR-146-AC-1
+    #[test]
+    fn tc_1842_a_bare_rational_typeref_resolves_at_field_param_and_result() {
+        assert_eq!(
+            native_scalar(&format!("{NATIVE_PREFIX}Rational")),
+            Some("string")
+        );
+        let bundle = parse(
+            r#"{
+                "ir": {
+                    "contractVersion": "2.0.0", "canonicalization": {"algorithm": "rfc8785-v1"},
+                    "types": [
+                        {
+                            "identity": "ix://acme/pkg/T",
+                            "kind": "record",
+                            "fields": [
+                                {
+                                    "identity": "ix://acme/pkg/T/ratio",
+                                    "name": "ratio",
+                                    "typeRef": "ix://quire/native/Rational"
+                                }
+                            ],
+                            "operations": [
+                                {
+                                    "name": "scale",
+                                    "params": [
+                                        {"name": "by", "typeRef": "ix://quire/native/Rational"}
+                                    ],
+                                    "returns": {"typeRef": "ix://quire/native/Rational"}
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }"#,
+        )
+        .expect("a document");
+        let diagnostics = decide(&bundle);
+        assert!(
+            !diagnostics
+                .iter()
+                .any(|located| located.code == UNRESOLVED_TYPE_REF),
+            "a bare Rational typeRef resolves: {diagnostics:?}"
+        );
+        let misspelled = parse(
+            &format!(
+                "{}",
+                r#"{"ir":{"types":[{"identity":"ix://acme/pkg/T","kind":"record","fields":[{"identity":"ix://acme/pkg/T/r","name":"r","typeRef":"ix://quire/native/rational"}]}]}}"#
+            ),
+        )
+        .expect("a document");
+        assert!(
+            decide(&misspelled)
+                .iter()
+                .any(|located| located.code == UNRESOLVED_TYPE_REF),
+            "the native name is compared byte for byte"
+        );
     }
 
     /// A ring of `count` record types, each carrying one composite
