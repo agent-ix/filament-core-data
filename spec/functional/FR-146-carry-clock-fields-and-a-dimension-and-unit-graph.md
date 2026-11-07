@@ -120,12 +120,29 @@ a field or operation parameter.
 - Every IR reader SHALL resolve `ix://quire/native/<Name>` against one closed
   native set: the FR-032 kernel scalars, `Text` (FR-141), `Rational` and `Clock`.
 - `Rational` SHALL NOT be an FR-032 kernel scalar: `packages/semantic-core/kernel-scalars.json`
-  carries no `Rational` entry. A reader SHALL resolve `ix://quire/native/Rational`
-  to the IR scalar `string`, whose instance form is the canonical rational string
-  (the `n` or `n/d` form that "Units" defines), and to no node of the document.
-  A bare `Rational` `typeRef` carries no `decimal` policy and no other wire
-  policy, and the reader SHALL raise no `UNRESOLVED_TYPE_REF` for it at a field,
-  an operation parameter or an operation result (QSpec FR-056-AC-43, FR-154).
+  carries no `Rational` entry. Every IR reader (the Rust, Node, Python and v1-1
+  TypeScript readers) SHALL resolve `ix://quire/native/Rational` to the IR scalar
+  `string` and to no node of the document, and SHALL raise no
+  `UNRESOLVED_TYPE_REF` for a bare `Rational` `typeRef` at a field, an operation
+  parameter or an operation result (QSL FR-056-AC-43, QSpec FR-154). The
+  upstream specs (QSL FR-056, QSpec FR-154 and FR-322) name `Rational` as a
+  native with no checked type but give it no IR scalar, so this statement
+  chooses `string` because `string` is the IR scalar that carries the canonical
+  rational string (the `n` or `n/d` form that "Units" defines), the one wire
+  form a rational has in this contract, and the IR scalar enumeration has no
+  `rational` member.
+- A `Rational` member's resolved scalar is `string`, so the reader's
+  applicability table treats it as a `string` subject. It SHALL NOT read a
+  `Rational` value, and it SHALL NOT carry a `decimal` policy (a `decimal` member
+  on a `Rational` member is refused as on any non-`decimal` scalar). The
+  keywords the `string` row admits (`minLength`, `maxLength`, `pattern`, `format`,
+  `nonEmpty`) are admitted on a `Rational` member as on a `string`, and `min`,
+  `max`, `exclusiveMin` and `exclusiveMax` raise
+  `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE`. The reader gives these
+  admitted keywords no rational meaning; the bounds of a `Rational` come only
+  from a Rational value type of the package (QSpec FR-154 "Rational value
+  types"), and a `Rational` member's use is decided by the QSL spine, not by the
+  reader.
 - `Clock` SHALL NOT be an FR-032 kernel scalar: `packages/semantic-core/kernel-scalars.json`
   carries no `Clock` entry.
 - Every IR reader SHALL resolve `ix://quire/native/Clock` to no IR scalar and to
@@ -721,7 +738,7 @@ unit-reference constructs of a spec bundle to the IR constructs above.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-146-AC-1 | A document of package `acme/rpc` whose object type `Call` has a field `x` typed `ix://quire/native/Clock` with multiplicity `{1, 1, false, false}`, presence `required`, nullable `false` and defaultKind `none` is accepted by every reader with no diagnostic, and no `types[]` node is declared for the clock; every reader's native set is the `kernel-scalars.json` names plus `Text`, `Rational` and `Clock`, and `kernel-scalars.json` has no `Clock` or `Rational` entry. A field, an operation parameter and an operation result typed `ix://quire/native/Rational` with no `decimal` are each accepted with no diagnostic, resolving to the IR scalar `string`. | Test (TC-1842) |
+| FR-146-AC-1 | A document of package `acme/rpc` whose object type `Call` has a field `x` typed `ix://quire/native/Clock` with multiplicity `{1, 1, false, false}`, presence `required`, nullable `false` and defaultKind `none` is accepted by every reader with no diagnostic, and no `types[]` node is declared for the clock; every reader's native set is the `kernel-scalars.json` names plus `Text`, `Rational` and `Clock`, and `kernel-scalars.json` has no `Clock` or `Rational` entry. A field, an operation parameter and an operation result typed `ix://quire/native/Rational` with no `decimal` are accepted by every reader with no diagnostic, resolving to the IR scalar `string`; a `min` constraint whose `appliesTo` is `ix://quire/native/Rational` raises `CONSTRAINT_NOT_APPLICABLE`, a `minLength` one raises nothing, and a `decimal` member on a `Rational` field is refused. | Test (TC-1842) |
 | FR-146-AC-2 | `ix://quire/native/Clock` as an operation parameter, an operation result, an alias target, a sequence `items` and a map `values` is accepted with no diagnostic, and as a variant `payloadType` it raises exactly one `INVALID_CLOCK_MEMBER` at the `payloadType` (FR-147-AC-15); as a field of an object type or a record, and as a parameter or field typed by an alias of it (a core `alias` or a construct of the alias shape, alone or chained), it is a clock member. `ix://quire/native/Clock` as a reference target and as a constraint `appliesTo` (with `max`) is accepted with no diagnostic (FR-146-AC-21). A clock field with presence `optional` is accepted. A clock field carrying `nullable: true`, `defaultKind: semantic` with `defaultValue: 0`, `unit: "ms"`, a `textProfile`, a `decimal` policy and a `min` constraint refuses exactly one `INVALID_CLOCK_MEMBER` at each of `/nullable`, `/defaultKind`, `/defaultValue`, `/unit`, `/textProfile`, `/decimal` and `/constraints` under the field, and no `UNIT_ON_NON_SCALAR`, `CONSTRAINT_NOT_APPLICABLE`, `SCHEMA_VIOLATION`, decimal-policy code, `INVALID_DEFAULT_VALUE`, `UNKNOWN_CONSTRAINT_KEYWORD` or `INVALID_PATTERN`; a clock parameter breaking the same members refuses at `<param>/…`, and a clock result with `nullable: true` refuses exactly one `INVALID_CLOCK_MEMBER` at `returns/nullable`. A clock field with multiplicity `{3, 1}` raises exactly `INVALID_MULTIPLICITY`, as a unit-typed field does, and no `INVALID_CLOCK_MEMBER`; clock fields with multiplicity `{0, 3, true, false}`, `{0, 3, false, true}`, `{0, 3, false, false}` and `{0}` with no upper bound are accepted, and so are a parameter and a result of multiplicity `{0, 2, true, false}`. The published JSON Schema keys its rules on the literal `typeRef`, so on an alias-typed member whose `textProfile` is outside the enumeration or whose `defaultKind` and `defaultValue` do not pair a pure JSON Schema pass MAY report a schema error; the readers raise the member code at the member and no `SCHEMA_VIOLATION`, and every layer rejects. | Test (TC-1843) |
 | FR-146-AC-3 | A document declaring base dimension `Time` (`ix://acme/rpc/dimension/Time`, `base: true`, no terms), derived dimension `Rate` (`base: false`, terms `[{Time, "-1"}]`), dimensionless dimension `Ratio` (`base: false`, no terms), root unit `s` (`scale` `"1"`, `offset` `"0"`) and unit `ms` (`target` `s`, `scale` `"1/1000"`, `offset` `"0"`) is accepted by every reader; the same document without `dimensions` and `units` serializes with neither member. | Test (TC-1844) |
 | FR-146-AC-4 | Each refuses exactly one diagnostic at the stated pointer: a term naming an undeclared dimension (`UNRESOLVED_DIMENSION_REF`, `…/terms/0/dimension`); a unit typed by an undeclared dimension (`UNRESOLVED_DIMENSION_REF`, `/units/<j>/dimension`); a unit targeting an undeclared unit (`UNRESOLVED_UNIT_REF`, `/units/<j>/target`); and, each `INVALID_UNIT_GRAPH`: scale `"0"` (`/scale`), a target in another dimension (`/target`), a second root of `Time` (`/units/<j>` of the second root), a root with scale `"2"` (`/scale`), a root with offset `"273"` (`/offset`), a two-unit target cycle (`/target` of the lower-index unit only), a self-target (`/target`), a two-dimension term cycle (the lower-index dimension's term only), a three-dimension component holding two cycles (one refusal, at the least-index dimension's first term into the component), a base dimension with a term (`/terms`), terms out of order and a repeated term (the later term), a term exponent `"0"` (`/exponent`), an identity `ix://acme/rpc/unit/msec` on unit `ms` and an identity `ix://acme/rpc/dimension/Duration` on dimension `Time` (`/identity`). A document carrying a zero scale and a cycle reports both. Two units named `ms` refuse `DUPLICATE_IDENTITY` at the later one's `/identity`. A dimension `Time` with no units is accepted. | Test (TC-1845) |

@@ -78,7 +78,7 @@ const NATIVE_SCALARS: &[(&str, &str)] = &[
     // bounds `minLength`/`maxLength` and its profile the `format`
     // `text-profile:<profile>`. It is not an FR-032 kernel scalar.
     ("Text", "string"),
-    // The model document's rational name (QSpec FR-056, FR-146 "The native
+    // The model document's rational name (QSL FR-056, FR-146 "The native
     // set"): scalar `string`, instance form the canonical rational string.
     // It is not an FR-032 kernel scalar and carries no `decimal` policy.
     ("Rational", "string"),
@@ -2958,69 +2958,20 @@ mod tests {
         }
     }
 
-    /// A bare `ix://quire/native/Rational` field, operation parameter and
-    /// operation result each resolve (scalar `string`, no `decimal` policy):
-    /// the validator raises no `UNRESOLVED_TYPE_REF` for them (QSpec
-    /// FR-056-AC-43, TC-897 step 8).
+    /// `ix://quire/native/Rational` resolves to the IR scalar `string`, and
+    /// the native name is compared byte for byte (QSL FR-056-AC-43,
+    /// FR-146-AC-1). The whole-document verdicts are in
+    /// `tests/native_rational.rs`.
     ///
     /// Tracing: TC-1842
     /// ACs: FR-146-AC-1
     #[test]
-    fn tc_1842_a_bare_rational_typeref_resolves_at_field_param_and_result() {
+    fn tc_1842_rational_resolves_to_string_by_exact_name() {
         assert_eq!(
             native_scalar(&format!("{NATIVE_PREFIX}Rational")),
             Some("string")
         );
-        let bundle = parse(
-            r#"{
-                "ir": {
-                    "contractVersion": "2.0.0", "canonicalization": {"algorithm": "rfc8785-v1"},
-                    "types": [
-                        {
-                            "identity": "ix://acme/pkg/T",
-                            "kind": "record",
-                            "fields": [
-                                {
-                                    "identity": "ix://acme/pkg/T/ratio",
-                                    "name": "ratio",
-                                    "typeRef": "ix://quire/native/Rational"
-                                }
-                            ],
-                            "operations": [
-                                {
-                                    "name": "scale",
-                                    "params": [
-                                        {"name": "by", "typeRef": "ix://quire/native/Rational"}
-                                    ],
-                                    "returns": {"typeRef": "ix://quire/native/Rational"}
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }"#,
-        )
-        .expect("a document");
-        let diagnostics = decide(&bundle);
-        assert!(
-            !diagnostics
-                .iter()
-                .any(|located| located.code == UNRESOLVED_TYPE_REF),
-            "a bare Rational typeRef resolves: {diagnostics:?}"
-        );
-        let misspelled = parse(
-            &format!(
-                "{}",
-                r#"{"ir":{"types":[{"identity":"ix://acme/pkg/T","kind":"record","fields":[{"identity":"ix://acme/pkg/T/r","name":"r","typeRef":"ix://quire/native/rational"}]}]}}"#
-            ),
-        )
-        .expect("a document");
-        assert!(
-            decide(&misspelled)
-                .iter()
-                .any(|located| located.code == UNRESOLVED_TYPE_REF),
-            "the native name is compared byte for byte"
-        );
+        assert_eq!(native_scalar(&format!("{NATIVE_PREFIX}rational")), None);
     }
 
     /// A ring of `count` record types, each carrying one composite

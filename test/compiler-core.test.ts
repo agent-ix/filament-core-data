@@ -4308,10 +4308,52 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			).map((entry) => [entry[1], entry[2]]),
 		);
 		const names = Object.keys(canonical.scalars);
-		expect(Object.keys(pairs).sort()).toEqual(names.sort());
+		// `Rational` is FR-146's native, not a kernel scalar.
+		expect(canonical.scalars.Rational).toBeUndefined();
+		expect(Object.keys(pairs).sort()).toEqual([...names, "Rational"].sort());
+		expect(pairs.Rational).toBe("string");
 		for (const name of names) {
 			expect(pairs[name]).toBe(canonical.scalars[name].irScalar);
 		}
+	});
+
+	it("TC-1842: a bare Rational typeRef resolves as a String one does (FR-146-AC-1)", () => {
+		const documentOf = (typeRef: string) => ({
+			contractVersion: "2.0.0",
+			types: [
+				{
+					identity: "ix://acme/pkg/T",
+					kind: "record",
+					fields: [
+						{
+							identity: "ix://acme/pkg/T/f",
+							name: "f",
+							typeRef,
+							presence: "required",
+							nullable: false,
+							multiplicity: {
+								lower: 1,
+								upper: 1,
+								ordered: false,
+								unique: false,
+							},
+						},
+					],
+				},
+			],
+		});
+		const rational = readContractIr(
+			documentOf("ix://quire/native/Rational") as never,
+		);
+		const string = readContractIr(
+			documentOf("ix://quire/native/String") as never,
+		);
+		expect(codesOf(rational as never)).toEqual(codesOf(string as never));
+		expect(
+			codesOf(rational as never).some((code) =>
+				code.includes("UNRESOLVED_TYPE_REF"),
+			),
+		).toBe(false);
 	});
 });
 

@@ -212,6 +212,9 @@ const NATIVE_SCALARS = new Map([
 	["Duration", "duration"],
 	["Bytes", "bytes"],
 	["JsonObject", "any"],
+	// FR-146 "The native set": not a kernel scalar; wire form is the canonical
+	// rational string.
+	["Rational", "string"],
 ]);
 
 function nativeScalar(identity) {

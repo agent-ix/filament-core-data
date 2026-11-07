@@ -1303,10 +1303,47 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 			).map((entry) => [entry[1], entry[2]]),
 		);
 		const names = Object.keys(canonical.scalars);
-		expect(Object.keys(pairs).sort()).toEqual(names.sort());
+		// `Rational` is FR-146's native, not a kernel scalar.
+		expect(canonical.scalars.Rational).toBeUndefined();
+		expect(Object.keys(pairs).sort()).toEqual([...names, "Rational"].sort());
+		expect(pairs.Rational).toBe("string");
 		for (const name of names) {
 			expect(pairs[name]).toBe(canonical.scalars[name].irScalar);
 		}
+	});
+
+	/** Traces: TC-1842; FR-146-AC-1. */
+	it("TC-1842: a bare Rational typeRef resolves as a String one does (FR-146-AC-1)", () => {
+		const documentOf = (typeRef: string) => ({
+			contractVersion: "2.0.0",
+			types: [
+				{
+					identity: "ix://acme/pkg/T",
+					kind: "record",
+					fields: [
+						{
+							identity: "ix://acme/pkg/T/f",
+							name: "f",
+							typeRef,
+							presence: "required",
+							nullable: false,
+							multiplicity: {
+								lower: 1,
+								upper: 1,
+								ordered: false,
+								unique: false,
+							},
+						},
+					],
+				},
+			],
+		});
+		const rational = readSemanticIr(documentOf("ix://quire/native/Rational"));
+		const string = readSemanticIr(documentOf("ix://quire/native/String"));
+		expect(rational.map((d) => d.code)).toEqual(string.map((d) => d.code));
+		expect(rational.map((d) => d.code)).not.toContain(
+			"agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
+		);
 	});
 
 	/** Traces: TC-1815; FR-093-AC-6, FR-093-CON-4. */

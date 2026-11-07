@@ -432,9 +432,52 @@ class TestNativeScalarParity:
             (ROOT / "packages" / "semantic-core" / "kernel-scalars.json").read_text()
         )
         scalars = canonical["scalars"]
-        assert len(scalars) == len(NATIVE_SCALARS)
+        # ``Rational`` is FR-146's native, not a kernel scalar.
+        assert "Rational" not in scalars
+        assert len(scalars) + 1 == len(NATIVE_SCALARS)
         for name, definition in scalars.items():
             assert _native_scalar(f"{NATIVE_PREFIX}{name}") == definition["irScalar"]
+        assert _native_scalar(f"{NATIVE_PREFIX}Rational") == "string"
+
+    def test_a_bare_rational_typeref_resolves_as_a_string_one_does(self) -> None:
+        """Description: TC-1842. Criteria: FR-146-AC-1."""
+
+        def document_of(type_ref: str) -> dict:
+            return {
+                "contractVersion": "2.0.0",
+                "types": [
+                    {
+                        "identity": "ix://acme/pkg/T",
+                        "kind": "record",
+                        "fields": [
+                            {
+                                "identity": "ix://acme/pkg/T/f",
+                                "name": "f",
+                                "typeRef": type_ref,
+                                "presence": "required",
+                                "nullable": False,
+                                "multiplicity": {
+                                    "lower": 1,
+                                    "upper": 1,
+                                    "ordered": False,
+                                    "unique": False,
+                                },
+                            }
+                        ],
+                    }
+                ],
+            }
+
+        rational = [
+            d["code"]
+            for d in read_semantic_ir(document_of("ix://quire/native/Rational"))
+        ]
+        string = [
+            d["code"]
+            for d in read_semantic_ir(document_of("ix://quire/native/String"))
+        ]
+        assert rational == string
+        assert "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF" not in rational
 
 
 class TestInlineFieldConstraints:
