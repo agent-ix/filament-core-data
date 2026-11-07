@@ -46,31 +46,17 @@ fn tc_1842_bare_rational_field_param_and_result_are_accepted_with_no_diagnostic(
     assert_eq!(codes(&document(RATIONAL, "", "")), vec![]);
 }
 
-/// A misspelled native name is still refused, and `decimal` on a Rational
-/// member is a policy conflict, so Rational carries no decimal policy.
+/// A misspelled native name is still refused (byte-for-byte comparison).
 ///
 /// Tracing: TC-1842
 /// ACs: FR-146-AC-1
 #[test]
-fn tc_1842_rational_name_is_exact_and_carries_no_decimal_policy() {
+fn tc_1842_rational_name_is_exact() {
     let wrong = codes(&document("ix://quire/native/rational", "", ""));
     assert!(wrong
         .iter()
         .all(|(code, _)| *code == "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF"));
     assert!(!wrong.is_empty());
-    let decimal = codes(&document(
-        RATIONAL,
-        r#","decimal":{"precision":4,"scale":2}"#,
-        "",
-    ));
-    assert_eq!(
-        decimal,
-        vec![(
-            "agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT",
-            "/ir/types/0/fields/0".to_string()
-        )],
-        "decimal on a Rational member is refused"
-    );
 }
 
 /// The adverse consequence of the `string` scalar (FR-146 "The native

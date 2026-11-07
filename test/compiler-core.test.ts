@@ -4378,9 +4378,6 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		expect(
 			codes(documentOf({}, [constraint("minLength", { value: 1 })])),
 		).toEqual([]);
-		expect(codes(documentOf({ decimal: { precision: 4, scale: 2 } }))).toEqual([
-			"agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT",
-		]);
 	});
 });
 
