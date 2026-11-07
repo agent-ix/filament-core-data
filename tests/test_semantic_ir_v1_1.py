@@ -439,45 +439,76 @@ class TestNativeScalarParity:
             assert _native_scalar(f"{NATIVE_PREFIX}{name}") == definition["irScalar"]
         assert _native_scalar(f"{NATIVE_PREFIX}Rational") == "string"
 
-    def test_a_bare_rational_typeref_resolves_as_a_string_one_does(self) -> None:
+    def test_a_bare_rational_field_param_and_result_resolve_as_the_string_row(
+        self,
+    ) -> None:
         """Description: TC-1842. Criteria: FR-146-AC-1."""
+        org = {
+            "generated": {
+                "generatorIdentity": "ix://a/g",
+                "generatorVersion": "1",
+                "inputIdentities": ["ix://a/s"],
+            }
+        }
+        mult = {"lower": 1, "upper": 1, "ordered": False, "unique": False}
+        ref = "ix://quire/native/Rational"
 
-        def document_of(type_ref: str) -> dict:
+        def member(identity: str, name: str) -> dict:
             return {
+                "identity": identity,
+                "name": name,
+                "typeRef": ref,
+                "multiplicity": mult,
+                "presence": "required",
+                "nullable": False,
+                "defaultKind": "none",
+                "origin": org,
+            }
+
+        def constraint(keyword: str, operands: dict) -> dict:
+            return {
+                "identity": "ix://a/T/c",
+                "keyword": keyword,
+                "operands": operands,
+                "appliesTo": ref,
+                "diagnosticCode": "ix://a/C",
+                "origin": org,
+            }
+
+        def codes(constraints: list) -> list:
+            document = {
                 "contractVersion": "2.0.0",
                 "types": [
                     {
-                        "identity": "ix://acme/pkg/T",
+                        "identity": "ix://a/T",
                         "kind": "record",
-                        "fields": [
+                        "constraints": constraints,
+                        "fields": [member("ix://a/T/f", "f")],
+                        "operations": [
                             {
-                                "identity": "ix://acme/pkg/T/f",
-                                "name": "f",
-                                "typeRef": type_ref,
-                                "presence": "required",
-                                "nullable": False,
-                                "multiplicity": {
-                                    "lower": 1,
-                                    "upper": 1,
-                                    "ordered": False,
-                                    "unique": False,
+                                "identity": "ix://a/T/op",
+                                "name": "op",
+                                "params": [member("ix://a/T/op/by", "by")],
+                                "returns": {
+                                    "typeRef": ref,
+                                    "multiplicity": mult,
+                                    "nullable": False,
                                 },
+                                "pre": [],
+                                "post": [],
+                                "origin": org,
                             }
                         ],
                     }
                 ],
             }
+            return [d["code"] for d in read_semantic_ir(document)]
 
-        rational = [
-            d["code"]
-            for d in read_semantic_ir(document_of("ix://quire/native/Rational"))
+        assert codes([]) == []
+        assert codes([constraint("min", {"value": "1/2"})]) == [
+            "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE"
         ]
-        string = [
-            d["code"]
-            for d in read_semantic_ir(document_of("ix://quire/native/String"))
-        ]
-        assert rational == string
-        assert "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF" not in rational
+        assert codes([constraint("minLength", {"value": 1})]) == []
 
 
 class TestInlineFieldConstraints:

@@ -1313,37 +1313,67 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 	});
 
 	/** Traces: TC-1842; FR-146-AC-1. */
-	it("TC-1842: a bare Rational typeRef resolves as a String one does (FR-146-AC-1)", () => {
-		const documentOf = (typeRef: string) => ({
+	it("TC-1842: a bare Rational field, parameter and result resolve as the string row (FR-146-AC-1)", () => {
+		const org = {
+			generated: {
+				generatorIdentity: "ix://a/g",
+				generatorVersion: "1",
+				inputIdentities: ["ix://a/s"],
+			},
+		};
+		const mult = { lower: 1, upper: 1, ordered: false, unique: false };
+		const ref = "ix://quire/native/Rational";
+		const member = (identity: string, name: string, extra = {}) => ({
+			identity,
+			name,
+			typeRef: ref,
+			multiplicity: mult,
+			presence: "required",
+			nullable: false,
+			defaultKind: "none",
+			origin: org,
+			...extra,
+		});
+		const constraint = (keyword: string, operands: object) => ({
+			identity: "ix://a/T/c",
+			keyword,
+			operands,
+			appliesTo: ref,
+			diagnosticCode: "ix://a/C",
+			origin: org,
+		});
+		const documentOf = (fieldExtra = {}, constraints: object[] = []) => ({
 			contractVersion: "2.0.0",
 			types: [
 				{
-					identity: "ix://acme/pkg/T",
+					identity: "ix://a/T",
 					kind: "record",
-					fields: [
+					constraints,
+					fields: [member("ix://a/T/f", "f", fieldExtra)],
+					operations: [
 						{
-							identity: "ix://acme/pkg/T/f",
-							name: "f",
-							typeRef,
-							presence: "required",
-							nullable: false,
-							multiplicity: {
-								lower: 1,
-								upper: 1,
-								ordered: false,
-								unique: false,
-							},
+							identity: "ix://a/T/op",
+							name: "op",
+							params: [member("ix://a/T/op/by", "by")],
+							returns: { typeRef: ref, multiplicity: mult, nullable: false },
+							pre: [],
+							post: [],
+							origin: org,
 						},
 					],
 				},
 			],
 		});
-		const rational = readSemanticIr(documentOf("ix://quire/native/Rational"));
-		const string = readSemanticIr(documentOf("ix://quire/native/String"));
-		expect(rational.map((d) => d.code)).toEqual(string.map((d) => d.code));
-		expect(rational.map((d) => d.code)).not.toContain(
-			"agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
-		);
+		const codes = (document: object) =>
+			readSemanticIr(document as never).map((d: { code: string }) => d.code);
+		// A field, a parameter and a result: no diagnostic.
+		expect(codes(documentOf())).toEqual([]);
+		expect(
+			codes(documentOf({}, [constraint("min", { value: "1/2" })])),
+		).toEqual(["agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE"]);
+		expect(
+			codes(documentOf({}, [constraint("minLength", { value: 1 })])),
+		).toEqual([]);
 	});
 
 	/** Traces: TC-1815; FR-093-AC-6, FR-093-CON-4. */

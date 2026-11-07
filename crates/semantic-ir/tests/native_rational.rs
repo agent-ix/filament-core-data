@@ -63,8 +63,12 @@ fn tc_1842_rational_name_is_exact_and_carries_no_decimal_policy() {
         r#","decimal":{"precision":4,"scale":2}"#,
         "",
     ));
-    assert!(
-        !decimal.is_empty(),
+    assert_eq!(
+        decimal,
+        vec![(
+            "agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT",
+            "/ir/types/0/fields/0".to_string()
+        )],
         "decimal on a Rational member is refused"
     );
 }
