@@ -57,6 +57,9 @@ const NATIVE_SCALARS: Record<string, string> = {
 	Duration: "duration",
 	Bytes: "bytes",
 	JsonObject: "any",
+	// FR-146 "The native set": not a kernel scalar; wire form is the canonical
+	// rational string.
+	Rational: "string",
 };
 
 const I128_MIN = -170141183460469231731687303715884105728n;

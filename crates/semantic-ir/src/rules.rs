@@ -78,6 +78,10 @@ const NATIVE_SCALARS: &[(&str, &str)] = &[
     // bounds `minLength`/`maxLength` and its profile the `format`
     // `text-profile:<profile>`. It is not an FR-032 kernel scalar.
     ("Text", "string"),
+    // The model document's rational name (QSL FR-056, FR-146 "The native
+    // set"): scalar `string`, instance form the canonical rational string.
+    // It is not an FR-032 kernel scalar and carries no `decimal` policy.
+    ("Rational", "string"),
 ];
 
 /// The `irScalar` value a native type reference names, when `identity` is
@@ -2934,10 +2938,11 @@ mod tests {
         // `Text` is the model document's name (QSpec FR-056), not a kernel
         // scalar, so the library holds every native name but that one.
         assert!(!scalars.iter().any(|(name, _)| name == "Text"));
+        assert!(!scalars.iter().any(|(name, _)| name == "Rational"));
         assert_eq!(
-            scalars.len() + 1,
+            scalars.len() + 2,
             NATIVE_SCALARS.len(),
-            "this crate's copy declares the canonical library and Text"
+            "this crate's copy declares the canonical library, Text and Rational"
         );
         for (name, definition) in scalars {
             let canonical_scalar = definition
@@ -2951,6 +2956,22 @@ mod tests {
                 "{name} maps to {canonical_scalar} in kernel-scalars.json"
             );
         }
+    }
+
+    /// `ix://quire/native/Rational` resolves to the IR scalar `string`, and
+    /// the native name is compared byte for byte (QSL FR-056-AC-43,
+    /// FR-146-AC-1). The whole-document verdicts are in
+    /// `tests/native_rational.rs`.
+    ///
+    /// Tracing: TC-1842
+    /// ACs: FR-146-AC-1
+    #[test]
+    fn tc_1842_rational_resolves_to_string_by_exact_name() {
+        assert_eq!(
+            native_scalar(&format!("{NATIVE_PREFIX}Rational")),
+            Some("string")
+        );
+        assert_eq!(native_scalar(&format!("{NATIVE_PREFIX}rational")), None);
     }
 
     /// A ring of `count` record types, each carrying one composite

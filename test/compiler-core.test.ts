@@ -4308,10 +4308,76 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			).map((entry) => [entry[1], entry[2]]),
 		);
 		const names = Object.keys(canonical.scalars);
-		expect(Object.keys(pairs).sort()).toEqual(names.sort());
+		// `Rational` is FR-146's native, not a kernel scalar.
+		expect(canonical.scalars.Rational).toBeUndefined();
+		expect(Object.keys(pairs).sort()).toEqual([...names, "Rational"].sort());
+		expect(pairs.Rational).toBe("string");
 		for (const name of names) {
 			expect(pairs[name]).toBe(canonical.scalars[name].irScalar);
 		}
+	});
+
+	it("TC-1842: a bare Rational field, parameter and result resolve as the string row (FR-146-AC-1)", () => {
+		const org = {
+			generated: {
+				generatorIdentity: "ix://a/g",
+				generatorVersion: "1",
+				inputIdentities: ["ix://a/s"],
+			},
+		};
+		const mult = { lower: 1, upper: 1, ordered: false, unique: false };
+		const ref = "ix://quire/native/Rational";
+		const member = (identity: string, name: string, extra = {}) => ({
+			identity,
+			name,
+			typeRef: ref,
+			multiplicity: mult,
+			presence: "required",
+			nullable: false,
+			defaultKind: "none",
+			origin: org,
+			...extra,
+		});
+		const constraint = (keyword: string, operands: object) => ({
+			identity: "ix://a/T/c",
+			keyword,
+			operands,
+			appliesTo: ref,
+			diagnosticCode: "ix://a/C",
+			origin: org,
+		});
+		const documentOf = (fieldExtra = {}, constraints: object[] = []) => ({
+			contractVersion: "2.0.0",
+			types: [
+				{
+					identity: "ix://a/T",
+					kind: "record",
+					constraints,
+					fields: [member("ix://a/T/f", "f", fieldExtra)],
+					operations: [
+						{
+							identity: "ix://a/T/op",
+							name: "op",
+							params: [member("ix://a/T/op/by", "by")],
+							returns: { typeRef: ref, multiplicity: mult, nullable: false },
+							pre: [],
+							post: [],
+							origin: org,
+						},
+					],
+				},
+			],
+		});
+		const codes = (document: object) =>
+			readContractIr(document as never).map((d: { code: string }) => d.code);
+		// A field, a parameter and a result: no diagnostic.
+		expect(codes(documentOf())).toEqual([]);
+		expect(
+			codes(documentOf({}, [constraint("min", { value: "1/2" })])),
+		).toEqual(["agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE"]);
+		expect(
+			codes(documentOf({}, [constraint("minLength", { value: 1 })])),
+		).toEqual([]);
 	});
 });
 

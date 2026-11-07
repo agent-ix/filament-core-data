@@ -432,9 +432,83 @@ class TestNativeScalarParity:
             (ROOT / "packages" / "semantic-core" / "kernel-scalars.json").read_text()
         )
         scalars = canonical["scalars"]
-        assert len(scalars) == len(NATIVE_SCALARS)
+        # ``Rational`` is FR-146's native, not a kernel scalar.
+        assert "Rational" not in scalars
+        assert len(scalars) + 1 == len(NATIVE_SCALARS)
         for name, definition in scalars.items():
             assert _native_scalar(f"{NATIVE_PREFIX}{name}") == definition["irScalar"]
+        assert _native_scalar(f"{NATIVE_PREFIX}Rational") == "string"
+
+    def test_a_bare_rational_field_param_and_result_resolve_as_the_string_row(
+        self,
+    ) -> None:
+        """Description: TC-1842. Criteria: FR-146-AC-1."""
+        org = {
+            "generated": {
+                "generatorIdentity": "ix://a/g",
+                "generatorVersion": "1",
+                "inputIdentities": ["ix://a/s"],
+            }
+        }
+        mult = {"lower": 1, "upper": 1, "ordered": False, "unique": False}
+        ref = "ix://quire/native/Rational"
+
+        def member(identity: str, name: str) -> dict:
+            return {
+                "identity": identity,
+                "name": name,
+                "typeRef": ref,
+                "multiplicity": mult,
+                "presence": "required",
+                "nullable": False,
+                "defaultKind": "none",
+                "origin": org,
+            }
+
+        def constraint(keyword: str, operands: dict) -> dict:
+            return {
+                "identity": "ix://a/T/c",
+                "keyword": keyword,
+                "operands": operands,
+                "appliesTo": ref,
+                "diagnosticCode": "ix://a/C",
+                "origin": org,
+            }
+
+        def codes(constraints: list) -> list:
+            document = {
+                "contractVersion": "2.0.0",
+                "types": [
+                    {
+                        "identity": "ix://a/T",
+                        "kind": "record",
+                        "constraints": constraints,
+                        "fields": [member("ix://a/T/f", "f")],
+                        "operations": [
+                            {
+                                "identity": "ix://a/T/op",
+                                "name": "op",
+                                "params": [member("ix://a/T/op/by", "by")],
+                                "returns": {
+                                    "typeRef": ref,
+                                    "multiplicity": mult,
+                                    "nullable": False,
+                                },
+                                "pre": [],
+                                "post": [],
+                                "origin": org,
+                            }
+                        ],
+                    }
+                ],
+            }
+            return [d["code"] for d in read_semantic_ir(document)]
+
+        assert codes([]) == []
+        assert codes([constraint("min", {"value": "1/2"})]) == [
+            "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE"
+        ]
+        assert codes([constraint("minLength", {"value": 1})]) == []
 
 
 class TestInlineFieldConstraints:
