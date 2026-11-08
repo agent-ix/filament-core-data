@@ -1374,6 +1374,11 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 		expect(
 			codes(documentOf({}, [constraint("minLength", { value: 1 })])),
 		).toEqual([]);
+		// FR-144: a decimal member on a non-decimal scalar is refused at the
+		// field, as the Rust and Node readers refuse it.
+		expect(
+			codes(documentOf({ decimal: { precision: 4, scale: 2 } })),
+		).toEqual(["agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT"]);
 	});
 
 	/** Traces: TC-1815; FR-093-AC-6, FR-093-CON-4. */

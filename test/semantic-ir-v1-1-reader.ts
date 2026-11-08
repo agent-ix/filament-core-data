@@ -785,6 +785,20 @@ function checkField(
 			message: `typeRef does not resolve: ${String(field.typeRef)}`,
 		});
 	}
+	// FR-144: a decimal policy applies only to a decimal subject. Rust and
+	// Node raise DECIMAL_POLICY_CONFLICT at the field for every non-decimal
+	// scalar; this reader raised nothing (QSL-1807 FND-005 residual).
+	if (
+		resolved?.kind === "scalar" &&
+		resolved.scalar !== "decimal" &&
+		(isObject(field.decimal) ||
+			decimalPolicies(types, field.typeRef, fields).length > 0)
+	)
+		diagnostics.push({
+			code: "agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT",
+			path,
+			message: "a decimal policy applies only to a decimal subject",
+		});
 	if (field.multiplicity === undefined) {
 		// fcd#179: 2.0.0 is the only contract, and its schema requires
 		// `multiplicity` on every field, so a document reaching this reader

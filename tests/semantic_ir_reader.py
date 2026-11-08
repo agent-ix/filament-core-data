@@ -448,6 +448,25 @@ def _check_field(
                 "typeRef does not resolve",
             )
         )
+    # FR-144: a decimal policy applies only to a decimal subject. Rust and
+    # Node raise DECIMAL_POLICY_CONFLICT at the field for every non-decimal
+    # scalar; this reader raised nothing (QSL-1807 FND-005 residual).
+    if (
+        resolved is not None
+        and resolved[0] == "scalar"
+        and resolved[1] != "decimal"
+        and (
+            isinstance(field.get("decimal"), dict)
+            or _decimal_policy(types, fields, field.get("typeRef")) is not None
+        )
+    ):
+        out.append(
+            _diag(
+                "agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT",
+                path,
+                "a decimal policy applies only to a decimal subject",
+            )
+        )
     if "multiplicity" not in field:
         # fcd#179: 2.0.0 is the only contract, and its schema requires
         # `multiplicity` on every field, so a document reaching this reader
