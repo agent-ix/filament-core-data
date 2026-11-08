@@ -475,7 +475,7 @@ class TestNativeScalarParity:
                 "origin": org,
             }
 
-        def codes(constraints: list) -> list:
+        def codes(constraints: list, field_extra: dict | None = None) -> list:
             document = {
                 "contractVersion": "2.0.0",
                 "types": [
@@ -483,7 +483,7 @@ class TestNativeScalarParity:
                         "identity": "ix://a/T",
                         "kind": "record",
                         "constraints": constraints,
-                        "fields": [member("ix://a/T/f", "f")],
+                        "fields": [{**member("ix://a/T/f", "f"), **(field_extra or {})}],
                         "operations": [
                             {
                                 "identity": "ix://a/T/op",
@@ -509,6 +509,10 @@ class TestNativeScalarParity:
             "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE"
         ]
         assert codes([constraint("minLength", {"value": 1})]) == []
+        # FR-144: a decimal member on a non-decimal scalar is refused at the
+        # field, as the Rust and Node readers refuse it.
+        decimal = {"decimal": {"precision": 4, "scale": 2}}
+        assert codes([], decimal) == ["agent-ix.semantic-ir.DECIMAL_POLICY_CONFLICT"]
 
 
 class TestInlineFieldConstraints:
