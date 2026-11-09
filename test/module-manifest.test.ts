@@ -438,6 +438,15 @@ describe("traceability", () => {
 	it("refuses an undeclared model member and malformed sections", () => {
 		rejects(trace({ surprise: [] }), T, "additionalProperties");
 		rejects(
+			trace({
+				trace_tags: {
+					legacy: [{ name: "l", pattern: "Trace: (.*)", rewrite_to: "m" }],
+				},
+			}),
+			`${T}/trace_tags`,
+			"additionalProperties",
+		);
+		rejects(
 			trace({ trace_targets: [{ ...target, section: [] }] }),
 			`${T}/trace_targets/0/section`,
 			"oneOf",
@@ -482,11 +491,6 @@ describe("traceability", () => {
 		rejects(
 			trace({ trace_tags: { markers: [form] } }),
 			`${T}/trace_tags/markers/0`,
-			"additionalProperties",
-		);
-		rejects(
-			trace({ trace_tags: { legacy: [form] } }),
-			`${T}/trace_tags`,
 			"additionalProperties",
 		);
 		rejects(
