@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.0/MinConstraint.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.1/MinConstraint.json",
 	"type": "object",
 	"properties": {
 		"keyword": {
@@ -8,7 +8,7 @@
 			"const": "min"
 		},
 		"value": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/MinConstraintValue.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/MinConstraintValue.json"
 		}
 	},
 	"required": ["keyword", "value"],
