@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.0/MaxConstraint.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.1/MaxConstraint.json",
 	"type": "object",
 	"properties": {
 		"keyword": {
@@ -8,7 +8,7 @@
 			"const": "max"
 		},
 		"value": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/MaxConstraintValue.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/MaxConstraintValue.json"
 		}
 	},
 	"required": ["keyword", "value"],

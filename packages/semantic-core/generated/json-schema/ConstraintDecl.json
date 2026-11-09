@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.0/ConstraintDecl.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.1/ConstraintDecl.json",
 	"oneOf": [
 		{
 			"type": "object",
@@ -10,7 +10,7 @@
 					"const": "MinConstraint"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/MinConstraint.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/MinConstraint.json"
 				}
 			},
 			"required": ["kind", "value"],
@@ -26,7 +26,7 @@
 					"const": "MaxConstraint"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/MaxConstraint.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/MaxConstraint.json"
 				}
 			},
 			"required": ["kind", "value"],
@@ -42,7 +42,7 @@
 					"const": "ExclusiveMinConstraint"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/ExclusiveMinConstraint.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/ExclusiveMinConstraint.json"
 				}
 			},
 			"required": ["kind", "value"],
@@ -58,7 +58,7 @@
 					"const": "ExclusiveMaxConstraint"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/ExclusiveMaxConstraint.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/ExclusiveMaxConstraint.json"
 				}
 			},
 			"required": ["kind", "value"],
@@ -74,7 +74,7 @@
 					"const": "PatternConstraint"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/PatternConstraint.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/PatternConstraint.json"
 				}
 			},
 			"required": ["kind", "value"],
@@ -90,7 +90,7 @@
 					"const": "MinLengthConstraint"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/MinLengthConstraint.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/MinLengthConstraint.json"
 				}
 			},
 			"required": ["kind", "value"],
@@ -106,7 +106,7 @@
 					"const": "MaxLengthConstraint"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/MaxLengthConstraint.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/MaxLengthConstraint.json"
 				}
 			},
 			"required": ["kind", "value"],
@@ -122,7 +122,7 @@
 					"const": "EnumValuesConstraint"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/EnumValuesConstraint.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/EnumValuesConstraint.json"
 				}
 			},
 			"required": ["kind", "value"],
@@ -138,7 +138,7 @@
 					"const": "NonEmptyConstraint"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/NonEmptyConstraint.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/NonEmptyConstraint.json"
 				}
 			},
 			"required": ["kind", "value"],
@@ -154,7 +154,7 @@
 					"const": "UniqueConstraint"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/UniqueConstraint.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/UniqueConstraint.json"
 				}
 			},
 			"required": ["kind", "value"],
@@ -170,7 +170,7 @@
 					"const": "FormatConstraint"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/FormatConstraint.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/FormatConstraint.json"
 				}
 			},
 			"required": ["kind", "value"],

@@ -5,7 +5,7 @@
 	},
 	"source": {
 		"identity": "ix://agent-ix/semantic-core",
-		"version": "0.4.0",
+		"version": "0.4.1",
 		"dialect": "spec-bundle"
 	},
 	"package": {

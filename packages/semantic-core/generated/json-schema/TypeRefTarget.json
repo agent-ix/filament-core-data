@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.0/TypeRefTarget.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.1/TypeRefTarget.json",
 	"oneOf": [
 		{
 			"type": "object",
@@ -10,7 +10,7 @@
 					"const": "SemanticId"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/SemanticId.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/SemanticId.json"
 				}
 			},
 			"required": ["kind", "value"],
@@ -26,7 +26,7 @@
 					"const": "KernelScalar"
 				},
 				"value": {
-					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/KernelScalar.json"
+					"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/KernelScalar.json"
 				}
 			},
 			"required": ["kind", "value"],
