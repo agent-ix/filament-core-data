@@ -1,0 +1,613 @@
+{
+	"base": "map-keys-bound.json",
+	"cases": [
+		{
+			"id": "PM-01",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-48",
+			"description": "the base map type",
+			"set": [],
+			"remove": [],
+			"rust": []
+		},
+		{
+			"id": "PM-02",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-48",
+			"description": "bound with no upper",
+			"set": [
+				[
+					"/types/13/bound",
+					{
+						"lower": 0
+					}
+				]
+			],
+			"remove": [],
+			"rust": []
+		},
+		{
+			"id": "PM-03",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-48",
+			"description": "Integer key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://quire/native/Integer"
+				]
+			],
+			"remove": [],
+			"rust": []
+		},
+		{
+			"id": "PM-04",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-48",
+			"description": "Int[0, 9] value type key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Small"
+				]
+			],
+			"remove": [],
+			"rust": []
+		},
+		{
+			"id": "PM-05",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-48",
+			"description": "payload-free variant (enumeration) key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Color"
+				]
+			],
+			"remove": [],
+			"rust": []
+		},
+		{
+			"id": "PM-06",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-48",
+			"description": "unit key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://quire/unit/ms"
+				]
+			],
+			"remove": [],
+			"rust": []
+		},
+		{
+			"id": "PM-07",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-48",
+			"description": "alias of Text key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Key"
+				]
+			],
+			"remove": [],
+			"rust": []
+		},
+		{
+			"id": "PM-08",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "Clock key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://quire/native/Clock"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-09",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "alias of Clock key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Stopwatch"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-10",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "clock-bearing record key Timer",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Timer"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-11",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "record Cfg { a: Boolean } key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Cfg"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-12",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "Option<Text> key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/OptText"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-13",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "sequence type key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Texts"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-14",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "map type key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Inner"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-15",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "tuple value type key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Pair"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-16",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "union (payload-bearing variant) key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Shape"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-17",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "reference type key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/ClockRef"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-18",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "object type key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Holder"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-19",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "absent keys",
+			"set": [],
+			"remove": [
+				"/types/13/keys"
+			],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/13"
+				}
+			]
+		},
+		{
+			"id": "PM-20",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "keys naming no node",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Nothing"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.UNRESOLVED_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-21",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "absent bound",
+			"set": [],
+			"remove": [
+				"/types/13/bound"
+			],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/13"
+				}
+			]
+		},
+		{
+			"id": "PM-22",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "string bound",
+			"set": [
+				[
+					"/types/13/bound",
+					"[0, 2]"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/13/bound"
+				}
+			]
+		},
+		{
+			"id": "PM-23",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "negative lower",
+			"set": [
+				[
+					"/types/13/bound/lower",
+					-1
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/13/bound/lower"
+				}
+			]
+		},
+		{
+			"id": "PM-24",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "non-integer upper",
+			"set": [
+				[
+					"/types/13/bound/upper",
+					1.5
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/13/bound/upper"
+				}
+			]
+		},
+		{
+			"id": "PM-25",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "bound with an extra member",
+			"set": [
+				[
+					"/types/13/bound/ordered",
+					true
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/13/bound"
+				}
+			]
+		},
+		{
+			"id": "PM-26",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "lower above upper",
+			"set": [
+				[
+					"/types/13/bound",
+					{
+						"lower": 3,
+						"upper": 2
+					}
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_BOUND",
+					"pointer": "/ir/types/13/bound"
+				}
+			]
+		},
+		{
+			"id": "PM-27",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "bound with no lower",
+			"set": [
+				[
+					"/types/13/bound",
+					{
+						"upper": 2
+					}
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/13/bound"
+				}
+			]
+		},
+		{
+			"id": "PM-28",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "bound with no upper and a lower above 0",
+			"set": [
+				[
+					"/types/13/bound",
+					{
+						"lower": 1
+					}
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_BOUND",
+					"pointer": "/ir/types/13/bound"
+				}
+			]
+		},
+		{
+			"id": "PM-29",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "an items member on the map",
+			"set": [
+				[
+					"/types/13/items",
+					"ix://quire/native/Text"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/13/items"
+				}
+			]
+		},
+		{
+			"id": "PM-30",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "absent values",
+			"set": [],
+			"remove": [
+				"/types/13/values"
+			],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/13"
+				}
+			]
+		},
+		{
+			"id": "PM-31",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "keys naming a namespace",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Area"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-32",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "Decimal[...] value type key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://acme/maps/Price"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-33",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "native Rational key",
+			"set": [
+				[
+					"/types/13/keys",
+					"ix://quire/native/Rational"
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+					"pointer": "/ir/types/13/keys"
+				}
+			]
+		},
+		{
+			"id": "PM-34",
+			"tc": "TC-234",
+			"ac": "FR-154-AC-49",
+			"description": "bound on a sequence type definition",
+			"set": [
+				[
+					"/types/9/bound",
+					{
+						"lower": 0
+					}
+				]
+			],
+			"remove": [],
+			"rust": [
+				{
+					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
+					"pointer": "/ir/types/9/bound"
+				}
+			]
+		}
+	]
+}
