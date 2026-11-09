@@ -135,3 +135,4 @@ six types, so the code is right; only the check cannot fail.)
 | FND-003 | fixed | 59f534c6 asserts `(entry-errors: lines 33)` and `(entry-errors: lines 49)` |
 | FND-004 | fixed | 59f534c6 adds a lower_mutated PR_001 case repeating a step `consumes` id, asserting the "twice" rule |
 | FND-005 | fixed | 59f534c6 comment now reads "population table" |
+| FND-006 | fixed | a9a7462d compares against `_errors(name, base)`; with `required` emptied in a scratch copy of OperationExpression.json the test fails for all 12 type/slot cases, so the control can fail |

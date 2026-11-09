@@ -68,3 +68,4 @@ scope:
 | FND-001 | fixed | 59f534c6 adds the FR-143 refusal statement and FR-143-AC-12, mapped to TC-1785 and TC-1897; no id collision with main or open PR #84 |
 | FND-002 | deferred | Not a filament-core-data change: the PR body now states item 2 is not done end to end, and PLAT-1362 (filament-core-service) owns setting constructReferences |
 | FND-003 | fixed | 59f534c6 tags every test `Trace: TC-1897, FR-143-AC-12` (matrix binds all four) and parametrizes over all six operation types |
+| FND-004 | fixed | a9a7462d adds FR-143-AC-12 to tc_1785's trace attribute; `quoin matrix` binds AC-12 to tc_1785 and the four schema tests; tc_1785 passes |
