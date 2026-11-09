@@ -363,15 +363,6 @@ describe("traceability", () => {
 							template: "#[trace({ids})]",
 						},
 					],
-					legacy: [
-						{
-							name: "l",
-							language: "ts",
-							pattern: "Trace: (.*)",
-							rewrite_to: "m",
-							id_format: "x",
-						},
-					],
 					implements: [
 						{ name: "i", language: "python", pattern: "(.*)" },
 						{
@@ -495,7 +486,7 @@ describe("traceability", () => {
 		);
 		rejects(
 			trace({ trace_tags: { legacy: [form] } }),
-			`${T}/trace_tags/legacy/0`,
+			`${T}/trace_tags`,
 			"additionalProperties",
 		);
 		rejects(
