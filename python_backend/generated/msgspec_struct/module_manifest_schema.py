@@ -228,13 +228,22 @@ class IterateOver(Struct):
 
 class ColumnVocabularies(Struct):
     no_source_symbol: list[str] | UnsetType = UNSET
+    retired: (
+        Annotated[
+            list[str],
+            Meta(
+                description='Exact verification-cell values declaring a historical, retired row.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
     test_type: list[str] | UnsetType = UNSET
     test_type_column: str | UnsetType = UNSET
 
 
 class CombinatorialColumns(Struct):
     dimension_column: Annotated[str, Meta(min_length=1)]
-    strength: Annotated[int, Meta(ge=0)]
+    strength: Annotated[int, Meta(ge=1)]
     values_column: Annotated[str, Meta(min_length=1)]
     excludes_column: str | UnsetType = UNSET
 
@@ -324,49 +333,7 @@ type Section = Annotated[
 ]
 
 
-type Section1Item = Annotated[str, Meta(min_length=1)]
-
-
-type Section1 = Annotated[
-    list[Section1Item],
-    Meta(
-        description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-        min_length=1,
-    ),
-]
-
-
 type Target2 = Annotated[str, Meta(min_length=1)]
-
-
-class DocumentReference(Struct):
-    archetype: Annotated[str, Meta(min_length=1)]
-    column: Annotated[str, Meta(min_length=1)]
-    name: Annotated[str, Meta(min_length=1)]
-    pattern: Annotated[
-        str,
-        Meta(
-            description='Regex with a capture group; each capture is a referenced id.',
-            min_length=1,
-        ),
-    ]
-    section: Annotated[
-        Section | Section1,
-        Meta(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
-        ),
-    ]
-    targets: Annotated[
-        list[Target2],
-        Meta(
-            description='Names of the trace_targets the captured ids resolve against.'
-        ),
-    ]
-    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
-    expand_ranges: bool | UnsetType = False
-    row_id_column: str | UnsetType = UNSET
-    status_column: str | UnsetType = UNSET
-    strip_annotations: bool | UnsetType = False
 
 
 class Category1(StrEnum):
@@ -449,102 +416,6 @@ class LocatorPrimitive(Struct):
 type Role = Annotated[str, Meta(min_length=1)]
 
 
-type Section2 = Annotated[
-    str,
-    Meta(
-        description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-        min_length=1,
-    ),
-]
-
-
-type Section3Item = Annotated[str, Meta(min_length=1)]
-
-
-type Section3 = Annotated[
-    list[Section3Item],
-    Meta(
-        description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-        min_length=1,
-    ),
-]
-
-
-class ObligationSource1(Struct):
-    name: Annotated[str, Meta(min_length=1)]
-    statement_column: Annotated[str, Meta(min_length=1)]
-    target: Annotated[str, Meta(min_length=1)]
-    archetype: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
-    combinatorial: CombinatorialColumns | UnsetType = UNSET
-    criticality_column: str | UnsetType = UNSET
-    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
-    id_format: (
-        Annotated[str, Meta(description='Template naming {document} and/or {row}.')]
-        | UnsetType
-    ) = UNSET
-    method_column: str | UnsetType = UNSET
-    parameters: dict[str, str] | UnsetType = UNSET
-    section: (
-        Annotated[
-            Section2 | Section3,
-            Meta(
-                description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
-            ),
-        ]
-        | UnsetType
-    ) = UNSET
-
-
-type Section4 = Annotated[
-    str,
-    Meta(
-        description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-        min_length=1,
-    ),
-]
-
-
-type Section5Item = Annotated[str, Meta(min_length=1)]
-
-
-type Section5 = Annotated[
-    list[Section5Item],
-    Meta(
-        description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-        min_length=1,
-    ),
-]
-
-
-class ObligationSource2(Struct):
-    archetype: Annotated[str, Meta(min_length=1)]
-    id_format: Annotated[
-        str, Meta(description='Template naming {document} and/or {row}.')
-    ]
-    name: Annotated[str, Meta(min_length=1)]
-    section: Annotated[
-        Section4 | Section5,
-        Meta(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
-        ),
-    ]
-    statement_column: Annotated[str, Meta(min_length=1)]
-    combinatorial: CombinatorialColumns | UnsetType = UNSET
-    criticality_column: str | UnsetType = UNSET
-    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
-    method_column: str | UnsetType = UNSET
-    parameters: dict[str, str] | UnsetType = UNSET
-    target: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
-
-
-type ObligationSource = Annotated[
-    ObligationSource1 | ObligationSource2,
-    Meta(
-        description='Rows that state obligations. Inherits from a trace target (`target`) XOR names its own `archetype`, `section` and `id_format`.'
-    ),
-]
-
-
 class Shape1(Enum):
     round_trip = 'round-trip'
     idempotence = 'idempotence'
@@ -608,6 +479,12 @@ class RoleEntry(Struct):
     description: Annotated[str, Meta(min_length=1)]
 
 
+type SectionListItem = Annotated[str, Meta(min_length=1)]
+
+
+type SectionList = Annotated[list[SectionListItem], Meta(min_length=1)]
+
+
 class StatusVocabulary(Struct):
     column: Annotated[str, Meta(min_length=1)]
     complete: list[str] | UnsetType = UNSET
@@ -621,6 +498,26 @@ class Language(Enum):
     python = 'python'
     typescript = 'typescript'
     ts = 'ts'
+
+
+class Syntax(Enum):
+    rust_attribute = 'rust_attribute'
+
+
+class TraceImplementsForm(Struct):
+    language: Language
+    name: Annotated[str, Meta(min_length=1)]
+    pattern: Annotated[str, Meta(min_length=1)]
+    syntax: (
+        Annotated[
+            Syntax,
+            Meta(
+                description='A complete outer Rust attribute attached to a declaration; Rust only.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+    template: str | UnsetType = UNSET
 
 
 class TraceLegacyForm(Struct):
@@ -639,7 +536,7 @@ class TraceMarkerForm(Struct):
 
 
 class TraceTagGrammar(Struct):
-    implements: list[TraceMarkerForm] | UnsetType = UNSET
+    implements: list[TraceImplementsForm] | UnsetType = UNSET
     legacy: list[TraceLegacyForm] | UnsetType = UNSET
     markers: list[TraceMarkerForm] | UnsetType = UNSET
 
@@ -649,33 +546,18 @@ class Evidence(Enum):
     reference_only = 'reference-only'
 
 
-type Section6 = Annotated[
-    str,
-    Meta(
-        description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-        min_length=1,
-    ),
-]
+class From1(Enum):
+    table_row = 'table_row'
+    list_item = 'list_item'
+    heading = 'heading'
 
 
-type Section7Item = Annotated[str, Meta(min_length=1)]
-
-
-type Section7 = Annotated[
-    list[Section7Item],
-    Meta(
-        description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-        min_length=1,
-    ),
-]
-
-
-class TraceTarget(Struct):
+class TraceTarget1(Struct):
     archetype: Annotated[str, Meta(min_length=1)]
     id_column: Annotated[str, Meta(min_length=1)]
     name: Annotated[str, Meta(min_length=1)]
     section: Annotated[
-        Section6 | Section7,
+        Section | SectionList,
         Meta(
             description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
         ),
@@ -684,7 +566,63 @@ class TraceTarget(Struct):
         Annotated[Evidence, Meta(description='Defaults to source.')] | UnsetType
     ) = UNSET
     exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    from_: Annotated[From1, Meta(description='Defaults to table_row.')] | UnsetType = field(
+        name='from', default=UNSET
+    )
+    pattern: (
+        Annotated[
+            str,
+            Meta(
+                description='Regex with a capture group, for from: list_item or heading.',
+                min_length=1,
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
     required: bool | UnsetType = True
+
+
+class From2(Enum):
+    table_row = 'table_row'
+    list_item = 'list_item'
+    heading = 'heading'
+    list_item_1 = 'list_item'
+    heading_1 = 'heading'
+
+
+class TraceTarget2(Struct):
+    archetype: Annotated[str, Meta(min_length=1)]
+    from_: Annotated[From2, Meta(description='Defaults to table_row.')] = field(
+        name='from'
+    )
+    name: Annotated[str, Meta(min_length=1)]
+    pattern: Annotated[
+        str,
+        Meta(
+            description='Regex with a capture group, for from: list_item or heading.',
+            min_length=1,
+        ),
+    ]
+    section: Annotated[
+        Section | SectionList,
+        Meta(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+    evidence: (
+        Annotated[Evidence, Meta(description='Defaults to source.')] | UnsetType
+    ) = UNSET
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    id_column: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
+    required: bool | UnsetType = True
+
+
+type TraceTarget = Annotated[
+    TraceTarget1 | TraceTarget2,
+    Meta(
+        description='A document section whose rows or items mint trace ids. `from` (default table_row) selects the shape: table_row reads `id_column`; list_item and heading read capture group 1 of `pattern`.'
+    ),
+]
 
 
 type AcyclicEdge = Annotated[str, Meta(min_length=1)]
@@ -720,6 +658,36 @@ class VocabularyTerm(Struct):
     category: str | UnsetType = UNSET
 
 
+class DocumentReference(Struct):
+    archetype: Annotated[str, Meta(min_length=1)]
+    column: Annotated[str, Meta(min_length=1)]
+    name: Annotated[str, Meta(min_length=1)]
+    pattern: Annotated[
+        str,
+        Meta(
+            description='Regex with a capture group; each capture is a referenced id.',
+            min_length=1,
+        ),
+    ]
+    section: Annotated[
+        Section | SectionList,
+        Meta(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+    targets: Annotated[
+        list[Target2],
+        Meta(
+            description='Names of the trace_targets the captured ids resolve against.'
+        ),
+    ]
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    expand_ranges: bool | UnsetType = False
+    row_id_column: str | UnsetType = UNSET
+    status_column: str | UnsetType = UNSET
+    strip_annotations: bool | UnsetType = False
+
+
 type Locator1 = Annotated[
     list[LocatorPrimitive],
     Meta(
@@ -733,6 +701,60 @@ type Locator = Annotated[
     LocatorPrimitive | Locator1,
     Meta(
         description='A body-extraction locator: a single primitive (object with a `from` key) or an ordered fallback chain (array of primitives).'
+    ),
+]
+
+
+class ObligationSource1(Struct):
+    name: Annotated[str, Meta(min_length=1)]
+    statement_column: Annotated[str, Meta(min_length=1)]
+    target: Annotated[str, Meta(min_length=1)]
+    archetype: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
+    combinatorial: CombinatorialColumns | UnsetType = UNSET
+    criticality_column: str | UnsetType = UNSET
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    id_format: (
+        Annotated[str, Meta(description='Template naming {document} and/or {row}.')]
+        | UnsetType
+    ) = UNSET
+    method_column: str | UnsetType = UNSET
+    parameters: dict[str, str] | UnsetType = UNSET
+    section: (
+        Annotated[
+            Section | SectionList,
+            Meta(
+                description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+
+
+class ObligationSource2(Struct):
+    archetype: Annotated[str, Meta(min_length=1)]
+    id_format: Annotated[
+        str, Meta(description='Template naming {document} and/or {row}.')
+    ]
+    name: Annotated[str, Meta(min_length=1)]
+    section: Annotated[
+        Section | SectionList,
+        Meta(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+    statement_column: Annotated[str, Meta(min_length=1)]
+    combinatorial: CombinatorialColumns | UnsetType = UNSET
+    criticality_column: str | UnsetType = UNSET
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    method_column: str | UnsetType = UNSET
+    parameters: dict[str, str] | UnsetType = UNSET
+    target: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
+
+
+type ObligationSource = Annotated[
+    ObligationSource1 | ObligationSource2,
+    Meta(
+        description='Rows that state obligations. Inherits from a trace target (`target`) XOR names its own `archetype`, `section` and `id_format`.'
     ),
 ]
 

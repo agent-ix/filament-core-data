@@ -256,6 +256,12 @@ class ColumnVocabularies(BaseModel):
         extra='forbid',
     )
     no_source_symbol: list[str] | None = None
+    retired: Annotated[
+        list[str] | None,
+        Field(
+            description='Exact verification-cell values declaring a historical, retired row.'
+        ),
+    ] = None
     test_type: list[str] | None = None
     test_type_column: str | None = None
 
@@ -266,7 +272,7 @@ class CombinatorialColumns(BaseModel):
     )
     dimension_column: Annotated[str, Field(min_length=1)]
     excludes_column: str | None = None
-    strength: Annotated[int, Field(ge=0)]
+    strength: Annotated[int, Field(ge=1)]
     values_column: Annotated[str, Field(min_length=1)]
 
 
@@ -354,55 +360,8 @@ class Section(RootModel[str]):
     ]
 
 
-class Section1Item(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
-class Section1(RootModel[list[Section1Item]]):
-    root: Annotated[
-        list[Section1Item],
-        Field(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-            min_length=1,
-        ),
-    ]
-
-
 class Target2(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
-
-
-class DocumentReference(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-    )
-    archetype: Annotated[str, Field(min_length=1)]
-    column: Annotated[str, Field(min_length=1)]
-    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
-    expand_ranges: bool = False
-    name: Annotated[str, Field(min_length=1)]
-    pattern: Annotated[
-        str,
-        Field(
-            description='Regex with a capture group; each capture is a referenced id.',
-            min_length=1,
-        ),
-    ]
-    row_id_column: str | None = None
-    section: Annotated[
-        Section | Section1,
-        Field(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
-        ),
-    ]
-    status_column: str | None = None
-    strip_annotations: bool = False
-    targets: Annotated[
-        list[Target2],
-        Field(
-            description='Names of the trace_targets the captured ids resolve against.'
-        ),
-    ]
 
 
 class Category1(StrEnum):
@@ -499,111 +458,6 @@ class Role(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
-class Section2(RootModel[str]):
-    root: Annotated[
-        str,
-        Field(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-            min_length=1,
-        ),
-    ]
-
-
-class Section3Item(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
-class Section3(RootModel[list[Section3Item]]):
-    root: Annotated[
-        list[Section3Item],
-        Field(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-            min_length=1,
-        ),
-    ]
-
-
-class ObligationSource1(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-    )
-    archetype: Annotated[str | None, Field(min_length=1)] = None
-    combinatorial: CombinatorialColumns | None = None
-    criticality_column: str | None = None
-    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
-    id_format: Annotated[
-        str | None, Field(description='Template naming {document} and/or {row}.')
-    ] = None
-    method_column: str | None = None
-    name: Annotated[str, Field(min_length=1)]
-    parameters: dict[str, str] | None = None
-    section: Annotated[
-        Section2 | Section3 | None,
-        Field(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
-        ),
-    ] = None
-    statement_column: Annotated[str, Field(min_length=1)]
-    target: Annotated[str, Field(min_length=1)]
-
-
-class Section4(RootModel[str]):
-    root: Annotated[
-        str,
-        Field(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-            min_length=1,
-        ),
-    ]
-
-
-class Section5Item(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
-class Section5(RootModel[list[Section5Item]]):
-    root: Annotated[
-        list[Section5Item],
-        Field(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-            min_length=1,
-        ),
-    ]
-
-
-class ObligationSource2(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-    )
-    archetype: Annotated[str, Field(min_length=1)]
-    combinatorial: CombinatorialColumns | None = None
-    criticality_column: str | None = None
-    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
-    id_format: Annotated[
-        str, Field(description='Template naming {document} and/or {row}.')
-    ]
-    method_column: str | None = None
-    name: Annotated[str, Field(min_length=1)]
-    parameters: dict[str, str] | None = None
-    section: Annotated[
-        Section4 | Section5,
-        Field(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
-        ),
-    ]
-    statement_column: Annotated[str, Field(min_length=1)]
-    target: Annotated[str | None, Field(min_length=1)] = None
-
-
-class ObligationSource(RootModel[ObligationSource1 | ObligationSource2]):
-    root: Annotated[
-        ObligationSource1 | ObligationSource2,
-        Field(
-            description='Rows that state obligations. Inherits from a trace target (`target`) XOR names its own `archetype`, `section` and `id_format`.'
-        ),
-    ]
-
-
 class Shape1(Enum):
     round_trip = 'round-trip'
     idempotence = 'idempotence'
@@ -672,6 +526,14 @@ class RoleEntry(BaseModel):
     description: Annotated[str, Field(min_length=1)]
 
 
+class SectionListItem(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
+class SectionList(RootModel[list[SectionListItem]]):
+    root: Annotated[list[SectionListItem], Field(min_length=1)]
+
+
 class StatusVocabulary(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -688,6 +550,26 @@ class Language(Enum):
     python = 'python'
     typescript = 'typescript'
     ts = 'ts'
+
+
+class Syntax(Enum):
+    rust_attribute = 'rust_attribute'
+
+
+class TraceImplementsForm(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    language: Language
+    name: Annotated[str, Field(min_length=1)]
+    pattern: Annotated[str, Field(min_length=1)]
+    syntax: Annotated[
+        Syntax | None,
+        Field(
+            description='A complete outer Rust attribute attached to a declaration; Rust only.'
+        ),
+    ] = None
+    template: str | None = None
 
 
 class TraceLegacyForm(BaseModel):
@@ -715,7 +597,7 @@ class TraceTagGrammar(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    implements: list[TraceMarkerForm] | None = None
+    implements: list[TraceImplementsForm] | None = None
     legacy: list[TraceLegacyForm] | None = None
     markers: list[TraceMarkerForm] | None = None
 
@@ -725,31 +607,13 @@ class Evidence(Enum):
     reference_only = 'reference-only'
 
 
-class Section6(RootModel[str]):
-    root: Annotated[
-        str,
-        Field(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-            min_length=1,
-        ),
-    ]
+class From1(Enum):
+    table_row = 'table_row'
+    list_item = 'list_item'
+    heading = 'heading'
 
 
-class Section7Item(RootModel[str]):
-    root: Annotated[str, Field(min_length=1)]
-
-
-class Section7(RootModel[list[Section7Item]]):
-    root: Annotated[
-        list[Section7Item],
-        Field(
-            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
-            min_length=1,
-        ),
-    ]
-
-
-class TraceTarget(BaseModel):
+class TraceTarget1(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
@@ -758,13 +622,68 @@ class TraceTarget(BaseModel):
         None
     )
     exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    from_: Annotated[
+        From1 | None, Field(alias='from', description='Defaults to table_row.')
+    ] = None
     id_column: Annotated[str, Field(min_length=1)]
     name: Annotated[str, Field(min_length=1)]
+    pattern: Annotated[
+        str | None,
+        Field(
+            description='Regex with a capture group, for from: list_item or heading.',
+            min_length=1,
+        ),
+    ] = None
     required: bool = True
     section: Annotated[
-        Section6 | Section7,
+        Section | SectionList,
         Field(
             description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+
+
+class From2(Enum):
+    table_row = 'table_row'
+    list_item = 'list_item'
+    heading = 'heading'
+    list_item_1 = 'list_item'
+    heading_1 = 'heading'
+
+
+class TraceTarget2(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    archetype: Annotated[str, Field(min_length=1)]
+    evidence: Annotated[Evidence | None, Field(description='Defaults to source.')] = (
+        None
+    )
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    from_: Annotated[From2, Field(alias='from', description='Defaults to table_row.')]
+    id_column: Annotated[str | None, Field(min_length=1)] = None
+    name: Annotated[str, Field(min_length=1)]
+    pattern: Annotated[
+        str,
+        Field(
+            description='Regex with a capture group, for from: list_item or heading.',
+            min_length=1,
+        ),
+    ]
+    required: bool = True
+    section: Annotated[
+        Section | SectionList,
+        Field(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+
+
+class TraceTarget(RootModel[TraceTarget1 | TraceTarget2]):
+    root: Annotated[
+        TraceTarget1 | TraceTarget2,
+        Field(
+            description='A document section whose rows or items mint trace ids. `from` (default table_row) selects the shape: table_row reads `id_column`; list_item and heading read capture group 1 of `pattern`.'
         ),
     ]
 
@@ -806,6 +725,39 @@ class VocabularyTerm(BaseModel):
     definition: str
 
 
+class DocumentReference(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    archetype: Annotated[str, Field(min_length=1)]
+    column: Annotated[str, Field(min_length=1)]
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    expand_ranges: bool = False
+    name: Annotated[str, Field(min_length=1)]
+    pattern: Annotated[
+        str,
+        Field(
+            description='Regex with a capture group; each capture is a referenced id.',
+            min_length=1,
+        ),
+    ]
+    row_id_column: str | None = None
+    section: Annotated[
+        Section | SectionList,
+        Field(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+    status_column: str | None = None
+    strip_annotations: bool = False
+    targets: Annotated[
+        list[Target2],
+        Field(
+            description='Names of the trace_targets the captured ids resolve against.'
+        ),
+    ]
+
+
 class Locator1(RootModel[list[LocatorPrimitive]]):
     root: Annotated[
         list[LocatorPrimitive],
@@ -821,6 +773,63 @@ class Locator(RootModel[LocatorPrimitive | Locator1]):
         LocatorPrimitive | Locator1,
         Field(
             description='A body-extraction locator: a single primitive (object with a `from` key) or an ordered fallback chain (array of primitives).'
+        ),
+    ]
+
+
+class ObligationSource1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    archetype: Annotated[str | None, Field(min_length=1)] = None
+    combinatorial: CombinatorialColumns | None = None
+    criticality_column: str | None = None
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    id_format: Annotated[
+        str | None, Field(description='Template naming {document} and/or {row}.')
+    ] = None
+    method_column: str | None = None
+    name: Annotated[str, Field(min_length=1)]
+    parameters: dict[str, str] | None = None
+    section: Annotated[
+        Section | SectionList | None,
+        Field(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ] = None
+    statement_column: Annotated[str, Field(min_length=1)]
+    target: Annotated[str, Field(min_length=1)]
+
+
+class ObligationSource2(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    archetype: Annotated[str, Field(min_length=1)]
+    combinatorial: CombinatorialColumns | None = None
+    criticality_column: str | None = None
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    id_format: Annotated[
+        str, Field(description='Template naming {document} and/or {row}.')
+    ]
+    method_column: str | None = None
+    name: Annotated[str, Field(min_length=1)]
+    parameters: dict[str, str] | None = None
+    section: Annotated[
+        Section | SectionList,
+        Field(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+    statement_column: Annotated[str, Field(min_length=1)]
+    target: Annotated[str | None, Field(min_length=1)] = None
+
+
+class ObligationSource(RootModel[ObligationSource1 | ObligationSource2]):
+    root: Annotated[
+        ObligationSource1 | ObligationSource2,
+        Field(
+            description='Rows that state obligations. Inherits from a trace target (`target`) XOR names its own `archetype`, `section` and `id_format`.'
         ),
     ]
 

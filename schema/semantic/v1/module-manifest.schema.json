@@ -950,8 +950,8 @@
 		},
 		"TraceTarget": {
 			"type": "object",
-			"description": "A document section whose rows mint trace ids.",
-			"required": ["name", "archetype", "section", "id_column"],
+			"description": "A document section whose rows or items mint trace ids. `from` (default table_row) selects the shape: table_row reads `id_column`; list_item and heading read capture group 1 of `pattern`.",
+			"required": ["name", "archetype", "section"],
 			"additionalProperties": false,
 			"properties": {
 				"name": {
@@ -977,12 +977,7 @@
 							"minLength": 1
 						},
 						{
-							"type": "array",
-							"minItems": 1,
-							"items": {
-								"type": "string",
-								"minLength": 1
-							}
+							"$ref": "#/$defs/SectionList"
 						}
 					]
 				},
@@ -997,8 +992,48 @@
 				"evidence": {
 					"enum": ["source", "reference-only"],
 					"description": "Defaults to source."
+				},
+				"from": {
+					"enum": ["table_row", "list_item", "heading"],
+					"description": "Defaults to table_row."
+				},
+				"pattern": {
+					"type": "string",
+					"minLength": 1,
+					"description": "Regex with a capture group, for from: list_item or heading."
 				}
-			}
+			},
+			"oneOf": [
+				{
+					"required": ["id_column"],
+					"not": {
+						"anyOf": [
+							{
+								"required": ["pattern"]
+							},
+							{
+								"required": ["from"],
+								"properties": {
+									"from": {
+										"enum": ["list_item", "heading"]
+									}
+								}
+							}
+						]
+					}
+				},
+				{
+					"required": ["from", "pattern"],
+					"properties": {
+						"from": {
+							"enum": ["list_item", "heading"]
+						}
+					},
+					"not": {
+						"required": ["id_column"]
+					}
+				}
+			]
 		},
 		"DocumentReference": {
 			"type": "object",
@@ -1036,12 +1071,7 @@
 							"minLength": 1
 						},
 						{
-							"type": "array",
-							"minItems": 1,
-							"items": {
-								"type": "string",
-								"minLength": 1
-							}
+							"$ref": "#/$defs/SectionList"
 						}
 					]
 				},
@@ -1135,7 +1165,7 @@
 				"implements": {
 					"type": "array",
 					"items": {
-						"$ref": "#/$defs/TraceMarkerForm"
+						"$ref": "#/$defs/TraceImplementsForm"
 					}
 				}
 			}
@@ -1207,6 +1237,13 @@
 					"items": {
 						"type": "string"
 					}
+				},
+				"retired": {
+					"type": "array",
+					"description": "Exact verification-cell values declaring a historical, retired row.",
+					"items": {
+						"type": "string"
+					}
 				}
 			}
 		},
@@ -1229,7 +1266,7 @@
 				},
 				"strength": {
 					"type": "integer",
-					"minimum": 0
+					"minimum": 1
 				}
 			}
 		},
@@ -1285,12 +1322,7 @@
 							"minLength": 1
 						},
 						{
-							"type": "array",
-							"minItems": 1,
-							"items": {
-								"type": "string",
-								"minLength": 1
-							}
+							"$ref": "#/$defs/SectionList"
 						}
 					]
 				},
@@ -1303,17 +1335,7 @@
 				{
 					"required": ["target"],
 					"not": {
-						"anyOf": [
-							{
-								"required": ["archetype"]
-							},
-							{
-								"required": ["section"]
-							},
-							{
-								"required": ["id_format"]
-							}
-						]
+						"required": ["archetype"]
 					}
 				},
 				{
@@ -1402,6 +1424,48 @@
 					"description": "Path globs.",
 					"items": {
 						"type": "string"
+					}
+				}
+			}
+		},
+		"SectionList": {
+			"type": "array",
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"TraceImplementsForm": {
+			"type": "object",
+			"description": "A trace_tags.implements form: a marker form that may also declare `syntax`. `markers` and `legacy` forms cannot.",
+			"required": ["name", "language", "pattern"],
+			"additionalProperties": false,
+			"properties": {
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"language": {
+					"enum": ["rust", "python", "typescript", "ts"]
+				},
+				"pattern": {
+					"type": "string",
+					"minLength": 1
+				},
+				"template": {
+					"type": "string"
+				},
+				"syntax": {
+					"enum": ["rust_attribute"],
+					"description": "A complete outer Rust attribute attached to a declaration; Rust only."
+				}
+			},
+			"not": {
+				"required": ["syntax"],
+				"properties": {
+					"language": {
+						"enum": ["python", "typescript", "ts"]
 					}
 				}
 			}

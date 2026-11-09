@@ -10,13 +10,13 @@ from .compatibility_report_schema import AffectedConsumer, Change, ConsumerEvide
 from .compiler_request_schema import Backend, FilamentCompilerRequestV1, Limits, SupportedFeature
 from .consumer_policy_schema import FilamentSemanticConsumerPolicyV1, IdentityPlane, Mode
 from .mapping_schema import Base, ConflictPolicy, Correspondence, DecodePolicy, FilamentSemanticMappingV1, GetPutLaw, LateDataPolicy, Lifetime, Preservation, Purity, Transformation
-from .module_manifest_schema import AcyclicEdge, AllowedLink, AmbiguityTermEntry, ArchetypeEntry, ArtifactTypeEntry, BodyExtraction, Category1, Column, ColumnVocabularies, CombinatorialColumns, DataSchema, Defaults, DependsOnItem, DocKind, DocumentReference, Edge, EdgeTypeEntry, EmitEdge, Evidence, Example, FilamentModuleManifest, From, GrammarEntry, GrammarSeverity, ImportsAdditionalProperty, IterateOver, Language, LegacyForms, LintRuleEntry, LintRulesRefItem, Locator, Locator1, LocatorAssert, LocatorPrimitive, Nav, ObjectTypeEntry, ObligationSource, ObligationSource1, ObligationSource2, Pattern, PropertyIdiomEntry, Reference, RequiredRelation, RoleEntry, Section, Section1, Section1Item, Section2, Section3, Section3Item, Section4, Section5, Section5Item, Section6, Section7, Section7Item, SectionPathItem, Semantic, Shape1, StateSchemas, StatusVocabulary, Target2, ToItem, TraceLegacyForm, TraceMarkerForm, TraceTagGrammar, TraceTarget, TraceabilityModel, VerificationMethodEntry, VocabularyCoverage, VocabularyTerm, YieldPattern
+from .module_manifest_schema import AcyclicEdge, AllowedLink, AmbiguityTermEntry, ArchetypeEntry, ArtifactTypeEntry, BodyExtraction, Category1, Column, ColumnVocabularies, CombinatorialColumns, DataSchema, Defaults, DependsOnItem, DocKind, DocumentReference, Edge, EdgeTypeEntry, EmitEdge, Evidence, Example, FilamentModuleManifest, From, From1, From2, GrammarEntry, GrammarSeverity, ImportsAdditionalProperty, IterateOver, Language, LegacyForms, LintRuleEntry, LintRulesRefItem, Locator, Locator1, LocatorAssert, LocatorPrimitive, Nav, ObjectTypeEntry, ObligationSource, ObligationSource1, ObligationSource2, Pattern, PropertyIdiomEntry, Reference, RequiredRelation, RoleEntry, Section, SectionList, SectionListItem, SectionPathItem, Semantic, Shape1, StateSchemas, StatusVocabulary, Syntax, Target2, ToItem, TraceImplementsForm, TraceLegacyForm, TraceMarkerForm, TraceTagGrammar, TraceTarget, TraceTarget1, TraceTarget2, TraceabilityModel, VerificationMethodEntry, VocabularyCoverage, VocabularyTerm, YieldPattern
 from .module_semantic_block_schema import FilamentModuleManifestSemanticBlockV1
 from .output_manifest_schema import FilamentCompilerOutputManifestV1, File
 from .package_manifest_schema import Capability, Export3, FilamentSemanticPackageManifestV1, Import, Profile, SourceRoot, Visibility
 from .profile_schema import EditDirection, FilamentRepresentationProfileV1, MaterializationLifetime
 from .representation_schema import Avro, BestFitItem, Columnar, Delimited, EnumNumbersAdditionalProperty, FieldNumbersAdditionalProperty, FilamentRepresentationContractV1, Json, Kind3, Locus, Markdown, NonUs, Postgresql, Protobuf, ReservedName, ReservedNumber
-from .semantic_ir_schema import Clause, ConnectionEnd, Constraint, Constraint1, Constraint2, Constraint3, Constraint4, Constraint5, Constraint6, Construct, ConstructKind, ContractItem, ContractItem1, ContractVersion, DecimalPolicy, DecimalPolicy1, DecimalPolicy10, DecimalPolicy11, DecimalPolicy12, DecimalPolicy13, DecimalPolicy14, DecimalPolicy15, DecimalPolicy16, DecimalPolicy17, DecimalPolicy18, DecimalPolicy19, DecimalPolicy2, DecimalPolicy20, DecimalPolicy21, DecimalPolicy22, DecimalPolicy23, DecimalPolicy24, DecimalPolicy25, DecimalPolicy26, DecimalPolicy27, DecimalPolicy28, DecimalPolicy29, DecimalPolicy3, DecimalPolicy30, DecimalPolicy31, DecimalPolicy32, DecimalPolicy33, DecimalPolicy34, DecimalPolicy35, DecimalPolicy36, DecimalPolicy37, DecimalPolicy38, DecimalPolicy4, DecimalPolicy5, DecimalPolicy6, DecimalPolicy7, DecimalPolicy8, DecimalPolicy9, DefaultKind, Dimension, Direction2, Extent, Field, FilamentSemanticIrV1ContractVersion200, FlowDirection, Frame, IdentityList, InlineClause, Keyword, Keyword1, Keyword2, Keyword3, Keyword4, Keyword5, Multiplicity, Occurrence, Operands, Operands1, Operands2, Operands3, Operands4, Operation, PackageRevision, PackageRevision1, Population, Position, Presence, ReferencesAdditionalProperty, ReferencesAdditionalPropertyItem, Relationship, RelationshipSourceEnd, RelationshipTargetEnd, Returns, Scalar, Source, State, Step, StepKind, Term, Term1, Transition, TypeDefinition, Unit, Value, Variant
+from .semantic_ir_schema import Clause, ConnectionEnd, Constraint, Constraint1, Constraint2, Constraint3, Constraint4, Constraint5, Constraint6, Construct, ConstructKind, ContractItem, ContractItem1, ContractVersion, DecimalPolicy, DecimalPolicy1, DecimalPolicy10, DecimalPolicy11, DecimalPolicy12, DecimalPolicy13, DecimalPolicy14, DecimalPolicy15, DecimalPolicy16, DecimalPolicy17, DecimalPolicy18, DecimalPolicy19, DecimalPolicy2, DecimalPolicy20, DecimalPolicy21, DecimalPolicy22, DecimalPolicy23, DecimalPolicy24, DecimalPolicy25, DecimalPolicy26, DecimalPolicy27, DecimalPolicy28, DecimalPolicy29, DecimalPolicy3, DecimalPolicy30, DecimalPolicy31, DecimalPolicy32, DecimalPolicy33, DecimalPolicy34, DecimalPolicy35, DecimalPolicy36, DecimalPolicy37, DecimalPolicy38, DecimalPolicy4, DecimalPolicy5, DecimalPolicy6, DecimalPolicy7, DecimalPolicy8, DecimalPolicy9, DefaultKind, Dimension, Direction2, Extent, Field, FilamentSemanticIrV1ContractVersion200, FlowDirection, Frame, IdentityList, InlineClause, Keyword, Keyword1, Keyword2, Keyword3, Keyword4, Keyword5, MapBound, Multiplicity, Occurrence, Operands, Operands1, Operands2, Operands3, Operands4, Operation, PackageRevision, PackageRevision1, Population, Position, Presence, ReferencesAdditionalProperty, ReferencesAdditionalPropertyItem, Relationship, RelationshipSourceEnd, RelationshipTargetEnd, Returns, Scalar, Source, State, Step, StepKind, Term, Term1, Transition, TypeDefinition, Unit, Value, Variant
 from .target_contract_schema import BackendQualification, ExecutableGeneratorDependency, FilamentGeneratedTargetContractV1, NativeApiItem, ProhibitedDependency, PythonAuthoring, SecurityFinding, UnsupportedFeaturePolicy
 
 __all__ = [
@@ -138,6 +138,8 @@ __all__ = [
     "FlowDirection",
     "Frame",
     "From",
+    "From1",
+    "From2",
     "FrontendDialect",
     "GeneratedOrigin",
     "GetPutLaw",
@@ -170,6 +172,7 @@ __all__ = [
     "LocatorPrimitive",
     "Locus",
     "ManifestTarget",
+    "MapBound",
     "Markdown",
     "MaterializationLifetime",
     "Mode",
@@ -224,17 +227,8 @@ __all__ = [
     "RoleEntry",
     "Scalar",
     "Section",
-    "Section1",
-    "Section1Item",
-    "Section2",
-    "Section3",
-    "Section3Item",
-    "Section4",
-    "Section5",
-    "Section5Item",
-    "Section6",
-    "Section7",
-    "Section7Item",
+    "SectionList",
+    "SectionListItem",
     "SectionPathItem",
     "SecurityFinding",
     "Semantic",
@@ -251,16 +245,20 @@ __all__ = [
     "StepKind",
     "SupportedFeature",
     "Surface",
+    "Syntax",
     "Target2",
     "TargetResult",
     "Term",
     "Term1",
     "TextProfile",
     "ToItem",
+    "TraceImplementsForm",
     "TraceLegacyForm",
     "TraceMarkerForm",
     "TraceTagGrammar",
     "TraceTarget",
+    "TraceTarget1",
+    "TraceTarget2",
     "TraceabilityModel",
     "Transformation",
     "Transition",
