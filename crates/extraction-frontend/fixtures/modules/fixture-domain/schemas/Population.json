@@ -3,6 +3,9 @@
 	"$id": "https://schemas.agent-ix.org/fixture/domain/0.1.0/Population.json",
 	"type": "object",
 	"properties": {
+		"extent": {
+			"enum": ["closed", "open"]
+		},
 		"members": {
 			"type": "array",
 			"items": {

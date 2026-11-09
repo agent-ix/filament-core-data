@@ -441,5 +441,5 @@ object_types:
           under_section: Members
           required: true
           assert:
-            columns: [Type, Extent]
+            columns: [Type]
             min_rows: 1

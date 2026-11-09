@@ -10,6 +10,12 @@
 			},
 			"minItems": 1
 		},
+		"operationExpressions": {
+			"type": "array",
+			"items": {
+				"$ref": "https://schemas.agent-ix.org/fixture/domain/0.1.0/OperationExpression.json"
+			}
+		},
 		"fields": {
 			"type": "array",
 			"items": {

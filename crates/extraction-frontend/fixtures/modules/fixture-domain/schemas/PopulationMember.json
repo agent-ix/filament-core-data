@@ -5,12 +5,9 @@
 	"properties": {
 		"type": {
 			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/TypeRef.json"
-		},
-		"extent": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/Multiplicity.json"
 		}
 	},
-	"required": ["type", "extent"],
+	"required": ["type"],
 	"unevaluatedProperties": {
 		"not": {}
 	}

@@ -41,7 +41,7 @@ mapping.
 ### Dependency feature boundary
 
 - The frontend SHALL select the existing `quire-rs` filesystem and Markdown semantic extraction capabilities without activating `rust-symbols`, `python-symbols`, or `typescript-symbols` on its dependency edge.
-- For a consumer whose normal/build dependency paths to the pinned `quire-rs` package all pass through the frontend's lift dependency, the activated normal/build dependency graph SHALL contain no path to `quire-rust-extraction`, `quire-code-parse`, the `tree-sitter` runtime, or any tree-sitter language or grammar package.
+- For a consumer whose normal/build dependency paths to the pinned `quire-rs` package all pass through the frontend's lift dependency, the activated normal/build dependency graph SHALL contain no path to `quire-code-extraction`, `quire-code-parse`, the `tree-sitter` runtime, or any tree-sitter language or grammar package.
 - The frontend SHALL preserve the real public `lift(LiftRequest)` pipeline, including typed `body_extraction` for model and enum tables, canonical document bytes, package and node identities, typed outcomes and diagnostics, and the [FR-099](./FR-099-provide-the-extraction-frontend-command-line.md) CLI exit behavior.
 
 This dependency boundary is planned under

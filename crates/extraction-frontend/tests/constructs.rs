@@ -1733,6 +1733,7 @@ fn tc_1755_state_machine_process_and_domain_lift_their_engine_members() {
 }
 
 #[trace("TC-1785", "FR-143-AC-6")]
+#[trace("TC-1785", "FR-143-AC-12")]
 #[test]
 fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact() {
     type Edit = Box<dyn Fn(&str) -> String>;
@@ -1752,7 +1753,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
             "PR_001",
             "spec/functional/PR_001-fulfilment.md",
             Box::new(|t| t.replace("| placed | event | EV_001 |", "| placed | event | EV_999 |")),
-            "names `EV_999`, which is the artifact id of no type of the bundle the construct's steps admit",
+            "the engine's model extraction is unavailable (entry-errors: lines 33)",
         ),
         (
             "SM_001",
@@ -1774,7 +1775,24 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
                     "| draft | placed | advance | | EV_001, EV_001 |",
                 )
             }),
-            "names `EV_001` twice, and one cell names each type at most once",
+            "the engine's model extraction is unavailable (entry-errors: lines 49)",
+        ),
+        (
+            "SM_001",
+            "spec/functional/SM_001-order-lifecycle.md",
+            Box::new(|t| {
+                t.replace(
+                    "| draft | placed | advance | | EV_001 |",
+                    "| draft | placed | advance | total > 0 | EV_001 |",
+                )
+            }),
+            "it declares an inline expression as a transition Guard, which this frontend does not lower",
+        ),
+        (
+            "RP_001",
+            "spec/functional/RP_001-order-repository.md",
+            Box::new(|t| t.replace("Pre: known_id", "Pre: id != null")),
+            "it declares an inline expression in an operation Pre: or Post: line, which this frontend does not lower",
         ),
         (
             "VO_001",
@@ -1823,7 +1841,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     // A population artifact: its `Members` table has no construct member.
     // The engine reads a model table only under the locator key that names
     // it (quire-rs#449), and the fixture manifest still declares the
-    // population extent table under `members`, so the key is renamed for
+    // population table under `members`, so the key is renamed for
     // this case (the domain module).
     let dir = tempfile::tempdir().expect("tempdir");
     let module = dir.path().join("fixture-domain");
@@ -1831,8 +1849,8 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     let manifest = module.join("manifest.yaml");
     let text = fs::read_to_string(&manifest).expect("manifest");
     let keyed = text.replacen(
-        "        members:\n          from: table_row\n          under_section: Members\n          required: true\n          assert:\n            columns: [Type, Extent]",
-        "        population:\n          from: table_row\n          under_section: Members\n          required: true\n          assert:\n            columns: [Type, Extent]",
+        "        members:\n          from: table_row\n          under_section: Members\n          required: true\n          assert:\n            columns: [Type]",
+        "        population:\n          from: table_row\n          under_section: Members\n          required: true\n          assert:\n            columns: [Type]",
         1,
     );
     assert_ne!(keyed, text, "the population table is keyed `members`");
@@ -1841,7 +1859,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     copy_tree(&fixture("business"), &root);
     fs::write(
         root.join("spec/functional/PO-001-open-orders.md"),
-        "---\nid: PO-001\ntitle: Open Orders\nobject: population\ntype: population\nname: OpenOrders\n---\n\n# PO-001: Open Orders\n\n## Description\n\nThe open orders.\n\n## Members\n\n| Type | Extent |\n|------|--------|\n| Order | 0..* |\n",
+        "---\nid: PO-001\ntitle: Open Orders\nobject: population\ntype: population\nname: OpenOrders\nextent: open\n---\n\n# PO-001: Open Orders\n\n## Description\n\nThe open orders.\n\n## Members\n\n| Type |\n|------|\n| Order |\n",
     )
     .expect("write");
     let bundle = Bundle::load(&root, &[module.as_path(), edge_vocabulary().as_path()])
@@ -1874,6 +1892,25 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
         &guard,
         "SM_001",
         "its guard `nope` names no clause of the artifact",
+    );
+
+    // The engine refuses a repeated reference itself, so the frontend's own
+    // duplicate check is reached by a record carrying one.
+    let repeated = lower_mutated(|e| {
+        let steps = e
+            .artifacts
+            .get_mut("PR_001")
+            .and_then(|a| a.extraction.model.as_mut())
+            .and_then(|m| m.steps.as_mut())
+            .expect("PR_001 carries steps");
+        let consumes = steps[0].consumes.as_mut().expect("the first step consumes");
+        let first = consumes[0].clone();
+        consumes.push(first);
+    });
+    assert_refused(
+        &repeated,
+        "PR_001",
+        "twice, and one cell names each type at most once",
     );
 
     // An emitted event that lowers to nothing refuses the state machine. The
