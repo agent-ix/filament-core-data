@@ -26,7 +26,7 @@
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/MaxConstraint.json",
 			"locator": "#/properties/value/$ref",
-			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.4.1/MaxConstraintValue.json\""
+			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.4.2/MaxConstraintValue.json\""
 		}
 	],
 	"provenance": {

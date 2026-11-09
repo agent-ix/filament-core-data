@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.1/EnumValuesConstraint.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.2/EnumValuesConstraint.json",
 	"type": "object",
 	"properties": {
 		"keyword": {
@@ -10,7 +10,7 @@
 		"values": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/EnumValuesConstraintValues.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.2/EnumValuesConstraintValues.json"
 			},
 			"minItems": 1
 		}
