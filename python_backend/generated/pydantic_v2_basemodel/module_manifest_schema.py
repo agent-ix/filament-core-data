@@ -656,17 +656,6 @@ class TraceImplementsForm(BaseModel):
     template: str | None = None
 
 
-class TraceLegacyForm(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-    )
-    id_format: str | None = None
-    language: Language | None = None
-    name: Annotated[str, Field(min_length=1)]
-    pattern: Annotated[str, Field(min_length=1)]
-    rewrite_to: str | None = None
-
-
 class TraceMarkerForm(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -682,7 +671,6 @@ class TraceTagGrammar(BaseModel):
         extra='forbid',
     )
     implements: list[TraceImplementsForm] | None = None
-    legacy: list[TraceLegacyForm] | None = None
     markers: list[TraceMarkerForm] | None = None
 
 

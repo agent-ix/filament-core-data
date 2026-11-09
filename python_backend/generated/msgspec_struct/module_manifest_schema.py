@@ -627,14 +627,6 @@ class TraceImplementsForm(Struct):
     template: str | UnsetType = UNSET
 
 
-class TraceLegacyForm(Struct):
-    name: Annotated[str, Meta(min_length=1)]
-    pattern: Annotated[str, Meta(min_length=1)]
-    id_format: str | UnsetType = UNSET
-    language: Language | UnsetType = UNSET
-    rewrite_to: str | UnsetType = UNSET
-
-
 class TraceMarkerForm(Struct):
     language: Language
     name: Annotated[str, Meta(min_length=1)]
@@ -644,7 +636,6 @@ class TraceMarkerForm(Struct):
 
 class TraceTagGrammar(Struct):
     implements: list[TraceImplementsForm] | UnsetType = UNSET
-    legacy: list[TraceLegacyForm] | UnsetType = UNSET
     markers: list[TraceMarkerForm] | UnsetType = UNSET
 
 

@@ -585,15 +585,6 @@ class TraceImplementsForm:
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
-class TraceLegacyForm:
-    name: Annotated[str, Field(min_length=1)]
-    pattern: Annotated[str, Field(min_length=1)]
-    id_format: str | None = None
-    language: Language | None = None
-    rewrite_to: str | None = None
-
-
-@dataclass(config=ConfigDict(extra='forbid'))
 class TraceMarkerForm:
     language: Language
     name: Annotated[str, Field(min_length=1)]
@@ -604,7 +595,6 @@ class TraceMarkerForm:
 @dataclass(config=ConfigDict(extra='forbid'))
 class TraceTagGrammar:
     implements: list[TraceImplementsForm] | None = None
-    legacy: list[TraceLegacyForm] | None = None
     markers: list[TraceMarkerForm] | None = None
 
 
