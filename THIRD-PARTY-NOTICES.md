@@ -59,6 +59,20 @@ appears in no emitted package's closure.
 |---|---|
 | `regex` | FR-057 refuses it. The pattern this backend must enforce uses four ECMAScript lookaheads, and RE2 — the engine behind `regex` — has no lookahead, so the crate would not solve the problem it looks like it solves. The matcher is generated instead. |
 | `chrono`, `time` | The `date`, `datetime` and `duration` newtypes are generated and validated in the crate itself, so the published `serde`-only runtime dependency holds. |
+| `data-encoding` | `MIT` | https://github.com/ia0/data-encoding | licence files in the published crate archive |
+| `email_address` | `MIT` | https://github.com/johnstonskj/rust-email_address.git | licence files in the published crate archive |
+| `fluent-uri` | `MIT` | https://github.com/yescallop/fluent-uri-rs | licence files in the published crate archive |
+| `foldhash` | `Zlib` | https://github.com/orlp/foldhash | licence files in the published crate archive |
+| `jsonschema-regex` | `MIT` | https://github.com/Stranger6667/jsonschema | licence files in the published crate archive |
+| `jsonschema-value` | `MIT` | https://github.com/Stranger6667/jsonschema | licence files in the published crate archive |
+| `micromap` | `MIT` | https://github.com/yegor256/micromap | licence files in the published crate archive |
+| `outref` | `MIT` | https://github.com/Nugine/outref | licence files in the published crate archive |
+| `ref-cast` | `MIT OR Apache-2.0` | https://github.com/dtolnay/ref-cast | licence files in the published crate archive |
+| `ref-cast-impl` | `MIT OR Apache-2.0` | https://github.com/dtolnay/ref-cast | licence files in the published crate archive |
+| `referencing` | `MIT` | https://github.com/Stranger6667/jsonschema | licence files in the published crate archive |
+| `strum` | `MIT` | https://github.com/Peternator7/strum | licence files in the published crate archive |
+| `strum_macros` | `MIT` | https://github.com/Peternator7/strum | licence files in the published crate archive |
+| `unicode-general-category` | `Apache-2.0` | https://github.com/yeslogic/unicode-general-category | licence files in the published crate archive |
 | `uuid` | Same reason: the `uuid` newtype is generated. |
 | `proptest`, `arbitrary`, a fuzzer | The property generators, the ECMA-262 reference engine and the mutation harness run on the Node side against the Rust binaries, so the Rust crates take no test-time dependency beyond `serde_json` in the consumers. |
 
@@ -89,20 +103,20 @@ licence as this work.
 | `agent-ix-semantic-schema` | `AGPL-3.0-or-later` | https://github.com/agent-ix/filament-core-data | `LICENSE` in the repository at the pinned tag |
 | `ahash` | `MIT OR Apache-2.0` | https://github.com/tkaitchuck/ahash | licence files in the published crate archive |
 | `aho-corasick` | `Unlicense OR MIT` | https://github.com/BurntSushi/aho-corasick | licence files in the published crate archive |
+| `allocator-api2` | `MIT OR Apache-2.0` | https://github.com/zakarumych/allocator-api2 | licence files in the published crate archive |
 | `anstream` | `MIT OR Apache-2.0` | https://github.com/rust-cli/anstyle.git | licence files in the published crate archive |
 | `anstyle` | `MIT OR Apache-2.0` | https://github.com/rust-cli/anstyle.git | licence files in the published crate archive |
 | `anstyle-parse` | `MIT OR Apache-2.0` | https://github.com/rust-cli/anstyle.git | licence files in the published crate archive |
 | `anstyle-query` | `MIT OR Apache-2.0` | https://github.com/rust-cli/anstyle.git | licence files in the published crate archive |
 | `anstyle-wincon` | `MIT OR Apache-2.0` | https://github.com/rust-cli/anstyle.git | licence files in the published crate archive |
-| `anyhow` | `MIT OR Apache-2.0` | https://github.com/dtolnay/anyhow | licence files in the published crate archive |
 | `autocfg` | `Apache-2.0 OR MIT` | https://github.com/cuviper/autocfg | licence files in the published crate archive |
-| `base64` | `MIT OR Apache-2.0` | https://github.com/marshallpierce/rust-base64 | licence files in the published crate archive |
 | `bit-set` | `MIT/Apache-2.0` | https://github.com/contain-rs/bit-set | licence files in the published crate archive |
 | `bit-set` | `Apache-2.0 OR MIT` | https://github.com/contain-rs/bit-set | licence files in the published crate archive |
 | `bit-vec` | `MIT/Apache-2.0` | https://github.com/contain-rs/bit-vec | licence files in the published crate archive |
 | `bit-vec` | `Apache-2.0 OR MIT` | https://github.com/contain-rs/bit-vec | licence files in the published crate archive |
 | `bitflags` | `MIT OR Apache-2.0` | https://github.com/bitflags/bitflags | licence files in the published crate archive |
 | `block-buffer` | `MIT OR Apache-2.0` | https://github.com/RustCrypto/utils | licence files in the published crate archive |
+| `borrow-or-share` | `MIT-0` | https://github.com/yescallop/borrow-or-share | licence files in the published crate archive |
 | `bstr` | `MIT OR Apache-2.0` | https://github.com/BurntSushi/bstr | licence files in the published crate archive |
 | `bumpalo` | `MIT OR Apache-2.0` | https://github.com/fitzgen/bumpalo | licence files in the published crate archive |
 | `bytecount` | `Apache-2.0/MIT` | https://github.com/llogiq/bytecount | licence files in the published crate archive |
@@ -118,9 +132,7 @@ licence as this work.
 | `crossbeam-epoch` | `MIT OR Apache-2.0` | https://github.com/crossbeam-rs/crossbeam | licence files in the published crate archive |
 | `crossbeam-utils` | `MIT OR Apache-2.0` | https://github.com/crossbeam-rs/crossbeam | licence files in the published crate archive |
 | `crypto-common` | `MIT OR Apache-2.0` | https://github.com/RustCrypto/traits | licence files in the published crate archive |
-| `deranged` | `MIT OR Apache-2.0` | https://github.com/jhpratt/deranged | licence files in the published crate archive |
 | `digest` | `MIT OR Apache-2.0` | https://github.com/RustCrypto/traits | licence files in the published crate archive |
-| `displaydoc` | `MIT OR Apache-2.0` | https://github.com/yaahc/displaydoc | licence files in the published crate archive |
 | `either` | `MIT OR Apache-2.0` | https://github.com/rayon-rs/either | licence files in the published crate archive |
 | `equivalent` | `Apache-2.0 OR MIT` | https://github.com/indexmap-rs/equivalent | licence files in the published crate archive |
 | `errno` | `MIT OR Apache-2.0` | https://github.com/lambda-fairy/rust-errno | licence files in the published crate archive |
@@ -128,7 +140,6 @@ licence as this work.
 | `fastrand` | `Apache-2.0 OR MIT` | https://github.com/smol-rs/fastrand | licence files in the published crate archive |
 | `find-msvc-tools` | `MIT OR Apache-2.0` | https://github.com/rust-lang/cc-rs | licence files in the published crate archive |
 | `fnv` | `Apache-2.0 / MIT` | https://github.com/servo/rust-fnv | licence files in the published crate archive |
-| `form_urlencoded` | `MIT OR Apache-2.0` | https://github.com/servo/rust-url | licence files in the published crate archive |
 | `fraction` | `MIT OR Apache-2.0` | https://github.com/dnsl48/fraction.git | licence files in the published crate archive |
 | `futures-core` | `MIT OR Apache-2.0` | https://github.com/rust-lang/futures-rs | licence files in the published crate archive |
 | `futures-task` | `MIT OR Apache-2.0` | https://github.com/rust-lang/futures-rs | licence files in the published crate archive |
@@ -141,19 +152,9 @@ licence as this work.
 | `globset` | `Unlicense OR MIT` | https://github.com/BurntSushi/ripgrep/tree/master/crates/globset | licence files in the published crate archive |
 | `hashbrown` | `MIT OR Apache-2.0` | https://github.com/rust-lang/hashbrown | licence files in the published crate archive |
 | `heck` | `MIT OR Apache-2.0` | https://github.com/withoutboats/heck | licence files in the published crate archive |
-| `icu_collections` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `icu_locale_core` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `icu_normalizer` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `icu_normalizer_data` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `icu_properties` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `icu_properties_data` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `icu_provider` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `idna` | `MIT OR Apache-2.0` | https://github.com/servo/rust-url/ | licence files in the published crate archive |
-| `idna_adapter` | `Apache-2.0 OR MIT` | https://github.com/hsivonen/idna_adapter | licence files in the published crate archive |
 | `ignore` | `Unlicense OR MIT` | https://github.com/BurntSushi/ripgrep/tree/master/crates/ignore | licence files in the published crate archive |
 | `indexmap` | `Apache-2.0 OR MIT` | https://github.com/indexmap-rs/indexmap | licence files in the published crate archive |
 | `is_terminal_polyfill` | `MIT OR Apache-2.0` | https://github.com/polyfill-rs/is_terminal_polyfill | licence files in the published crate archive |
-| `iso8601` | `MIT` | https://github.com/badboy/iso8601 | licence files in the published crate archive |
 | `itoa` | `MIT OR Apache-2.0` | https://github.com/dtolnay/itoa | licence files in the published crate archive |
 | `ix-trace-rs` | `AGPL-3.0-or-later` | https://github.com/agent-ix/ix-trace-rs | `LICENSE` in the repository at the pinned revision |
 | `js-sys` | `MIT OR Apache-2.0` | https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/js-sys | licence files in the published crate archive |
@@ -162,19 +163,16 @@ licence as this work.
 | `libc` | `MIT OR Apache-2.0` | https://github.com/rust-lang/libc | licence files in the published crate archive |
 | `libyaml-rs` | `MIT` | https://github.com/yaml/libyaml-rs | licence files in the published crate archive |
 | `linux-raw-sys` | `Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT` | https://github.com/sunfishcode/linux-raw-sys | licence files in the published crate archive |
-| `litemap` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
 | `lock_api` | `MIT OR Apache-2.0` | https://github.com/Amanieu/parking_lot | licence files in the published crate archive |
 | `log` | `MIT OR Apache-2.0` | https://github.com/rust-lang/log | licence files in the published crate archive |
 | `loom` | `MIT` | https://github.com/tokio-rs/loom | licence files in the published crate archive |
 | `matchers` | `MIT` | https://github.com/hawkw/matchers | licence files in the published crate archive |
 | `memchr` | `Unlicense OR MIT` | https://github.com/BurntSushi/memchr | licence files in the published crate archive |
-| `nom` | `MIT` | https://github.com/rust-bakery/nom | licence files in the published crate archive |
 | `nu-ansi-term` | `MIT` | https://github.com/nushell/nu-ansi-term | licence files in the published crate archive |
 | `num` | `MIT OR Apache-2.0` | https://github.com/rust-num/num | licence files in the published crate archive |
 | `num-bigint` | `MIT OR Apache-2.0` | https://github.com/rust-num/num-bigint | licence files in the published crate archive |
 | `num-cmp` | `MIT/Apache-2.0` | https://github.com/lifthrasiir/num-cmp | licence files in the published crate archive |
 | `num-complex` | `MIT OR Apache-2.0` | https://github.com/rust-num/num-complex | licence files in the published crate archive |
-| `num-conv` | `MIT OR Apache-2.0` | https://github.com/jhpratt/num-conv | licence files in the published crate archive |
 | `num-integer` | `MIT OR Apache-2.0` | https://github.com/rust-num/num-integer | licence files in the published crate archive |
 | `num-iter` | `MIT OR Apache-2.0` | https://github.com/rust-num/num-iter | licence files in the published crate archive |
 | `num-rational` | `MIT OR Apache-2.0` | https://github.com/rust-num/num-rational | licence files in the published crate archive |
@@ -185,15 +183,11 @@ licence as this work.
 | `parking_lot_core` | `MIT OR Apache-2.0` | https://github.com/Amanieu/parking_lot | licence files in the published crate archive |
 | `percent-encoding` | `MIT OR Apache-2.0` | https://github.com/servo/rust-url/ | licence files in the published crate archive |
 | `pin-project-lite` | `Apache-2.0 OR MIT` | https://github.com/taiki-e/pin-project-lite | licence files in the published crate archive |
-| `potential_utf` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `powerfmt` | `MIT OR Apache-2.0` | https://github.com/jhpratt/powerfmt | licence files in the published crate archive |
 | `ppv-lite86` | `MIT OR Apache-2.0` | https://github.com/cryptocorrosion/cryptocorrosion | licence files in the published crate archive |
 | `proc-macro2` | `MIT OR Apache-2.0` | https://github.com/dtolnay/proc-macro2 | licence files in the published crate archive |
 | `proptest` | `MIT OR Apache-2.0` | https://github.com/proptest-rs/proptest | licence files in the published crate archive |
 | `quick-error` | `MIT/Apache-2.0` | http://github.com/tailhook/quick-error | licence files in the published crate archive |
-| `quire-code-parse` | `AGPL-3.0-or-later` | https://github.com/agent-ix/quire-code-rs | `LICENSE` in the repository at the pinned revision |
 | `quire-rs` | `AGPL-3.0-or-later` | https://github.com/agent-ix/quire-rs | `LICENSE` in the repository at the pinned revision |
-| `quire-code-extraction` | `AGPL-3.0-or-later` | https://github.com/agent-ix/quire-rs | `LICENSE` in the repository at the pinned revision |
 | `quote` | `MIT OR Apache-2.0` | https://github.com/dtolnay/quote | licence files in the published crate archive |
 | `r-efi` | `MIT OR Apache-2.0 OR LGPL-2.1-or-later` | https://github.com/r-efi/r-efi | licence files in the published crate archive |
 | `r-efi` | `MIT OR Apache-2.0 OR LGPL-2.1-or-later` | https://github.com/r-efi/r-efi | licence files in the published crate archive |
@@ -223,44 +217,28 @@ licence as this work.
 | `shlex` | `MIT OR Apache-2.0` | https://github.com/comex/rust-shlex | licence files in the published crate archive |
 | `slab` | `MIT` | https://github.com/tokio-rs/slab | licence files in the published crate archive |
 | `smallvec` | `MIT OR Apache-2.0` | https://github.com/servo/rust-smallvec | licence files in the published crate archive |
-| `stable_deref_trait` | `MIT OR Apache-2.0` | https://github.com/storyyeller/stable_deref_trait | licence files in the published crate archive |
-| `streaming-iterator` | `MIT OR Apache-2.0` | https://github.com/sfackler/streaming-iterator | licence files in the published crate archive |
 | `strsim` | `MIT` | https://github.com/rapidfuzz/strsim-rs | licence files in the published crate archive |
 | `syn` | `MIT OR Apache-2.0` | https://github.com/dtolnay/syn | licence files in the published crate archive |
 | `syn` | `MIT OR Apache-2.0` | https://github.com/dtolnay/syn | licence files in the published crate archive |
-| `synstructure` | `MIT` | https://github.com/mystor/synstructure | licence files in the published crate archive |
 | `tempfile` | `MIT OR Apache-2.0` | https://github.com/Stebalien/tempfile | licence files in the published crate archive |
 | `thiserror` | `MIT OR Apache-2.0` | https://github.com/dtolnay/thiserror | licence files in the published crate archive |
 | `thiserror-impl` | `MIT OR Apache-2.0` | https://github.com/dtolnay/thiserror | licence files in the published crate archive |
 | `thread_local` | `MIT OR Apache-2.0` | https://github.com/Amanieu/thread_local-rs | licence files in the published crate archive |
-| `time` | `MIT OR Apache-2.0` | https://github.com/time-rs/time | licence files in the published crate archive |
-| `time-core` | `MIT OR Apache-2.0` | https://github.com/time-rs/time | licence files in the published crate archive |
-| `time-macros` | `MIT OR Apache-2.0` | https://github.com/time-rs/time | licence files in the published crate archive |
-| `tinystr` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `tinyvec` | `Zlib OR Apache-2.0 OR MIT` | https://github.com/Lokathor/tinyvec | licence files in the published crate archive |
-| `tinyvec_macros` | `MIT OR Apache-2.0 OR Zlib` | https://github.com/Soveu/tinyvec_macros | licence files in the published crate archive |
 | `tracing` | `MIT` | https://github.com/tokio-rs/tracing | licence files in the published crate archive |
 | `tracing-core` | `MIT` | https://github.com/tokio-rs/tracing | licence files in the published crate archive |
 | `tracing-log` | `MIT` | https://github.com/tokio-rs/tracing | licence files in the published crate archive |
 | `tracing-subscriber` | `MIT` | https://github.com/tokio-rs/tracing | licence files in the published crate archive |
-| `tree-sitter` | `MIT` | https://github.com/tree-sitter/tree-sitter | licence files in the published crate archive |
-| `tree-sitter-language` | `MIT` | https://github.com/tree-sitter/tree-sitter | licence files in the published crate archive |
-| `tree-sitter-python` | `MIT` | https://github.com/tree-sitter/tree-sitter-python | licence files in the published crate archive |
-| `tree-sitter-rust` | `MIT` | https://github.com/tree-sitter/tree-sitter-rust | licence files in the published crate archive |
-| `tree-sitter-typescript` | `MIT` | https://github.com/tree-sitter/tree-sitter-typescript | licence files in the published crate archive |
 | `typenum` | `MIT OR Apache-2.0` | https://github.com/paholg/typenum | licence files in the published crate archive |
 | `unarray` | `MIT OR Apache-2.0` | https://github.com/cameron1024/unarray | licence files in the published crate archive |
 | `unicode-ident` | `(MIT OR Apache-2.0) AND Unicode-3.0` | https://github.com/dtolnay/unicode-ident | licence files in the published crate archive |
-| `unicode-normalization` | `MIT OR Apache-2.0` | https://github.com/unicode-rs/unicode-normalization | licence files in the published crate archive |
-| `url` | `MIT OR Apache-2.0` | https://github.com/servo/rust-url | licence files in the published crate archive |
-| `utf8_iter` | `Apache-2.0 OR MIT` | https://github.com/hsivonen/utf8_iter | licence files in the published crate archive |
 | `utf8parse` | `Apache-2.0 OR MIT` | https://github.com/alacritty/vte | licence files in the published crate archive |
 | `uuid` | `Apache-2.0 OR MIT` | https://github.com/uuid-rs/uuid | licence files in the published crate archive |
+| `uuid-simd` | `MIT` | https://github.com/Nugine/simd | licence files in the published crate archive |
 | `valuable` | `MIT` | https://github.com/tokio-rs/valuable | licence files in the published crate archive |
 | `version_check` | `MIT/Apache-2.0` | https://github.com/SergioBenitez/version_check | licence files in the published crate archive |
+| `vsimd` | `MIT` | https://github.com/Nugine/simd | licence files in the published crate archive |
 | `wait-timeout` | `MIT/Apache-2.0` | https://github.com/alexcrichton/wait-timeout | licence files in the published crate archive |
 | `walkdir` | `Unlicense/MIT` | https://github.com/BurntSushi/walkdir | licence files in the published crate archive |
-| `wasi` | `Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT` | https://github.com/bytecodealliance/wasi | licence files in the published crate archive |
 | `wasip2` | `Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT` | https://github.com/bytecodealliance/wasi-rs | licence files in the published crate archive |
 | `wasm-bindgen` | `MIT OR Apache-2.0` | https://github.com/wasm-bindgen/wasm-bindgen | licence files in the published crate archive |
 | `wasm-bindgen-macro` | `MIT OR Apache-2.0` | https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro | licence files in the published crate archive |
@@ -271,15 +249,7 @@ licence as this work.
 | `windows-result` | `MIT OR Apache-2.0` | https://github.com/microsoft/windows-rs | licence files in the published crate archive |
 | `windows-sys` | `MIT OR Apache-2.0` | https://github.com/microsoft/windows-rs | licence files in the published crate archive |
 | `wit-bindgen` | `Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT` | https://github.com/bytecodealliance/wit-bindgen | licence files in the published crate archive |
-| `writeable` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
 | `yaml_serde` | `MIT OR Apache-2.0` | https://github.com/yaml/yaml-serde | licence files in the published crate archive |
-| `yoke` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `yoke-derive` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
 | `zerocopy` | `BSD-2-Clause OR Apache-2.0 OR MIT` | https://github.com/google/zerocopy | licence files in the published crate archive |
 | `zerocopy-derive` | `BSD-2-Clause OR Apache-2.0 OR MIT` | https://github.com/google/zerocopy | licence files in the published crate archive |
-| `zerofrom` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `zerofrom-derive` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `zerotrie` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `zerovec` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
-| `zerovec-derive` | `Unicode-3.0` | https://github.com/unicode-org/icu4x | licence files in the published crate archive |
 | `zmij` | `MIT` | https://github.com/dtolnay/zmij | licence files in the published crate archive |

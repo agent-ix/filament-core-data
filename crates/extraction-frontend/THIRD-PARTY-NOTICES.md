@@ -20,16 +20,16 @@ features; this crate declares no `jsonschema` dependency of its own
 | `agent-ix-semantic-schema` | AGPL-3.0-or-later | https://github.com/agent-ix/filament-core-data |
 | `ahash` | MIT OR Apache-2.0 | crates.io |
 | `aho-corasick` | Unlicense OR MIT | crates.io |
+| `allocator-api2` | MIT OR Apache-2.0 | https://github.com/zakarumych/allocator-api2 |
 | `anstream` | MIT OR Apache-2.0 | crates.io |
 | `anstyle` | MIT OR Apache-2.0 | crates.io |
 | `anstyle-parse` | MIT OR Apache-2.0 | crates.io |
 | `anstyle-query` | MIT OR Apache-2.0 | crates.io |
-| `anyhow` | MIT OR Apache-2.0 | crates.io |
 | `autocfg` | Apache-2.0 OR MIT | crates.io |
-| `base64` | MIT OR Apache-2.0 | crates.io |
 | `bit-set` | MIT/Apache-2.0 | crates.io |
 | `bit-vec` | MIT/Apache-2.0 | crates.io |
 | `block-buffer` | MIT OR Apache-2.0 | crates.io |
+| `borrow-or-share` | MIT-0 | https://github.com/yescallop/borrow-or-share |
 | `bstr` | MIT OR Apache-2.0 | crates.io |
 | `bytecount` | Apache-2.0/MIT | crates.io |
 | `cc` | MIT OR Apache-2.0 | https://github.com/rust-lang/cc-rs |
@@ -44,14 +44,15 @@ features; this crate declares no `jsonschema` dependency of its own
 | `crossbeam-epoch` | MIT OR Apache-2.0 | crates.io |
 | `crossbeam-utils` | MIT OR Apache-2.0 | crates.io |
 | `crypto-common` | MIT OR Apache-2.0 | crates.io |
-| `deranged` | MIT OR Apache-2.0 | crates.io |
+| `data-encoding` | MIT | https://github.com/ia0/data-encoding |
 | `digest` | MIT OR Apache-2.0 | crates.io |
-| `displaydoc` | MIT OR Apache-2.0 | crates.io |
 | `either` | MIT OR Apache-2.0 | crates.io |
+| `email_address` | MIT | https://github.com/johnstonskj/rust-email_address.git |
 | `equivalent` | Apache-2.0 OR MIT | crates.io |
 | `fancy-regex` | MIT | crates.io |
 | `find-msvc-tools` | MIT OR Apache-2.0 | https://github.com/rust-lang/cc-rs |
-| `form_urlencoded` | MIT OR Apache-2.0 | crates.io |
+| `fluent-uri` | MIT | https://github.com/yescallop/fluent-uri-rs |
+| `foldhash` | Zlib | https://github.com/orlp/foldhash |
 | `fraction` | MIT OR Apache-2.0 | crates.io |
 | `generic-array` | MIT | crates.io |
 | `getrandom` | MIT OR Apache-2.0 | crates.io |
@@ -59,51 +60,41 @@ features; this crate declares no `jsonschema` dependency of its own
 | `globset` | Unlicense OR MIT | crates.io |
 | `hashbrown` | MIT OR Apache-2.0 | crates.io |
 | `heck` | MIT OR Apache-2.0 | crates.io |
-| `icu_collections` | Unicode-3.0 | crates.io |
-| `icu_locale_core` | Unicode-3.0 | crates.io |
-| `icu_normalizer` | Unicode-3.0 | crates.io |
-| `icu_normalizer_data` | Unicode-3.0 | crates.io |
-| `icu_properties` | Unicode-3.0 | crates.io |
-| `icu_properties_data` | Unicode-3.0 | crates.io |
-| `icu_provider` | Unicode-3.0 | crates.io |
-| `idna` | MIT OR Apache-2.0 | crates.io |
-| `idna_adapter` | Apache-2.0 OR MIT | crates.io |
 | `ignore` | Unlicense OR MIT | crates.io |
 | `indexmap` | Apache-2.0 OR MIT | crates.io |
 | `is_terminal_polyfill` | MIT OR Apache-2.0 | crates.io |
-| `iso8601` | MIT | crates.io |
 | `itoa` | MIT OR Apache-2.0 | crates.io |
 | `jsonschema` | MIT | crates.io |
+| `jsonschema-regex` | MIT | https://github.com/Stranger6667/jsonschema |
+| `jsonschema-value` | MIT | https://github.com/Stranger6667/jsonschema |
 | `lazy_static` | MIT OR Apache-2.0 | crates.io |
 | `libc` | MIT OR Apache-2.0 | crates.io |
 | `libyaml-rs` | MIT | crates.io |
-| `litemap` | Unicode-3.0 | crates.io |
 | `lock_api` | MIT OR Apache-2.0 | crates.io |
 | `log` | MIT OR Apache-2.0 | crates.io |
 | `memchr` | Unlicense OR MIT | crates.io |
-| `nom` | MIT | crates.io |
+| `micromap` | MIT | https://github.com/yegor256/micromap |
 | `num` | MIT OR Apache-2.0 | crates.io |
 | `num-bigint` | MIT OR Apache-2.0 | crates.io |
 | `num-cmp` | MIT/Apache-2.0 | crates.io |
 | `num-complex` | MIT OR Apache-2.0 | crates.io |
-| `num-conv` | MIT OR Apache-2.0 | crates.io |
 | `num-integer` | MIT OR Apache-2.0 | crates.io |
 | `num-iter` | MIT OR Apache-2.0 | crates.io |
 | `num-rational` | MIT OR Apache-2.0 | crates.io |
 | `num-traits` | MIT OR Apache-2.0 | crates.io |
 | `once_cell` | MIT OR Apache-2.0 | crates.io |
+| `outref` | MIT | https://github.com/Nugine/outref |
 | `parking_lot` | MIT OR Apache-2.0 | crates.io |
 | `parking_lot_core` | MIT OR Apache-2.0 | crates.io |
 | `percent-encoding` | MIT OR Apache-2.0 | crates.io |
-| `potential_utf` | Unicode-3.0 | crates.io |
-| `powerfmt` | MIT OR Apache-2.0 | crates.io |
 | `proc-macro2` | MIT OR Apache-2.0 | crates.io |
-| `quire-code-parse` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-code-rs |
 | `quire-rs` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-rs |
-| `quire-code-extraction` | AGPL-3.0-or-later | https://github.com/agent-ix/quire-rs |
 | `quote` | MIT OR Apache-2.0 | crates.io |
 | `rayon` | MIT OR Apache-2.0 | crates.io |
 | `rayon-core` | MIT OR Apache-2.0 | crates.io |
+| `ref-cast` | MIT OR Apache-2.0 | https://github.com/dtolnay/ref-cast |
+| `ref-cast-impl` | MIT OR Apache-2.0 | https://github.com/dtolnay/ref-cast |
+| `referencing` | MIT | https://github.com/Stranger6667/jsonschema |
 | `regex` | MIT OR Apache-2.0 | crates.io |
 | `regex-automata` | MIT OR Apache-2.0 | crates.io |
 | `regex-syntax` | MIT OR Apache-2.0 | crates.io |
@@ -117,44 +108,24 @@ features; this crate declares no `jsonschema` dependency of its own
 | `sha2` | MIT OR Apache-2.0 | crates.io |
 | `shlex` | MIT OR Apache-2.0 | https://github.com/comex/rust-shlex |
 | `smallvec` | MIT OR Apache-2.0 | crates.io |
-| `stable_deref_trait` | MIT OR Apache-2.0 | crates.io |
-| `streaming-iterator` | MIT OR Apache-2.0 | crates.io |
 | `strsim` | MIT | crates.io |
+| `strum` | MIT | https://github.com/Peternator7/strum |
+| `strum_macros` | MIT | https://github.com/Peternator7/strum |
 | `syn` | MIT OR Apache-2.0 | crates.io |
 | `syn` | MIT OR Apache-2.0 | crates.io |
-| `synstructure` | MIT | crates.io |
 | `thiserror` | MIT OR Apache-2.0 | crates.io |
 | `thiserror-impl` | MIT OR Apache-2.0 | crates.io |
-| `time` | MIT OR Apache-2.0 | crates.io |
-| `time-core` | MIT OR Apache-2.0 | crates.io |
-| `time-macros` | MIT OR Apache-2.0 | crates.io |
-| `tinystr` | Unicode-3.0 | crates.io |
-| `tinyvec` | Zlib OR Apache-2.0 OR MIT | crates.io |
-| `tinyvec_macros` | MIT OR Apache-2.0 OR Zlib | crates.io |
-| `tree-sitter` | MIT | crates.io |
-| `tree-sitter-language` | MIT | crates.io |
-| `tree-sitter-python` | MIT | crates.io |
-| `tree-sitter-rust` | MIT | crates.io |
-| `tree-sitter-typescript` | MIT | crates.io |
 | `typenum` | MIT OR Apache-2.0 | crates.io |
+| `unicode-general-category` | Apache-2.0 | https://github.com/yeslogic/unicode-general-category |
 | `unicode-ident` | (MIT OR Apache-2.0) AND Unicode-3.0 | crates.io |
-| `unicode-normalization` | MIT OR Apache-2.0 | crates.io |
-| `url` | MIT OR Apache-2.0 | crates.io |
-| `utf8_iter` | Apache-2.0 OR MIT | crates.io |
 | `utf8parse` | Apache-2.0 OR MIT | crates.io |
 | `uuid` | Apache-2.0 OR MIT | crates.io |
+| `uuid-simd` | MIT | https://github.com/Nugine/simd |
 | `version_check` | MIT/Apache-2.0 | crates.io |
+| `vsimd` | MIT | https://github.com/Nugine/simd |
 | `walkdir` | Unlicense/MIT | crates.io |
-| `writeable` | Unicode-3.0 | crates.io |
 | `yaml_serde` | MIT OR Apache-2.0 | crates.io |
-| `yoke` | Unicode-3.0 | crates.io |
-| `yoke-derive` | Unicode-3.0 | crates.io |
 | `zerocopy` | BSD-2-Clause OR Apache-2.0 OR MIT | crates.io |
-| `zerofrom` | Unicode-3.0 | crates.io |
-| `zerofrom-derive` | Unicode-3.0 | crates.io |
-| `zerotrie` | Unicode-3.0 | crates.io |
-| `zerovec` | Unicode-3.0 | crates.io |
-| `zerovec-derive` | Unicode-3.0 | crates.io |
 | `zmij` | MIT | crates.io |
 
 ## Development only (dev edges; not linked into the binary)
