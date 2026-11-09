@@ -8,6 +8,8 @@ from typing import Annotated, Any
 
 from msgspec import UNSET, Meta, Struct, UnsetType, field
 
+type ClauseSet = Annotated[str, Meta(min_length=1)]
+
 
 class DependsOnItem(Struct):
     name: Annotated[str, Meta(min_length=1)]
@@ -349,12 +351,30 @@ class Category1(StrEnum):
 class EdgeTypeEntry(Struct):
     category: Category1
     description: Annotated[str, Meta(min_length=1)]
+    composite: (
+        Annotated[
+            bool,
+            Meta(
+                description='The verb carries composition semantics during extraction. Defaults to false.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
     inverse: (
         Annotated[
             str,
             Meta(
                 description='Optional inverse verb (e.g. contains <-> part_of). Need not itself be declared.',
                 min_length=1,
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+    symmetric: (
+        Annotated[
+            bool,
+            Meta(
+                description='`A verb B` holds exactly when `B verb A` does, so the relationship has no direction. Defaults to false.'
             ),
         ]
         | UnsetType
@@ -368,33 +388,104 @@ class GrammarEntry(Struct):
     version: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
 
 
-class Pattern(Struct):
-    kind: Annotated[str, Meta(min_length=1)]
-
-
-class Severity(StrEnum):
-    error = 'error'
+class Severity(Enum):
     warning = 'warning'
-    info = 'info'
+    error = 'error'
+
+
+class Type(Enum):
+    table_column_values = 'table_column_values'
+    section_body_pattern = 'section_body_pattern'
+    forbidden_section = 'forbidden_section'
 
 
 class LintRuleEntry(Struct):
-    description: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
-    name: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
-    pattern: Pattern | UnsetType = UNSET
+    id: Annotated[str, Meta(min_length=1)]
+    section: Annotated[str, Meta(min_length=1)]
+    type: Type
+    archetypes: list[str] | UnsetType = UNSET
+    message: str | UnsetType = UNSET
     severity: Severity | UnsetType = UNSET
+
+
+type ColumnPatternsAdditionalProperty = Annotated[str, Meta(min_length=1)]
+
+
+type ColumnVocabulariesAdditionalProperty = Annotated[str, Meta(min_length=1)]
 
 
 type Column = Annotated[str, Meta(min_length=1)]
 
 
+type OptionalColumn = Annotated[str, Meta(min_length=1)]
+
+
 class LocatorAssert(Struct):
+    choices: (
+        Annotated[
+            list[str], Meta(description='Allowed values of located scalar content.')
+        ]
+        | UnsetType
+    ) = UNSET
+    column_choices: (
+        Annotated[
+            dict[str, list[str]],
+            Meta(
+                description='Header -> allowed values for every data cell in that column (table_row only).'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+    column_patterns: (
+        Annotated[
+            dict[str, ColumnPatternsAdditionalProperty],
+            Meta(
+                description='Header -> regex every data cell in that column MUST match (table_row only).'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+    column_vocabularies: (
+        Annotated[
+            dict[str, ColumnVocabulariesAdditionalProperty],
+            Meta(
+                description='Header -> declared vocabulary name for that column (table_row only).'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
     columns: list[Column] | UnsetType = UNSET
+    from_vocabulary: (
+        Annotated[
+            str,
+            Meta(
+                description='Name of a declared vocabulary whose values are the allowed scalar content.',
+                min_length=1,
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
     id_column: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
     id_pattern: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
     level: Annotated[int, Meta(ge=1, le=6)] | UnsetType = UNSET
+    matches: (
+        Annotated[
+            str, Meta(description='Regex the located content MUST match.', min_length=1)
+        ]
+        | UnsetType
+    ) = UNSET
+    max_rows: Annotated[int, Meta(ge=0)] | UnsetType = UNSET
     min_items: Annotated[int, Meta(ge=0)] | UnsetType = UNSET
     min_rows: Annotated[int, Meta(ge=0)] | UnsetType = UNSET
+    optional_columns: (
+        Annotated[
+            list[OptionalColumn],
+            Meta(
+                description='Subset of `columns` a document MAY omit (table_row only).'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
 
 
 class From(StrEnum):
@@ -414,6 +505,18 @@ class LocatorPrimitive(Struct):
 
 
 type Role = Annotated[str, Meta(min_length=1)]
+
+
+type DocumentType = Annotated[str, Meta(min_length=1)]
+
+
+class PlainLanguageProfile(Struct):
+    max_heading_level_step: Annotated[int, Meta(ge=1, le=5)]
+    sentence_word_limit: Annotated[int, Meta(ge=1)]
+    version: Annotated[str, Meta(min_length=1)]
+    document_types: list[DocumentType] | UnsetType = UNSET
+    ignored_uppercase_terms: list[str] | UnsetType = UNSET
+    known_acronyms: dict[str, str] | UnsetType = UNSET
 
 
 class Shape1(Enum):
@@ -902,6 +1005,15 @@ class FilamentModuleManifest(Struct):
     ) = UNSET
     archetypes: list[ArchetypeEntry] | UnsetType = UNSET
     artifact_types: list[ArtifactTypeEntry] | UnsetType = UNSET
+    clause_sets: (
+        Annotated[
+            list[ClauseSet],
+            Meta(
+                description='Rights-aware clause-set files, resolved relative to the module root.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
     depends_on: list[DependsOnItem] | UnsetType = UNSET
     description: str | UnsetType = UNSET
     doc_kinds: list[DocKind] | UnsetType = UNSET
@@ -949,6 +1061,15 @@ class FilamentModuleManifest(Struct):
             dict[str, VocabularyTerm],
             Meta(
                 description='Mergeable observable-result verb registry (quire FR-047): verb -> {definition, category?}. Layered over the engine defaults.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+    plain_language_profiles: (
+        Annotated[
+            dict[str, PlainLanguageProfile],
+            Meta(
+                description='Named, versioned advisory plain-language profiles (quire FR-074): profile id -> profile body. Merged first-wins across active modules.'
             ),
         ]
         | UnsetType

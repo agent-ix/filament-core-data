@@ -10,7 +10,7 @@ from .compatibility_report_schema import AffectedConsumer, Change, ConsumerEvide
 from .compiler_request_schema import Backend, FilamentCompilerRequestV1, Limits, SupportedFeature
 from .consumer_policy_schema import FilamentSemanticConsumerPolicyV1, IdentityPlane, Mode
 from .mapping_schema import Base, ConflictPolicy, Correspondence, DecodePolicy, FilamentSemanticMappingV1, GetPutLaw, LateDataPolicy, Lifetime, Preservation, Purity, Transformation
-from .module_manifest_schema import AcyclicEdge, AllowedLink, AmbiguityTermEntry, ArchetypeEntry, ArtifactTypeEntry, BodyExtraction, Category1, Column, ColumnVocabularies, CombinatorialColumns, DataSchema, Defaults, DependsOnItem, DocKind, DocumentReference, Edge, EdgeTypeEntry, EmitEdge, Evidence, Example, FilamentModuleManifest, From, From1, From2, GrammarEntry, GrammarSeverity, ImportsAdditionalProperty, IterateOver, Language, LegacyForms, LintRuleEntry, LintRulesRefItem, Locator, Locator1, LocatorAssert, LocatorPrimitive, Nav, ObjectTypeEntry, ObligationSource, ObligationSource1, ObligationSource2, Pattern, PropertyIdiomEntry, Reference, RequiredRelation, RoleEntry, Section, SectionList, SectionListItem, SectionPathItem, Semantic, Shape1, StateSchemas, StatusVocabulary, Syntax, Target2, ToItem, TraceImplementsForm, TraceLegacyForm, TraceMarkerForm, TraceTagGrammar, TraceTarget, TraceTarget1, TraceTarget2, TraceabilityModel, VerificationMethodEntry, VocabularyCoverage, VocabularyTerm, YieldPattern
+from .module_manifest_schema import AcyclicEdge, AllowedLink, AmbiguityTermEntry, ArchetypeEntry, ArtifactTypeEntry, BodyExtraction, Category1, ClauseSet, Column, ColumnPatternsAdditionalProperty, ColumnVocabularies, ColumnVocabulariesAdditionalProperty, CombinatorialColumns, DataSchema, Defaults, DependsOnItem, DocKind, DocumentReference, DocumentType, Edge, EdgeTypeEntry, EmitEdge, Evidence, Example, FilamentModuleManifest, From, From1, From2, GrammarEntry, GrammarSeverity, ImportsAdditionalProperty, IterateOver, Language, LegacyForms, LintRuleEntry, LintRulesRefItem, Locator, Locator1, LocatorAssert, LocatorPrimitive, Nav, ObjectTypeEntry, ObligationSource, ObligationSource1, ObligationSource2, OptionalColumn, PlainLanguageProfile, PropertyIdiomEntry, Reference, RequiredRelation, RoleEntry, Section, SectionList, SectionListItem, SectionPathItem, Semantic, Shape1, StateSchemas, StatusVocabulary, Syntax, Target2, ToItem, TraceImplementsForm, TraceLegacyForm, TraceMarkerForm, TraceTagGrammar, TraceTarget, TraceTarget1, TraceTarget2, TraceabilityModel, Type, VerificationMethodEntry, VocabularyCoverage, VocabularyTerm, YieldPattern
 from .module_semantic_block_schema import FilamentModuleManifestSemanticBlockV1
 from .output_manifest_schema import FilamentCompilerOutputManifestV1, File
 from .package_manifest_schema import Capability, Export3, FilamentSemanticPackageManifestV1, Import, Profile, SourceRoot, Visibility
@@ -36,8 +36,11 @@ __all__ = [
     "Category1",
     "Change",
     "Clause",
+    "ClauseSet",
     "Column",
+    "ColumnPatternsAdditionalProperty",
     "ColumnVocabularies",
+    "ColumnVocabulariesAdditionalProperty",
     "Columnar",
     "CombinatorialColumns",
     "ConflictPolicy",
@@ -107,6 +110,7 @@ __all__ = [
     "Disposition",
     "DocKind",
     "DocumentReference",
+    "DocumentType",
     "Edge",
     "EdgeTypeEntry",
     "EditDirection",
@@ -192,13 +196,14 @@ __all__ = [
     "Operands3",
     "Operands4",
     "Operation",
+    "OptionalColumn",
     "Origin",
     "Origin1",
     "Origin2",
     "PackageIdentity",
     "PackageRevision",
     "PackageRevision1",
-    "Pattern",
+    "PlainLanguageProfile",
     "Population",
     "Position",
     "Postgresql",
@@ -262,6 +267,7 @@ __all__ = [
     "TraceabilityModel",
     "Transformation",
     "Transition",
+    "Type",
     "TypeDefinition",
     "Unit",
     "UnknownPolicy",

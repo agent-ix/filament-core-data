@@ -10,6 +10,10 @@ from pydantic import BaseModel, ConfigDict, Field, RootModel, constr
 from typing_extensions import TypeAliasType
 
 
+class ClauseSet(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
 class DependsOnItem(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -379,12 +383,24 @@ class EdgeTypeEntry(BaseModel):
         extra='forbid',
     )
     category: Category1
+    composite: Annotated[
+        bool | None,
+        Field(
+            description='The verb carries composition semantics during extraction. Defaults to false.'
+        ),
+    ] = None
     description: Annotated[str, Field(min_length=1)]
     inverse: Annotated[
         str | None,
         Field(
             description='Optional inverse verb (e.g. contains <-> part_of). Need not itself be declared.',
             min_length=1,
+        ),
+    ] = None
+    symmetric: Annotated[
+        bool | None,
+        Field(
+            description='`A verb B` holds exactly when `B verb A` does, so the relationship has no direction. Defaults to false.'
         ),
     ] = None
 
@@ -399,30 +415,41 @@ class GrammarEntry(BaseModel):
     version: Annotated[str | None, Field(min_length=1)] = None
 
 
-class Pattern(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    kind: Annotated[str, Field(min_length=1)]
-
-
-class Severity(StrEnum):
-    error = 'error'
+class Severity(Enum):
     warning = 'warning'
-    info = 'info'
+    error = 'error'
+
+
+class Type(Enum):
+    table_column_values = 'table_column_values'
+    section_body_pattern = 'section_body_pattern'
+    forbidden_section = 'forbidden_section'
 
 
 class LintRuleEntry(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    description: Annotated[str | None, Field(min_length=1)] = None
-    name: Annotated[str | None, Field(min_length=1)] = None
-    pattern: Pattern | None = None
+    archetypes: list[str] | None = None
+    id: Annotated[str, Field(min_length=1)]
+    message: str | None = None
+    section: Annotated[str, Field(min_length=1)]
     severity: Severity | None = None
+    type: Type
+
+
+ColumnPatternsAdditionalProperty = TypeAliasType(
+    "ColumnPatternsAdditionalProperty", Annotated[str, Field(min_length=1)]
+)
+
+
+ColumnVocabulariesAdditionalProperty = TypeAliasType(
+    "ColumnVocabulariesAdditionalProperty", Annotated[str, Field(min_length=1)]
+)
 
 
 class Column(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
+class OptionalColumn(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
@@ -430,12 +457,49 @@ class LocatorAssert(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
+    choices: Annotated[
+        list[str] | None, Field(description='Allowed values of located scalar content.')
+    ] = None
+    column_choices: Annotated[
+        dict[str, list[str]] | None,
+        Field(
+            description='Header -> allowed values for every data cell in that column (table_row only).'
+        ),
+    ] = None
+    column_patterns: Annotated[
+        dict[str, ColumnPatternsAdditionalProperty] | None,
+        Field(
+            description='Header -> regex every data cell in that column MUST match (table_row only).'
+        ),
+    ] = None
+    column_vocabularies: Annotated[
+        dict[str, ColumnVocabulariesAdditionalProperty] | None,
+        Field(
+            description='Header -> declared vocabulary name for that column (table_row only).'
+        ),
+    ] = None
     columns: list[Column] | None = None
+    from_vocabulary: Annotated[
+        str | None,
+        Field(
+            description='Name of a declared vocabulary whose values are the allowed scalar content.',
+            min_length=1,
+        ),
+    ] = None
     id_column: Annotated[str | None, Field(min_length=1)] = None
     id_pattern: Annotated[str | None, Field(min_length=1)] = None
     level: Annotated[int | None, Field(ge=1, le=6)] = None
+    matches: Annotated[
+        str | None,
+        Field(description='Regex the located content MUST match.', min_length=1),
+    ] = None
+    max_rows: Annotated[int | None, Field(ge=0)] = None
     min_items: Annotated[int | None, Field(ge=0)] = None
     min_rows: Annotated[int | None, Field(ge=0)] = None
+    optional_columns: Annotated[
+        list[OptionalColumn] | None,
+        Field(description='Subset of `columns` a document MAY omit (table_row only).'),
+    ] = None
 
 
 class From(StrEnum):
@@ -456,6 +520,22 @@ class LocatorPrimitive(BaseModel):
 
 class Role(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
+
+
+class DocumentType(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
+class PlainLanguageProfile(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    document_types: list[DocumentType] | None = None
+    ignored_uppercase_terms: list[str] | None = None
+    known_acronyms: dict[str, str] | None = None
+    max_heading_level_step: Annotated[int, Field(ge=1, le=5)]
+    sentence_word_limit: Annotated[int, Field(ge=1)]
+    version: Annotated[str, Field(min_length=1)]
 
 
 class Shape1(Enum):
@@ -947,6 +1027,12 @@ class FilamentModuleManifest(BaseModel):
     ] = None
     archetypes: list[ArchetypeEntry] | None = None
     artifact_types: list[ArtifactTypeEntry] | None = None
+    clause_sets: Annotated[
+        list[ClauseSet] | None,
+        Field(
+            description='Rights-aware clause-set files, resolved relative to the module root.'
+        ),
+    ] = None
     depends_on: list[DependsOnItem] | None = None
     description: str | None = None
     doc_kinds: list[DocKind] | None = None
@@ -995,6 +1081,12 @@ class FilamentModuleManifest(BaseModel):
         dict[str, VocabularyTerm] | None,
         Field(
             description='Mergeable observable-result verb registry (quire FR-047): verb -> {definition, category?}. Layered over the engine defaults.'
+        ),
+    ] = None
+    plain_language_profiles: Annotated[
+        dict[str, PlainLanguageProfile] | None,
+        Field(
+            description='Named, versioned advisory plain-language profiles (quire FR-074): profile id -> profile body. Merged first-wins across active modules.'
         ),
     ] = None
     property_idioms: Annotated[

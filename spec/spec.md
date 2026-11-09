@@ -463,7 +463,7 @@ package.
 
 FR-149 (Linear PLAT-206, PLAT-900) types the module manifest's artifact-type
 `data_schema` reference form and declares the eight registry and traceability
-root keys live modules use, so the manifest schema enforces what the loader reads.
+root keys live modules use, so the manifest schema enforces what the loader reads. PLAT-1369 (also FR-149) adds the locator `assert` members, the `composite` and `symmetric` edge-type flags, the `type`-tagged lint rule, and the `plain_language_profiles` and `clause_sets` root keys that the loader reads. `semantic.semantic_core` stays retired (PLAT-1221).
 
 ## 7. Verification Strategy
 
