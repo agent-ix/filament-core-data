@@ -193,7 +193,7 @@ licence as this work.
 | `quick-error` | `MIT/Apache-2.0` | http://github.com/tailhook/quick-error | licence files in the published crate archive |
 | `quire-code-parse` | `AGPL-3.0-or-later` | https://github.com/agent-ix/quire-code-rs | `LICENSE` in the repository at the pinned revision |
 | `quire-rs` | `AGPL-3.0-or-later` | https://github.com/agent-ix/quire-rs | `LICENSE` in the repository at the pinned revision |
-| `quire-rust-extraction` | `AGPL-3.0-or-later` | https://github.com/agent-ix/quire-rs | `LICENSE` in the repository at the pinned revision |
+| `quire-code-extraction` | `AGPL-3.0-or-later` | https://github.com/agent-ix/quire-rs | `LICENSE` in the repository at the pinned revision |
 | `quote` | `MIT OR Apache-2.0` | https://github.com/dtolnay/quote | licence files in the published crate archive |
 | `r-efi` | `MIT OR Apache-2.0 OR LGPL-2.1-or-later` | https://github.com/r-efi/r-efi | licence files in the published crate archive |
 | `r-efi` | `MIT OR Apache-2.0 OR LGPL-2.1-or-later` | https://github.com/r-efi/r-efi | licence files in the published crate archive |

@@ -89,7 +89,7 @@ fn parser_paths(graph: &Value) -> BTreeMap<String, Vec<String>> {
         quire_seen |= name == "quire-rs";
         if matches!(
             name,
-            "quire-rust-extraction" | "quire-code-parse" | "tree-sitter"
+            "quire-code-extraction" | "quire-code-parse" | "tree-sitter"
         ) || name.starts_with("tree-sitter-")
         {
             forbidden.insert(name.to_string(), path.clone());
@@ -176,7 +176,7 @@ fn tc_1841_lift_graph_excludes_parsers_and_restoring_defaults_at_its_edge_is_rej
         &owner.join("Cargo.lock"),
     );
     let rejected = parser_paths(&control);
-    for parser in ["quire-rust-extraction", "quire-code-parse", "tree-sitter"] {
+    for parser in ["quire-code-extraction", "quire-code-parse", "tree-sitter"] {
         assert!(
             rejected.contains_key(parser),
             "control did not activate {parser}: {rejected:?}"
