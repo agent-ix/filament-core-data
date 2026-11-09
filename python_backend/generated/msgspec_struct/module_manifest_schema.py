@@ -403,8 +403,12 @@ class LintRuleEntry(Struct):
     id: Annotated[str, Meta(min_length=1)]
     section: Annotated[str, Meta(min_length=1)]
     type: Type
+    allowed: list[str] | UnsetType = UNSET
+    annotation_pattern: str | UnsetType = UNSET
     archetypes: list[str] | UnsetType = UNSET
+    column: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
     message: str | UnsetType = UNSET
+    pattern: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
     severity: Severity | UnsetType = UNSET
 
 

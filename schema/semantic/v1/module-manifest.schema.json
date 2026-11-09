@@ -330,8 +330,7 @@
 					"type": "array",
 					"items": {
 						"type": "string"
-					},
-					"uniqueItems": true
+					}
 				}
 			}
 		},
@@ -876,7 +875,7 @@
 		},
 		"LintRuleEntry": {
 			"type": "object",
-			"description": "One declarative advisory lint rule (quire-rs LintRule, FR-036): a `type`-tagged union of table_column_values, section_body_pattern and forbidden_section. Unknown members are ignored by the consumer. Written as a tag plus per-type conditions rather than a root-level oneOf, which the Python generation inspection classifies as degraded.",
+			"description": "One declarative advisory lint rule (quire-rs LintRule, FR-036): a `type`-tagged union of table_column_values, section_body_pattern and forbidden_section. Unknown members are ignored by the consumer. The variant members are declared as optional properties so generated types keep them; per-type conditions only add `required`. Written as a tag plus per-type conditions rather than a root-level oneOf, which the Python generation inspection classifies as degraded.",
 			"required": ["type", "id", "section"],
 			"properties": {
 				"type": {
@@ -905,6 +904,23 @@
 				},
 				"message": {
 					"type": "string"
+				},
+				"pattern": {
+					"type": "string",
+					"minLength": 1
+				},
+				"column": {
+					"type": "string",
+					"minLength": 1
+				},
+				"allowed": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"annotation_pattern": {
+					"type": "string"
 				}
 			},
 			"allOf": [
@@ -917,22 +933,7 @@
 						}
 					},
 					"then": {
-						"required": ["column", "allowed"],
-						"properties": {
-							"column": {
-								"type": "string",
-								"minLength": 1
-							},
-							"allowed": {
-								"type": "array",
-								"items": {
-									"type": "string"
-								}
-							},
-							"annotation_pattern": {
-								"type": "string"
-							}
-						}
+						"required": ["column", "allowed"]
 					}
 				},
 				{
@@ -944,13 +945,7 @@
 						}
 					},
 					"then": {
-						"required": ["pattern"],
-						"properties": {
-							"pattern": {
-								"type": "string",
-								"minLength": 1
-							}
-						}
+						"required": ["pattern"]
 					}
 				}
 			]

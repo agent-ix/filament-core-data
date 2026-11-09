@@ -1412,7 +1412,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1902 | `traceability` accepts a block exercising every member and refuses an undeclared member, an empty `section`, a malformed obligation source, relation, marker, status or document reference. | Unit | P0 | FR-149-AC-5 |
 | TC-1903 | A locator `assert` accepts each of `optional_columns`, `max_rows`, `matches`, `choices`, `column_choices`, `column_patterns`, `from_vocabulary` and `column_vocabularies` and refuses a value of the wrong type. | Unit | P0 | FR-149-AC-6 |
 | TC-1904 | An `edge_types` entry accepts boolean `composite` and `symmetric` and refuses a non-boolean. | Unit | P0 | FR-149-AC-7 |
-| TC-1905 | `lint_rules` accepts the three `type`-tagged rules with a string `pattern` and refuses an untagged rule, an unknown `type`, an object `pattern` and a `table_column_values` rule missing `column` and `allowed`. | Unit | P0 | FR-149-AC-8 |
+| TC-1905 | `lint_rules` accepts the three `type`-tagged rules with a string `pattern` and refuses an untagged rule, an unknown `type`, an object `pattern` on any rule type, a `table_column_values` rule missing `column` or `allowed`, and a `section_body_pattern` rule missing `pattern`. | Unit | P0 | FR-149-AC-8 |
 | TC-1906 | `plain_language_profiles` and `clause_sets` are accepted and an undeclared profile member, a zero limit and a non-list `clause_sets` are refused. | Unit | P0 | FR-149-AC-9 |
 | TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 |
 

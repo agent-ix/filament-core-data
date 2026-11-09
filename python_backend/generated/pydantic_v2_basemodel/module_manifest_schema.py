@@ -427,9 +427,13 @@ class Type(Enum):
 
 
 class LintRuleEntry(BaseModel):
+    allowed: list[str] | None = None
+    annotation_pattern: str | None = None
     archetypes: list[str] | None = None
+    column: Annotated[str | None, Field(min_length=1)] = None
     id: Annotated[str, Field(min_length=1)]
     message: str | None = None
+    pattern: Annotated[str | None, Field(min_length=1)] = None
     section: Annotated[str, Field(min_length=1)]
     severity: Severity | None = None
     type: Type

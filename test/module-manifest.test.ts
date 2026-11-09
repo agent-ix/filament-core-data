@@ -777,6 +777,43 @@ describe("lint_rules", () => {
 			"/lint_rules/0",
 			"required",
 		);
+		rejects(
+			{
+				lint_rules: [
+					{
+						type: "table_column_values",
+						id: "r",
+						section: "S",
+						allowed: ["a"],
+					},
+				],
+			},
+			"/lint_rules/0",
+			"required",
+		);
+		rejects(
+			{ lint_rules: [{ type: "section_body_pattern", id: "r", section: "S" }] },
+			"/lint_rules/0",
+			"required",
+		);
+		for (const type of ["forbidden_section", "table_column_values"]) {
+			rejects(
+				{
+					lint_rules: [
+						{
+							type,
+							id: "r",
+							section: "S",
+							column: "C",
+							allowed: ["a"],
+							pattern: { kind: "regex" },
+						},
+					],
+				},
+				"/lint_rules/0/pattern",
+				"type",
+			);
+		}
 	});
 });
 

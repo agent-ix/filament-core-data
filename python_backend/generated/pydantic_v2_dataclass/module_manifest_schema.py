@@ -380,8 +380,12 @@ class LintRuleEntry:
     id: Annotated[str, Field(min_length=1)]
     section: Annotated[str, Field(min_length=1)]
     type: Type
+    allowed: list[str] | None = None
+    annotation_pattern: str | None = None
     archetypes: list[str] | None = None
+    column: Annotated[str | None, Field(min_length=1)] = None
     message: str | None = None
+    pattern: Annotated[str | None, Field(min_length=1)] = None
     severity: Severity | None = None
 
 

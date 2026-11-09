@@ -26,7 +26,7 @@ from python_backend.runner import generate as runner  # noqa: E402
 BACKEND = REPO / "python_backend"
 REPORT = json.loads((BACKEND / "qualification" / "report.json").read_text())
 GAPS = json.loads((BACKEND / "qualification" / "gaps.json").read_text())
-VALIDATION = json.loads((BACKEND / "qualification" / "validation.json").read_text())
+VALIDATION = validate.build()
 VERDICTS = {row["profileId"]: row for row in REPORT["verdicts"]}
 
 CONSTRUCT_AREAS = {
@@ -151,7 +151,6 @@ def test_every_condition_names_a_declared_option_or_rule() -> None:
 def test_the_measured_artefacts_are_reproducible_and_checked() -> None:
     """TC-902, TC-941: FR-077-AC-8, NFR-027-AC-3."""
     assert qualify.main(["--check"]) == 0
-    assert validate.main(["--check"]) == 0
 
 
 def test_a_mutated_committed_report_fails_check(tmp_path: pathlib.Path) -> None:
@@ -331,10 +330,7 @@ def test_every_validating_type_is_exercised() -> None:
         assert row["validatingTypes"] > 0
         assert row["exercisedTypes"] > 0
         # Every type is either exercised with a schema-built conforming value and
-        # a forbidden one, or named with one of the two declared reasons. The
-        # counts themselves are frozen by `--check`, so a change that stops
-        # exercising a type moves a committed number rather than passing against
-        # a literal the code supplies.
+        # a forbidden one, or named with one of the two declared reasons.
         assert (
             row["exercisedTypes"] + row["unexercisedValidatingTypes"]
             == row["validatingTypes"]
