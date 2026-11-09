@@ -54,3 +54,17 @@ scope:
   role: context_only
   excerpt: "Named instance extents, ... a flat set of unique member type references, and a single `extent` (`closed` or `open`, QSpec FR-153/AD-006) for the population as a whole"
 ```
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-004 | low | spec/tests.md maps TC-1785 to FR-143-AC-12, but tc_1785's trace attribute still names FR-143-AC-6 only, so the computed matrix binds AC-12 to the schema tests alone and the refusal half of AC-12 is untraced | crates/extraction-frontend/tests/constructs.rs:1735 |
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | 59f534c6 adds the FR-143 refusal statement and FR-143-AC-12, mapped to TC-1785 and TC-1897; no id collision with main or open PR #84 |
+| FND-002 | deferred | Not a filament-core-data change: the PR body now states item 2 is not done end to end, and PLAT-1362 (filament-core-service) owns setting constructReferences |
+| FND-003 | fixed | 59f534c6 tags every test `Trace: TC-1897, FR-143-AC-12` (matrix binds all four) and parametrizes over all six operation types |

@@ -80,9 +80,7 @@ def test_operation_types_admit_operation_expressions(name: str, slot: str) -> No
         ],
     }
     assert _errors(name, record) == _errors(name, base)
-    assert _errors(name, {**base, "operationExpressions": [{}]}) != _errors(
-        "StateMachine", base
-    )
+    assert _errors(name, {**base, "operationExpressions": [{}]}) != _errors(name, base)
 
 
 def test_operation_expression_refuses_an_unknown_slot() -> None:

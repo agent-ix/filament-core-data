@@ -112,3 +112,26 @@ scope:
   role: context_only
   excerpt: "pub(crate) fn context_for(bundle: &Bundle, document: &Document, object_type: &ObjectType) -> SemanticContext"
 ```
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-006 | medium | The negative control in `test_operation_types_admit_operation_expressions` compares each type's errors against the StateMachine baseline, so for Entity, AggregateRoot, NestedEntity and Process it holds whatever the schema does | tests/test_fixture_domain_expressions.py:83-85 |
+
+**FND-006.** `_errors(name, {**base, "operationExpressions": [{}]}) != _errors("StateMachine", base)`:
+Entity, AggregateRoot, NestedEntity and Process report `'fields' is a required property`
+for the base record and StateMachine reports `[] should be non-empty`, so the inequality
+is true for those four types even if `operationExpressions` accepted `{}`. Compare against
+`_errors(name, base)`. (Measured at head 59f534c6: the schemas do refuse `[{}]` for all
+six types, so the code is right; only the check cannot fail.)
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | 59f534c6: `unlowered_declaration` refuses `operation_expressions` and any transition `guard_expression`; tc_1785 cases added; CLI probes now refuse SM_001 and RP_001 with ARTIFACT_NOT_LOWERED, exit 1 |
+| FND-002 | fixed | 59f534c6 splits the call; tc_1326 (clippy + fmt) passes |
+| FND-003 | fixed | 59f534c6 asserts `(entry-errors: lines 33)` and `(entry-errors: lines 49)` |
+| FND-004 | fixed | 59f534c6 adds a lower_mutated PR_001 case repeating a step `consumes` id, asserting the "twice" rule |
+| FND-005 | fixed | 59f534c6 comment now reads "population table" |
