@@ -40,3 +40,11 @@ both the FR and the loader.
 | FND-001 | medium | FR-149 says "An object `pattern` SHALL be refused" with no scope, but `pattern` is typed only in the `section_body_pattern` `then` block. A `forbidden_section` or `table_column_values` rule with an object `pattern` validates (measured with Ajv). Fix: either declare `pattern` as a string at LintRuleEntry level (this also fixes SR-16490 FND-001), or scope the sentence to `section_body_pattern`. | spec/functional/FR-149-type-the-module-manifest-registry-and-traceability-keys.md:54, schema/semantic/v1/module-manifest.schema.json:877 |
 | FND-002 | low | AC-8 refuses "a `table_column_values` rule without `column` and `allowed`". The only test case omits `allowed` and keeps `column`, so a rule that is missing only `column` is never exercised. | test/module-manifest.test.ts:774 |
 | FND-003 | low | `ignored_uppercase_terms` carries `uniqueItems: true`, which neither the FR nor the loader states. quire-rs deserializes it into a BTreeSet and silently removes duplicates, so the schema refuses a manifest that the loader accepts. | schema/semantic/v1/module-manifest.schema.json:334 |
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | `pattern` is now a string at LintRuleEntry level, so an object `pattern` is refused on every rule type (Ajv: `/lint_rules/0/pattern type` for forbidden_section and table_column_values). The FR says "on every rule type", and new tests cover both variants. |
+| FND-002 | fixed | A new test refuses a table_column_values rule with `allowed` and no `column`. A section_body_pattern rule with no `pattern` is now also tested. |
+| FND-003 | fixed | `uniqueItems` was removed from `ignored_uppercase_terms`. Ajv now accepts duplicates, matching the loader's BTreeSet. |

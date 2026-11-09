@@ -878,7 +878,7 @@ computed by `quire matrix` from those trace tags.
 | TC-929 | Every generated type in a validating profile is exercised with a conforming and a non-conforming value; an unexercised type reds the gate | Integration | P0 | FR-080-AC-3 |
 | TC-930 | For each retained constraint a non-conforming value is rejected by the family's own runtime, naming the constraint | Integration | P0 | FR-080-AC-4 |
 | TC-931 | For each lost constraint, scratch generation from the corresponding probe produces a surface that accepts the forbidden value | Integration | P0 | FR-080-AC-5 |
-| TC-932 | `validation.json` records static-only and undemonstrated families as such and counts neither as runtime-covered | Unit | P0 | FR-080-AC-6 |
+| TC-932 | The validation measurement records static-only and undemonstrated families as such and counts neither as runtime-covered | Unit | P0 | FR-080-AC-6 |
 | TC-933 | With the type checker absent the gate fails with a provisioning message and does not skip | Unit | P0 | FR-080-AC-7 |
 | TC-934 | The added suites report zero skipped tests read from the run's own report, and the coverage account counts no skip | Unit | P0 | FR-080-AC-8, FR-080-CON-2 |
 | TC-935 | Removing a constraint from a probe schema produces, in a scratch directory, a surface that accepts the previously rejected value and the gate reports the difference | Integration | P0 | FR-080-AC-9 |

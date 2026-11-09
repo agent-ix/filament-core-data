@@ -57,3 +57,16 @@ Pre-existing failures, confirmed not caused by this PR:
 | --- | --- | --- | --- |
 | FND-001 | medium | Generated Python LintRuleEntry (all three profiles) has no `pattern`, `column`, `allowed` or `annotation_pattern` field, because those members are declared only under `allOf`/`if`/`then`. Parsing a rule through the Python types silently drops them. Fix: declare them as typed optional properties on LintRuleEntry and keep the `if`/`then` blocks for `required` only. | python_backend/generated/pydantic_v2_basemodel/module_manifest_schema.py:429, python_backend/generated/msgspec_struct/module_manifest_schema.py:402, schema/semantic/v1/module-manifest.schema.json:877 |
 | FND-002 | low | Pre-existing ceremony: python_backend/qualification/validation.json is a committed snapshot of type counts (`declaredTypes`, `constraintsExercised`, ...), kept in sync by `validate --check` comparing bytes. Every schema change has to regenerate it, which here is 757 lines of churn. It is not introduced by this PR and should be deleted in its own change. | python_backend/qualification/validation.json:9, python_backend/runner/validate.py:526 |
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-003 | low | Two references to the deleted `python_backend/qualification/validation.json` remain after the round-1 fix: the `_SAMPLES` comment in runner/validate.py still says that file names unexercised types, and the TC-932 row in spec/tests.md still says "`validation.json` records static-only and undemonstrated families". Both should say "the validation measurement", as FR-080 now does. | python_backend/runner/validate.py:147, spec/tests.md:881 |
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | 53b7a443 declares `pattern`, `column`, `allowed` and `annotation_pattern` as typed LintRuleEntry properties and keeps only `required` in the if/then blocks. All three generated LintRuleEntry types now carry the four fields. |
+| FND-002 | fixed | 53b7a443 deletes validation.json and the `validate --check` byte gate. The test now reads `validate.build()`, and FR-080 states the add-up invariant instead of a frozen count. |

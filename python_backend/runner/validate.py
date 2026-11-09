@@ -145,7 +145,7 @@ def _conforming_string(schema: dict[str, Any]) -> str:
 #: One value per pattern the published schemas actually use, each satisfying the
 #: pattern it is filed under. A conforming value cannot be derived from an
 #: arbitrary regular expression, so these are enumerated from the contract —
-#: `python_backend/qualification/validation.json` names any type whose pattern
+#: the validation measurement names any type whose pattern
 #: has no sample as **unexercised**, so a missing entry is reported rather than
 #: silently skipped.
 _SAMPLES: dict[str, str] = {
