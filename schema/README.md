@@ -30,8 +30,7 @@ them from `schema/semantic/v1/`.
 ## Usage
 
 This script validates a module manifest with Ajv. Run `npm install ajv` first and
-save the script as an ES module, for example `validate.mjs`. `common.schema.json` is
-loaded as well, because `module-semantic-block.schema.json` references it.
+save the script as an ES module, for example `validate.mjs`.
 
 ```js
 import Ajv2020 from "ajv/dist/2020.js";
@@ -41,7 +40,6 @@ const dir = "node_modules/@agent-ix/semantic-schema/semantic/v1";
 const load = (file) => JSON.parse(readFileSync(`${dir}/${file}`, "utf8"));
 
 const ajv = new Ajv2020({ strict: false });
-ajv.addSchema(load("common.schema.json"));
 const validate = ajv.compile(load("module-manifest.schema.json"));
 
 console.log(validate({ manifest_version: "1.0.0", name: "billing", version: "1.0.0" })); // true

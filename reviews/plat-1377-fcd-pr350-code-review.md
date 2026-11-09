@@ -50,3 +50,15 @@ What was measured, independently of the PR text:
 | Rendered SVGs (6) | examined | `render.py --check` exit 0 in both packages |
 | `package.json` `files` and `repository.directory` (both packages) | context_only | Images excluded from tarball |
 | dev-tools `docs-style` and `docs-figures` skills; tl-* READMEs | context_only | Structure and badge parity |
+
+## Dispositions
+
+Round 1, head `d224a33` (fix commit `c07644b`, plus a trailing commit that adds this file under `reviews/`). The fix commit also releases semantic-core 0.4.3 and semantic-schema 0.4.2. Version bump check: `package.json`, the `main.tsp` `@jsonSchema` root, all 37 generated schemas, and the semantic-kernel index, IR and parity goldens are updated. The test module fixtures are updated as well. `git grep 'semantic-core/0\.4\.2'` outside `reviews/` finds nothing. `generate.mjs --check` reports "up to date (37 files)", and `render.py --check` exits 0 in both packages. Both Usage snippets were re-run and print the documented output. GitHub reports `MERGEABLE`. No full gate was run, per the brief.
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-001 | fixed | All three `<picture>` embeds use absolute `https://raw.githubusercontent.com/agent-ix/filament-core-data/main/<pkg>/docs/images/...` URLs in `src` and `srcset`. The paths match files on the branch. |
+| FND-002 | still-open | The false claim is gone, but the new rationale is also wrong. It says `common.schema.json` "is loaded as well, because `module-semantic-block.schema.json` references it", yet the script never loads `module-semantic-block.schema.json`, and `module-manifest.schema.json` has no external `$ref`. With the `addSchema(load("common.schema.json"))` line removed, the script prints the same `true` / `false` / `must have required property 'manifest_version'` (measured). Delete the sentence and that line. |
+| FND-003 | fixed | The README now says the schema checks the shape and the name, and that the `Decimal` → `decimal` rule is enforced by the semantic-core reader. |
+| FND-004 | fixed | Both Usage sections say to run `npm install ajv` and save the script as an ES module (`validate.mjs`). |
+| FND-005 | fixed | The "Three tables ship beside the schemas" and "The namespace holds 37 declarations" sentences are removed. The build-from-clone step now points to Building and testing. |
