@@ -1,0 +1,556 @@
+{
+	"contractVersion": "2.0.0",
+	"canonicalization": {
+		"algorithm": "rfc8785-v1"
+	},
+	"source": {
+		"identity": "ix://test/maps/source",
+		"version": "1",
+		"dialect": "spec-bundle"
+	},
+	"package": {
+		"identity": "acme/maps",
+		"version": "1",
+		"mappingVersions": [
+			"1.0.0"
+		],
+		"profileVersions": []
+	},
+	"constructs": [
+		{
+			"kind": {
+				"module": "agent-ix/quire-model",
+				"name": "tuple_value_type"
+			},
+			"moduleVersion": "1.0.0",
+			"construct": {
+				"identity": "none",
+				"shape": "tuple",
+				"members": {
+					"positions": "required",
+					"fields": "forbidden",
+					"operations": "forbidden"
+				},
+				"references": {},
+				"rules": [],
+				"meaning": "quire.meaning.model.tuple-value-type/v1"
+			}
+		},
+		{
+			"kind": {
+				"module": "agent-ix/quire-model",
+				"name": "namespace"
+			},
+			"moduleVersion": "1.0.0",
+			"construct": {
+				"identity": "none",
+				"shape": "namespace",
+				"meaning": "quire.meaning.model.population/v1",
+				"members": {}
+			}
+		}
+	],
+	"types": [
+		{
+			"identity": "ix://acme/maps/Timer",
+			"displayName": "Timer",
+			"kind": "record",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://acme/maps/Timer/x",
+					"name": "x",
+					"typeRef": "ix://quire/native/Clock",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1,
+						"ordered": false,
+						"unique": false
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/maps/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": [
+								"ix://acme/maps/source"
+							]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/maps/Timer/n",
+					"name": "n",
+					"typeRef": "ix://quire/native/Integer",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1,
+						"ordered": false,
+						"unique": false
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/maps/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": [
+								"ix://acme/maps/source"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://acme/maps/Cfg",
+			"displayName": "Cfg",
+			"kind": "record",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://acme/maps/Cfg/a",
+					"name": "a",
+					"typeRef": "ix://quire/native/Boolean",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1,
+						"ordered": false,
+						"unique": false
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/maps/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": [
+								"ix://acme/maps/source"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://acme/maps/Small",
+			"displayName": "Small",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "integer"
+		},
+		{
+			"identity": "ix://acme/maps/Color",
+			"displayName": "Color",
+			"kind": "enum",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"variants": [
+				{
+					"identity": "ix://acme/maps/Color/Red",
+					"name": "Red",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/maps/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": [
+								"ix://acme/maps/source"
+							]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/maps/Color/Green",
+					"name": "Green",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/maps/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": [
+								"ix://acme/maps/source"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://acme/maps/Shape",
+			"displayName": "Shape",
+			"kind": "union",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"variants": [
+				{
+					"identity": "ix://acme/maps/Shape/Dot",
+					"name": "Dot",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/maps/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": [
+								"ix://acme/maps/source"
+							]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/maps/Shape/Box",
+					"name": "Box",
+					"payloadType": "ix://quire/native/Integer",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/maps/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": [
+								"ix://acme/maps/source"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://acme/maps/Pair",
+			"displayName": "Pair",
+			"kind": {
+				"module": "agent-ix/quire-model",
+				"name": "tuple_value_type"
+			},
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"positions": [
+				{
+					"identity": "ix://acme/maps/Pair/p0",
+					"typeRef": "ix://quire/native/Boolean",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/maps/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": [
+								"ix://acme/maps/source"
+							]
+						}
+					}
+				},
+				{
+					"identity": "ix://acme/maps/Pair/p1",
+					"typeRef": "ix://quire/native/Integer",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/maps/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": [
+								"ix://acme/maps/source"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://acme/maps/Key",
+			"displayName": "Key",
+			"kind": "alias",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"target": "ix://quire/native/Text"
+		},
+		{
+			"identity": "ix://acme/maps/Stopwatch",
+			"displayName": "Stopwatch",
+			"kind": "alias",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"target": "ix://quire/native/Clock"
+		},
+		{
+			"identity": "ix://acme/maps/OptText",
+			"displayName": "OptText",
+			"kind": "option",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"inner": "ix://quire/native/Text"
+		},
+		{
+			"identity": "ix://acme/maps/Texts",
+			"displayName": "Texts",
+			"kind": "sequence",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"items": "ix://quire/native/Text"
+		},
+		{
+			"identity": "ix://acme/maps/Inner",
+			"displayName": "Inner",
+			"kind": "map",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"keys": "ix://quire/native/Text",
+			"values": "ix://quire/native/Integer",
+			"bound": {
+				"lower": 0
+			}
+		},
+		{
+			"identity": "ix://acme/maps/ClockRef",
+			"displayName": "ClockRef",
+			"kind": "reference",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"target": "ix://acme/maps/Cfg"
+		},
+		{
+			"identity": "ix://acme/maps/Holder",
+			"displayName": "Holder",
+			"kind": "record",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"fields": [
+				{
+					"identity": "ix://acme/maps/Holder/m",
+					"name": "m",
+					"typeRef": "ix://acme/maps/M",
+					"multiplicity": {
+						"lower": 1,
+						"upper": 1,
+						"ordered": false,
+						"unique": false
+					},
+					"presence": "required",
+					"nullable": false,
+					"defaultKind": "none",
+					"origin": {
+						"generated": {
+							"generatorIdentity": "ix://acme/maps/case-author",
+							"generatorVersion": "1.0.0",
+							"inputIdentities": [
+								"ix://acme/maps/source"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"identity": "ix://acme/maps/M",
+			"displayName": "M",
+			"kind": "map",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"keys": "ix://quire/native/Text",
+			"values": "ix://acme/maps/Timer",
+			"bound": {
+				"lower": 0,
+				"upper": 2
+			}
+		},
+		{
+			"identity": "ix://acme/maps/Area",
+			"displayName": "Area",
+			"kind": {
+				"module": "agent-ix/quire-model",
+				"name": "namespace"
+			},
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject"
+		},
+		{
+			"identity": "ix://acme/maps/Price",
+			"displayName": "Price",
+			"kind": "scalar",
+			"roles": [],
+			"origin": {
+				"generated": {
+					"generatorIdentity": "ix://acme/maps/case-author",
+					"generatorVersion": "1.0.0",
+					"inputIdentities": [
+						"ix://acme/maps/source"
+					]
+				}
+			},
+			"constraints": [],
+			"extensions": [],
+			"unknownPolicy": "reject",
+			"scalar": "decimal",
+			"decimal": {
+				"precision": 18,
+				"scale": 2
+			}
+		}
+	],
+	"occurrences": [],
+	"extensions": []
+}

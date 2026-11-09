@@ -1080,6 +1080,12 @@
 				},
 				"inner": {
 					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"keys": {
+					"$ref": "common.schema.json#/$defs/semanticIdentity"
+				},
+				"bound": {
+					"$ref": "#/$defs/mapBound"
 				}
 			},
 			"allOf": [
@@ -1195,7 +1201,40 @@
 					},
 					"then": {
 						"type": "object",
-						"required": ["values"]
+						"required": ["values"],
+						"dependentRequired": {
+							"keys": ["bound"],
+							"bound": ["keys"]
+						},
+						"properties": {
+							"fields": false,
+							"identityFields": false,
+							"operations": false,
+							"supertypes": false,
+							"clauses": false,
+							"positions": false,
+							"variants": false,
+							"items": false,
+							"inner": false
+						}
+					}
+				},
+				{
+					"if": {
+						"type": "object",
+						"properties": {
+							"kind": {
+								"not": { "const": "map" }
+							}
+						},
+						"required": ["kind"]
+					},
+					"then": {
+						"type": "object",
+						"properties": {
+							"keys": false,
+							"bound": false
+						}
 					}
 				},
 				{
@@ -1321,6 +1360,21 @@
 					"format": "date-time"
 				},
 				"value": {}
+			},
+			"additionalProperties": false
+		},
+		"mapBound": {
+			"type": "object",
+			"required": ["lower"],
+			"properties": {
+				"lower": {
+					"type": "integer",
+					"minimum": 0
+				},
+				"upper": {
+					"type": "integer",
+					"minimum": 0
+				}
 			},
 			"additionalProperties": false
 		},

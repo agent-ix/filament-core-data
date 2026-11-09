@@ -232,6 +232,9 @@ codes! {
     INVALID_OPTION_INNER => "agent-ix.semantic-ir.INVALID_OPTION_INNER",
     UNRESOLVED_OPTION_INNER => "agent-ix.semantic-ir.UNRESOLVED_OPTION_INNER",
     INVALID_OPTION_PRESENCE => "agent-ix.semantic-ir.INVALID_OPTION_PRESENCE",
+    UNRESOLVED_MAP_KEY => "agent-ix.semantic-ir.UNRESOLVED_MAP_KEY",
+    INVALID_MAP_KEY => "agent-ix.semantic-ir.INVALID_MAP_KEY",
+    INVALID_MAP_BOUND => "agent-ix.semantic-ir.INVALID_MAP_BOUND",
     UNRESOLVED_OCCURRENCE_DEFINITION => "agent-ix.semantic-ir.UNRESOLVED_OCCURRENCE_DEFINITION",
     ALIAS_CYCLE => "agent-ix.semantic-ir.ALIAS_CYCLE",
     DEPTH_LIMIT_EXCEEDED => "agent-ix.semantic-ir.DEPTH_LIMIT_EXCEEDED",
@@ -1461,6 +1464,8 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
         }
         if kind == "map" {
             check_element(document, &declared, definition, "values", &type_at, sink);
+            map_key(document, &declared, definition, &type_at, sink);
+            map_bound(definition, &type_at, sink);
         }
         if let Some(variants) = definition.get("variants").and_then(Json::as_array) {
             let variants_at = child(&type_at, "variants");
@@ -1696,6 +1701,152 @@ fn option_inner(
                 "an option inner names a value type, not a namespace, state machine, interface or process",
             );
         }
+    }
+}
+
+/// The native value types a map key may be (QSpec FR-154 "Map types"): each
+/// has a total canonical key. `Rational`, `Decimal` and `Clock` have none.
+const KEY_NATIVES: &[&str] = &[
+    "Boolean",
+    "Integer",
+    "Float32",
+    "Float64",
+    "Text",
+    "String",
+    "UUID",
+    "Timestamp",
+    "Bytes",
+    "Duration",
+    "JsonObject",
+];
+
+/// What a map `keys` reference reaches (QSpec FR-154 "Map types").
+enum KeyEnd {
+    /// A scalar key type.
+    Scalar,
+    /// A declared type that is no scalar key type, or a native that is none.
+    Other,
+    /// Names no declared type.
+    Unresolved,
+}
+
+/// Follows `identity` through its alias chain to the type that decides
+/// whether it is a scalar key type: a native name of [`KEY_NATIVES`], a unit,
+/// a declared scalar of `integer` or `string`, an enumeration, or a union none
+/// of whose cases carries a payload. A closed alias chain is the alias rule's
+/// to report and is admitted here.
+fn key_end(document: &Document<'_>, declared: &HashSet<String>, identity: &str) -> KeyEnd {
+    let mut seen: HashSet<&str> = HashSet::new();
+    let mut at = identity;
+    loop {
+        if is_quantity_type_ref(at) {
+            return KeyEnd::Scalar;
+        }
+        if let Some(name) = at.strip_prefix(NATIVE_PREFIX) {
+            return if KEY_NATIVES.contains(&name) {
+                KeyEnd::Scalar
+            } else {
+                KeyEnd::Other
+            };
+        }
+        if !declared.contains(at) {
+            return KeyEnd::Unresolved;
+        }
+        if !seen.insert(at) {
+            return KeyEnd::Scalar;
+        }
+        let Some(definition) = document.type_of(at) else {
+            return KeyEnd::Other;
+        };
+        if document.is_alias_definition(definition) {
+            match definition.get("target").and_then(Json::as_str) {
+                Some(next) => {
+                    at = next;
+                    continue;
+                }
+                None => return KeyEnd::Scalar,
+            }
+        }
+        let payload_free = || {
+            definition
+                .get("variants")
+                .and_then(Json::as_array)
+                .is_some_and(|cases| cases.iter().all(|case| !case.has("payloadType")))
+        };
+        let scalar_key = match definition.get("kind").and_then(Json::as_str) {
+            Some("scalar") => matches!(
+                definition.get("scalar").and_then(Json::as_str),
+                Some("integer" | "string")
+            ),
+            Some("enum") => true,
+            Some("union") => payload_free(),
+            Some(_) => false,
+            None => matches!(
+                crate::constructs::shape_of(document, definition),
+                Some(Shape::Enumeration)
+            ),
+        };
+        return if scalar_key {
+            KeyEnd::Scalar
+        } else {
+            KeyEnd::Other
+        };
+    }
+}
+
+/// The key rules of QSpec FR-154 "Map types" for one map definition whose
+/// `keys` is a string identity (a non-identity is the schema's): an identity
+/// naming no declared type is `UNRESOLVED_MAP_KEY`; a type that is no scalar
+/// key type (a clock or a type holding one, a record, tuple or payload-bearing
+/// union, an option, sequence, map or reference, `Rational`, `Decimal`, a
+/// namespace, state machine, interface or process) is `INVALID_MAP_KEY`.
+/// Reports at `keys`.
+fn map_key(
+    document: &Document<'_>,
+    declared: &HashSet<String>,
+    definition: &Json,
+    type_at: &str,
+    sink: &mut Sink<'_>,
+) {
+    let Some(keys) = definition.get("keys").and_then(Json::as_str) else {
+        return;
+    };
+    let at = child(type_at, "keys");
+    match key_end(document, declared, keys) {
+        KeyEnd::Scalar => {}
+        KeyEnd::Unresolved => sink.emit(
+            at,
+            UNRESOLVED_MAP_KEY,
+            "the map key resolves to no declared type",
+        ),
+        KeyEnd::Other => sink.emit(
+            at,
+            INVALID_MAP_KEY,
+            "a map key is a scalar key type with a total canonical key",
+        ),
+    }
+}
+
+/// The bound order rule of QSpec FR-154 "Map types" for one map definition
+/// whose `bound` has the schema's shape: `lower` above `upper`, or a `lower`
+/// above `0` with no `upper`, is `INVALID_MAP_BOUND`. Reports at `bound`.
+fn map_bound(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
+    let Some(bound) = definition.get("bound") else {
+        return;
+    };
+    let Some(lower) = bound.get("lower").and_then(Json::as_i64) else {
+        return;
+    };
+    let unordered = match bound.get("upper") {
+        None => lower > 0,
+        Some(upper) => upper.as_i64().is_some_and(|upper| lower > upper),
+    };
+    if unordered {
+        sink.emit(
+            child(type_at, "bound"),
+            INVALID_MAP_BOUND,
+            "a map bound has a lower bound at most its upper bound, and a lower bound of 0 when it has no upper bound",
+        );
     }
 }
 

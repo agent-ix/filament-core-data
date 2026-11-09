@@ -407,6 +407,12 @@ type IdentityList = list[common_schema.SemanticIdentity]
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
+class MapBound:
+    lower: Annotated[int, Field(ge=0)]
+    upper: Annotated[int | None, Field(ge=0)] = None
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
 class Multiplicity:
     lower: Annotated[int, Field(ge=0)]
     ordered: bool
@@ -793,6 +799,7 @@ class TypeDefinition:
     roles: list[Role]
     unknownPolicy: common_schema.UnknownPolicy
     abstract: bool | None = None
+    bound: MapBound | None = None
     clauses: list[Clause] | None = None
     decimal: DecimalPolicy | None = None
     declaredType: common_schema.SemanticIdentity | None = None
@@ -808,6 +815,7 @@ class TypeDefinition:
     inner: common_schema.SemanticIdentity | None = None
     interfaceType: common_schema.SemanticIdentity | None = None
     items: common_schema.SemanticIdentity | None = None
+    keys: common_schema.SemanticIdentity | None = None
     members: IdentityList | None = None
     multiplicity: Multiplicity | None = None
     occurrenceField: common_schema.SemanticIdentity | None = None

@@ -130,6 +130,9 @@ with it.
 | `INVALID_OPTION_INNER` | `contracts-v1.md` "raises `INVALID_OPTION_INNER`" | An option value type (`kind` `option`) whose `inner` names a native name outside the kernel library, `ix://quire/native/Clock` or an alias of it, an option value type (directly, through an alias, or itself) or a namespace, state machine, interface or process, at `.../inner` (`rules.rs`; QSpec FR-154-AC-40). |
 | `UNRESOLVED_OPTION_INNER` | `contracts-v1.md` "`UNRESOLVED_OPTION_INNER`" | An option value type whose `inner` is a package identity naming no declared type, at `.../inner` (QSpec FR-154-AC-41). |
 | `INVALID_OPTION_PRESENCE` | `contracts-v1.md` "`INVALID_OPTION_PRESENCE`" | A field typed by an option value type (directly or through an alias) with presence `optional` and multiplicity `[1, 1]`, which would be `Option<Option<T>>`, at `.../presence` (QSpec FR-154-AC-40). |
+| `UNRESOLVED_MAP_KEY` | `contracts-v1.md` "`UNRESOLVED_MAP_KEY`" | A map type (`kind` `map`) whose `keys` is a package identity naming no declared type, at `.../keys` (`rules.rs`; QSpec FR-154-AC-48, missing_declaration/missing-name). |
+| `INVALID_MAP_KEY` | `contracts-v1.md` "`INVALID_MAP_KEY`" | A map type whose `keys` is no scalar key type (a clock, `Rational`, `Decimal`, a record, tuple, option, sequence, map, reference, a union with a payload, a namespace, state machine, interface or process), directly or through an alias, at `.../keys` (`rules.rs`; QSpec FR-154-AC-48, ill_typed/operator-ineligible). |
+| `INVALID_MAP_BOUND` | `contracts-v1.md` "`INVALID_MAP_BOUND`" | A map type whose `bound` has `lower` above `upper`, or `lower` above `0` and no `upper`, at `.../bound` (`rules.rs`; QSpec FR-154-AC-48, invalid_model_binding/unpreserved-model-meaning). |
 
 ### The applicability table
 
