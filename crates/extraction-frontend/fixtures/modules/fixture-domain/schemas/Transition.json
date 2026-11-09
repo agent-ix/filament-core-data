@@ -4,22 +4,22 @@
 	"type": "object",
 	"properties": {
 		"from": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/Identifier.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/Identifier.json"
 		},
 		"to": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/Identifier.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/Identifier.json"
 		},
 		"trigger": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/Identifier.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/Identifier.json"
 		},
 		"guard": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/ClauseRef.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/ClauseRef.json"
 		},
 		"guardExpression": {
 			"$ref": "https://schemas.agent-ix.org/fixture/domain/0.1.0/Expression.json"
 		},
 		"emits": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/SemanticId.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/SemanticId.json"
 		}
 	},
 	"required": ["from", "to", "trigger"],

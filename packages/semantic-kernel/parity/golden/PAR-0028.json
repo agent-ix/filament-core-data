@@ -26,7 +26,7 @@
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/MinConstraint.json",
 			"locator": "#/properties/value/$ref",
-			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.3.3/MinConstraintValue.json\""
+			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.4.0/MinConstraintValue.json\""
 		}
 	],
 	"provenance": {
