@@ -1087,6 +1087,8 @@ const TYPE_MEMBERS: &[&str] = &[
     "featureOrder",
     "positions",
     "inner",
+    "keys",
+    "bound",
 ];
 const TYPE_REQUIRED: &[&str] = &[
     "identity",
@@ -1194,6 +1196,7 @@ fn type_definition(definition: &Json, at: &str, table: &mut ConstructTable<'_>, 
         }
     }
     option_schema(definition, at, kind, f);
+    map_schema(definition, at, kind, f);
     match construct {
         Some((module, name)) => match table.position(module, name) {
             Some(found) => {
@@ -1480,6 +1483,73 @@ fn option_schema(definition: &Json, at: &str, kind: &str, f: &mut Findings) {
             &child(at, "constraints"),
             "an option type carries no constraints",
         );
+    }
+}
+
+/// The members a map type never carries (QSpec FR-154 "Map types"): it has
+/// `keys`, `values` and `bound` and nothing another kind declares. `target`
+/// is refused by the construct-member rule that every core kind shares.
+const MAP_FOREIGN_MEMBERS: &[&str] = &[
+    "fields",
+    "identityFields",
+    "operations",
+    "supertypes",
+    "clauses",
+    "positions",
+    "variants",
+    "items",
+    "inner",
+];
+
+/// The shape of a map type's `keys` and `bound` (QSpec FR-154 "Map types",
+/// FR-154-AC-48). Both are optional on a map, so a map written before them is
+/// unchanged, but one without the other is a map with no default to fall back
+/// on and is refused at the type. A key that names no type, or no scalar key
+/// type, and an unordered bound are decided by the rule layer, not here.
+fn map_schema(definition: &Json, at: &str, kind: &str, f: &mut Findings) {
+    if kind != "map" {
+        for name in ["keys", "bound"] {
+            if definition.has(name) {
+                f.push(
+                    &child(at, name),
+                    format!("{name} is carried by a map type only"),
+                );
+            }
+        }
+        return;
+    }
+    for name in MAP_FOREIGN_MEMBERS {
+        if definition.has(name) {
+            f.push(
+                &child(at, name),
+                format!("a map type carries keys, values and bound, not {name}"),
+            );
+        }
+    }
+    for (present, absent) in [("keys", "bound"), ("bound", "keys")] {
+        if definition.has(present) && !definition.has(absent) {
+            f.push(at, format!("a map type that declares {present} declares {absent}"));
+        }
+    }
+    expect_shape(
+        definition.get("keys"),
+        &child(at, "keys"),
+        is_semantic_identity,
+        "a map key is one type identity ix://<owner>/<name>",
+        f,
+    );
+    if let Some(bound) = definition.get("bound") {
+        let bound_at = child(at, "bound");
+        if expect_object(bound, &bound_at, "a map bound", f) {
+            require_members(bound, &bound_at, &["lower"], f);
+            forbid_extra(bound, &bound_at, &["lower", "upper"], f);
+            for (name, what) in [
+                ("lower", "a lower bound is a non-negative integer"),
+                ("upper", "an upper bound is a non-negative integer"),
+            ] {
+                expect_integer(bound.get(name), &child(&bound_at, name), 0, what, f);
+            }
+        }
     }
 }
 
