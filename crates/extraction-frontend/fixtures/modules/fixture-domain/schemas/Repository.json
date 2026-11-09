@@ -6,7 +6,7 @@
 		"operations": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/OperationDecl.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.2/OperationDecl.json"
 			},
 			"minItems": 1
 		},
@@ -19,7 +19,7 @@
 		"persists": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/SemanticId.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.2/SemanticId.json"
 			}
 		}
 	},

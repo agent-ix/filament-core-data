@@ -1,19 +1,19 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.1/TypeRef.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.2/TypeRef.json",
 	"type": "object",
 	"properties": {
 		"target": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/TypeRefTarget.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.2/TypeRefTarget.json"
 		},
 		"multiplicity": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/Multiplicity.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.2/Multiplicity.json"
 		},
 		"unit": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/UnitSymbol.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.2/UnitSymbol.json"
 		},
 		"decimal": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.1/DecimalPolicy.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.2/DecimalPolicy.json"
 		}
 	},
 	"required": ["target"],
