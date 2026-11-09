@@ -1,0 +1,20 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/domain/0.1.0/OperationExpression.json",
+	"type": "object",
+	"properties": {
+		"operation": {
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/Identifier.json"
+		},
+		"slot": {
+			"enum": ["pre", "post"]
+		},
+		"expression": {
+			"$ref": "https://schemas.agent-ix.org/fixture/domain/0.1.0/Expression.json"
+		}
+	},
+	"required": ["operation", "slot", "expression"],
+	"unevaluatedProperties": {
+		"not": {}
+	}
+}

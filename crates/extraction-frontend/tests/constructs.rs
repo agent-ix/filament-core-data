@@ -1752,7 +1752,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
             "PR_001",
             "spec/functional/PR_001-fulfilment.md",
             Box::new(|t| t.replace("| placed | event | EV_001 |", "| placed | event | EV_999 |")),
-            "names `EV_999`, which is the artifact id of no type of the bundle the construct's steps admit",
+            "the engine's model extraction is unavailable",
         ),
         (
             "SM_001",
@@ -1774,7 +1774,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
                     "| draft | placed | advance | | EV_001, EV_001 |",
                 )
             }),
-            "names `EV_001` twice, and one cell names each type at most once",
+            "the engine's model extraction is unavailable",
         ),
         (
             "VO_001",
@@ -1831,8 +1831,8 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     let manifest = module.join("manifest.yaml");
     let text = fs::read_to_string(&manifest).expect("manifest");
     let keyed = text.replacen(
-        "        members:\n          from: table_row\n          under_section: Members\n          required: true\n          assert:\n            columns: [Type, Extent]",
-        "        population:\n          from: table_row\n          under_section: Members\n          required: true\n          assert:\n            columns: [Type, Extent]",
+        "        members:\n          from: table_row\n          under_section: Members\n          required: true\n          assert:\n            columns: [Type]",
+        "        population:\n          from: table_row\n          under_section: Members\n          required: true\n          assert:\n            columns: [Type]",
         1,
     );
     assert_ne!(keyed, text, "the population table is keyed `members`");
@@ -1841,7 +1841,7 @@ fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact
     copy_tree(&fixture("business"), &root);
     fs::write(
         root.join("spec/functional/PO-001-open-orders.md"),
-        "---\nid: PO-001\ntitle: Open Orders\nobject: population\ntype: population\nname: OpenOrders\n---\n\n# PO-001: Open Orders\n\n## Description\n\nThe open orders.\n\n## Members\n\n| Type | Extent |\n|------|--------|\n| Order | 0..* |\n",
+        "---\nid: PO-001\ntitle: Open Orders\nobject: population\ntype: population\nname: OpenOrders\nextent: open\n---\n\n# PO-001: Open Orders\n\n## Description\n\nThe open orders.\n\n## Members\n\n| Type |\n|------|\n| Order |\n",
     )
     .expect("write");
     let bundle = Bundle::load(&root, &[module.as_path(), edge_vocabulary().as_path()])

@@ -1032,7 +1032,7 @@ fn lift_transitions(
             }
         }
         let emits = references
-            .identities(Member::Transitions, decl.emits.as_deref(), ctx, &site)
+            .identities(Member::Transitions, decl.emits.as_ref().map(std::slice::from_ref), ctx, &site)
             .map_err(|rule| refuse(ctx, object, &rule))?;
         let identities = (
             ctx.package.state_identity(ctx.id, &decl.from),

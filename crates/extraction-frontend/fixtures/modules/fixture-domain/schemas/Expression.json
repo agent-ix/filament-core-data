@@ -1,0 +1,21 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://schemas.agent-ix.org/fixture/domain/0.1.0/Expression.json",
+	"type": "object",
+	"properties": {
+		"kind": {
+			"const": "expression"
+		},
+		"text": {
+			"type": "string",
+			"minLength": 1
+		},
+		"sourceSpan": {
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/SourceLocus.json"
+		}
+	},
+	"required": ["kind", "text", "sourceSpan"],
+	"unevaluatedProperties": {
+		"not": {}
+	}
+}
