@@ -678,6 +678,10 @@ const fn has_source_table(member: Member, model: &ModelDeclarations) -> Option<b
 ///
 /// An unavailable `model` is refused too: the engine failed a declared model
 /// feature, and a construct is never lowered from part of its declarations.
+/// So is an inline expression (a transition `Guard` or an operation `Pre:`/
+/// `Post:` that is not a clause id): the engine carries it opaquely in a
+/// sibling key no construct member lowers, and dropping it would change the
+/// meaning of the lifted type.
 pub(crate) fn unlowered_declaration(
     declaration: Option<&Declaration>,
     extraction: &SemanticExtraction,
@@ -708,7 +712,27 @@ pub(crate) fn unlowered_declaration(
                 .to_string(),
         );
     }
+    if extraction
+        .operation_expressions
+        .as_deref()
+        .is_some_and(|e| !e.is_empty())
+    {
+        return Some(
+            "it declares an inline expression in an operation Pre: or Post: line, which this frontend does not lower"
+                .to_string(),
+        );
+    }
     let model = extraction.model.as_ref()?;
+    if model
+        .transitions
+        .as_deref()
+        .is_some_and(|t| t.iter().any(|t| t.guard_expression.is_some()))
+    {
+        return Some(
+            "it declares an inline expression as a transition Guard, which this frontend does not lower"
+                .to_string(),
+        );
+    }
     unlowered_model_feature(declaration, model)
         .map(|feature| format!("it declares {feature}, which no member of the construct lowers"))
 }
@@ -1032,7 +1056,12 @@ fn lift_transitions(
             }
         }
         let emits = references
-            .identities(Member::Transitions, decl.emits.as_ref().map(std::slice::from_ref), ctx, &site)
+            .identities(
+                Member::Transitions,
+                decl.emits.as_ref().map(std::slice::from_ref),
+                ctx,
+                &site,
+            )
             .map_err(|rule| refuse(ctx, object, &rule))?;
         let identities = (
             ctx.package.state_identity(ctx.id, &decl.from),

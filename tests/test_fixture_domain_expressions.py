@@ -48,16 +48,30 @@ TRANSITION = {"from": "Draft", "to": "Placed", "trigger": "place"}
 
 
 def test_transition_admits_a_guard_expression() -> None:
+    """Trace: TC-1897, FR-143-AC-12."""
     assert _errors("Transition", {**TRANSITION, "guardExpression": EXPRESSION}) == []
 
 
 def test_transition_refuses_an_expression_of_another_kind() -> None:
+    """Trace: TC-1897, FR-143-AC-12."""
     bad = {**EXPRESSION, "kind": "clause"}
     assert _errors("Transition", {**TRANSITION, "guardExpression": bad}) != []
 
 
+OPERATION_TYPES = [
+    "Entity",
+    "AggregateRoot",
+    "NestedEntity",
+    "Process",
+    "StateMachine",
+    "Repository",
+]
+
+
+@pytest.mark.parametrize("name", OPERATION_TYPES)
 @pytest.mark.parametrize("slot", ["pre", "post"])
-def test_state_machine_admits_operation_expressions(slot: str) -> None:
+def test_operation_types_admit_operation_expressions(name: str, slot: str) -> None:
+    """Trace: TC-1897, FR-143-AC-12."""
     base = {"operations": []}
     record = {
         **base,
@@ -65,12 +79,13 @@ def test_state_machine_admits_operation_expressions(slot: str) -> None:
             {"operation": "place", "slot": slot, "expression": EXPRESSION}
         ],
     }
-    assert _errors("StateMachine", record) == _errors("StateMachine", base)
-    assert _errors("StateMachine", {**base, "operationExpressions": [{}]}) != _errors(
+    assert _errors(name, record) == _errors(name, base)
+    assert _errors(name, {**base, "operationExpressions": [{}]}) != _errors(
         "StateMachine", base
     )
 
 
 def test_operation_expression_refuses_an_unknown_slot() -> None:
+    """Trace: TC-1897, FR-143-AC-12."""
     entry = {"operation": "place", "slot": "during", "expression": EXPRESSION}
     assert _errors("OperationExpression", entry) != []
