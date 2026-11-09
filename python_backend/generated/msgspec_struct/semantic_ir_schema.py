@@ -405,7 +405,7 @@ class StepKind(Enum):
     wait = 'wait'
 
 
-class Direction1(Enum):
+class Direction2(Enum):
     in_ = 'in'
     out = 'out'
     inout = 'inout'
@@ -686,7 +686,7 @@ class TypeDefinition(Struct):
     clauses: list[Clause] | UnsetType = UNSET
     decimal: DecimalPolicy | UnsetType = UNSET
     declaredType: common_schema.SemanticIdentity | UnsetType = UNSET
-    direction: Direction1 | UnsetType = UNSET
+    direction: Direction2 | UnsetType = UNSET
     featureOrder: (
         Annotated[list[common_schema.SemanticIdentity], Meta(min_length=1)] | UnsetType
     ) = UNSET

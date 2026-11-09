@@ -1122,7 +1122,15 @@
 						"type": "object",
 						"properties": {
 							"kind": {
-								"enum": ["scalar", "record", "enum", "union", "sequence", "map", "option"]
+								"enum": [
+									"scalar",
+									"record",
+									"enum",
+									"union",
+									"sequence",
+									"map",
+									"option"
+								]
 							}
 						},
 						"required": ["kind"]

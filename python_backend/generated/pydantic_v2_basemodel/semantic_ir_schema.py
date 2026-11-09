@@ -655,7 +655,7 @@ class StepKind(Enum):
     wait = 'wait'
 
 
-class Direction1(Enum):
+class Direction2(Enum):
     in_ = 'in'
     out = 'out'
     inout = 'inout'
@@ -1016,7 +1016,7 @@ class TypeDefinition(BaseModel):
     constraints: list[Constraint]
     decimal: DecimalPolicy | None = None
     declaredType: common_schema.SemanticIdentity | None = None
-    direction: Direction1 | None = None
+    direction: Direction2 | None = None
     displayName: Annotated[str, Field(min_length=1)]
     extensions: list[common_schema.Extension]
     featureOrder: Annotated[
