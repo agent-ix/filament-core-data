@@ -10,13 +10,11 @@ relation, operation, clause reference and enum value is, and the closed set of 1
 kernel scalars a declaration can end in.
 
 You can import the namespace into your own TypeSpec, or validate declarations as
-JSON with the generated schemas and no build step. Three tables ship beside the
-schemas: the declaration inventory, the kernel scalar representations and the
-lowering of each grammar property to the semantic IR.
+JSON with the generated schemas and no build step.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.svg">
-  <img alt="main.tsp, the TypeSpec source for the AgentIx.Semantic.Core namespace, compiles with the @typespec/json-schema emitter into 37 JSON Schema documents under generated/json-schema/. A JSON Schema validator checks a field declaration against FieldDecl.json and answers true or false. Three tables ship beside them: inventory.json, kernel-scalars.json (11 scalars) and lowering.json (62 rows)." src="docs/images/hero-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/agent-ix/filament-core-data/main/packages/semantic-core/docs/images/hero-dark.svg">
+  <img alt="main.tsp, the TypeSpec source for the AgentIx.Semantic.Core namespace, compiles with the @typespec/json-schema emitter into 37 JSON Schema documents under generated/json-schema/. A JSON Schema validator checks a field declaration against FieldDecl.json and answers true or false. Three tables ship beside them: inventory.json, kernel-scalars.json (11 scalars) and lowering.json (62 rows)." src="https://raw.githubusercontent.com/agent-ix/filament-core-data/main/packages/semantic-core/docs/images/hero-light.svg">
 </picture>
 
 ## Getting started
@@ -28,12 +26,8 @@ npm install @agent-ix/semantic-core
 `@typespec/compiler` and `@typespec/json-schema` (both 1.15.0) are peer dependencies.
 You need them only to compile `main.tsp`; the generated JSON Schema files need no build step.
 
-To build from a clone of [filament-core-data](https://github.com/agent-ix/filament-core-data):
-
-```sh
-pnpm install
-node packages/semantic-core/scripts/generate.mjs
-```
+To build from a clone of [filament-core-data](https://github.com/agent-ix/filament-core-data),
+run `pnpm install`, then the targets under Building and testing.
 
 ## Usage
 
@@ -49,8 +43,11 @@ model Invoice {
 }
 ```
 
-This script validates a field declaration with Ajv against `FieldDecl.json`.
-A `Decimal` field needs a `decimal` policy, and the name must be an identifier.
+This script validates a field declaration with Ajv against `FieldDecl.json`. Run
+`npm install ajv` first and save the script as an ES module, for example `validate.mjs`.
+The schema checks the shape and the name, which must be an identifier. Rules that
+JSON Schema cannot express, such as a `Decimal` field needing a `decimal` policy, are
+enforced by the semantic-core reader.
 
 ```js
 import Ajv2020 from "ajv/dist/2020.js";
@@ -61,7 +58,7 @@ const ajv = new Ajv2020({ strict: false });
 for (const file of readdirSync(dir)) {
   ajv.addSchema(JSON.parse(readFileSync(`${dir}/${file}`, "utf8")));
 }
-const validate = ajv.getSchema("https://schemas.agent-ix.org/semantic-core/0.4.2/FieldDecl.json");
+const validate = ajv.getSchema("https://schemas.agent-ix.org/semantic-core/0.4.3/FieldDecl.json");
 
 const field = {
   name: "amount",
@@ -77,7 +74,7 @@ console.log(validate(field)); // true
 console.log(validate({ name: "1bad", type: field.type })); // false, at /name
 ```
 
-Replace `0.4.2` in the `$id` with the installed package version.
+Replace `0.4.3` in the `$id` with the installed package version.
 
 ## Reference
 
@@ -89,11 +86,9 @@ Replace `0.4.2` in the `$id` with the installed package version.
 | `kernel-scalars.json` | For each kernel scalar: its IR scalar, bounds, serialization and whether a unit is allowed. |
 | `lowering.json` | Each grammar property mapped to its IR node property. |
 
-The namespace holds 37 declarations, and each has a generated schema.
-
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/inventory-dark.svg">
-  <img alt="The AgentIx.Semantic.Core namespace declares 21 models, 1 union, 6 wire unions, 4 enums, 5 scalars, 37 in all, and each one has a generated JSON Schema document." src="docs/images/inventory-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/agent-ix/filament-core-data/main/packages/semantic-core/docs/images/inventory-dark.svg">
+  <img alt="The AgentIx.Semantic.Core namespace declares 21 models, 1 union, 6 wire unions, 4 enums, 5 scalars, 37 in all, and each one has a generated JSON Schema document." src="https://raw.githubusercontent.com/agent-ix/filament-core-data/main/packages/semantic-core/docs/images/inventory-light.svg">
 </picture>
 
 | Group | Members |

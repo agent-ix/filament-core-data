@@ -13,8 +13,8 @@ document before you use it. The package is data only, with no build step and no 
 dependency.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/hero-dark.svg">
-  <img alt="A module manifest JSON document goes to a draft 2020-12 JSON Schema validator loaded with module-manifest.schema.json, one of 13 schema documents in semantic/v1/. The validator answers true when the document has the required properties manifest_version, name, version, and false with the missing property named when it does not." src="docs/images/hero-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/agent-ix/filament-core-data/main/schema/docs/images/hero-dark.svg">
+  <img alt="A module manifest JSON document goes to a draft 2020-12 JSON Schema validator loaded with module-manifest.schema.json, one of 13 schema documents in semantic/v1/. The validator answers true when the document has the required properties manifest_version, name, version, and false with the missing property named when it does not." src="https://raw.githubusercontent.com/agent-ix/filament-core-data/main/schema/docs/images/hero-light.svg">
 </picture>
 
 ## Getting started
@@ -29,8 +29,9 @@ them from `schema/semantic/v1/`.
 
 ## Usage
 
-This script validates a module manifest with Ajv. `module-manifest.schema.json`
-references `common.schema.json`, so both are loaded.
+This script validates a module manifest with Ajv. Run `npm install ajv` first and
+save the script as an ES module, for example `validate.mjs`. `common.schema.json` is
+loaded as well, because `module-semantic-block.schema.json` references it.
 
 ```js
 import Ajv2020 from "ajv/dist/2020.js";

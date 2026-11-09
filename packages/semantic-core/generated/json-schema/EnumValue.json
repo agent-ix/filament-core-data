@@ -1,10 +1,10 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.2/EnumValue.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.3/EnumValue.json",
 	"type": "object",
 	"properties": {
 		"value": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.2/EnumValueName.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/EnumValueName.json"
 		},
 		"doc": {
 			"type": "string"

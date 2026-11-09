@@ -14,7 +14,7 @@
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/EnumValue.json",
 			"locator": "#/properties/value/$ref",
-			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.4.2/EnumValueName.json\""
+			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.4.3/EnumValueName.json\""
 		}
 	],
 	"provenance": { "authoredFor": "FR-090", "blessedFromRun": false }

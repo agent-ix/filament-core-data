@@ -1,6 +1,6 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.2/ExclusiveMaxConstraint.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.3/ExclusiveMaxConstraint.json",
 	"type": "object",
 	"properties": {
 		"keyword": {
@@ -8,7 +8,7 @@
 			"const": "exclusiveMax"
 		},
 		"value": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.2/ExclusiveMaxConstraintValue.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/ExclusiveMaxConstraintValue.json"
 		}
 	},
 	"required": ["keyword", "value"],
