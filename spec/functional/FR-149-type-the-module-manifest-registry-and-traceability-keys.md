@@ -23,9 +23,9 @@ The schema shapes below mirror the typed readers in quire-rs
 (`src/vocab.rs`, `src/traceability.rs`, `src/grammar/mod.rs`,
 `src/loader/manifest.rs`); where quire-rs ignores an unknown member the schema
 does too, and where it denies one the schema does. Relations between members of
-one declaration (a trace target named by a reference, a marker named by a legacy
-form, a regular expression's validity, one status value in one class) are
-checked by the consumer at module load and are not restated here.
+one declaration (a trace target named by a reference, a regular expression's
+validity, one status value in one class) are checked by the consumer at module
+load and are not restated here.
 
 ## Inputs
 
@@ -43,9 +43,9 @@ checked by the consumer at module load and are not restated here.
 - `property_idioms` SHALL be a map from phrase to `{definition, shape, category?}`, where `shape` is one of `round-trip`, `idempotence`, `ordering`, `invariant`, `error-case`, `lifecycle`, `concurrency`, `universal`, `example`, `unclassified`.
 - `grammar_severity` SHALL be a map from a `<grammar>:<check>` key (two non-empty halves, no whitespace, exactly one colon) to `off`, `warning` or `error`.
 - `verification_catalog` SHALL be a map from method id to an entry with non-blank `name`, `class` and `definition` and optional `evidence_kind`, `cost`, `applicability` (rule name to a list of strings) and `tooling` (a list of strings), and SHALL refuse any other member.
-- `traceability` SHALL be the declarative traceability model: `exclude`, `source_exclude`, `trace_targets`, `document_references`, `status`, `trace_tags` (`markers`, `legacy`, `implements`), `vocabularies` (`test_type`, `test_type_column`, `no_source_symbol`, `retired`), `obligations`, `required_relations`, `acyclic_edges` and `vocabulary_coverage`, each entry with the required and optional members the quire-rs reader declares, and SHALL refuse an undeclared member at any level of it.
+- `traceability` SHALL be the declarative traceability model: `exclude`, `source_exclude`, `trace_targets`, `document_references`, `status`, `trace_tags` (`markers`, `implements`), `vocabularies` (`test_type`, `test_type_column`, `no_source_symbol`, `retired`), `obligations`, `required_relations`, `acyclic_edges` and `vocabulary_coverage`, each entry with the required and optional members the quire-rs reader declares, and SHALL refuse an undeclared member at any level of it.
 - A trace target SHALL declare `from` as `table_row` (the default), `list_item` or `heading`. A `table_row` target SHALL declare `id_column` and no `pattern`; a `list_item` or `heading` target SHALL declare `pattern` and no `id_column`.
-- A `trace_tags.implements` form SHALL accept `syntax: rust_attribute` for language `rust` only; a `markers` or `legacy` form SHALL refuse `syntax`.
+- A `trace_tags.implements` form SHALL accept `syntax: rust_attribute` for language `rust` only; a `markers` form SHALL refuse `syntax`.
 - An obligation SHALL NOT name both `target` and `archetype`, and SHALL name one of them; an obligation naming `archetype` SHALL also name `section` and `id_format`. A combinatorial `strength` SHALL be at least 1.
 - A required relation SHALL declare a non-empty `edges` and a `direction` of `outgoing`, `incoming` or `either`.
 

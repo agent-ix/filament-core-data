@@ -1048,7 +1048,7 @@
 		},
 		"TraceabilityModel": {
 			"type": "object",
-			"description": "Declarative traceability model (quire FR-050): which documents mint trace ids, which columns reference them, the status vocabulary and the trace-tag grammar (quire-rs traceability.rs TraceabilityModel, deny_unknown_fields). Cross-references (a target naming a declared trace target, a rewrite_to naming a declared marker, regex validity) are checked by the consumer at module load, not by this schema.",
+			"description": "Declarative traceability model (quire FR-050): which documents mint trace ids, which columns reference them, the status vocabulary and the trace-tag grammar (quire-rs traceability.rs TraceabilityModel, deny_unknown_fields). Cross-references (a target naming a declared trace target, regex validity) are checked by the consumer at module load, not by this schema.",
 			"additionalProperties": false,
 			"properties": {
 				"exclude": {
@@ -1322,12 +1322,6 @@
 						"$ref": "#/$defs/TraceMarkerForm"
 					}
 				},
-				"legacy": {
-					"type": "array",
-					"items": {
-						"$ref": "#/$defs/TraceLegacyForm"
-					}
-				},
 				"implements": {
 					"type": "array",
 					"items": {
@@ -1354,31 +1348,6 @@
 					"minLength": 1
 				},
 				"template": {
-					"type": "string"
-				}
-			}
-		},
-		"TraceLegacyForm": {
-			"type": "object",
-			"description": "A legacy trace-marker form; rewrite_to names a declared marker.",
-			"required": ["name", "pattern"],
-			"additionalProperties": false,
-			"properties": {
-				"name": {
-					"type": "string",
-					"minLength": 1
-				},
-				"language": {
-					"enum": ["rust", "python", "typescript", "ts"]
-				},
-				"pattern": {
-					"type": "string",
-					"minLength": 1
-				},
-				"id_format": {
-					"type": "string"
-				},
-				"rewrite_to": {
 					"type": "string"
 				}
 			}
@@ -1604,7 +1573,7 @@
 		},
 		"TraceImplementsForm": {
 			"type": "object",
-			"description": "A trace_tags.implements form: a marker form that may also declare `syntax`. `markers` and `legacy` forms cannot.",
+			"description": "A trace_tags.implements form: a marker form that may also declare `syntax`. `markers` forms cannot.",
 			"required": ["name", "language", "pattern"],
 			"additionalProperties": false,
 			"properties": {
