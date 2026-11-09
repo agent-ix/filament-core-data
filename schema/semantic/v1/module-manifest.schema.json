@@ -221,6 +221,61 @@
 					"description": "Module-relative path to the quoin semantic sweep report that justifies legacy_forms: error."
 				}
 			}
+		},
+		"lexicon": {
+			"type": "object",
+			"description": "Mergeable concrete-term lexicon (quire FR-043): term -> {definition, category?}. Merged first-wins; the EARS vague-response check accepts the keys as verifiable objects.",
+			"additionalProperties": {
+				"$ref": "#/$defs/VocabularyTerm"
+			}
+		},
+		"observable_verbs": {
+			"type": "object",
+			"description": "Mergeable observable-result verb registry (quire FR-047): verb -> {definition, category?}. Layered over the engine defaults.",
+			"additionalProperties": {
+				"$ref": "#/$defs/VocabularyTerm"
+			}
+		},
+		"vacuous_predicates": {
+			"type": "object",
+			"description": "Mergeable vacuous-predicate registry (quire FR-047, CR-014): predicate -> {definition, category?}.",
+			"additionalProperties": {
+				"$ref": "#/$defs/VocabularyTerm"
+			}
+		},
+		"ambiguity_terms": {
+			"type": "object",
+			"description": "Mergeable ambiguity lexicon (quire FR-056): term -> {definition, category?}.",
+			"additionalProperties": {
+				"$ref": "#/$defs/AmbiguityTermEntry"
+			}
+		},
+		"property_idioms": {
+			"type": "object",
+			"description": "Mergeable property-idiom registry (quire FR-052): phrase -> {definition, shape, category?}.",
+			"additionalProperties": {
+				"$ref": "#/$defs/PropertyIdiomEntry"
+			}
+		},
+		"verification_catalog": {
+			"type": "object",
+			"description": "Mergeable verification-method catalog (quire FR-054): method id -> {name, class, definition, evidence_kind?, cost?, applicability?, tooling?}.",
+			"additionalProperties": {
+				"$ref": "#/$defs/VerificationMethodEntry"
+			}
+		},
+		"grammar_severity": {
+			"type": "object",
+			"description": "Mergeable per-check grammar severity registry (quire FR-048): `<grammar>:<check>` -> off | warning | error. Each key is exactly two non-empty, whitespace-free halves around one colon.",
+			"propertyNames": {
+				"pattern": "^[^\\s:]+:[^\\s:]+$"
+			},
+			"additionalProperties": {
+				"enum": ["off", "warning", "error"]
+			}
+		},
+		"traceability": {
+			"$ref": "#/$defs/TraceabilityModel"
 		}
 	},
 	"$defs": {
@@ -289,8 +344,34 @@
 					"description": "Locator DSL (FR-035 CR-002). Each locator MAY carry an `assert` facet driving structural validation in quire-rs validate_document. Supersedes required_sections."
 				},
 				"data_schema": {
-					"type": "object",
-					"description": "JSON Schema validating the EXTRACTED record (distinct from frontmatter_schema_ref, which validates frontmatter)."
+					"description": "JSON Schema validating the EXTRACTED record (distinct from frontmatter_schema_ref, which validates frontmatter). Same two forms as ObjectTypeEntry.data_schema (quoin FR-073): an inline schema object, or {schema: <module-relative .json path>}; an object carrying `schema` or `digest` alongside any other key is ambiguous and rejected.",
+					"oneOf": [
+						{
+							"type": "object",
+							"not": {
+								"anyOf": [
+									{
+										"required": ["schema"]
+									},
+									{
+										"required": ["digest"]
+									}
+								]
+							}
+						},
+						{
+							"type": "object",
+							"required": ["schema"],
+							"additionalProperties": false,
+							"properties": {
+								"schema": {
+									"type": "string",
+									"minLength": 1,
+									"pattern": "^(?!/)(?!.*\\.\\.)[^\\u0000]+\\.json$"
+								}
+							}
+						}
+					]
 				},
 				"defaults": {
 					"type": "object",
@@ -700,6 +781,692 @@
 						}
 					},
 					"additionalProperties": true
+				}
+			}
+		},
+		"VocabularyTerm": {
+			"description": "One entry of a mergeable concrete-vocabulary registry (quire-rs vocab.rs LexiconTermDef / ObservableVerbDef / VacuousPredicateDef): the map key is the term, `definition` is documentation, `category` an optional grouping tag. Unknown members are ignored by the consumer.",
+			"type": "object",
+			"required": ["definition"],
+			"properties": {
+				"definition": {
+					"type": "string"
+				},
+				"category": {
+					"type": "string"
+				}
+			}
+		},
+		"AmbiguityTermEntry": {
+			"description": "One ambiguity_terms entry (quire-rs AmbiguityTermDef, deny_unknown_fields).",
+			"additionalProperties": false,
+			"type": "object",
+			"required": ["definition"],
+			"properties": {
+				"definition": {
+					"type": "string"
+				},
+				"category": {
+					"type": "string"
+				}
+			}
+		},
+		"PropertyIdiomEntry": {
+			"description": "One property_idioms entry (quire-rs PropertyIdiomDef): the map key is the idiom phrase, `shape` the property shape it indicates. A label booster only.",
+			"type": "object",
+			"required": ["definition", "shape"],
+			"properties": {
+				"definition": {
+					"type": "string"
+				},
+				"shape": {
+					"enum": [
+						"round-trip",
+						"idempotence",
+						"ordering",
+						"invariant",
+						"error-case",
+						"lifecycle",
+						"concurrency",
+						"universal",
+						"example",
+						"unclassified"
+					]
+				},
+				"category": {
+					"type": "string"
+				}
+			}
+		},
+		"VerificationMethodEntry": {
+			"description": "One verification_catalog entry (quire-rs VerificationMethodDef, deny_unknown_fields). `name`, `class` and `definition` must be non-blank; `class`, `evidence_kind` and `cost` are free strings the engine never interprets.",
+			"type": "object",
+			"required": ["name", "class", "definition"],
+			"additionalProperties": false,
+			"properties": {
+				"name": {
+					"type": "string",
+					"pattern": "\\S"
+				},
+				"class": {
+					"type": "string",
+					"pattern": "\\S"
+				},
+				"definition": {
+					"type": "string",
+					"pattern": "\\S"
+				},
+				"evidence_kind": {
+					"type": "string"
+				},
+				"cost": {
+					"type": "string"
+				},
+				"applicability": {
+					"type": "object",
+					"description": "Rule name -> values that trigger advising this method.",
+					"additionalProperties": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"tooling": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		"TraceabilityModel": {
+			"type": "object",
+			"description": "Declarative traceability model (quire FR-050): which documents mint trace ids, which columns reference them, the status vocabulary and the trace-tag grammar (quire-rs traceability.rs TraceabilityModel, deny_unknown_fields). Cross-references (a target naming a declared trace target, a rewrite_to naming a declared marker, regex validity) are checked by the consumer at module load, not by this schema.",
+			"additionalProperties": false,
+			"properties": {
+				"exclude": {
+					"type": "array",
+					"description": "Document path globs holding no traceable data.",
+					"items": {
+						"type": "string"
+					}
+				},
+				"source_exclude": {
+					"type": "array",
+					"description": "Code-root path globs holding no traceable source.",
+					"items": {
+						"type": "string"
+					}
+				},
+				"trace_targets": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/TraceTarget"
+					}
+				},
+				"document_references": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/DocumentReference"
+					}
+				},
+				"status": {
+					"$ref": "#/$defs/StatusVocabulary"
+				},
+				"trace_tags": {
+					"$ref": "#/$defs/TraceTagGrammar"
+				},
+				"vocabularies": {
+					"$ref": "#/$defs/ColumnVocabularies"
+				},
+				"obligations": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/ObligationSource"
+					}
+				},
+				"required_relations": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/RequiredRelation"
+					}
+				},
+				"acyclic_edges": {
+					"type": "array",
+					"description": "Edge verbs that must not form a cycle.",
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				},
+				"vocabulary_coverage": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/VocabularyCoverage"
+					}
+				}
+			}
+		},
+		"TraceTarget": {
+			"type": "object",
+			"description": "A document section whose rows or items mint trace ids. `from` (default table_row) selects the shape: table_row reads `id_column`; list_item and heading read capture group 1 of `pattern`.",
+			"required": ["name", "archetype", "section"],
+			"additionalProperties": false,
+			"properties": {
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"archetype": {
+					"type": "string",
+					"minLength": 1
+				},
+				"exclude": {
+					"type": "array",
+					"description": "Path globs.",
+					"items": {
+						"type": "string"
+					}
+				},
+				"section": {
+					"description": "Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.",
+					"oneOf": [
+						{
+							"type": "string",
+							"minLength": 1
+						},
+						{
+							"$ref": "#/$defs/SectionList"
+						}
+					]
+				},
+				"id_column": {
+					"type": "string",
+					"minLength": 1
+				},
+				"required": {
+					"type": "boolean",
+					"default": true
+				},
+				"evidence": {
+					"enum": ["source", "reference-only"],
+					"description": "Defaults to source."
+				},
+				"from": {
+					"enum": ["table_row", "list_item", "heading"],
+					"description": "Defaults to table_row."
+				},
+				"pattern": {
+					"type": "string",
+					"minLength": 1,
+					"description": "Regex with a capture group, for from: list_item or heading."
+				}
+			},
+			"oneOf": [
+				{
+					"required": ["id_column"],
+					"not": {
+						"anyOf": [
+							{
+								"required": ["pattern"]
+							},
+							{
+								"required": ["from"],
+								"properties": {
+									"from": {
+										"enum": ["list_item", "heading"]
+									}
+								}
+							}
+						]
+					}
+				},
+				{
+					"required": ["from", "pattern"],
+					"properties": {
+						"from": {
+							"enum": ["list_item", "heading"]
+						}
+					},
+					"not": {
+						"required": ["id_column"]
+					}
+				}
+			]
+		},
+		"DocumentReference": {
+			"type": "object",
+			"description": "A table column whose cells reference minted trace ids.",
+			"required": [
+				"name",
+				"archetype",
+				"section",
+				"column",
+				"pattern",
+				"targets"
+			],
+			"additionalProperties": false,
+			"properties": {
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"archetype": {
+					"type": "string",
+					"minLength": 1
+				},
+				"exclude": {
+					"type": "array",
+					"description": "Path globs.",
+					"items": {
+						"type": "string"
+					}
+				},
+				"section": {
+					"description": "Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.",
+					"oneOf": [
+						{
+							"type": "string",
+							"minLength": 1
+						},
+						{
+							"$ref": "#/$defs/SectionList"
+						}
+					]
+				},
+				"column": {
+					"type": "string",
+					"minLength": 1
+				},
+				"row_id_column": {
+					"type": "string"
+				},
+				"status_column": {
+					"type": "string"
+				},
+				"pattern": {
+					"type": "string",
+					"minLength": 1,
+					"description": "Regex with a capture group; each capture is a referenced id."
+				},
+				"targets": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"minLength": 1
+					},
+					"description": "Names of the trace_targets the captured ids resolve against."
+				},
+				"expand_ranges": {
+					"type": "boolean",
+					"default": false
+				},
+				"strip_annotations": {
+					"type": "boolean",
+					"default": false
+				}
+			}
+		},
+		"StatusVocabulary": {
+			"type": "object",
+			"description": "The status column and how its values class. A value may appear in only one class (checked by the consumer).",
+			"required": ["column"],
+			"additionalProperties": false,
+			"properties": {
+				"column": {
+					"type": "string",
+					"minLength": 1
+				},
+				"complete": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"pending": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"failed": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"retired": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		"TraceTagGrammar": {
+			"type": "object",
+			"description": "How source symbols carry trace ids.",
+			"required": [],
+			"additionalProperties": false,
+			"properties": {
+				"markers": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/TraceMarkerForm"
+					}
+				},
+				"legacy": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/TraceLegacyForm"
+					}
+				},
+				"implements": {
+					"type": "array",
+					"items": {
+						"$ref": "#/$defs/TraceImplementsForm"
+					}
+				}
+			}
+		},
+		"TraceMarkerForm": {
+			"type": "object",
+			"description": "A current trace-marker form in source.",
+			"required": ["name", "language", "pattern"],
+			"additionalProperties": false,
+			"properties": {
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"language": {
+					"enum": ["rust", "python", "typescript", "ts"]
+				},
+				"pattern": {
+					"type": "string",
+					"minLength": 1
+				},
+				"template": {
+					"type": "string"
+				}
+			}
+		},
+		"TraceLegacyForm": {
+			"type": "object",
+			"description": "A legacy trace-marker form; rewrite_to names a declared marker.",
+			"required": ["name", "pattern"],
+			"additionalProperties": false,
+			"properties": {
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"language": {
+					"enum": ["rust", "python", "typescript", "ts"]
+				},
+				"pattern": {
+					"type": "string",
+					"minLength": 1
+				},
+				"id_format": {
+					"type": "string"
+				},
+				"rewrite_to": {
+					"type": "string"
+				}
+			}
+		},
+		"ColumnVocabularies": {
+			"type": "object",
+			"description": "Column vocabularies the matrix contract and the rollup agree on.",
+			"required": [],
+			"additionalProperties": false,
+			"properties": {
+				"test_type": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"test_type_column": {
+					"type": "string"
+				},
+				"no_source_symbol": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"retired": {
+					"type": "array",
+					"description": "Exact verification-cell values declaring a historical, retired row.",
+					"items": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		"CombinatorialColumns": {
+			"type": "object",
+			"description": "Columns of a combinatorial configuration table.",
+			"required": ["dimension_column", "values_column", "strength"],
+			"additionalProperties": false,
+			"properties": {
+				"dimension_column": {
+					"type": "string",
+					"minLength": 1
+				},
+				"values_column": {
+					"type": "string",
+					"minLength": 1
+				},
+				"excludes_column": {
+					"type": "string"
+				},
+				"strength": {
+					"type": "integer",
+					"minimum": 1
+				}
+			}
+		},
+		"ObligationSource": {
+			"type": "object",
+			"description": "Rows that state obligations. Inherits from a trace target (`target`) XOR names its own `archetype`, `section` and `id_format`.",
+			"required": ["name", "statement_column"],
+			"additionalProperties": false,
+			"properties": {
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"exclude": {
+					"type": "array",
+					"description": "Path globs.",
+					"items": {
+						"type": "string"
+					}
+				},
+				"statement_column": {
+					"type": "string",
+					"minLength": 1
+				},
+				"method_column": {
+					"type": "string"
+				},
+				"criticality_column": {
+					"type": "string"
+				},
+				"parameters": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				},
+				"combinatorial": {
+					"$ref": "#/$defs/CombinatorialColumns"
+				},
+				"target": {
+					"type": "string",
+					"minLength": 1
+				},
+				"archetype": {
+					"type": "string",
+					"minLength": 1
+				},
+				"section": {
+					"description": "Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.",
+					"oneOf": [
+						{
+							"type": "string",
+							"minLength": 1
+						},
+						{
+							"$ref": "#/$defs/SectionList"
+						}
+					]
+				},
+				"id_format": {
+					"type": "string",
+					"description": "Template naming {document} and/or {row}."
+				}
+			},
+			"oneOf": [
+				{
+					"required": ["target"],
+					"not": {
+						"required": ["archetype"]
+					}
+				},
+				{
+					"required": ["archetype", "section", "id_format"],
+					"not": {
+						"required": ["target"]
+					}
+				}
+			]
+		},
+		"RequiredRelation": {
+			"type": "object",
+			"description": "An edge every document of one archetype must have.",
+			"required": ["name", "from", "edges", "direction", "check"],
+			"additionalProperties": false,
+			"properties": {
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"from": {
+					"type": "string",
+					"minLength": 1
+				},
+				"edges": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"minLength": 1
+					},
+					"minItems": 1,
+					"description": "Accepted edge verbs; any one satisfies the relation."
+				},
+				"to": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"minLength": 1
+					},
+					"description": "Accepted archetypes at the other end; empty means any."
+				},
+				"direction": {
+					"enum": ["outgoing", "incoming", "either"]
+				},
+				"check": {
+					"type": "string",
+					"pattern": "^[^\\s:]+$",
+					"description": "The <check> half of a `trace:<check>` severity key."
+				},
+				"exclude": {
+					"type": "array",
+					"description": "Path globs.",
+					"items": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		"VocabularyCoverage": {
+			"type": "object",
+			"description": "A vocabulary (an enum in the archetype's frontmatter schema) whose values documents are expected to claim.",
+			"required": ["name", "from", "field", "check"],
+			"additionalProperties": false,
+			"properties": {
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"from": {
+					"type": "string",
+					"minLength": 1
+				},
+				"field": {
+					"type": "string",
+					"minLength": 1
+				},
+				"check": {
+					"type": "string",
+					"pattern": "^[^\\s:]+$"
+				},
+				"justified_absence_field": {
+					"type": "string"
+				},
+				"exclude": {
+					"type": "array",
+					"description": "Path globs.",
+					"items": {
+						"type": "string"
+					}
+				}
+			}
+		},
+		"SectionList": {
+			"type": "array",
+			"minItems": 1,
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"TraceImplementsForm": {
+			"type": "object",
+			"description": "A trace_tags.implements form: a marker form that may also declare `syntax`. `markers` and `legacy` forms cannot.",
+			"required": ["name", "language", "pattern"],
+			"additionalProperties": false,
+			"properties": {
+				"name": {
+					"type": "string",
+					"minLength": 1
+				},
+				"language": {
+					"enum": ["rust", "python", "typescript", "ts"]
+				},
+				"pattern": {
+					"type": "string",
+					"minLength": 1
+				},
+				"template": {
+					"type": "string"
+				},
+				"syntax": {
+					"enum": ["rust_attribute"],
+					"description": "A complete outer Rust attribute attached to a declaration; Rust only."
+				}
+			},
+			"not": {
+				"required": ["syntax"],
+				"properties": {
+					"language": {
+						"enum": ["python", "typescript", "ts"]
+					}
 				}
 			}
 		}

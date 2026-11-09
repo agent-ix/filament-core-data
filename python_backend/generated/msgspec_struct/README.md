@@ -31,6 +31,7 @@ types. They are reachable as `<module>.<Name>` and are excluded from
 - `Category` — module_manifest_schema, semantic_ir_schema
 - `CompatibilityPosture` — module_manifest_schema, package_manifest_schema
 - `ConstructDeclaration` — module_manifest_schema, semantic_ir_schema
+- `Direction` — module_manifest_schema, semantic_ir_schema
 - `Export` — module_manifest_schema, module_semantic_block_schema, package_manifest_schema
 - `Identity` — module_manifest_schema, semantic_ir_schema
 - `Kind` — mapping_schema, module_manifest_schema, representation_schema, semantic_ir_schema

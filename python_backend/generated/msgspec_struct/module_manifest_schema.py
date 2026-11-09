@@ -17,6 +17,12 @@ class DependsOnItem(Struct):
 type DocKind = Annotated[str, Meta(min_length=1)]
 
 
+class GrammarSeverity(Enum):
+    off = 'off'
+    warning = 'warning'
+    error = 'error'
+
+
 class Category(Struct):
     label: Annotated[str, Meta(min_length=1)]
     slug: Annotated[
@@ -162,6 +168,11 @@ type StateSchemas = Annotated[
 ]
 
 
+class AmbiguityTermEntry(Struct):
+    definition: str
+    category: str | UnsetType = UNSET
+
+
 class ArchetypeEntry(Struct):
     kind: Annotated[str, Meta(min_length=1)]
     composition: dict[str, Any] | UnsetType = UNSET
@@ -176,6 +187,12 @@ class ArchetypeEntry(Struct):
 
 
 type AllowedLink = Annotated[str, Meta(min_length=1)]
+
+
+class DataSchema(Struct):
+    schema: Annotated[
+        str, Meta(min_length=1, pattern='^(?!/)(?!.*\\.\\.)[^\\u0000]+\\.json$')
+    ]
 
 
 class Defaults(Struct):
@@ -207,6 +224,28 @@ class IterateOver(Struct):
     kind: Kind
     section_path: list[SectionPathItem]
     depth: Annotated[int, Meta(ge=1)] | UnsetType = UNSET
+
+
+class ColumnVocabularies(Struct):
+    no_source_symbol: list[str] | UnsetType = UNSET
+    retired: (
+        Annotated[
+            list[str],
+            Meta(
+                description='Exact verification-cell values declaring a historical, retired row.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+    test_type: list[str] | UnsetType = UNSET
+    test_type_column: str | UnsetType = UNSET
+
+
+class CombinatorialColumns(Struct):
+    dimension_column: Annotated[str, Meta(min_length=1)]
+    strength: Annotated[int, Meta(ge=1)]
+    values_column: Annotated[str, Meta(min_length=1)]
+    excludes_column: str | UnsetType = UNSET
 
 
 class Identity(StrEnum):
@@ -283,6 +322,18 @@ class ConstructDeclaration(Struct):
         ]
         | UnsetType
     ) = UNSET
+
+
+type Section = Annotated[
+    str,
+    Meta(
+        description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
+        min_length=1,
+    ),
+]
+
+
+type Target2 = Annotated[str, Meta(min_length=1)]
 
 
 class Category1(StrEnum):
@@ -362,17 +413,279 @@ class LocatorPrimitive(Struct):
     required: bool | UnsetType = True
 
 
-class DataSchema(Struct):
-    schema: Annotated[
-        str, Meta(min_length=1, pattern='^(?!/)(?!.*\\.\\.)[^\\u0000]+\\.json$')
-    ]
-
-
 type Role = Annotated[str, Meta(min_length=1)]
+
+
+class Shape1(Enum):
+    round_trip = 'round-trip'
+    idempotence = 'idempotence'
+    ordering = 'ordering'
+    invariant = 'invariant'
+    error_case = 'error-case'
+    lifecycle = 'lifecycle'
+    concurrency = 'concurrency'
+    universal = 'universal'
+    example = 'example'
+    unclassified = 'unclassified'
+
+
+class PropertyIdiomEntry(Struct):
+    definition: str
+    shape: Shape1
+    category: str | UnsetType = UNSET
+
+
+class Direction(Enum):
+    outgoing = 'outgoing'
+    incoming = 'incoming'
+    either = 'either'
+
+
+type Edge = Annotated[str, Meta(min_length=1)]
+
+
+type ToItem = Annotated[str, Meta(min_length=1)]
+
+
+class RequiredRelation(Struct):
+    check: Annotated[
+        str,
+        Meta(
+            description='The <check> half of a `trace:<check>` severity key.',
+            pattern='^[^\\s:]+$',
+        ),
+    ]
+    direction: Direction
+    edges: Annotated[
+        list[Edge],
+        Meta(
+            description='Accepted edge verbs; any one satisfies the relation.',
+            min_length=1,
+        ),
+    ]
+    from_: Annotated[str, Meta(min_length=1)] = field(name='from')
+    name: Annotated[str, Meta(min_length=1)]
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    to: (
+        Annotated[
+            list[ToItem],
+            Meta(description='Accepted archetypes at the other end; empty means any.'),
+        ]
+        | UnsetType
+    ) = UNSET
 
 
 class RoleEntry(Struct):
     description: Annotated[str, Meta(min_length=1)]
+
+
+type SectionListItem = Annotated[str, Meta(min_length=1)]
+
+
+type SectionList = Annotated[list[SectionListItem], Meta(min_length=1)]
+
+
+class StatusVocabulary(Struct):
+    column: Annotated[str, Meta(min_length=1)]
+    complete: list[str] | UnsetType = UNSET
+    failed: list[str] | UnsetType = UNSET
+    pending: list[str] | UnsetType = UNSET
+    retired: list[str] | UnsetType = UNSET
+
+
+class Language(Enum):
+    rust = 'rust'
+    python = 'python'
+    typescript = 'typescript'
+    ts = 'ts'
+
+
+class Syntax(Enum):
+    rust_attribute = 'rust_attribute'
+
+
+class TraceImplementsForm(Struct):
+    language: Language
+    name: Annotated[str, Meta(min_length=1)]
+    pattern: Annotated[str, Meta(min_length=1)]
+    syntax: (
+        Annotated[
+            Syntax,
+            Meta(
+                description='A complete outer Rust attribute attached to a declaration; Rust only.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+    template: str | UnsetType = UNSET
+
+
+class TraceLegacyForm(Struct):
+    name: Annotated[str, Meta(min_length=1)]
+    pattern: Annotated[str, Meta(min_length=1)]
+    id_format: str | UnsetType = UNSET
+    language: Language | UnsetType = UNSET
+    rewrite_to: str | UnsetType = UNSET
+
+
+class TraceMarkerForm(Struct):
+    language: Language
+    name: Annotated[str, Meta(min_length=1)]
+    pattern: Annotated[str, Meta(min_length=1)]
+    template: str | UnsetType = UNSET
+
+
+class TraceTagGrammar(Struct):
+    implements: list[TraceImplementsForm] | UnsetType = UNSET
+    legacy: list[TraceLegacyForm] | UnsetType = UNSET
+    markers: list[TraceMarkerForm] | UnsetType = UNSET
+
+
+class Evidence(Enum):
+    source = 'source'
+    reference_only = 'reference-only'
+
+
+class From1(Enum):
+    table_row = 'table_row'
+    list_item = 'list_item'
+    heading = 'heading'
+
+
+class TraceTarget1(Struct):
+    archetype: Annotated[str, Meta(min_length=1)]
+    id_column: Annotated[str, Meta(min_length=1)]
+    name: Annotated[str, Meta(min_length=1)]
+    section: Annotated[
+        Section | SectionList,
+        Meta(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+    evidence: (
+        Annotated[Evidence, Meta(description='Defaults to source.')] | UnsetType
+    ) = UNSET
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    from_: Annotated[From1, Meta(description='Defaults to table_row.')] | UnsetType = field(
+        name='from', default=UNSET
+    )
+    pattern: (
+        Annotated[
+            str,
+            Meta(
+                description='Regex with a capture group, for from: list_item or heading.',
+                min_length=1,
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+    required: bool | UnsetType = True
+
+
+class From2(Enum):
+    table_row = 'table_row'
+    list_item = 'list_item'
+    heading = 'heading'
+    list_item_1 = 'list_item'
+    heading_1 = 'heading'
+
+
+class TraceTarget2(Struct):
+    archetype: Annotated[str, Meta(min_length=1)]
+    from_: Annotated[From2, Meta(description='Defaults to table_row.')] = field(
+        name='from'
+    )
+    name: Annotated[str, Meta(min_length=1)]
+    pattern: Annotated[
+        str,
+        Meta(
+            description='Regex with a capture group, for from: list_item or heading.',
+            min_length=1,
+        ),
+    ]
+    section: Annotated[
+        Section | SectionList,
+        Meta(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+    evidence: (
+        Annotated[Evidence, Meta(description='Defaults to source.')] | UnsetType
+    ) = UNSET
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    id_column: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
+    required: bool | UnsetType = True
+
+
+type TraceTarget = Annotated[
+    TraceTarget1 | TraceTarget2,
+    Meta(
+        description='A document section whose rows or items mint trace ids. `from` (default table_row) selects the shape: table_row reads `id_column`; list_item and heading read capture group 1 of `pattern`.'
+    ),
+]
+
+
+type AcyclicEdge = Annotated[str, Meta(min_length=1)]
+
+
+class VerificationMethodEntry(Struct):
+    class_: Annotated[str, Meta(pattern='\\S')] = field(name='class')
+    definition: Annotated[str, Meta(pattern='\\S')]
+    name: Annotated[str, Meta(pattern='\\S')]
+    applicability: (
+        Annotated[
+            dict[str, list[str]],
+            Meta(description='Rule name -> values that trigger advising this method.'),
+        ]
+        | UnsetType
+    ) = UNSET
+    cost: str | UnsetType = UNSET
+    evidence_kind: str | UnsetType = UNSET
+    tooling: list[str] | UnsetType = UNSET
+
+
+class VocabularyCoverage(Struct):
+    check: Annotated[str, Meta(pattern='^[^\\s:]+$')]
+    field_: Annotated[str, Meta(min_length=1)] = field(name='field')
+    from_: Annotated[str, Meta(min_length=1)] = field(name='from')
+    name: Annotated[str, Meta(min_length=1)]
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    justified_absence_field: str | UnsetType = UNSET
+
+
+class VocabularyTerm(Struct):
+    definition: str
+    category: str | UnsetType = UNSET
+
+
+class DocumentReference(Struct):
+    archetype: Annotated[str, Meta(min_length=1)]
+    column: Annotated[str, Meta(min_length=1)]
+    name: Annotated[str, Meta(min_length=1)]
+    pattern: Annotated[
+        str,
+        Meta(
+            description='Regex with a capture group; each capture is a referenced id.',
+            min_length=1,
+        ),
+    ]
+    section: Annotated[
+        Section | SectionList,
+        Meta(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+    targets: Annotated[
+        list[Target2],
+        Meta(
+            description='Names of the trace_targets the captured ids resolve against.'
+        ),
+    ]
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    expand_ranges: bool | UnsetType = False
+    row_id_column: str | UnsetType = UNSET
+    status_column: str | UnsetType = UNSET
+    strip_annotations: bool | UnsetType = False
 
 
 type Locator1 = Annotated[
@@ -390,6 +703,92 @@ type Locator = Annotated[
         description='A body-extraction locator: a single primitive (object with a `from` key) or an ordered fallback chain (array of primitives).'
     ),
 ]
+
+
+class ObligationSource1(Struct):
+    name: Annotated[str, Meta(min_length=1)]
+    statement_column: Annotated[str, Meta(min_length=1)]
+    target: Annotated[str, Meta(min_length=1)]
+    archetype: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
+    combinatorial: CombinatorialColumns | UnsetType = UNSET
+    criticality_column: str | UnsetType = UNSET
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    id_format: (
+        Annotated[str, Meta(description='Template naming {document} and/or {row}.')]
+        | UnsetType
+    ) = UNSET
+    method_column: str | UnsetType = UNSET
+    parameters: dict[str, str] | UnsetType = UNSET
+    section: (
+        Annotated[
+            Section | SectionList,
+            Meta(
+                description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+
+
+class ObligationSource2(Struct):
+    archetype: Annotated[str, Meta(min_length=1)]
+    id_format: Annotated[
+        str, Meta(description='Template naming {document} and/or {row}.')
+    ]
+    name: Annotated[str, Meta(min_length=1)]
+    section: Annotated[
+        Section | SectionList,
+        Meta(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+    statement_column: Annotated[str, Meta(min_length=1)]
+    combinatorial: CombinatorialColumns | UnsetType = UNSET
+    criticality_column: str | UnsetType = UNSET
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    method_column: str | UnsetType = UNSET
+    parameters: dict[str, str] | UnsetType = UNSET
+    target: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
+
+
+type ObligationSource = Annotated[
+    ObligationSource1 | ObligationSource2,
+    Meta(
+        description='Rows that state obligations. Inherits from a trace target (`target`) XOR names its own `archetype`, `section` and `id_format`.'
+    ),
+]
+
+
+class TraceabilityModel(Struct):
+    acyclic_edges: (
+        Annotated[
+            list[AcyclicEdge],
+            Meta(description='Edge verbs that must not form a cycle.'),
+        ]
+        | UnsetType
+    ) = UNSET
+    document_references: list[DocumentReference] | UnsetType = UNSET
+    exclude: (
+        Annotated[
+            list[str],
+            Meta(description='Document path globs holding no traceable data.'),
+        ]
+        | UnsetType
+    ) = UNSET
+    obligations: list[ObligationSource] | UnsetType = UNSET
+    required_relations: list[RequiredRelation] | UnsetType = UNSET
+    source_exclude: (
+        Annotated[
+            list[str],
+            Meta(description='Code-root path globs holding no traceable source.'),
+        ]
+        | UnsetType
+    ) = UNSET
+    status: StatusVocabulary | UnsetType = UNSET
+    trace_tags: TraceTagGrammar | UnsetType = UNSET
+    trace_targets: list[TraceTarget] | UnsetType = UNSET
+    vocabularies: ColumnVocabularies | UnsetType = UNSET
+    vocabulary_coverage: list[VocabularyCoverage] | UnsetType = UNSET
 
 
 class YieldPattern(Struct):
@@ -458,9 +857,9 @@ class ArtifactTypeEntry(Struct):
     ) = UNSET
     data_schema: (
         Annotated[
-            dict[str, Any],
+            dict[str, Any] | DataSchema,
             Meta(
-                description='JSON Schema validating the EXTRACTED record (distinct from frontmatter_schema_ref, which validates frontmatter).'
+                description='JSON Schema validating the EXTRACTED record (distinct from frontmatter_schema_ref, which validates frontmatter). Same two forms as ObjectTypeEntry.data_schema (quoin FR-073): an inline schema object, or {schema: <module-relative .json path>}; an object carrying `schema` or `digest` alongside any other key is ambiguous and rejected.'
             ),
         ]
         | UnsetType
@@ -492,6 +891,15 @@ class FilamentModuleManifest(Struct):
             pattern='^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$',
         ),
     ]
+    ambiguity_terms: (
+        Annotated[
+            dict[str, AmbiguityTermEntry],
+            Meta(
+                description='Mergeable ambiguity lexicon (quire FR-056): term -> {definition, category?}.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
     archetypes: list[ArchetypeEntry] | UnsetType = UNSET
     artifact_types: list[ArtifactTypeEntry] | UnsetType = UNSET
     depends_on: list[DependsOnItem] | UnsetType = UNSET
@@ -506,7 +914,25 @@ class FilamentModuleManifest(Struct):
         ]
         | UnsetType
     ) = UNSET
+    grammar_severity: (
+        Annotated[
+            dict[str, GrammarSeverity],
+            Meta(
+                description='Mergeable per-check grammar severity registry (quire FR-048): `<grammar>:<check>` -> off | warning | error. Each key is exactly two non-empty, whitespace-free halves around one colon.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
     grammars: list[GrammarEntry] | UnsetType = UNSET
+    lexicon: (
+        Annotated[
+            dict[str, VocabularyTerm],
+            Meta(
+                description='Mergeable concrete-term lexicon (quire FR-043): term -> {definition, category?}. Merged first-wins; the EARS vague-response check accepts the keys as verifiable objects.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
     lint_rules: list[LintRuleEntry] | UnsetType = UNSET
     nav: (
         Annotated[
@@ -518,6 +944,24 @@ class FilamentModuleManifest(Struct):
         | UnsetType
     ) = UNSET
     object_types: list[ObjectTypeEntry] | UnsetType = UNSET
+    observable_verbs: (
+        Annotated[
+            dict[str, VocabularyTerm],
+            Meta(
+                description='Mergeable observable-result verb registry (quire FR-047): verb -> {definition, category?}. Layered over the engine defaults.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+    property_idioms: (
+        Annotated[
+            dict[str, PropertyIdiomEntry],
+            Meta(
+                description='Mergeable property-idiom registry (quire FR-052): phrase -> {definition, shape, category?}.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
     roles: (
         Annotated[
             dict[str, RoleEntry],
@@ -537,3 +981,22 @@ class FilamentModuleManifest(Struct):
         | UnsetType
     ) = UNSET
     state_schemas: dict[str, dict[str, Any] | StateSchemas] | UnsetType = UNSET
+    traceability: TraceabilityModel | UnsetType = UNSET
+    vacuous_predicates: (
+        Annotated[
+            dict[str, VocabularyTerm],
+            Meta(
+                description='Mergeable vacuous-predicate registry (quire FR-047, CR-014): predicate -> {definition, category?}.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+    verification_catalog: (
+        Annotated[
+            dict[str, VerificationMethodEntry],
+            Meta(
+                description='Mergeable verification-method catalog (quire FR-054): method id -> {name, class, definition, evidence_kind?, cost?, applicability?, tooling?}.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET

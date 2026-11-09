@@ -6,7 +6,7 @@ from __future__ import annotations
 from enum import Enum, StrEnum
 from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field, RootModel, constr
 from typing_extensions import TypeAliasType
 
 
@@ -20,6 +20,12 @@ class DependsOnItem(BaseModel):
 
 class DocKind(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
+
+
+class GrammarSeverity(Enum):
+    off = 'off'
+    warning = 'warning'
+    error = 'error'
 
 
 class Category(BaseModel):
@@ -159,6 +165,14 @@ class StateSchemas(RootModel[str]):
     ]
 
 
+class AmbiguityTermEntry(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    category: str | None = None
+    definition: str
+
+
 class ArchetypeEntry(BaseModel):
     model_config = ConfigDict(
         extra='allow',
@@ -177,6 +191,21 @@ class ArchetypeEntry(BaseModel):
 
 class AllowedLink(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
+
+
+class DataSchema(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        regex_engine="python-re",
+    )
+    schema_: Annotated[
+        str,
+        Field(
+            alias='schema',
+            min_length=1,
+            pattern='^(?!/)(?!.*\\.\\.)[^\\u0000]+\\.json$',
+        ),
+    ]
 
 
 class Defaults(BaseModel):
@@ -220,6 +249,31 @@ class IterateOver(BaseModel):
     depth: Annotated[int | None, Field(ge=1)] = None
     kind: Kind
     section_path: list[SectionPathItem]
+
+
+class ColumnVocabularies(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    no_source_symbol: list[str] | None = None
+    retired: Annotated[
+        list[str] | None,
+        Field(
+            description='Exact verification-cell values declaring a historical, retired row.'
+        ),
+    ] = None
+    test_type: list[str] | None = None
+    test_type_column: str | None = None
+
+
+class CombinatorialColumns(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    dimension_column: Annotated[str, Field(min_length=1)]
+    excludes_column: str | None = None
+    strength: Annotated[int, Field(ge=1)]
+    values_column: Annotated[str, Field(min_length=1)]
 
 
 class Identity(StrEnum):
@@ -294,6 +348,20 @@ class ConstructDeclaration(BaseModel):
     shape: Annotated[
         Shape, Field(description='The construct shape backends dispatch on.')
     ]
+
+
+class Section(RootModel[str]):
+    root: Annotated[
+        str,
+        Field(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.',
+            min_length=1,
+        ),
+    ]
+
+
+class Target2(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
 
 
 class Category1(StrEnum):
@@ -386,23 +454,69 @@ class LocatorPrimitive(BaseModel):
     required: bool = True
 
 
-class DataSchema(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        regex_engine="python-re",
-    )
-    schema_: Annotated[
-        str,
-        Field(
-            alias='schema',
-            min_length=1,
-            pattern='^(?!/)(?!.*\\.\\.)[^\\u0000]+\\.json$',
-        ),
-    ]
-
-
 class Role(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
+
+
+class Shape1(Enum):
+    round_trip = 'round-trip'
+    idempotence = 'idempotence'
+    ordering = 'ordering'
+    invariant = 'invariant'
+    error_case = 'error-case'
+    lifecycle = 'lifecycle'
+    concurrency = 'concurrency'
+    universal = 'universal'
+    example = 'example'
+    unclassified = 'unclassified'
+
+
+class PropertyIdiomEntry(BaseModel):
+    category: str | None = None
+    definition: str
+    shape: Shape1
+
+
+class Direction(Enum):
+    outgoing = 'outgoing'
+    incoming = 'incoming'
+    either = 'either'
+
+
+class Edge(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
+class ToItem(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
+class RequiredRelation(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    check: Annotated[
+        str,
+        Field(
+            description='The <check> half of a `trace:<check>` severity key.',
+            pattern='^[^\\s:]+$',
+        ),
+    ]
+    direction: Direction
+    edges: Annotated[
+        list[Edge],
+        Field(
+            description='Accepted edge verbs; any one satisfies the relation.',
+            min_length=1,
+        ),
+    ]
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    from_: Annotated[str, Field(alias='from', min_length=1)]
+    name: Annotated[str, Field(min_length=1)]
+    to: Annotated[
+        list[ToItem] | None,
+        Field(description='Accepted archetypes at the other end; empty means any.'),
+    ] = None
 
 
 class RoleEntry(BaseModel):
@@ -410,6 +524,238 @@ class RoleEntry(BaseModel):
         extra='forbid',
     )
     description: Annotated[str, Field(min_length=1)]
+
+
+class SectionListItem(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
+class SectionList(RootModel[list[SectionListItem]]):
+    root: Annotated[list[SectionListItem], Field(min_length=1)]
+
+
+class StatusVocabulary(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    column: Annotated[str, Field(min_length=1)]
+    complete: list[str] | None = None
+    failed: list[str] | None = None
+    pending: list[str] | None = None
+    retired: list[str] | None = None
+
+
+class Language(Enum):
+    rust = 'rust'
+    python = 'python'
+    typescript = 'typescript'
+    ts = 'ts'
+
+
+class Syntax(Enum):
+    rust_attribute = 'rust_attribute'
+
+
+class TraceImplementsForm(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    language: Language
+    name: Annotated[str, Field(min_length=1)]
+    pattern: Annotated[str, Field(min_length=1)]
+    syntax: Annotated[
+        Syntax | None,
+        Field(
+            description='A complete outer Rust attribute attached to a declaration; Rust only.'
+        ),
+    ] = None
+    template: str | None = None
+
+
+class TraceLegacyForm(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    id_format: str | None = None
+    language: Language | None = None
+    name: Annotated[str, Field(min_length=1)]
+    pattern: Annotated[str, Field(min_length=1)]
+    rewrite_to: str | None = None
+
+
+class TraceMarkerForm(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    language: Language
+    name: Annotated[str, Field(min_length=1)]
+    pattern: Annotated[str, Field(min_length=1)]
+    template: str | None = None
+
+
+class TraceTagGrammar(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    implements: list[TraceImplementsForm] | None = None
+    legacy: list[TraceLegacyForm] | None = None
+    markers: list[TraceMarkerForm] | None = None
+
+
+class Evidence(Enum):
+    source = 'source'
+    reference_only = 'reference-only'
+
+
+class From1(Enum):
+    table_row = 'table_row'
+    list_item = 'list_item'
+    heading = 'heading'
+
+
+class TraceTarget1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    archetype: Annotated[str, Field(min_length=1)]
+    evidence: Annotated[Evidence | None, Field(description='Defaults to source.')] = (
+        None
+    )
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    from_: Annotated[
+        From1 | None, Field(alias='from', description='Defaults to table_row.')
+    ] = None
+    id_column: Annotated[str, Field(min_length=1)]
+    name: Annotated[str, Field(min_length=1)]
+    pattern: Annotated[
+        str | None,
+        Field(
+            description='Regex with a capture group, for from: list_item or heading.',
+            min_length=1,
+        ),
+    ] = None
+    required: bool = True
+    section: Annotated[
+        Section | SectionList,
+        Field(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+
+
+class From2(Enum):
+    table_row = 'table_row'
+    list_item = 'list_item'
+    heading = 'heading'
+    list_item_1 = 'list_item'
+    heading_1 = 'heading'
+
+
+class TraceTarget2(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    archetype: Annotated[str, Field(min_length=1)]
+    evidence: Annotated[Evidence | None, Field(description='Defaults to source.')] = (
+        None
+    )
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    from_: Annotated[From2, Field(alias='from', description='Defaults to table_row.')]
+    id_column: Annotated[str | None, Field(min_length=1)] = None
+    name: Annotated[str, Field(min_length=1)]
+    pattern: Annotated[
+        str,
+        Field(
+            description='Regex with a capture group, for from: list_item or heading.',
+            min_length=1,
+        ),
+    ]
+    required: bool = True
+    section: Annotated[
+        Section | SectionList,
+        Field(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+
+
+class TraceTarget(RootModel[TraceTarget1 | TraceTarget2]):
+    root: Annotated[
+        TraceTarget1 | TraceTarget2,
+        Field(
+            description='A document section whose rows or items mint trace ids. `from` (default table_row) selects the shape: table_row reads `id_column`; list_item and heading read capture group 1 of `pattern`.'
+        ),
+    ]
+
+
+class AcyclicEdge(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
+class VerificationMethodEntry(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    applicability: Annotated[
+        dict[str, list[str]] | None,
+        Field(description='Rule name -> values that trigger advising this method.'),
+    ] = None
+    class_: Annotated[str, Field(alias='class', pattern='\\S')]
+    cost: str | None = None
+    definition: Annotated[str, Field(pattern='\\S')]
+    evidence_kind: str | None = None
+    name: Annotated[str, Field(pattern='\\S')]
+    tooling: list[str] | None = None
+
+
+class VocabularyCoverage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    check: Annotated[str, Field(pattern='^[^\\s:]+$')]
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    field: Annotated[str, Field(min_length=1)]
+    from_: Annotated[str, Field(alias='from', min_length=1)]
+    justified_absence_field: str | None = None
+    name: Annotated[str, Field(min_length=1)]
+
+
+class VocabularyTerm(BaseModel):
+    category: str | None = None
+    definition: str
+
+
+class DocumentReference(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    archetype: Annotated[str, Field(min_length=1)]
+    column: Annotated[str, Field(min_length=1)]
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    expand_ranges: bool = False
+    name: Annotated[str, Field(min_length=1)]
+    pattern: Annotated[
+        str,
+        Field(
+            description='Regex with a capture group; each capture is a referenced id.',
+            min_length=1,
+        ),
+    ]
+    row_id_column: str | None = None
+    section: Annotated[
+        Section | SectionList,
+        Field(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+    status_column: str | None = None
+    strip_annotations: bool = False
+    targets: Annotated[
+        list[Target2],
+        Field(
+            description='Names of the trace_targets the captured ids resolve against.'
+        ),
+    ]
 
 
 class Locator1(RootModel[list[LocatorPrimitive]]):
@@ -429,6 +775,89 @@ class Locator(RootModel[LocatorPrimitive | Locator1]):
             description='A body-extraction locator: a single primitive (object with a `from` key) or an ordered fallback chain (array of primitives).'
         ),
     ]
+
+
+class ObligationSource1(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    archetype: Annotated[str | None, Field(min_length=1)] = None
+    combinatorial: CombinatorialColumns | None = None
+    criticality_column: str | None = None
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    id_format: Annotated[
+        str | None, Field(description='Template naming {document} and/or {row}.')
+    ] = None
+    method_column: str | None = None
+    name: Annotated[str, Field(min_length=1)]
+    parameters: dict[str, str] | None = None
+    section: Annotated[
+        Section | SectionList | None,
+        Field(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ] = None
+    statement_column: Annotated[str, Field(min_length=1)]
+    target: Annotated[str, Field(min_length=1)]
+
+
+class ObligationSource2(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    archetype: Annotated[str, Field(min_length=1)]
+    combinatorial: CombinatorialColumns | None = None
+    criticality_column: str | None = None
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    id_format: Annotated[
+        str, Field(description='Template naming {document} and/or {row}.')
+    ]
+    method_column: str | None = None
+    name: Annotated[str, Field(min_length=1)]
+    parameters: dict[str, str] | None = None
+    section: Annotated[
+        Section | SectionList,
+        Field(
+            description='Heading, or any-of list of headings, the table lives under. `*` is the only metacharacter.'
+        ),
+    ]
+    statement_column: Annotated[str, Field(min_length=1)]
+    target: Annotated[str | None, Field(min_length=1)] = None
+
+
+class ObligationSource(RootModel[ObligationSource1 | ObligationSource2]):
+    root: Annotated[
+        ObligationSource1 | ObligationSource2,
+        Field(
+            description='Rows that state obligations. Inherits from a trace target (`target`) XOR names its own `archetype`, `section` and `id_format`.'
+        ),
+    ]
+
+
+class TraceabilityModel(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    acyclic_edges: Annotated[
+        list[AcyclicEdge] | None,
+        Field(description='Edge verbs that must not form a cycle.'),
+    ] = None
+    document_references: list[DocumentReference] | None = None
+    exclude: Annotated[
+        list[str] | None,
+        Field(description='Document path globs holding no traceable data.'),
+    ] = None
+    obligations: list[ObligationSource] | None = None
+    required_relations: list[RequiredRelation] | None = None
+    source_exclude: Annotated[
+        list[str] | None,
+        Field(description='Code-root path globs holding no traceable source.'),
+    ] = None
+    status: StatusVocabulary | None = None
+    trace_tags: TraceTagGrammar | None = None
+    trace_targets: list[TraceTarget] | None = None
+    vocabularies: ColumnVocabularies | None = None
+    vocabulary_coverage: list[VocabularyCoverage] | None = None
 
 
 class YieldPattern(BaseModel):
@@ -493,9 +922,9 @@ class ArtifactTypeEntry(BaseModel):
         ),
     ] = None
     data_schema: Annotated[
-        dict[str, Any] | None,
+        dict[str, Any] | DataSchema | None,
         Field(
-            description='JSON Schema validating the EXTRACTED record (distinct from frontmatter_schema_ref, which validates frontmatter).'
+            description='JSON Schema validating the EXTRACTED record (distinct from frontmatter_schema_ref, which validates frontmatter). Same two forms as ObjectTypeEntry.data_schema (quoin FR-073): an inline schema object, or {schema: <module-relative .json path>}; an object carrying `schema` or `digest` alongside any other key is ambiguous and rejected.'
         ),
     ] = None
     defaults: Defaults | None = None
@@ -510,6 +939,12 @@ class FilamentModuleManifest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
+    ambiguity_terms: Annotated[
+        dict[str, AmbiguityTermEntry] | None,
+        Field(
+            description='Mergeable ambiguity lexicon (quire FR-056): term -> {definition, category?}.'
+        ),
+    ] = None
     archetypes: list[ArchetypeEntry] | None = None
     artifact_types: list[ArtifactTypeEntry] | None = None
     depends_on: list[DependsOnItem] | None = None
@@ -521,7 +956,19 @@ class FilamentModuleManifest(BaseModel):
             description='Mergeable edge-type registry (FR-040): verb -> {description, category, inverse?}. Merged first-wins across active modules; a conflicting re-declaration is advisory (quire-rs DuplicateEdgeType), a verb used in allowed_links but absent here is advisory (UnknownEdgeType). The controlled vocabulary that closes the free-string edge type.'
         ),
     ] = None
+    grammar_severity: Annotated[
+        dict[constr(pattern=r'^[^\s:]+:[^\s:]+$'), GrammarSeverity] | None,
+        Field(
+            description='Mergeable per-check grammar severity registry (quire FR-048): `<grammar>:<check>` -> off | warning | error. Each key is exactly two non-empty, whitespace-free halves around one colon.'
+        ),
+    ] = None
     grammars: list[GrammarEntry] | None = None
+    lexicon: Annotated[
+        dict[str, VocabularyTerm] | None,
+        Field(
+            description='Mergeable concrete-term lexicon (quire FR-043): term -> {definition, category?}. Merged first-wins; the EARS vague-response check accepts the keys as verifiable objects.'
+        ),
+    ] = None
     lint_rules: list[LintRuleEntry] | None = None
     manifest_version: Annotated[
         str,
@@ -544,6 +991,18 @@ class FilamentModuleManifest(BaseModel):
         ),
     ] = None
     object_types: list[ObjectTypeEntry] | None = None
+    observable_verbs: Annotated[
+        dict[str, VocabularyTerm] | None,
+        Field(
+            description='Mergeable observable-result verb registry (quire FR-047): verb -> {definition, category?}. Layered over the engine defaults.'
+        ),
+    ] = None
+    property_idioms: Annotated[
+        dict[str, PropertyIdiomEntry] | None,
+        Field(
+            description='Mergeable property-idiom registry (quire FR-052): phrase -> {definition, shape, category?}.'
+        ),
+    ] = None
     roles: Annotated[
         dict[str, RoleEntry] | None,
         Field(
@@ -557,6 +1016,19 @@ class FilamentModuleManifest(BaseModel):
         ),
     ] = None
     state_schemas: dict[str, dict[str, Any] | StateSchemas] | None = None
+    traceability: TraceabilityModel | None = None
+    vacuous_predicates: Annotated[
+        dict[str, VocabularyTerm] | None,
+        Field(
+            description='Mergeable vacuous-predicate registry (quire FR-047, CR-014): predicate -> {definition, category?}.'
+        ),
+    ] = None
+    verification_catalog: Annotated[
+        dict[str, VerificationMethodEntry] | None,
+        Field(
+            description='Mergeable verification-method catalog (quire FR-054): method id -> {name, class, definition, evidence_kind?, cost?, applicability?, tooling?}.'
+        ),
+    ] = None
     version: Annotated[
         str,
         Field(
