@@ -31,12 +31,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "Integer key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://quire/native/Integer"
-				]
-			],
+			"set": [["/types/13/keys", "ix://quire/native/Integer"]],
 			"remove": [],
 			"rust": []
 		},
@@ -45,12 +40,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "Int[0, 9] value type key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Small"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Small"]],
 			"remove": [],
 			"rust": []
 		},
@@ -59,12 +49,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "payload-free variant (enumeration) key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Color"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Color"]],
 			"remove": [],
 			"rust": []
 		},
@@ -73,12 +58,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "unit key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://quire/unit/ms"
-				]
-			],
+			"set": [["/types/13/keys", "ix://quire/unit/ms"]],
 			"remove": [],
 			"rust": []
 		},
@@ -87,12 +67,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "alias of Text key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Key"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Key"]],
 			"remove": [],
 			"rust": []
 		},
@@ -101,12 +76,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "Clock key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://quire/native/Clock"
-				]
-			],
+			"set": [["/types/13/keys", "ix://quire/native/Clock"]],
 			"remove": [],
 			"rust": [
 				{
@@ -120,12 +90,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "alias of Clock key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Stopwatch"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Stopwatch"]],
 			"remove": [],
 			"rust": [
 				{
@@ -139,12 +104,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "clock-bearing record key Timer",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Timer"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Timer"]],
 			"remove": [],
 			"rust": [
 				{
@@ -158,12 +118,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "record Cfg { a: Boolean } key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Cfg"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Cfg"]],
 			"remove": [],
 			"rust": [
 				{
@@ -177,12 +132,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "Option<Text> key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/OptText"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/OptText"]],
 			"remove": [],
 			"rust": [
 				{
@@ -196,12 +146,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "sequence type key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Texts"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Texts"]],
 			"remove": [],
 			"rust": [
 				{
@@ -215,12 +160,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "map type key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Inner"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Inner"]],
 			"remove": [],
 			"rust": [
 				{
@@ -234,12 +174,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "tuple value type key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Pair"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Pair"]],
 			"remove": [],
 			"rust": [
 				{
@@ -253,12 +188,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "union (payload-bearing variant) key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Shape"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Shape"]],
 			"remove": [],
 			"rust": [
 				{
@@ -272,12 +202,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "reference type key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/ClockRef"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/ClockRef"]],
 			"remove": [],
 			"rust": [
 				{
@@ -291,12 +216,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "object type key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Holder"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Holder"]],
 			"remove": [],
 			"rust": [
 				{
@@ -311,9 +231,7 @@
 			"ac": "FR-154-AC-49",
 			"description": "absent keys",
 			"set": [],
-			"remove": [
-				"/types/13/keys"
-			],
+			"remove": ["/types/13/keys"],
 			"rust": [
 				{
 					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
@@ -326,12 +244,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "keys naming no node",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Nothing"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Nothing"]],
 			"remove": [],
 			"rust": [
 				{
@@ -346,9 +259,7 @@
 			"ac": "FR-154-AC-49",
 			"description": "absent bound",
 			"set": [],
-			"remove": [
-				"/types/13/bound"
-			],
+			"remove": ["/types/13/bound"],
 			"rust": [
 				{
 					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
@@ -361,12 +272,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "string bound",
-			"set": [
-				[
-					"/types/13/bound",
-					"[0, 2]"
-				]
-			],
+			"set": [["/types/13/bound", "[0, 2]"]],
 			"remove": [],
 			"rust": [
 				{
@@ -380,12 +286,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "negative lower",
-			"set": [
-				[
-					"/types/13/bound/lower",
-					-1
-				]
-			],
+			"set": [["/types/13/bound/lower", -1]],
 			"remove": [],
 			"rust": [
 				{
@@ -399,12 +300,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "non-integer upper",
-			"set": [
-				[
-					"/types/13/bound/upper",
-					1.5
-				]
-			],
+			"set": [["/types/13/bound/upper", 1.5]],
 			"remove": [],
 			"rust": [
 				{
@@ -418,12 +314,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "bound with an extra member",
-			"set": [
-				[
-					"/types/13/bound/ordered",
-					true
-				]
-			],
+			"set": [["/types/13/bound/ordered", true]],
 			"remove": [],
 			"rust": [
 				{
@@ -501,12 +392,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "an items member on the map",
-			"set": [
-				[
-					"/types/13/items",
-					"ix://quire/native/Text"
-				]
-			],
+			"set": [["/types/13/items", "ix://quire/native/Text"]],
 			"remove": [],
 			"rust": [
 				{
@@ -521,9 +407,7 @@
 			"ac": "FR-154-AC-49",
 			"description": "absent values",
 			"set": [],
-			"remove": [
-				"/types/13/values"
-			],
+			"remove": ["/types/13/values"],
 			"rust": [
 				{
 					"code": "agent-ix.semantic-ir.SCHEMA_VIOLATION",
@@ -536,12 +420,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "keys naming a namespace",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Area"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Area"]],
 			"remove": [],
 			"rust": [
 				{
@@ -555,12 +434,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "Decimal[...] value type key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://acme/maps/Price"
-				]
-			],
+			"set": [["/types/13/keys", "ix://acme/maps/Price"]],
 			"remove": [],
 			"rust": [
 				{
@@ -574,12 +448,7 @@
 			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "native Rational key",
-			"set": [
-				[
-					"/types/13/keys",
-					"ix://quire/native/Rational"
-				]
-			],
+			"set": [["/types/13/keys", "ix://quire/native/Rational"]],
 			"remove": [],
 			"rust": [
 				{
