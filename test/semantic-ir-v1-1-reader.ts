@@ -978,13 +978,14 @@ function checkTypeDefinition(
 			(inner.startsWith(NATIVE_PREFIX) && nativeScalar(inner) === undefined) ||
 			specialKind(types, fields, inner) === "clock"
 		)
-			code = "INVALID_OPTION_INNER";
+			code = "agent-ix.semantic-ir.INVALID_OPTION_INNER";
 		else if (
 			nativeScalar(inner) !== undefined ||
 			inner.startsWith(QUANTITY_REFERENCE)
 		) {
 			// The type-position pass owns malformed unit references.
-		} else if (!types.has(inner)) code = "UNRESOLVED_OPTION_INNER";
+		} else if (!types.has(inner))
+			code = "agent-ix.semantic-ir.UNRESOLVED_OPTION_INNER";
 		else if (
 			terminal?.node?.kind === "option" ||
 			(terminal?.node &&
@@ -992,10 +993,10 @@ function checkTypeDefinition(
 					optionShape(types, terminal.node) ?? "",
 				))
 		)
-			code = "INVALID_OPTION_INNER";
+			code = "agent-ix.semantic-ir.INVALID_OPTION_INNER";
 		if (code)
 			diagnostics.push({
-				code: `agent-ix.semantic-ir.${code}`,
+				code,
 				path: `${path}.inner`,
 				message: "an option inner must name a non-option value type",
 			});

@@ -7111,6 +7111,68 @@ describe("diagnostic coverage (FR-049 closing gate)", () => {
 		).toEqual([DIAGNOSTIC_CODES.INVALID_QUANTITY_MEMBER.code]);
 	});
 
+	/** FR-148: the option value type diagnostics fire from authored documents. */
+	it("observes the option inner and option presence diagnostics", () => {
+		const document = JSON.parse(
+			readFileSync(
+				new URL(
+					"../fixtures/semantic/v1/clock-units/config-clock.json",
+					import.meta.url,
+				),
+				"utf8",
+			),
+		);
+		const origin = document.types[0].origin;
+		const option = (name: string, inner: string) => ({
+			identity: `ix://acme/config/${name}`,
+			displayName: name,
+			kind: "option",
+			inner,
+			roles: [],
+			origin,
+			constraints: [],
+			extensions: [],
+			unknownPolicy: "reject",
+		});
+		const base = option("Base", "ix://quire/native/Integer");
+		document.types.push(
+			base,
+			option("Missing", "ix://acme/config/Nowhere"),
+			option("Nested", base.identity),
+			{
+				identity: "ix://acme/config/Holder",
+				displayName: "Holder",
+				kind: "record",
+				roles: [],
+				origin,
+				constraints: [],
+				extensions: [],
+				unknownPolicy: "reject",
+				fields: [
+					{
+						identity: "ix://acme/config/Holder/maybe",
+						name: "maybe",
+						typeRef: base.identity,
+						multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
+						presence: "optional",
+						nullable: false,
+						defaultKind: "none",
+						origin,
+					},
+				],
+			},
+		);
+		const emitted = note(readContractIr(document as never) as never)
+			.map((entry) => entry.code)
+			.filter((code) => code.includes("OPTION"))
+			.sort();
+		expect(emitted).toEqual([
+			DIAGNOSTIC_CODES.INVALID_OPTION_INNER.code,
+			DIAGNOSTIC_CODES.INVALID_OPTION_PRESENCE.code,
+			DIAGNOSTIC_CODES.UNRESOLVED_OPTION_INNER.code,
+		]);
+	});
+
 	/** Traces: TC-494, TC-609; FR-049-AC-3. */
 	it("fires every registry code at least once across the fixture corpus", () => {
 		const declared = (
