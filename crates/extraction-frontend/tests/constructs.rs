@@ -1732,7 +1732,8 @@ fn tc_1755_state_machine_process_and_domain_lift_their_engine_members() {
     );
 }
 
-#[trace("TC-1785", "FR-143-AC-6", "FR-143-AC-12")]
+#[trace("TC-1785", "FR-143-AC-6")]
+#[trace("TC-1785", "FR-143-AC-12")]
 #[test]
 fn tc_1785_an_engine_declaration_the_construct_cannot_lower_refuses_the_artifact() {
     type Edit = Box<dyn Fn(&str) -> String>;
