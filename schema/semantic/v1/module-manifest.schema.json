@@ -276,9 +276,64 @@
 		},
 		"traceability": {
 			"$ref": "#/$defs/TraceabilityModel"
+		},
+		"plain_language_profiles": {
+			"type": "object",
+			"description": "Named, versioned advisory plain-language profiles (quire FR-074): profile id -> profile body. Merged first-wins across active modules.",
+			"additionalProperties": {
+				"$ref": "#/$defs/PlainLanguageProfile"
+			}
+		},
+		"clause_sets": {
+			"type": "array",
+			"description": "Rights-aware clause-set files, resolved relative to the module root.",
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
 		}
 	},
 	"$defs": {
+		"PlainLanguageProfile": {
+			"type": "object",
+			"description": "One plain_language_profiles body (quire-rs PlainLanguageProfile, deny_unknown_fields). The profile id is the map key.",
+			"required": ["version", "sentence_word_limit", "max_heading_level_step"],
+			"additionalProperties": false,
+			"properties": {
+				"version": {
+					"type": "string",
+					"minLength": 1
+				},
+				"document_types": {
+					"type": "array",
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				},
+				"sentence_word_limit": {
+					"type": "integer",
+					"minimum": 1
+				},
+				"max_heading_level_step": {
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 5
+				},
+				"known_acronyms": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "string"
+					}
+				},
+				"ignored_uppercase_terms": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				}
+			}
+		},
 		"ArchetypeEntry": {
 			"type": "object",
 			"required": ["kind"],
@@ -573,6 +628,14 @@
 					"type": "string",
 					"minLength": 1,
 					"description": "Optional inverse verb (e.g. contains <-> part_of). Need not itself be declared."
+				},
+				"composite": {
+					"type": "boolean",
+					"description": "The verb carries composition semantics during extraction. Defaults to false."
+				},
+				"symmetric": {
+					"type": "boolean",
+					"description": "`A verb B` holds exactly when `B verb A` does, so the relationship has no direction. Defaults to false."
 				}
 			}
 		},
@@ -620,6 +683,61 @@
 				"id_pattern": {
 					"type": "string",
 					"minLength": 1
+				},
+				"optional_columns": {
+					"type": "array",
+					"description": "Subset of `columns` a document MAY omit (table_row only).",
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				},
+				"max_rows": {
+					"type": "integer",
+					"minimum": 0
+				},
+				"matches": {
+					"type": "string",
+					"minLength": 1,
+					"description": "Regex the located content MUST match."
+				},
+				"choices": {
+					"type": "array",
+					"description": "Allowed values of located scalar content.",
+					"items": {
+						"type": "string"
+					}
+				},
+				"column_choices": {
+					"type": "object",
+					"description": "Header -> allowed values for every data cell in that column (table_row only).",
+					"additionalProperties": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
+				},
+				"column_patterns": {
+					"type": "object",
+					"description": "Header -> regex every data cell in that column MUST match (table_row only).",
+					"additionalProperties": {
+						"type": "string",
+						"minLength": 1
+					}
+				},
+				"from_vocabulary": {
+					"type": "string",
+					"minLength": 1,
+					"description": "Name of a declared vocabulary whose values are the allowed scalar content."
+				},
+				"column_vocabularies": {
+					"type": "object",
+					"description": "Header -> declared vocabulary name for that column (table_row only).",
+					"additionalProperties": {
+						"type": "string",
+						"minLength": 1
+					}
 				}
 			}
 		},
@@ -757,32 +875,80 @@
 		},
 		"LintRuleEntry": {
 			"type": "object",
-			"additionalProperties": true,
+			"description": "One declarative advisory lint rule (quire-rs LintRule, FR-036): a `type`-tagged union of table_column_values, section_body_pattern and forbidden_section. Unknown members are ignored by the consumer. The variant members are declared as optional properties so generated types keep them; per-type conditions only add `required`. Written as a tag plus per-type conditions rather than a root-level oneOf, which the Python generation inspection classifies as degraded.",
+			"required": ["type", "id", "section"],
 			"properties": {
-				"name": {
+				"type": {
+					"enum": [
+						"table_column_values",
+						"section_body_pattern",
+						"forbidden_section"
+					]
+				},
+				"id": {
 					"type": "string",
 					"minLength": 1
 				},
-				"description": {
+				"archetypes": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"section": {
 					"type": "string",
 					"minLength": 1
 				},
 				"severity": {
-					"type": "string",
-					"enum": ["error", "warning", "info"]
+					"enum": ["warning", "error"]
+				},
+				"message": {
+					"type": "string"
 				},
 				"pattern": {
-					"type": "object",
-					"required": ["kind"],
-					"properties": {
-						"kind": {
-							"type": "string",
-							"minLength": 1
+					"type": "string",
+					"minLength": 1
+				},
+				"column": {
+					"type": "string",
+					"minLength": 1
+				},
+				"allowed": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					}
+				},
+				"annotation_pattern": {
+					"type": "string"
+				}
+			},
+			"allOf": [
+				{
+					"if": {
+						"properties": {
+							"type": {
+								"const": "table_column_values"
+							}
 						}
 					},
-					"additionalProperties": true
+					"then": {
+						"required": ["column", "allowed"]
+					}
+				},
+				{
+					"if": {
+						"properties": {
+							"type": {
+								"const": "section_body_pattern"
+							}
+						}
+					},
+					"then": {
+						"required": ["pattern"]
+					}
 				}
-			}
+			]
 		},
 		"VocabularyTerm": {
 			"description": "One entry of a mergeable concrete-vocabulary registry (quire-rs vocab.rs LexiconTermDef / ObservableVerbDef / VacuousPredicateDef): the map key is the term, `definition` is documentation, `category` an optional grouping tag. Unknown members are ignored by the consumer.",

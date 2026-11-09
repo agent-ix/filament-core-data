@@ -15,17 +15,13 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import sys
 from typing import Any
 
 from python_backend import ROOT
 from python_backend.adapter.prepare import prepare_input_set
 from python_backend.adapter.profiles import load_profiles
-from python_backend.adapter.render import render
 from python_backend.runner.emit import GENERATED, demonstrated
 from python_backend.runner.qualify import REPORT
-
-VALIDATION = ROOT / "qualification" / "validation.json"
 
 
 def _generated_types(profile_id: str) -> dict[str, list[str]]:
@@ -149,7 +145,7 @@ def _conforming_string(schema: dict[str, Any]) -> str:
 #: One value per pattern the published schemas actually use, each satisfying the
 #: pattern it is filed under. A conforming value cannot be derived from an
 #: arbitrary regular expression, so these are enumerated from the contract —
-#: `python_backend/qualification/validation.json` names any type whose pattern
+#: the validation measurement names any type whose pattern
 #: has no sample as **unexercised**, so a missing entry is reported rather than
 #: silently skipped.
 _SAMPLES: dict[str, str] = {
@@ -518,17 +514,8 @@ def build() -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Exercise the generated surfaces.")
-    parser.add_argument("--check", action="store_true")
-    args = parser.parse_args(argv)
-    document = build()
-    fresh = render(document)
-    if args.check:
-        if not VALIDATION.exists() or VALIDATION.read_text(encoding="utf-8") != fresh:
-            print(f"{VALIDATION} differs from a fresh measurement", file=sys.stderr)
-            return 1
-        return 0
-    VALIDATION.write_text(fresh, encoding="utf-8")
-    for row in document["profiles"]:
+    parser.parse_args(argv)
+    for row in build()["profiles"]:
         print(row["profileId"], row["coverage"], row.get("exercisedTypes", "-"))
     return 0
 

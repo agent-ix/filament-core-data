@@ -69,10 +69,12 @@
 	},
 	"lint_rules": [
 		{
-			"name": "component-has-description",
-			"description": "Every component object type declares a description.",
-			"severity": "warning",
-			"pattern": { "kind": "field-presence" }
+			"type": "section_body_pattern",
+			"id": "component-has-description",
+			"section": "Description",
+			"pattern": "\\S",
+			"message": "Every component declares a description.",
+			"severity": "warning"
 		}
 	],
 	"edge_types": {

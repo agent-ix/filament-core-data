@@ -9,6 +9,8 @@ from typing import Annotated, Any
 from pydantic import ConfigDict, Field, constr
 from pydantic.dataclasses import dataclass
 
+type ClauseSet = Annotated[str, Field(min_length=1)]
+
 
 @dataclass(config=ConfigDict(extra='forbid'))
 class DependsOnItem:
@@ -333,11 +335,23 @@ class Category1(StrEnum):
 class EdgeTypeEntry:
     category: Category1
     description: Annotated[str, Field(min_length=1)]
+    composite: Annotated[
+        bool | None,
+        Field(
+            description='The verb carries composition semantics during extraction. Defaults to false.'
+        ),
+    ] = None
     inverse: Annotated[
         str | None,
         Field(
             description='Optional inverse verb (e.g. contains <-> part_of). Need not itself be declared.',
             min_length=1,
+        ),
+    ] = None
+    symmetric: Annotated[
+        bool | None,
+        Field(
+            description='`A verb B` holds exactly when `B verb A` does, so the relationship has no direction. Defaults to false.'
         ),
     ] = None
 
@@ -350,36 +364,88 @@ class GrammarEntry:
     version: Annotated[str | None, Field(min_length=1)] = None
 
 
-@dataclass(config=ConfigDict(extra='allow'))
-class Pattern:
-    kind: Annotated[str, Field(min_length=1)]
-
-
-class Severity(StrEnum):
-    error = 'error'
+class Severity(Enum):
     warning = 'warning'
-    info = 'info'
+    error = 'error'
 
 
-@dataclass(config=ConfigDict(extra='allow'))
+class Type(Enum):
+    table_column_values = 'table_column_values'
+    section_body_pattern = 'section_body_pattern'
+    forbidden_section = 'forbidden_section'
+
+
+@dataclass
 class LintRuleEntry:
-    description: Annotated[str | None, Field(min_length=1)] = None
-    name: Annotated[str | None, Field(min_length=1)] = None
-    pattern: Pattern | None = None
+    id: Annotated[str, Field(min_length=1)]
+    section: Annotated[str, Field(min_length=1)]
+    type: Type
+    allowed: list[str] | None = None
+    annotation_pattern: str | None = None
+    archetypes: list[str] | None = None
+    column: Annotated[str | None, Field(min_length=1)] = None
+    message: str | None = None
+    pattern: Annotated[str | None, Field(min_length=1)] = None
     severity: Severity | None = None
+
+
+type ColumnPatternsAdditionalProperty = Annotated[str, Field(min_length=1)]
+
+
+type ColumnVocabulariesAdditionalProperty = Annotated[str, Field(min_length=1)]
 
 
 type Column = Annotated[str, Field(min_length=1)]
 
 
+type OptionalColumn = Annotated[str, Field(min_length=1)]
+
+
 @dataclass(config=ConfigDict(extra='forbid'))
 class LocatorAssert:
+    choices: Annotated[
+        list[str] | None, Field(description='Allowed values of located scalar content.')
+    ] = None
+    column_choices: Annotated[
+        dict[str, list[str]] | None,
+        Field(
+            description='Header -> allowed values for every data cell in that column (table_row only).'
+        ),
+    ] = None
+    column_patterns: Annotated[
+        dict[str, ColumnPatternsAdditionalProperty] | None,
+        Field(
+            description='Header -> regex every data cell in that column MUST match (table_row only).'
+        ),
+    ] = None
+    column_vocabularies: Annotated[
+        dict[str, ColumnVocabulariesAdditionalProperty] | None,
+        Field(
+            description='Header -> declared vocabulary name for that column (table_row only).'
+        ),
+    ] = None
     columns: list[Column] | None = None
+    from_vocabulary: Annotated[
+        str | None,
+        Field(
+            description='Name of a declared vocabulary whose values are the allowed scalar content.',
+            min_length=1,
+        ),
+    ] = None
     id_column: Annotated[str | None, Field(min_length=1)] = None
     id_pattern: Annotated[str | None, Field(min_length=1)] = None
     level: Annotated[int | None, Field(ge=1, le=6)] = None
+    matches: Annotated[
+        str | None,
+        Field(description='Regex the located content MUST match.', min_length=1),
+    ] = None
+    max_rows: Annotated[int | None, Field(ge=0)] = None
     min_items: Annotated[int | None, Field(ge=0)] = None
     min_rows: Annotated[int | None, Field(ge=0)] = None
+    optional_columns: Annotated[
+        list[OptionalColumn] | None,
+        Field(description='Subset of `columns` a document MAY omit (table_row only).'),
+    ] = None
 
 
 class From(StrEnum):
@@ -400,6 +466,19 @@ class LocatorPrimitive:
 
 
 type Role = Annotated[str, Field(min_length=1)]
+
+
+type DocumentType = Annotated[str, Field(min_length=1)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class PlainLanguageProfile:
+    max_heading_level_step: Annotated[int, Field(ge=1, le=5)]
+    sentence_word_limit: Annotated[int, Field(ge=1)]
+    version: Annotated[str, Field(min_length=1)]
+    document_types: list[DocumentType] | None = None
+    ignored_uppercase_terms: list[str] | None = None
+    known_acronyms: dict[str, str] | None = None
 
 
 class Shape1(Enum):
@@ -865,6 +944,12 @@ class FilamentModuleManifest:
     ] = None
     archetypes: list[ArchetypeEntry] | None = None
     artifact_types: list[ArtifactTypeEntry] | None = None
+    clause_sets: Annotated[
+        list[ClauseSet] | None,
+        Field(
+            description='Rights-aware clause-set files, resolved relative to the module root.'
+        ),
+    ] = None
     depends_on: list[DependsOnItem] | None = None
     description: str | None = None
     doc_kinds: list[DocKind] | None = None
@@ -899,6 +984,12 @@ class FilamentModuleManifest:
         dict[str, VocabularyTerm] | None,
         Field(
             description='Mergeable observable-result verb registry (quire FR-047): verb -> {definition, category?}. Layered over the engine defaults.'
+        ),
+    ] = None
+    plain_language_profiles: Annotated[
+        dict[str, PlainLanguageProfile] | None,
+        Field(
+            description='Named, versioned advisory plain-language profiles (quire FR-074): profile id -> profile body. Merged first-wins across active modules.'
         ),
     ] = None
     property_idioms: Annotated[

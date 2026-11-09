@@ -639,3 +639,222 @@ describe("traceability", () => {
 		);
 	});
 });
+
+describe("locator assert members", () => {
+	const ASSERT =
+		"/artifact_types/0/body_extraction/yield_pattern/match/f/assert";
+	function withAssert(
+		assert: Record<string, unknown>,
+	): Record<string, unknown> {
+		return {
+			artifact_types: [
+				{
+					name: "A",
+					grammar_ref: "g",
+					frontmatter_schema_ref: "schemas/a.json",
+					body_extraction: {
+						yield_pattern: {
+							match: { f: { from: "table_row", assert } },
+						},
+					},
+				},
+			],
+		};
+	}
+
+	/// Trace: FR-149-AC-6
+	it.each([
+		["optional_columns", ["Priority"], "Priority", "type"],
+		["max_rows", 5, "5", "type"],
+		["matches", "^FR-[0-9]+$", 7, "type"],
+		["choices", ["a", "b"], "a", "type"],
+		["column_choices", { Status: ["open"] }, { Status: "open" }, "type"],
+		["column_patterns", { Id: "^[A-Z]+$" }, { Id: 1 }, "type"],
+		["from_vocabulary", "status", "", "minLength"],
+		["column_vocabularies", { Status: "status" }, { Status: 1 }, "type"],
+	])("accepts and refuses %s", (member, good, bad, keyword) => {
+		accepts(withAssert({ [member]: good }));
+		const at =
+			member === "from_vocabulary" ||
+			member === "matches" ||
+			member === "max_rows" ||
+			member === "optional_columns" ||
+			member === "choices"
+				? `${ASSERT}/${member}`
+				: `${ASSERT}/${member}/${Object.keys(good as object)[0]}`;
+		rejects(withAssert({ [member]: bad }), at, keyword as string);
+	});
+});
+
+describe("edge type composite and symmetric", () => {
+	const edge = { description: "d", category: "structural" };
+
+	/// Trace: FR-149-AC-7
+	it("accepts boolean composite and symmetric and refuses other types", () => {
+		accepts({
+			edge_types: {
+				contains: { ...edge, composite: true },
+				peer: { ...edge, symmetric: true },
+			},
+		});
+		rejects(
+			{ edge_types: { contains: { ...edge, composite: "yes" } } },
+			"/edge_types/contains/composite",
+			"type",
+		);
+		rejects(
+			{ edge_types: { peer: { ...edge, symmetric: 1 } } },
+			"/edge_types/peer/symmetric",
+			"type",
+		);
+	});
+});
+
+describe("lint_rules", () => {
+	/// Trace: FR-149-AC-8
+	it("accepts each type-tagged rule with a string pattern", () => {
+		accepts({
+			lint_rules: [
+				{
+					type: "table_column_values",
+					id: "r1",
+					section: "Verification",
+					column: "Method",
+					allowed: ["Test"],
+					annotation_pattern: "^\\(.*\\)$",
+					archetypes: ["FR"],
+					severity: "warning",
+				},
+				{
+					type: "section_body_pattern",
+					id: "r2",
+					section: "Behavior",
+					pattern: "SHALL",
+					message: "m",
+				},
+				{
+					type: "forbidden_section",
+					id: "r3",
+					section: "Acceptance Criteria",
+					severity: "error",
+				},
+			],
+		});
+	});
+
+	/// Trace: FR-149-AC-8
+	it("refuses an untagged rule, a missing variant member and an object pattern", () => {
+		rejects(
+			{ lint_rules: [{ id: "r", section: "S", pattern: "x" }] },
+			"/lint_rules/0",
+			"required",
+		);
+		rejects(
+			{ lint_rules: [{ type: "bogus", id: "r", section: "S" }] },
+			"/lint_rules/0/type",
+			"enum",
+		);
+		rejects(
+			{
+				lint_rules: [
+					{
+						type: "section_body_pattern",
+						id: "r",
+						section: "S",
+						pattern: { kind: "regex" },
+					},
+				],
+			},
+			"/lint_rules/0/pattern",
+			"type",
+		);
+		rejects(
+			{
+				lint_rules: [
+					{ type: "table_column_values", id: "r", section: "S", column: "C" },
+				],
+			},
+			"/lint_rules/0",
+			"required",
+		);
+		rejects(
+			{
+				lint_rules: [
+					{
+						type: "table_column_values",
+						id: "r",
+						section: "S",
+						allowed: ["a"],
+					},
+				],
+			},
+			"/lint_rules/0",
+			"required",
+		);
+		rejects(
+			{ lint_rules: [{ type: "section_body_pattern", id: "r", section: "S" }] },
+			"/lint_rules/0",
+			"required",
+		);
+		for (const type of ["forbidden_section", "table_column_values"]) {
+			rejects(
+				{
+					lint_rules: [
+						{
+							type,
+							id: "r",
+							section: "S",
+							column: "C",
+							allowed: ["a"],
+							pattern: { kind: "regex" },
+						},
+					],
+				},
+				"/lint_rules/0/pattern",
+				"type",
+			);
+		}
+	});
+});
+
+describe("plain_language_profiles and clause_sets", () => {
+	const profile = {
+		version: "1",
+		sentence_word_limit: 25,
+		max_heading_level_step: 1,
+	};
+
+	/// Trace: FR-149-AC-9
+	it("accepts a profile and a clause-set path list", () => {
+		accepts({
+			plain_language_profiles: {
+				std: {
+					...profile,
+					document_types: ["FR"],
+					known_acronyms: { API: "Application Programming Interface" },
+					ignored_uppercase_terms: ["SHALL"],
+				},
+			},
+			clause_sets: ["clauses/widget.json"],
+		});
+	});
+
+	/// Trace: FR-149-AC-9
+	it("refuses an undeclared profile member, a zero limit and a non-list clause_sets", () => {
+		rejects(
+			{ plain_language_profiles: { std: { ...profile, extra: 1 } } },
+			"/plain_language_profiles/std",
+			"additionalProperties",
+		);
+		rejects(
+			{
+				plain_language_profiles: {
+					std: { ...profile, sentence_word_limit: 0 },
+				},
+			},
+			"/plain_language_profiles/std/sentence_word_limit",
+			"minimum",
+		);
+		rejects({ clause_sets: "clauses/widget.json" }, "/clause_sets", "type");
+	});
+});

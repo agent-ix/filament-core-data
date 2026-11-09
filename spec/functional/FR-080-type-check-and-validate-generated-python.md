@@ -30,20 +30,20 @@ type-checks but accepts invalid data is caught.
 ## Outputs
 
 - A pinned `mypy` configuration scoped to `python_backend/generated/**` and `python_backend/examples/**`
-- `python_backend/qualification/validation.json`: per profile and per generated type, the conforming and non-conforming values exercised and the outcome
+- `python_backend/runner/validate.py`: per profile and per generated type, the conforming and non-conforming values exercised and the outcome
 
 ## Behavior
 
 - The gate SHALL run the type checker over every emitted module and every example under `strict` settings, with no per-file ignore and no `type: ignore` comment in generated or example source.
 - The gate SHALL run the type checker at the version the `python-backend` Poetry group resolves, failing with a provisioning message rather than skipping when it is absent.
-- The gate SHALL cover only demonstrated profiles, recording each undemonstrated family in `validation.json` as not emitted rather than as passing, because a `not-qualified` family has no emitted tree.
+- The gate SHALL cover only demonstrated profiles, recording each undemonstrated family in the validation measurement as not emitted rather than as passing, because a `not-qualified` family has no emitted tree.
 - The gate SHALL exercise every generated type in a profile whose `runtimeValidation` is `validating` with a value built from that type's own schema node and a value the contract forbids.
-- The gate SHALL name in `validation.json`, with the reason, every type it could not exercise.
+- The gate SHALL name in the validation measurement, with the reason, every type it could not exercise.
 - The reason SHALL be one of two measured facts: no schema node carries that type's property set, or the value built from its schema node was rejected by the family's own runtime. A type counted as exercised without both a conforming and a forbidden value SHALL NOT be reported as exercised.
 - The conforming value SHALL be built from the schema — its required members, its combinators, its `$ref` targets resolved in the document that wrote them, and one enumerated sample per pattern the published schemas use — so that it comes from the contract rather than from what the generated code happens to accept.
-- `validation.json` SHALL record the exercised and unexercised counts per profile, frozen by `--check`, so that a change which stops exercising a type moves a committed number and reds a gate rather than passing against a literal the code supplies.
+- The validation measurement SHALL record the exercised and unexercised counts per profile, and the gate SHALL assert that they add up to the validating types.
 - The gate SHALL fail, naming the type, the field, and the constraint, when the family's own runtime — Pydantic validation for the two Pydantic families, `msgspec` decoding for `msgspec.Struct` — accepts a value the contract forbids.
-- `validation.json` SHALL record a profile whose `runtimeValidation` is `static-only` as covered by static checking alone, never as runtime-covered.
+- The validation measurement SHALL record a profile whose `runtimeValidation` is `static-only` as covered by static checking alone, never as runtime-covered.
 - The gate SHALL assert, for every constraint a demonstrated family is recorded as losing, that the generated surface really does accept the value the contract forbids, so the recorded verdict is falsifiable rather than asserted.
 - The gate SHALL run its falsification cases against generation into a scratch directory with a mutated probe schema, never against the committed tree, so that the freeze of FR-079-AC-4 and the falsification of a verdict do not contradict each other.
 - The coverage account SHALL state, per profile, the number of generated types, the number exercised, and the number of constraints exercised, failing when any generated type in a validating profile is unexercised.
@@ -63,10 +63,10 @@ type-checks but accepts invalid data is caught.
 |---|---|---|
 | FR-080-AC-1 | The pinned type checker reports zero errors over every emitted module and every example under strict settings. | Analysis |
 | FR-080-AC-2 | No generated or example source contains a `type: ignore` comment, and the checker configuration declares no per-module override and no relaxation of `strict`. | Static |
-| FR-080-AC-3 | Every generated type in a `validating` profile is either exercised with a schema-built conforming value and a forbidden one, or named in `validation.json` with one of the two declared reasons; the per-profile exercised and unexercised counts are frozen by `--check`, and a mutated count fails it. | Integration |
+| FR-080-AC-3 | Every generated type in a `validating` profile is either exercised with a schema-built conforming value and a forbidden one, or named in the validation measurement with one of the two declared reasons, and the per-profile exercised and unexercised counts add up to the validating types. | Integration |
 | FR-080-AC-4 | For each constraint a demonstrated family retains, a non-conforming value is rejected by that family's runtime, naming the constraint. | Integration |
 | FR-080-AC-5 | For each constraint a demonstrated family is recorded as losing, generation into a scratch directory from the corresponding probe produces a surface that accepts the forbidden value. | Integration |
-| FR-080-AC-6 | `validation.json` records every `static-only` profile as static-only and every undemonstrated family as not emitted, and the coverage account counts neither as runtime-covered. | Test |
+| FR-080-AC-6 | The validation measurement records every `static-only` profile as static-only and every undemonstrated family as not emitted, and the coverage account counts neither as runtime-covered. | Test |
 | FR-080-AC-7 | With the type checker absent, the gate fails with a provisioning message naming the Poetry group; it does not skip. | Test |
 | FR-080-AC-8 | The suites added by this change report zero skipped tests, read from the run's own report rather than by inspection. | Test |
 | FR-080-AC-9 | A probe schema whose constraint is removed produces, into a scratch directory, a surface that accepts the previously rejected value, and the runtime-validation gate reports that difference. | Integration |

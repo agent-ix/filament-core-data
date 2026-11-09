@@ -49,6 +49,11 @@ checked by the consumer at module load and are not restated here.
 - An obligation SHALL NOT name both `target` and `archetype`, and SHALL name one of them; an obligation naming `archetype` SHALL also name `section` and `id_format`. A combinatorial `strength` SHALL be at least 1.
 - A required relation SHALL declare a non-empty `edges` and a `direction` of `outgoing`, `incoming` or `either`.
 
+- A locator `assert` SHALL additionally declare, as the quire-rs `LocatorAssert` reader does, `optional_columns` (list of strings), `max_rows` (integer, at least 0), `matches` (non-empty string), `choices` (list of strings), `column_choices` (header to list of strings), `column_patterns` (header to non-empty string), `from_vocabulary` (non-empty string) and `column_vocabularies` (header to non-empty string), and SHALL refuse a value of another type.
+- An `edge_types` entry SHALL additionally accept boolean `composite` and boolean `symmetric`.
+- A `lint_rules` entry SHALL be the quire-rs `LintRule`: an object with `type` of `table_column_values`, `section_body_pattern` or `forbidden_section`, a non-empty `id` and `section`, and optional `archetypes`, `message` and `severity` (`warning` or `error`). A `table_column_values` rule SHALL declare `column` and `allowed`, and its optional `annotation_pattern` SHALL be a string. A `section_body_pattern` rule SHALL declare a string `pattern`. A `pattern` that is not a string SHALL be refused on every rule type.
+- `plain_language_profiles` SHALL be a map from profile id to `{version, sentence_word_limit, max_heading_level_step}` with optional `document_types`, `known_acronyms` and `ignored_uppercase_terms`, refusing any other member; `clause_sets` SHALL be a list of non-empty strings.
+
 The scalar-or-list `section` is one named definition (`SectionList` for the list form). The `oneOf` of a string and that list stays at each use, because the Python generation inspection classifies a root-level `oneOf` definition as degraded.
 
 ## Acceptance Criteria
@@ -60,6 +65,10 @@ The scalar-or-list `section` is one named definition (`SectionList` for the list
 | FR-149-AC-3 | `grammar_severity` with `ac:vacuous-outcome: error` is accepted; a key with no colon, two colons, an empty half or whitespace, and a level outside `off`, `warning`, `error` are refused. | Test (TC-1900) |
 | FR-149-AC-4 | A full `verification_catalog` entry is accepted; an entry missing `class`, with a blank `class`, an empty `name`, an undeclared member, a non-list `applicability` value or a string `tooling` is refused. | Test (TC-1901) |
 | FR-149-AC-5 | A `traceability` block exercising every member, including `from: list_item` and `heading` targets, `retired` and an `implements` `syntax`, is accepted; an undeclared member, an empty `section` list, a trace target whose `id_column` and `pattern` disagree with its `from`, a `syntax` outside an `implements` form or on a non-Rust form, a non-list `retired`, an obligation naming both or neither of `target` and `archetype` or `archetype` without `section` or `id_format`, a combinatorial `strength` of 0, a required relation with no `edges`, an unknown `direction` or a `check` containing a colon, a marker of an unknown `language`, a status without `column` and a document reference without `targets` are refused. | Test (TC-1902) |
+| FR-149-AC-6 | Each of `optional_columns`, `max_rows`, `matches`, `choices`, `column_choices`, `column_patterns`, `from_vocabulary` and `column_vocabularies` is accepted in a locator `assert` with a value of its stated type and refused with a value of another type or, for `from_vocabulary`, an empty string. | Test (TC-1903) |
+| FR-149-AC-7 | An `edge_types` entry with boolean `composite` or `symmetric` is accepted; a non-boolean value is refused. | Test (TC-1904) |
+| FR-149-AC-8 | A `lint_rules` entry of each of the three `type` values is accepted, with a string `pattern` on a `section_body_pattern` rule; an entry with no `type`, an unknown `type`, an object `pattern` on any rule type, a `table_column_values` rule without `column` or without `allowed`, or a `section_body_pattern` rule without `pattern` is refused. | Test (TC-1905) |
+| FR-149-AC-9 | A `plain_language_profiles` map and a `clause_sets` list of paths are accepted; a profile with an undeclared member or a zero `sentence_word_limit`, and a non-list `clause_sets`, are refused. | Test (TC-1906) |
 
 ## Dependencies
 

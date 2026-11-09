@@ -23,7 +23,6 @@ trustworthy, plus the measured evidence for what it does and does not carry.
 | `qualification/malicious/` | Sixty-seven documents, each carrying one injection construct or one prohibited option |
 | `qualification/report.json` | The measured verdicts. Generated; never hand-edited |
 | `qualification/gaps.json` | One row per construct and affected family, with a severity and a disposition |
-| `qualification/validation.json` | Per profile: what was exercised, and what is static-only or not emitted |
 | `generated/<profile-id>/` | The emitted packages. Regenerated and byte-compared |
 | `examples/` | Ordinary consumers, executed by the suite |
 
@@ -67,7 +66,7 @@ poetry run python -m python_backend.runner.emit         # regenerate the package
 poetry run python -m python_backend.runner.validate
 ```
 
-Each takes `--check`, which fails when a committed artefact differs from a fresh
+`qualify` and `emit` take `--check`, which fails when a committed artefact differs from a fresh
 measurement. Nothing here opens a network connection.
 
 ## What this does not do

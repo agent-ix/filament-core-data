@@ -878,7 +878,7 @@ computed by `quire matrix` from those trace tags.
 | TC-929 | Every generated type in a validating profile is exercised with a conforming and a non-conforming value; an unexercised type reds the gate | Integration | P0 | FR-080-AC-3 |
 | TC-930 | For each retained constraint a non-conforming value is rejected by the family's own runtime, naming the constraint | Integration | P0 | FR-080-AC-4 |
 | TC-931 | For each lost constraint, scratch generation from the corresponding probe produces a surface that accepts the forbidden value | Integration | P0 | FR-080-AC-5 |
-| TC-932 | `validation.json` records static-only and undemonstrated families as such and counts neither as runtime-covered | Unit | P0 | FR-080-AC-6 |
+| TC-932 | The validation measurement records static-only and undemonstrated families as such and counts neither as runtime-covered | Unit | P0 | FR-080-AC-6 |
 | TC-933 | With the type checker absent the gate fails with a provisioning message and does not skip | Unit | P0 | FR-080-AC-7 |
 | TC-934 | The added suites report zero skipped tests read from the run's own report, and the coverage account counts no skip | Unit | P0 | FR-080-AC-8, FR-080-CON-2 |
 | TC-935 | Removing a constraint from a probe schema produces, in a scratch directory, a surface that accepts the previously rejected value and the gate reports the difference | Integration | P0 | FR-080-AC-9 |
@@ -1410,6 +1410,10 @@ computed by `quire matrix` from those trace tags.
 | TC-1900 | `grammar_severity` accepts `<grammar>:<check>` keys with `off`, `warning` or `error` and refuses a malformed key or an unknown level. | Unit | P0 | FR-149-AC-3 |
 | TC-1901 | `verification_catalog` accepts a full entry and refuses a missing or blank `class`, an empty `name`, an undeclared member and wrongly typed `applicability` or `tooling`. | Unit | P0 | FR-149-AC-4 |
 | TC-1902 | `traceability` accepts a block exercising every member and refuses an undeclared member, an empty `section`, a malformed obligation source, relation, marker, status or document reference. | Unit | P0 | FR-149-AC-5 |
+| TC-1903 | A locator `assert` accepts each of `optional_columns`, `max_rows`, `matches`, `choices`, `column_choices`, `column_patterns`, `from_vocabulary` and `column_vocabularies` and refuses a value of the wrong type. | Unit | P0 | FR-149-AC-6 |
+| TC-1904 | An `edge_types` entry accepts boolean `composite` and `symmetric` and refuses a non-boolean. | Unit | P0 | FR-149-AC-7 |
+| TC-1905 | `lint_rules` accepts the three `type`-tagged rules with a string `pattern` and refuses an untagged rule, an unknown `type`, an object `pattern` on any rule type, a `table_column_values` rule missing `column` or `allowed`, and a `section_body_pattern` rule missing `pattern`. | Unit | P0 | FR-149-AC-8 |
+| TC-1906 | `plain_language_profiles` and `clause_sets` are accepted and an undeclared profile member, a zero limit and a non-list `clause_sets` are refused. | Unit | P0 | FR-149-AC-9 |
 | TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 |
 
 ## Option Permutation Matrix
