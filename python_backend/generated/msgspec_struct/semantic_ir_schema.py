@@ -320,6 +320,11 @@ class Frame(Struct):
 type IdentityList = list[common_schema.SemanticIdentity]
 
 
+class MapBound(Struct):
+    lower: Annotated[int, Meta(ge=0)]
+    upper: Annotated[int, Meta(ge=0)] | UnsetType = UNSET
+
+
 class Multiplicity(Struct):
     lower: Annotated[int, Meta(ge=0)]
     ordered: bool
@@ -677,6 +682,7 @@ class TypeDefinition(Struct):
     roles: list[Role]
     unknownPolicy: common_schema.UnknownPolicy
     abstract: bool | UnsetType = UNSET
+    bound: MapBound | UnsetType = UNSET
     clauses: list[Clause] | UnsetType = UNSET
     decimal: DecimalPolicy | UnsetType = UNSET
     declaredType: common_schema.SemanticIdentity | UnsetType = UNSET
@@ -692,6 +698,7 @@ class TypeDefinition(Struct):
     inner: common_schema.SemanticIdentity | UnsetType = UNSET
     interfaceType: common_schema.SemanticIdentity | UnsetType = UNSET
     items: common_schema.SemanticIdentity | UnsetType = UNSET
+    keys: common_schema.SemanticIdentity | UnsetType = UNSET
     members: IdentityList | UnsetType = UNSET
     multiplicity: Multiplicity | UnsetType = UNSET
     occurrenceField: common_schema.SemanticIdentity | UnsetType = UNSET

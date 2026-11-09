@@ -547,6 +547,14 @@ class IdentityList(RootModel[list[common_schema.SemanticIdentity]]):
     root: list[common_schema.SemanticIdentity]
 
 
+class MapBound(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    lower: Annotated[int, Field(ge=0)]
+    upper: Annotated[int | None, Field(ge=0)] = None
+
+
 class Multiplicity(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1003,6 +1011,7 @@ class TypeDefinition(BaseModel):
         extra='forbid',
     )
     abstract: bool | None = None
+    bound: MapBound | None = None
     clauses: list[Clause] | None = None
     constraints: list[Constraint]
     decimal: DecimalPolicy | None = None
@@ -1022,6 +1031,7 @@ class TypeDefinition(BaseModel):
     inner: common_schema.SemanticIdentity | None = None
     interfaceType: common_schema.SemanticIdentity | None = None
     items: common_schema.SemanticIdentity | None = None
+    keys: common_schema.SemanticIdentity | None = None
     kind: Kind | ConstructKind
     members: IdentityList | None = None
     multiplicity: Multiplicity | None = None

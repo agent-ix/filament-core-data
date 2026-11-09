@@ -423,6 +423,26 @@ multiplicity `[1, 1]` raises `INVALID_OPTION_PRESENCE`. A missing or malformed
 generation backend renders an option, and the seam refuses it with
 `UNSUPPORTED_CONSTRUCT_SHAPE`.
 
+A map type (QSpec FR-154 "Map types") is a type definition of the core `kind`
+`map` that declares `keys`, a type identity, `values`, a type identity, and
+`bound`, an object `{lower, upper}` of non-negative integers whose `upper` is
+absent when the map has no maximum. A map written before `keys` and `bound`
+carries neither and is unchanged; a map that declares one declares the other,
+or it is a `SCHEMA_VIOLATION`, as is a `bound` that is not an object of a
+`lower` and an optional `upper`, a member another kind declares, and `keys` or
+`bound` on any kind but `map`. A `keys` naming no declared type raises
+`UNRESOLVED_MAP_KEY`. A `keys` that is no scalar key type raises
+`INVALID_MAP_KEY`: the scalar key types are the native value types `Boolean`,
+`Integer`, `Float32`, `Float64`, `Text`, `String`, `UUID`, `Timestamp`,
+`Bytes`, `Duration` and `JsonObject`, a unit, a scalar type definition of
+scalar `integer` or `string`, an enumeration, a union none of whose cases
+carries a payload, and an alias whose `target` chain reaches one of those; a
+clock, `Rational`, `Decimal`, a record, tuple, option, sequence, map or
+reference type, a union with a payload and a type that is no value type are
+not. A `bound` whose `lower` is above its `upper`, or above `0` with no
+`upper`, raises `INVALID_MAP_BOUND`. No generation backend renders a map key
+other than a string.
+
 A broken construct reference raises `UNRESOLVED_CONSTRUCT_REF` or
 `CONSTRUCT_TARGET_KIND`; a wrong occurrence field raises
 `INVALID_OCCURRENCE_FIELD`; a guard naming no clause raises

@@ -3,7 +3,7 @@
 	"cases": [
 		{
 			"id": "PM-01",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "the base map type",
 			"set": [],
@@ -12,7 +12,7 @@
 		},
 		{
 			"id": "PM-02",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "bound with no upper",
 			"set": [
@@ -28,7 +28,7 @@
 		},
 		{
 			"id": "PM-03",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "Integer key",
 			"set": [
@@ -42,7 +42,7 @@
 		},
 		{
 			"id": "PM-04",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "Int[0, 9] value type key",
 			"set": [
@@ -56,7 +56,7 @@
 		},
 		{
 			"id": "PM-05",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "payload-free variant (enumeration) key",
 			"set": [
@@ -70,7 +70,7 @@
 		},
 		{
 			"id": "PM-06",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "unit key",
 			"set": [
@@ -84,7 +84,7 @@
 		},
 		{
 			"id": "PM-07",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "alias of Text key",
 			"set": [
@@ -98,7 +98,7 @@
 		},
 		{
 			"id": "PM-08",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "Clock key",
 			"set": [
@@ -117,7 +117,7 @@
 		},
 		{
 			"id": "PM-09",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "alias of Clock key",
 			"set": [
@@ -136,7 +136,7 @@
 		},
 		{
 			"id": "PM-10",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "clock-bearing record key Timer",
 			"set": [
@@ -155,7 +155,7 @@
 		},
 		{
 			"id": "PM-11",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "record Cfg { a: Boolean } key",
 			"set": [
@@ -174,7 +174,7 @@
 		},
 		{
 			"id": "PM-12",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "Option<Text> key",
 			"set": [
@@ -193,7 +193,7 @@
 		},
 		{
 			"id": "PM-13",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "sequence type key",
 			"set": [
@@ -212,7 +212,7 @@
 		},
 		{
 			"id": "PM-14",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "map type key",
 			"set": [
@@ -231,7 +231,7 @@
 		},
 		{
 			"id": "PM-15",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "tuple value type key",
 			"set": [
@@ -250,7 +250,7 @@
 		},
 		{
 			"id": "PM-16",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "union (payload-bearing variant) key",
 			"set": [
@@ -269,7 +269,7 @@
 		},
 		{
 			"id": "PM-17",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "reference type key",
 			"set": [
@@ -288,7 +288,7 @@
 		},
 		{
 			"id": "PM-18",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "object type key",
 			"set": [
@@ -307,7 +307,7 @@
 		},
 		{
 			"id": "PM-19",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "absent keys",
 			"set": [],
@@ -323,7 +323,7 @@
 		},
 		{
 			"id": "PM-20",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "keys naming no node",
 			"set": [
@@ -342,7 +342,7 @@
 		},
 		{
 			"id": "PM-21",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "absent bound",
 			"set": [],
@@ -358,7 +358,7 @@
 		},
 		{
 			"id": "PM-22",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "string bound",
 			"set": [
@@ -377,7 +377,7 @@
 		},
 		{
 			"id": "PM-23",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "negative lower",
 			"set": [
@@ -396,7 +396,7 @@
 		},
 		{
 			"id": "PM-24",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "non-integer upper",
 			"set": [
@@ -415,7 +415,7 @@
 		},
 		{
 			"id": "PM-25",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "bound with an extra member",
 			"set": [
@@ -434,7 +434,7 @@
 		},
 		{
 			"id": "PM-26",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "lower above upper",
 			"set": [
@@ -456,7 +456,7 @@
 		},
 		{
 			"id": "PM-27",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "bound with no lower",
 			"set": [
@@ -477,7 +477,7 @@
 		},
 		{
 			"id": "PM-28",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "bound with no upper and a lower above 0",
 			"set": [
@@ -498,7 +498,7 @@
 		},
 		{
 			"id": "PM-29",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "an items member on the map",
 			"set": [
@@ -517,7 +517,7 @@
 		},
 		{
 			"id": "PM-30",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "absent values",
 			"set": [],
@@ -533,7 +533,7 @@
 		},
 		{
 			"id": "PM-31",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "keys naming a namespace",
 			"set": [
@@ -552,7 +552,7 @@
 		},
 		{
 			"id": "PM-32",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "Decimal[...] value type key",
 			"set": [
@@ -571,7 +571,7 @@
 		},
 		{
 			"id": "PM-33",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "native Rational key",
 			"set": [
@@ -590,7 +590,7 @@
 		},
 		{
 			"id": "PM-34",
-			"tc": "TC-234",
+			"tc": "QSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "bound on a sequence type definition",
 			"set": [

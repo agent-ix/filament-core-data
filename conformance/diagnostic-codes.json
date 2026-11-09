@@ -521,6 +521,33 @@
 			"rule": "A field of option type with presence optional and multiplicity [1, 1].",
 			"citation": "INVALID_OPTION_PRESENCE",
 			"exercisedBy": "test:TC-1890"
+		},
+		{
+			"code": "agent-ix.semantic-ir.UNRESOLVED_MAP_KEY",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A map type whose keys names no declared type.",
+			"citation": "UNRESOLVED_MAP_KEY",
+			"exercisedBy": "test:map_keys_bound"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_MAP_KEY",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A map type whose keys is no scalar key type.",
+			"citation": "INVALID_MAP_KEY",
+			"exercisedBy": "test:map_keys_bound"
+		},
+		{
+			"code": "agent-ix.semantic-ir.INVALID_MAP_BOUND",
+			"provenance": "minted",
+			"decidedBy": "cross-field",
+			"sources": ["docs/semantic-data-system/contracts-v1.md"],
+			"rule": "A map type whose bound has a lower above its upper, or a lower above 0 and no upper.",
+			"citation": "INVALID_MAP_BOUND",
+			"exercisedBy": "test:map_keys_bound"
 		}
 	]
 }

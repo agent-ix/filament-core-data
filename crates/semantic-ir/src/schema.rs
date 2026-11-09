@@ -1528,7 +1528,10 @@ fn map_schema(definition: &Json, at: &str, kind: &str, f: &mut Findings) {
     }
     for (present, absent) in [("keys", "bound"), ("bound", "keys")] {
         if definition.has(present) && !definition.has(absent) {
-            f.push(at, format!("a map type that declares {present} declares {absent}"));
+            f.push(
+                at,
+                format!("a map type that declares {present} declares {absent}"),
+            );
         }
     }
     expect_shape(
