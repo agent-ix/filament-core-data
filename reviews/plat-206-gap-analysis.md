@@ -51,3 +51,9 @@ separate release PR.
 Plan completion: not assessed
 
 The whole-tree matrix holds 278 tagged, 1562 untagged, 4 tagged-by-ignored-test and 380 method-without-symbol criteria; that is context only.
+
+## Dispositions
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-001 | fixed | ce8b1660: the tests carry `/// Trace: FR-149-AC-n`. `quoin matrix` (0.29.1) reports FR-149-AC-1 to AC-5 as tagged, with 2, 3, 2, 2 and 8 binders. |
