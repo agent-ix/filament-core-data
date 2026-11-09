@@ -62,3 +62,9 @@ Round 1, head `d224a33` (fix commit `c07644b`, plus a trailing commit that adds 
 | FND-003 | fixed | The README now says the schema checks the shape and the name, and that the `Decimal` → `decimal` rule is enforced by the semantic-core reader. |
 | FND-004 | fixed | Both Usage sections say to run `npm install ajv` and save the script as an ES module (`validate.mjs`). |
 | FND-005 | fixed | The "Three tables ship beside the schemas" and "The namespace holds 37 declarations" sentences are removed. The build-from-clone step now points to Building and testing. |
+
+Round 2, head `d83a358`. Since `d224a33`, the only changes are FND-002 in `schema/README.md` and the round-1 copy of this file under `reviews/`. The schema Usage snippet was re-run against the head's `schema/semantic/v1` and prints `true`, `false`, `must have required property 'manifest_version'`. GitHub reports `MERGEABLE`. No gate was run, per the brief.
+
+| FND | Outcome | Reason |
+| --- | --- | --- |
+| FND-002 | fixed | The `common.schema.json` sentence and the `ajv.addSchema(load("common.schema.json"))` line are removed. The snippet compiles `module-manifest.schema.json` alone and prints the documented output. |
