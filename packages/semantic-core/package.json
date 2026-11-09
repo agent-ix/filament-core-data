@@ -1,6 +1,6 @@
 {
 	"name": "@agent-ix/semantic-core",
-	"version": "0.4.2",
+	"version": "0.4.3",
 	"description": "Semantic-core L3 declaration grammar and kernel scalar library (TypeSpec source, AgentIx.Semantic.Core).",
 	"license": "AGPL-3.0-or-later",
 	"tspMain": "main.tsp",
