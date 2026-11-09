@@ -26,7 +26,7 @@
 		{
 			"artifact": "packages/semantic-core/generated/json-schema/TypeRef.json",
 			"locator": "#/properties/target/$ref",
-			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.3.3/TypeRefTarget.json\""
+			"quote": "\"$ref\": \"https://schemas.agent-ix.org/semantic-core/0.4.0/TypeRefTarget.json\""
 		}
 	],
 	"provenance": {

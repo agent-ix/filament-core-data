@@ -1,16 +1,16 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.3.3/ClauseRef.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.0/ClauseRef.json",
 	"type": "object",
 	"properties": {
 		"language": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/ClauseLanguage.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/ClauseLanguage.json"
 		},
 		"clauseId": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/Identifier.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/Identifier.json"
 		},
 		"sourceSpan": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.3.3/SourceLocus.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.0/SourceLocus.json"
 		}
 	},
 	"required": ["language", "clauseId"],
