@@ -24,9 +24,8 @@ name: Schema Release
 # Trusted Publishing (OIDC) -- the same mechanism as the spec-artifacts-* /
 # spec-objects-* repos (agent-ix/nodejs-actions release-npm-module.yml). Each
 # package needs a Trusted Publisher entry on npmjs.com naming repository
-# agent-ix/filament-core-data and workflow file schema-release.yml. An optional
-# NPM_TOKEN secret is honoured only for a package's first publish, before that
-# entry exists. The test/lint jobs still read GitHub Packages (npm.ix) through
+# agent-ix/filament-core-data and workflow file schema-release.yml. No npm token
+# is used anywhere in the publish job. The test/lint jobs still read GitHub Packages (npm.ix) through
 # secrets.REGISTRY_TOKEN to install dependencies; only the publish moved.
 #
 # Tags are package-prefixed (`<package>-vX.Y.Z`) because the two payloads
@@ -290,17 +289,12 @@ jobs:
 
       - name: Publish to npm
         working-directory: ${{ steps.resolve.outputs.dir }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -e
           PACKAGE_ID="$(node -p "require('./package.json').name")@${{ steps.resolve.outputs.version }}"
           if npm view "$PACKAGE_ID" version > /dev/null 2>&1; then
             echo "Already published: $PACKAGE_ID"
             exit 0
-          fi
-          if [ -n "$NODE_AUTH_TOKEN" ]; then
-            echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" >> "$HOME/.npmrc"
           fi
           npm publish --access public
 

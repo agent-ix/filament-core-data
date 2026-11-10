@@ -6,7 +6,7 @@
 		"members": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/RelationDecl.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/RelationDecl.json"
 			}
 		},
 		"vocabulary": {
