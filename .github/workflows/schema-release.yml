@@ -296,7 +296,14 @@ jobs:
             echo "Already published: $PACKAGE_ID"
             exit 0
           fi
-          npm publish --access public
+          # Diagnostic: npm swallows OIDC exchange errors and falls through to
+          # ENEEDAUTH, so on failure print the OIDC-relevant debug-log lines.
+          rc=0
+          npm publish --access public --loglevel silly || rc=$?
+          if [ "$rc" -ne 0 ]; then
+            grep -hiE "oidc|trusted|exchange|id[-_]token|provenance|ACTIONS_ID" ~/.npm/_logs/*.log | sed -E 's/(token|bearer|authorization)[^ ]*[ =:]+[^ ]+/\1 [redacted]/Ig' | head -60 || true
+          fi
+          exit "$rc"
 
       - name: Write summary
         shell: bash
