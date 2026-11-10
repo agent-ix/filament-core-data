@@ -173,6 +173,19 @@
 					},
 					"description": "Imported semantic packages (<org>/<repo>) at exact versions."
 				},
+				"import_types": {
+					"type": "object",
+					"additionalProperties": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1
+						},
+						"minItems": 1,
+						"uniqueItems": true
+					},
+					"description": "Optional sibling of imports: for an imported package (<org>/<repo>), the names of the types of that package this module uses."
+				},
 				"targets": {
 					"type": "array",
 					"items": {

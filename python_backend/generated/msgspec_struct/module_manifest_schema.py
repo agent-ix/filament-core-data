@@ -59,6 +59,14 @@ class CompatibilityPosture(Enum):
 type Export = Annotated[str, Meta(min_length=1)]
 
 
+type ImportTypesAdditionalPropertyItem = Annotated[str, Meta(min_length=1)]
+
+
+type ImportTypesAdditionalProperty = Annotated[
+    list[ImportTypesAdditionalPropertyItem], Meta(min_length=1)
+]
+
+
 type ImportsAdditionalProperty = Annotated[
     str, Meta(pattern='^[0-9]+\\.[0-9]+\\.[0-9]+$')
 ]
@@ -111,6 +119,15 @@ class Semantic(Struct):
             list[Export],
             Meta(
                 description='Object-type names published as semantic types; each must be declared in object_types.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+    import_types: (
+        Annotated[
+            dict[str, ImportTypesAdditionalProperty],
+            Meta(
+                description='Optional sibling of imports: for an imported package (<org>/<repo>), the names of the types of that package this module uses.'
             ),
         ]
         | UnsetType
