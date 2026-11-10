@@ -78,6 +78,25 @@ describe("PLAT-899 module manifest semantic block", () => {
 		expect(validate(bad)).toBe(false);
 	});
 
+	it("loads a block with no import_types exactly as before", () => {
+		const validate = validator(buildAjv());
+		const { import_types: _omitted, ...without } = knownGoodBlock;
+		expect(validate(without)).toBe(true);
+	});
+
+	it.each([
+		["a non-object", "Entity"],
+		["a non-array value", { "agent-ix/core": "Entity" }],
+		["an empty list", { "agent-ix/core": [] }],
+		["a duplicate type name", { "agent-ix/core": ["Entity", "Entity"] }],
+		["an empty type name", { "agent-ix/core": [""] }],
+		["a non-string entry", { "agent-ix/core": [1] }],
+		["a key that is not a package identity", { "NotAPackage": ["Entity"] }],
+	])("rejects import_types holding %s", (_label, value) => {
+		const validate = validator(buildAjv());
+		expect(validate({ ...knownGoodBlock, import_types: value })).toBe(false);
+	});
+
 	it.each([
 		"compatibility_posture",
 		"legacy_forms",

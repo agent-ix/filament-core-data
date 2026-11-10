@@ -853,3 +853,34 @@ describe("plain_language_profiles and clause_sets", () => {
 		rejects({ clause_sets: "clauses/widget.json" }, "/clause_sets", "type");
 	});
 });
+
+describe("semantic.import_types (PLAT-212)", () => {
+	const semantic = (extra: Record<string, unknown>) => ({
+		semantic: {
+			contract_version: "1.0.0",
+			package: "agent-ix/m",
+			imports: { "agent-ix/core": "1.0.0" },
+			...extra,
+		},
+	});
+
+	it("accepts an optional import_types sibling of imports", () => {
+		accepts(semantic({ import_types: { "agent-ix/core": ["Entity"] } }));
+		accepts(semantic({}));
+	});
+
+	it.each([
+		["a non-array value", { "agent-ix/core": "Entity" }, "type"],
+		["an empty list", { "agent-ix/core": [] }, "minItems"],
+		["a duplicate type name", { "agent-ix/core": ["E", "E"] }, "uniqueItems"],
+		["an empty type name", { "agent-ix/core": [""] }, "minLength"],
+		["a non-string entry", { "agent-ix/core": [1] }, "type"],
+	])("refuses import_types holding %s", (_label, value, keyword) => {
+		const validate = validator(buildAjv());
+		expect(validate({ ...base, ...semantic({ import_types: value }) })).toBe(
+			false,
+		);
+		const found = (validate.errors ?? []).map((e) => e.keyword);
+		expect(found).toContain(keyword);
+	});
+});

@@ -34,6 +34,7 @@ types. They are reachable as `<module>.<Name>` and are excluded from
 - `Direction` — module_manifest_schema, semantic_ir_schema
 - `Export` — module_manifest_schema, module_semantic_block_schema, package_manifest_schema
 - `Identity` — module_manifest_schema, semantic_ir_schema
+- `ImportTypesAdditionalProperty` — module_manifest_schema, module_semantic_block_schema
 - `Kind` — mapping_schema, module_manifest_schema, representation_schema, semantic_ir_schema
 - `Mapping` — module_manifest_schema, module_semantic_block_schema
 - `Members` — module_manifest_schema, semantic_ir_schema

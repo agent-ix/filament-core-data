@@ -34,6 +34,22 @@
 			},
 			"description": "Imported semantic packages, keyed by package identity, pinned to the exact version this module compiles against."
 		},
+		"import_types": {
+			"type": "object",
+			"propertyNames": {
+				"$ref": "common.schema.json#/$defs/packageIdentity"
+			},
+			"additionalProperties": {
+				"type": "array",
+				"items": {
+					"type": "string",
+					"minLength": 1
+				},
+				"minItems": 1,
+				"uniqueItems": true
+			},
+			"description": "Optional sibling of imports: for an imported package (<org>/<repo>), the names of the types of that package this module uses."
+		},
 		"targets": {
 			"type": "array",
 			"items": {

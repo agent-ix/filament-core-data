@@ -6,12 +6,23 @@ from __future__ import annotations
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel
+from typing_extensions import TypeAliasType
 
 from . import common_schema
 
 
 class Export(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
+
+
+class ImportTypesAdditionalProperty1Item(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
+ImportTypesAdditionalProperty = TypeAliasType(
+    "ImportTypesAdditionalProperty",
+    Annotated[list[ImportTypesAdditionalProperty1Item], Field(min_length=1)],
+)
 
 
 class Mapping(RootModel[str]):
@@ -32,6 +43,12 @@ class FilamentModuleManifestSemanticBlockV1(BaseModel):
         list[Export] | None,
         Field(
             description="Object-type names this module publishes as semantic types; each must also be declared in the manifest's object_types."
+        ),
+    ] = None
+    import_types: Annotated[
+        dict[common_schema.PackageIdentity, ImportTypesAdditionalProperty] | None,
+        Field(
+            description='Optional sibling of imports: for an imported package (<org>/<repo>), the names of the types of that package this module uses.'
         ),
     ] = None
     imports: Annotated[

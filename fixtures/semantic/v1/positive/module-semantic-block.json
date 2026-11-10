@@ -5,6 +5,9 @@
 	"imports": {
 		"agent-ix/core": "1.4.0"
 	},
+	"import_types": {
+		"agent-ix/core": ["Entity"]
+	},
 	"targets": ["rust", "json-schema", "markdown", "postgresql"],
 	"mappings": ["widget-postgres"]
 }

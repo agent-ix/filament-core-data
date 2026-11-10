@@ -70,6 +70,16 @@ class Export(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
 
+class ImportTypesAdditionalPropertyItem(RootModel[str]):
+    root: Annotated[str, Field(min_length=1)]
+
+
+ImportTypesAdditionalProperty = TypeAliasType(
+    "ImportTypesAdditionalProperty",
+    Annotated[list[ImportTypesAdditionalPropertyItem], Field(min_length=1)],
+)
+
+
 ImportsAdditionalProperty = TypeAliasType(
     "ImportsAdditionalProperty",
     Annotated[str, Field(pattern='^[0-9]+\\.[0-9]+\\.[0-9]+$')],
@@ -119,6 +129,12 @@ class Semantic(BaseModel):
         list[Export] | None,
         Field(
             description='Object-type names published as semantic types; each must be declared in object_types.'
+        ),
+    ] = None
+    import_types: Annotated[
+        dict[str, ImportTypesAdditionalProperty] | None,
+        Field(
+            description='Optional sibling of imports: for an imported package (<org>/<repo>), the names of the types of that package this module uses.'
         ),
     ] = None
     imports: Annotated[

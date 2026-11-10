@@ -13,6 +13,14 @@ from . import common_schema
 type Export = Annotated[str, Field(min_length=1)]
 
 
+type ImportTypesAdditionalProperty1Item = Annotated[str, Field(min_length=1)]
+
+
+type ImportTypesAdditionalProperty = Annotated[
+    list[ImportTypesAdditionalProperty1Item], Field(min_length=1)
+]
+
+
 type Mapping = Annotated[str, Field(min_length=1)]
 
 
@@ -34,6 +42,12 @@ class FilamentModuleManifestSemanticBlockV1:
         list[Export] | None,
         Field(
             description="Object-type names this module publishes as semantic types; each must also be declared in the manifest's object_types."
+        ),
+    ] = None
+    import_types: Annotated[
+        dict[common_schema.PackageIdentity, ImportTypesAdditionalProperty] | None,
+        Field(
+            description='Optional sibling of imports: for an imported package (<org>/<repo>), the names of the types of that package this module uses.'
         ),
     ] = None
     imports: Annotated[
