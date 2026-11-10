@@ -870,6 +870,7 @@ describe("semantic.import_types (PLAT-212)", () => {
 	});
 
 	it.each([
+		["a non-object", "Entity", "type"],
 		["a non-array value", { "agent-ix/core": "Entity" }, "type"],
 		["an empty list", { "agent-ix/core": [] }, "minItems"],
 		["a duplicate type name", { "agent-ix/core": ["E", "E"] }, "uniqueItems"],

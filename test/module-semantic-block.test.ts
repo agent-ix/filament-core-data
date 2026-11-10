@@ -91,7 +91,7 @@ describe("PLAT-899 module manifest semantic block", () => {
 		["a duplicate type name", { "agent-ix/core": ["Entity", "Entity"] }],
 		["an empty type name", { "agent-ix/core": [""] }],
 		["a non-string entry", { "agent-ix/core": [1] }],
-		["a key that is not a package identity", { "NotAPackage": ["Entity"] }],
+		["a key that is not a package identity", { NotAPackage: ["Entity"] }],
 	])("rejects import_types holding %s", (_label, value) => {
 		const validate = validator(buildAjv());
 		expect(validate({ ...knownGoodBlock, import_types: value })).toBe(false);
