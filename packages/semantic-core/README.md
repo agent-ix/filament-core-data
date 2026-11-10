@@ -58,7 +58,7 @@ const ajv = new Ajv2020({ strict: false });
 for (const file of readdirSync(dir)) {
   ajv.addSchema(JSON.parse(readFileSync(`${dir}/${file}`, "utf8")));
 }
-const validate = ajv.getSchema("https://schemas.agent-ix.org/semantic-core/0.4.3/FieldDecl.json");
+const validate = ajv.getSchema("https://schemas.agent-ix.org/semantic-core/0.4.4/FieldDecl.json");
 
 const field = {
   name: "amount",
@@ -74,7 +74,7 @@ console.log(validate(field)); // true
 console.log(validate({ name: "1bad", type: field.type })); // false, at /name
 ```
 
-Replace `0.4.3` in the `$id` with the installed package version.
+Replace `0.4.4` in the `$id` with the installed package version.
 
 ## Reference
 

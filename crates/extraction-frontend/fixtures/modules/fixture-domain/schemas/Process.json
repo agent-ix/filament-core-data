@@ -6,7 +6,7 @@
 		"fields": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/FieldDecl.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/FieldDecl.json"
 			},
 			"minItems": 1,
 			"contains": {
@@ -22,13 +22,13 @@
 		"clauses": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/ClauseRef.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/ClauseRef.json"
 			}
 		},
 		"operations": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/OperationDecl.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/OperationDecl.json"
 			}
 		},
 		"operationExpressions": {
@@ -40,7 +40,7 @@
 		"emits": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/SemanticId.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/SemanticId.json"
 			}
 		}
 	},

@@ -1,30 +1,30 @@
 {
 	"$schema": "https://json-schema.org/draft/2020-12/schema",
-	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.3/OperationDecl.json",
+	"$id": "https://schemas.agent-ix.org/semantic-core/0.4.4/OperationDecl.json",
 	"type": "object",
 	"properties": {
 		"name": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/Identifier.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/Identifier.json"
 		},
 		"params": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/FieldDecl.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/FieldDecl.json"
 			}
 		},
 		"returns": {
-			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/TypeRef.json"
+			"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/TypeRef.json"
 		},
 		"pre": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/ClauseRef.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/ClauseRef.json"
 			}
 		},
 		"post": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/ClauseRef.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/ClauseRef.json"
 			}
 		}
 	},

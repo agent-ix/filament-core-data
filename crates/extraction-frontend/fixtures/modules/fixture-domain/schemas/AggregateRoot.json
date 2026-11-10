@@ -6,7 +6,7 @@
 		"fields": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/FieldDecl.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/FieldDecl.json"
 			},
 			"contains": {
 				"$ref": "https://schemas.agent-ix.org/fixture/domain/0.1.0/IdentityField.json"
@@ -15,20 +15,20 @@
 		"clauses": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/ClauseRef.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/ClauseRef.json"
 			},
 			"minItems": 1
 		},
 		"relations": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/RelationDecl.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/RelationDecl.json"
 			}
 		},
 		"operations": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/OperationDecl.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/OperationDecl.json"
 			}
 		},
 		"operationExpressions": {
@@ -40,13 +40,13 @@
 		"members": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/RelationDecl.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/RelationDecl.json"
 			}
 		},
 		"emits": {
 			"type": "array",
 			"items": {
-				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.3/SemanticId.json"
+				"$ref": "https://schemas.agent-ix.org/semantic-core/0.4.4/SemanticId.json"
 			}
 		}
 	},
