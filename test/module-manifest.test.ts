@@ -1,8 +1,8 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import Ajv2020 from "ajv/dist/2020.js";
 import type { ValidateFunction } from "ajv/dist/2020.js";
+import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 
@@ -884,4 +884,97 @@ describe("semantic.import_types (PLAT-212)", () => {
 		const found = (validate.errors ?? []).map((e) => e.keyword);
 		expect(found).toContain(keyword);
 	});
+});
+
+describe("where and record_validation", () => {
+	const rel = {
+		name: "r",
+		from: "a",
+		edges: ["e"],
+		direction: "incoming",
+		check: "c",
+	};
+	const rr = (where: unknown) => ({
+		traceability: { required_relations: [{ ...rel, where }] },
+	});
+	const W = "/traceability/required_relations/0/where";
+
+	/// Trace: FR-149-AC-10
+	it("accepts a required relation with where", () => {
+		accepts(rr({ field: "quality_attribute", values: ["security", "safety"] }));
+	});
+
+	/// Trace: FR-149-AC-10
+	it("refuses a malformed where", () => {
+		rejects(
+			rr({ field: "f", values: ["v"], extra: 1 }),
+			W,
+			"additionalProperties",
+		);
+		rejects(rr({ values: ["v"] }), W, "required");
+		rejects(rr({ field: "f" }), W, "required");
+		rejects(rr({ field: "f", values: [] }), `${W}/values`, "minItems");
+		rejects(rr({ field: " ", values: ["v"] }), `${W}/field`, "pattern");
+		rejects(rr({ field: "f", values: [" "] }), `${W}/values/0`, "pattern");
+	});
+
+	const sections: Array<[string, (rv: unknown) => Record<string, unknown>]> = [
+		[
+			"artifact_types",
+			(record_validation) => ({
+				artifact_types: [
+					{
+						name: "A",
+						grammar_ref: "g",
+						frontmatter_schema_ref: "schemas/a.json",
+						record_validation,
+					},
+				],
+			}),
+		],
+		[
+			"object_types",
+			(record_validation) => ({
+				object_types: [{ name: "O", record_validation }],
+			}),
+		],
+		[
+			"archetypes",
+			(record_validation) => ({
+				archetypes: [{ kind: "k", name: "A", record_validation }],
+			}),
+		],
+	];
+
+	for (const [section, wrap] of sections) {
+		const RV = `/${section}/0/record_validation`;
+
+		/// Trace: FR-149-AC-11
+		it(`accepts record_validation in ${section}`, () => {
+			accepts(wrap({ schema: "schemas/f.json", locate_absence_at: "status" }));
+			accepts(wrap({ schema: "schemas/f.json", locate_absence_at: " " }));
+		});
+
+		/// Trace: FR-149-AC-11
+		it(`refuses a malformed record_validation in ${section}`, () => {
+			rejects(wrap({ schema: "s.json" }), RV, "required");
+			rejects(wrap({ locate_absence_at: "status" }), RV, "required");
+			rejects(
+				wrap({ schema: "", locate_absence_at: "status" }),
+				`${RV}/schema`,
+				"minLength",
+			);
+			rejects(
+				wrap({ schema: "s.json", locate_absence_at: "" }),
+				`${RV}/locate_absence_at`,
+				"minLength",
+			);
+			rejects(
+				wrap({ schema: "s.json", locate_absence_at: "x", extra: 1 }),
+				RV,
+				"additionalProperties",
+			);
+			rejects(wrap({ bogus: 1 }), RV, "additionalProperties");
+		});
+	}
 });

@@ -193,22 +193,6 @@ class AmbiguityTermEntry(BaseModel):
     definition: str
 
 
-class ArchetypeEntry(BaseModel):
-    model_config = ConfigDict(
-        extra='allow',
-    )
-    composition: dict[str, Any] | None = None
-    description: str | None = None
-    doc_backed: bool = False
-    has_service: bool = False
-    icon: str | None = None
-    kind: Annotated[str, Field(min_length=1)]
-    name: Annotated[str | None, Field(min_length=1)] = None
-    parent_kind: str | None = None
-    state_schema_ref: str | None = None
-    supports_membership: bool = False
-
-
 class AllowedLink(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
@@ -577,6 +561,14 @@ class PropertyIdiomEntry(BaseModel):
     shape: Shape1
 
 
+class RecordValidation(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    locate_absence_at: Annotated[str, Field(min_length=1)]
+    schema_: Annotated[str, Field(alias='schema', min_length=1)]
+
+
 class Direction(Enum):
     outgoing = 'outgoing'
     incoming = 'incoming'
@@ -589,34 +581,6 @@ class Edge(RootModel[str]):
 
 class ToItem(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
-
-
-class RequiredRelation(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-    )
-    check: Annotated[
-        str,
-        Field(
-            description='The <check> half of a `trace:<check>` severity key.',
-            pattern='^[^\\s:]+$',
-        ),
-    ]
-    direction: Direction
-    edges: Annotated[
-        list[Edge],
-        Field(
-            description='Accepted edge verbs; any one satisfies the relation.',
-            min_length=1,
-        ),
-    ]
-    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
-    from_: Annotated[str, Field(alias='from', min_length=1)]
-    name: Annotated[str, Field(min_length=1)]
-    to: Annotated[
-        list[ToItem] | None,
-        Field(description='Accepted archetypes at the other end; empty means any.'),
-    ] = None
 
 
 class RoleEntry(BaseModel):
@@ -813,6 +777,32 @@ class VocabularyTerm(BaseModel):
     definition: str
 
 
+class WhereValue(RootModel[str]):
+    root: Annotated[
+        str,
+        Field(
+            description='A non-blank string: one `where.values` entry.', pattern='\\S'
+        ),
+    ]
+
+
+class ArchetypeEntry(BaseModel):
+    model_config = ConfigDict(
+        extra='allow',
+    )
+    composition: dict[str, Any] | None = None
+    description: str | None = None
+    doc_backed: bool = False
+    has_service: bool = False
+    icon: str | None = None
+    kind: Annotated[str, Field(min_length=1)]
+    name: Annotated[str | None, Field(min_length=1)] = None
+    parent_kind: str | None = None
+    record_validation: RecordValidation | None = None
+    state_schema_ref: str | None = None
+    supports_membership: bool = False
+
+
 class DocumentReference(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -922,6 +912,48 @@ class ObligationSource(RootModel[ObligationSource1 | ObligationSource2]):
     ]
 
 
+class Where(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    field: Annotated[str, Field(pattern='\\S')]
+    values: Annotated[list[WhereValue], Field(min_length=1)]
+
+
+class RequiredRelation(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+    )
+    check: Annotated[
+        str,
+        Field(
+            description='The <check> half of a `trace:<check>` severity key.',
+            pattern='^[^\\s:]+$',
+        ),
+    ]
+    direction: Direction
+    edges: Annotated[
+        list[Edge],
+        Field(
+            description='Accepted edge verbs; any one satisfies the relation.',
+            min_length=1,
+        ),
+    ]
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    from_: Annotated[str, Field(alias='from', min_length=1)]
+    name: Annotated[str, Field(min_length=1)]
+    to: Annotated[
+        list[ToItem] | None,
+        Field(description='Accepted archetypes at the other end; empty means any.'),
+    ] = None
+    where: Annotated[
+        Where | None,
+        Field(
+            description='Narrows the obliged `from` documents to those whose frontmatter `field` holds one of `values` (FR-149-AC-10; semantics in quire-rs FR-058). Uniqueness of `values` after trim and ASCII case folding is not expressible in JSON Schema; the loader enforces it.'
+        ),
+    ] = None
+
+
 class TraceabilityModel(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -990,6 +1022,7 @@ class ObjectTypeEntry(BaseModel):
     ] = None
     description: str | None = None
     name: Annotated[str, Field(min_length=1)]
+    record_validation: RecordValidation | None = None
     roles: Annotated[
         list[Role] | None,
         Field(
@@ -1021,6 +1054,7 @@ class ArtifactTypeEntry(BaseModel):
     grammar_ref: Annotated[str, Field(min_length=1)]
     lint_rules_ref: list[LintRulesRefItem] | None = None
     name: Annotated[str, Field(min_length=1)]
+    record_validation: RecordValidation | None = None
 
 
 class FilamentModuleManifest(BaseModel):
