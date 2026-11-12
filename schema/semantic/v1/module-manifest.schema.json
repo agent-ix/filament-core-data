@@ -347,11 +347,35 @@
 				}
 			}
 		},
+		"WhereValue": {
+			"type": "string",
+			"pattern": "\\S",
+			"description": "A non-blank string: one `where.values` entry."
+		},
+		"RecordValidation": {
+			"type": "object",
+			"description": "Opt-in record validation for an archetype (FR-149-AC-11; semantics in quire-rs FR-069). `schema` is a path to the JSON Schema the extracted record is validated against; `locate_absence_at` names the yield_pattern.match key whose line locates a missing-property finding. Cross-references are checked by the loader.",
+			"required": ["schema", "locate_absence_at"],
+			"additionalProperties": false,
+			"properties": {
+				"schema": {
+					"type": "string",
+					"minLength": 1
+				},
+				"locate_absence_at": {
+					"type": "string",
+					"minLength": 1
+				}
+			}
+		},
 		"ArchetypeEntry": {
 			"type": "object",
 			"required": ["kind"],
 			"additionalProperties": true,
 			"properties": {
+				"record_validation": {
+					"$ref": "#/$defs/RecordValidation"
+				},
 				"kind": {
 					"type": "string",
 					"minLength": 1
@@ -395,6 +419,9 @@
 			"required": ["name", "grammar_ref", "frontmatter_schema_ref"],
 			"additionalProperties": false,
 			"properties": {
+				"record_validation": {
+					"$ref": "#/$defs/RecordValidation"
+				},
 				"name": {
 					"type": "string",
 					"minLength": 1
@@ -410,22 +437,6 @@
 				"body_extraction": {
 					"$ref": "#/$defs/BodyExtraction",
 					"description": "Locator DSL (FR-035 CR-002). Each locator MAY carry an `assert` facet driving structural validation in quire-rs validate_document. Supersedes required_sections."
-				},
-				"record_validation": {
-					"type": "object",
-					"description": "Opt-in record validation for an archetype (FR-149-AC-11; semantics in quire-rs FR-069). `schema` is a path to the JSON Schema the extracted record is validated against; `locate_absence_at` names the yield_pattern.match key whose line locates a missing-property finding. Cross-references are checked by the loader.",
-					"required": ["schema", "locate_absence_at"],
-					"additionalProperties": false,
-					"properties": {
-						"schema": {
-							"type": "string",
-							"minLength": 1
-						},
-						"locate_absence_at": {
-							"type": "string",
-							"pattern": "\\S"
-						}
-					}
 				},
 				"data_schema": {
 					"description": "JSON Schema validating the EXTRACTED record (distinct from frontmatter_schema_ref, which validates frontmatter). Same two forms as ObjectTypeEntry.data_schema (quoin FR-073): an inline schema object, or {schema: <module-relative .json path>}; an object carrying `schema` or `digest` alongside any other key is ambiguous and rejected.",
@@ -499,6 +510,9 @@
 			"required": ["name"],
 			"additionalProperties": true,
 			"properties": {
+				"record_validation": {
+					"$ref": "#/$defs/RecordValidation"
+				},
 				"name": {
 					"type": "string",
 					"minLength": 1
@@ -1558,8 +1572,7 @@
 							"type": "array",
 							"minItems": 1,
 							"items": {
-								"type": "string",
-								"pattern": "\\S"
+								"$ref": "#/$defs/WhereValue"
 							}
 						}
 					}

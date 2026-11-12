@@ -918,36 +918,63 @@ describe("where and record_validation", () => {
 		rejects(rr({ field: "f", values: [" "] }), `${W}/values/0`, "pattern");
 	});
 
-	const rv = (record_validation: unknown) => ({
-		artifact_types: [
-			{
-				name: "A",
-				grammar_ref: "g",
-				frontmatter_schema_ref: "schemas/a.json",
-				record_validation,
-			},
+	const sections: Array<[string, (rv: unknown) => Record<string, unknown>]> = [
+		[
+			"artifact_types",
+			(record_validation) => ({
+				artifact_types: [
+					{
+						name: "A",
+						grammar_ref: "g",
+						frontmatter_schema_ref: "schemas/a.json",
+						record_validation,
+					},
+				],
+			}),
 		],
-	});
-	const RV = "/artifact_types/0/record_validation";
+		[
+			"object_types",
+			(record_validation) => ({
+				object_types: [{ name: "O", record_validation }],
+			}),
+		],
+		[
+			"archetypes",
+			(record_validation) => ({
+				archetypes: [{ kind: "k", name: "A", record_validation }],
+			}),
+		],
+	];
 
-	/// Trace: FR-149-AC-11
-	it("accepts an artifact type with record_validation", () => {
-		accepts(rv({ schema: "schemas/f.json", locate_absence_at: "status" }));
-	});
+	for (const [section, wrap] of sections) {
+		const RV = `/${section}/0/record_validation`;
 
-	/// Trace: FR-149-AC-11
-	it("refuses a malformed record_validation", () => {
-		rejects(rv({ schema: "s.json" }), RV, "required");
-		rejects(rv({ locate_absence_at: "status" }), RV, "required");
-		rejects(
-			rv({ schema: "s.json", locate_absence_at: " " }),
-			`${RV}/locate_absence_at`,
-			"pattern",
-		);
-		rejects(
-			rv({ schema: "s.json", locate_absence_at: "x", extra: 1 }),
-			RV,
-			"additionalProperties",
-		);
-	});
+		/// Trace: FR-149-AC-11
+		it(`accepts record_validation in ${section}`, () => {
+			accepts(wrap({ schema: "schemas/f.json", locate_absence_at: "status" }));
+			accepts(wrap({ schema: "schemas/f.json", locate_absence_at: " " }));
+		});
+
+		/// Trace: FR-149-AC-11
+		it(`refuses a malformed record_validation in ${section}`, () => {
+			rejects(wrap({ schema: "s.json" }), RV, "required");
+			rejects(wrap({ locate_absence_at: "status" }), RV, "required");
+			rejects(
+				wrap({ schema: "", locate_absence_at: "status" }),
+				`${RV}/schema`,
+				"minLength",
+			);
+			rejects(
+				wrap({ schema: "s.json", locate_absence_at: "" }),
+				`${RV}/locate_absence_at`,
+				"minLength",
+			);
+			rejects(
+				wrap({ schema: "s.json", locate_absence_at: "x", extra: 1 }),
+				RV,
+				"additionalProperties",
+			);
+			rejects(wrap({ bogus: 1 }), RV, "additionalProperties");
+		});
+	}
 });

@@ -49,7 +49,7 @@ load and are not restated here.
 - An obligation SHALL NOT name both `target` and `archetype`, and SHALL name one of them; an obligation naming `archetype` SHALL also name `section` and `id_format`. A combinatorial `strength` SHALL be at least 1.
 - A required relation SHALL declare a non-empty `edges` and a `direction` of `outgoing`, `incoming` or `either`.
 - A required relation MAY declare `where`: an object of exactly `field` (a non-blank string) and `values` (a non-empty list of non-blank strings). That no two `values` are equal after trimming and ASCII case folding cannot be expressed in JSON Schema; the schema does not state it and the module loader enforces it (quire-rs FR-058).
-- An artifact type MAY declare `record_validation`: an object of exactly `schema` (a non-empty string path) and `locate_absence_at` (a non-blank string), both required (quire-rs FR-069). Whether the path resolves and whether `locate_absence_at` names a `yield_pattern.match` key are checked by the loader.
+- An archetype in `artifact_types`, `object_types` or `archetypes` MAY declare `record_validation`: an object of exactly `schema` (a non-empty string path) and `locate_absence_at` (a non-empty string), both required (quire-rs FR-069). Whether the path resolves and whether `locate_absence_at` names a `yield_pattern.match` key are checked by the loader.
 
 - A locator `assert` SHALL additionally declare, as the quire-rs `LocatorAssert` reader does, `optional_columns` (list of strings), `max_rows` (integer, at least 0), `matches` (non-empty string), `choices` (list of strings), `column_choices` (header to list of strings), `column_patterns` (header to non-empty string), `from_vocabulary` (non-empty string) and `column_vocabularies` (header to non-empty string), and SHALL refuse a value of another type.
 - An `edge_types` entry SHALL additionally accept boolean `composite` and boolean `symmetric`.
@@ -72,7 +72,7 @@ The scalar-or-list `section` is one named definition (`SectionList` for the list
 | FR-149-AC-8 | A `lint_rules` entry of each of the three `type` values is accepted, with a string `pattern` on a `section_body_pattern` rule; an entry with no `type`, an unknown `type`, an object `pattern` on any rule type, a `table_column_values` rule without `column` or without `allowed`, or a `section_body_pattern` rule without `pattern` is refused. | Test (TC-1905) |
 | FR-149-AC-9 | A `plain_language_profiles` map and a `clause_sets` list of paths are accepted; a profile with an undeclared member or a zero `sentence_word_limit`, and a non-list `clause_sets`, are refused. | Test (TC-1906) |
 | FR-149-AC-10 | A required relation with `where: {field, values}` is accepted; a `where` with an extra member, a missing `field` or `values`, an empty `values`, a blank `field` or a blank `values` entry is refused. Duplicate `values` after trim and case folding are not a schema concern. | Test (TC-1907) |
-| FR-149-AC-11 | An artifact type with `record_validation: {schema, locate_absence_at}` is accepted; a `record_validation` missing `schema` or `locate_absence_at`, with a blank `locate_absence_at`, or with an unknown member is refused. | Test (TC-1908) |
+| FR-149-AC-11 | An entry of `artifact_types`, `object_types` and `archetypes` with `record_validation: {schema, locate_absence_at}` is accepted; in each section a `record_validation` missing `schema` or `locate_absence_at`, with an empty `schema` or `locate_absence_at`, or with an unknown member is refused. | Test (TC-1908) |
 
 ## Dependencies
 

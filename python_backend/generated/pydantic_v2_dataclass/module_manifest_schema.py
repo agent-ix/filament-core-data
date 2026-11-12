@@ -174,20 +174,6 @@ class AmbiguityTermEntry:
     category: str | None = None
 
 
-@dataclass(config=ConfigDict(extra='allow'))
-class ArchetypeEntry:
-    kind: Annotated[str, Field(min_length=1)]
-    composition: dict[str, Any] | None = None
-    description: str | None = None
-    doc_backed: bool = False
-    has_service: bool = False
-    icon: str | None = None
-    name: Annotated[str | None, Field(min_length=1)] = None
-    parent_kind: str | None = None
-    state_schema_ref: str | None = None
-    supports_membership: bool = False
-
-
 type AllowedLink = Annotated[str, Field(min_length=1)]
 
 
@@ -515,6 +501,12 @@ class PropertyIdiomEntry:
     category: str | None = None
 
 
+@dataclass(config=ConfigDict(extra='forbid'))
+class RecordValidation:
+    locate_absence_at: Annotated[str, Field(min_length=1)]
+    schema: Annotated[str, Field(min_length=1)]
+
+
 class Direction(Enum):
     outgoing = 'outgoing'
     incoming = 'incoming'
@@ -525,32 +517,6 @@ type Edge = Annotated[str, Field(min_length=1)]
 
 
 type ToItem = Annotated[str, Field(min_length=1)]
-
-
-@dataclass(config=ConfigDict(extra='forbid'))
-class RequiredRelation:
-    check: Annotated[
-        str,
-        Field(
-            description='The <check> half of a `trace:<check>` severity key.',
-            pattern='^[^\\s:]+$',
-        ),
-    ]
-    direction: Direction
-    edges: Annotated[
-        list[Edge],
-        Field(
-            description='Accepted edge verbs; any one satisfies the relation.',
-            min_length=1,
-        ),
-    ]
-    from_: Annotated[str, Field(alias='from', min_length=1)]
-    name: Annotated[str, Field(min_length=1)]
-    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
-    to: Annotated[
-        list[ToItem] | None,
-        Field(description='Accepted archetypes at the other end; empty means any.'),
-    ] = None
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
@@ -726,6 +692,27 @@ class VocabularyTerm:
     category: str | None = None
 
 
+type WhereValue = Annotated[
+    str,
+    Field(description='A non-blank string: one `where.values` entry.', pattern='\\S'),
+]
+
+
+@dataclass(config=ConfigDict(extra='allow'))
+class ArchetypeEntry:
+    kind: Annotated[str, Field(min_length=1)]
+    composition: dict[str, Any] | None = None
+    description: str | None = None
+    doc_backed: bool = False
+    has_service: bool = False
+    icon: str | None = None
+    name: Annotated[str | None, Field(min_length=1)] = None
+    parent_kind: str | None = None
+    record_validation: RecordValidation | None = None
+    state_schema_ref: str | None = None
+    supports_membership: bool = False
+
+
 @dataclass(config=ConfigDict(extra='forbid'))
 class DocumentReference:
     archetype: Annotated[str, Field(min_length=1)]
@@ -827,6 +814,44 @@ type ObligationSource = Annotated[
 
 
 @dataclass(config=ConfigDict(extra='forbid'))
+class Where:
+    field: Annotated[str, Field(pattern='\\S')]
+    values: Annotated[list[WhereValue], Field(min_length=1)]
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
+class RequiredRelation:
+    check: Annotated[
+        str,
+        Field(
+            description='The <check> half of a `trace:<check>` severity key.',
+            pattern='^[^\\s:]+$',
+        ),
+    ]
+    direction: Direction
+    edges: Annotated[
+        list[Edge],
+        Field(
+            description='Accepted edge verbs; any one satisfies the relation.',
+            min_length=1,
+        ),
+    ]
+    from_: Annotated[str, Field(alias='from', min_length=1)]
+    name: Annotated[str, Field(min_length=1)]
+    exclude: Annotated[list[str] | None, Field(description='Path globs.')] = None
+    to: Annotated[
+        list[ToItem] | None,
+        Field(description='Accepted archetypes at the other end; empty means any.'),
+    ] = None
+    where: Annotated[
+        Where | None,
+        Field(
+            description='Narrows the obliged `from` documents to those whose frontmatter `field` holds one of `values` (FR-149-AC-10; semantics in quire-rs FR-058). Uniqueness of `values` after trim and ASCII case folding is not expressible in JSON Schema; the loader enforces it.'
+        ),
+    ] = None
+
+
+@dataclass(config=ConfigDict(extra='forbid'))
 class TraceabilityModel:
     acyclic_edges: Annotated[
         list[AcyclicEdge] | None,
@@ -886,6 +911,7 @@ class ObjectTypeEntry:
         ),
     ] = None
     description: str | None = None
+    record_validation: RecordValidation | None = None
     roles: Annotated[
         list[Role] | None,
         Field(
@@ -915,6 +941,7 @@ class ArtifactTypeEntry:
     defaults: Defaults | None = None
     examples: list[Example] | None = None
     lint_rules_ref: list[LintRulesRefItem] | None = None
+    record_validation: RecordValidation | None = None
 
 
 @dataclass(config=ConfigDict(extra='forbid', regex_engine="python-re"))

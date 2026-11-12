@@ -1415,7 +1415,7 @@ computed by `quire matrix` from those trace tags.
 | TC-1905 | `lint_rules` accepts the three `type`-tagged rules with a string `pattern` and refuses an untagged rule, an unknown `type`, an object `pattern` on any rule type, a `table_column_values` rule missing `column` or `allowed`, and a `section_body_pattern` rule missing `pattern`. | Unit | P0 | FR-149-AC-8 |
 | TC-1906 | `plain_language_profiles` and `clause_sets` are accepted and an undeclared profile member, a zero limit and a non-list `clause_sets` are refused. | Unit | P0 | FR-149-AC-9 |
 | TC-1907 | A required relation accepts `where: {field, values}` and refuses an extra `where` member, a missing `field` or `values`, an empty `values`, a blank `field` and a blank `values` entry. | Unit | P0 | FR-149-AC-10 |
-| TC-1908 | An artifact type accepts `record_validation: {schema, locate_absence_at}` and refuses a missing `schema` or `locate_absence_at`, a blank `locate_absence_at` and an unknown member. | Unit | P0 | FR-149-AC-11 |
+| TC-1908 | Entries of `artifact_types`, `object_types` and `archetypes` accept `record_validation: {schema, locate_absence_at}` and each refuses a missing or empty `schema`, a missing or empty `locate_absence_at` and an unknown member. | Unit | P0 | FR-149-AC-11 |
 | TC-1819 | A `@relationship` whose decorator `category` disagrees with the loaded edge vocabulary's declared `category` for that verb is refused `EDGE_CATEGORY_MISMATCH` | Unit | P1 | FR-094-AC-16 |
 
 ## Option Permutation Matrix

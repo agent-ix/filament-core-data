@@ -192,19 +192,6 @@ class AmbiguityTermEntry(Struct):
     category: str | UnsetType = UNSET
 
 
-class ArchetypeEntry(Struct):
-    kind: Annotated[str, Meta(min_length=1)]
-    composition: dict[str, Any] | UnsetType = UNSET
-    description: str | UnsetType = UNSET
-    doc_backed: bool | UnsetType = False
-    has_service: bool | UnsetType = False
-    icon: str | UnsetType = UNSET
-    name: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
-    parent_kind: str | UnsetType = UNSET
-    state_schema_ref: str | UnsetType = UNSET
-    supports_membership: bool | UnsetType = False
-
-
 type AllowedLink = Annotated[str, Meta(min_length=1)]
 
 
@@ -559,6 +546,11 @@ class PropertyIdiomEntry(Struct):
     category: str | UnsetType = UNSET
 
 
+class RecordValidation(Struct):
+    locate_absence_at: Annotated[str, Meta(min_length=1)]
+    schema: Annotated[str, Meta(min_length=1)]
+
+
 class Direction(Enum):
     outgoing = 'outgoing'
     incoming = 'incoming'
@@ -569,34 +561,6 @@ type Edge = Annotated[str, Meta(min_length=1)]
 
 
 type ToItem = Annotated[str, Meta(min_length=1)]
-
-
-class RequiredRelation(Struct):
-    check: Annotated[
-        str,
-        Meta(
-            description='The <check> half of a `trace:<check>` severity key.',
-            pattern='^[^\\s:]+$',
-        ),
-    ]
-    direction: Direction
-    edges: Annotated[
-        list[Edge],
-        Meta(
-            description='Accepted edge verbs; any one satisfies the relation.',
-            min_length=1,
-        ),
-    ]
-    from_: Annotated[str, Meta(min_length=1)] = field(name='from')
-    name: Annotated[str, Meta(min_length=1)]
-    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
-    to: (
-        Annotated[
-            list[ToItem],
-            Meta(description='Accepted archetypes at the other end; empty means any.'),
-        ]
-        | UnsetType
-    ) = UNSET
 
 
 class RoleEntry(Struct):
@@ -773,6 +737,26 @@ class VocabularyTerm(Struct):
     category: str | UnsetType = UNSET
 
 
+type WhereValue = Annotated[
+    str,
+    Meta(description='A non-blank string: one `where.values` entry.', pattern='\\S'),
+]
+
+
+class ArchetypeEntry(Struct):
+    kind: Annotated[str, Meta(min_length=1)]
+    composition: dict[str, Any] | UnsetType = UNSET
+    description: str | UnsetType = UNSET
+    doc_backed: bool | UnsetType = False
+    has_service: bool | UnsetType = False
+    icon: str | UnsetType = UNSET
+    name: Annotated[str, Meta(min_length=1)] | UnsetType = UNSET
+    parent_kind: str | UnsetType = UNSET
+    record_validation: RecordValidation | UnsetType = UNSET
+    state_schema_ref: str | UnsetType = UNSET
+    supports_membership: bool | UnsetType = False
+
+
 class DocumentReference(Struct):
     archetype: Annotated[str, Meta(min_length=1)]
     column: Annotated[str, Meta(min_length=1)]
@@ -874,6 +858,48 @@ type ObligationSource = Annotated[
 ]
 
 
+class Where(Struct):
+    field_: Annotated[str, Meta(pattern='\\S')] = field(name='field')
+    values: Annotated[list[WhereValue], Meta(min_length=1)]
+
+
+class RequiredRelation(Struct):
+    check: Annotated[
+        str,
+        Meta(
+            description='The <check> half of a `trace:<check>` severity key.',
+            pattern='^[^\\s:]+$',
+        ),
+    ]
+    direction: Direction
+    edges: Annotated[
+        list[Edge],
+        Meta(
+            description='Accepted edge verbs; any one satisfies the relation.',
+            min_length=1,
+        ),
+    ]
+    from_: Annotated[str, Meta(min_length=1)] = field(name='from')
+    name: Annotated[str, Meta(min_length=1)]
+    exclude: Annotated[list[str], Meta(description='Path globs.')] | UnsetType = UNSET
+    to: (
+        Annotated[
+            list[ToItem],
+            Meta(description='Accepted archetypes at the other end; empty means any.'),
+        ]
+        | UnsetType
+    ) = UNSET
+    where: (
+        Annotated[
+            Where,
+            Meta(
+                description='Narrows the obliged `from` documents to those whose frontmatter `field` holds one of `values` (FR-149-AC-10; semantics in quire-rs FR-058). Uniqueness of `values` after trim and ASCII case folding is not expressible in JSON Schema; the loader enforces it.'
+            ),
+        ]
+        | UnsetType
+    ) = UNSET
+
+
 class TraceabilityModel(Struct):
     acyclic_edges: (
         Annotated[
@@ -945,6 +971,7 @@ class ObjectTypeEntry(Struct):
         | UnsetType
     ) = UNSET
     description: str | UnsetType = UNSET
+    record_validation: RecordValidation | UnsetType = UNSET
     roles: (
         Annotated[
             list[Role],
@@ -982,6 +1009,7 @@ class ArtifactTypeEntry(Struct):
     defaults: Defaults | UnsetType = UNSET
     examples: list[Example] | UnsetType = UNSET
     lint_rules_ref: list[LintRulesRefItem] | UnsetType = UNSET
+    record_validation: RecordValidation | UnsetType = UNSET
 
 
 class FilamentModuleManifest(Struct):
