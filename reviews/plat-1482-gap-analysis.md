@@ -43,9 +43,11 @@ except at the edges listed below.
 | FND-003 | low | `\S` (ECMA-262) and Rust `str::trim` disagree on whitespace. U+FEFF is `\s` in JS but not Rust White_Space, so `field: "﻿"` or `values: ["﻿"]` loads in quire-rs and Ajv refuses it. U+0085 goes the other way, which is harmless. | schema/semantic/v1/module-manifest.schema.json:1554 |
 | FND-004 | low | `record_validation: null` is read as absent by the loader (`Option<Value>` with `serde(default)`, src/loader/manifest.rs:481-482), so it loads, while the schema refuses it. `where: null` is refused on both sides. The fix belongs in quire-rs: refuse null as `where` does. | schema/semantic/v1/module-manifest.schema.json:414 |
 
-## Disposition (fix round 1)
+## Dispositions
 
-- FND-001 (gap, record_validation on every archetype section): fixed. `$defs/RecordValidation` is referenced from `ArtifactTypeEntry`, `ObjectTypeEntry` and `ArchetypeEntry`; FR-149 and FR-149-AC-11 widened; tests per section.
-- FND-002: fixed. `locate_absence_at` uses `minLength: 1`; AC-11 says "empty".
-- FND-003: accepted, no change. U+FEFF is `\s` in JS but not Rust trim; harmless edge.
-- FND-004: no change here. The schema is right to refuse null; the quire-rs side is filed separately.
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | Round 1 (cb53d607): `$defs/RecordValidation` is `$ref`'d from ArtifactTypeEntry, ObjectTypeEntry and ArchetypeEntry. The FR-149 statement, AC-11 and TC-1908 are widened, and there are positive and negative tests for each section. The mutants that remove each section's `$ref` are killed. |
+| FND-002 | fixed | Round 1: `locate_absence_at` uses `minLength: 1`, AC-11 says "empty", and a positive test accepts `" "`. |
+| FND-003 | accepted-no-change | U+FEFF divergence between ECMA-262 `\s` and Rust trim has no practical impact; team accepted it unchanged. |
+| FND-004 | deferred | The schema is right to refuse null. The loader side is tracked in quire-rs ticket PLAT-1484. |

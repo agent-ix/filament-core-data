@@ -32,3 +32,9 @@ PASS WITH FINDINGS.
 | ID | Severity | Summary | Refs |
 | --- | --- | --- | --- |
 | FND-001 | low | The statement says `schema` is "a non-empty string path", but FR-149-AC-11 and TC-1908 list no refusal for an empty `schema`. A mutant that removes `minLength` survives the tests. Add the empty-`schema` refusal to the AC, the TC and the test. | spec/functional/FR-149-type-the-module-manifest-registry-and-traceability-keys.md:75 |
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | Round 1 (cb53d607): AC-11 and TC-1908 list an empty `schema` refusal, the test asserts `minLength` at `/record_validation/schema` for each section, and the minLength mutant is now killed. |

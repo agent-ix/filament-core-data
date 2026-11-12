@@ -44,3 +44,9 @@ sound.
 | ID | Severity | Summary | Refs |
 | --- | --- | --- | --- |
 | FND-001 | high | The committed Python packages were not regenerated, so TC-921 `test_the_generated_tree_regenerates_byte_for_byte` fails on the PR head and passes on origin/main. A fresh `python -m python_backend.runner.emit` also adds a `Value` alias for the untitled `where.values` items, which collides with `semantic_ir_schema.Value` and drops `Value` from the top-level exports of all three packages. Regenerate, and title the items or name the defs so no export is lost. | tests/test_python_backend_qualification.py:245, python_backend/generated/msgspec_struct/__init__.py:19 |
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | Round 1 (cb53d607): the 9 generated files are regenerated, the `where.values` item is `$defs/WhereValue`, and TC-921 passes. Compared with origin/main, all three packages' `__init__` and `module_manifest_schema` only gain RecordValidation, Where and WhereValue, and `Value` is still exported. |
