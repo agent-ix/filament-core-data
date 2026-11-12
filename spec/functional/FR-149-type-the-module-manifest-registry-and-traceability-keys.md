@@ -48,6 +48,8 @@ load and are not restated here.
 - A `trace_tags.implements` form SHALL accept `syntax: rust_attribute` for language `rust` only; a `markers` form SHALL refuse `syntax`.
 - An obligation SHALL NOT name both `target` and `archetype`, and SHALL name one of them; an obligation naming `archetype` SHALL also name `section` and `id_format`. A combinatorial `strength` SHALL be at least 1.
 - A required relation SHALL declare a non-empty `edges` and a `direction` of `outgoing`, `incoming` or `either`.
+- A required relation MAY declare `where`: an object of exactly `field` (a non-blank string) and `values` (a non-empty list of non-blank strings). That no two `values` are equal after trimming and ASCII case folding cannot be expressed in JSON Schema; the schema does not state it and the module loader enforces it (quire-rs FR-058).
+- An artifact type MAY declare `record_validation`: an object of exactly `schema` (a non-empty string path) and `locate_absence_at` (a non-blank string), both required (quire-rs FR-069). Whether the path resolves and whether `locate_absence_at` names a `yield_pattern.match` key are checked by the loader.
 
 - A locator `assert` SHALL additionally declare, as the quire-rs `LocatorAssert` reader does, `optional_columns` (list of strings), `max_rows` (integer, at least 0), `matches` (non-empty string), `choices` (list of strings), `column_choices` (header to list of strings), `column_patterns` (header to non-empty string), `from_vocabulary` (non-empty string) and `column_vocabularies` (header to non-empty string), and SHALL refuse a value of another type.
 - An `edge_types` entry SHALL additionally accept boolean `composite` and boolean `symmetric`.
@@ -69,7 +71,9 @@ The scalar-or-list `section` is one named definition (`SectionList` for the list
 | FR-149-AC-7 | An `edge_types` entry with boolean `composite` or `symmetric` is accepted; a non-boolean value is refused. | Test (TC-1904) |
 | FR-149-AC-8 | A `lint_rules` entry of each of the three `type` values is accepted, with a string `pattern` on a `section_body_pattern` rule; an entry with no `type`, an unknown `type`, an object `pattern` on any rule type, a `table_column_values` rule without `column` or without `allowed`, or a `section_body_pattern` rule without `pattern` is refused. | Test (TC-1905) |
 | FR-149-AC-9 | A `plain_language_profiles` map and a `clause_sets` list of paths are accepted; a profile with an undeclared member or a zero `sentence_word_limit`, and a non-list `clause_sets`, are refused. | Test (TC-1906) |
+| FR-149-AC-10 | A required relation with `where: {field, values}` is accepted; a `where` with an extra member, a missing `field` or `values`, an empty `values`, a blank `field` or a blank `values` entry is refused. Duplicate `values` after trim and case folding are not a schema concern. | Test (TC-1907) |
+| FR-149-AC-11 | An artifact type with `record_validation: {schema, locate_absence_at}` is accepted; a `record_validation` missing `schema` or `locate_absence_at`, with a blank `locate_absence_at`, or with an unknown member is refused. | Test (TC-1908) |
 
 ## Dependencies
 
-- **Referenced**: [FR-142](./FR-142-declare-construct-kinds-as-module-data.md) (object-type declarations in the same manifest), quoin FR-073 (the `data_schema` reference form), quire-rs FR-043, FR-047, FR-048, FR-050, FR-052, FR-054 and FR-056 (the typed readers)
+- **Referenced**: [FR-142](./FR-142-declare-construct-kinds-as-module-data.md) (object-type declarations in the same manifest), quoin FR-073 (the `data_schema` reference form), quire-rs FR-043, FR-047, FR-048, FR-050, FR-052, FR-054, FR-056, FR-058 (`where`) and FR-069 (`record_validation`) (the typed readers)

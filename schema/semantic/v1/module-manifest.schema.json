@@ -411,6 +411,22 @@
 					"$ref": "#/$defs/BodyExtraction",
 					"description": "Locator DSL (FR-035 CR-002). Each locator MAY carry an `assert` facet driving structural validation in quire-rs validate_document. Supersedes required_sections."
 				},
+				"record_validation": {
+					"type": "object",
+					"description": "Opt-in record validation for an archetype (FR-149-AC-11; semantics in quire-rs FR-069). `schema` is a path to the JSON Schema the extracted record is validated against; `locate_absence_at` names the yield_pattern.match key whose line locates a missing-property finding. Cross-references are checked by the loader.",
+					"required": ["schema", "locate_absence_at"],
+					"additionalProperties": false,
+					"properties": {
+						"schema": {
+							"type": "string",
+							"minLength": 1
+						},
+						"locate_absence_at": {
+							"type": "string",
+							"pattern": "\\S"
+						}
+					}
+				},
 				"data_schema": {
 					"description": "JSON Schema validating the EXTRACTED record (distinct from frontmatter_schema_ref, which validates frontmatter). Same two forms as ObjectTypeEntry.data_schema (quoin FR-073): an inline schema object, or {schema: <module-relative .json path>}; an object carrying `schema` or `digest` alongside any other key is ambiguous and rejected.",
 					"oneOf": [
@@ -1527,6 +1543,26 @@
 				},
 				"direction": {
 					"enum": ["outgoing", "incoming", "either"]
+				},
+				"where": {
+					"type": "object",
+					"description": "Narrows the obliged `from` documents to those whose frontmatter `field` holds one of `values` (FR-149-AC-10; semantics in quire-rs FR-058). Uniqueness of `values` after trim and ASCII case folding is not expressible in JSON Schema; the loader enforces it.",
+					"required": ["field", "values"],
+					"additionalProperties": false,
+					"properties": {
+						"field": {
+							"type": "string",
+							"pattern": "\\S"
+						},
+						"values": {
+							"type": "array",
+							"minItems": 1,
+							"items": {
+								"type": "string",
+								"pattern": "\\S"
+							}
+						}
+					}
 				},
 				"check": {
 					"type": "string",

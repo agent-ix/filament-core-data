@@ -1,8 +1,8 @@
-import { readFileSync, readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import Ajv2020 from "ajv/dist/2020.js";
 import type { ValidateFunction } from "ajv/dist/2020.js";
+import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
 import { describe, expect, it } from "vitest";
 
@@ -883,5 +883,71 @@ describe("semantic.import_types (PLAT-212)", () => {
 		);
 		const found = (validate.errors ?? []).map((e) => e.keyword);
 		expect(found).toContain(keyword);
+	});
+});
+
+describe("where and record_validation", () => {
+	const rel = {
+		name: "r",
+		from: "a",
+		edges: ["e"],
+		direction: "incoming",
+		check: "c",
+	};
+	const rr = (where: unknown) => ({
+		traceability: { required_relations: [{ ...rel, where }] },
+	});
+	const W = "/traceability/required_relations/0/where";
+
+	/// Trace: FR-149-AC-10
+	it("accepts a required relation with where", () => {
+		accepts(rr({ field: "quality_attribute", values: ["security", "safety"] }));
+	});
+
+	/// Trace: FR-149-AC-10
+	it("refuses a malformed where", () => {
+		rejects(
+			rr({ field: "f", values: ["v"], extra: 1 }),
+			W,
+			"additionalProperties",
+		);
+		rejects(rr({ values: ["v"] }), W, "required");
+		rejects(rr({ field: "f" }), W, "required");
+		rejects(rr({ field: "f", values: [] }), `${W}/values`, "minItems");
+		rejects(rr({ field: " ", values: ["v"] }), `${W}/field`, "pattern");
+		rejects(rr({ field: "f", values: [" "] }), `${W}/values/0`, "pattern");
+	});
+
+	const rv = (record_validation: unknown) => ({
+		artifact_types: [
+			{
+				name: "A",
+				grammar_ref: "g",
+				frontmatter_schema_ref: "schemas/a.json",
+				record_validation,
+			},
+		],
+	});
+	const RV = "/artifact_types/0/record_validation";
+
+	/// Trace: FR-149-AC-11
+	it("accepts an artifact type with record_validation", () => {
+		accepts(rv({ schema: "schemas/f.json", locate_absence_at: "status" }));
+	});
+
+	/// Trace: FR-149-AC-11
+	it("refuses a malformed record_validation", () => {
+		rejects(rv({ schema: "s.json" }), RV, "required");
+		rejects(rv({ locate_absence_at: "status" }), RV, "required");
+		rejects(
+			rv({ schema: "s.json", locate_absence_at: " " }),
+			`${RV}/locate_absence_at`,
+			"pattern",
+		);
+		rejects(
+			rv({ schema: "s.json", locate_absence_at: "x", extra: 1 }),
+			RV,
+			"additionalProperties",
+		);
 	});
 });
