@@ -17,32 +17,32 @@ relationships:
     type: "references"
   - target: "ix://agent-ix/filament-core-data/FR-079"
     type: "references"
-  - target: "ix://agent-ix/quire-specification/FR-154"
+  - target: "ix://agent-ix/filament-specification/FR-154"
     type: "references"
-  - target: "ix://agent-ix/quire-specification/FR-322"
+  - target: "ix://agent-ix/filament-specification/FR-322"
     type: "references"
 ---
 # FR-148: Carry option value types in the semantic IR
 
 ## Description
 
-This requirement answers Linear IR-1239 (STD-627). QSpec FR-154 "Option value
+This requirement answers Linear IR-1239 (STD-627). FSpec FR-154 "Option value
 types" admits an **option value type**: a type definition of `kind` `option`
 with exactly one member `inner`, a type reference, denoting `Option<T>` for the
 type `T` that `inner` names (an absent value or one present `T` value). The
 type reference grammar stays the three forms (native, unit, package identity)
 with no type argument. The semantic IR carried no such kind; the extraction
 frontend, the readers and the schema had to be told what `Option<T>` is before
-QSL could read one from an admitted domain package.
+FSL could read one from an admitted domain package.
 
 The option value type is the type-level spelling of the same `Option<T>` that
 presence `optional` writes on a field. The two differ in reach only: presence
 exists on a field, so an optional element, map value, tuple position, variant
 payload, alias target or parameter is an option value type and nothing else.
-This requirement carries the kind, refuses what QSpec FR-154 assigns to the
+This requirement carries the kind, refuses what FSpec FR-154 assigns to the
 producer and the readers, and names the accessors a consumer reads the option
 through. It does not derive the checked-package `composite_type`/`option` node
-(QSpec FR-322 step 4); that belongs to the checked-package reader.
+(FSpec FR-322 step 4); that belongs to the checked-package reader.
 
 | Term | Meaning |
 |---|---|
@@ -54,9 +54,9 @@ through. It does not derive the checked-package `composite_type`/`option` node
 
 - A semantic IR `2.0.0` document whose type definitions may have the core kind
   `option`
-- The vectors OP-01 to OP-41 of QSpec
+- The vectors OP-01 to OP-41 of FSpec
   `proposals/checked-package-v2/model-option-type-vectors.json`, read from the
-  QSpec repository at git ref `fa6be9cd` or later and never copied
+  FSpec repository at git ref `fa6be9cd` or later and never copied
 
 ## Outputs
 
@@ -95,13 +95,13 @@ through. It does not derive the checked-package `composite_type`/`option` node
 ### Inner resolution
 
 - An `inner` naming a native name outside the kernel library
-  (`ix://quire/native/Int`), `ix://quire/native/Clock` or an alias of it,
+  (`ix://filament/native/Int`), `ix://filament/native/Clock` or an alias of it,
   an option value type (directly, through an alias, or itself), or a namespace,
   state machine, interface or process SHALL raise `INVALID_OPTION_INNER` at
   `inner`. `Option<Option<T>>` has no spelling and is never flattened.
 - An `inner` that is a package identity naming no declared type SHALL raise
   `UNRESOLVED_OPTION_INNER` at `inner`.
-- A native scalar, a well-formed `ix://quire/unit/<name>` and any value type
+- A native scalar, a well-formed `ix://filament/unit/<name>` and any value type
   are admitted as `inner`; a malformed unit reference is `UNRESOLVED_TYPE_REF`
   as at every type position.
 
@@ -122,8 +122,8 @@ through. It does not derive the checked-package `composite_type`/`option` node
 ### Other positions
 
 - A `reference` whose `target` is an option value type SHALL raise
-  `UNRESOLVED_TYPE_REF` at `target`; a field typed `ix://quire/native/Option`,
-  `ix://quire/native/Option<Integer>` or `ix://quire/native/option` SHALL be
+  `UNRESOLVED_TYPE_REF` at `target`; a field typed `ix://filament/native/Option`,
+  `ix://filament/native/Option<Integer>` or `ix://filament/native/option` SHALL be
   refused at its `typeRef`.
 - No constraint applies to an option value type: a constraint whose
   `appliesTo` names one raises `CONSTRAINT_NOT_APPLICABLE` at the constraint.
@@ -152,18 +152,18 @@ through. It does not derive the checked-package `composite_type`/`option` node
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-148-AC-1 | The kind enumeration names `option` in the schema, the extraction frontend and the reader, and a kind outside it is refused; the vector documents OP-09, OP-10 and OP-20 (an option over a native, a unit and a record, an alias of an option, an option at a sequence `items`, map `values`, tuple position and variant payload, and presence `optional` on a collection of options) are accepted with no diagnostic (QSpec FR-154-AC-39). | Test (TC-1887, TC-1893) |
-| FR-148-AC-2 | An option with no `inner`, a `null`, empty, numeric, object, one-element-array or two-element-array `inner`, an `inner` of `Integer`, and one declaring a field, an operation, a supertype, a position, an `items` member or a non-empty `constraints` each raise exactly one `SCHEMA_VIOLATION` at the member (the type for an absent `inner`): vectors OP-25 to OP-32 and OP-34 to OP-39 (QSpec FR-154-AC-41). | Test (TC-1888) |
-| FR-148-AC-3 | An option whose `inner` is an option, an alias of one, itself, `ix://quire/native/Clock`, an alias of it, a namespace or `ix://quire/native/Int` raises exactly one `INVALID_OPTION_INNER` at `inner`, and one whose `inner` is a package identity naming no node raises exactly one `UNRESOLVED_OPTION_INNER`: vectors OP-11 to OP-17 and OP-33 (QSpec FR-154-AC-40, AC-41). | Test (TC-1889) |
-| FR-148-AC-4 | A field typed by an option value type, or by an alias of one, with presence `optional` and multiplicity `[1, 1]` in either flag order raises exactly one `INVALID_OPTION_PRESENCE` at its `presence`, and the same field with presence `required` or with a collection multiplicity raises nothing: vectors OP-18, OP-19, OP-20 and OP-41 (QSpec FR-154-AC-40). | Test (TC-1890) |
-| FR-148-AC-5 | A `reference` to an option raises `UNRESOLVED_TYPE_REF` at `target`, a field typed `ix://quire/native/Option`, `ix://quire/native/Option<Integer>` or `ix://quire/native/option` is refused at its `typeRef`, and a constraint applying to an option raises `CONSTRAINT_NOT_APPLICABLE`: vectors OP-21 to OP-24, OP-39 and OP-40 (QSpec FR-154-AC-40, AC-41). | Test (TC-1891) |
-| FR-148-AC-6 | `Document::option_inner` and `Document::member_option` read the field and operation types of vectors OP-01 to OP-08 as `Option<Integer>` for `a`, `b`, `g` and the operation parameter and result, `Option<Quantity<ms>>` for `c`, `Sequence<Option<Integer>>[0, 3]` for `d`, `Option<Sequence<Integer>[0, 3]>` for `e` and an option over the record for `f`; `a` and `b` name the same `T` through the two spellings (QSpec FR-322-AC-298). | Test (TC-1892) |
+| FR-148-AC-1 | The kind enumeration names `option` in the schema, the extraction frontend and the reader, and a kind outside it is refused; the vector documents OP-09, OP-10 and OP-20 (an option over a native, a unit and a record, an alias of an option, an option at a sequence `items`, map `values`, tuple position and variant payload, and presence `optional` on a collection of options) are accepted with no diagnostic (FSpec FR-154-AC-39). | Test (TC-1887, TC-1893) |
+| FR-148-AC-2 | An option with no `inner`, a `null`, empty, numeric, object, one-element-array or two-element-array `inner`, an `inner` of `Integer`, and one declaring a field, an operation, a supertype, a position, an `items` member or a non-empty `constraints` each raise exactly one `SCHEMA_VIOLATION` at the member (the type for an absent `inner`): vectors OP-25 to OP-32 and OP-34 to OP-39 (FSpec FR-154-AC-41). | Test (TC-1888) |
+| FR-148-AC-3 | An option whose `inner` is an option, an alias of one, itself, `ix://filament/native/Clock`, an alias of it, a namespace or `ix://filament/native/Int` raises exactly one `INVALID_OPTION_INNER` at `inner`, and one whose `inner` is a package identity naming no node raises exactly one `UNRESOLVED_OPTION_INNER`: vectors OP-11 to OP-17 and OP-33 (FSpec FR-154-AC-40, AC-41). | Test (TC-1889) |
+| FR-148-AC-4 | A field typed by an option value type, or by an alias of one, with presence `optional` and multiplicity `[1, 1]` in either flag order raises exactly one `INVALID_OPTION_PRESENCE` at its `presence`, and the same field with presence `required` or with a collection multiplicity raises nothing: vectors OP-18, OP-19, OP-20 and OP-41 (FSpec FR-154-AC-40). | Test (TC-1890) |
+| FR-148-AC-5 | A `reference` to an option raises `UNRESOLVED_TYPE_REF` at `target`, a field typed `ix://filament/native/Option`, `ix://filament/native/Option<Integer>` or `ix://filament/native/option` is refused at its `typeRef`, and a constraint applying to an option raises `CONSTRAINT_NOT_APPLICABLE`: vectors OP-21 to OP-24, OP-39 and OP-40 (FSpec FR-154-AC-40, AC-41). | Test (TC-1891) |
+| FR-148-AC-6 | `Document::option_inner` and `Document::member_option` read the field and operation types of vectors OP-01 to OP-08 as `Option<Integer>` for `a`, `b`, `g` and the operation parameter and result, `Option<Quantity<ms>>` for `c`, `Sequence<Option<Integer>>[0, 3]` for `d`, `Option<Sequence<Integer>[0, 3]>` for `e` and an option over the record for `f`; `a` and `b` name the same `T` through the two spellings (FSpec FR-322-AC-298). | Test (TC-1892) |
 | FR-148-AC-7 | The extraction frontend's `Kind::Option` serializes as `option`, its `TypeDefinition` carries `inner` and exposes it through `option_inner`, and a definition of any other kind exposes none. | Test (TC-1894) |
 | FR-148-AC-8 | A generation request whose IR declares an option value type is refused for every target by the generation seam with state `unsupported` and one blocking `UNSUPPORTED_CONSTRUCT_SHAPE`, and a request with none is unchanged. | Test (TC-1895) |
-| FR-148-AC-9 | For every vector OP-01 to OP-41 read by ref from the QSpec input above, the Node `readContractIr`, independent TypeScript reader and Python reader agree with the existing Rust reader on the corresponding semantic IR document: OP-01 to OP-10 and OP-20 are accepted with no diagnostic; each rejection row yields exactly one mapped canonical vector result for the code and located member required by AC-2 to AC-5, without requiring a single raw native diagnostic. The gate documents the mapping from each existing reader envelope to the Rust vector mapping, preserving each vector's expected path and cause, each reader's published ABI, and original code and path plus severity and blocking status where exposed. For the schema shape rows OP-23, OP-25 to OP-32 and OP-34 to OP-39, the compiler's `INVALID_IR` envelope is mapped using its original schema errors and pointers to the evidence readers' `SCHEMA_VIOLATION`, rather than synthesizing a matching result. The gate retains and checks every native schema diagnostic, normalizes only documented duplicate or ancestor representations of the same violation, and fails on any extra distinct violation; semantic refusals retain their existing codes and locations. | Test |
+| FR-148-AC-9 | For every vector OP-01 to OP-41 read by ref from the FSpec input above, the Node `readContractIr`, independent TypeScript reader and Python reader agree with the existing Rust reader on the corresponding semantic IR document: OP-01 to OP-10 and OP-20 are accepted with no diagnostic; each rejection row yields exactly one mapped canonical vector result for the code and located member required by AC-2 to AC-5, without requiring a single raw native diagnostic. The gate documents the mapping from each existing reader envelope to the Rust vector mapping, preserving each vector's expected path and cause, each reader's published ABI, and original code and path plus severity and blocking status where exposed. For the schema shape rows OP-23, OP-25 to OP-32 and OP-34 to OP-39, the compiler's `INVALID_IR` envelope is mapped using its original schema errors and pointers to the evidence readers' `SCHEMA_VIOLATION`, rather than synthesizing a matching result. The gate retains and checks every native schema diagnostic, normalizes only documented duplicate or ancestor representations of the same violation, and fails on any extra distinct violation; semantic refusals retain their existing codes and locations. | Test |
 
 ## Dependencies
 
 - **Upstream**: [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md) (the readers and their code table), [FR-141](./FR-141-carry-the-model-members-in-the-semantic-ir.md) (the model members this extends)
-- **Referenced**: [FR-097](./FR-097-normalize-validate-and-write-the-lifted-document.md) (validation at lift time), [FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md) (Clock and quantity references), [FR-147](./FR-147-carry-tuple-value-types-and-union-variant-payloads.md) (tuple positions and variant payloads), QSpec FR-154 and FR-322
+- **Referenced**: [FR-097](./FR-097-normalize-validate-and-write-the-lifted-document.md) (validation at lift time), [FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md) (Clock and quantity references), [FR-147](./FR-147-carry-tuple-value-types-and-union-variant-payloads.md) (tuple positions and variant payloads), FSpec FR-154 and FR-322
 - **Generated Python surfaces**: [FR-079](./FR-079-emit-the-python-package-layout.md) (the existing regeneration and `--check` obligation, including CON-2)

@@ -547,7 +547,7 @@ describe("FR-027 field multiplicity and units", () => {
 	/**
 	 * Traces: TC-237; FR-027-AC-8.
 	 *
-	 * QSpec model-complete.md: every multiplicity carries `ordered` and
+	 * FSpec model-complete.md: every multiplicity carries `ordered` and
 	 * `unique`. Owner ruling (2026-09-19T15:39:32Z) on FCD #199, superseding
 	 * R2 of the #199/#200 review round: `FLAGS_ON_NON_COLLECTION` is
 	 * deleted, not corrected — every producer clamps both flags to `false`
@@ -1322,7 +1322,7 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 			},
 		};
 		const mult = { lower: 1, upper: 1, ordered: false, unique: false };
-		const ref = "ix://quire/native/Rational";
+		const ref = "ix://filament/native/Rational";
 		const member = (identity: string, name: string, extra = {}) => ({
 			identity,
 			name,
@@ -1401,7 +1401,7 @@ describe("FR-020 closing gate: two readers, round trip, fixture inventory (Task-
 						{
 							identity: "ix://acme/pkg/T/f",
 							name: "f",
-							typeRef: "ix://quire/native/String",
+							typeRef: "ix://filament/native/String",
 							presence: "required",
 							nullable: false,
 							multiplicity: {

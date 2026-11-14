@@ -2,7 +2,7 @@
 //!
 //! A module declares each of its construct kinds as data: an identity, a
 //! shape, the presence of each IR member, the roles each reference member
-//! admits, the named core rules, and a Quire meaning id the contract carries
+//! admits, the named core rules, and a Filament meaning id the contract carries
 //! without interpreting.
 //! `schema/semantic/v1/construct-vocabulary.json` states the vocabulary once;
 //! the enums here are its Rust reading, and the parity test below compares
@@ -330,7 +330,7 @@ pub struct Declaration {
     pub references: Vec<(Member, Vec<String>)>,
     /// The selected core rules, in declaration order.
     pub rules: Vec<Rule>,
-    /// The Quire meaning id, retained verbatim.
+    /// The Filament meaning id, retained verbatim.
     pub meaning: String,
     /// Whether an instance never changes once created; `false` when the
     /// declaration does not state it.
@@ -506,7 +506,7 @@ impl Declaration {
             .get("meaning")
             .and_then(Json::as_str)
             .filter(|text| !text.is_empty())
-            .ok_or_else(|| error("/meaning", "meaning is a non-empty Quire meaning id"))?
+            .ok_or_else(|| error("/meaning", "meaning is a non-empty Filament meaning id"))?
             .to_string();
         let immutable = match value.get("immutable") {
             None => false,
@@ -897,7 +897,7 @@ mod tests {
 
     #[test]
     fn tc_1788_a_declaration_round_trips_and_defaults_unlisted_members() {
-        let text = r#"{"identity":"identified","shape":"record","members":{"fields":"required","identityFields":"required","owner":"required"},"references":{"owner":["acme:thing","acme:part"]},"rules":["identity_field_required","single_owner"],"meaning":"quire.meaning.model.object-type/v1"}"#;
+        let text = r#"{"identity":"identified","shape":"record","members":{"fields":"required","identityFields":"required","owner":"required"},"references":{"owner":["acme:thing","acme:part"]},"rules":["identity_field_required","single_owner"],"meaning":"filament.meaning.model.object-type/v1"}"#;
         let read = declaration(text).expect("a declaration");
         assert_eq!(read.presence(Member::Owner), Presence::Required);
         assert_eq!(read.presence(Member::Clauses), Presence::Optional);

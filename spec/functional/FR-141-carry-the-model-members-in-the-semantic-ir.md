@@ -18,7 +18,7 @@ This requirement answers the model-member part of
 [filament-core-data#93](https://github.com/agent-ix/filament-core-data/issues/93).
 
 The semantic IR at contract `2.0.0` SHALL carry the model members that the
-quire-spec model definition (AD-006) declares, so that a checked model reads
+filament-spec model definition (AD-006) declares, so that a checked model reads
 generalization, feature presence, subsetting, redefinition, operation frames,
 inline pre- and postconditions and populations from the IR rather than from
 prose. The members are:
@@ -30,29 +30,29 @@ prose. The members are:
 | `presence` | `field` | Whether the member must appear, authored (FR-106) |
 | `subsets` | `field` | The supertype fields whose values include this field's values |
 | `redefines` | `field`, `operation` | The supertype field or operation this member narrows; an operation narrows by its return multiplicity |
-| `textProfile` | `field`, `typeDefinition` | The text profile (`unicode-scalars`, `nfc`, `nfd`, `nfkc`, `nfkd`, `binary-utf8`, FR-141 of the quire-specification text contract) a text field or a text value type binds; a type definition carries it only as a scalar of `string` |
+| `textProfile` | `field`, `typeDefinition` | The text profile (`unicode-scalars`, `nfc`, `nfd`, `nfkc`, `nfkd`, `binary-utf8`, FR-141 of the filament-specification text contract) a text field or a text value type binds; a type definition carries it only as a scalar of `string` |
 | `frame` | `operation` | The declarations the operation `modifies`, `creates` and `deletes`, required arrays, and three optional receiver-scoped members `modifies_receiver` (strings), `deletes_receiver` (boolean) and `deletes_parameters` (strings): each `modifies`, `creates` and `deletes` entry is the node identity of a declared field or relationship (`modifies`) or of a declared object type or process (`creates`, `deletes`), never an access path |
 | inline `pre`, `post` items | `operation` | A `pre` or `post` item that is an inline clause with a language and text, beside the clause-id items |
-| `populations` | document | Named instance extents, each bound by its own `kind` (`{module, name}`, QSpec FR-154 row 2/AC-7, FR-208) for QSpec intake to key on, a flat set of unique member type references, and a single `extent` (`closed` or `open`, QSpec FR-153/AD-006) for the population as a whole |
+| `populations` | document | Named instance extents, each bound by its own `kind` (`{module, name}`, FSpec FR-154 row 2/AC-7, FR-208) for FSpec intake to key on, a flat set of unique member type references, and a single `extent` (`closed` or `open`, FSpec FR-153/AD-006) for the population as a whole |
 | scalar `any` | `typeDefinition` | An unconstrained JSON value (FR-139) |
 | `identity` | `typeDefinition` | The node identity; a spec-bundle lift mints it from the artifact id (FR-143) |
 
-Clauses are Quire. A clause language is one of `quire`, `ocl`, `sysml`,
+Clauses are Filament. A clause language is one of `quire`, `ocl`, `sysml`,
 `fretish` or a registered `namespace:name`. `quire` is the one checked language;
 a clause in any other admitted language is carried as authored, unchecked, with
 an advisory, and a reader never re-reads its text in another language.
 
-`frame` names only what QSpec has settled: each entry is a declaration's
+`frame` names only what FSpec has settled: each entry is a declaration's
 node identity, never a dotted access path, resolved against every field,
-relationship or type the document declares — QSpec FR-340 admits any
+relationship or type the document declares — FSpec FR-340 admits any
 declared field or relationship node in the package as a `modifies` target,
 and FR-013 has no reachability limit, so resolution is never narrowed to
 the operation's own type or its supertypes. The frame's body encoding and
 its grant-range semantics (what a `modifies` entry ranges over, what
 `creates`/`deletes` differ over, and relationship-end scope) are open in
-agent-ix/quire-specification#101 (Q3 still open with Peter) and
-agent-ix/quire-specification#106; this requirement carries no shape for
-either question until QSpec decides it.
+agent-ix/filament-specification#101 (Q3 still open with Peter) and
+agent-ix/filament-specification#106; this requirement carries no shape for
+either question until FSpec decides it.
 
 ## Inputs
 
@@ -68,7 +68,7 @@ either question until QSpec decides it.
 - A reader SHALL raise `UNRESOLVED_CONSTRUCT_REF` for a supertype naming no declared type, `CONSTRUCT_TARGET_KIND` for a supertype of another kind, and `SUPERTYPE_CYCLE` for a type that reaches itself through `supertypes`.
 - A reader SHALL raise `UNRESOLVED_FEATURE_REF` for a `subsets` or `redefines` entry naming no field of a transitive supertype, and `INVALID_REDEFINITION` for a redefinition whose multiplicity lies outside the redefined field's bounds. An operation's `redefines` is read the same way against the operations of its transitive supertypes, and its return multiplicity is the one compared. An operation that declares no `returns` returns no value, a return multiplicity of `0..0`: redefining an operation that returns with one that does not, or the reverse, leaves the redefined bounds and raises `INVALID_REDEFINITION`, and two operations that both return nothing agree.
 - The schema SHALL admit `textProfile` only from the closed set above, on a field or on a scalar type definition of scalar `string`; any other value, and the member on any other kind of type, is `SCHEMA_VIOLATION` at the member. A field's `typeRef` must resolve, through aliases, to a scalar of `string`; the JSON Schema cannot follow a `typeRef`, so the reader raises `SCHEMA_VIOLATION` at the field's `textProfile` where it resolves to anything else.
-- A reader SHALL raise `UNRESOLVED_FRAME_PATH` for a `modifies` entry naming no field or relationship the document declares, and for a `creates` or `deletes` entry naming no type the document declares. Resolution ranges over the whole document, not only the operation's own type or its supertypes: QSpec FR-340 admits any declared field or relationship node in the package, and FR-013 has no reachability limit.
+- A reader SHALL raise `UNRESOLVED_FRAME_PATH` for a `modifies` entry naming no field or relationship the document declares, and for a `creates` or `deletes` entry naming no type the document declares. Resolution ranges over the whole document, not only the operation's own type or its supertypes: FSpec FR-340 admits any declared field or relationship node in the package, and FR-013 has no reachability limit.
 - A reader SHALL raise `UNRESOLVED_TYPE_REF` for a population member naming no declared type.
 - The Node, Python and Rust readers SHALL agree on the schema verdict of every document.
 - The TypeSpec frontend SHALL lower a member of the intrinsic type `unknown` to the kernel scalar `any`, named `JsonObject` as a spec bundle names it, never to a record.

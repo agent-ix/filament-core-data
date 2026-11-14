@@ -32,17 +32,17 @@ pub struct RuleLimits {
 /// kernel scalar mints no document node, so a `typeRef`, `target`, sequence
 /// `items`, map `values`, variant `payloadType` or constraint `appliesTo`
 /// naming one resolves against this closed set instead of `document.types`.
-pub const NATIVE_PREFIX: &str = "ix://quire/native/";
+pub const NATIVE_PREFIX: &str = "ix://filament/native/";
 
 /// The native clock type reference: a clock is no IR scalar or document node.
-const CLOCK_TYPE_REF: &str = "ix://quire/native/Clock";
+const CLOCK_TYPE_REF: &str = "ix://filament/native/Clock";
 const INVALID_CLOCK_MEMBER: &str = "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER";
 const INVALID_QUANTITY_MEMBER: &str = "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER";
 
 // These references have position-specific rules; ordinary identity members
 // continue to use their own resolution rules.
 pub(crate) fn special_type_ref(identity: &str) -> bool {
-    identity == CLOCK_TYPE_REF || identity.starts_with("ix://quire/unit/")
+    identity == CLOCK_TYPE_REF || identity.starts_with("ix://filament/unit/")
 }
 
 /// What a clock or quantity type reference, directly or through an alias
@@ -74,11 +74,11 @@ const NATIVE_SCALARS: &[(&str, &str)] = &[
     ("Duration", "duration"),
     ("Bytes", "bytes"),
     ("JsonObject", "any"),
-    // The model document's text name (QSpec FR-056): scalar `string`, its
+    // The model document's text name (FSpec FR-056): scalar `string`, its
     // bounds `minLength`/`maxLength` and its profile the `format`
     // `text-profile:<profile>`. It is not an FR-032 kernel scalar.
     ("Text", "string"),
-    // The model document's rational name (QSL FR-056, FR-146 "The native
+    // The model document's rational name (FSL FR-056, FR-146 "The native
     // set"): scalar `string`, instance form the canonical rational string.
     // It is not an FR-032 kernel scalar and carries no `decimal` policy.
     ("Rational", "string"),
@@ -861,7 +861,7 @@ impl<'a> Document<'a> {
     }
 
     /// The `Option<T>` a cardinality-one field or parameter is (FR-148,
-    /// QSpec FR-154 "Presence and option"): a member of option value type
+    /// FSpec FR-154 "Presence and option"): a member of option value type
     /// with presence `required`, or a member of any other type with presence
     /// `optional`, at multiplicity `[1, 1]`, is the same `Option<T>`; the
     /// result names `T` and the spelling that wrote it. A member of a
@@ -1472,7 +1472,7 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
             for (member, variant) in variants.iter().enumerate() {
                 if let Some(payload) = variant.get("payloadType").and_then(Json::as_str) {
                     let variant_at = index(&variants_at, member);
-                    // QSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
+                    // FSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
                     if document.special_of(payload) == Some(Special::Clock) {
                         sink.emit(
                             child(&variant_at, "payloadType"),
@@ -1704,7 +1704,7 @@ fn option_inner(
     }
 }
 
-/// The native value types a map key may be (QSpec FR-154 "Map types"): each
+/// The native value types a map key may be (FSpec FR-154 "Map types"): each
 /// has a total canonical key. `Rational`, `Decimal` and `Clock` have none.
 const KEY_NATIVES: &[&str] = &[
     "Boolean",
@@ -1720,7 +1720,7 @@ const KEY_NATIVES: &[&str] = &[
     "JsonObject",
 ];
 
-/// What a map `keys` reference reaches (QSpec FR-154 "Map types").
+/// What a map `keys` reference reaches (FSpec FR-154 "Map types").
 enum KeyEnd {
     /// A scalar key type.
     Scalar,
@@ -1794,7 +1794,7 @@ fn key_end(document: &Document<'_>, declared: &HashSet<String>, identity: &str) 
     }
 }
 
-/// The key rules of QSpec FR-154 "Map types" for one map definition whose
+/// The key rules of FSpec FR-154 "Map types" for one map definition whose
 /// `keys` is a string identity (a non-identity is the schema's): an identity
 /// naming no declared type is `UNRESOLVED_MAP_KEY`; a type that is no scalar
 /// key type (a clock or a type holding one, a record, tuple or payload-bearing
@@ -1827,7 +1827,7 @@ fn map_key(
     }
 }
 
-/// The bound order rule of QSpec FR-154 "Map types" for one map definition
+/// The bound order rule of FSpec FR-154 "Map types" for one map definition
 /// whose `bound` has the schema's shape: `lower` above `upper`, or a `lower`
 /// above `0` with no `upper`, is `INVALID_MAP_BOUND`. Reports at `bound`.
 fn map_bound(definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
@@ -2802,37 +2802,37 @@ mod tests {
     fn type_position_fixture(kind: TypePositionKind) -> Json {
         let definition = match kind {
             TypePositionKind::FieldType => {
-                r#"{"identity":"ix://acme/pkg/T","kind":"record","fields":[{"typeRef":"ix://quire/native/Decimal"}]}"#
+                r#"{"identity":"ix://acme/pkg/T","kind":"record","fields":[{"typeRef":"ix://filament/native/Decimal"}]}"#
             }
             TypePositionKind::ParameterType => {
-                r#"{"identity":"ix://acme/pkg/T","kind":"record","operations":[{"params":[{"typeRef":"ix://quire/native/Decimal"}]}]}"#
+                r#"{"identity":"ix://acme/pkg/T","kind":"record","operations":[{"params":[{"typeRef":"ix://filament/native/Decimal"}]}]}"#
             }
             TypePositionKind::OperationReturn => {
-                r#"{"identity":"ix://acme/pkg/T","kind":"record","operations":[{"returns":{"typeRef":"ix://quire/native/Decimal"}}]}"#
+                r#"{"identity":"ix://acme/pkg/T","kind":"record","operations":[{"returns":{"typeRef":"ix://filament/native/Decimal"}}]}"#
             }
             TypePositionKind::ConstraintSubject => {
-                r#"{"identity":"ix://acme/pkg/T","kind":"record","constraints":[{"appliesTo":"ix://quire/native/Decimal"}]}"#
+                r#"{"identity":"ix://acme/pkg/T","kind":"record","constraints":[{"appliesTo":"ix://filament/native/Decimal"}]}"#
             }
             TypePositionKind::AliasTarget => {
-                r#"{"identity":"ix://acme/pkg/T","kind":"alias","target":"ix://quire/native/Decimal"}"#
+                r#"{"identity":"ix://acme/pkg/T","kind":"alias","target":"ix://filament/native/Decimal"}"#
             }
             TypePositionKind::ReferenceTarget => {
-                r#"{"identity":"ix://acme/pkg/T","kind":"reference","target":"ix://quire/native/Decimal"}"#
+                r#"{"identity":"ix://acme/pkg/T","kind":"reference","target":"ix://filament/native/Decimal"}"#
             }
             TypePositionKind::SequenceItems => {
-                r#"{"identity":"ix://acme/pkg/T","kind":"sequence","items":"ix://quire/native/Decimal"}"#
+                r#"{"identity":"ix://acme/pkg/T","kind":"sequence","items":"ix://filament/native/Decimal"}"#
             }
             TypePositionKind::MapValues => {
-                r#"{"identity":"ix://acme/pkg/T","kind":"map","values":"ix://quire/native/Decimal"}"#
+                r#"{"identity":"ix://acme/pkg/T","kind":"map","values":"ix://filament/native/Decimal"}"#
             }
             TypePositionKind::VariantPayload => {
-                r#"{"identity":"ix://acme/pkg/T","kind":"union","variants":[{"payloadType":"ix://quire/native/Decimal"}]}"#
+                r#"{"identity":"ix://acme/pkg/T","kind":"union","variants":[{"payloadType":"ix://filament/native/Decimal"}]}"#
             }
             TypePositionKind::TuplePosition => {
-                r#"{"identity":"ix://acme/pkg/T","kind":"tuple","positions":[{"typeRef":"ix://quire/native/Decimal"}]}"#
+                r#"{"identity":"ix://acme/pkg/T","kind":"tuple","positions":[{"typeRef":"ix://filament/native/Decimal"}]}"#
             }
             TypePositionKind::OptionInner => {
-                r#"{"identity":"ix://acme/pkg/T","kind":"option","inner":"ix://quire/native/Decimal"}"#
+                r#"{"identity":"ix://acme/pkg/T","kind":"option","inner":"ix://filament/native/Decimal"}"#
             }
         };
         parse(&format!(r#"{{"ir":{{"types":[{definition}]}}}}"#)).expect("a type position fixture")
@@ -2930,7 +2930,7 @@ mod tests {
     fn tc_1806_ordered_and_unique_are_never_refused_by_the_reader() {
         let field = |ordered: bool, unique: bool, upper: i64| {
             format!(
-                r#"{{"identity": "ix://acme/pkg/T/f", "name": "f", "typeRef": "ix://quire/native/String", "multiplicity": {{"lower": 0, "upper": {upper}, "ordered": {ordered}, "unique": {unique}}}}}"#
+                r#"{{"identity": "ix://acme/pkg/T/f", "name": "f", "typeRef": "ix://filament/native/String", "multiplicity": {{"lower": 0, "upper": {upper}, "ordered": {ordered}, "unique": {unique}}}}}"#
             )
         };
         let wrap = |field: String| {
@@ -2982,7 +2982,7 @@ mod tests {
                                 {
                                     "identity": "ix://acme/pkg/T/f",
                                     "name": "f",
-                                    "typeRef": "ix://quire/native/String",
+                                    "typeRef": "ix://filament/native/String",
                                     "constraints": [
                                         {
                                             "identity": "ix://acme/pkg/constraint/T-f-min",
@@ -3086,7 +3086,7 @@ mod tests {
             .get("scalars")
             .and_then(Json::as_object)
             .expect("kernel-scalars.json carries a scalars object");
-        // `Text` is the model document's name (QSpec FR-056), not a kernel
+        // `Text` is the model document's name (FSpec FR-056), not a kernel
         // scalar, so the library holds every native name but that one.
         assert!(!scalars.iter().any(|(name, _)| name == "Text"));
         assert!(!scalars.iter().any(|(name, _)| name == "Rational"));
@@ -3109,8 +3109,8 @@ mod tests {
         }
     }
 
-    /// `ix://quire/native/Rational` resolves to the IR scalar `string`, and
-    /// the native name is compared byte for byte (QSL FR-056-AC-43,
+    /// `ix://filament/native/Rational` resolves to the IR scalar `string`, and
+    /// the native name is compared byte for byte (FSL FR-056-AC-43,
     /// FR-146-AC-1). The whole-document verdicts are in
     /// `tests/native_rational.rs`.
     ///
@@ -3276,7 +3276,7 @@ mod tests {
             let target = if position + 1 < count {
                 format!("ix://acme/pkg/A{}", position + 1)
             } else {
-                "ix://quire/native/Decimal".to_string()
+                "ix://filament/native/Decimal".to_string()
             };
             text.push_str(&format!(
                 r#"{{"identity":"ix://acme/pkg/A{position}","kind":"alias","target":"{target}","decimal":{{"precision":18,"scale":2}}}}"#

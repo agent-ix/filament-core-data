@@ -286,7 +286,7 @@ describe("TC-1388..1395 the Rust backend reached through the seam (FR-130)", () 
 				.filter((kind) => typeof kind === "object")
 				.map((kind) => (kind as { name: string }).name),
 		);
-		// A construct table entry a population alone uses (QSpec FR-154 row
+		// A construct table entry a population alone uses (FSpec FR-154 row
 		// 2/AC-7, FR-208) has no TYPES row of
 		// its own — it is rendered instead inside POPULATIONS' own
 		// `PopulationKindMeta.name`, so it is checked there, not against the

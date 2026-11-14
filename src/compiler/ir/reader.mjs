@@ -188,7 +188,7 @@ function checkConstructs(document, definitions, raise, locusOf) {
 		entry.used = true;
 	});
 	for (const entry of entries)
-		if (!entry.used && entry.meaning !== "quire.meaning.model.population/v1")
+		if (!entry.used && entry.meaning !== "filament.meaning.model.population/v1")
 			invalid(
 				entry.at,
 				`constructs declares ${entry.label}, and no type definition or population is of that kind`,
@@ -196,10 +196,10 @@ function checkConstructs(document, definitions, raise, locusOf) {
 }
 
 /**
- * A native value type reference (gap 1 of FCD #199/#200): `ix://quire/native/<Name>`
+ * A native value type reference (gap 1 of FCD #199/#200): `ix://filament/native/<Name>`
  * declares no node, over the closed set of kernel scalars below.
  */
-const NATIVE_PREFIX = "ix://quire/native/";
+const NATIVE_PREFIX = "ix://filament/native/";
 const NATIVE_SCALARS = new Map([
 	["UUID", "uuid"],
 	["Boolean", "boolean"],
@@ -488,8 +488,8 @@ export function readContractIr(document, options = {}) {
 		return value;
 	};
 
-	const clockRef = "ix://quire/native/Clock";
-	const quantityPrefix = "ix://quire/unit/";
+	const clockRef = "ix://filament/native/Clock";
+	const quantityPrefix = "ix://filament/unit/";
 	const quantityName = (ref) => {
 		if (typeof ref !== "string" || !ref.startsWith(quantityPrefix))
 			return false;
@@ -612,7 +612,7 @@ export function readContractIr(document, options = {}) {
 			// reference into this document's own package cannot be resolved by any
 			// resolution, so it is a defect whether or not one was supplied, and the
 			// reserved native namespace is never a foreign package either: a
-			// misspelled native reference (`ix://quire/native/Strng`) is a defect
+			// misspelled native reference (`ix://filament/native/Strng`) is a defect
 			// in this document, not an absent import.
 			const foreign =
 				exportsUnknown &&
@@ -1000,7 +1000,7 @@ export function readContractIr(document, options = {}) {
 				`/ir${definitionPointer}/variants/${index}/payloadType`,
 				variant,
 			);
-			// QSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
+			// FSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
 			if (specialOf(variant.payloadType) === "clock")
 				raise(
 					DIAGNOSTIC_CODES.INVALID_CLOCK_MEMBER,

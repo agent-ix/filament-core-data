@@ -27,7 +27,7 @@ use serde_json::Value;
 pub const IR_MEMBER: &str = "ir";
 /// The identity-keyed sets of one `typeDefinition`, in FR-097's order.
 /// `fields` is not among them: its array order is the authored declaration
-/// order (QSpec FR-154-AC-32), which the effective field order reads
+/// order (FSpec FR-154-AC-32), which the effective field order reads
 /// (FR-208-AC-18), so it is kept as assembled and `supertypes` likewise.
 pub const TYPE_LISTS: [&str; 6] = [
     "variants",

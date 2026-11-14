@@ -328,7 +328,7 @@ class ConstructDeclaration(BaseModel):
     meaning: Annotated[
         str,
         Field(
-            description='Quire meaning id (e.g. quire.meaning.entity).', min_length=1
+            description='Filament meaning id (e.g. filament.meaning.entity).', min_length=1
         ),
     ]
     members: Annotated[

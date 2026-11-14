@@ -11,7 +11,7 @@ relationships:
     type: "depends_on"
   - target: "ix://agent-ix/filament-core-data/FR-048"
     type: "depends_on"
-  - target: "ix://agent-ix/quire-spec-language/FR-056"
+  - target: "ix://agent-ix/filament-spec-language/FR-056"
     type: "references"
   - target: "ix://agent-ix/filament-core-data/NFR-019"
     type: "constrained_by"

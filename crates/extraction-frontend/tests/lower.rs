@@ -372,7 +372,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     assert_eq!(id["presence"], "required");
     assert_eq!(id["nullable"], false);
     assert_eq!(id["defaultKind"], "none");
-    assert_eq!(id["typeRef"], "ix://quire/native/UUID");
+    assert_eq!(id["typeRef"], "ix://filament/native/UUID");
     assert_eq!(id["identity"], "ix://agent-ix/docs-service/FR-006/id");
     assert_eq!(
         id["extensions"],
@@ -415,7 +415,7 @@ fn tc_1222_identity_row_lowers_to_one_one_required_with_the_identity_extension_a
     // the typeRef names the resolved native scalar directly, no alias is
     // minted. Decimal bounds are intentionally absent because JSON Schema
     // cannot enforce them without loss (FR-144).
-    assert_eq!(total["typeRef"], "ix://quire/native/Decimal");
+    assert_eq!(total["typeRef"], "ix://filament/native/Decimal");
     assert_eq!(total["decimal"], json!({"precision": 10, "scale": 2}));
     assert_eq!(total.get("constraints"), None);
     assert_eq!(total["extensions"], json!([]));
@@ -436,7 +436,7 @@ fn tc_1223_version_number_min_one_emits_one_min_constraint_on_the_field_with_the
         field["identity"],
         "ix://agent-ix/docs-service/FR-006/versionNumber"
     );
-    assert_eq!(field["typeRef"], "ix://quire/native/Integer");
+    assert_eq!(field["typeRef"], "ix://filament/native/Integer");
     let constraints = field["constraints"].as_array().expect("constraints");
     assert_eq!(constraints.len(), 1, "{constraints:?}");
     let min = &constraints[0];
@@ -553,7 +553,7 @@ fn tc_1826_spec_bundle_lifts_numeric_rows_and_canonicalizes_the_ir() {
         "ix://agent-ix/identity-collision/FR-001Price"
     );
     assert_eq!(price_alias["kind"], "alias");
-    assert_eq!(price_alias["target"], "ix://quire/native/Decimal");
+    assert_eq!(price_alias["target"], "ix://filament/native/Decimal");
     assert_eq!(price_alias["decimal"], json!({"precision": 10, "scale": 2}));
     assert_eq!(
         price_alias["constraints"][0]["operands"],
@@ -587,7 +587,7 @@ fn tc_1224_max_length_pattern_and_enum_values_carry_their_operand_shapes() {
     assert_eq!(max_length["operands"], json!({"value": 64}));
     let created_by = field_named(record, "createdBy");
     assert_eq!(max_length["appliesTo"], created_by["identity"]);
-    assert_eq!(created_by["typeRef"], "ix://quire/native/String");
+    assert_eq!(created_by["typeRef"], "ix://filament/native/String");
 
     let audit = self::lift("lower/constraints");
     assert!(
@@ -850,7 +850,7 @@ fn tc_1226_and_tc_1553_json_object_resolves_to_the_native_any_scalar_without_a_d
     let blob = type_named(&types, "Blob");
     assert_eq!(
         field_named(blob, "data")["typeRef"],
-        "ix://quire/native/JsonObject"
+        "ix://filament/native/JsonObject"
     );
     assert!(!types.iter().any(|t| t.get("scalar").is_some()));
 

@@ -52,7 +52,7 @@ identity and origin rather than prose.
 - Within one type definition, `relationships[]`, `operations[]`, and `clauses[]` entries SHALL be unique by `identity`.
 - An operation's `params[]` SHALL be unique by `name`.
 - The `language` value SHALL be `quire`, `ocl`, `sysml`, `fretish`, or a namespaced extension language of the form `<namespace>:<name>`.
-- `quire` SHALL be the checked clause language: a `quire` clause is typed, checked, and evaluated by Quire (QSpec AD-006, `ix://agent-ix/quire-specification/AD-006`).
+- `quire` SHALL be the checked clause language: a `quire` clause is typed, checked, and evaluated by Filament (FSpec AD-006, `ix://agent-ix/filament-specification/AD-006`).
 - A clause in any language other than `quire` SHALL be carried with its text and span and SHALL NOT be evaluated or used as a proof obligation.
 - This contract owns the core language set; adding a core language is an additive IR revision, while a namespaced language needs no revision.
 - The IR SHALL carry clause text opaquely.
@@ -90,4 +90,4 @@ identity and origin rather than prose.
 ## Dependencies
 
 - **Upstream**: [FR-027](./FR-027-declare-field-multiplicity-and-units.md), [FR-020](./FR-020-define-semantic-type-system-and-identity.md), [FR-021](./FR-021-define-package-graphs-exports-and-locks.md) (selected package graph exports for target resolution), [FR-025](./FR-025-classify-semantic-and-target-compatibility.md), FR-040 edge vocabulary (`ix://agent-ix/quire-rs/FR-040`)
-- **Downstream**: semantic-core grammar (issue #35), extraction frontend (issue #36), `agent-ix/quire-contract-ir#52`
+- **Downstream**: semantic-core grammar (issue #35), extraction frontend (issue #36), `agent-ix/filament-contract-ir#52`

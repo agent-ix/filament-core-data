@@ -38,7 +38,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -104,7 +104,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -175,7 +175,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -246,7 +246,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -318,7 +318,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -390,7 +390,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -465,7 +465,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -537,7 +537,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -626,7 +626,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 0,
 								"ordered": false,
@@ -692,7 +692,7 @@
 						{
 							"identity": "ix://acme/config/Config/q",
 							"name": "q",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 0,
 								"ordered": true,
@@ -713,7 +713,7 @@
 						{
 							"identity": "ix://acme/config/Config/u",
 							"name": "u",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 0,
 								"ordered": false,
@@ -734,7 +734,7 @@
 						{
 							"identity": "ix://acme/config/Config/b",
 							"name": "b",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 0,
 								"ordered": false,
@@ -755,7 +755,7 @@
 						{
 							"identity": "ix://acme/config/Config/o",
 							"name": "o",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 0,
 								"ordered": true,
@@ -816,7 +816,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -916,7 +916,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -1024,7 +1024,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -1097,7 +1097,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -1158,7 +1158,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -1202,7 +1202,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"items": "ix://quire/native/Clock"
+					"items": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -1246,7 +1246,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"values": "ix://quire/native/Clock"
+					"values": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -1294,7 +1294,7 @@
 						{
 							"identity": "ix://acme/config/Config/V",
 							"name": "V",
-							"payloadType": "ix://quire/native/Clock",
+							"payloadType": "ix://filament/native/Clock",
 							"origin": {
 								"generated": {
 									"generatorIdentity": "ix://acme/config/case-author",
@@ -1361,7 +1361,7 @@
 								{
 									"identity": "ix://acme/config/Config/op/a",
 									"name": "a",
-									"typeRef": "ix://quire/native/Clock",
+									"typeRef": "ix://filament/native/Clock",
 									"multiplicity": {
 										"lower": 1,
 										"ordered": false,
@@ -1382,7 +1382,7 @@
 								{
 									"identity": "ix://acme/config/Config/op/b",
 									"name": "b",
-									"typeRef": "ix://quire/native/Clock",
+									"typeRef": "ix://filament/native/Clock",
 									"multiplicity": {
 										"lower": 0,
 										"ordered": false,
@@ -1403,7 +1403,7 @@
 								{
 									"identity": "ix://acme/config/Config/op/c",
 									"name": "c",
-									"typeRef": "ix://quire/native/Clock",
+									"typeRef": "ix://filament/native/Clock",
 									"multiplicity": {
 										"lower": 0,
 										"ordered": true,
@@ -1485,7 +1485,7 @@
 								{
 									"identity": "ix://acme/config/Config/op/a",
 									"name": "a",
-									"typeRef": "ix://quire/native/Clock",
+									"typeRef": "ix://filament/native/Clock",
 									"multiplicity": {
 										"lower": 1,
 										"ordered": false,
@@ -1593,7 +1593,7 @@
 								}
 							},
 							"returns": {
-								"typeRef": "ix://quire/native/Clock",
+								"typeRef": "ix://filament/native/Clock",
 								"multiplicity": {
 									"lower": 1,
 									"ordered": false,
@@ -1663,7 +1663,7 @@
 								}
 							},
 							"returns": {
-								"typeRef": "ix://quire/native/Clock",
+								"typeRef": "ix://filament/native/Clock",
 								"multiplicity": {
 									"lower": 0,
 									"ordered": false,
@@ -1733,7 +1733,7 @@
 								}
 							},
 							"returns": {
-								"typeRef": "ix://quire/native/Clock",
+								"typeRef": "ix://filament/native/Clock",
 								"multiplicity": {
 									"lower": 1,
 									"ordered": false,
@@ -1857,7 +1857,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -1905,7 +1905,7 @@
 							"operands": {
 								"value": "3"
 							},
-							"appliesTo": "ix://quire/native/Clock",
+							"appliesTo": "ix://filament/native/Clock",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -1996,7 +1996,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -2074,7 +2074,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -2122,7 +2122,7 @@
 							"operands": {
 								"value": "0"
 							},
-							"appliesTo": "ix://quire/native/Clock",
+							"appliesTo": "ix://filament/native/Clock",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -2183,7 +2183,7 @@
 							"operands": {
 								"value": 3
 							},
-							"appliesTo": "ix://quire/native/Clock",
+							"appliesTo": "ix://filament/native/Clock",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -2280,7 +2280,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -2333,7 +2333,7 @@
 							"operands": {
 								"value": "-1"
 							},
-							"appliesTo": "ix://quire/native/Clock",
+							"appliesTo": "ix://filament/native/Clock",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -2399,7 +2399,7 @@
 							"operands": {
 								"value": "2/4"
 							},
-							"appliesTo": "ix://quire/native/Clock",
+							"appliesTo": "ix://filament/native/Clock",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -2465,7 +2465,7 @@
 							"operands": {
 								"value": "1.5"
 							},
-							"appliesTo": "ix://quire/native/Clock",
+							"appliesTo": "ix://filament/native/Clock",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -2531,7 +2531,7 @@
 							"operands": {
 								"value": 3
 							},
-							"appliesTo": "ix://quire/native/Clock",
+							"appliesTo": "ix://filament/native/Clock",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -2597,7 +2597,7 @@
 							"operands": {
 								"value": "170141183460469231731687303715884105728"
 							},
-							"appliesTo": "ix://quire/native/Clock",
+							"appliesTo": "ix://filament/native/Clock",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -2659,7 +2659,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -2759,7 +2759,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -2890,7 +2890,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -2976,7 +2976,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -3037,7 +3037,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"items": "ix://quire/unit/ms"
+					"items": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -3081,7 +3081,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"values": "ix://quire/unit/ms"
+					"values": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -3129,7 +3129,7 @@
 						{
 							"identity": "ix://acme/config/Config/V",
 							"name": "V",
-							"payloadType": "ix://quire/unit/ms",
+							"payloadType": "ix://filament/unit/ms",
 							"origin": {
 								"generated": {
 									"generatorIdentity": "ix://acme/config/case-author",
@@ -3212,7 +3212,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -3256,7 +3256,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -3322,7 +3322,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -3371,7 +3371,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/3ms"
+					"target": "ix://filament/unit/3ms"
 				}
 			],
 			"occurrences": [],
@@ -3420,7 +3420,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"items": "ix://quire/unit/"
+					"items": "ix://filament/unit/"
 				}
 			],
 			"occurrences": [],
@@ -3473,7 +3473,7 @@
 							"operands": {
 								"value": "-3/2"
 							},
-							"appliesTo": "ix://quire/unit/ms",
+							"appliesTo": "ix://filament/unit/ms",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -3534,7 +3534,7 @@
 							"operands": {
 								"value": "500"
 							},
-							"appliesTo": "ix://quire/unit/ms",
+							"appliesTo": "ix://filament/unit/ms",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -3625,7 +3625,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -3674,7 +3674,7 @@
 								"regex": "x",
 								"dialect": "ecma-262"
 							},
-							"appliesTo": "ix://quire/unit/ms",
+							"appliesTo": "ix://filament/unit/ms",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -3740,7 +3740,7 @@
 							"operands": {
 								"value": "2/4"
 							},
-							"appliesTo": "ix://quire/unit/ms",
+							"appliesTo": "ix://filament/unit/ms",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -3806,7 +3806,7 @@
 							"operands": {
 								"value": "1/1"
 							},
-							"appliesTo": "ix://quire/unit/ms",
+							"appliesTo": "ix://filament/unit/ms",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -3872,7 +3872,7 @@
 							"operands": {
 								"value": "1.5"
 							},
-							"appliesTo": "ix://quire/unit/ms",
+							"appliesTo": "ix://filament/unit/ms",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -3938,7 +3938,7 @@
 							"operands": {
 								"value": 3
 							},
-							"appliesTo": "ix://quire/unit/ms",
+							"appliesTo": "ix://filament/unit/ms",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -4004,7 +4004,7 @@
 							"operands": {
 								"value": "0"
 							},
-							"appliesTo": "ix://quire/unit/3ms",
+							"appliesTo": "ix://filament/unit/3ms",
 							"diagnosticCode": "ix://acme/config/MIN",
 							"origin": {
 								"generated": {
@@ -4070,7 +4070,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/ms",
+							"typeRef": "ix://filament/unit/ms",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -4136,7 +4136,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -4163,7 +4163,7 @@
 								{
 									"identity": "ix://acme/config/Config/op/p",
 									"name": "p",
-									"typeRef": "ix://quire/unit/ms",
+									"typeRef": "ix://filament/unit/ms",
 									"multiplicity": {
 										"lower": 1,
 										"upper": 1,
@@ -4240,7 +4240,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -4274,7 +4274,7 @@
 								}
 							},
 							"returns": {
-								"typeRef": "ix://quire/unit/ms",
+								"typeRef": "ix://filament/unit/ms",
 								"multiplicity": {
 									"lower": 1,
 									"upper": 1,
@@ -4332,7 +4332,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/agent-ix/time-units/ms",
+							"typeRef": "ix://filament/unit/agent-ix/time-units/ms",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -4398,7 +4398,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -4425,7 +4425,7 @@
 								{
 									"identity": "ix://acme/config/Config/op/p",
 									"name": "p",
-									"typeRef": "ix://quire/unit/agent-ix/time-units/ms",
+									"typeRef": "ix://filament/unit/agent-ix/time-units/ms",
 									"multiplicity": {
 										"lower": 1,
 										"upper": 1,
@@ -4502,7 +4502,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -4536,7 +4536,7 @@
 								}
 							},
 							"returns": {
-								"typeRef": "ix://quire/unit/agent-ix/time-units/ms",
+								"typeRef": "ix://filament/unit/agent-ix/time-units/ms",
 								"multiplicity": {
 									"lower": 1,
 									"upper": 1,
@@ -4594,7 +4594,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/acme/rpc.v2/ms",
+							"typeRef": "ix://filament/unit/acme/rpc.v2/ms",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -4660,7 +4660,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -4687,7 +4687,7 @@
 								{
 									"identity": "ix://acme/config/Config/op/p",
 									"name": "p",
-									"typeRef": "ix://quire/unit/acme/rpc.v2/ms",
+									"typeRef": "ix://filament/unit/acme/rpc.v2/ms",
 									"multiplicity": {
 										"lower": 1,
 										"upper": 1,
@@ -4764,7 +4764,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -4798,7 +4798,7 @@
 								}
 							},
 							"returns": {
-								"typeRef": "ix://quire/unit/acme/rpc.v2/ms",
+								"typeRef": "ix://filament/unit/acme/rpc.v2/ms",
 								"multiplicity": {
 									"lower": 1,
 									"upper": 1,
@@ -4856,7 +4856,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/acme/rpc/ms",
+							"typeRef": "ix://filament/unit/acme/rpc/ms",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -4922,7 +4922,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -4949,7 +4949,7 @@
 								{
 									"identity": "ix://acme/config/Config/op/p",
 									"name": "p",
-									"typeRef": "ix://quire/unit/acme/rpc/ms",
+									"typeRef": "ix://filament/unit/acme/rpc/ms",
 									"multiplicity": {
 										"lower": 1,
 										"upper": 1,
@@ -5026,7 +5026,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -5060,7 +5060,7 @@
 								}
 							},
 							"returns": {
-								"typeRef": "ix://quire/unit/acme/rpc/ms",
+								"typeRef": "ix://filament/unit/acme/rpc/ms",
 								"multiplicity": {
 									"lower": 1,
 									"upper": 1,
@@ -5118,7 +5118,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/a-b/c.d/e-f/ms",
+							"typeRef": "ix://filament/unit/a-b/c.d/e-f/ms",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -5184,7 +5184,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -5211,7 +5211,7 @@
 								{
 									"identity": "ix://acme/config/Config/op/p",
 									"name": "p",
-									"typeRef": "ix://quire/unit/a-b/c.d/e-f/ms",
+									"typeRef": "ix://filament/unit/a-b/c.d/e-f/ms",
 									"multiplicity": {
 										"lower": 1,
 										"upper": 1,
@@ -5288,7 +5288,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/native/Clock",
+							"typeRef": "ix://filament/native/Clock",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -5322,7 +5322,7 @@
 								}
 							},
 							"returns": {
-								"typeRef": "ix://quire/unit/a-b/c.d/e-f/ms",
+								"typeRef": "ix://filament/unit/a-b/c.d/e-f/ms",
 								"multiplicity": {
 									"lower": 1,
 									"upper": 1,
@@ -5380,7 +5380,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/",
+							"typeRef": "ix://filament/unit/",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -5451,7 +5451,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/3ms",
+							"typeRef": "ix://filament/unit/3ms",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -5522,7 +5522,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/agent-ix/time-units/m-s",
+							"typeRef": "ix://filament/unit/agent-ix/time-units/m-s",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -5593,7 +5593,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/-acme/rpc/ms",
+							"typeRef": "ix://filament/unit/-acme/rpc/ms",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -5664,7 +5664,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/.acme/rpc/ms",
+							"typeRef": "ix://filament/unit/.acme/rpc/ms",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -5735,7 +5735,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/agent-ix//ms",
+							"typeRef": "ix://filament/unit/agent-ix//ms",
 							"multiplicity": {
 								"lower": 1,
 								"upper": 1,
@@ -5795,7 +5795,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -5821,7 +5821,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -5858,7 +5858,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -5923,7 +5923,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -5960,7 +5960,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -6050,7 +6050,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -6163,7 +6163,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -6205,7 +6205,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -6288,7 +6288,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -6330,7 +6330,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -6373,7 +6373,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -6410,7 +6410,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -6471,7 +6471,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -6513,7 +6513,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -6578,7 +6578,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -6615,7 +6615,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -6683,7 +6683,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -6737,7 +6737,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -6780,7 +6780,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -6822,7 +6822,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -6882,7 +6882,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -6970,7 +6970,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -7059,7 +7059,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -7148,7 +7148,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -7190,7 +7190,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -7255,7 +7255,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -7297,7 +7297,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -7363,7 +7363,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -7405,7 +7405,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -7471,7 +7471,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/native/Clock"
+					"target": "ix://filament/native/Clock"
 				}
 			],
 			"occurrences": [],
@@ -7559,7 +7559,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -7648,7 +7648,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -7737,7 +7737,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -7779,7 +7779,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -7844,7 +7844,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -7886,7 +7886,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -7952,7 +7952,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -7994,7 +7994,7 @@
 					"construct": {
 						"identity": "none",
 						"shape": "alias",
-						"meaning": "quire.meaning.model.value-type/v1",
+						"meaning": "filament.meaning.model.value-type/v1",
 						"members": {
 							"target": "required"
 						}
@@ -8060,7 +8060,7 @@
 					"constraints": [],
 					"extensions": [],
 					"unknownPolicy": "reject",
-					"target": "ix://quire/unit/ms"
+					"target": "ix://filament/unit/ms"
 				}
 			],
 			"occurrences": [],
@@ -8113,7 +8113,7 @@
 						{
 							"identity": "ix://acme/config/Config/x",
 							"name": "x",
-							"typeRef": "ix://quire/unit/ms",
+							"typeRef": "ix://filament/unit/ms",
 							"multiplicity": {
 								"lower": 1,
 								"ordered": false,

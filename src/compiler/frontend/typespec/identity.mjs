@@ -75,11 +75,11 @@ export function mintIdentity(packageIdentity, slot, parts) {
 }
 
 /**
- * The `typeRef` a built-in scalar resolves to: `ix://quire/native/<Name>`,
+ * The `typeRef` a built-in scalar resolves to: `ix://filament/native/<Name>`,
  * naming no package node (gap 1 of FCD #199/#200).
  */
 export function nativeTypeRef(kernelName) {
-	return `ix://quire/native/${kernelName}`;
+	return `ix://filament/native/${kernelName}`;
 }
 
 /**

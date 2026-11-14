@@ -278,8 +278,8 @@ describe("SysML v2 textual target", () => {
 			),
 		) as { name: string; document: TestIr }[];
 		for (const [name, target] of [
-			["clock-alias", "ix://quire/native/Clock"],
-			["quantity-alias", "ix://quire/unit/ms"],
+			["clock-alias", "ix://filament/native/Clock"],
+			["quantity-alias", "ix://filament/unit/ms"],
 		]) {
 			const ir = cases.find((one) => one.name === name)?.document;
 			const result = sysmlBackend.generate({ ir } as never);

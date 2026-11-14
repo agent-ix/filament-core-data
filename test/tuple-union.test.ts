@@ -234,7 +234,7 @@ describe("FR-147 tuple value types and union variant payloads", () => {
 		});
 		const direct = base();
 		typeNamed(direct, "Shape").variants[0].payloadType =
-			"ix://quire/native/Clock";
+			"ix://filament/native/Clock";
 		expect(validateIrDocument(direct)).toEqual([]);
 		const code = "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER";
 		expect(located(direct)).toEqual({
@@ -248,7 +248,7 @@ describe("FR-147 tuple value types and union variant payloads", () => {
 		alias.displayName = "Tick";
 		alias.kind = "alias";
 		delete alias.scalar;
-		alias.target = "ix://quire/native/Clock";
+		alias.target = "ix://filament/native/Clock";
 		aliased.types.push(alias);
 		typeNamed(aliased, "Shape").variants[0].payloadType =
 			"ix://acme/shapes/Tick";
@@ -257,7 +257,7 @@ describe("FR-147 tuple value types and union variant payloads", () => {
 		expect(seen.independent.map((d) => d.code)).toEqual([code]);
 
 		const quantity = base();
-		typeNamed(quantity, "Shape").variants[0].payloadType = "ix://quire/unit/ms";
+		typeNamed(quantity, "Shape").variants[0].payloadType = "ix://filament/unit/ms";
 		expect(located(quantity)).toEqual({ node: [], independent: [] });
 		expect(
 			typeNamed(base(), "Shape").variants.some(

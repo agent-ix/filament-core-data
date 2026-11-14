@@ -252,7 +252,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
         params[1]["identity"],
         "ix://agent-ix/orders/OP-001/addLine/quantity"
     );
-    assert_eq!(params[1]["typeRef"], "ix://quire/native/Integer");
+    assert_eq!(params[1]["typeRef"], "ix://filament/native/Integer");
     assert_eq!(
         add_line["returns"],
         json!({
@@ -274,7 +274,7 @@ fn tc_1241_operations_lower_params_under_param_returns_non_nullable_and_pre_post
     assert_eq!(
         total["returns"],
         json!({
-            "typeRef": "ix://quire/native/Decimal",
+            "typeRef": "ix://filament/native/Decimal",
             "decimal": { "precision": 10, "scale": 2 },
             "multiplicity": { "lower": 1, "upper": 1, "ordered": false, "unique": false },
             "nullable": false,
@@ -540,7 +540,7 @@ fn tc_1243_and_tc_1251_every_identity_of_the_business_document_matches_one_fr_09
     // A native type reference (gap 1 of FCD #199/#200) is a valid
     // semanticIdentity that mints no node, so it is exempt from the
     // "names a minted identity" check below.
-    const NATIVE_PREFIX: &str = "ix://quire/native/";
+    const NATIVE_PREFIX: &str = "ix://filament/native/";
     for (pointer, reference) in &refs {
         assert!(
             is_semantic_identity(reference),

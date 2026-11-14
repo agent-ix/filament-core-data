@@ -37,7 +37,7 @@ is one diagnostic at the token's source locus.
 
 - `crates/extraction-frontend/src/resolve.rs`: `enum Resolution { KernelScalar(KernelScalar), Clock, Unit(ArtifactRef), Object(ArtifactRef), Enumeration(ArtifactRef), Unresolved(Unresolved) }` and `enum Unresolved { UnknownToken, NoBundleIndex, ImportUnresolved, ImportUnsupported(String), Stale(ArtifactRef) }`
 - One IR `typeRef` identity per resolved token, minted under FR-095
-- One `typeRef` value `ix://quire/native/<KernelScalar>` per kernel scalar token the bundle resolves (`scalars.rs::KernelScalar::native_type_ref`), naming no node in the emitted document; the frontend mints no package-local scalar or record definition for any kernel scalar, `JsonObject` included (gap 1 of FCD #199/#200)
+- One `typeRef` value `ix://filament/native/<KernelScalar>` per kernel scalar token the bundle resolves (`scalars.rs::KernelScalar::native_type_ref`), naming no node in the emitted document; the frontend mints no package-local scalar or record definition for any kernel scalar, `JsonObject` included (gap 1 of FCD #199/#200)
 
 ## Behavior
 
@@ -51,7 +51,7 @@ is one diagnostic at the token's source locus.
 - The frontend SHALL classify each `target` from the form the engine returned and, for a placeholder, the companion diagnostic's `reason`.
 - The frontend SHALL NOT re-derive a classification from the token's spelling, casing, pluralisation, or from any name the index does not carry.
 - If `target` is a kernel scalar name of FR-032, then the frontend SHALL return `KernelScalar`.
-- If `target` is the engine's native name `Clock`, then the frontend SHALL return `Clock`, and if it is the bundle identity of a unit artifact (frontmatter `object` `unit`) named by a `Quantity<u>` token, then the frontend SHALL return `Unit` naming that artifact; each resolves to `ix://quire/native/Clock` or `ix://quire/unit/<u>` and mints no node ([FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md) "Spec-bundle extraction").
+- If `target` is the engine's native name `Clock`, then the frontend SHALL return `Clock`, and if it is the bundle identity of a unit artifact (frontmatter `object` `unit`) named by a `Quantity<u>` token, then the frontend SHALL return `Unit` naming that artifact; each resolves to `ix://filament/native/Clock` or `ix://filament/unit/<u>` and mints no node ([FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md) "Spec-bundle extraction").
 - If `target` is `ix://<org>/<name>/type/<Name>` under the bundle package and the resolved artifact's frontmatter `object` is `enumeration`, then the frontend SHALL return `Enumeration` naming that artifact.
 - If `target` is `ix://<org>/<name>/type/<Name>` under the bundle package and the resolved artifact's frontmatter `object` is any other declared object type, then the frontend SHALL return `Object` naming that artifact.
 - If the resolved artifact's lowering outcome from pass one is anything other than a definition, then the frontend SHALL return `Unresolved::Stale` naming that artifact.
@@ -69,7 +69,7 @@ is one diagnostic at the token's source locus.
 
 ### Kernel scalars
 
-- The frontend SHALL resolve every kernel scalar token to the native reference `ix://quire/native/<KernelScalar>` and mint no package-local node for it (gap 1 of FCD #199/#200); no kernel scalar carries the `ix://agent-ix/semantic-core/ext/kernel-scalar` extension FR-034 and FR-046 stamp on the semantic-core kernel's own declarations, because none is a node this frontend emits.
+- The frontend SHALL resolve every kernel scalar token to the native reference `ix://filament/native/<KernelScalar>` and mint no package-local node for it (gap 1 of FCD #199/#200); no kernel scalar carries the `ix://agent-ix/semantic-core/ext/kernel-scalar` extension FR-034 and FR-046 stamp on the semantic-core kernel's own declarations, because none is a node this frontend emits.
 - The frontend SHALL map kernel names to IR `scalar` values by the FR-032 table (`UUID→uuid`, `Boolean→boolean`, `Integer→integer`, `Decimal→decimal`, `Float32→float32`, `Float64→float64`, `String→string`, `Timestamp→datetime`, `Duration→duration`, `Bytes→bytes`, `JsonObject→any`) for constraint applicability (FR-093 RULES.md table); the mapping decides no node's kind, since none is minted.
 
 Rationale: the engine has already resolved every token (quire-rs FR-070:
@@ -95,7 +95,7 @@ document to point at.
 
 | ID | Criteria | Verification |
 |---|---|---|
-| FR-092-AC-1 | Every kernel scalar name resolves to `KernelScalar`, and the `snapshot-table` fixture uses exactly five kernel scalar names (`UUID`, `Integer`, `String`, `Timestamp`, `JsonObject`), each token's `typeRef` resolving to `ix://quire/native/<Name>` and minting no package-local node. | Test (TC-1210) |
+| FR-092-AC-1 | Every kernel scalar name resolves to `KernelScalar`, and the `snapshot-table` fixture uses exactly five kernel scalar names (`UUID`, `Integer`, `String`, `Timestamp`, `JsonObject`), each token's `typeRef` resolving to `ix://filament/native/<Name>` and minting no package-local node. | Test (TC-1210) |
 | FR-092-AC-2 | `SnapshotGroup` in a `Type` cell resolves to `Object(FR-005)` by title (or by an identifier-shaped id); a cell reading `FR-005` is rejected upstream by quire-rs FR-070 `is_identifier` as `semantic.invalid-type-token`, so by-id resolution applies only to identifier-shaped ids. | Test (TC-1211) |
 | FR-092-AC-3 | A `Type` cell reading `Sting` yields `Unresolved::UnknownToken` and one blocking `UNRESOLVED_TYPE_TOKEN` at that row's line and column, naming `Sting`; no IR document is written. | Test (TC-1212) |
 | FR-092-AC-4 | Two artifacts titled `Status` make the engine emit `semantic.ambiguous-type`; the referring artifact yields `ARTIFACT_NOT_LOWERED` plus one `ENGINE_DIAGNOSTIC`, and no `Resolution` value is produced for the dropped row. | Test (TC-1213) |

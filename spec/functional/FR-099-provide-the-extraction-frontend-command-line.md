@@ -114,5 +114,5 @@ evidence produced by the named targets, not by `cargo test`.
 ## Dependencies
 
 - **Upstream**: [FR-097](./FR-097-normalize-validate-and-write-the-lifted-document.md), [FR-098](./FR-098-prove-fixture-goldens-and-cross-frontend-parity.md), [FR-052](./FR-052-provide-the-compiler-command-line.md), [FR-091](./FR-091-read-a-spec-bundle-through-the-extraction-contract.md), [FR-096](./FR-096-emit-stable-source-located-frontend-diagnostics.md)
-- **Downstream**: issue #37, `agent-ix/quire-contract-ir#52`
+- **Downstream**: issue #37, `agent-ix/filament-contract-ir#52`
 - **Constrained by**: [NFR-031](../non-functional/NFR-031-deterministic-and-hermetic-lifting.md), [NFR-032](../non-functional/NFR-032-non-disruptive-extraction-frontend.md), [NFR-033](../non-functional/NFR-033-qualified-toolchain-and-licensed-dependencies.md)

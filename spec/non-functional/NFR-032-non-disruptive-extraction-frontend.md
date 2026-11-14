@@ -125,7 +125,7 @@ Phase 0 gate found that the live `docs-service` FR-006 predates the
 typed-table contract and lifts to nothing, and that no `object: entity`
 artifact anywhere under the authoring host's checkouts is yet in the typed form.
 The temptation to "fix the fixture" is exactly the corpus migration the program
-has deferred (quire-contract-ir#52); the fixture this ticket lifts is the
+has deferred (filament-contract-ir#52); the fixture this ticket lifts is the
 provenance-tracked re-authoring `quire-rs` vendors, and every test run ends with
 `git status --porcelain` empty in every repository it read.
 

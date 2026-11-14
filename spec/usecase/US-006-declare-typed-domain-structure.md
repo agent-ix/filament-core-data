@@ -74,7 +74,7 @@ published fixtures.
 This story refines [US-005](./US-005-author-portable-semantic-packages.md) and
 supplies the node shapes that the semantic-core grammar
 (`agent-ix/filament-core-data#35`), the module contract (`agent-ix/quoin#293`),
-and the formal-clause frontends (`agent-ix/quire-contract-ir#52`) consume.
+and the formal-clause frontends (`agent-ix/filament-contract-ir#52`) consume.
 
 ## Priority and Risk (Informative)
 

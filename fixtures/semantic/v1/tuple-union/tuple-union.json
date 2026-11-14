@@ -17,7 +17,7 @@
 	"constructs": [
 		{
 			"kind": {
-				"module": "agent-ix/quire-model",
+				"module": "agent-ix/filament-model",
 				"name": "tuple_value_type"
 			},
 			"moduleVersion": "1.0.0",
@@ -31,7 +31,7 @@
 				},
 				"references": {},
 				"rules": [],
-				"meaning": "quire.meaning.model.tuple-value-type/v1"
+				"meaning": "filament.meaning.model.tuple-value-type/v1"
 			}
 		}
 	],
@@ -74,7 +74,7 @@
 			"identity": "ix://acme/shapes/Pair",
 			"displayName": "Pair",
 			"kind": {
-				"module": "agent-ix/quire-model",
+				"module": "agent-ix/filament-model",
 				"name": "tuple_value_type"
 			},
 			"roles": [],
@@ -117,7 +117,7 @@
 			"identity": "ix://acme/shapes/Swap",
 			"displayName": "Swap",
 			"kind": {
-				"module": "agent-ix/quire-model",
+				"module": "agent-ix/filament-model",
 				"name": "tuple_value_type"
 			},
 			"roles": [],
@@ -213,7 +213,7 @@
 			"identity": "ix://acme/shapes/Nest",
 			"displayName": "Nest",
 			"kind": {
-				"module": "agent-ix/quire-model",
+				"module": "agent-ix/filament-model",
 				"name": "tuple_value_type"
 			},
 			"roles": [],
@@ -256,7 +256,7 @@
 			"identity": "ix://acme/shapes/Cell",
 			"displayName": "Cell",
 			"kind": {
-				"module": "agent-ix/quire-model",
+				"module": "agent-ix/filament-model",
 				"name": "tuple_value_type"
 			},
 			"roles": [],

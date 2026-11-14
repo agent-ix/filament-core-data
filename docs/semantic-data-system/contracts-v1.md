@@ -115,7 +115,7 @@ over the resolved kind. `source.dialect` is `typespec` or `spec-bundle`.
 The numeric scalars are `integer`, `decimal`, `float32` and `float64`; there
 is no `number` scalar ([FR-144](../../spec/functional/FR-144-carry-exact-numeric-scalars-under-one-literal-encoding.md),
 Linear AGE-2229). Every number is spelled by one encoding, shared with
-quire-spec-language's QSL-642 rule (QSL FR-092): a counter (a multiplicity
+filament-spec-language's QSL-642 rule (FSL FR-092): a counter (a multiplicity
 bound, a length operand, a source position, a decimal `precision` or `scale`)
 is a JSON integer no greater than 2^53 - 1; an integer value (a bound, default
 or enumerated value of an `integer` subject) is a canonical integer string
@@ -126,7 +126,7 @@ fraction zero) within the subject's decimal policy `{precision, scale}`,
 never a binary float; and a value of a `float32` or `float64` subject is a
 finite JSON number. A document read from bytes holding a JSON number with no
 exact RFC 8785 spelling is refused (`INEXACT_INTEGER`, `INEXACT_NUMBER`), the
-condition QSL names `noncanonical_wire`. Each walk from a field or reference to
+condition FSL names `noncanonical_wire`. Each walk from a field or reference to
 a `decimal` scalar passes exactly one node carrying the decimal policy: the
 field, an alias, or the scalar definition. Rationals and quantities with units
 are not declared here (AGE-2229 row 4). Manifest
@@ -317,11 +317,11 @@ frontend to skip its own half of the check.
 | `redefines` | field, operation | The supertype field or operation this member narrows; its multiplicity lies within the redefined bounds (for an operation, its return multiplicity) | `UNRESOLVED_FEATURE_REF`, `INVALID_REDEFINITION` |
 | `textProfile` | field, type | The text profile a text field or a text value type binds: `unicode-scalars`, `nfc`, `nfd`, `nfkc`, `nfkd` or `binary-utf8`; a type carries it only as a scalar of `string` | `SCHEMA_VIOLATION` |
 | `decimal` | field, alias type, `decimal` scalar type | The decimal policy `{precision, scale}` (`1 <= precision <= 38`, `0 <= scale <= precision`) governing a `decimal` subject; exactly one node on each resolution walk carries it (FR-144) | `SCHEMA_VIOLATION`, `DECIMAL_POLICY_MISSING`, `DECIMAL_POLICY_CONFLICT` |
-| `frame` | operation | Declaration references the operation `modifies` (a field or relationship), `creates` or `deletes` (an object type or process); never an access path. Resolution ranges over every such declaration the whole document carries, never only the operation's own type or its supertypes (QSpec FR-340, FR-013). QSpec #101 and #106 leave the frame's body encoding and grant-range semantics open | `UNRESOLVED_FRAME_PATH` |
+| `frame` | operation | Declaration references the operation `modifies` (a field or relationship), `creates` or `deletes` (an object type or process); never an access path. Resolution ranges over every such declaration the whole document carries, never only the operation's own type or its supertypes (FSpec FR-340, FR-013). FSpec #101 and #106 leave the frame's body encoding and grant-range semantics open | `UNRESOLVED_FRAME_PATH` |
 | `pre`, `post` items | operation | A `pre` or `post` item is a clause id or an inline clause `{language, text}` | `DANGLING_CLAUSE_REF` for an id item |
 | `populations` | document | Named instance extents, bound by `kind` (`{module, name}`); a flat set of unique member type references; one `extent` (`closed` or `open`) for the whole population; an optional Boolean `symmetric`, absent meaning false | `UNRESOLVED_TYPE_REF` |
 
-Clauses are Quire: a clause `language` is `ocl`, `sysml`, `fretish`, `quire`
+Clauses are Filament: a clause `language` is `ocl`, `sysml`, `fretish`, `quire`
 or a registered `namespace:name`. No reader translates a clause between
 languages, and an unsupported meaning is refused, never approximated.
 
@@ -346,7 +346,7 @@ member; an unlisted member takes its default) and `meaning`, and an optional
 non-empty roles it admits, each spelled `<module short name>:<role>`; `*` is
 not a role, and a module frontend admits only a role some loaded object type
 carries. `rules` is a unique list of rules, each requiring one member
-presence of the declaration. `meaning` is an id owned by QSpec, retained
+presence of the declaration. `meaning` is an id owned by FSpec, retained
 verbatim; its recognized population meaning permits the unused declaration
 exception stated below.
 
@@ -366,7 +366,7 @@ exception stated below.
 A document using a module construct kind carries a `constructs` table with
 one entry per kind used by a type or population: `kind`, `moduleVersion`,
 and the `construct` declaration. An unused declaration
-carrying the recognized meaning `quire.meaning.model.population/v1` is admitted
+carrying the recognized meaning `filament.meaning.model.population/v1` is admitted
 and preserved, independently of its kind name, for a package that declares a population
 construct before any type uses it. Every other unused kind is refused. Every declaration is checked
 against the same core vocabulary and declaration requirements regardless of
@@ -406,14 +406,14 @@ whose `positions` are an ordered, non-empty list of `{ identity, typeRef,
 origin }`, the position at index `i` having the identity
 `<tuple identity>/p<i>` and the admitted value type `typeRef`. A tuple that carries a member it never has, or whose identity is not owner-nested, raises
 `INVALID_TUPLE`; a position out of order, with a gap, or typed
-`ix://quire/native/Clock` raises `INVALID_TUPLE_POSITION`; a position type
+`ix://filament/native/Clock` raises `INVALID_TUPLE_POSITION`; a position type
 naming no declared type raises `UNRESOLVED_POSITION_TYPE`. Positions keep their
 authored order in the normalized form. A variant's
 `payloadType` is the single typed payload of that case and a variant without
 one stays nullary. A generation backend that renders no tuple is refused by the
 seam with `UNSUPPORTED_CONSTRUCT_SHAPE`.
 
-An option value type (FR-148, QSpec FR-154 "Option value types") is a type
+An option value type (FR-148, FSpec FR-154 "Option value types") is a type
 definition of the core `kind` `option` with exactly one `inner`, a type
 identity, denoting `Option<T>`. An option inner that names an option, a clock or a
 non-value type raises `INVALID_OPTION_INNER`; an inner naming no declared type raises
@@ -423,7 +423,7 @@ multiplicity `[1, 1]` raises `INVALID_OPTION_PRESENCE`. A missing or malformed
 generation backend renders an option, and the seam refuses it with
 `UNSUPPORTED_CONSTRUCT_SHAPE`.
 
-A map type (QSpec FR-154 "Map types") is a type definition of the core `kind`
+A map type (FSpec FR-154 "Map types") is a type definition of the core `kind`
 `map` that declares `keys`, a type identity, `values`, a type identity, and
 `bound`, an object `{lower, upper}` of non-negative integers whose `upper` is
 absent when the map has no maximum. A map written before `keys` and `bound`
@@ -611,6 +611,6 @@ value and is not converted. JSON numbers, signs, leading zeros on integers,
 fractional revision strings and whitespace are refused at the version member.
 Other version fields retain their existing contracts. See FR-050-AC-16 and
 FR-142-AC-15 for the unused-population reader boundary: an unused population declaration is
-retained by its recognized `quire.meaning.model.population/v1` meaning, and
+retained by its recognized `filament.meaning.model.population/v1` meaning, and
 `Instant` continues to resolve to native `Timestamp`, whose
 semantic scalar is `datetime`.

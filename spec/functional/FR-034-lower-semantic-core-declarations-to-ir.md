@@ -92,4 +92,4 @@ the two implementations of that statement.
 ## Dependencies
 
 - **Upstream**: [FR-031](./FR-031-define-the-semantic-core-declaration-grammar.md), [FR-032](./FR-032-define-the-kernel-scalar-library.md), [FR-027](./FR-027-declare-field-multiplicity-and-units.md), [FR-028](./FR-028-represent-relationships-operations-and-clauses.md), [FR-029](./FR-029-close-the-constraint-keyword-vocabulary.md)
-- **Downstream**: [FR-053](./FR-053-declare-the-typespec-semantic-vocabulary.md), [FR-095](./FR-095-mint-package-identity-and-provenance.md) (extraction frontend, issue #36), `agent-ix/quire-contract-ir#53`
+- **Downstream**: [FR-053](./FR-053-declare-the-typespec-semantic-vocabulary.md), [FR-095](./FR-095-mint-package-identity-and-provenance.md) (extraction frontend, issue #36), `agent-ix/filament-contract-ir#53`

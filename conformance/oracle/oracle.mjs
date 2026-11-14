@@ -239,9 +239,9 @@ export function resolve(types, identity, limit = DEPTH_LIMIT) {
 		if (seen.has(current)) return { status: "cycle", chain };
 		seen.add(current);
 		chain.push(current);
-		if (current.startsWith("ix://quire/native/")) {
+		if (current.startsWith("ix://filament/native/")) {
 			const scalar = NATIVE_SCALARS.get(
-				current.slice("ix://quire/native/".length),
+				current.slice("ix://filament/native/".length),
 			);
 			if (scalar !== undefined)
 				return { status: "resolved", kind: "scalar", scalar, chain };

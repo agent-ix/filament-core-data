@@ -431,7 +431,7 @@ describe("TC-1530..1536 the Python backends reached through the seam (FR-136)", 
 			const paths = result.files.map((file) => file.path);
 			expect(paths).toContain("Snapshot.py");
 			// Gap 1 of FCD #199/#200: a field typed by a native kernel scalar
-			// used directly (`data`, `ix://quire/native/JsonObject`) names that
+			// used directly (`data`, `ix://filament/native/JsonObject`) names that
 			// reference inline. No `JsonObject.py` module is minted for it.
 			expect(paths).not.toContain("JsonObject.py");
 			expect(paths.some((path) => /^FR[-_]?0/.test(path))).toBe(false);

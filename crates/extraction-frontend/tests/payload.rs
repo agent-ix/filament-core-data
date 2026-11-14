@@ -87,9 +87,9 @@ fn payload_schema(document: &Value, record: &str) -> Vec<FieldRule> {
         let mut target = field["typeRef"].as_str().expect("typeRef");
         let scalar = loop {
             // A kernel scalar mints no package node (gap 1 of FCD
-            // #199/#200): its `typeRef` names `ix://quire/native/<Name>`
+            // #199/#200): its `typeRef` names `ix://filament/native/<Name>`
             // directly, over the closed FR-032 set.
-            if let Some(name) = target.strip_prefix("ix://quire/native/") {
+            if let Some(name) = target.strip_prefix("ix://filament/native/") {
                 break native_ir_scalar(name).to_string();
             }
             let node = types[target];

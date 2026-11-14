@@ -3,7 +3,7 @@
 	"cases": [
 		{
 			"id": "PM-01",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "the base map type",
 			"set": [],
@@ -12,7 +12,7 @@
 		},
 		{
 			"id": "PM-02",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "bound with no upper",
 			"set": [
@@ -28,16 +28,16 @@
 		},
 		{
 			"id": "PM-03",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "Integer key",
-			"set": [["/types/13/keys", "ix://quire/native/Integer"]],
+			"set": [["/types/13/keys", "ix://filament/native/Integer"]],
 			"remove": [],
 			"rust": []
 		},
 		{
 			"id": "PM-04",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "Int[0, 9] value type key",
 			"set": [["/types/13/keys", "ix://acme/maps/Small"]],
@@ -46,7 +46,7 @@
 		},
 		{
 			"id": "PM-05",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "payload-free variant (enumeration) key",
 			"set": [["/types/13/keys", "ix://acme/maps/Color"]],
@@ -55,16 +55,16 @@
 		},
 		{
 			"id": "PM-06",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "unit key",
-			"set": [["/types/13/keys", "ix://quire/unit/ms"]],
+			"set": [["/types/13/keys", "ix://filament/unit/ms"]],
 			"remove": [],
 			"rust": []
 		},
 		{
 			"id": "PM-07",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-48",
 			"description": "alias of Text key",
 			"set": [["/types/13/keys", "ix://acme/maps/Key"]],
@@ -73,10 +73,10 @@
 		},
 		{
 			"id": "PM-08",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "Clock key",
-			"set": [["/types/13/keys", "ix://quire/native/Clock"]],
+			"set": [["/types/13/keys", "ix://filament/native/Clock"]],
 			"remove": [],
 			"rust": [
 				{
@@ -87,7 +87,7 @@
 		},
 		{
 			"id": "PM-09",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "alias of Clock key",
 			"set": [["/types/13/keys", "ix://acme/maps/Stopwatch"]],
@@ -101,7 +101,7 @@
 		},
 		{
 			"id": "PM-10",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "clock-bearing record key Timer",
 			"set": [["/types/13/keys", "ix://acme/maps/Timer"]],
@@ -115,7 +115,7 @@
 		},
 		{
 			"id": "PM-11",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "record Cfg { a: Boolean } key",
 			"set": [["/types/13/keys", "ix://acme/maps/Cfg"]],
@@ -129,7 +129,7 @@
 		},
 		{
 			"id": "PM-12",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "Option<Text> key",
 			"set": [["/types/13/keys", "ix://acme/maps/OptText"]],
@@ -143,7 +143,7 @@
 		},
 		{
 			"id": "PM-13",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "sequence type key",
 			"set": [["/types/13/keys", "ix://acme/maps/Texts"]],
@@ -157,7 +157,7 @@
 		},
 		{
 			"id": "PM-14",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "map type key",
 			"set": [["/types/13/keys", "ix://acme/maps/Inner"]],
@@ -171,7 +171,7 @@
 		},
 		{
 			"id": "PM-15",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "tuple value type key",
 			"set": [["/types/13/keys", "ix://acme/maps/Pair"]],
@@ -185,7 +185,7 @@
 		},
 		{
 			"id": "PM-16",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "union (payload-bearing variant) key",
 			"set": [["/types/13/keys", "ix://acme/maps/Shape"]],
@@ -199,7 +199,7 @@
 		},
 		{
 			"id": "PM-17",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "reference type key",
 			"set": [["/types/13/keys", "ix://acme/maps/ClockRef"]],
@@ -213,7 +213,7 @@
 		},
 		{
 			"id": "PM-18",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "object type key",
 			"set": [["/types/13/keys", "ix://acme/maps/Holder"]],
@@ -227,7 +227,7 @@
 		},
 		{
 			"id": "PM-19",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "absent keys",
 			"set": [],
@@ -241,7 +241,7 @@
 		},
 		{
 			"id": "PM-20",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "keys naming no node",
 			"set": [["/types/13/keys", "ix://acme/maps/Nothing"]],
@@ -255,7 +255,7 @@
 		},
 		{
 			"id": "PM-21",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "absent bound",
 			"set": [],
@@ -269,7 +269,7 @@
 		},
 		{
 			"id": "PM-22",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "string bound",
 			"set": [["/types/13/bound", "[0, 2]"]],
@@ -283,7 +283,7 @@
 		},
 		{
 			"id": "PM-23",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "negative lower",
 			"set": [["/types/13/bound/lower", -1]],
@@ -297,7 +297,7 @@
 		},
 		{
 			"id": "PM-24",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "non-integer upper",
 			"set": [["/types/13/bound/upper", 1.5]],
@@ -311,7 +311,7 @@
 		},
 		{
 			"id": "PM-25",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "bound with an extra member",
 			"set": [["/types/13/bound/ordered", true]],
@@ -325,7 +325,7 @@
 		},
 		{
 			"id": "PM-26",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "lower above upper",
 			"set": [
@@ -347,7 +347,7 @@
 		},
 		{
 			"id": "PM-27",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "bound with no lower",
 			"set": [
@@ -368,7 +368,7 @@
 		},
 		{
 			"id": "PM-28",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "bound with no upper and a lower above 0",
 			"set": [
@@ -389,10 +389,10 @@
 		},
 		{
 			"id": "PM-29",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "an items member on the map",
-			"set": [["/types/13/items", "ix://quire/native/Text"]],
+			"set": [["/types/13/items", "ix://filament/native/Text"]],
 			"remove": [],
 			"rust": [
 				{
@@ -403,7 +403,7 @@
 		},
 		{
 			"id": "PM-30",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "absent values",
 			"set": [],
@@ -417,7 +417,7 @@
 		},
 		{
 			"id": "PM-31",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "keys naming a namespace",
 			"set": [["/types/13/keys", "ix://acme/maps/Area"]],
@@ -431,7 +431,7 @@
 		},
 		{
 			"id": "PM-32",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "Decimal[...] value type key",
 			"set": [["/types/13/keys", "ix://acme/maps/Price"]],
@@ -445,10 +445,10 @@
 		},
 		{
 			"id": "PM-33",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "native Rational key",
-			"set": [["/types/13/keys", "ix://quire/native/Rational"]],
+			"set": [["/types/13/keys", "ix://filament/native/Rational"]],
 			"remove": [],
 			"rust": [
 				{
@@ -459,7 +459,7 @@
 		},
 		{
 			"id": "PM-34",
-			"tc": "QSpec TC-234",
+			"tc": "FSpec TC-234",
 			"ac": "FR-154-AC-49",
 			"description": "bound on a sequence type definition",
 			"set": [

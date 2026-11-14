@@ -121,7 +121,7 @@ construct's disposition is written down rather than decided at the keyboard.
   scalar, a nullable member, a record, an enum or a union, or a newtype over
   one), then the backend SHALL raise `UNSUPPORTED_CONSTRUCT` naming the field
   and write no file, rather than compare the instances by every member.
-- A construct's clauses are Quire
+- A construct's clauses are Filament
   meaning over instances rather than over one value. That is the
   carried-not-enforced row
   [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md)
@@ -140,7 +140,7 @@ construct's disposition is written down rather than decided at the keyboard.
 | `abstract` | `pub trait N { .. }`, one `fn <member>(&self) -> &T;` accessor per effective field, in place of a struct, plus `pub const ABSTRACT: bool = true`; each concrete subtype implements the trait of every abstract supertype |
 | `subsets` | `pub const FIELD_SUBSETS: &[FieldLinkMeta]`, each member and the members its values are a subset of, by wire name |
 | `redefines` | the redefining member stands in the struct in place of the inherited one; `pub const FIELD_REDEFINES: &[FieldLinkMeta]` names the member it redefines |
-| operation `frame` and inline `pre` and `post` clauses | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]`, each operation's frame and inline Quire clauses as text |
+| operation `frame` and inline `pre` and `post` clauses | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]`, each operation's frame and inline Filament clauses as text |
 | `populations` | `pub const POPULATIONS: &[PopulationMeta]` in `identity.rs`, each population's identity, display name, member types and extents |
 
 - The descriptor types `TransitionMeta`, `StepMeta`, `TermMeta`,
@@ -154,7 +154,7 @@ construct's disposition is written down rather than decided at the keyboard.
   parameter, return, alias target, item or value names an abstract type, or a concrete subtype's field maps to a Rust type
   other than the one the abstract supertype's accessor returns, then the
   backend SHALL raise `UNSUPPORTED_CONSTRUCT` and write no file.
-- `subsets` are carried, not enforced: the subset relation is Quire meaning
+- `subsets` are carried, not enforced: the subset relation is Filament meaning
   over values. That is the carried-not-enforced row
   [FR-058](./FR-058-refuse-unsupported-constructs-with-stable-diagnostics.md)
   declares.

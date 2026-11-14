@@ -348,7 +348,7 @@ describe("TypeScript Decimal applicability (FR-144)", () => {
 				{
 					identity: fieldIdentity,
 					name: "total",
-					typeRef: "ix://quire/native/Decimal",
+					typeRef: "ix://filament/native/Decimal",
 					decimal: { precision: 10, scale: 2 },
 					presence: "required",
 					nullable: false,

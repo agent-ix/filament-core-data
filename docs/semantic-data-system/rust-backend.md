@@ -56,9 +56,9 @@ construction, not by claim.
 |---|---|---|---|---|
 | `supertypes` | `pub const SUPERTYPES: &[&str]; the subtype's struct carries every inherited member` | — | the effective member list: the supertypes' fields, farthest first, then the type's own, with each redefined field left out; the direct supertypes' semantic identities beside FIELDS | — |
 | `abstract` | `pub trait N { fn <field>(&self) -> &T; .. } with pub const ABSTRACT: bool = true` | — | no value type: one accessor per effective field, implemented by each concrete subtype; a member naming the abstract type, and a subtype field of another Rust type, are refused with UNSUPPORTED_CONSTRUCT | — |
-| `subsets` | `pub const FIELD_SUBSETS: &[FieldLinkMeta]` | — | carried, not enforced: each member and the members its values are a subset of, by wire name; the subset relation is Quire meaning over values | — |
+| `subsets` | `pub const FIELD_SUBSETS: &[FieldLinkMeta]` | — | carried, not enforced: each member and the members its values are a subset of, by wire name; the subset relation is Filament meaning over values | — |
 | `redefines` | `pub const FIELD_REDEFINES: &[FieldLinkMeta]` | — | the redefining member stands in the struct in place of the inherited one, and the constant names the member it redefines | — |
-| `operation-contract` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]` | — | each operation's frame and inline Quire pre and post clauses, carried as text; an interface method whose frame is empty takes &self | — |
+| `operation-contract` | `pub const OPERATION_CONTRACTS: &[OperationContractMeta]` | — | each operation's frame and inline Filament pre and post clauses, carried as text; an interface method whose frame is empty takes &self | — |
 | `populations` | `pub const POPULATIONS: &[PopulationMeta] in identity.rs` | — | each population's identity, display name, binding kind, member type identities and its own extent, in document order | — |
 
 ### scalar

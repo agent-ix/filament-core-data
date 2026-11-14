@@ -132,7 +132,7 @@ function numericIr(): any {
 			{
 				identity: `${PACKAGE}/field/DirectDecimalCollection-single`,
 				name: "single",
-				typeRef: "ix://quire/native/Decimal",
+				typeRef: "ix://filament/native/Decimal",
 				constraints: [],
 				decimal: { precision: 5, scale: 2 },
 				presence: "optional",
@@ -143,7 +143,7 @@ function numericIr(): any {
 			{
 				identity: `${PACKAGE}/field/DirectDecimalCollection-nullable`,
 				name: "nullable",
-				typeRef: "ix://quire/native/Decimal",
+				typeRef: "ix://filament/native/Decimal",
 				constraints: [],
 				decimal: { precision: 5, scale: 2 },
 				presence: "optional",
@@ -154,7 +154,7 @@ function numericIr(): any {
 			{
 				identity: `${PACKAGE}/field/DirectDecimalCollection-values`,
 				name: "values",
-				typeRef: "ix://quire/native/Decimal",
+				typeRef: "ix://filament/native/Decimal",
 				constraints: [],
 				decimal: { precision: 5, scale: 2 },
 				presence: "required",
@@ -370,14 +370,14 @@ function wrapperFieldMatrixIr(): any {
 		fields: [
 			field(
 				"native_scalar",
-				"ix://quire/native/String",
+				"ix://filament/native/String",
 				{ lower: 1, upper: 1, ordered: false, unique: false },
 				false,
 				[],
 			),
 			field(
 				"native_collection",
-				"ix://quire/native/String",
+				"ix://filament/native/String",
 				{ lower: 1, upper: 3, ordered: true, unique: false },
 				false,
 				[],
@@ -545,8 +545,8 @@ function featureFieldMatrixIr(): any {
 		kind: "record",
 		unknownPolicy: "reject",
 		fields: [
-			field("float32_scalar", "ix://quire/native/Float32", 1, 1),
-			field("float64_collection", "ix://quire/native/Float64", 1, 2),
+			field("float32_scalar", "ix://filament/native/Float32", 1, 1),
+			field("float64_collection", "ix://filament/native/Float64", 1, 2),
 			field("float32_named_nullable", float32.identity, 0, 1, true),
 			field("float64_named_collection", float64.identity, 1, 2),
 			field("bounded_integer", boundedInteger.identity, 1, 1),

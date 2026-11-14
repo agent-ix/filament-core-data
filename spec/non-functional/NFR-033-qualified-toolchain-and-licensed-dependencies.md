@@ -43,7 +43,7 @@ path, and so that nothing it links can change the licence of what it produces.
 
 The owner directive fixes first-party production Rust on one toolchain. The
 supported minimum and the qualification compiler are two different facts and
-are named separately, in the shape `agent-ix/quire-contract-ir` PR #62 fixed.
+are named separately, in the shape `agent-ix/filament-contract-ir` PR #62 fixed.
 The manifest declares `rust-version.workspace = true` — the workspace's
 minimum, as the sibling members do — because `cargo` enforces every member's
 `rust-version` under `--workspace`, so a member-level `rust-version` above
@@ -154,5 +154,5 @@ reports the metric it could not measure.
 
 ## Dependencies
 
-- **Upstream**: [NFR-022](./NFR-022-deterministic-and-hermetic-rust-generation.md), [NFR-032](./NFR-032-non-disruptive-extraction-frontend.md), `agent-ix/quire-rs#411`, `agent-ix/quire-rs#417`, `agent-ix/quire-cli#82`, `agent-ix/ix-trace-rs#6`, `agent-ix/quire-contract-ir` PR #62
+- **Upstream**: [NFR-022](./NFR-022-deterministic-and-hermetic-rust-generation.md), [NFR-032](./NFR-032-non-disruptive-extraction-frontend.md), `agent-ix/quire-rs#411`, `agent-ix/quire-rs#417`, `agent-ix/quire-cli#82`, `agent-ix/ix-trace-rs#6`, `agent-ix/filament-contract-ir` PR #62
 - **Downstream**: [FR-099](../functional/FR-099-provide-the-extraction-frontend-command-line.md), [FR-098](../functional/FR-098-prove-fixture-goldens-and-cross-frontend-parity.md), [FR-097](../functional/FR-097-normalize-validate-and-write-the-lifted-document.md)

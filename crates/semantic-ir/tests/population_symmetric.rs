@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Agent IX
 
-//! The optional Boolean `symmetric` member of a population (QSpec FR-381,
-//! QSL FR-150, QSL-871). Absent means false.
+//! The optional Boolean `symmetric` member of a population (FSpec FR-381,
+//! FSL FR-150, QSL-871). Absent means false.
 
 use agent_ix_semantic_ir::{decide, json::parse};
 

@@ -404,12 +404,12 @@ const SCALAR_KINDS = new Set(["scalar"]);
 const ALIAS_KINDS = new Set(["alias", "reference"]);
 
 /**
- * A native value type reference (gap 1 of FCD #199/#200): `ix://quire/native/<Name>`
+ * A native value type reference (gap 1 of FCD #199/#200): `ix://filament/native/<Name>`
  * declares no node, over the closed set of kernel scalars below. This is a
  * second implementation beside `src/compiler/ir/reader.mjs`'s `nativeScalar`,
  * deliberately, and it imports neither — see this file's header comment.
  */
-const NATIVE_PREFIX = "ix://quire/native/";
+const NATIVE_PREFIX = "ix://filament/native/";
 const NATIVE_SCALARS = new Map([
 	["UUID", "uuid"],
 	["Boolean", "boolean"],

@@ -22,8 +22,8 @@ without the source-symbol features.
 
 [IR-640](https://linear.app/agent-ix/issue/IR-640) changes this dependency
 selection contract before implementation. Reducing build weight must preserve
-the genuine public lift that downstream QSL model intake reaches through
-`LiftRequest` and that contract-generator reaches through qsl-replay.
+the genuine public lift that downstream FSL model intake reaches through
+`LiftRequest` and that contract-generator reaches through fsl-replay.
 
 ## Options
 
@@ -35,7 +35,7 @@ the genuine public lift that downstream QSL model intake reaches through
 - **B: Introduce a separate lift crate.** This adds publication and consumer
   migration work and risks a second implementation, although the existing
   feature seam already expresses the needed boundary.
-- **C: Skip lift in QSL replay or patch contract-generator intake.** This would
+- **C: Skip lift in FSL replay or patch contract-generator intake.** This would
   remove the real model-lift control instead of reducing its dependencies and
   would move the change outside the owning dependency edge.
 
@@ -82,10 +82,10 @@ the same compiler, profile, job count and source-cache policy. First-run
 failures remain evidence. A single build comparison is observational and
 establishes no numeric performance guarantee.
 
-Downstream adoption requires QSL to select the reviewed frontend revision via
+Downstream adoption requires FSL to select the reviewed frontend revision via
 its ordinary producer dependency before contract-generator qualification.
-Regenerating a consumer lockfile alone cannot select a revision that QSL does
-not name. This adoption preserves the qsl-replay-only consumer boundary.
+Regenerating a consumer lockfile alone cannot select a revision that FSL does
+not name. This adoption preserves the fsl-replay-only consumer boundary.
 
 ## Status
 

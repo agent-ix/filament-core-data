@@ -19,13 +19,13 @@ relationships:
     type: "constrained_by"
   - target: "ix://agent-ix/filament-core-data/NFR-019"
     type: "constrained_by"
-  - target: "ix://agent-ix/quire-spec-language/FR-092"
+  - target: "ix://agent-ix/filament-spec-language/FR-092"
     type: "references"
-  - target: "ix://agent-ix/quire-spec-language/FR-056"
+  - target: "ix://agent-ix/filament-spec-language/FR-056"
     type: "references"
-  - target: "ix://agent-ix/quire-spec-language/FR-091"
+  - target: "ix://agent-ix/filament-spec-language/FR-091"
     type: "references"
-  - target: "ix://agent-ix/quire-specification/FR-140"
+  - target: "ix://agent-ix/filament-specification/FR-140"
     type: "references"
 ---
 # FR-144: Carry exact numeric scalars under one numeric literal encoding
@@ -53,8 +53,8 @@ decimal or a float, nor of what width. Every place that wrote `number` now
 names one of the four.
 
 Every number the IR carries is spelled by one encoding, shared with
-quire-spec-language's QSL-642 rule (QSL FR-092, "A preimage holds integers in
-two kinds of place"), so QSL intake and the FCD readers agree by construction:
+filament-spec-language's QSL-642 rule (FSL FR-092, "A preimage holds integers in
+two kinds of place"), so FSL intake and the FCD readers agree by construction:
 
 - A *counter* (a count or position: `multiplicity.lower` and `upper`, a
   `minLength` or `maxLength` operand, a source span's line and column, a
@@ -101,8 +101,8 @@ two kinds of place"), so QSL intake and the FCD readers agree by construction:
 ### Canonical spellings
 
 - A *canonical integer string* SHALL match `^(0|-?[1-9][0-9]*)$`: no leading
-  zero, no `+`, no space, and `-` only before a nonzero value (QSpec
-  `IntegerString`, the spelling QSL FR-092 gives an `integer` literal value).
+  zero, no `+`, no space, and `-` only before a nonzero value (FSpec
+  `IntegerString`, the spelling FSL FR-092 gives an `integer` literal value).
 - A *canonical decimal string* SHALL match
   `^(0|-?(0\.[0-9]*[1-9]|[1-9][0-9]*(\.[0-9]*[1-9])?))$`: a canonical integer
   part, and a fraction part only when the value is not whole, with no trailing
@@ -115,7 +115,7 @@ two kinds of place"), so QSL intake and the FCD readers agree by construction:
 
 - Every integer value the IR carries SHALL lie in
   `i128::MIN..=i128::MAX` (`-170141183460469231731687303715884105728` to
-  `170141183460469231731687303715884105727`), the ceiling QSL FR-091 fixes for
+  `170141183460469231731687303715884105727`), the ceiling FSL FR-091 fixes for
   integer bounds and literals.
 - If an integer value lies outside that range, then each reader SHALL raise
   `agent-ix.semantic-ir.INTEGER_OUTSIDE_I128` at the value's pointer, naming the
@@ -141,7 +141,7 @@ two kinds of place"), so QSL intake and the FCD readers agree by construction:
 - A *resolution walk* is the walk FR-050 resolves a reference by: from a field
   through its `typeRef`, then through alias `target`s, to a scalar type
   definition or a native type reference. A walk *reaches decimal* when it ends
-  at a scalar definition of scalar `decimal` or at `ix://quire/native/Decimal`.
+  at a scalar definition of scalar `decimal` or at `ix://filament/native/Decimal`.
 - Each resolution walk that reaches decimal SHALL pass exactly one node carrying
   `decimal`, and that node's policy governs the walk's subject.
 - If a field's walk, a constraint's walk from its `appliesTo`, or the walk from a
@@ -167,7 +167,7 @@ field whose subject is `any` is not a value site (FR-139).
 - On an `integer` subject, each value site SHALL be a canonical integer string.
 - On a `decimal` subject, each value site SHALL be a canonical decimal string
   that is a value of the subject's decimal policy; a bound is a value of the
-  type it bounds, so QSL builds its coefficient bound by an exact shift with no
+  type it bounds, so FSL builds its coefficient bound by an exact shift with no
   rounding.
 - On a `float64` subject, each value site SHALL be a finite JSON number.
 - On a `float32` subject, each value site SHALL be a finite JSON number whose
@@ -189,7 +189,7 @@ field whose subject is `any` is not a value site (FR-139).
 
 - Each reader that reads a document from its bytes SHALL refuse a JSON number
   that has no exact RFC 8785 spelling, deciding from the number's source text by
-  exact decimal reasoning, never from a parsed double, by the two cases QSL
+  exact decimal reasoning, never from a parsed double, by the two cases FSL
   FR-056 states for `noncanonical_wire`:
   - a number denoting a whole value whose magnitude exceeds 2^53
     (`9007199254740992`), however spelled (`9007199254740993`, `1e20`,
@@ -208,13 +208,13 @@ field whose subject is `any` is not a value site (FR-139).
   default or enumerated value beyond it (`1e20`, or binary32's largest value
   `3.4028234663852886e38`) is refused with `INEXACT_INTEGER` when read from
   bytes, although RFC 8785 spells it exactly. The limit applies to values the
-  IR writes, not to instance values, and QSL FR-056 refuses the same numbers.
-- The two codes SHALL name the same condition as QSL's
+  IR writes, not to instance values, and FSL FR-056 refuses the same numbers.
+- The two codes SHALL name the same condition as FSL's
   `noncanonical_wire`/`inexact-integer` and `noncanonical_wire`/`inexact-number`,
-  so a document an FCD reader admits is never refused by QSL intake for a number
+  so a document an FCD reader admits is never refused by FSL intake for a number
   spelling, and the reverse.
 - A counter SHALL be a JSON integer in `0..=9007199254740991` (2^53 - 1). Under
-  QSL FR-092's counter rule a counter is a JSON number up to 2^53 - 1 and a
+  FSL FR-092's counter rule a counter is a JSON number up to 2^53 - 1 and a
   decimal string beyond; the IR admits no counter beyond, so every counter the
   IR holds is spelled the same under both rules.
 - A reader entry point that receives an already-parsed value SHALL apply every
@@ -225,8 +225,8 @@ field whose subject is `any` is not a value site (FR-139).
 - The FR-032 kernel scalar library SHALL name `Integer` → `integer`,
   `Decimal` → `decimal`, `Float32` → `float32` and `Float64` → `float64`,
   beside its other members.
-- `ix://quire/native/Float32` and `ix://quire/native/Float64` SHALL resolve as
-  native type references, the names QSL FR-056 gives the same native types.
+- `ix://filament/native/Float32` and `ix://filament/native/Float64` SHALL resolve as
+  native type references, the names FSL FR-056 gives the same native types.
 
 ### Lifting
 
@@ -446,23 +446,23 @@ agreement (NFR-009).
   change, because its instance wire form and its generated types change
   (FR-051-AC-19).
 
-### QSL agreement
+### FSL agreement
 
-The rules above fix what QSL intake reads; QSL adapts its intake in the same
+The rules above fix what FSL intake reads; FSL adapts its intake in the same
 round (AGE-2229's same-slice rule). For reference, the mapping is:
 
-- An `integer` subject maps to QSL `Int[lo, hi]` over its effective range, so a
+- An `integer` subject maps to FSL `Int[lo, hi]` over its effective range, so a
   missing bound maps to -(2^53 - 1) or 2^53 - 1 and an exclusive bound moves one
-  inward. QSL then models the domain every FCD validator enforces. QSL FR-056
+  inward. FSL then models the domain every FCD validator enforces. FSL FR-056
   already reads a decimal-string bound, and with this requirement every bound
   is one.
-- A `decimal` subject with policy `{p, s}` maps to QSpec FR-140's
+- A `decimal` subject with policy `{p, s}` maps to FSpec FR-140's
   `Decimal[lo, hi; s, s]`, with `lo` = -(10^p - 1) and `hi` = 10^p - 1, each
   narrowed by a declared bound shifted by `10^s` (an exclusive bound moved one
   coefficient unit inward), and the rounding spelling omitted, which selects
   strict `exact`.
-- A `float32` or `float64` subject maps to QSL `Float32` or `Float64` with the
-  mode omitted (strict `exact`); QSL FR-056 refuses such a field until QSL-285.
+- A `float32` or `float64` subject maps to FSL `Float32` or `Float64` with the
+  mode omitted (strict `exact`); FSL FR-056 refuses such a field until QSL-285.
 
 ## Constraints
 
@@ -471,7 +471,7 @@ round (AGE-2229's same-slice rule). For reference, the mapping is:
 | FR-144-CON-1 | The independent implementations SHALL agree on diagnostic codes and pointers within each input layer: the Rust, Node and Python readers and the oracle on IR codes and IR pointers for document cases; generated validators, their conformance adapters and the independent instance oracle on the full codes and instance pointers named by FR-050's numeric instance table for instance cases (FR-050-CON-1). | Correctness | Differential test |
 | FR-144-CON-2 | No reader, frontend, or backend SHALL hold a decimal value as a binary double at any step, nor an integer value until an exact check has placed it within ±(2^53 - 1), where every integer is a binary double exactly; a safe subject's bounds and instance values are then held as doubles (the TypeScript `number`, the JSON Schema `minimum`/`maximum`). | Correctness | Inspection |
 | FR-144-CON-3 | This requirement SHALL NOT carry a rational scalar, a quantity type, unit algebra, dimension checks, or unit conversions; AGE-2229 row 4 is undecided. | Scope | Inspection |
-| FR-144-CON-4 | FCD SHALL reference QSL's and QSpec's numeric rules by requirement id only, with none of their files or vectors copied into this repository. | Integrity | Inspection |
+| FR-144-CON-4 | FCD SHALL reference FSL's and FSpec's numeric rules by requirement id only, with none of their files or vectors copied into this repository. | Integrity | Inspection |
 
 ## Acceptance Criteria
 
@@ -480,13 +480,13 @@ round (AGE-2229's same-slice rule). For reference, the mapping is:
 | FR-144-AC-1 | A scalar type definition of each of `integer`, `decimal` (with a policy), `float32` and `float64` is accepted by the Rust, Node and Python readers and the oracle; one of `number` raises `SCHEMA_VIOLATION` at `scalar`. | Test |
 | FR-144-AC-2 | On an `integer` subject, a `max` of `"18446744073709551615"`, of `"170141183460469231731687303715884105727"` and of `"-170141183460469231731687303715884105728"` is accepted; `"170141183460469231731687303715884105728"` and `"-170141183460469231731687303715884105729"` raise `INTEGER_OUTSIDE_I128` at the operand naming the value and the limit; `"01"`, `"+1"`, `" 1"`, `"-0"`, `"1.0"` and the JSON number `1` raise `INVALID_OPERAND` at the operand. | Test |
 | FR-144-AC-3 | On an `integer` field, a `defaultValue` of `"42"` is accepted and one of `42` or `"042"` raises `INVALID_DEFAULT_VALUE`; an `enumValues` list `["1", "2"]` is accepted and `["1", 2]` raises `INVALID_OPERAND` at that constraint's `operands/values/1`, the pointer being the constraint's own pointer followed by `/operands/values/1`. | Test |
-| FR-144-AC-4 | A field typed `ix://quire/native/Decimal` carrying `decimal: {precision: 5, scale: 2}` is accepted with a `max` of `"999.99"` and a `defaultValue` of `"1.5"`; `"1000"` and `"0.001"` raise `INVALID_OPERAND`, `"1.50"`, `"-0"`, `".5"`, `"1e2"` and the JSON number `1.5` raise `INVALID_OPERAND`, and a `defaultValue` of `"1.50"` raises `INVALID_DEFAULT_VALUE`. | Test |
+| FR-144-AC-4 | A field typed `ix://filament/native/Decimal` carrying `decimal: {precision: 5, scale: 2}` is accepted with a `max` of `"999.99"` and a `defaultValue` of `"1.5"`; `"1000"` and `"0.001"` raise `INVALID_OPERAND`, `"1.50"`, `"-0"`, `".5"`, `"1e2"` and the JSON number `1.5` raise `INVALID_OPERAND`, and a `defaultValue` of `"1.50"` raises `INVALID_DEFAULT_VALUE`. | Test |
 | FR-144-AC-5 | A policy with `precision` 0 or 39, a negative `scale`, or a `scale` above `precision` raises `SCHEMA_VIOLATION` at the policy; `decimal` on a record raises `SCHEMA_VIOLATION`, and on a field resolving to `integer` raises `SCHEMA_VIOLATION` at the field's `decimal`. | Test |
-| FR-144-AC-6 | A field typed `ix://quire/native/Decimal` with no `decimal`, and a sequence whose `items` is `ix://quire/native/Decimal`, each raise `DECIMAL_POLICY_MISSING` at the field or the `items`; a field carrying `decimal` whose `typeRef` names a scalar `decimal` definition carrying one raises `DECIMAL_POLICY_CONFLICT` at the field's `decimal`, and the same field without its own policy is accepted. | Test |
+| FR-144-AC-6 | A field typed `ix://filament/native/Decimal` with no `decimal`, and a sequence whose `items` is `ix://filament/native/Decimal`, each raise `DECIMAL_POLICY_MISSING` at the field or the `items`; a field carrying `decimal` whose `typeRef` names a scalar `decimal` definition carrying one raises `DECIMAL_POLICY_CONFLICT` at the field's `decimal`, and the same field without its own policy is accepted. | Test |
 | FR-144-AC-7 | On a `float32` subject a bound of `0.5` and of `0.10000000149011612` is accepted and one of `0.1` raises `INVALID_OPERAND`; on a `float64` subject `0.1` is accepted. Read from bytes, a `float64` bound of `9007199254740992` is accepted and one of `1e20` raises `INEXACT_INTEGER`. | Test |
 | FR-144-AC-8 | Read from bytes, a document holding `9007199254740993`, `-9007199254740993`, `9.007199254740993e15`, `1e20`, `18446744073709551615`, `1e400` or `-1e400` at any depth, the inside of an `any` default included, raises `INEXACT_INTEGER` at that number's pointer and no parse failure; one holding `0.1000000000000000000001`, `1e-400` or `4.9e-324` raises `INEXACT_NUMBER`; one holding `9007199254740992`, `0.1`, `1.0`, `-0` or `5e-324` raises neither. The Rust, Node and Python readers and the oracle agree on each. | Test |
 | FR-144-AC-9 | A `multiplicity.upper`, a `maxLength` operand, or a source span's `startLine` or `startColumn` of `9007199254740991` is accepted, and `9007199254740992` raises `SCHEMA_VIOLATION` at it; a decimal policy's `precision` or `scale` of `9007199254740992` raises `SCHEMA_VIOLATION` at it. | Test |
-| FR-144-AC-10 | `kernel-scalars.json` maps `Integer`, `Decimal`, `Float32` and `Float64` to `integer`, `decimal`, `float32` and `float64`, and a field typed `ix://quire/native/Float32` resolves to scalar `float32` in every reader. | Test |
+| FR-144-AC-10 | `kernel-scalars.json` maps `Integer`, `Decimal`, `Float32` and `Float64` to `integer`, `decimal`, `float32` and `float64`, and a field typed `ix://filament/native/Float32` resolves to scalar `float32` in every reader. | Test |
 | FR-144-AC-11 | The TypeSpec frontend lowers members typed `int8`, `uint64`, `safeint`, `float`, `float32` and `decimal` with `@decimal(12, 2)` to the scalars and bounds of the lifting table. An undecorated `int8` member's field references a minted alias carrying `min` `"-128"` and `max` `"127"` over the package-local `Integer` definition, which carries no bound, and `scalar Age extends uint8` carries `min` `"0"` and `max` `"255"` on its own definition. `int8` with `@minValue(0)` carries one `min` of `"0"` and one `max` of `"127"`. An unconstrained `decimal` member with `@decimal(12, 2)` carries the policy on its field, and one also carrying `@minValue(0)` carries it on its minted alias and none on the field. A `float32` member with `@minValue(0.1)` carries the bound `0.10000000149011612`. `decimal` without `@decimal` raises `DECIMAL_POLICY_MISSING`, `decimal128` with `@decimal(35, 2)` raises `DECIMAL_PRECISION_EXCEEDS_BASE` while `@decimal(34, 2)` is accepted, and `numeric` raises `AMBIGUOUS_NUMERIC`, each blocking. | Test |
 | FR-144-AC-12 | The spec-bundle frontend lifts `versionNumber \| Integer \| 1 \| min: 1` with operand `"1"`, a constrained `Decimal` row with policy `(10, 2)` and `min: 1.50` to an alias carrying `decimal` `{precision: 10, scale: 2}` and operand `"1.5"`, and a `Decimal` row with no policy to a blocking `DECIMAL_POLICY_MISSING` at the row. | Test |
 | FR-144-AC-13 | The Rust backend types integer subjects with effective ranges `[0, 9]`, unbounded, `[0, 18446744073709551615]` and `[-1, 18446744073709551615]` as `i64`, `i64`, `u64` and `i128`; a generated `u64` field reads `"18446744073709551615"` and rejects `"18446744073709551616"` and the JSON number `5`; a `decimal(5, 2)` field reads `"1.1"` and `"1.10"` as one value, writes `"1.10"`, and rejects `"1.001"`, `"1000"`, `"-0"` and `"-0.00"`; `f32` and `f64` fields generate for `float32` and `float64`, and the `f32` field reads `3.4028234663852886e38` and rejects `3.5e38`. | Test |
@@ -506,6 +506,6 @@ round (AGE-2229's same-slice rule). For reference, the mapping is:
 
 ## Dependencies
 
-- **Upstream**: [FR-029](./FR-029-close-the-constraint-keyword-vocabulary.md), [FR-032](./FR-032-define-the-kernel-scalar-library.md), [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md), [FR-139](./FR-139-express-an-unconstrained-value-in-the-semantic-ir.md); QSL FR-056, FR-091 and FR-092 (`ix://agent-ix/quire-spec-language/FR-092`), QSpec FR-140 (`ix://agent-ix/quire-specification/FR-140`)
+- **Upstream**: [FR-029](./FR-029-close-the-constraint-keyword-vocabulary.md), [FR-032](./FR-032-define-the-kernel-scalar-library.md), [FR-050](./FR-050-validate-and-normalize-the-emitted-ir.md), [FR-139](./FR-139-express-an-unconstrained-value-in-the-semantic-ir.md); FSL FR-056, FR-091 and FR-092 (`ix://agent-ix/filament-spec-language/FR-092`), FSpec FR-140 (`ix://agent-ix/filament-specification/FR-140`)
 - **Downstream**: [FR-046](./FR-046-lower-typespec-to-contract-ir.md), [FR-051](./FR-051-diff-and-evolve-the-semantic-ir.md), [FR-054](./FR-054-map-the-semantic-ir-to-rust-serde-declarations.md), [FR-057](./FR-057-enforce-constraints-in-generated-rust.md), [FR-064](./FR-064-lower-ir-type-definitions-to-typescript.md), [FR-066](./FR-066-generate-runtime-validators.md), [FR-093](./FR-093-lower-field-declarations-to-ir-fields.md), [FR-100](./FR-100-map-semantic-ir-to-json-schema.md), [FR-138](./FR-138-emit-the-sysml-v2-textual-target.md)
 - **Constrained by**: [NFR-009](../non-functional/NFR-009-cross-language-semantic-parity.md), [NFR-019](../non-functional/NFR-019-deterministic-contract-compilation.md)

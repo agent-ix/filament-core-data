@@ -126,7 +126,7 @@ pub enum Resolution {
 
 impl Resolution {
     /// The IR `typeRef`: a kernel scalar's native reference
-    /// (`ix://quire/native/<Name>`, gap 1 of FCD #199/#200, no package node
+    /// (`ix://filament/native/<Name>`, gap 1 of FCD #199/#200, no package node
     /// minted), or the identity of the definition the token names, minted
     /// under FR-095 (the artifact id verbatim, under no `NodeKind` segment
     /// of its own). `None` for an unresolved token, which reaches no

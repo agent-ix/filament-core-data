@@ -1,17 +1,17 @@
-//! FR-148 "Option value types": the QSpec vectors
+//! FR-148 "Option value types": the FSpec vectors
 //! `proposals/checked-package-v2/model-option-type-vectors.json` (OP-01 to
-//! OP-41, QSpec FR-154-AC-39 to AC-41 and FR-322-AC-298) run against the
+//! OP-41, FSpec FR-154-AC-39 to AC-41 and FR-322-AC-298) run against the
 //! semantic-IR reader the extraction frontend validates every lift with.
 //!
-//! The vectors are written over QSpec's `domain_package` projection, which is
+//! The vectors are written over FSpec's `domain_package` projection, which is
 //! not the Semantic IR: [`ir_of`] translates the (patched) projection into a
 //! `2.0.0` IR document, keeping every member the patch wrote verbatim so a
 //! malformed `inner` reaches the reader as the vector wrote it. Nothing is
-//! copied: the file is read from the QSpec repository at a git ref
-//! (`QSPEC_REPO`, default the `quire-specification` sibling of the main clone;
-//! `QSPEC_OPTION_VECTORS_REF`, default the merging commit `fa6be9cd`).
+//! copied: the file is read from the FSpec repository at a git ref
+//! (`FSPEC_REPO`, default the `filament-specification` sibling of the main clone;
+//! `FSPEC_OPTION_VECTORS_REF`, default the merge commit `17d49a98`, which renamed the vocabulary).
 //! Each vector's `expected` code (`invalid_model_binding`/
-//! `malformed-declaration`, `missing_declaration`/`missing-name`) is QSpec's
+//! `malformed-declaration`, `missing_declaration`/`missing-name`) is FSpec's
 //! intake code; FCD's typed code and pointer for it are in [`fcd_expected`].
 
 use std::path::PathBuf;
@@ -29,10 +29,10 @@ use ix_trace_rs::trace;
 use serde_json::{json, Map, Value};
 
 const VECTORS: &str = "proposals/checked-package-v2/model-option-type-vectors.json";
-const DEFAULT_REF: &str = "fa6be9cd";
+const DEFAULT_REF: &str = "17d49a98";
 
 fn vectors() -> Value {
-    let repo = std::env::var("QSPEC_REPO")
+    let repo = std::env::var("FSPEC_REPO")
         .map(PathBuf::from)
         .unwrap_or_else(|_| {
             // The sibling checkout of the main FCD clone, found through the git
@@ -43,10 +43,10 @@ fn vectors() -> Value {
                 .output()
                 .expect("git is runnable");
             let common = String::from_utf8(common.stdout).expect("utf8");
-            PathBuf::from(common.trim()).join("../../quire-specification")
+            PathBuf::from(common.trim()).join("../../filament-specification")
         });
     let reference =
-        std::env::var("QSPEC_OPTION_VECTORS_REF").unwrap_or_else(|_| DEFAULT_REF.into());
+        std::env::var("FSPEC_OPTION_VECTORS_REF").unwrap_or_else(|_| DEFAULT_REF.into());
     let output = Command::new("git")
         .arg("-C")
         .arg(&repo)
@@ -56,12 +56,12 @@ fn vectors() -> Value {
         .expect("git is runnable");
     assert!(
         output.status.success(),
-        "the QSpec vectors {reference}:{VECTORS} are unreadable in {} (set QSPEC_REPO): {}",
+        "the FSpec vectors {reference}:{VECTORS} are unreadable in {} (set FSPEC_REPO): {}",
         repo.display(),
         String::from_utf8_lossy(&output.stderr)
     );
     let vectors: Value = serde_json::from_slice(&output.stdout).expect("the vectors are JSON");
-    assert_eq!(vectors["version"], "quire.model-option-type-vectors/v1");
+    assert_eq!(vectors["version"], "filament.model-option-type-vectors/v1");
     vectors
 }
 
@@ -118,7 +118,7 @@ fn patch(document: &mut Value, operations: &[Value]) {
 // ---------------------------------------------------------------------------
 
 const SOURCE: &str = "ix://acme/optionals/source";
-const MODEL: &str = "agent-ix/quire-model";
+const MODEL: &str = "agent-ix/filament-model";
 
 fn origin() -> Value {
     json!({"generated": {
@@ -385,7 +385,7 @@ fn ir_of(projection: &Value) -> Value {
                 "identity": "none", "shape": "tuple",
                 "members": {"positions": "required", "fields": "forbidden", "operations": "forbidden"},
                 "references": {}, "rules": [],
-                "meaning": "quire.meaning.model.tuple-value-type/v1"
+                "meaning": "filament.meaning.model.tuple-value-type/v1"
             }
         }));
     }
@@ -432,7 +432,7 @@ fn ir_of(projection: &Value) -> Value {
                 "identity": "none", "shape": "namespace",
                 "members": {"members": "optional"},
                 "references": {}, "rules": [],
-                "meaning": "quire.meaning.model.namespace/v1"
+                "meaning": "filament.meaning.model.namespace/v1"
             }
         }));
     }
@@ -532,7 +532,7 @@ fn fcd_expected(name: &str, projection: &Value, at: &str) -> (&'static str, Stri
         "OP-11" | "OP-12" | "OP-13" | "OP-14" | "OP-15" | "OP-16" | "OP-33" => (INNER, pointer),
         "OP-17" => (UNRESOLVED_INNER, pointer),
         "OP-18" | "OP-19" | "OP-41" => (PRESENCE, pointer),
-        // A reference to an option; `ix://quire/native/Option*` field types.
+        // A reference to an option; `ix://filament/native/Option*` field types.
         "OP-21" | "OP-22" | "OP-24" => (UNRESOLVED_TYPE, pointer),
         // `Option<Integer>` is no type identity at all: the schema's.
         "OP-23" => (SCHEMA, pointer),
@@ -729,9 +729,9 @@ fn tc_1892_the_two_spellings_are_one_option_and_every_type_reads_back() {
 
     // The type of a member as the vectors write it.
     let leaf_of = |type_ref: &str| -> Value {
-        if let Some(name) = type_ref.strip_prefix("ix://quire/native/") {
+        if let Some(name) = type_ref.strip_prefix("ix://filament/native/") {
             json!({"type": name})
-        } else if let Some(unit) = type_ref.strip_prefix("ix://quire/unit/") {
+        } else if let Some(unit) = type_ref.strip_prefix("ix://filament/unit/") {
             json!({"type": format!("Quantity<{unit}>")})
         } else {
             json!({"declaration": leaf(type_ref)})
@@ -800,7 +800,7 @@ fn tc_1892_the_two_spellings_are_one_option_and_every_type_reads_back() {
     let alias_option = document.member_option(field_of("g")).expect("g");
     assert_eq!(
         (alias_option.inner, alias_option.spelling),
-        ("ix://quire/native/Integer", OptionSpelling::Type)
+        ("ix://filament/native/Integer", OptionSpelling::Type)
     );
 }
 
@@ -869,7 +869,7 @@ fn tc_1894_the_frontend_definition_serializes_the_option_kind_and_exposes_the_in
         scalar: None,
         decimal: None,
         target: None,
-        inner: Some("ix://quire/native/Integer".into()),
+        inner: Some("ix://filament/native/Integer".into()),
         fields: None,
         variants: None,
         positions: None,
@@ -878,10 +878,13 @@ fn tc_1894_the_frontend_definition_serializes_the_option_kind_and_exposes_the_in
         clauses: None,
         construct: ConstructMembers::default(),
     };
-    assert_eq!(definition.option_inner(), Some("ix://quire/native/Integer"));
+    assert_eq!(
+        definition.option_inner(),
+        Some("ix://filament/native/Integer")
+    );
     let value = serde_json::to_value(&definition).unwrap();
     assert_eq!(value["kind"], "option");
-    assert_eq!(value["inner"], "ix://quire/native/Integer");
+    assert_eq!(value["inner"], "ix://filament/native/Integer");
     let record = TypeDefinition {
         kind: Kind::Record,
         inner: None,

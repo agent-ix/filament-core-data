@@ -123,7 +123,7 @@ fn admits_authored_revision_one_and_unused_population_with_timestamp_binding() {
     );
     assert_eq!(
         instant.get("target").unwrap().as_str(),
-        Some("ix://quire/native/Timestamp")
+        Some("ix://filament/native/Timestamp")
     );
     // The occurrence-field rule still follows Instant to the native scalar.
     assert_eq!(
@@ -139,7 +139,7 @@ fn admits_authored_revision_one_and_unused_population_with_timestamp_binding() {
 #[test]
 fn construct_alias_target_must_resolve_to_a_document_or_native_type() {
     let diagnostics = diagnostics(
-        &K2_BOUNDARY.replace("ix://quire/native/Timestamp", "ix://test/orders/Missing"),
+        &K2_BOUNDARY.replace("ix://filament/native/Timestamp", "ix://test/orders/Missing"),
     );
     assert!(diagnostics.contains(&(
         "agent-ix.semantic-ir.UNRESOLVED_CONSTRUCT_REF",
@@ -152,12 +152,12 @@ fn construct_alias_target_must_resolve_to_a_document_or_native_type() {
 fn construct_alias_target_does_not_accept_a_field_that_resolves_to_native() {
     let document = K2_BOUNDARY
         .replace(
-            "\"target\": \"ix://quire/native/Timestamp\"",
+            "\"target\": \"ix://filament/native/Timestamp\"",
             "\"target\": \"ix://test/orders/OrderPlaced/occurred_at\"",
         )
         .replace(
             "\"typeRef\": \"ix://test/orders/InstantAlias\"",
-            "\"typeRef\": \"ix://quire/native/Timestamp\"",
+            "\"typeRef\": \"ix://filament/native/Timestamp\"",
         );
     assert!(diagnostics(&document).contains(&(
         "agent-ix.semantic-ir.UNRESOLVED_CONSTRUCT_REF",
@@ -289,13 +289,13 @@ fn unused_declarations_still_refuse_broken_shapes_duplicates_and_dangling_kinds(
 #[test]
 fn refuses_unused_kinds_outside_the_recognized_population_meaning() {
     for meaning in [
-        "quire.meaning.model.event-type/v1",
-        "quire.meaning.model.unrecognized/v1",
-        "quire.meaning.model.population/v2",
+        "filament.meaning.model.event-type/v1",
+        "filament.meaning.model.unrecognized/v1",
+        "filament.meaning.model.population/v2",
     ] {
         let document = K2_BOUNDARY
             .replace("\"name\": \"population\"", "\"name\": \"ledger\"")
-            .replace("quire.meaning.model.population/v1", meaning);
+            .replace("filament.meaning.model.population/v1", meaning);
         assert_eq!(
             diagnostics(&document),
             vec![(

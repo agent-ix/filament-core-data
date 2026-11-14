@@ -3228,7 +3228,7 @@ function constructItems(type) {
 		);
 	if (facts.operationContracts !== undefined)
 		item(
-			`The frame and inline Quire clauses of the operations of ${named}.`,
+			`The frame and inline Filament clauses of the operations of ${named}.`,
 			"OPERATION_CONTRACTS",
 			"&[crate::identity::OperationContractMeta]",
 			slice(
@@ -3473,8 +3473,8 @@ pub struct OperationContractMeta {
     pub post: &'static [InlineClauseMeta],
 }
 
-/// A population's binding kind ({module, name}; QSpec FR-154 row 2/AC-7,
-/// FR-208), the key QSpec intake binds a population by.
+/// A population's binding kind ({module, name}; FSpec FR-154 row 2/AC-7,
+/// FR-208), the key FSpec intake binds a population by.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct PopulationKindMeta {
     /// The owning module's package identity.
@@ -3495,7 +3495,7 @@ pub struct PopulationMeta {
     /// The member types' semantic identities.
     pub members: &'static [&'static str],
     /// The extent, \`closed\` or \`open\`: one value for the whole population
-    /// (QSpec FR-153/AD-006), never a per-member multiplicity.
+    /// (FSpec FR-153/AD-006), never a per-member multiplicity.
     pub extent: &'static str,
 }`;
 

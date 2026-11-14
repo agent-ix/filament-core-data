@@ -256,8 +256,8 @@ function numericSubject(types, identity) {
 		seen.add(current);
 		const type = types.get(current);
 		if (!type) {
-			const native = current.startsWith("ix://quire/native/")
-				? current.slice("ix://quire/native/".length)
+			const native = current.startsWith("ix://filament/native/")
+				? current.slice("ix://filament/native/".length)
 				: undefined;
 			return { scalar: NATIVE_NUMERIC.get(native), constraints, decimal };
 		}
@@ -1088,9 +1088,9 @@ function diffNodes(previous, next, record) {
 /**
  * `populations` is a document-level member (FR-141), not a per-type one: each
  * entry is a named instance extent, keyed by its own `identity`, bound by its
- * own `kind` ({module, name}, QSpec FR-154 row 2/AC-7, FR-208). `members` is
+ * own `kind` ({module, name}, FSpec FR-154 row 2/AC-7, FR-208). `members` is
  * a set of type-ref identities and `extent` (`closed`/`open`) is one value
- * for the whole population, never a per-member multiplicity (QSpec
+ * for the whole population, never a per-member multiplicity (FSpec
  * FR-153/AD-006) — a change to any of `kind`, `members` or `extent` is
  * `breaking`, the same as a change to `meaning` is for a construct table
  * entry (fcd#193/#196 review): none of the three is silently dropped as a

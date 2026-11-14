@@ -762,11 +762,11 @@
 							"typeRef": {
 								"anyOf": [
 									{
-										"const": "ix://quire/native/Clock"
+										"const": "ix://filament/native/Clock"
 									},
 									{
 										"type": "string",
-										"pattern": "^ix://quire/unit/(?:(?:[A-Za-z][A-Za-z0-9_]*|[a-z0-9][a-z0-9._-]*)/)*[A-Za-z][A-Za-z0-9_]*$"
+										"pattern": "^ix://filament/unit/(?:(?:[A-Za-z][A-Za-z0-9_]*|[a-z0-9][a-z0-9._-]*)/)*[A-Za-z][A-Za-z0-9_]*$"
 									}
 								]
 							}
@@ -788,11 +788,11 @@
 								"typeRef": {
 									"anyOf": [
 										{
-											"const": "ix://quire/native/Clock"
+											"const": "ix://filament/native/Clock"
 										},
 										{
 											"type": "string",
-											"pattern": "^ix://quire/unit/(?:(?:[A-Za-z][A-Za-z0-9_]*|[a-z0-9][a-z0-9._-]*)/)*[A-Za-z][A-Za-z0-9_]*$"
+											"pattern": "^ix://filament/unit/(?:(?:[A-Za-z][A-Za-z0-9_]*|[a-z0-9][a-z0-9._-]*)/)*[A-Za-z][A-Za-z0-9_]*$"
 										}
 									]
 								}

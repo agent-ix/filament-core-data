@@ -34,7 +34,7 @@
 					"dependsOn": ["agent-ix:entity"]
 				},
 				"rules": ["no_self_reference"],
-				"meaning": "quire.meaning.entity",
+				"meaning": "filament.meaning.entity",
 				"immutable": false
 			}
 		}

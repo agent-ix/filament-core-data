@@ -124,7 +124,7 @@ export const RENDERED_NOT_LOST = Object.freeze([
 		renderedAs:
 			"a readonly clause descriptor carrying its identity, language, clauseId, opaque text, and sourceSpan",
 		rationale:
-			"the IR itself never parses clause text and agent-ix/quire-contract-ir#52 owns clause semantics; carrying the text opaquely loses nothing",
+			"the IR itself never parses clause text and agent-ix/filament-contract-ir#52 owns clause semantics; carrying the text opaquely loses nothing",
 	}),
 	Object.freeze({
 		construct: "identified-construct",
@@ -138,14 +138,14 @@ export const RENDERED_NOT_LOST = Object.freeze([
 		renderedAs:
 			"a construct of the record, sequence or state_machine shape as a record interface with its validator; of the enumeration shape as a string literal union with its validator; of the interface shape as an interface of method signatures; of the namespace shape as no type; each with its members in the TYPE_ maps: TYPE_OWNER, TYPE_MEMBERS, TYPE_OCCURRENCE_FIELD, TYPE_EQUALITY, TYPE_IMMUTABLE, TYPE_STATES, TYPE_TRANSITIONS, TYPE_STEPS, TYPE_PERSISTS and TYPE_VOCABULARY",
 		rationale:
-			"a value construct's value equality and an identified construct's identity equality are <Name>Equals, an occurrence construct's immutability is its readonly members, and a state machine's states are <Name>State; the Quire meaning of clauses and guards is over instances, so the generated package carries it as data",
+			"a value construct's value equality and an identified construct's identity equality are <Name>Equals, an occurrence construct's immutability is its readonly members, and a state machine's states are <Name>State; the Filament meaning of clauses and guards is over instances, so the generated package carries it as data",
 	}),
 	Object.freeze({
 		construct: "model-members",
 		renderedAs:
 			"a subtype's interface carrying its effective fields; an abstract type's interface with no validator; with TYPE_SUPERTYPES, TYPE_ABSTRACT, FIELD_SUBSETS, FIELD_REDEFINES, OPERATION_CONTRACTS and POPULATIONS in the identity module",
 		rationale:
-			"an interface is TypeScript's abstract form: no value validates as an abstract type, only as a subtype; TypeScript has no subset relation between properties, so subsets are carried as data; a redefined field is replaced in the subtype's interface, and an operation's frame and inline Quire clauses are text a consumer reads",
+			"an interface is TypeScript's abstract form: no value validates as an abstract type, only as a subtype; TypeScript has no subset relation between properties, so subsets are carried as data; a redefined field is replaced in the subtype's interface, and an operation's frame and inline Filament clauses are text a consumer reads",
 	}),
 	Object.freeze({
 		construct: "default-kind",

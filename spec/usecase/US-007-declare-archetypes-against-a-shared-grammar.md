@@ -25,7 +25,7 @@ field. Issue #34 gave the IR nodes for multiplicity, units, relationships,
 operations, clauses, and closed constraints, but no authoring grammar
 produces them. The semantic-core package is the type environment shared
 by Wave 4 module tickets (`agent-ix/quoin#286`), the extraction frontend
-(`agent-ix/filament-core-data#36`), and `agent-ix/quire-contract-ir#52`.
+(`agent-ix/filament-core-data#36`), and `agent-ix/filament-contract-ir#52`.
 
 ## Acceptance Examples (Illustrative)
 
@@ -70,7 +70,7 @@ unchanged. Only the official TypeSpec emitters run.
 
 Depends on IR v1.1 node shapes ([US-006](./US-006-declare-typed-domain-structure.md), FR-027..030)
 and ADR-0005. Blocks `agent-ix/quoin#293` and every Wave 4 module ticket;
-`agent-ix/quire-contract-ir#53` consumes the model shapes early.
+`agent-ix/filament-contract-ir#53` consumes the model shapes early.
 
 ## Priority and Risk (Informative)
 

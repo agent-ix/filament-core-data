@@ -290,7 +290,7 @@ class ConstructDeclaration(Struct):
     ]
     meaning: Annotated[
         str,
-        Meta(description='Quire meaning id (e.g. quire.meaning.entity).', min_length=1),
+        Meta(description='Filament meaning id (e.g. filament.meaning.entity).', min_length=1),
     ]
     members: Annotated[
         dict[str, Members],

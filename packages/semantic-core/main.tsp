@@ -36,7 +36,7 @@ scalar SemanticId extends string;
 @pattern("^[!-~]+$")
 scalar UnitSymbol extends string;
 
-/** `quire` (checked by Quire), `ocl`, `sysml`, `fretish`, or a namespaced `<ns>:<name>` language (FR-028). */
+/** `quire` (checked by Filament), `ocl`, `sysml`, `fretish`, or a namespaced `<ns>:<name>` language (FR-028). */
 @pattern("^(quire|ocl|sysml|fretish|[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*)$")
 scalar ClauseLanguage extends string;
 

@@ -39,12 +39,12 @@ const CORE_LANGUAGES = new Set(["quire", "ocl", "sysml", "fretish"]);
 
 /**
  * A native value type reference (gap 1 of FCD #199/#200):
- * `ix://quire/native/<Name>` declares no document node, over this closed set
+ * `ix://filament/native/<Name>` declares no document node, over this closed set
  * of kernel scalars, mirrored independently from
  * `crates/semantic-ir/src/rules.rs`'s `NATIVE_SCALARS` and
  * `tests/semantic_ir_reader.py`'s `NATIVE_SCALARS`.
  */
-const NATIVE_PREFIX = "ix://quire/native/";
+const NATIVE_PREFIX = "ix://filament/native/";
 const NATIVE_SCALARS: Record<string, string> = {
 	UUID: "uuid",
 	Boolean: "boolean",
@@ -120,7 +120,7 @@ function valueAdmitted(scalar: string | undefined, value: unknown): boolean {
 }
 
 function nativeScalar(identity: unknown): string | undefined {
-	if (identity === "ix://quire/native/Text") return "string";
+	if (identity === "ix://filament/native/Text") return "string";
 	if (typeof identity !== "string" || !identity.startsWith(NATIVE_PREFIX))
 		return undefined;
 	return NATIVE_SCALARS[identity.slice(NATIVE_PREFIX.length)];
@@ -283,8 +283,8 @@ function checkMultiplicity(
 	return value as Multiplicity;
 }
 
-const CLOCK_REFERENCE = "ix://quire/native/Clock";
-const QUANTITY_REFERENCE = "ix://quire/unit/";
+const CLOCK_REFERENCE = "ix://filament/native/Clock";
+const QUANTITY_REFERENCE = "ix://filament/unit/";
 const INVALID_CLOCK_MEMBER = "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER";
 const INVALID_QUANTITY_MEMBER = "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER";
 const INVALID_UNIT_GRAPH = "agent-ix.semantic-ir.INVALID_UNIT_GRAPH";
@@ -1038,7 +1038,7 @@ function checkTypeDefinition(
 			variant.payloadType,
 			`${path}.variants.${index}.payloadType`,
 		);
-		// QSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
+		// FSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
 		if (specialKind(types, fields, variant.payloadType) === "clock")
 			diagnostics.push({
 				code: "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",

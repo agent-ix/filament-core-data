@@ -64,12 +64,12 @@ and SHALL define one normalized serialization of it, so that
   the offending `version` member. `contractVersion`, `moduleVersion`, mapping,
   profile and extension versions retain their existing closed or SemVer rules.
 - This reader contract aligns the boundary required by
-  [QSL FR-056 AC19](https://github.com/agent-ix/quire-spec-language/blob/main/spec/functional/FR-056-admit-domain-package-model-declarations.md)
-  and [QSpec TC-235 K2](https://github.com/agent-ix/quire-specification/blob/main/spec/test-cases/TC-235-business-construct-meaning-binding.md).
+  [FSL FR-056 AC19](https://github.com/agent-ix/filament-spec-language/blob/main/spec/functional/FR-056-admit-domain-package-model-declarations.md)
+  and [FSpec TC-235 K2](https://github.com/agent-ix/filament-specification/blob/main/spec/test-cases/TC-235-business-construct-meaning-binding.md).
   K2's authored version `1`, unused population declaration (FR-142), and
   `Instant` binding to native `Timestamp` SHALL be retained. Native `Timestamp`
   continues to resolve to semantic scalar `datetime`. This boundary admission
-  does not establish QSL's downstream declaration counts, normalization charges,
+  does not establish FSL's downstream declaration counts, normalization charges,
   native payload checks or runtime results.
 
 ### Cross-field rules
@@ -105,7 +105,7 @@ and SHALL define one normalized serialization of it, so that
 | operation parameter names are unique | `agent-ix.semantic-ir.DUPLICATE_PARAM` |
 | node identities are unique within each list; an extension `identity` is unique per node (within one node's `extensions[]` and within the document-level `extensions[]`) and is never entered into the declaration-identity set, so two definitions each carrying `ix://agent-ix/semantic-core/ext/kernel-scalar` are admissible | `agent-ix.semantic-ir.DUPLICATE_IDENTITY` |
 | a clock member has the FR-146 clock member shape, one diagnostic per breaking member | `agent-ix.semantic-ir.INVALID_CLOCK_MEMBER` |
-| a constraint whose `appliesTo` is `ix://quire/native/Clock`, or an alias reaching it, carries a keyword other than `min` or `max` ([FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md)) | `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` |
+| a constraint whose `appliesTo` is `ix://filament/native/Clock`, or an alias reaching it, carries a keyword other than `min` or `max` ([FR-146](./FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md)) | `agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE` |
 | a dimension term, a unit `dimension` and each entry of a dimension equivalence's `dimensions` name a dimension of the document (FR-146) | `agent-ix.semantic-ir.UNRESOLVED_DIMENSION_REF` |
 | a unit `target` names a unit of the document (FR-146) | `agent-ix.semantic-ir.UNRESOLVED_UNIT_REF` |
 | dimension and unit identities are minted from their names, a base dimension has no terms, terms are strictly ascending with nonzero exponents, terms and unit targets form no cycle, every unit's scale is nonzero, a target shares its unit's dimension, a dimension has one root, with scale `1` and offset `0`, and a dimension equivalence has its minted identity, two distinct entries in ascending order, a positive `rootScale`, base pairs whose `rootScale` values multiply to one around every cycle, and either two base dimensions or two dimensions of equal normalized maps and the `rootScale` their base roots fix (FR-146) | `agent-ix.semantic-ir.INVALID_UNIT_GRAPH` |

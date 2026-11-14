@@ -81,7 +81,7 @@ artefacts rather than asserted in a pull-request description.
 | A type's `abstract` flag set; cleared | `type` | `semantic` | `breaking`; `additive` |
 | A field's `subsets` changed | `field` | `semantic` | `breaking` |
 | A field's `redefines` target changed | `field` | `semantic` | `breaking` |
-| An operation's `frame` changed | `type` | `semantic` | `breaking` (classified with the owning operation; FR-013/FR-051 leave the frame's own body encoding and grant-range semantics to QSpec #101/#106) |
+| An operation's `frame` changed | `type` | `semantic` | `breaking` (classified with the owning operation; FR-013/FR-051 leave the frame's own body encoding and grant-range semantics to FSpec #101/#106) |
 | A population added; removed; its `kind`, `members` or `extent` changed | `type` | `semantic` | `additive`; `breaking`; `breaking` |
 | A construct table entry added; removed; its `identity`, `shape`, `members`, `rules`, `references`, `immutable` or `meaning` changed | `type` | `semantic` | `additive`; `breaking`; `breaking` |
 | Generated name changed with no semantic identity change | `generated-api` | `target` | `patch` |

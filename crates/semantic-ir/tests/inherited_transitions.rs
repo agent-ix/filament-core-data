@@ -75,7 +75,7 @@ fn with_guard(target: &str, trigger: &str, guard: Option<&str>) -> Json {
 }
 
 /// Trace: FR-142-AC-16
-/// Provenance: AGE-2239, QSL TC-235 M19 run 1.
+/// Provenance: AGE-2239, FSL TC-235 M19 run 1.
 #[test]
 fn subtype_transition_resolves_own_and_inherited_states_and_operations() {
     let verdict = decide(&document(
@@ -139,7 +139,7 @@ fn assert_guard_dangling(guard: &str) {
 }
 
 /// Trace: FR-142-AC-16
-/// Provenance: QSL TC-235 M19 run 7, FR-208-AC-12.
+/// Provenance: FSL TC-235 M19 run 7, FR-208-AC-12.
 #[test]
 fn subtype_transition_guard_resolves_clause_of_a_supertype() {
     // `can_ship` is declared on SM-001, two levels above UrgentLifecycle.

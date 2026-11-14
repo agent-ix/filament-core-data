@@ -182,7 +182,7 @@ mod tests {
     #[test]
     fn fr_144_raw_bytes_find_inexact_integer_inside_any_default() {
         let record = format!(
-            r#"{{"identity":"ix://probe/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{{"identity":"ix://probe/Holder/payload","name":"payload","typeRef":"ix://quire/native/JsonObject","presence":"required","nullable":false,"defaultKind":"semantic","defaultValue":{{"nested":9007199254740993}},"origin":{GENERATED},"multiplicity":{{"lower":1,"upper":1,"ordered":false,"unique":false}},"extensions":[]}}]}}"#
+            r#"{{"identity":"ix://probe/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{{"identity":"ix://probe/Holder/payload","name":"payload","typeRef":"ix://filament/native/JsonObject","presence":"required","nullable":false,"defaultKind":"semantic","defaultValue":{{"nested":9007199254740993}},"origin":{GENERATED},"multiplicity":{{"lower":1,"upper":1,"ordered":false,"unique":false}},"extensions":[]}}]}}"#
         );
         let bundle = parse(&format!(r#"{{"ir":{{{HEADER},"types":[{record}]}}}}"#))
             .expect("a schema-valid raw numeric case");
@@ -203,7 +203,7 @@ mod tests {
     fn fr_144_raw_bytes_check_safe_metadata_integer_boundaries() {
         fn bundle(value: &str) -> String {
             format!(
-                r#"{{"ir":{{{HEADER},"types":[{{"identity":"ix://probe/Text","displayName":"Text","kind":"scalar","scalar":"string","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"}},{{"identity":"ix://probe/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{{"identity":"ix://probe/Holder/value","name":"value","typeRef":"ix://quire/native/String","presence":"required","nullable":false,"defaultKind":"none","origin":{{"source":{{"sourceIdentity":"ix://probe/Source","path":"probe.tsp","startLine":{value},"startColumn":{value}}}}},"multiplicity":{{"lower":1,"upper":{value},"ordered":false,"unique":false}},"constraints":[{{"identity":"ix://probe/Holder/value/maxLength","keyword":"maxLength","operands":{{"value":{value}}},"appliesTo":"ix://probe/Holder/value","diagnosticCode":"ix://probe/MAX_LENGTH","origin":{GENERATED}}}],"extensions":[]}}]}}]}}}}"#
+                r#"{{"ir":{{{HEADER},"types":[{{"identity":"ix://probe/Text","displayName":"Text","kind":"scalar","scalar":"string","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject"}},{{"identity":"ix://probe/Holder","displayName":"Holder","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{{"identity":"ix://probe/Holder/value","name":"value","typeRef":"ix://filament/native/String","presence":"required","nullable":false,"defaultKind":"none","origin":{{"source":{{"sourceIdentity":"ix://probe/Source","path":"probe.tsp","startLine":{value},"startColumn":{value}}}}},"multiplicity":{{"lower":1,"upper":{value},"ordered":false,"unique":false}},"constraints":[{{"identity":"ix://probe/Holder/value/maxLength","keyword":"maxLength","operands":{{"value":{value}}},"appliesTo":"ix://probe/Holder/value","diagnosticCode":"ix://probe/MAX_LENGTH","origin":{GENERATED}}}],"extensions":[]}}]}}]}}}}"#
             )
         }
 
@@ -305,7 +305,7 @@ mod tests {
 
     fn operation(identity: &str, upper: i64, redefines: &str) -> String {
         format!(
-            r#"{{"identity":"{identity}","name":"size","params":[],"pre":[],"post":[],"origin":{GENERATED},"returns":{{"typeRef":"ix://quire/native/Integer","multiplicity":{},"nullable":false}}{redefines}}}"#,
+            r#"{{"identity":"{identity}","name":"size","params":[],"pre":[],"post":[],"origin":{GENERATED},"returns":{{"typeRef":"ix://filament/native/Integer","multiplicity":{},"nullable":false}}{redefines}}}"#,
             multiplicity(1, upper)
         )
     }
@@ -400,7 +400,7 @@ mod tests {
 
     fn text_bundle_of(native: &str, field_profile: &str, type_members: &str) -> Json {
         let field = format!(
-            r#"{{"identity":"ix://acme/pkg/Item/sku","name":"sku","typeRef":"ix://quire/native/{native}","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{}{field_profile}}}"#,
+            r#"{{"identity":"ix://acme/pkg/Item/sku","name":"sku","typeRef":"ix://filament/native/{native}","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{}{field_profile}}}"#,
             multiplicity(1, 1)
         );
         let item = format!(
@@ -580,7 +580,7 @@ mod tests {
             ""
         };
         let field = format!(
-            r#"{{"identity":"ix://acme/pkg/Item/count","name":"count","typeRef":"ix://quire/native/{native}","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{}{policy},"constraints":[{constraint}]}}"#,
+            r#"{{"identity":"ix://acme/pkg/Item/count","name":"count","typeRef":"ix://filament/native/{native}","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{}{policy},"constraints":[{constraint}]}}"#,
             multiplicity(1, 1)
         );
         let item = format!(
