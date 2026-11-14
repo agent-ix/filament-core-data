@@ -249,7 +249,7 @@ export function readDeclaration(value) {
 	}
 
 	if (typeof value.meaning !== "string" || value.meaning.length === 0)
-		return refuse("/meaning", "meaning is a non-empty Quire meaning id");
+		return refuse("/meaning", "meaning is a non-empty Filament meaning id");
 
 	const flags = {};
 	for (const [name, flag] of FLAGS) {
@@ -720,9 +720,9 @@ export function operationContract(operation) {
 
 /**
  * The document's populations (FR-141), each a display name, identity, the
- * `kind` ({module, name}; QSpec FR-154 row 2/AC-7, FR-208) QSpec intake binds
+ * `kind` ({module, name}; FSpec FR-154 row 2/AC-7, FR-208) FSpec intake binds
  * it by, its member type-ref identities and its `extent` (`closed` or
- * `open`, QSpec FR-153/AD-006: one value for the whole population, never a
+ * `open`, FSpec FR-153/AD-006: one value for the whole population, never a
  * per-member multiplicity).
  */
 export function populationsOf(ir) {

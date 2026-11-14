@@ -2648,7 +2648,7 @@
 					"members": ["business:aggregate-member"]
 				},
 				"rules": ["identity_field_required", "min_clauses"],
-				"meaning": "quire.meaning.model.object-type/v1"
+				"meaning": "filament.meaning.model.object-type/v1"
 			}
 		},
 		{
@@ -2673,7 +2673,7 @@
 					"exclusive_membership",
 					"members_not_namespace"
 				],
-				"meaning": "quire.meaning.namespace"
+				"meaning": "filament.meaning.namespace"
 			}
 		},
 		{
@@ -2691,7 +2691,7 @@
 				},
 				"references": {},
 				"rules": ["identity_field_required"],
-				"meaning": "quire.meaning.model.object-type/v1"
+				"meaning": "filament.meaning.model.object-type/v1"
 			}
 		},
 		{
@@ -2711,7 +2711,7 @@
 				},
 				"references": {},
 				"rules": [],
-				"meaning": "quire.meaning.model.variant-type/v1"
+				"meaning": "filament.meaning.model.variant-type/v1"
 			}
 		},
 		{
@@ -2729,7 +2729,7 @@
 				},
 				"references": {},
 				"rules": ["identity_field_forbidden", "occurrence_field_required"],
-				"meaning": "quire.meaning.model.value-type/v1",
+				"meaning": "filament.meaning.model.value-type/v1",
 				"immutable": true
 			}
 		},
@@ -2751,7 +2751,7 @@
 					"owner": ["business:composite-owner"]
 				},
 				"rules": ["identity_field_required", "single_owner"],
-				"meaning": "quire.meaning.model.object-type/v1"
+				"meaning": "filament.meaning.model.object-type/v1"
 			}
 		},
 		{
@@ -2766,7 +2766,7 @@
 				"members": {},
 				"references": {},
 				"rules": [],
-				"meaning": "quire.meaning.model.population/v1"
+				"meaning": "filament.meaning.model.population/v1"
 			}
 		},
 		{
@@ -2787,7 +2787,7 @@
 					"steps": ["business:event-like"]
 				},
 				"rules": ["identity_field_required"],
-				"meaning": "quire.meaning.process"
+				"meaning": "filament.meaning.process"
 			}
 		},
 		{
@@ -2808,7 +2808,7 @@
 					"persists": ["business:persistable"]
 				},
 				"rules": ["no_fields", "min_operations"],
-				"meaning": "quire.meaning.persistence-interface"
+				"meaning": "filament.meaning.persistence-interface"
 			}
 		},
 		{
@@ -2829,7 +2829,7 @@
 					"transitions": ["business:event-like"]
 				},
 				"rules": ["min_operations"],
-				"meaning": "quire.meaning.state-machine"
+				"meaning": "filament.meaning.state-machine"
 			}
 		},
 		{
@@ -2846,7 +2846,7 @@
 				},
 				"references": {},
 				"rules": ["identity_field_forbidden"],
-				"meaning": "quire.meaning.model.value-type/v1"
+				"meaning": "filament.meaning.model.value-type/v1"
 			}
 		}
 	]

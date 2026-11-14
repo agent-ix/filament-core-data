@@ -42,9 +42,9 @@ NAMESPACED = re.compile(r"^[a-z0-9][a-z0-9.-]*:[A-Za-z0-9][A-Za-z0-9._-]*$")
 BOUNDS = {"min", "max", "exclusiveMin", "exclusiveMax"}
 TEMPORAL = {"date", "datetime", "duration"}
 
-# A native value type reference (gap 1 of FCD #199/#200): `ix://quire/native/<Name>`
+# A native value type reference (gap 1 of FCD #199/#200): `ix://filament/native/<Name>`
 # declares no node, over the closed set of kernel scalars below.
-NATIVE_PREFIX = "ix://quire/native/"
+NATIVE_PREFIX = "ix://filament/native/"
 NATIVE_SCALARS = {
     "UUID": "uuid",
     "Boolean": "boolean",
@@ -207,12 +207,12 @@ def _check_option_inner(
     code = None
     if (
         inner.startswith(NATIVE_PREFIX) and _native_scalar(inner) is None
-    ) or reference == "ix://quire/native/Clock":
+    ) or reference == "ix://filament/native/Clock":
         code = "INVALID_OPTION_INNER"
     elif _native_scalar(inner) is not None:
         return
-    elif inner.startswith("ix://quire/unit/"):
-        parts = inner.removeprefix("ix://quire/unit/").split("/")
+    elif inner.startswith("ix://filament/unit/"):
+        parts = inner.removeprefix("ix://filament/unit/").split("/")
         if not (
             parts
             and re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", parts[-1])
@@ -1200,7 +1200,7 @@ def construct_diagnostics(document: Any) -> list[dict[str, str]]:
             isinstance(declared, dict)
             and position not in used
             and isinstance(declaration, dict)
-            and declaration.get("meaning") != "quire.meaning.model.population/v1"
+            and declaration.get("meaning") != "filament.meaning.model.population/v1"
         ):
             emit(
                 f"constructs.{position}.kind",

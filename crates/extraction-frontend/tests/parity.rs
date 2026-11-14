@@ -286,10 +286,10 @@ fn tc_1291_both_halves_of_the_shared_case_project_and_an_absent_node_is_named() 
         assert_eq!(
             type_refs,
             [
-                "ix://quire/native/Boolean",
-                "ix://quire/native/Integer",
-                "ix://quire/native/String",
-                "ix://quire/native/Timestamp"
+                "ix://filament/native/Boolean",
+                "ix://filament/native/Integer",
+                "ix://filament/native/String",
+                "ix://filament/native/Timestamp"
             ],
             "{label}"
         );

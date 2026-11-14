@@ -219,15 +219,15 @@ class _Classes:
 
     def annotation(self, identity: str) -> str:
         native = {
-            "ix://quire/native/UUID": "UUID",
-            "ix://quire/native/Boolean": "bool",
-            "ix://quire/native/Integer": "int",
-            "ix://quire/native/Decimal": "Decimal",
-            "ix://quire/native/String": "str",
-            "ix://quire/native/Timestamp": "datetime",
-            "ix://quire/native/Duration": "timedelta",
-            "ix://quire/native/Bytes": "bytes",
-            "ix://quire/native/JsonObject": "Any",
+            "ix://filament/native/UUID": "UUID",
+            "ix://filament/native/Boolean": "bool",
+            "ix://filament/native/Integer": "int",
+            "ix://filament/native/Decimal": "Decimal",
+            "ix://filament/native/String": "str",
+            "ix://filament/native/Timestamp": "datetime",
+            "ix://filament/native/Duration": "timedelta",
+            "ix://filament/native/Bytes": "bytes",
+            "ix://filament/native/JsonObject": "Any",
         }.get(identity)
         if native is not None:
             if native in {"UUID", "Decimal", "datetime", "timedelta", "Any"}:

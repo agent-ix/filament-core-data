@@ -119,8 +119,8 @@ const KERNEL_NAMES = new Map([
 	["uuid", "UUID"],
 ]);
 
-/** The `ix://quire/native/<Name>` prefix a kernel scalar reference takes. */
-const NATIVE_PREFIX = "ix://quire/native/";
+/** The `ix://filament/native/<Name>` prefix a kernel scalar reference takes. */
+const NATIVE_PREFIX = "ix://filament/native/";
 
 /** `KERNEL_NAMES` inverted: the kernel name to the IR scalar it resolves
  * to, for reading a native reference back (gap 1 of FCD #199/#200). */
@@ -1114,7 +1114,7 @@ export function lowerProgram(options) {
 			multiplicity = { lower: property.optional ? 0 : 1, upper: 1 };
 		}
 
-		// Every emitted multiplicity carries `ordered` and `unique` (QSpec
+		// Every emitted multiplicity carries `ordered` and `unique` (FSpec
 		// model-complete.md, owner ruling 2026-09-19T15:39:32Z on FCD #199):
 		// when `upper` is absent or greater than one, `@collection`'s own
 		// `ordered`/`unique` are emitted; when `upper` is present and at most
@@ -1473,7 +1473,7 @@ export function lowerProgram(options) {
 						node.returns = {
 							typeRef,
 							// Every emitted multiplicity carries `ordered` and `unique`
-							// (QSpec model-complete.md); a return type never declares
+							// (FSpec model-complete.md); a return type never declares
 							// either, so both are always `false`.
 							multiplicity: returnItem
 								? { lower: 1, ordered: false, unique: false }

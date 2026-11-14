@@ -82,10 +82,10 @@ export const GENERATED_SCALARS = Object.freeze([
 ]);
 
 /**
- * A native value type reference (gap 1 of FCD #199/#200): `ix://quire/native/<Name>`
+ * A native value type reference (gap 1 of FCD #199/#200): `ix://filament/native/<Name>`
  * names a kernel scalar and declares no node, over the closed set below.
  */
-const NATIVE_PREFIX = "ix://quire/native/";
+const NATIVE_PREFIX = "ix://filament/native/";
 const NATIVE_SCALARS = new Map([
 	["UUID", "uuid"],
 	["Boolean", "boolean"],

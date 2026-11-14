@@ -239,7 +239,7 @@ function typeOf(document, name) {
 
 const OPEN_CONSUMER = {
 	contractVersion: "1.0.0",
-	consumer: "ix://agent-ix/quire/consumer/dynamic",
+	consumer: "ix://agent-ix/filament/consumer/dynamic",
 	mode: "dynamic",
 	exports: [],
 	unknownModules: "preserve",

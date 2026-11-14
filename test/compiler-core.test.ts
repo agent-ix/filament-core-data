@@ -438,7 +438,7 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 					identity: "ix://agent-ix/probe/VersionNumber",
 					displayName: "VersionNumber",
 					kind: "alias",
-					target: "ix://quire/native/Integer",
+					target: "ix://filament/native/Integer",
 					constraints: [
 						{
 							keyword: "min",
@@ -450,7 +450,7 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 					identity: "ix://agent-ix/probe/Price",
 					displayName: "Price",
 					kind: "alias",
-					target: "ix://quire/native/Decimal",
+					target: "ix://filament/native/Decimal",
 					decimal: { precision: 10, scale: 2 },
 					constraints: [
 						{
@@ -463,7 +463,7 @@ describe("frontend seam and dialect registry (FR-045)", () => {
 					identity: "ix://agent-ix/probe/Unpriced",
 					displayName: "Unpriced",
 					kind: "alias",
-					target: "ix://quire/native/Decimal",
+					target: "ix://filament/native/Decimal",
 					constraints: [],
 				},
 				{
@@ -2120,7 +2120,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		);
 		expect(typeOf("Timestamp")).toBeUndefined();
 		expect(fieldOf("AuditEvent", "at").typeRef).toBe(
-			"ix://quire/native/Timestamp",
+			"ix://filament/native/Timestamp",
 		);
 	});
 
@@ -2162,7 +2162,7 @@ describe("TypeSpec structural lowering (FR-046)", () => {
 		// Gap 1 of FCD #199/#200: the kernel scalar `any` mints no package
 		// node; the field's `typeRef` names it directly as the native
 		// reference JsonObject resolves to over the closed FR-032 set.
-		expect(typeRef).toBe("ix://quire/native/JsonObject");
+		expect(typeRef).toBe("ix://filament/native/JsonObject");
 		expect(types.find((type) => type.identity === typeRef)).toBeUndefined();
 		expect(
 			types.filter(
@@ -4035,7 +4035,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 		}
 		expect(normalizeIr(reordered)).toBe(base);
 
-		// `fields` and `supertypes` are ordered sequences (QSpec FR-154-AC-32),
+		// `fields` and `supertypes` are ordered sequences (FSpec FR-154-AC-32),
 		// so reordering either is a different document.
 		const withTwo = (order: string[], supers: string[]) => {
 			const doc = JSON.parse(JSON.stringify(document)) as never as {
@@ -4059,7 +4059,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			fieldsForward,
 		);
 
-		// An operation's `params` are positional (QSpec FR-154, FR-432): a
+		// An operation's `params` are positional (FSpec FR-154, FR-432): a
 		// reversal is a different document, while a parameter's own
 		// `extensions` stay an identity set.
 		const withParams = (names: string[], extensions: string[]) => {
@@ -4326,7 +4326,7 @@ describe("IR validation, reader, and normalization (FR-050)", () => {
 			},
 		};
 		const mult = { lower: 1, upper: 1, ordered: false, unique: false };
-		const ref = "ix://quire/native/Rational";
+		const ref = "ix://filament/native/Rational";
 		const member = (identity: string, name: string, extra = {}) => ({
 			identity,
 			name,
@@ -4579,7 +4579,7 @@ describe("compatibility (FR-051)", () => {
 		for (const document of [alias.old, alias.next]) {
 			seconds(document).kind = "alias";
 			delete seconds(document).scalar;
-			seconds(document).target = "ix://quire/native/Integer";
+			seconds(document).target = "ix://filament/native/Integer";
 			bound(document, "min", "0");
 		}
 		bound(alias.old, "max", "100");
@@ -4593,7 +4593,7 @@ describe("compatibility (FR-051)", () => {
 
 		const integerField = numericPair();
 		for (const document of [integerField.old, integerField.next]) {
-			duration(document).typeRef = "ix://quire/native/Integer";
+			duration(document).typeRef = "ix://filament/native/Integer";
 			fieldBound(document, "min", "0");
 		}
 		fieldBound(integerField.old, "max", "100");
@@ -4620,7 +4620,7 @@ describe("compatibility (FR-051)", () => {
 
 		const decimalField = numericPair();
 		for (const document of [decimalField.old, decimalField.next]) {
-			duration(document).typeRef = "ix://quire/native/Decimal";
+			duration(document).typeRef = "ix://filament/native/Decimal";
 			duration(document).decimal = { precision: 5, scale: 2 };
 		}
 		fieldBound(decimalField.old, "max", "10.51");
@@ -4672,7 +4672,7 @@ describe("compatibility (FR-051)", () => {
 	];
 	type NumericState = (typeof numericStates)[number];
 	const nativeRef = (state: NumericState) =>
-		`ix://quire/native/${state.scalar[0].toUpperCase()}${state.scalar.slice(1)}`;
+		`ix://filament/native/${state.scalar[0].toUpperCase()}${state.scalar.slice(1)}`;
 	const configureType = (
 		document: Json,
 		subject: Record<string, unknown>,
@@ -5183,9 +5183,9 @@ describe("compatibility (FR-051)", () => {
 
 		// populations: document-level, added then its members and extent each
 		// changed on their own, keyed by `identity` and bound by their own
-		// `kind` (QSpec FR-154 row 2/AC-7, FR-208; `members` a set of type-ref
+		// `kind` (FSpec FR-154 row 2/AC-7, FR-208; `members` a set of type-ref
 		// identities and `extent` one `closed`/`open` value for the whole
-		// population, QSpec FR-153/AD-006; fcd#196).
+		// population, FSpec FR-153/AD-006; fcd#196).
 		const withPopulation = structuredClone(base);
 		withPopulation.populations = [
 			{
@@ -5270,7 +5270,7 @@ describe("compatibility (FR-051)", () => {
 					identity: "identified",
 					shape: "record",
 					members: {},
-					meaning: "ix://agent-ix/quire-specification/meaning/entity",
+					meaning: "ix://agent-ix/filament-specification/meaning/entity",
 				},
 			},
 		];
@@ -5283,7 +5283,7 @@ describe("compatibility (FR-051)", () => {
 		]);
 		const constructChanged = structuredClone(withConstruct);
 		constructChanged.constructs[0].construct.meaning =
-			"ix://agent-ix/quire-specification/meaning/entity-v2";
+			"ix://agent-ix/filament-specification/meaning/entity-v2";
 		expect(
 			projectChanges(reportOfPair(withConstruct, constructChanged)),
 		).toStrictEqual([
@@ -5376,7 +5376,7 @@ describe("compatibility (FR-051)", () => {
 
 		// frame: caught by the existing whole-operation comparison, classified
 		// with the owning operation (`type`, `breaking`) rather than its own
-		// family, because QSpec #101/#106 have not settled what the frame
+		// family, because FSpec #101/#106 have not settled what the frame
 		// itself means to diff (FR-051-AC-16).
 		const framed = structuredClone(base);
 		framed.types.find(
@@ -6893,7 +6893,7 @@ describe("diagnostic coverage (FR-049 closing gate)", () => {
 				{
 					identity: "ix://probe/Values",
 					kind: "sequence",
-					items: "ix://quire/native/Decimal",
+					items: "ix://filament/native/Decimal",
 				},
 			],
 		};
@@ -6927,7 +6927,7 @@ describe("diagnostic coverage (FR-049 closing gate)", () => {
 				{
 					identity: "ix://probe/Record",
 					kind: "record",
-					fields: [field("ix://quire/native/Integer", { defaultValue: 1.5 })],
+					fields: [field("ix://filament/native/Integer", { defaultValue: 1.5 })],
 				},
 			],
 		};
@@ -7102,7 +7102,7 @@ describe("diagnostic coverage (FR-049 closing gate)", () => {
 			),
 		);
 		const field = quantityDocument.types[0].fields[0];
-		field.typeRef = "ix://quire/unit/ms";
+		field.typeRef = "ix://filament/unit/ms";
 		field.unit = "ms";
 		expect(
 			note(readContractIr(quantityDocument) as never).map(
@@ -7134,7 +7134,7 @@ describe("diagnostic coverage (FR-049 closing gate)", () => {
 			extensions: [],
 			unknownPolicy: "reject",
 		});
-		const base = option("Base", "ix://quire/native/Integer");
+		const base = option("Base", "ix://filament/native/Integer");
 		document.types.push(
 			base,
 			option("Missing", "ix://acme/config/Nowhere"),

@@ -5,7 +5,7 @@ use agent_ix_semantic_ir::{decide, json::parse};
 
 const ORIGIN: &str = r#"{"generated":{"generatorIdentity":"ix://acme/config/case-author","generatorVersion":"1.0.0","inputIdentities":["ix://acme/config/source"]}}"#;
 const MULTIPLICITY: &str = r#"{"lower":1,"upper":1,"ordered":false,"unique":false}"#;
-const RATIONAL: &str = "ix://quire/native/Rational";
+const RATIONAL: &str = "ix://filament/native/Rational";
 
 fn member(identity: &str, name: &str, type_ref: &str, extra: &str) -> String {
     format!(
@@ -52,7 +52,7 @@ fn tc_1842_bare_rational_field_param_and_result_are_accepted_with_no_diagnostic(
 /// ACs: FR-146-AC-1
 #[test]
 fn tc_1842_rational_name_is_exact() {
-    let wrong = codes(&document("ix://quire/native/rational", "", ""));
+    let wrong = codes(&document("ix://filament/native/rational", "", ""));
     assert!(wrong
         .iter()
         .all(|(code, _)| *code == "agent-ix.semantic-ir.UNRESOLVED_TYPE_REF"));

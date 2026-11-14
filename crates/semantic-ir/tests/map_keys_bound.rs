@@ -2,11 +2,11 @@
 // Copyright (C) 2026 Agent IX
 
 //! FR-154 "Map types" (QSL-1169): a map type definition declares `keys`, a
-//! scalar key type, and `bound`, the entry-count bound. The QSpec vectors
+//! scalar key type, and `bound`, the entry-count bound. The FSpec vectors
 //! PM-01 to PM-34 (`proposals/checked-package-v2/map-type-vectors.json`,
 //! `package_map_types`) are carried in `fixtures/semantic/v1/map-keys-bound`
 //! as patches over the semantic IR projection of their base, each with the
-//! FCD code and pointer its QSpec intake code maps to.
+//! FCD code and pointer its FSpec intake code maps to.
 
 use agent_ix_semantic_ir::decide;
 use agent_ix_semantic_ir::json::{parse, Json};
@@ -87,14 +87,14 @@ fn mutated(case: &Json) -> Json {
     ir
 }
 
-/// Tracing: QSpec TC-234 (I35, I36)
+/// Tracing: FSpec TC-234 (I35, I36)
 /// ACs: FR-154-AC-48
 #[test]
 fn fr154_map_the_base_map_document_is_admitted() {
     assert_eq!(observed(base()), Vec::<(String, String)>::new());
 }
 
-/// Tracing: QSpec TC-234 (I35, I36)
+/// Tracing: FSpec TC-234 (I35, I36)
 /// ACs: FR-154-AC-48
 #[test]
 fn fr154_map_every_map_type_vector_has_its_recorded_rust_verdict() {
@@ -127,7 +127,7 @@ fn fr154_map_every_map_type_vector_has_its_recorded_rust_verdict() {
     }
 }
 
-/// Tracing: QSpec TC-234 (I35, I36)
+/// Tracing: FSpec TC-234 (I35, I36)
 /// ACs: FR-154-AC-48
 #[test]
 fn fr154_map_a_map_with_neither_keys_nor_bound_is_admitted_unchanged() {
@@ -137,19 +137,19 @@ fn fr154_map_a_map_with_neither_keys_nor_bound_is_admitted_unchanged() {
     assert_eq!(observed(ir), Vec::<(String, String)>::new());
 }
 
-/// Tracing: QSpec TC-234 (I35, I36)
+/// Tracing: FSpec TC-234 (I35, I36)
 /// ACs: FR-154-AC-48
 #[test]
 fn fr154_map_a_scalar_key_through_an_alias_chain_is_admitted() {
     for key in [
-        "ix://quire/native/Boolean",
-        "ix://quire/native/Float64",
-        "ix://quire/native/UUID",
-        "ix://quire/native/Timestamp",
-        "ix://quire/native/Bytes",
-        "ix://quire/native/Duration",
-        "ix://quire/native/JsonObject",
-        "ix://quire/native/String",
+        "ix://filament/native/Boolean",
+        "ix://filament/native/Float64",
+        "ix://filament/native/UUID",
+        "ix://filament/native/Timestamp",
+        "ix://filament/native/Bytes",
+        "ix://filament/native/Duration",
+        "ix://filament/native/JsonObject",
+        "ix://filament/native/String",
         "ix://acme/maps/Key",
     ] {
         let mut ir = base();
@@ -158,7 +158,7 @@ fn fr154_map_a_scalar_key_through_an_alias_chain_is_admitted() {
     }
 }
 
-/// Tracing: QSpec TC-234 (I35, I36)
+/// Tracing: FSpec TC-234 (I35, I36)
 /// ACs: FR-154-AC-48
 #[test]
 fn fr154_map_a_key_that_reaches_a_clock_or_rational_through_an_alias_is_refused() {
@@ -166,7 +166,7 @@ fn fr154_map_a_key_that_reaches_a_clock_or_rational_through_an_alias_is_refused(
     set(
         &mut ir,
         "/types/6/target",
-        Json::Str("ix://quire/native/Rational".to_owned()),
+        Json::Str("ix://filament/native/Rational".to_owned()),
     );
     set(
         &mut ir,
@@ -182,7 +182,7 @@ fn fr154_map_a_key_that_reaches_a_clock_or_rational_through_an_alias_is_refused(
     );
 }
 
-/// Tracing: QSpec TC-234 (I35, I36)
+/// Tracing: FSpec TC-234 (I35, I36)
 /// ACs: FR-154-AC-48
 #[test]
 fn fr154_map_keys_or_bound_without_the_other_is_a_schema_violation() {
@@ -200,7 +200,7 @@ fn fr154_map_keys_or_bound_without_the_other_is_a_schema_violation() {
     }
 }
 
-/// Tracing: QSpec TC-234 (I35, I36)
+/// Tracing: FSpec TC-234 (I35, I36)
 /// ACs: FR-154-AC-48
 #[test]
 fn fr154_map_keys_on_a_non_map_kind_is_a_schema_violation() {
@@ -208,7 +208,7 @@ fn fr154_map_keys_on_a_non_map_kind_is_a_schema_violation() {
     set(
         &mut ir,
         "/types/9/keys",
-        Json::Str("ix://quire/native/Text".to_owned()),
+        Json::Str("ix://filament/native/Text".to_owned()),
     );
     assert_eq!(
         observed(ir),

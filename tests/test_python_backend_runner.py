@@ -590,7 +590,7 @@ def test_json_object_native_operation_exposes_any_value_annotation() -> None:
     """TC-1784: FR-136-AC-12, FR-032 — JsonObject is any JSON value."""
     any_value = {
         "name": "value",
-        "typeRef": "ix://quire/native/JsonObject",
+        "typeRef": "ix://filament/native/JsonObject",
         "presence": "required",
         "multiplicity": {"lower": 1, "upper": 1},
     }

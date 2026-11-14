@@ -44,7 +44,7 @@ token to a declared artifact, the mapping from a Quire edge to an IR
 relationship, the package identity minted from a repository and a spec
 revision, and the fixtures that prove a table-authored and a fence-authored
 declaration reach the same bytes. Without it there is no compiled domain
-package, so quire-contract-ir#52's typed-model binding has nothing to bind and
+package, so filament-contract-ir#52's typed-model binding has nothing to bind and
 the SysML target (#37) has no input.
 
 The owner directive of 2026-09-07 fixes the language: this is a new
@@ -116,7 +116,7 @@ the compiler core and its frontend seam
 ([US-010](./US-010-compile-a-semantic-package.md)), `agent-ix/quoin#293`,
 `agent-ix/quire-rs#388`, `agent-ix/quire-rs#411` (the closed module set),
 `agent-ix/spec-objects-business#4`, and `agent-ix/spec-artifacts-iso#34`.
-Blocks the SysML target (#37), `agent-ix/quire-contract-ir#52`'s typed-model
+Blocks the SysML target (#37), `agent-ix/filament-contract-ir#52`'s typed-model
 binding, and filament-core-data#86 (wiring the Rust binary into the
 `spec-bundle` seam). Waits on `agent-ix/quire-rs#418` for `## Relationships`
 body-list extraction and on issue #85 for the `json-schema` target.

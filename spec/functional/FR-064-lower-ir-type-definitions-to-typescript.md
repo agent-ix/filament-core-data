@@ -90,7 +90,7 @@ rather than the raw document.
 - If a derived `<Name>State` or `<Name>Equals` identifier equals another minted identifier, then the backend SHALL raise `IDENTIFIER_COLLISION` and write no file.
 - A subtype's construct members SHALL be read from the document as authored, so `FIELD_SUBSETS` and `FIELD_REDEFINES` key a field by the type declaring it.
 - A subtype SHALL render its effective fields: its supertypes' fields, farthest first, then its own, with each redefined field left out. If two effective fields carry one name, then the backend SHALL raise `IDENTIFIER_COLLISION` at the type's `fields` and write no file.
-- An entity's Quire meaning, that its instances are told apart by the identity fields, is `<Name>Equals`; the generated type also carries the identity field names. `loss.mjs` records the construct in `RENDERED_NOT_LOST`, so the row is named rather than silent, and generation raises no diagnostic for it.
+- An entity's Filament meaning, that its instances are told apart by the identity fields, is `<Name>Equals`; the generated type also carries the identity field names. `loss.mjs` records the construct in `RENDERED_NOT_LOST`, so the row is named rather than silent, and generation raises no diagnostic for it.
 - A `record` SHALL render with no `extends` clause: a subtype's interface carries its inherited fields itself, so a redefining field stands in place of the inherited one rather than intersecting it.
 - An `enum` definition SHALL render as a union of the string literals of its variants' `name` values.
 - An `enum` variant SHALL render without a value, because the contract IR gives a variant no value member and the TypeSpec frontend reports an assigned enum member value as declared loss.

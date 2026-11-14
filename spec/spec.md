@@ -264,7 +264,7 @@ against the TypeSpec frontend on a shared case authored in both dialects.
 - Implementing or publishing the production compiler, custom codegen, generated
   packages, module-manifest adoption, or consumer migrations as part of issue #9.
 - Parsing, normalizing, or typechecking formal clause text in the IR; clause
-  semantics belong to the formal-clause frontends (`agent-ix/quire-contract-ir#52`).
+  semantics belong to the formal-clause frontends (`agent-ix/filament-contract-ir#52`).
 - Editing any corpus repository for issue #34; config-service FR-006 is a
   read-only worked example.
 - Changing the frozen TypeSpec spike or any backend as part of issue #34.
@@ -443,22 +443,22 @@ schema, the readers, the frontends and the backends in the following change.
 FR-145 (Linear PLAT-990) settles the normalized Semantic IR byte domain as
 `rfc8785-v1` and keeps the identity-sorted-set form as the separately named
 package-lock fingerprint domain. The normalized document carries its algorithm
-descriptor so FCD readers and QSL intake do not infer it from member order.
+descriptor so FCD readers and FSL intake do not infer it from member order.
 
 FR-146 (Linear STD-295) gives the semantic IR the clock field type, the
-quantity type reference and the package dimension and unit graph that QSL's
-timed models read from an admitted domain package (QSL FR-230).
+quantity type reference and the package dimension and unit graph that FSL's
+timed models read from an admitted domain package (FSL FR-230).
 
 FR-147 (Linear IR-1059, QSL-1168) gives the semantic IR the `tuple` construct
 shape with ordered, owner-nested `positions` and carries a union variant's
-payload from the extraction frontend, so QSL can enumerate tuples and unions
-from an admitted domain package (QSL FR-120). No generation backend renders a
+payload from the extraction frontend, so FSL can enumerate tuples and unions
+from an admitted domain package (FSL FR-120). No generation backend renders a
 tuple yet; the generation seam refuses it as unsupported.
 
 FR-148 (Linear IR-1239, STD-627) gives the semantic IR the `option` core kind
-with one `inner` type reference, the typed refusals QSpec FR-154 assigns to
+with one `inner` type reference, the typed refusals FSpec FR-154 assigns to
 the producer and the readers, and the accessors a consumer reads `Option<T>`
-through, so QSL can read a constructible `Option<T>` from an admitted domain
+through, so FSL can read a constructible `Option<T>` from an admitted domain
 package.
 
 FR-149 (Linear PLAT-206, PLAT-900) types the module manifest's artifact-type

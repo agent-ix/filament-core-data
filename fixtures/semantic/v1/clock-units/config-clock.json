@@ -35,7 +35,7 @@
 				{
 					"identity": "ix://acme/config/Config/x",
 					"name": "x",
-					"typeRef": "ix://quire/native/Clock",
+					"typeRef": "ix://filament/native/Clock",
 					"multiplicity": {
 						"lower": 1,
 						"upper": 1,

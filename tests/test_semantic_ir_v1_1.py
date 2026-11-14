@@ -351,7 +351,7 @@ class TestContract20:
         self, validator
     ) -> None:
         """A population's `kind` resolves against the document's own
-        `constructs` table exactly like a type definition's kind (QSpec
+        `constructs` table exactly like a type definition's kind (FSpec
         FR-154 row 2/AC-7, FR-208): a dangling kind is refused, and the entry
         it names counts as used, not only a type's.
 
@@ -451,7 +451,7 @@ class TestNativeScalarParity:
             }
         }
         mult = {"lower": 1, "upper": 1, "ordered": False, "unique": False}
-        ref = "ix://quire/native/Rational"
+        ref = "ix://filament/native/Rational"
 
         def member(identity: str, name: str) -> dict:
             return {
@@ -539,7 +539,7 @@ class TestInlineFieldConstraints:
                         {
                             "identity": "ix://acme/pkg/T/f",
                             "name": "f",
-                            "typeRef": "ix://quire/native/String",
+                            "typeRef": "ix://filament/native/String",
                             "presence": "required",
                             "nullable": False,
                             "multiplicity": {

@@ -637,7 +637,7 @@
 				"meaning": {
 					"type": "string",
 					"minLength": 1,
-					"description": "Quire meaning id (e.g. quire.meaning.entity)."
+					"description": "Filament meaning id (e.g. filament.meaning.entity)."
 				},
 				"immutable": {
 					"type": "boolean",

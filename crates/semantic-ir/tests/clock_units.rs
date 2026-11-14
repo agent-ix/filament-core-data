@@ -246,7 +246,7 @@ fn tc_1843_alias_typed_clock_member_carries_only_its_own_shape_code() {
     set_member(
         &mut alias,
         "target",
-        Json::Str("ix://quire/native/Clock".to_owned()),
+        Json::Str("ix://filament/native/Clock".to_owned()),
     );
     let mut record = document
         .get("types")
@@ -313,7 +313,7 @@ fn tc_1843_clock_nonfield_positions_are_admitted() {
         set_member(
             &mut node,
             member,
-            Json::Str("ix://quire/native/Clock".to_owned()),
+            Json::Str("ix://filament/native/Clock".to_owned()),
         );
         set_member(&mut document, "types", Json::Array(vec![node]));
         let bundle = Json::Object(vec![("ir".to_owned(), document)]);
@@ -389,7 +389,7 @@ fn tc_1843_clock_in_other_identity_members_keeps_each_members_own_rule() {
         )
     };
     assert_eq!(
-        observe(&with("\"supertypes\": [\"ix://quire/native/Clock\"]")),
+        observe(&with("\"supertypes\": [\"ix://filament/native/Clock\"]")),
         vec![(
             "agent-ix.semantic-ir.UNRESOLVED_CONSTRUCT_REF".to_owned(),
             "/ir/types/0/supertypes/0".to_owned()
@@ -398,7 +398,7 @@ fn tc_1843_clock_in_other_identity_members_keeps_each_members_own_rule() {
     let relationship = with(&format!(
         "\"relationships\": [{{\"category\":\"structural\",\"composite\":false,\"direction\":\"source-to-target\",\"identity\":\"ix://acme/config/Config/link\",\"origin\":{{\"generated\":{{\"generatorIdentity\":\"ix://acme/config/case-author\",\"generatorVersion\":\"1.0.0\",\"inputIdentities\":[\"ix://acme/config/source\"]}}}},\"sourceEnd\":{},\"targetEnd\":{}}}]",
         end("ix://acme/config/Config").replacen("{", "{\"role\":\"owner\",", 1),
-        end("ix://quire/native/Clock")
+        end("ix://filament/native/Clock")
     ));
     assert_eq!(
         observe(&relationship),

@@ -198,7 +198,7 @@
 			"selector": "subsets",
 			"rustForm": "pub const FIELD_SUBSETS: &[FieldLinkMeta]",
 			"serdeAttributes": [],
-			"mechanism": "carried, not enforced: each member and the members its values are a subset of, by wire name; the subset relation is Quire meaning over values",
+			"mechanism": "carried, not enforced: each member and the members its values are a subset of, by wire name; the subset relation is Filament meaning over values",
 			"diagnosticCode": null
 		},
 		{
@@ -216,7 +216,7 @@
 			"selector": "operation-contract",
 			"rustForm": "pub const OPERATION_CONTRACTS: &[OperationContractMeta]",
 			"serdeAttributes": [],
-			"mechanism": "each operation's frame and inline Quire pre and post clauses, carried as text; an interface method whose frame is empty takes &self",
+			"mechanism": "each operation's frame and inline Filament pre and post clauses, carried as text; an interface method whose frame is empty takes &self",
 			"diagnosticCode": null
 		},
 		{

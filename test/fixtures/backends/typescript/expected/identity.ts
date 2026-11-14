@@ -75,7 +75,7 @@ export interface OperationDescriptor {
 /**
  * One clause a type declares, with its text carried opaquely.
  *
- * The text is not parsed. `agent-ix/quire-contract-ir#52` owns clause
+ * The text is not parsed. `agent-ix/filament-contract-ir#52` owns clause
  * semantics, and the IR carries the text without parsing it.
  */
 export interface ClauseDescriptor {
@@ -382,7 +382,7 @@ export const TYPE_OPERATIONS = {
 /**
  * The clauses each type declares, with their text carried opaquely.
  *
- * The text is never parsed here: `agent-ix/quire-contract-ir#52` owns clause
+ * The text is never parsed here: `agent-ix/filament-contract-ir#52` owns clause
  * semantics and the IR itself carries the text without parsing it.
  */
 export const TYPE_CLAUSES = {

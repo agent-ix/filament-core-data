@@ -16,10 +16,10 @@ import { readContractIr } from "../src/compiler/ir/reader.mjs";
 import { readSemanticIr } from "./semantic-ir-v1-1-reader";
 import { validateIrDocument } from "../src/compiler/ir/schema.mjs";
 
-// FR-148 over the QSpec vectors
+// FR-148 over the FSpec vectors
 // `proposals/checked-package-v2/model-option-type-vectors.json` (OP-01 to
-// OP-41), read in place from the sibling quire-specification checkout and
-// never copied: QSPEC_REPO overrides the checkout location. The vectors live in
+// OP-41), read in place from the sibling filament-specification checkout and
+// never copied: FSPEC_REPO overrides the checkout location. The vectors live in
 // another repository, so the suite runs only where that checkout is present
 // (a developer machine); it is skipped where it is absent (this repository's CI).
 
@@ -32,7 +32,7 @@ const common = execFileSync("git", ["rev-parse", "--git-common-dir"], {
 	encoding: "utf8",
 }).trim();
 const repo = resolve(
-	process.env.QSPEC_REPO ?? resolve(common, "..", "..", "quire-specification"),
+	process.env.FSPEC_REPO ?? resolve(common, "..", "..", "filament-specification"),
 );
 const vectorsPath = resolve(repo, FILE);
 const available = existsSync(vectorsPath);
@@ -41,7 +41,7 @@ const vectors = (
 ) as Json;
 
 const SOURCE = "ix://acme/optionals/source";
-const MODEL = "agent-ix/quire-model";
+const MODEL = "agent-ix/filament-model";
 const origin = () => ({
 	generated: {
 		generatorIdentity: "ix://acme/optionals/vector-author",
@@ -136,7 +136,7 @@ const definition = (node: string, kind: unknown, extra: Json): Json => ({
 	...extra,
 });
 
-/** The QSpec `domain_package` projection as a `2.0.0` Semantic IR. */
+/** The FSpec `domain_package` projection as a `2.0.0` Semantic IR. */
 function irOf(projection: Json): Json {
 	const list = (name: string): Json[] => projection[name] ?? [];
 	const types: Json[] = [];
@@ -193,7 +193,7 @@ function irOf(projection: Json): Json {
 				},
 				references: {},
 				rules: [],
-				meaning: "quire.meaning.model.tuple-value-type/v1",
+				meaning: "filament.meaning.model.tuple-value-type/v1",
 			},
 		});
 	for (const e of list("variant_types"))
@@ -222,7 +222,7 @@ function irOf(projection: Json): Json {
 				members: { members: "optional" },
 				references: {},
 				rules: [],
-				meaning: "quire.meaning.model.namespace/v1",
+				meaning: "filament.meaning.model.namespace/v1",
 			},
 		});
 	for (const e of list("object_types"))
@@ -382,7 +382,7 @@ describe.skipIf(!available)("FR-148 option value types", () => {
 					.map(nativePointer),
 			);
 		const documents = rows.map((entry: Json) => irOf(patched(entry)));
-		// A normalization control, not an additional QSpec row: two equally
+		// A normalization control, not an additional FSpec row: two equally
 		// valued forbidden properties must remain two distinct violations.
 		const siblingControl = irOf(vectors.domain_package);
 		const siblingOwner = siblingControl.types.findIndex(

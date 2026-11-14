@@ -4,7 +4,7 @@
 //! The model-document forms the semantic-IR validator admits: receiver-scoped
 //! operation frames, the native `Text` type, and constraints over a value type
 //! whose scalar decides the keywords. Every expected result is stated by the
-//! QSpec model contract (Frames and value-type rows, FR-013, FR-056) and QSL
+//! FSpec model contract (Frames and value-type rows, FR-013, FR-056) and FSL
 //! FR-154 / FR-056, not read back from the validator.
 
 use agent_ix_semantic_ir::{decide, json::parse};
@@ -18,9 +18,9 @@ const MULTIPLICITY: &str = r#"{"lower":1,"upper":1,"ordered":false,"unique":fals
 const SCHEMA_VIOLATION: &str = "agent-ix.semantic-ir.SCHEMA_VIOLATION";
 const CONSTRAINT_NOT_APPLICABLE: &str = "agent-ix.semantic-ir.CONSTRAINT_NOT_APPLICABLE";
 
-/// The value-type construct the QSpec checked-package vectors write: a record
-/// shape whose meaning is `quire.meaning.model.value-type/v1`.
-const VALUE_TYPE_CONSTRUCT: &str = r#"{"construct":{"identity":"value","meaning":"quire.meaning.model.value-type/v1","members":{},"shape":"record"},"kind":{"module":"acme/pkg","name":"value_type"},"moduleVersion":"1.0.0"}"#;
+/// The value-type construct the FSpec checked-package vectors write: a record
+/// shape whose meaning is `filament.meaning.model.value-type/v1`.
+const VALUE_TYPE_CONSTRUCT: &str = r#"{"construct":{"identity":"value","meaning":"filament.meaning.model.value-type/v1","members":{},"shape":"record"},"kind":{"module":"acme/pkg","name":"value_type"},"moduleVersion":"1.0.0"}"#;
 
 /// `(pointer, code)` of every diagnostic the validator reports for the
 /// document, schema layer first and rules after, as `decide` runs them.
@@ -51,7 +51,7 @@ fn framed(frame: &str) -> String {
     );
     format!(
         r#"{{"identity":"ix://acme/pkg/T","displayName":"T","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{}],"operations":[{operation}]}}"#,
-        field("ix://acme/pkg/T/f", "f", "ix://quire/native/Integer")
+        field("ix://acme/pkg/T/f", "f", "ix://filament/native/Integer")
     )
 }
 
@@ -152,7 +152,7 @@ fn text_field_type() -> String {
         field(
             "ix://acme/pkg/Item/label",
             "label",
-            "ix://quire/native/Text"
+            "ix://filament/native/Text"
         )
     )
 }
@@ -168,7 +168,7 @@ fn a_field_typed_by_the_native_text_name_resolves() {
 fn a_clock_field_is_admitted_without_a_declared_type() {
     let record = format!(
         r#"{{"identity":"ix://acme/pkg/Call","displayName":"Call","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{}]}}"#,
-        field("ix://acme/pkg/Call/x", "x", "ix://quire/native/Clock")
+        field("ix://acme/pkg/Call/x", "x", "ix://filament/native/Clock")
     );
     assert_eq!(diagnostics("", &[record]), vec![]);
 }
@@ -176,12 +176,12 @@ fn a_clock_field_is_admitted_without_a_declared_type() {
 /// Trace: FR-146-AC-2
 #[test]
 fn a_clock_operation_parameter_and_result_are_admitted() {
-    let parameter = field("ix://acme/pkg/T/op/x", "x", "ix://quire/native/Clock");
+    let parameter = field("ix://acme/pkg/T/op/x", "x", "ix://filament/native/Clock");
     let record = framed(r#"{"modifies":[],"creates":[],"deletes":[]}"#)
         .replace(r#""params":[]"#, &format!(r#""params":[{parameter}]"#));
     assert_eq!(diagnostics("", &[record]), vec![]);
     assert_eq!(
-        diagnostics("", &[operation_result("ix://quire/native/Clock", "")]),
+        diagnostics("", &[operation_result("ix://filament/native/Clock", "")]),
         vec![]
     );
 }
@@ -310,8 +310,8 @@ fn operation_result(type_ref: &str, extra: &str) -> String {
 fn clock_and_quantity_are_admitted_at_every_position_but_a_quantity_reference_target() {
     // FR-146-AC-2, FR-146-AC-6, FR-146-AC-21, FR-146-AC-23: exact reader assertions below.
     for (reference, quantity) in [
-        ("ix://quire/native/Clock", false),
-        ("ix://quire/unit/ms", true),
+        ("ix://filament/native/Clock", false),
+        ("ix://filament/unit/ms", true),
     ] {
         for (kind, member) in [
             ("alias", "target"),
@@ -335,7 +335,7 @@ fn clock_and_quantity_are_admitted_at_every_position_but_a_quantity_reference_ta
         let variant = format!(
             r#"{{"identity":"ix://acme/pkg/T","displayName":"T","kind":"union","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","variants":[{{"identity":"ix://acme/pkg/T/v","name":"v","origin":{GENERATED},"payloadType":"{reference}"}}]}}"#
         );
-        // FR-147: a Clock payload is refused (QSpec FR-322, pending STD-528).
+        // FR-147: a Clock payload is refused (FSpec FR-322, pending STD-528).
         let expected = if quantity {
             vec![]
         } else {
@@ -355,7 +355,7 @@ fn clock_and_quantity_are_admitted_at_every_position_but_a_quantity_reference_ta
         assert_eq!(diagnostics("", &[node]), vec![], "{reference}");
     }
     assert_eq!(
-        diagnostics("", &[operation_result("ix://quire/native/Clock", "")]),
+        diagnostics("", &[operation_result("ix://filament/native/Clock", "")]),
         vec![]
     );
 }
@@ -377,7 +377,7 @@ fn quantity_members_check_uri_form_without_resolving_local_units() {
         (".acme/rpc/ms", false),
         ("agent-ix//ms", false),
     ] {
-        let reference = format!("ix://quire/unit/{name}");
+        let reference = format!("ix://filament/unit/{name}");
         let member = field("ix://acme/pkg/T/x", "x", &reference);
         let parameter = field("ix://acme/pkg/T/op/x", "x", &reference);
         let parameter_record = framed(r#"{"modifies":[],"creates":[],"deletes":[]}"#)
@@ -415,17 +415,22 @@ fn special_member_shape_owns_nested_constraints_and_scalar_policy_diagnostics() 
     // FR-146-AC-2, FR-146-AC-6: exact reader assertions below.
     for (reference, code) in [
         (
-            "ix://quire/native/Clock",
+            "ix://filament/native/Clock",
             "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
         ),
         (
-            "ix://quire/unit/ms",
+            "ix://filament/unit/ms",
             "agent-ix.semantic-ir.INVALID_QUANTITY_MEMBER",
         ),
     ] {
         // An explicit Decimal subject would otherwise leak a missing-policy diagnostic
         // from the shared traversal, independently of constraint applicability.
-        let nested = constraint("k", "min", r#"{"value":"0"}"#, "ix://quire/native/Decimal");
+        let nested = constraint(
+            "k",
+            "min",
+            r#"{"value":"0"}"#,
+            "ix://filament/native/Decimal",
+        );
         let extras = format!(
             r#", "unit":"ms","decimal":{{"precision":4,"scale":2}},"textProfile":"unicode","defaultValue":0,"constraints":[{nested}]"#
         );
@@ -448,7 +453,7 @@ fn special_member_shape_owns_nested_constraints_and_scalar_policy_diagnostics() 
         expected.sort();
         assert_eq!(observed, expected, "{reference}");
     }
-    let member = field("ix://acme/pkg/T/x", "x", "ix://quire/unit/ms")
+    let member = field("ix://acme/pkg/T/x", "x", "ix://filament/unit/ms")
         .replace(r#""lower":1"#, r#""lower":3"#);
     assert_eq!(
         diagnostics("", &[record_with_member(&member)]),
@@ -461,7 +466,7 @@ fn special_member_shape_owns_nested_constraints_and_scalar_policy_diagnostics() 
         diagnostics(
             "",
             &[operation_result(
-                "ix://quire/unit/ms",
+                "ix://filament/unit/ms",
                 r#", "decimal":{"precision":4,"scale":2}"#
             )]
         ),

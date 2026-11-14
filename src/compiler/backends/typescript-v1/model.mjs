@@ -98,7 +98,7 @@ const NATIVE_SCALARS = new Map([
 ]);
 
 function nativeScalar(identity) {
-	const prefix = "ix://quire/native/";
+	const prefix = "ix://filament/native/";
 	if (typeof identity !== "string" || !identity.startsWith(prefix))
 		return undefined;
 	return NATIVE_SCALARS.get(identity.slice(prefix.length));

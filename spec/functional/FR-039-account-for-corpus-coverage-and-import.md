@@ -82,4 +82,4 @@ oracle verdicts without copying them.
 ## Dependencies
 
 - **Upstream**: [FR-037](./FR-037-run-the-differential-conformance-harness.md), [FR-038](./FR-038-cover-every-ir-construct-and-compatibility-rule.md)
-- **Downstream**: issue #11 publication gate, issues #19, #21, #22, #23, `agent-ix/quire-contract-ir#52`
+- **Downstream**: issue #11 publication gate, issues #19, #21, #22, #23, `agent-ix/filament-contract-ir#52`

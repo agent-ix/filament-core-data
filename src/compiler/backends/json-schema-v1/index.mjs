@@ -251,10 +251,10 @@ function schemaId(ir, type) {
 	return `https://agent-ix.dev/schema/${ir.package.identity}/${nameOf(type)}.json`;
 }
 /**
- * A native value type reference (gap 1 of FCD #199/#200): `ix://quire/native/<Name>`
+ * A native value type reference (gap 1 of FCD #199/#200): `ix://filament/native/<Name>`
  * names a kernel scalar and declares no node, over the closed set below.
  */
-const NATIVE_PREFIX = "ix://quire/native/";
+const NATIVE_PREFIX = "ix://filament/native/";
 const NATIVE_SCALARS = Object.freeze({
 	UUID: "uuid",
 	Boolean: "boolean",
@@ -467,7 +467,7 @@ function constraint(schema, one, subject, decimalPolicy) {
 }
 
 function decimalScalar(types, identity, seen = new Set()) {
-	if (identity === "ix://quire/native/Decimal") return "decimal";
+	if (identity === "ix://filament/native/Decimal") return "decimal";
 	if (typeof identity !== "string" || seen.has(identity)) return undefined;
 	seen.add(identity);
 	const type = types.get(identity);
@@ -506,7 +506,7 @@ function aliasOfScalarSchema(types, type) {
 }
 
 function integerScalar(types, identity, seen = new Set()) {
-	if (identity === "ix://quire/native/Integer") return "integer";
+	if (identity === "ix://filament/native/Integer") return "integer";
 	if (typeof identity !== "string" || seen.has(identity)) return undefined;
 	seen.add(identity);
 	const type = types.get(identity);

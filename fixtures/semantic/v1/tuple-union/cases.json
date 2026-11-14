@@ -176,7 +176,7 @@
 			"id": "clock-position",
 			"tc": "TC-1877",
 			"ac": "FR-147-AC-6",
-			"set": [["/types/2/positions/1/typeRef", "ix://quire/native/Clock"]],
+			"set": [["/types/2/positions/1/typeRef", "ix://filament/native/Clock"]],
 			"remove": [],
 			"node": "admits",
 			"rust": [
@@ -218,7 +218,7 @@
 			"id": "clock-variant-payload",
 			"tc": "TC-1886",
 			"ac": "FR-147-AC-15",
-			"set": [["/types/4/variants/0/payloadType", "ix://quire/native/Clock"]],
+			"set": [["/types/4/variants/0/payloadType", "ix://filament/native/Clock"]],
 			"remove": [],
 			"node": "refused",
 			"rust": [

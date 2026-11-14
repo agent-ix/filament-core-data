@@ -175,7 +175,7 @@ def test_authored_revision_one_and_unused_population_preserve_timestamp_binding(
     assert normalized["source"]["version"] == "1"
     assert normalized["package"]["version"] == "1"
     assert normalized["constructs"] == document["constructs"]
-    assert normalized["types"][0]["target"] == "ix://quire/native/Timestamp"
+    assert normalized["types"][0]["target"] == "ix://filament/native/Timestamp"
     types = type_index(document)
     assert resolve_kind(types, {}, "ix://test/orders/Instant") == ("scalar", "datetime")
     result = conformance_adapter.answer(
@@ -212,14 +212,14 @@ def test_adapter_resolves_known_natives_and_refuses_unknown_natives(
             {
                 "identity": "ix://test/orders/Control/native",
                 "name": "native",
-                "payloadType": "ix://quire/native/Timestamp",
+                "payloadType": "ix://filament/native/Timestamp",
                 "origin": subject["origin"],
             }
         ]
         target = subject["variants"][0]
         pointer = "/ir/types/3/variants/0/payloadType"
     else:
-        subject[member] = "ix://quire/native/Timestamp"
+        subject[member] = "ix://filament/native/Timestamp"
         target = subject
         pointer = f"/ir/types/3/{member}"
     document["types"].append(subject)
@@ -229,7 +229,7 @@ def test_adapter_resolves_known_natives_and_refuses_unknown_natives(
     )
     assert result["resultState"] == "success"
     assert result["diagnostics"] == []
-    target[member] = "ix://quire/native/UnsupportedNative"
+    target[member] = "ix://filament/native/UnsupportedNative"
     result = conformance_adapter.answer(
         {"caseId": kind, "kind": "admissibility", "input": {"ir": document}}
     )
@@ -305,9 +305,9 @@ def test_unused_declarations_still_validate_and_kinds_must_resolve():
 @pytest.mark.parametrize(
     "meaning",
     [
-        "quire.meaning.model.event-type/v1",
-        "quire.meaning.model.unrecognized/v1",
-        "quire.meaning.model.population/v2",
+        "filament.meaning.model.event-type/v1",
+        "filament.meaning.model.unrecognized/v1",
+        "filament.meaning.model.population/v2",
     ],
 )
 def test_unused_kinds_outside_the_recognized_population_meaning_refuse(

@@ -90,7 +90,7 @@ describe("package revision and unused construct reader contract", () => {
 		expect(normalized.package.version).toBe("1");
 		expect(normalized.source.version).toBe("1");
 		expect(normalized.constructs).toEqual(document.constructs);
-		expect(normalized.types[0].target).toBe("ix://quire/native/Timestamp");
+		expect(normalized.types[0].target).toBe("ix://filament/native/Timestamp");
 		// Instant is a construct of the alias shape: bound, it resolves through
 		// its target as a core alias does.
 		bindConstructs(document);
@@ -195,9 +195,9 @@ describe("package revision and unused construct reader contract", () => {
 	/** Trace: FR-142-AC-9, FR-142-AC-15 */
 	it("refuses unused kinds outside the recognized population meaning", () => {
 		for (const meaning of [
-			"quire.meaning.model.event-type/v1",
-			"quire.meaning.model.unrecognized/v1",
-			"quire.meaning.model.population/v2",
+			"filament.meaning.model.event-type/v1",
+			"filament.meaning.model.unrecognized/v1",
+			"filament.meaning.model.population/v2",
 		]) {
 			const document = fixture();
 			document.constructs[1].kind.name = "ledger";

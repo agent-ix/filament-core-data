@@ -865,7 +865,7 @@ fn semantic_ir(ir: &Json, at: &str, f: &mut Findings) {
                     .get("construct")
                     .and_then(|declaration| declaration.get("meaning"))
                     .and_then(Json::as_str)
-                    != Some("quire.meaning.model.population/v1")
+                    != Some("filament.meaning.model.population/v1")
             {
                 f.push(
                     &child(&index(&constructs_at, position), "kind"),
@@ -896,9 +896,9 @@ const POPULATION_MEMBERS: &[&str] = &[
     "origin",
 ];
 /// Optional population members: `symmetric` marks a symmetric population
-/// (QSpec FR-381); absent means false.
+/// (FSpec FR-381); absent means false.
 const POPULATION_OPTIONAL_MEMBERS: &[&str] = &["symmetric"];
-/// A population's `extent`: one value for the whole population (QSpec
+/// A population's `extent`: one value for the whole population (FSpec
 /// FR-153/AD-006), never a per-member multiplicity.
 const POPULATION_EXTENTS: &[&str] = &["closed", "open"];
 
@@ -1431,7 +1431,7 @@ fn construct_schema(
     }
 }
 
-/// The members an option value type never carries (FR-148, QSpec FR-154
+/// The members an option value type never carries (FR-148, FSpec FR-154
 /// "Option value types"): it has exactly one `inner`, a type identity.
 /// `target` and `positions` are refused by the construct-member rule that
 /// every core kind shares.
@@ -1486,7 +1486,7 @@ fn option_schema(definition: &Json, at: &str, kind: &str, f: &mut Findings) {
     }
 }
 
-/// The members a map type never carries (QSpec FR-154 "Map types"): it has
+/// The members a map type never carries (FSpec FR-154 "Map types"): it has
 /// `keys`, `values` and `bound` and nothing another kind declares. `target`
 /// is refused by the construct-member rule that every core kind shares.
 const MAP_FOREIGN_MEMBERS: &[&str] = &[
@@ -1501,7 +1501,7 @@ const MAP_FOREIGN_MEMBERS: &[&str] = &[
     "inner",
 ];
 
-/// The shape of a map type's `keys` and `bound` (QSpec FR-154 "Map types",
+/// The shape of a map type's `keys` and `bound` (FSpec FR-154 "Map types",
 /// FR-154-AC-48). Both are optional on a map, so a map written before them is
 /// unchanged, but one without the other is a map with no default to fall back
 /// on and is refused at the type. A key that names no type, or no scalar key
@@ -1762,7 +1762,7 @@ pub(crate) fn is_quantity_type_ref(identity: &str) -> bool {
                     || matches!(byte, b'.' | b'_' | b'-')
             })
     }
-    let Some(name) = identity.strip_prefix("ix://quire/unit/") else {
+    let Some(name) = identity.strip_prefix("ix://filament/unit/") else {
         return false;
     };
     let mut parts = name.rsplit('/');
@@ -1771,7 +1771,7 @@ pub(crate) fn is_quantity_type_ref(identity: &str) -> bool {
 }
 
 fn is_special_type_ref(identity: &str) -> bool {
-    identity == "ix://quire/native/Clock" || is_quantity_type_ref(identity)
+    identity == "ix://filament/native/Clock" || is_quantity_type_ref(identity)
 }
 
 /// The core aliases whose `target` chain reaches a clock or a well-formed
@@ -2176,7 +2176,7 @@ const OPERATION_MEMBERS: &[&str] = &[
     "frame",
 ];
 const FRAME_MEMBERS: &[&str] = &["modifies", "creates", "deletes"];
-/// The optional receiver-scoped members (QSpec model contract, Frames).
+/// The optional receiver-scoped members (FSpec model contract, Frames).
 const FRAME_RECEIVER_MEMBERS: &[&str] = &[
     "modifies_receiver",
     "deletes_receiver",
@@ -2223,7 +2223,7 @@ fn frame_schema(frame: &Json, at: &str, f: &mut Findings) {
             }
         }
     }
-    // A frame entry written twice is one entry (QSpec Frames), so no uniqueness.
+    // A frame entry written twice is one entry (FSpec Frames), so no uniqueness.
     for name in FRAME_MEMBERS {
         identity_entries(frame.get(name), &child(at, name), name, f);
     }

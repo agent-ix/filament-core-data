@@ -39,7 +39,7 @@ fn copy_tree(from: &Path, to: &Path) {
     }
 }
 
-/// `fixture-domain` plus the `tuple_value_type` object type, as QSpec's
+/// `fixture-domain` plus the `tuple_value_type` object type, as FSpec's
 /// domain module declares it.
 fn tuple_module(scratch: &Path) -> PathBuf {
     let root = scratch.join("module");
@@ -52,7 +52,7 @@ fn tuple_module(scratch: &Path) -> PathBuf {
     );
     let mut text = text;
     text.push_str(
-        "- name: tuple_value_type\n  roles: [aggregate-member]\n  construct:\n    identity: none\n    shape: tuple\n    members: {positions: required, fields: forbidden}\n    rules: []\n    meaning: quire.meaning.model.tuple-value-type/v1\n  allowed_links:\n    references: [enumeration]\n  data_schema:\n    schema: schemas/Enumeration.json\n  body_extraction:\n    yield_pattern:\n      match:\n        id:\n          from: frontmatter_field\n          path: [id]\n          regex: ^([A-Za-z][A-Za-z0-9_-]*)$\n          required: true\n        title:\n          from: frontmatter_field\n          path: [title]\n          required: true\n        type:\n          from: frontmatter_field\n          path: [type]\n          required: true\n",
+        "- name: tuple_value_type\n  roles: [aggregate-member]\n  construct:\n    identity: none\n    shape: tuple\n    members: {positions: required, fields: forbidden}\n    rules: []\n    meaning: filament.meaning.model.tuple-value-type/v1\n  allowed_links:\n    references: [enumeration]\n  data_schema:\n    schema: schemas/Enumeration.json\n  body_extraction:\n    yield_pattern:\n      match:\n        id:\n          from: frontmatter_field\n          path: [id]\n          regex: ^([A-Za-z][A-Za-z0-9_-]*)$\n          required: true\n        title:\n          from: frontmatter_field\n          path: [title]\n          required: true\n        type:\n          from: frontmatter_field\n          path: [type]\n          required: true\n",
     );
     fs::write(&manifest, text).expect("manifest write");
     root
@@ -193,7 +193,10 @@ fn tc_1883_a_payload_column_lowers_to_payload_type_and_an_empty_cell_to_none() {
             .unwrap_or_else(|| panic!("no variant {name}"))
     };
     assert_eq!(by_name("Both")["payloadType"], format!("{PACKAGE}/Pair"));
-    assert_eq!(by_name("Flag")["payloadType"], "ix://quire/native/Boolean");
+    assert_eq!(
+        by_name("Flag")["payloadType"],
+        "ix://filament/native/Boolean"
+    );
     assert!(
         by_name("Empty").get("payloadType").is_none(),
         "a nullary case writes no payloadType member"
@@ -238,9 +241,9 @@ fn tc_1884_a_tuple_lowers_to_ordered_positions_at_their_rows() {
     let positions = pair["positions"].as_array().expect("positions");
     assert_eq!(positions.len(), 2);
     assert_eq!(positions[0]["identity"], format!("{PACKAGE}/Pair/p0"));
-    assert_eq!(positions[0]["typeRef"], "ix://quire/native/Boolean");
+    assert_eq!(positions[0]["typeRef"], "ix://filament/native/Boolean");
     assert_eq!(positions[1]["identity"], format!("{PACKAGE}/Pair/p1"));
-    assert_eq!(positions[1]["typeRef"], "ix://quire/native/Integer");
+    assert_eq!(positions[1]["typeRef"], "ix://filament/native/Integer");
     assert_eq!(positions[0]["origin"]["source"]["startLine"], 14);
     assert_eq!(positions[1]["origin"]["source"]["startLine"], 15);
     assert_eq!(

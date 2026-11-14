@@ -194,7 +194,7 @@ function operationDescriptor(operation, indent) {
 /**
  * One clause, as readonly data, with its text carried opaquely.
  *
- * The text is never parsed here. `agent-ix/quire-contract-ir#52` owns clause
+ * The text is never parsed here. `agent-ix/filament-contract-ir#52` owns clause
  * semantics and the IR itself carries the text without parsing it, so a backend
  * that started interpreting it would be answering a question no contract has
  * asked it.
@@ -483,7 +483,7 @@ export interface OperationDescriptor {
 /**
  * One clause a type declares, with its text carried opaquely.
  *
- * The text is not parsed. \`agent-ix/quire-contract-ir#52\` owns clause
+ * The text is not parsed. \`agent-ix/filament-contract-ir#52\` owns clause
  * semantics, and the IR carries the text without parsing it.
  */
 export interface ClauseDescriptor {
@@ -852,7 +852,7 @@ ${mapDeclaration("TYPE_OPERATIONS", recordLiteral(operations), "Record<ExportedT
 /**
  * The clauses each type declares, with their text carried opaquely.
  *
- * The text is never parsed here: \`agent-ix/quire-contract-ir#52\` owns clause
+ * The text is never parsed here: \`agent-ix/filament-contract-ir#52\` owns clause
  * semantics and the IR itself carries the text without parsing it.
  */
 ${mapDeclaration("TYPE_CLAUSES", recordLiteral(clauses), "Record<ExportedTypeName, readonly ClauseDescriptor[]>")}

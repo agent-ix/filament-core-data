@@ -120,7 +120,7 @@ const clockDocument = () => {
 				{
 					identity: "ix://acme/config/Config/x",
 					name: "x",
-					typeRef: "ix://quire/native/Clock",
+					typeRef: "ix://filament/native/Clock",
 					multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
 					presence: "required",
 					nullable: false,
@@ -219,7 +219,7 @@ describe("FR-146 Clock and quantity positions", () => {
 		// FR-146-AC-6: exact reader assertions below.
 		for (const name of ["ms", "agent-ix/time-units/ms", "acme/rpc.v2/ms"]) {
 			const document = clockDocument();
-			document.types[0].fields[0].typeRef = `ix://quire/unit/${name}`;
+			document.types[0].fields[0].typeRef = `ix://filament/unit/${name}`;
 			expect(validateIrDocument(document)).toEqual([]);
 			expect([...readContractIr(document)]).toEqual([]);
 		}
@@ -234,7 +234,7 @@ describe("FR-146 Clock and quantity positions", () => {
 			"agent-ix/time-units/m-s",
 		]) {
 			const document = clockDocument();
-			document.types[0].fields[0].typeRef = `ix://quire/unit/${name}`;
+			document.types[0].fields[0].typeRef = `ix://filament/unit/${name}`;
 			expect([...readContractIr(document)].map((d) => d.code)).toEqual([
 				"agent-ix.semantic-ir.UNRESOLVED_TYPE_REF",
 			]);
@@ -255,7 +255,7 @@ describe("FR-146 Clock placement and quantity member adverse cases", () => {
 			const node = document.types[0];
 			node.kind = kind;
 			delete node.fields;
-			node[member] = "ix://quire/native/Clock";
+			node[member] = "ix://filament/native/Clock";
 			expect(validateIrDocument(document)).toEqual([]);
 			expect([...readContractIr(document)], kind).toEqual([]);
 			expect(readSemanticIr(document), kind).toEqual([]);
@@ -278,7 +278,7 @@ describe("FR-146 Clock placement and quantity member adverse cases", () => {
 			name: "arg",
 		};
 		const result = (multiplicity: object, nullable = false) => ({
-			typeRef: "ix://quire/native/Clock",
+			typeRef: "ix://filament/native/Clock",
 			multiplicity,
 			nullable,
 		});
@@ -321,7 +321,7 @@ describe("FR-146 Clock placement and quantity member adverse cases", () => {
 		// FR-146-AC-6: exact reader assertions below.
 		const document = clockDocument();
 		const field = document.types[0].fields[0];
-		field.typeRef = "ix://quire/unit/ms";
+		field.typeRef = "ix://filament/unit/ms";
 		field.multiplicity.lower = 3;
 		expect([...readContractIr(document)].map((d) => d.code)).toEqual([
 			"agent-ix.semantic-ir.INVALID_MULTIPLICITY",
@@ -331,7 +331,7 @@ describe("FR-146 Clock placement and quantity member adverse cases", () => {
 		// FR-146-AC-6: exact reader assertions below.
 		const document = clockDocument();
 		const field = document.types[0].fields[0];
-		field.typeRef = "ix://quire/unit/ms";
+		field.typeRef = "ix://filament/unit/ms";
 		field.unit = "ms";
 		field.decimal = { precision: 4, scale: 2 };
 		field.textProfile = "unicode";
@@ -416,7 +416,7 @@ describe("FR-146 Clock in other identity members", () => {
 				identity: `${node.identity}/link`,
 				origin: node.origin,
 				sourceEnd: end(node.identity, "owner"),
-				targetEnd: end("ix://quire/native/Clock"),
+				targetEnd: end("ix://filament/native/Clock"),
 			},
 		];
 		expect(validateIrDocument(document)).toEqual([]);
@@ -433,9 +433,9 @@ describe("FR-146 direct constraint type positions", () => {
 	it("TC-1866 and TC-1868 admit a bound on a clock or a quantity and refuse a malformed quantity", () => {
 		// FR-146-AC-21, FR-146-AC-23: exact reader assertions below.
 		for (const [typeRef, code] of [
-			["ix://quire/native/Clock", undefined],
-			["ix://quire/unit/ms", undefined],
-			["ix://quire/unit/3ms", "UNRESOLVED_TYPE_REF"],
+			["ix://filament/native/Clock", undefined],
+			["ix://filament/unit/ms", undefined],
+			["ix://filament/unit/3ms", "UNRESOLVED_TYPE_REF"],
 		] as const) {
 			const document = clockDocument();
 			const node = document.types[0];

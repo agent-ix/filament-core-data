@@ -44,7 +44,7 @@ object_types:
     shape: record
     members: {fields: required, identityFields: required}
     rules: [identity_field_required]
-    meaning: quire.meaning.model.object-type/v1
+    meaning: filament.meaning.model.object-type/v1
   allowed_links:
     specializes: [entity]
     contains: [nested_entity, value_object]

@@ -1,5 +1,5 @@
 //! FR-092 "Kernel scalars": the FR-032 library as this crate reads it, and
-//! the native `ix://quire/native/<Name>` reference a kernel scalar token
+//! the native `ix://filament/native/<Name>` reference a kernel scalar token
 //! resolves to. A kernel scalar mints no package-local node (gap 1 of
 //! FCD #199/#200): [`KernelScalar::native_type_ref`] is the closed set of
 //! `typeRef` values a token can take instead.
@@ -18,8 +18,8 @@ use serde::Deserialize;
 /// The FR-032 table, byte for byte.
 const LIBRARY: &str = include_str!("../../../packages/semantic-core/kernel-scalars.json");
 
-/// The package a native type reference names (`ix://quire/native/<Name>`).
-pub const NATIVE_PACKAGE: &str = "quire";
+/// The package a native type reference names (`ix://filament/native/<Name>`).
+pub const NATIVE_PACKAGE: &str = "filament";
 
 /// The nine members of the FR-032 kernel scalar library, in library order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -140,7 +140,7 @@ impl KernelScalar {
     }
 
     /// The `typeRef` value a token resolving to this member takes: `
-    /// ix://quire/native/<Name>`, naming no package node (gap 1 of FCD
+    /// ix://filament/native/<Name>`, naming no package node (gap 1 of FCD
     /// #199/#200). Every reader resolves this prefix as a native type over
     /// the closed [`KernelScalar::ALL`] set.
     pub fn native_type_ref(self) -> std::string::String {

@@ -25,7 +25,7 @@ backends are released from this repository on their own cadence.
 The module manifest (filament-core-service FR-035) carries, per object type, an
 optional `construct` declaration: an `identity`, a `shape`, a presence for each
 member, the roles each reference member admits, the rules the construct selects
-and an opaque `meaning` id owned by QSpec. The roles are the object type's own
+and an opaque `meaning` id owned by FSpec. The roles are the object type's own
 `roles`, declared in the same manifest.
 
 This is a decision about where a construct kind is defined.
@@ -79,7 +79,7 @@ same object type, versioned with it.
 **The vocabulary is what the contract can check.** A reader can verify that a
 member is present, forbidden or optional, that a reference names a type carrying
 an admitted role, and that a selected rule holds, without knowing what the kind
-means. What the kind means is its `meaning` id, which QSpec owns and the IR
+means. What the kind means is its `meaning` id, which FSpec owns and the IR
 carries opaquely.
 
 **A new domain costs no contract release.** A port in the systems module is an
@@ -121,7 +121,7 @@ manifest defect is reported against the manifest that holds it.
   a member, shape or rule the vocabulary lacks is a contract change, filed
   against this repository.
 - The business module's `meaning` ids for `domain`, `repository`,
-  `state_machine` and `process` are placeholders until QSpec allocates them.
+  `state_machine` and `process` are placeholders until FSpec allocates them.
   The IR carries them opaquely, so allocating them changes the module and no
   contract.
 

@@ -180,7 +180,7 @@ pub struct Term {
 }
 
 /// `semantic-ir.schema.json#/$defs/typeDefinition/direction`: a port's flow
-/// direction (QSpec FR-152).
+/// direction (FSpec FR-152).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Direction {
@@ -200,7 +200,7 @@ impl From<PortDirection> for Direction {
 }
 
 /// `semantic-ir.schema.json#/$defs/typeDefinition/flowDirection`: a
-/// connection's flow direction (QSpec FR-152).
+/// connection's flow direction (FSpec FR-152).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum FlowDirection {

@@ -64,7 +64,7 @@ const clock = () => {
 				{
 					identity: "ix://acme/config/Config/x",
 					name: "x",
-					typeRef: "ix://quire/native/Clock",
+					typeRef: "ix://filament/native/Clock",
 					multiplicity: { lower: 1, upper: 1, ordered: false, unique: false },
 					presence: "required",
 					nullable: false,
@@ -208,7 +208,7 @@ describe("FR-146 independent reader special member policy", () => {
 	it("TC-1842 admits Clock and Text without document scalar declarations", () => {
 		expect(observed(clock())).toEqual([]);
 		const document = clock();
-		document.types[0].fields[0].typeRef = "ix://quire/native/Text";
+		document.types[0].fields[0].typeRef = "ix://filament/native/Text";
 		expect(observed(document)).toEqual([]);
 	});
 	it("TC-1843 emits only the seven exact Clock shape diagnostics and an ordinary multiplicity refusal", () => {
@@ -254,7 +254,7 @@ describe("FR-146 independent reader special member policy", () => {
 			const definition = document.types[0];
 			definition.kind = kind;
 			delete definition.fields;
-			definition[member] = "ix://quire/native/Clock";
+			definition[member] = "ix://filament/native/Clock";
 			expect(observed(document), kind).toEqual([]);
 		}
 		const document = clock();
@@ -263,7 +263,7 @@ describe("FR-146 independent reader special member policy", () => {
 			{
 				keyword: "max",
 				operands: { value: "3/2" },
-				appliesTo: "ix://quire/native/Clock",
+				appliesTo: "ix://filament/native/Clock",
 			},
 		];
 		definition.operations = [
@@ -274,7 +274,7 @@ describe("FR-146 independent reader special member policy", () => {
 					{ ...definition.fields[0], identity: `${definition.identity}/op/p` },
 				],
 				returns: {
-					typeRef: "ix://quire/native/Clock",
+					typeRef: "ix://filament/native/Clock",
 					multiplicity: { lower: 0, upper: 1, ordered: false, unique: false },
 					nullable: false,
 				},
@@ -296,7 +296,7 @@ describe("FR-146 independent reader special member policy", () => {
 			...structuredClone(definition),
 			identity: "ix://acme/config/Stopwatch",
 			kind: "alias",
-			target: "ix://quire/native/Clock",
+			target: "ix://filament/native/Clock",
 		});
 		delete document.types[1].fields;
 		expect(observed(document)).toEqual([
@@ -315,8 +315,8 @@ describe("FR-146 independent reader special member policy", () => {
 			document.types[0].constraints = [{ keyword, operands, appliesTo }];
 			return document;
 		};
-		const clockRef = "ix://quire/native/Clock";
-		const ms = "ix://quire/unit/ms";
+		const clockRef = "ix://filament/native/Clock";
+		const ms = "ix://filament/unit/ms";
 		for (const [appliesTo, keyword, value] of [
 			[clockRef, "max", "3"],
 			[clockRef, "min", "3/2"],
@@ -371,7 +371,7 @@ describe("FR-146 independent reader special member policy", () => {
 				identity: "ix://acme/config/Config/link",
 				category: "structural",
 				sourceEnd: { type: other.types[0].identity },
-				targetEnd: { type: "ix://quire/native/Clock" },
+				targetEnd: { type: "ix://filament/native/Clock" },
 			},
 		];
 		expect(observed(other)).toEqual([
@@ -391,7 +391,7 @@ describe("FR-146 independent reader special member policy", () => {
 			"Acme/Ms",
 		]) {
 			const document = clock();
-			document.types[0].fields[0].typeRef = `ix://quire/unit/${name}`;
+			document.types[0].fields[0].typeRef = `ix://filament/unit/${name}`;
 			expect(observed(document), name).toEqual([]);
 		}
 		for (const name of [
@@ -404,7 +404,7 @@ describe("FR-146 independent reader special member policy", () => {
 			"ms\n",
 		]) {
 			const document = clock();
-			document.types[0].fields[0].typeRef = `ix://quire/unit/${name}`;
+			document.types[0].fields[0].typeRef = `ix://filament/unit/${name}`;
 			expect(observed(document), name).toEqual([
 				["UNRESOLVED_TYPE_REF", "types.0.fields.0.typeRef"],
 			]);
@@ -414,7 +414,7 @@ describe("FR-146 independent reader special member policy", () => {
 		// FR-146-AC-6: exact reader assertions below.
 		const document = clock();
 		const field = document.types[0].fields[0];
-		field.typeRef = "ix://quire/unit/ms";
+		field.typeRef = "ix://filament/unit/ms";
 		field.multiplicity.lower = 3;
 		field.unit = "ms";
 		field.constraints = [
@@ -434,7 +434,7 @@ describe("FR-146 independent reader special member policy", () => {
 		// FR-146-AC-6: exact reader assertions below.
 		const document = clock();
 		document.types[0].constraints = [
-			{ keyword: "notAKeyword", appliesTo: "ix://quire/unit/3ms" },
+			{ keyword: "notAKeyword", appliesTo: "ix://filament/unit/3ms" },
 		];
 		expect(observed(document)).toEqual([
 			["UNRESOLVED_TYPE_REF", "types.0.constraints.0.appliesTo"],
@@ -454,7 +454,7 @@ describe("FR-146 independent reader special member policy", () => {
 			delete document.types[1].fields;
 			return document;
 		};
-		const ms = "ix://quire/unit/ms";
+		const ms = "ix://filament/unit/ms";
 		expect(observed(withAlias("Delay", ms))).toEqual([]);
 		const chained = withAlias("Outer", "ix://acme/config/Inner");
 		chained.types.push({
@@ -492,7 +492,7 @@ describe("FR-146 independent reader special member policy", () => {
 		expect(observed(reference)).toEqual([
 			["UNRESOLVED_TYPE_REF", "types.0.target"],
 		]);
-		const malformed = withAlias("Delay", "ix://quire/unit/3ms");
+		const malformed = withAlias("Delay", "ix://filament/unit/3ms");
 		expect(observed(malformed)).toEqual([
 			["UNRESOLVED_TYPE_REF", "types.1.target"],
 		]);
@@ -508,7 +508,7 @@ describe("FR-146 independent reader special member policy", () => {
 	});
 	it("TC-1866 and TC-1868 refuse an unknown keyword on a clock or quantity subject as on any subject", () => {
 		// FR-146-AC-21: exact reader assertions below.
-		for (const appliesTo of ["ix://quire/native/Clock", "ix://quire/unit/ms"]) {
+		for (const appliesTo of ["ix://filament/native/Clock", "ix://filament/unit/ms"]) {
 			const document = clock();
 			document.types[0].constraints = [{ keyword: "notAKeyword", appliesTo }];
 			expect(observed(document)).toEqual([

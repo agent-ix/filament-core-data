@@ -17,7 +17,7 @@
 	"constructs": [
 		{
 			"kind": {
-				"module": "agent-ix/quire-model",
+				"module": "agent-ix/filament-model",
 				"name": "tuple_value_type"
 			},
 			"moduleVersion": "1.0.0",
@@ -31,19 +31,19 @@
 				},
 				"references": {},
 				"rules": [],
-				"meaning": "quire.meaning.model.tuple-value-type/v1"
+				"meaning": "filament.meaning.model.tuple-value-type/v1"
 			}
 		},
 		{
 			"kind": {
-				"module": "agent-ix/quire-model",
+				"module": "agent-ix/filament-model",
 				"name": "namespace"
 			},
 			"moduleVersion": "1.0.0",
 			"construct": {
 				"identity": "none",
 				"shape": "namespace",
-				"meaning": "quire.meaning.model.population/v1",
+				"meaning": "filament.meaning.model.population/v1",
 				"members": {}
 			}
 		}
@@ -68,7 +68,7 @@
 				{
 					"identity": "ix://acme/maps/Timer/x",
 					"name": "x",
-					"typeRef": "ix://quire/native/Clock",
+					"typeRef": "ix://filament/native/Clock",
 					"multiplicity": {
 						"lower": 1,
 						"upper": 1,
@@ -89,7 +89,7 @@
 				{
 					"identity": "ix://acme/maps/Timer/n",
 					"name": "n",
-					"typeRef": "ix://quire/native/Integer",
+					"typeRef": "ix://filament/native/Integer",
 					"multiplicity": {
 						"lower": 1,
 						"upper": 1,
@@ -128,7 +128,7 @@
 				{
 					"identity": "ix://acme/maps/Cfg/a",
 					"name": "a",
-					"typeRef": "ix://quire/native/Boolean",
+					"typeRef": "ix://filament/native/Boolean",
 					"multiplicity": {
 						"lower": 1,
 						"upper": 1,
@@ -235,7 +235,7 @@
 				{
 					"identity": "ix://acme/maps/Shape/Box",
 					"name": "Box",
-					"payloadType": "ix://quire/native/Integer",
+					"payloadType": "ix://filament/native/Integer",
 					"origin": {
 						"generated": {
 							"generatorIdentity": "ix://acme/maps/case-author",
@@ -250,7 +250,7 @@
 			"identity": "ix://acme/maps/Pair",
 			"displayName": "Pair",
 			"kind": {
-				"module": "agent-ix/quire-model",
+				"module": "agent-ix/filament-model",
 				"name": "tuple_value_type"
 			},
 			"roles": [],
@@ -267,7 +267,7 @@
 			"positions": [
 				{
 					"identity": "ix://acme/maps/Pair/p0",
-					"typeRef": "ix://quire/native/Boolean",
+					"typeRef": "ix://filament/native/Boolean",
 					"origin": {
 						"generated": {
 							"generatorIdentity": "ix://acme/maps/case-author",
@@ -278,7 +278,7 @@
 				},
 				{
 					"identity": "ix://acme/maps/Pair/p1",
-					"typeRef": "ix://quire/native/Integer",
+					"typeRef": "ix://filament/native/Integer",
 					"origin": {
 						"generated": {
 							"generatorIdentity": "ix://acme/maps/case-author",
@@ -304,7 +304,7 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"target": "ix://quire/native/Text"
+			"target": "ix://filament/native/Text"
 		},
 		{
 			"identity": "ix://acme/maps/Stopwatch",
@@ -321,7 +321,7 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"target": "ix://quire/native/Clock"
+			"target": "ix://filament/native/Clock"
 		},
 		{
 			"identity": "ix://acme/maps/OptText",
@@ -338,7 +338,7 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"inner": "ix://quire/native/Text"
+			"inner": "ix://filament/native/Text"
 		},
 		{
 			"identity": "ix://acme/maps/Texts",
@@ -355,7 +355,7 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"items": "ix://quire/native/Text"
+			"items": "ix://filament/native/Text"
 		},
 		{
 			"identity": "ix://acme/maps/Inner",
@@ -372,8 +372,8 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"keys": "ix://quire/native/Text",
-			"values": "ix://quire/native/Integer",
+			"keys": "ix://filament/native/Text",
+			"values": "ix://filament/native/Integer",
 			"bound": {
 				"lower": 0
 			}
@@ -449,7 +449,7 @@
 			"constraints": [],
 			"extensions": [],
 			"unknownPolicy": "reject",
-			"keys": "ix://quire/native/Text",
+			"keys": "ix://filament/native/Text",
 			"values": "ix://acme/maps/Timer",
 			"bound": {
 				"lower": 0,
@@ -460,7 +460,7 @@
 			"identity": "ix://acme/maps/Area",
 			"displayName": "Area",
 			"kind": {
-				"module": "agent-ix/quire-model",
+				"module": "agent-ix/filament-model",
 				"name": "namespace"
 			},
 			"roles": [],

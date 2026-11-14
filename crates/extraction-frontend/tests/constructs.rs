@@ -358,7 +358,7 @@ fn tc_1743_frame_admits_a_relationship_modifies_entry_and_a_declared_creates_ent
 }
 
 /// A `modifies` entry naming a field of a type other than the operation's own,
-/// and not one of its supertypes, resolves: QSpec FR-340 admits any declared
+/// and not one of its supertypes, resolves: FSpec FR-340 admits any declared
 /// field or relationship node in the package as a `modifies` target, and
 /// FR-013 has no reachability limit, so resolution ranges over the whole
 /// document, never only the owning type or its supertypes (fcd#193 review).
@@ -801,7 +801,7 @@ fn tc_1789_the_constructs_table_is_checked_and_references_are_admitted_by_role()
         &missing,
         &format!("/ir/types/{}/kind", at("EV-001")),
     );
-    // A population's kind resolves against the same table (QSpec FR-154 row
+    // A population's kind resolves against the same table (FSpec FR-154 row
     // 2/AC-7, FR-208): removing the entry it names refuses at the
     // population's own `kind` pointer, and the entry it does name counts as
     // used, not only a type's.
@@ -1009,7 +1009,7 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
     let constructs = document["constructs"].as_array_mut().expect("constructs");
     constructs.push(declaration(
         "part",
-        json!({ "identity": "none", "shape": "record", "members": {}, "meaning": "quire.meaning.systems.part/v1" }),
+        json!({ "identity": "none", "shape": "record", "members": {}, "meaning": "filament.meaning.systems.part/v1" }),
     ));
     constructs.push(declaration(
         "port",
@@ -1021,7 +1021,7 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
                 "interfaceType": "required", "multiplicity": "optional", "fields": "forbidden"
             },
             "references": { "owner": ["systems:part"], "interfaceType": ["business:domain-object"] },
-            "meaning": "quire.meaning.systems.port/v1"
+            "meaning": "filament.meaning.systems.port/v1"
         }),
     ));
     constructs.push(declaration(
@@ -1034,7 +1034,7 @@ fn tc_1791_a_kind_no_reader_code_names_reads_by_its_declaration_alone() {
                 "targetEnd": "required", "fields": "forbidden"
             },
             "references": { "sourceEnd": ["systems:port"], "targetEnd": ["systems:port"] },
-            "meaning": "quire.meaning.systems.connection/v1"
+            "meaning": "filament.meaning.systems.connection/v1"
         }),
     ));
     assert_rust("a systems part, port and connection", &document, &[]);
@@ -2091,7 +2091,7 @@ fn tc_1799_a_specializes_edge_and_an_abstract_flag_lower_to_supertypes_and_abstr
     assert_eq!(en.construct.is_abstract, Some(true));
 }
 
-/// FR-143-AC-11: the five systems-model kinds (QSpec FR-152, SOA
+/// FR-143-AC-11: the five systems-model kinds (FSpec FR-152, SOA
 /// `fixture-systems`) lower `owner`, `declaredType`, `direction`,
 /// `interfaceType`, `multiplicity`, `sourceEnd`, `targetEnd`,
 /// `flowDirection`, `sourceElement`, `targetElement` and `featureOrder`
@@ -2740,7 +2740,7 @@ fn architecture_document() -> Value {
 }
 
 /// FR-143-AC-11 over the real, committed `architecture` fixture
-/// (filament-core-data#173, the bundle QSL intake tests read) rather than a
+/// (filament-core-data#173, the bundle FSL intake tests read) rather than a
 /// synthetic document: the lift produces contract `2.0.0`, at least one
 /// artifact of each of the five systems kinds (`interface`, `part`, `port`,
 /// `connection`, `allocation`; ports and connections between components
@@ -3001,7 +3001,7 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
             },
             "references": { "members": ["fixture-domain:aggregate-member"] },
             "rules": ["identity_field_required", "min_clauses"],
-            "meaning": "quire.meaning.model.object-type/v1"
+            "meaning": "filament.meaning.model.object-type/v1"
         })
     );
     assert_eq!(
@@ -3043,11 +3043,11 @@ fn tc_1790_the_business_lift_carries_each_used_kind_s_manifest_declaration() {
 #[trace("TC-1792", "FR-143-AC-8")]
 #[test]
 fn tc_1792_a_broken_manifest_declaration_refuses_naming_the_module_and_object_type() {
-    const ENTITY: &str = "  construct:\n    identity: identified\n    shape: record\n    members: {fields: required, identityFields: required}\n    rules: [identity_field_required]\n    meaning: quire.meaning.model.object-type/v1\n";
+    const ENTITY: &str = "  construct:\n    identity: identified\n    shape: record\n    members: {fields: required, identityFields: required}\n    rules: [identity_field_required]\n    meaning: filament.meaning.model.object-type/v1\n";
     let cases: [(&str, String); 6] = [
         (
             "no meaning",
-            ENTITY.replace("    meaning: quire.meaning.model.object-type/v1\n", ""),
+            ENTITY.replace("    meaning: filament.meaning.model.object-type/v1\n", ""),
         ),
         (
             "a member outside the vocabulary",

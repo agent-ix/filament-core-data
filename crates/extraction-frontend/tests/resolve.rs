@@ -116,11 +116,11 @@ fn tc_1210_every_kernel_name_is_kernel_scalar_and_snapshot_uses_five_native_refs
     assert_eq!(
         native_refs,
         BTreeSet::from([
-            "ix://quire/native/Integer".to_string(),
-            "ix://quire/native/JsonObject".to_string(),
-            "ix://quire/native/String".to_string(),
-            "ix://quire/native/Timestamp".to_string(),
-            "ix://quire/native/UUID".to_string(),
+            "ix://filament/native/Integer".to_string(),
+            "ix://filament/native/JsonObject".to_string(),
+            "ix://filament/native/String".to_string(),
+            "ix://filament/native/Timestamp".to_string(),
+            "ix://filament/native/UUID".to_string(),
         ]),
         "five native references, each once, no package node"
     );

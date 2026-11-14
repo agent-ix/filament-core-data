@@ -157,7 +157,7 @@ function nativeFloat32BoundIr(
 	return document([
 		record(
 			recordIdentity,
-			field(recordIdentity, "ix://quire/native/Float32", {
+			field(recordIdentity, "ix://filament/native/Float32", {
 				collection,
 				multiplicity: collection
 					? { lower: 1, upper: 3, ordered: true, unique: !enumValue }
@@ -193,7 +193,7 @@ function nativeNullableCollectionIr(impossible = false, nullable = true) {
 	return document([
 		record(
 			recordIdentity,
-			field(recordIdentity, "ix://quire/native/Integer", {
+			field(recordIdentity, "ix://filament/native/Integer", {
 				collection: true,
 				nullable,
 				multiplicity: { lower: 1, upper: 3, ordered: true, unique: false },
@@ -227,7 +227,7 @@ function nativeIntegerEnumIr() {
 	return document([
 		record(
 			recordIdentity,
-			field(recordIdentity, "ix://quire/native/Integer", {
+			field(recordIdentity, "ix://filament/native/Integer", {
 				constraints: [
 					{
 						identity: `${fieldIdentity}/constraint/enumValues`,
@@ -250,7 +250,7 @@ function scalarEnumIr(name: string, typeRef: string, values: unknown[]) {
 		record(
 			recordIdentity,
 			field(recordIdentity, typeRef, {
-				...(typeRef === "ix://quire/native/Decimal"
+				...(typeRef === "ix://filament/native/Decimal"
 					? { decimal: { precision: 5, scale: 2 } }
 					: {}),
 				constraints: [
@@ -297,7 +297,7 @@ function nativeBoundIr(
 		record(
 			recordIdentity,
 			field(recordIdentity, typeRef, {
-				...(typeRef === "ix://quire/native/Decimal"
+				...(typeRef === "ix://filament/native/Decimal"
 					? { decimal: { precision: 5, scale: 2 } }
 					: {}),
 				constraints: [
@@ -777,7 +777,7 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 	const grid = [
 		{
 			name: "EnumString",
-			typeRef: "ix://quire/native/String",
+			typeRef: "ix://filament/native/String",
 			members: ["red"],
 			probes: [
 				["red", true],
@@ -789,7 +789,7 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 		},
 		{
 			name: "EnumBoolean",
-			typeRef: "ix://quire/native/Boolean",
+			typeRef: "ix://filament/native/Boolean",
 			members: [true],
 			probes: [
 				[true, true],
@@ -801,7 +801,7 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 		},
 		{
 			name: "EnumIntegerZero",
-			typeRef: "ix://quire/native/Integer",
+			typeRef: "ix://filament/native/Integer",
 			members: ["0"],
 			probes: [
 				[0, true],
@@ -815,7 +815,7 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 		},
 		{
 			name: "EnumWideInteger",
-			typeRef: "ix://quire/native/Integer",
+			typeRef: "ix://filament/native/Integer",
 			members: ["9007199254740992"],
 			probes: [
 				["9007199254740992", true],
@@ -827,7 +827,7 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 		},
 		{
 			name: "EnumFloat32",
-			typeRef: "ix://quire/native/Float32",
+			typeRef: "ix://filament/native/Float32",
 			members: [Math.fround(0.1)],
 			probes: [
 				[0.1, true],
@@ -839,7 +839,7 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 		},
 		{
 			name: "EnumFloat32Zero",
-			typeRef: "ix://quire/native/Float32",
+			typeRef: "ix://filament/native/Float32",
 			members: [0],
 			probes: [
 				[0, true],
@@ -849,7 +849,7 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 		},
 		{
 			name: "EnumFloat64Zero",
-			typeRef: "ix://quire/native/Float64",
+			typeRef: "ix://filament/native/Float64",
 			members: [0],
 			probes: [
 				[0, true],
@@ -863,7 +863,7 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 		},
 		{
 			name: "EnumDecimal",
-			typeRef: "ix://quire/native/Decimal",
+			typeRef: "ix://filament/native/Decimal",
 			members: ["1.1"],
 			probes: [
 				["1.1", true],
@@ -931,9 +931,9 @@ it("compares native scalar enum members without coercion or signed-zero drift", 
 /** Trace: FR-066-AC-25. */
 it("rejects hostile native bound inputs without coercion or a thrown exception", async () => {
 	const cases = [
-		["BoundInteger", "ix://quire/native/Integer", "0"],
-		["BoundFloat32", "ix://quire/native/Float32", 0],
-		["BoundFloat64", "ix://quire/native/Float64", 0],
+		["BoundInteger", "ix://filament/native/Integer", "0"],
+		["BoundFloat32", "ix://filament/native/Float32", 0],
+		["BoundFloat64", "ix://filament/native/Float64", 0],
 	] as const;
 	const hostile: unknown[] = [
 		Symbol("zero"),
@@ -980,7 +980,7 @@ it("rejects hostile native bound inputs without coercion or a thrown exception",
 /** Trace: FR-144-AC-14. */
 it("checks Decimal bounds in the exact instance oracle", async () => {
 	const name = "BoundDecimal";
-	const ir = nativeBoundIr(name, "ix://quire/native/Decimal", "10.5", "max");
+	const ir = nativeBoundIr(name, "ix://filament/native/Decimal", "10.5", "max");
 	expect([...readContractIr(ir)]).toEqual([]);
 	const directory = mkdtempSync(join(tmpdir(), "fcd-268-decimal-bound-"));
 	try {

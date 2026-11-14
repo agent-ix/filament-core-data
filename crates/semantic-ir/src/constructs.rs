@@ -254,7 +254,7 @@ pub(crate) fn decide(document: &Document<'_>, sink: &mut Sink<'_>) {
     populations(document, sink);
 }
 
-/// The members a tuple value type never carries (QSpec FR-208: a tuple has no
+/// The members a tuple value type never carries (FSpec FR-208: a tuple has no
 /// fields, identity fields, operations, supertypes or clauses; FR-147 adds the
 /// relationships and variants no tuple has either).
 const TUPLE_FOREIGN_MEMBERS: [&str; 7] = [
@@ -267,8 +267,8 @@ const TUPLE_FOREIGN_MEMBERS: [&str; 7] = [
     "variants",
 ];
 
-/// `ix://quire/native/Clock`, which is never a tuple position (QSpec FR-322).
-const CLOCK_TYPE_REF: &str = "ix://quire/native/Clock";
+/// `ix://filament/native/Clock`, which is never a tuple position (FSpec FR-322).
+const CLOCK_TYPE_REF: &str = "ix://filament/native/Clock";
 
 /// Whether `name` is a tuple name: `^[A-Za-z][A-Za-z0-9_]*$`.
 fn is_tuple_name(name: &str) -> bool {
@@ -870,7 +870,7 @@ fn narrows(field: &Json, redefined: &Json) -> bool {
 }
 
 /// A frame's `modifies`, `creates` and `deletes` name declarations, never a
-/// dotted access path (ADR-002). QSpec FR-340 admits any declared field or
+/// dotted access path (ADR-002). FSpec FR-340 admits any declared field or
 /// relationship node in the package as a `modifies` target, and FR-013 has
 /// no reachability limit, so `modifies` resolves against every field or
 /// relationship node the whole document declares, never only the operation's
@@ -881,10 +881,10 @@ fn narrows(field: &Json, redefined: &Json) -> bool {
 /// and nothing beyond that: it does not check reachability from the
 /// operation's own type, and it does not check that a `creates`/`deletes`
 /// target is specifically an object type or a process, which is bound at
-/// QSL intake (FR-208) and never interpreted here. The frame's body
+/// FSL intake (FR-208) and never interpreted here. The frame's body
 /// encoding and grant-range semantics (what a `modifies` entry ranges over,
 /// what `creates`/`deletes` differ over, and relationship-end scope) are
-/// still open in QSpec #101 (Q3 open with Peter) and #106; FCD carries no
+/// still open in FSpec #101 (Q3 open with Peter) and #106; FCD carries no
 /// shape for either question.
 fn frames(
     document: &Document<'_>,

@@ -191,5 +191,5 @@ unlisted or listed and absent.
 ## Dependencies
 
 - **Upstream**: [FR-096](./FR-096-emit-stable-source-located-frontend-diagnostics.md), [FR-097](./FR-097-normalize-validate-and-write-the-lifted-document.md), [FR-045](./FR-045-define-the-frontend-seam.md), [FR-046](./FR-046-lower-typespec-to-contract-ir.md), [FR-053](./FR-053-declare-the-typespec-semantic-vocabulary.md) (the TypeSpec half of the parity case, `identity.mjs`), [FR-030](./FR-030-bind-source-dialect-and-manifest-targets.md), the filament-core-data#87 ruling (the shared identity rule, `docs/semantic-data-system/contracts-v1.md` §Identity minting)
-- **Downstream**: [FR-099](./FR-099-provide-the-extraction-frontend-command-line.md), issue #37, `agent-ix/quire-contract-ir#52`, filament-core-data#86
+- **Downstream**: [FR-099](./FR-099-provide-the-extraction-frontend-command-line.md), issue #37, `agent-ix/filament-contract-ir#52`, filament-core-data#86
 - **Constrained by**: [NFR-031](../non-functional/NFR-031-deterministic-and-hermetic-lifting.md), [NFR-032](../non-functional/NFR-032-non-disruptive-extraction-frontend.md)

@@ -58,7 +58,7 @@ fn tc_1219_neither_reader_raises_unresolved_type_ref_over_any_emitted_document()
         assert_none_of(&name, &node, &["UNRESOLVED_TYPE_REF"]);
         // Every typeRef names either a declared identity or a kernel scalar
         // (gap 1 of FCD #199/#200: a kernel scalar mints no package node,
-        // its `typeRef` is `ix://quire/native/<Name>` over the closed
+        // its `typeRef` is `ix://filament/native/<Name>` over the closed
         // FR-032 set instead).
         let document: Value =
             serde_json::from_slice(&fs::read(&request.out).expect("read")).expect("json");
@@ -70,7 +70,7 @@ fn tc_1219_neither_reader_raises_unresolved_type_ref_over_any_emitted_document()
             .collect();
         let is_native = |type_ref: &str| {
             type_ref
-                .strip_prefix("ix://quire/native/")
+                .strip_prefix("ix://filament/native/")
                 .is_some_and(|name| {
                     agent_ix_extraction_frontend::KernelScalar::from_name(name).is_some()
                 })

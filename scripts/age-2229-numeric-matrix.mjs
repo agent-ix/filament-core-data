@@ -722,7 +722,7 @@ export function buildMatrixIr() {
 			: rangeConstraints(baseName, cell.range, cell.kind);
 		types.push(scalar(baseName, cell.kind, baseConstraints));
 		let valueRef = cell.native
-			? `ix://quire/native/${cell.kind === "float32" ? "Float32" : "Integer"}`
+			? `ix://filament/native/${cell.kind === "float32" ? "Float32" : "Integer"}`
 			: baseIdentity;
 		for (let depth = 1; depth <= cell.depth; depth += 1) {
 			const name = `${safeStem(cell.name)}Alias${depth}`;
