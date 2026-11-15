@@ -254,7 +254,11 @@ fn tc_1886_a_clock_payload_and_a_clock_position_are_admitted_directly_and_throug
     set(&mut payload, "/types/4/variants/0/payloadType", clock());
     assert_eq!(observed(payload), none);
     let mut payload_alias = with_alias();
-    set(&mut payload_alias, "/types/4/variants/0/payloadType", tick());
+    set(
+        &mut payload_alias,
+        "/types/4/variants/0/payloadType",
+        tick(),
+    );
     assert_eq!(observed(payload_alias), none);
 
     let mut position = base();
