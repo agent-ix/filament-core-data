@@ -60,3 +60,15 @@ Node, TS, Python) for any remaining Clock payload or position refusal. None
 remain. Remaining `INVALID_TUPLE_POSITION` uses are identity-only.
 
 Plan completion: not assessed
+
+## New findings (disposition pass 1)
+
+| ID | Severity | Summary | Refs |
+| --- | --- | --- | --- |
+| FND-002 | medium | The fix round's `keptRef` helper in test/tuple-union.test.ts is not biome-formatted (one 95-column line; biome wants the parameters one per line). `biome format .` (the first step of `pnpm run lint` / `make lint-node`) now fails on 4 files instead of the 3 untouched baseline files, so this PR adds a lint failure on a touched file. | test/tuple-union.test.ts:243-244 |
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | ace34cc6: the RULES.md:233 list now includes tuple position `typeRef`. |

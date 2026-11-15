@@ -43,3 +43,9 @@ PASS with one low finding.
 | FND-001 | low | FR-146-AC-2 now lists a tuple position `typeRef` among the places Clock is accepted, but TC-1843 (its test case row) still lists only parameter, result, alias target, items, values and variant payload, so the TC row no longer matches its AC. | spec/tests.md:1354, spec/functional/FR-146-carry-clock-fields-and-a-dimension-and-unit-graph.md:742 |
 
 Plan completion: not assessed
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | ace34cc6: TC-1843 now reads "sequence items, map values, tuple position and variant payload is accepted", matching FR-146-AC-2. |

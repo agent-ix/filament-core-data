@@ -42,3 +42,9 @@ Plan completion: not assessed
 | ID | Severity | Summary | Refs |
 | --- | --- | --- | --- |
 | FND-001 | medium | FR-147-AC-15 and TC-1886 now say the normalized form keeps the Clock type reference, which covers the payload as well as the position. Both suites check normalization only for the direct Clock position. No test normalizes a Clock payload or an aliased one. The Rust check is a whole-text `contains("ix://filament/native/Clock")`, which does not look at the position itself. | crates/semantic-ir/tests/tuple_union.rs:266-268, test/tuple-union.test.ts:253-260, spec/functional/FR-147-carry-tuple-value-types-and-union-variant-payloads.md:299 |
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | ace34cc6/4b740f10: Rust `kept` and TS `keptRef` read the exact normalized `payloadType` of Shape variant 0 and `typeRef` of Pair position 1, for the direct and alias forms in both suites, and the whole-text `contains` is gone. Normalizer mutations that rewrite each of the four refs fail every assertion (Rust lines 279, 295, 308, 314; TS on the matching four). |
