@@ -1000,13 +1000,6 @@ export function readContractIr(document, options = {}) {
 				`/ir${definitionPointer}/variants/${index}/payloadType`,
 				variant,
 			);
-			// FSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
-			if (specialOf(variant.payloadType) === "clock")
-				raise(
-					DIAGNOSTIC_CODES.INVALID_CLOCK_MEMBER,
-					`/ir${definitionPointer}/variants/${index}/payloadType: a union variant payload is never a clock`,
-					locusOf(variant),
-				);
 		});
 		asArray(definition.positions).forEach((position, index) =>
 			quantityRefused(

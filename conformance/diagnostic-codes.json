@@ -482,8 +482,8 @@
 			"provenance": "minted",
 			"decidedBy": "cross-field",
 			"sources": ["docs/semantic-data-system/contracts-v1.md"],
-			"rule": "A tuple position out of order, with a gap, or typed Clock.",
-			"citation": "a position out of order, with a gap, or typed",
+			"rule": "A tuple position out of order or with a gap.",
+			"citation": "a position out of order or with a gap",
 			"exercisedBy": "test:TC-1876"
 		},
 		{

@@ -1472,14 +1472,6 @@ fn per_type(document: &Document<'_>, sink: &mut Sink<'_>) {
             for (member, variant) in variants.iter().enumerate() {
                 if let Some(payload) = variant.get("payloadType").and_then(Json::as_str) {
                     let variant_at = index(&variants_at, member);
-                    // FSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
-                    if document.special_of(payload) == Some(Special::Clock) {
-                        sink.emit(
-                            child(&variant_at, "payloadType"),
-                            INVALID_CLOCK_MEMBER,
-                            "a union variant payload is never a clock",
-                        );
-                    }
                     if !special_type_ref(payload) && !resolves(&declared, payload) {
                         sink.emit(
                             child(&variant_at, "payloadType"),

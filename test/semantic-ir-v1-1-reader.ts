@@ -1038,13 +1038,6 @@ function checkTypeDefinition(
 			variant.payloadType,
 			`${path}.variants.${index}.payloadType`,
 		);
-		// FSpec FR-322 refuses a Clock payload (FR-147), pending STD-528.
-		if (specialKind(types, fields, variant.payloadType) === "clock")
-			diagnostics.push({
-				code: "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
-				path: `${path}.variants.${index}.payloadType`,
-				message: "a union variant payload is never a clock",
-			});
 	});
 	const isRecord = isEdgeKind(definition.kind);
 	if (definition.kind === "scalar" && definition.scalar === "number") {

@@ -174,17 +174,12 @@
 		},
 		{
 			"id": "clock-position",
-			"tc": "TC-1877",
-			"ac": "FR-147-AC-6",
+			"tc": "TC-1886",
+			"ac": "FR-147-AC-15",
 			"set": [["/types/2/positions/1/typeRef", "ix://filament/native/Clock"]],
 			"remove": [],
 			"node": "admits",
-			"rust": [
-				{
-					"code": "agent-ix.semantic-ir.INVALID_TUPLE_POSITION",
-					"pointer": "/ir/types/2/positions/1/typeRef"
-				}
-			]
+			"rust": []
 		},
 		{
 			"id": "unadmitted-position-type",
@@ -218,15 +213,12 @@
 			"id": "clock-variant-payload",
 			"tc": "TC-1886",
 			"ac": "FR-147-AC-15",
-			"set": [["/types/4/variants/0/payloadType", "ix://filament/native/Clock"]],
+			"set": [
+				["/types/4/variants/0/payloadType", "ix://filament/native/Clock"]
+			],
 			"remove": [],
-			"node": "refused",
-			"rust": [
-				{
-					"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
-					"pointer": "/ir/types/4/variants/0/payloadType"
-				}
-			]
+			"node": "admits",
+			"rust": []
 		}
 	]
 }

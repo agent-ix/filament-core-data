@@ -85,7 +85,7 @@ describe("FR-147 tuple value types and union variant payloads", () => {
 		expect(validateIrDocument(noRequirement).length).toBeGreaterThan(0);
 	});
 
-	/** Traces: TC-1874, TC-1875, TC-1876, TC-1877, TC-1879; FR-147-AC-3, FR-147-AC-4, FR-147-AC-5, FR-147-AC-6, FR-147-AC-8, FR-147-AC-14. */
+	/** Traces: TC-1874, TC-1875, TC-1876, TC-1877, TC-1879, TC-1886; FR-147-AC-3, FR-147-AC-4, FR-147-AC-5, FR-147-AC-6, FR-147-AC-8, FR-147-AC-14, FR-147-AC-15. */
 	it("TC-1885 gives every shared vector the recorded TypeScript verdict", () => {
 		for (const entry of vectors.cases) {
 			expect(nodeRefuses(mutated(entry)), entry.id).toBe(
@@ -220,45 +220,62 @@ describe("FR-147 tuple value types and union variant payloads", () => {
 	});
 
 	/** Traces: TC-1886; FR-147-AC-15. */
-	it("TC-1886 refuses a Clock variant payload, directly or through an alias, in every TypeScript reader", () => {
-		const clockPointer = "types.4.variants.0.payloadType";
+	it("TC-1886 admits a Clock variant payload and a Clock tuple position, directly or through an alias, in every TypeScript reader", () => {
 		const located = (document: Json) => ({
-			node: [...readContractIr(document)].map((d) => ({
-				code: d.code,
-				at: d.message.split(": ")[0],
-			})),
-			independent: readSemanticIr(document).map((d) => ({
-				code: d.code,
-				at: d.path,
-			})),
+			node: [...readContractIr(document)].map((d) => d.code),
+			independent: readSemanticIr(document).map((d) => d.code),
+			schema: validateIrDocument(document),
 		});
-		const direct = base();
-		typeNamed(direct, "Shape").variants[0].payloadType =
-			"ix://filament/native/Clock";
-		expect(validateIrDocument(direct)).toEqual([]);
-		const code = "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER";
-		expect(located(direct)).toEqual({
-			node: [{ code, at: "/ir/types/4/variants/0/payloadType" }],
-			independent: [{ code, at: clockPointer }],
-		});
+		const admitted = { node: [], independent: [], schema: [] };
+		const clock = "ix://filament/native/Clock";
+		const withAlias = () => {
+			const document = base();
+			const alias = structuredClone(typeNamed(document, "Boolean"));
+			alias.identity = "ix://acme/shapes/Tick";
+			alias.displayName = "Tick";
+			alias.kind = "alias";
+			delete alias.scalar;
+			alias.target = clock;
+			document.types.push(alias);
+			return document;
+		};
 
-		const aliased = base();
-		const alias = structuredClone(typeNamed(aliased, "Boolean"));
-		alias.identity = "ix://acme/shapes/Tick";
-		alias.displayName = "Tick";
-		alias.kind = "alias";
-		delete alias.scalar;
-		alias.target = "ix://filament/native/Clock";
-		aliased.types.push(alias);
-		typeNamed(aliased, "Shape").variants[0].payloadType =
+		const keptRef = (
+			document: Json,
+			owner: string,
+			list: string,
+			key: string,
+			at: number,
+		) => typeNamed(JSON.parse(normalizeIr(document)), owner)[list][at][key];
+
+		const payload = base();
+		typeNamed(payload, "Shape").variants[0].payloadType = clock;
+		expect(located(payload)).toEqual(admitted);
+		expect(keptRef(payload, "Shape", "variants", "payloadType", 0)).toBe(clock);
+		const payloadAlias = withAlias();
+		typeNamed(payloadAlias, "Shape").variants[0].payloadType =
 			"ix://acme/shapes/Tick";
-		const seen = located(aliased);
-		expect(seen.node.map((d) => d.code)).toEqual([code]);
-		expect(seen.independent.map((d) => d.code)).toEqual([code]);
+		expect(located(payloadAlias)).toEqual(admitted);
+		expect(keptRef(payloadAlias, "Shape", "variants", "payloadType", 0)).toBe(
+			"ix://acme/shapes/Tick",
+		);
+
+		const position = base();
+		typeNamed(position, "Pair").positions[1].typeRef = clock;
+		expect(located(position)).toEqual(admitted);
+		expect(keptRef(position, "Pair", "positions", "typeRef", 1)).toBe(clock);
+		const positionAlias = withAlias();
+		typeNamed(positionAlias, "Pair").positions[1].typeRef =
+			"ix://acme/shapes/Tick";
+		expect(located(positionAlias)).toEqual(admitted);
+		expect(keptRef(positionAlias, "Pair", "positions", "typeRef", 1)).toBe(
+			"ix://acme/shapes/Tick",
+		);
 
 		const quantity = base();
-		typeNamed(quantity, "Shape").variants[0].payloadType = "ix://filament/unit/ms";
-		expect(located(quantity)).toEqual({ node: [], independent: [] });
+		typeNamed(quantity, "Shape").variants[0].payloadType =
+			"ix://filament/unit/ms";
+		expect(located(quantity)).toEqual(admitted);
 		expect(
 			typeNamed(base(), "Shape").variants.some(
 				(v: Json) => v.payloadType === undefined,

@@ -231,34 +231,96 @@ fn tc_1881_a_changed_tuple_or_payload_is_breaking_and_an_origin_change_is_a_patc
 }
 
 #[test]
-fn tc_1886_a_clock_payload_is_refused_through_an_alias_and_a_unit_payload_is_not() {
-    // FR-147-AC-15: FSpec FR-322 refuses a Clock payload, pending STD-528.
-    let code = "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER".to_owned();
-    let pointer = "/ir/types/4/variants/0/payloadType".to_owned();
-    let mut direct = base();
-    set(
-        &mut direct,
-        &pointer.replacen("/ir", "", 1),
-        Json::Str("ix://filament/native/Clock".to_owned()),
-    );
-    assert_eq!(observed(direct), vec![(code.clone(), pointer.clone())]);
-
-    let mut aliased = parse(
-        r#"{"identity":"ix://acme/shapes/Tick","displayName":"Tick","kind":"alias","target":"ix://filament/native/Clock","roles":[],"origin":{"generated":{"generatorIdentity":"ix://acme/shapes/case-author","generatorVersion":"1.0.0","inputIdentities":["ix://acme/shapes/source"]}},"constraints":[],"extensions":[],"unknownPolicy":"reject"}"#,
-    )
-    .expect("alias");
-    let mut document = base();
-    if let Json::Object(members) = &mut document {
-        if let Some((_, Json::Array(types))) = members.iter_mut().find(|(k, _)| k == "types") {
-            types.push(std::mem::replace(&mut aliased, Json::Null));
+fn tc_1886_a_clock_payload_and_a_clock_position_are_admitted_directly_and_through_an_alias() {
+    // FR-147-AC-15: FSpec FR-322 "Clock positions and payloads".
+    let clock = || Json::Str("ix://filament/native/Clock".to_owned());
+    let tick = || Json::Str("ix://acme/shapes/Tick".to_owned());
+    let with_alias = || {
+        let alias = parse(
+            r#"{"identity":"ix://acme/shapes/Tick","displayName":"Tick","kind":"alias","target":"ix://filament/native/Clock","roles":[],"origin":{"generated":{"generatorIdentity":"ix://acme/shapes/case-author","generatorVersion":"1.0.0","inputIdentities":["ix://acme/shapes/source"]}},"constraints":[],"extensions":[],"unknownPolicy":"reject"}"#,
+        )
+        .expect("alias");
+        let mut document = base();
+        if let Json::Object(members) = &mut document {
+            if let Some((_, Json::Array(types))) = members.iter_mut().find(|(k, _)| k == "types") {
+                types.push(alias);
+            }
         }
-    }
-    set(
-        &mut document,
-        "/types/4/variants/0/payloadType",
-        Json::Str("ix://acme/shapes/Tick".to_owned()),
+        document
+    };
+    let none = Vec::<(String, String)>::new();
+    // The normalized form's `typeRef` / `payloadType` of the named type's member.
+    let kept = |document: Json, owner: &str, list: &str, member: usize, key: &str| {
+        assert_eq!(observed(document.clone()), none);
+        let text = normalized(&bundle(document));
+        let tree = parse(&text).expect("normalized is JSON");
+        let types = tree
+            .get("ir")
+            .unwrap_or(&tree)
+            .get("types")
+            .and_then(Json::as_array)
+            .expect("types");
+        let owner_type = types
+            .iter()
+            .find(|t| t.get("identity").and_then(Json::as_str) == Some(owner))
+            .expect("owner");
+        owner_type
+            .get(list)
+            .and_then(Json::as_array)
+            .and_then(|items| items.get(member))
+            .and_then(|item| item.get(key))
+            .and_then(Json::as_str)
+            .expect("member type")
+            .to_owned()
+    };
+
+    let mut payload = base();
+    set(&mut payload, "/types/4/variants/0/payloadType", clock());
+    assert_eq!(
+        kept(
+            payload,
+            "ix://acme/shapes/Shape",
+            "variants",
+            0,
+            "payloadType"
+        ),
+        "ix://filament/native/Clock"
     );
-    assert_eq!(observed(document), vec![(code, pointer.clone())]);
+    let mut payload_alias = with_alias();
+    set(
+        &mut payload_alias,
+        "/types/4/variants/0/payloadType",
+        tick(),
+    );
+    assert_eq!(
+        kept(
+            payload_alias,
+            "ix://acme/shapes/Shape",
+            "variants",
+            0,
+            "payloadType"
+        ),
+        "ix://acme/shapes/Tick"
+    );
+
+    let mut position = base();
+    set(&mut position, "/types/2/positions/1/typeRef", clock());
+    assert_eq!(
+        kept(position, "ix://acme/shapes/Pair", "positions", 1, "typeRef"),
+        "ix://filament/native/Clock"
+    );
+    let mut position_alias = with_alias();
+    set(&mut position_alias, "/types/2/positions/1/typeRef", tick());
+    assert_eq!(
+        kept(
+            position_alias,
+            "ix://acme/shapes/Pair",
+            "positions",
+            1,
+            "typeRef"
+        ),
+        "ix://acme/shapes/Tick"
+    );
 
     let mut unit = base();
     set(
@@ -266,5 +328,5 @@ fn tc_1886_a_clock_payload_is_refused_through_an_alias_and_a_unit_payload_is_not
         "/types/4/variants/0/payloadType",
         Json::Str("ix://filament/unit/ms".to_owned()),
     );
-    assert_eq!(observed(unit), vec![]);
+    assert_eq!(observed(unit), none);
 }
