@@ -240,28 +240,32 @@ describe("FR-147 tuple value types and union variant payloads", () => {
 			return document;
 		};
 
+		const keptRef = (document: Json, owner: string, list: string, key: string, at: number) =>
+			typeNamed(JSON.parse(normalizeIr(document)), owner)[list][at][key];
+
 		const payload = base();
 		typeNamed(payload, "Shape").variants[0].payloadType = clock;
 		expect(located(payload)).toEqual(admitted);
+		expect(keptRef(payload, "Shape", "variants", "payloadType", 0)).toBe(clock);
 		const payloadAlias = withAlias();
 		typeNamed(payloadAlias, "Shape").variants[0].payloadType =
 			"ix://acme/shapes/Tick";
 		expect(located(payloadAlias)).toEqual(admitted);
+		expect(
+			keptRef(payloadAlias, "Shape", "variants", "payloadType", 0),
+		).toBe("ix://acme/shapes/Tick");
 
 		const position = base();
 		typeNamed(position, "Pair").positions[1].typeRef = clock;
 		expect(located(position)).toEqual(admitted);
-		expect(JSON.parse(normalizeIr(position)).types).toContainEqual(
-			expect.objectContaining({
-				positions: expect.arrayContaining([
-					expect.objectContaining({ typeRef: clock }),
-				]),
-			}),
-		);
+		expect(keptRef(position, "Pair", "positions", "typeRef", 1)).toBe(clock);
 		const positionAlias = withAlias();
 		typeNamed(positionAlias, "Pair").positions[1].typeRef =
 			"ix://acme/shapes/Tick";
 		expect(located(positionAlias)).toEqual(admitted);
+		expect(
+			keptRef(positionAlias, "Pair", "positions", "typeRef", 1),
+		).toBe("ix://acme/shapes/Tick");
 
 		const quantity = base();
 		typeNamed(quantity, "Shape").variants[0].payloadType =

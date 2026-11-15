@@ -249,26 +249,77 @@ fn tc_1886_a_clock_payload_and_a_clock_position_are_admitted_directly_and_throug
         document
     };
     let none = Vec::<(String, String)>::new();
+    // The normalized form's `typeRef` / `payloadType` of the named type's member.
+    let kept = |document: Json, owner: &str, list: &str, member: usize, key: &str| {
+        assert_eq!(observed(document.clone()), none);
+        let text = normalized(&bundle(document));
+        let tree = parse(&text).expect("normalized is JSON");
+        let types = tree
+            .get("ir")
+            .and_then(|ir| ir.get("types"))
+            .and_then(Json::as_array)
+            .expect("types");
+        let owner_type = types
+            .iter()
+            .find(|t| t.get("identity").and_then(Json::as_str) == Some(owner))
+            .expect("owner");
+        owner_type
+            .get(list)
+            .and_then(Json::as_array)
+            .and_then(|items| items.get(member))
+            .and_then(|item| item.get(key))
+            .and_then(Json::as_str)
+            .expect("member type")
+            .to_owned()
+    };
 
     let mut payload = base();
     set(&mut payload, "/types/4/variants/0/payloadType", clock());
-    assert_eq!(observed(payload), none);
+    assert_eq!(
+        kept(
+            payload,
+            "ix://acme/shapes/Shape",
+            "variants",
+            0,
+            "payloadType"
+        ),
+        "ix://filament/native/Clock"
+    );
     let mut payload_alias = with_alias();
     set(
         &mut payload_alias,
         "/types/4/variants/0/payloadType",
         tick(),
     );
-    assert_eq!(observed(payload_alias), none);
+    assert_eq!(
+        kept(
+            payload_alias,
+            "ix://acme/shapes/Shape",
+            "variants",
+            0,
+            "payloadType"
+        ),
+        "ix://acme/shapes/Tick"
+    );
 
     let mut position = base();
     set(&mut position, "/types/2/positions/1/typeRef", clock());
-    assert_eq!(observed(position.clone()), none);
-    let text = normalized(&bundle(position));
-    assert!(text.contains("ix://filament/native/Clock"));
+    assert_eq!(
+        kept(position, "ix://acme/shapes/Pair", "positions", 1, "typeRef"),
+        "ix://filament/native/Clock"
+    );
     let mut position_alias = with_alias();
     set(&mut position_alias, "/types/2/positions/1/typeRef", tick());
-    assert_eq!(observed(position_alias), none);
+    assert_eq!(
+        kept(
+            position_alias,
+            "ix://acme/shapes/Pair",
+            "positions",
+            1,
+            "typeRef"
+        ),
+        "ix://acme/shapes/Tick"
+    );
 
     let mut unit = base();
     set(
