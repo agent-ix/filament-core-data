@@ -47,6 +47,22 @@ const document = {
 						},
 					],
 				},
+				{
+					identity: `${prefix}/Run/group`,
+					name: "group",
+					typeRef: `ix:${"/"}${"/"}filament/native/String`,
+					multiplicity: { lower: 0, upper: 1 },
+					presence: "optional",
+					nullable: false,
+					constraints: [
+						{
+							identity: `${prefix}/constraint/Run-group-nonEmpty`,
+							keyword: "nonEmpty",
+							operands: {},
+							appliesTo: `${prefix}/Run/group`,
+						},
+					],
+				},
 			],
 		},
 	],
@@ -66,6 +82,7 @@ it("a nonEmpty check on a native-typed field is emitted without a stray borrow a
 		.join("\n");
 	expect(source).toContain("is_empty()");
 	expect(source).not.toMatch(/if &\w+\.is_empty\(\)/);
+	expect(source).not.toMatch(/\*\w+\.is_empty\(\)/);
 
 	const directory = mkdtempSync(join(tmpdir(), "fcd-rust-nonempty-"));
 	try {

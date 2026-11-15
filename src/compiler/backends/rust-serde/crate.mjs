@@ -1453,7 +1453,9 @@ function renderCheck(
 	// `&field.is_empty()` borrows the method result rather than the field.
 	let subject = expression.startsWith("&")
 		? expression.slice(1)
-		: expression;
+		: wrapperDepth === 0 && expression.startsWith("*")
+			? expression.slice(1)
+			: expression;
 	for (let depth = 0; depth < wrapperDepth; depth += 1)
 		subject = `(${subject}).get()`;
 	// A scalar newtype hands its constructor the base by value, so `value` is
