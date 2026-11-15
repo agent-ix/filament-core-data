@@ -1448,11 +1448,12 @@ function renderCheck(
 				: 0;
 	// Method calls borrow the named value as needed.  A field expression is
 	// explicitly borrowed for the primitive path, but carrying that borrow
-	// through a newtype accessor emits the redundant `*(&field).get()`.
-	let subject =
-		wrapperDepth > 0 && expression.startsWith("&")
-			? expression.slice(1)
-			: expression;
+	// through a newtype accessor emits the redundant `*(&field).get()`.  At depth 0 the
+	// borrow must go too: every check calls a method on the subject, and
+	// `&field.is_empty()` borrows the method result rather than the field.
+	let subject = expression.startsWith("&")
+		? expression.slice(1)
+		: expression;
 	for (let depth = 0; depth < wrapperDepth; depth += 1)
 		subject = `(${subject}).get()`;
 	// A scalar newtype hands its constructor the base by value, so `value` is
