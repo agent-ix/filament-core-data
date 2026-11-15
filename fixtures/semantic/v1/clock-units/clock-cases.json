@@ -1256,7 +1256,7 @@
 		"ajv": "accepts"
 	},
 	{
-		"name": "clock-variant-refused",
+		"name": "clock-variant-admitted",
 		"document": {
 			"contractVersion": "2.0.0",
 			"canonicalization": {
@@ -1309,12 +1309,7 @@
 			"occurrences": [],
 			"extensions": []
 		},
-		"expected": [
-			{
-				"code": "agent-ix.semantic-ir.INVALID_CLOCK_MEMBER",
-				"pointer": "/ir/types/0/variants/0/payloadType"
-			}
-		],
+		"expected": [],
 		"ajv": "accepts"
 	},
 	{

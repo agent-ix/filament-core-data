@@ -405,8 +405,9 @@ a tuple value type is an owner-nested type `ix://<package identity>/<Name>`
 whose `positions` are an ordered, non-empty list of `{ identity, typeRef,
 origin }`, the position at index `i` having the identity
 `<tuple identity>/p<i>` and the admitted value type `typeRef`. A tuple that carries a member it never has, or whose identity is not owner-nested, raises
-`INVALID_TUPLE`; a position out of order, with a gap, or typed
-`ix://filament/native/Clock` raises `INVALID_TUPLE_POSITION`; a position type
+`INVALID_TUPLE`; a position out of order or with a gap
+raises `INVALID_TUPLE_POSITION`; a position typed `ix://filament/native/Clock`
+is admitted as a clock position; a position type
 naming no declared type raises `UNRESOLVED_POSITION_TYPE`. Positions keep their
 authored order in the normalized form. A variant's
 `payloadType` is the single typed payload of that case and a variant without

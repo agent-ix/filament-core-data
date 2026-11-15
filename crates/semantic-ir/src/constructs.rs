@@ -267,9 +267,6 @@ const TUPLE_FOREIGN_MEMBERS: [&str; 7] = [
     "variants",
 ];
 
-/// `ix://filament/native/Clock`, which is never a tuple position (FSpec FR-322).
-const CLOCK_TYPE_REF: &str = "ix://filament/native/Clock";
-
 /// Whether `name` is a tuple name: `^[A-Za-z][A-Za-z0-9_]*$`.
 fn is_tuple_name(name: &str) -> bool {
     let mut characters = name.chars();
@@ -281,7 +278,7 @@ fn is_tuple_name(name: &str) -> bool {
 
 /// The tuple rules of FR-147 for a type whose declaration has the shape
 /// `tuple`: an owner-nested identity, no member a tuple never carries, and
-/// positions `p0` to `pN-1` in order, none of them a clock. Position types
+/// positions `p0` to `pN-1` in order. Position types
 /// resolve through the shared type traversal.
 fn tuple(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut Sink<'_>) {
     let identity = identity_of(definition);
@@ -326,13 +323,6 @@ fn tuple(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mut S
                     format!("the position at index {ordinal} has the identity <tuple identity>/p{ordinal}"),
                 );
             }
-        }
-        if position.get("typeRef").and_then(Json::as_str) == Some(CLOCK_TYPE_REF) {
-            sink.emit(
-                child(&position_at, "typeRef"),
-                INVALID_TUPLE_POSITION,
-                "a tuple position is never a clock",
-            );
         }
     }
 }

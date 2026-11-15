@@ -140,16 +140,11 @@ following, accumulating every defect and reporting each once at its pointer:
   index `i` does not have the identity `<tuple identity>/p<i>`: a gap, an
   out-of-order position, a wrong prefix, a sign, a leading zero or an uppercase
   `P`.
-- `INVALID_TUPLE_POSITION` at `…/positions/<i>/typeRef` when the position type
-  is `ix://filament/native/Clock` (FSpec FR-322 intake order, step 3: a tuple
-  position is never a clock).
-- `INVALID_CLOCK_MEMBER` at `…/variants/<i>/payloadType` when the payload type
-  is `ix://filament/native/Clock`, directly or through an alias that reaches it.
-  This follows FSpec FR-322, which refuses a Clock payload
-  (`unsupported_construct`/`declaration-form`), and is provisional: STD-528
-  rules whether a Clock payload is admitted, and until it does FCD refuses it
-  here and FR-146 no longer lists a variant `payloadType` among the places the
-  reader admits a Clock.
+- A position `typeRef` or a variant `payloadType` of `ix://filament/native/Clock`,
+  directly or through an alias that reaches it, raises no diagnostic: FSpec
+  FR-322 "Clock positions and payloads" admits a clock at both, as a clock
+  member that holds no data value. The reader carries the type reference
+  verbatim.
 - `UNRESOLVED_POSITION_TYPE` at `…/positions/<i>/typeRef` when the position type
   resolves to no type of the document and to no native, as
   `UNRESOLVED_VARIANT_PAYLOAD` does for a payload.
@@ -244,10 +239,9 @@ The extraction frontend (FR-091 to FR-099) writes both forms.
   not `^[A-Za-z][A-Za-z0-9_]*$` SHALL raise one blocking `ARTIFACT_NOT_LOWERED`
   at the artifact naming the tuple-name rule. A tuple artifact with no
   `## Positions` row SHALL raise one blocking `ARTIFACT_NOT_LOWERED` at the
-  artifact. A `Clock` position (`INVALID_TUPLE_POSITION`) and a `Clock` payload
-  (`INVALID_CLOCK_MEMBER`) are refused by the reader, as above; the frontend's
-  kernel library has no `Clock` scalar, so no `Payload` or `Type` cell resolves
-  to one.
+  artifact. The frontend's kernel library has no `Clock` scalar, so no
+  `Payload` or `Type` cell resolves to one; a `Clock` position or payload
+  reaches the reader only from an authored IR document, which admits it as above.
 - The lifted tuple is a document the reader decides: a reader diagnostic for it
   surfaces as `INVALID_IR` (FR-096) at the row that produced the node.
 
@@ -260,13 +254,10 @@ The extraction frontend (FR-091 to FR-099) writes both forms.
   bound to its `typeRef`. The reader carries the meaning verbatim and decides
   neither that a `tuple` shape carries the tuple meaning nor the converse; that
   pairing is FSpec's intake check.
-- Clock payload (STD-528): FSpec FR-322 refuses a `payloadType` of
-  `ix://filament/native/Clock` (`unsupported_construct`/`declaration-form`), and a
-  tuple position is never a clock. Until STD-528 is ruled FCD follows the
-  FR-322 text: the reader refuses a Clock variant payload with
-  `INVALID_CLOCK_MEMBER` and a Clock tuple position with
-  `INVALID_TUPLE_POSITION`. FR-146 admits a Clock at its other positions and is
-  unchanged there.
+- Clock payload and position: FSpec FR-322 "Clock positions and payloads"
+  admits `ix://filament/native/Clock`, or an alias of it, as a tuple position
+  `typeRef` and a variant `payloadType`. FCD follows it: the reader admits both,
+  as FR-146 admits a Clock at its other positions.
 - Unit and nullary payload (STD-527): FSpec's text differs between FR-154's
   unit paragraph and FR-154-AC-25 on whether a unit payload is admitted. FCD
   follows the merged FSpec #468 (STD-519): a nullary case is a case with no
@@ -296,7 +287,7 @@ The extraction frontend (FR-091 to FR-099) writes both forms.
 | FR-147-AC-3 | A tuple type with an empty `positions`, with a position missing `identity`, `typeRef` or `origin`, with a position carrying an extra member, with `positions` on a core-kind type, on a construct whose declaration forbids it, or missing from a `tuple` construct is `SCHEMA_VIOLATION`. | Test (TC-1874) |
 | FR-147-AC-4 | A tuple whose identity is not `ix://<package.identity>/<Name>`, or whose name does not match `^[A-Za-z][A-Za-z0-9_]*$`, and a tuple carrying `fields`, `identityFields`, `operations`, `supertypes`, `clauses`, `relationships` or `variants` that its declaration admits each raise `INVALID_TUPLE` once per defect at the identity or member pointer. | Test (TC-1875) |
 | FR-147-AC-5 | A position at index 1 with identity `…/p2` (a gap), a pair `p1`, `p0` (out of order), `…/p01`, `…/P1`, `…/p-1` and a position under another tuple's prefix each raise `INVALID_TUPLE_POSITION` at the position's `identity`; two positions both `…/p0` raise exactly one `DUPLICATE_IDENTITY` at the later position's `identity` and no `INVALID_TUPLE_POSITION`. | Test (TC-1876) |
-| FR-147-AC-6 | A position typed `ix://filament/native/Clock` raises `INVALID_TUPLE_POSITION` at its `typeRef`; a position naming no type raises `UNRESOLVED_POSITION_TYPE`; a malformed unit reference raises `UNRESOLVED_TYPE_REF`; a decimal position with no policy raises `DECIMAL_POLICY_MISSING` and one typed by an alias carrying the policy raises nothing; a native, a unit, a record, an enumeration, a union, an alias, a tuple and the tuple itself are accepted. | Test (TC-1877) |
+| FR-147-AC-6 | A position naming no type raises `UNRESOLVED_POSITION_TYPE`; a malformed unit reference raises `UNRESOLVED_TYPE_REF`; a decimal position with no policy raises `DECIMAL_POLICY_MISSING` and one typed by an alias carrying the policy raises nothing; a native, a unit, a record, an enumeration, a union, an alias, a tuple and the tuple itself are accepted. | Test (TC-1877) |
 | FR-147-AC-7 | A field, an operation parameter and result, an alias `target`, a sequence `items`, a map `values`, a reference `target` and a variant `payloadType` naming a tuple are accepted, and each is visited by the type traversal exactly once together with every tuple position (the traversal inventory test counts `TuplePosition`). | Test (TC-1878) |
 | FR-147-AC-8 | A union mixing a nullary variant with payload-bearing variants, and an enumeration none of whose variants carries a payload, are accepted by the Rust and Node readers; a `payloadType` naming no type raises `UNRESOLVED_VARIANT_PAYLOAD`; reordering `variants` leaves the normalized bytes unchanged. | Test (TC-1879) |
 | FR-147-AC-9 | The Rust and Node normalizers keep the authored order of `positions` (a tuple of eleven positions keeps `p10` after `p9`), normalizing a normalized document is the identity, the written bytes of a document with no `positions` are unchanged, and `positions` remains an ordered sequence. | Test (TC-1880) |
@@ -305,7 +296,7 @@ The extraction frontend (FR-091 to FR-099) writes both forms.
 | FR-147-AC-12 | An enumeration artifact whose `## Payloads` table has a `Payload` token for a value lowers that value to a variant with `payloadType` and every other value to a variant with none, reading the `## Payloads` table as the source form of a variant payload (the `## Values` table keeps its `Value` and `Description` columns), resolving a native name and a bundle artifact as a `Type` cell is resolved, raises one blocking `UNRESOLVED_TYPE_TOKEN` at the row of an unresolved token and one blocking `ARTIFACT_NOT_LOWERED` at a row naming no value or repeating one, and writes the same bytes as before for an artifact with no `## Payloads` table. | Test (TC-1883) |
 | FR-147-AC-13 | A tuple artifact lifts to one type with `positions` in table order, identities `<tuple identity>/p<i>` and the origin at the row; a tuple artifact with no row or a non-conforming artifact id raises the blocking `ARTIFACT_NOT_LOWERED` at its artifact, and a position whose token resolves to no type raises the blocking `UNRESOLVED_TYPE_TOKEN` at its row; two runs write identical bytes. | Test (TC-1884) |
 | FR-147-AC-14 | The shared vectors `cases.json` beside `tuple-union.json` record, for every case, the Node reader verdict (refused or admitted) and the Rust reader codes and pointers, and the Node and Rust suites each assert their recorded verdicts. | Test (TC-1885) |
-| FR-147-AC-15 | A union variant whose `payloadType` is `ix://filament/native/Clock`, directly or through an alias of it, raises exactly one `INVALID_CLOCK_MEMBER` at `…/variants/<i>/payloadType` from the Rust reader, the Node reader and the independent TypeScript reader, following FSpec FR-322 pending STD-528, while `ix://filament/unit/<name>` and a nullary variant (no `payloadType`, FSpec #468) raise nothing. | Test (TC-1886) |
+| FR-147-AC-15 | A union variant whose `payloadType`, and a tuple position whose `typeRef`, is `ix://filament/native/Clock`, directly or through an alias of it, is admitted with no diagnostic by the Rust reader, the Node reader and the independent TypeScript reader (FSpec FR-322 "Clock positions and payloads"), and the normalized form keeps the type reference; `ix://filament/unit/<name>` and a nullary variant (no `payloadType`, FSpec #468) raise nothing either. | Test (TC-1886) |
 
 ## Dependencies
 
