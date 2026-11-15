@@ -256,7 +256,8 @@ fn tc_1886_a_clock_payload_and_a_clock_position_are_admitted_directly_and_throug
         let tree = parse(&text).expect("normalized is JSON");
         let types = tree
             .get("ir")
-            .and_then(|ir| ir.get("types"))
+            .unwrap_or(&tree)
+            .get("types")
             .and_then(Json::as_array)
             .expect("types");
         let owner_type = types
