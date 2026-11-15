@@ -213,7 +213,9 @@
 			"id": "clock-variant-payload",
 			"tc": "TC-1886",
 			"ac": "FR-147-AC-15",
-			"set": [["/types/4/variants/0/payloadType", "ix://filament/native/Clock"]],
+			"set": [
+				["/types/4/variants/0/payloadType", "ix://filament/native/Clock"]
+			],
 			"remove": [],
 			"node": "admits",
 			"rust": []

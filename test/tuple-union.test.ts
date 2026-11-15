@@ -264,7 +264,8 @@ describe("FR-147 tuple value types and union variant payloads", () => {
 		expect(located(positionAlias)).toEqual(admitted);
 
 		const quantity = base();
-		typeNamed(quantity, "Shape").variants[0].payloadType = "ix://filament/unit/ms";
+		typeNamed(quantity, "Shape").variants[0].payloadType =
+			"ix://filament/unit/ms";
 		expect(located(quantity)).toEqual(admitted);
 		expect(
 			typeNamed(base(), "Shape").variants.some(
