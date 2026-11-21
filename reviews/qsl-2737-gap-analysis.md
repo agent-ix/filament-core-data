@@ -47,3 +47,9 @@ the rule.
 | ID | Severity | Summary | Refs |
 | --- | --- | --- | --- |
 | FND-001 | medium | The owning-type `subsets` admission this PR adds is stated by no acceptance criterion. Its tests cite FR-142/FR-059, which do not own the subsets rule, instead of FR-141-AC-3. The only binder of FR-141-AC-3 (tc_1742) never exercises an owning-type target, so the matrix shows no AC covering the new behavior. | crates/semantic-ir/tests/model_document.rs:72, crates/semantic-ir/tests/model_document.rs:87, spec/functional/FR-141-carry-the-model-members-in-the-semantic-ir.md:90, crates/extraction-frontend/tests/constructs.rs:255 |
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | 92e48791: FR-141-AC-3 now states the owning-type admission in either order, transitive-supertype admission, the unknown, unrelated-type and non-field refusals, owning-type `redefines` refused, and widening. `quire matrix` (exit 0) shows FR-141-AC-3 `tagged` by `tc_1742_unresolved_subsets_and_widening_redefines_raise_their_codes` (crates/extraction-frontend/tests/constructs.rs:255, `#[trace("TC-1742", "FR-141-AC-3")]`). Its body now covers each clause against the constructs fixture: the inherited positive document clean; a Middle type inserted between FR-001 and FR-000 clean; badges subsetting FR-001/labels with the target before and after (swap) clean; FR-000/missing, VO-001/sku and the type FR-001 each raising UNRESOLVED_FEATURE_REF at .../badges/subsets/0; labels redefining the owning type's FR-001/tags raising UNRESOLVED_FEATURE_REF at .../labels/redefines; and the widening case kept. The semantic-ir doc comments now read `/// Trace: FR-141-AC-3`; they bind nothing, as is that file's convention under FR-059-CON-5. No semantic-ir src, Cargo.toml or Cargo.lock change. The focused Draco run of the new tc_1742 body is PENDING and not observed by this reviewer. |

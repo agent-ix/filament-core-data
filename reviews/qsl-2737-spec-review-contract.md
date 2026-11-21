@@ -52,3 +52,9 @@ contract and the reader.
 | ID | Severity | Summary | Refs |
 | --- | --- | --- | --- |
 | FND-001 | high | FR-141 Behavior still says a reader SHALL raise `UNRESOLVED_FEATURE_REF` for a `subsets` entry naming no field of a transitive supertype. Its member table (`subsets`: "The supertype fields whose values include this field's values") and FR-141-AC-3 ("naming no supertype field") say the same. The reader and contracts-v1.md now admit an owning-type field, so the code violates FR-141 as written and the spec and contract disagree. | spec/functional/FR-141-carry-the-model-members-in-the-semantic-ir.md:69, spec/functional/FR-141-carry-the-model-members-in-the-semantic-ir.md:31, spec/functional/FR-141-carry-the-model-members-in-the-semantic-ir.md:90, docs/semantic-data-system/contracts-v1.md:316 |
+
+## Dispositions
+
+| FND | outcome | reason |
+| --- | --- | --- |
+| FND-001 | fixed | 92e48791: FR-141's member table now reads "Fields of the owning type or a transitive supertype whose values include this field's values". Behavior now has separate statements: admit an owning-type or transitive-supertype `subsets` target in either declaration order, refuse an unknown, unrelated-type or non-field target at the entry, and keep `redefines` ancestors-only ("A field of the owning type is not a valid `redefines` target"). FR-141-AC-3 states the same split. This agrees with contracts-v1.md:316-317, diagnostic-codes.json, RULES.md and the reader (constructs.rs, unchanged since 35a1af39). `quire validate` on FR-141 exits 0, and its two grammar warnings are on lines 72 and 77, which the fix did not touch. |
