@@ -69,7 +69,7 @@ fn feature_owner(name: &str, fields: &[String], parent: Option<&str>) -> String 
     )
 }
 
-/// Trace: FR-142, FR-059
+/// Trace: FR-141-AC-3
 /// Provenance: QSL-2737; FSpec model-complete.md, Subsets.
 #[test]
 fn field_feature_subsets_resolve_the_owning_types_fields_in_either_order() {
@@ -84,7 +84,7 @@ fn field_feature_subsets_resolve_the_owning_types_fields_in_either_order() {
     }
 }
 
-/// Trace: FR-142, FR-059
+/// Trace: FR-141-AC-3
 /// Provenance: QSL-2737; contracts-v1.md, Model members.
 #[test]
 fn field_feature_subsets_and_redefines_keep_resolving_transitive_supertype_fields() {
@@ -110,7 +110,7 @@ fn field_feature_subsets_and_redefines_keep_resolving_transitive_supertype_field
     }
 }
 
-/// Trace: FR-142-CON-1, FR-059
+/// Trace: FR-141-AC-3
 /// Provenance: QSL-2737; contracts-v1.md, Model members.
 #[test]
 fn field_feature_subsets_refuse_foreign_unknown_and_non_field_targets_at_the_entry() {
@@ -142,7 +142,7 @@ fn field_feature_subsets_refuse_foreign_unknown_and_non_field_targets_at_the_ent
     }
 }
 
-/// Trace: FR-142-CON-1, FR-059
+/// Trace: FR-141-AC-3
 /// Provenance: QSL-2737; contracts-v1.md, Model members.
 #[test]
 fn field_feature_redefines_still_requires_a_supertype_field() {

@@ -267,14 +267,62 @@ fn tc_1742_unresolved_subsets_and_widening_redefines_raise_their_codes() {
         .position(|f| f["name"] == "labels")
         .expect("labels");
 
-    let mut unresolved = positive();
-    type_mut(&mut unresolved, "FR-001")["fields"][badges]["subsets"] =
-        json!([field_ref("FR-000", "missing")]);
+    assert_rust("inherited subset and redefinition", &document, &[]);
+
+    let mut transitive = positive();
+    let mut middle = type_mut(&mut transitive, "FR-000").clone();
+    middle["identity"] = json!(type_ref("FR-Middle"));
+    middle["displayName"] = json!("Middle");
+    middle["fields"] = json!([]);
+    middle["supertypes"] = json!([type_ref("FR-000")]);
+    transitive["types"]
+        .as_array_mut()
+        .expect("types")
+        .push(middle);
+    type_mut(&mut transitive, "FR-001")["supertypes"] = json!([type_ref("FR-Middle")]);
+    assert_rust("transitive subset and redefinition", &transitive, &[]);
+
+    for target_after in [false, true] {
+        let mut local = positive();
+        let owner = type_mut(&mut local, "FR-001");
+        owner["fields"][badges]["subsets"] = json!([field_ref("FR-001", "labels")]);
+        if target_after {
+            owner["fields"]
+                .as_array_mut()
+                .expect("fields")
+                .swap(badges, labels);
+        }
+        assert_rust(
+            &format!("owning-type subset, target after: {target_after}"),
+            &local,
+            &[],
+        );
+    }
+
+    for target in [
+        field_ref("FR-000", "missing"),
+        field_ref("VO-001", "sku"),
+        type_ref("FR-001"),
+    ] {
+        let mut unresolved = positive();
+        type_mut(&mut unresolved, "FR-001")["fields"][badges]["subsets"] = json!([target]);
+        assert_rust(
+            "invalid subset target",
+            &unresolved,
+            &[format!(
+                "UNRESOLVED_FEATURE_REF at /ir/types/{order}/fields/{badges}/subsets/0"
+            )],
+        );
+    }
+
+    let mut local_redefinition = positive();
+    type_mut(&mut local_redefinition, "FR-001")["fields"][labels]["redefines"] =
+        json!(field_ref("FR-001", "tags"));
     assert_rust(
-        "unresolved subsets",
-        &unresolved,
+        "redefinition still requires a supertype target",
+        &local_redefinition,
         &[format!(
-            "UNRESOLVED_FEATURE_REF at /ir/types/{order}/fields/{badges}/subsets/0"
+            "UNRESOLVED_FEATURE_REF at /ir/types/{order}/fields/{labels}/redefines"
         )],
     );
 
