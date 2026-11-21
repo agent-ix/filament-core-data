@@ -744,14 +744,15 @@ fn features(document: &Document<'_>, definition: &Json, type_at: &str, sink: &mu
         let field_at = index(&fields_at, position);
         let subsets_at = child(&field_at, "subsets");
         for (slot, name) in strings(field.get("subsets")) {
-            if !inherited
+            if !items(definition, "fields")
                 .iter()
+                .chain(inherited.iter().copied())
                 .any(|other| identity_of(other) == Some(name))
             {
                 sink.emit(
                     index(&subsets_at, slot),
                     UNRESOLVED_FEATURE_REF,
-                    "a subsetted field is a field of a supertype",
+                    "a subsetted field is a field of the owning type or a supertype",
                 );
             }
         }

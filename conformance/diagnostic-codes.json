@@ -382,8 +382,8 @@
 			"provenance": "minted",
 			"decidedBy": "cross-field",
 			"sources": ["docs/semantic-data-system/contracts-v1.md"],
-			"rule": "A subsets or redefines entry naming no field of a transitive supertype.",
-			"citation": "Supertype fields whose values include this field's values",
+			"rule": "A subsets entry naming no field of the owning type or a transitive supertype, or a redefines entry naming no field or operation of a transitive supertype.",
+			"citation": "Fields of the owning type or a supertype whose values include this field's values",
 			"exercisedBy": "test:TC-1742"
 		},
 		{
