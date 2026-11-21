@@ -43,6 +43,126 @@ fn field(identity: &str, name: &str, type_ref: &str) -> String {
     )
 }
 
+#[derive(Clone, Copy, Debug)]
+enum FieldLink {
+    Subsets,
+    Redefines,
+}
+
+fn linked_field(owner: &str, relation: FieldLink, target: &str) -> String {
+    let link = match relation {
+        FieldLink::Subsets => format!(r#""subsets":["{target}"]"#),
+        FieldLink::Redefines => format!(r#""redefines":"{target}""#),
+    };
+    format!(
+        r#"{{"identity":"ix://acme/pkg/{owner}/small","name":"small","typeRef":"ix://filament/native/Integer","presence":"required","nullable":false,"defaultKind":"none","origin":{GENERATED},"multiplicity":{MULTIPLICITY},"extensions":[],{link}}}"#
+    )
+}
+
+fn feature_owner(name: &str, fields: &[String], parent: Option<&str>) -> String {
+    let supertypes = parent.map_or(String::new(), |parent| {
+        format!(r#", "supertypes":["ix://acme/pkg/{parent}"]"#)
+    });
+    format!(
+        r#"{{"identity":"ix://acme/pkg/{name}","displayName":"{name}","kind":"record","roles":[],"origin":{GENERATED},"constraints":[],"extensions":[],"unknownPolicy":"reject","fields":[{}],"operations":[]{supertypes}}}"#,
+        fields.join(",")
+    )
+}
+
+/// Trace: FR-141-AC-3
+/// Provenance: QSL-2737; FSpec model-complete.md, Subsets.
+#[test]
+fn field_feature_subsets_resolve_the_owning_types_fields_in_either_order() {
+    let all = field("ix://acme/pkg/T/all", "all", "ix://filament/native/Integer");
+    let small = linked_field("T", FieldLink::Subsets, "ix://acme/pkg/T/all");
+    for fields in [[small.clone(), all.clone()], [all, small]] {
+        assert_eq!(
+            diagnostics("", &[feature_owner("T", &fields, None)]),
+            vec![],
+            "field order: {fields:?}"
+        );
+    }
+}
+
+/// Trace: FR-141-AC-3
+/// Provenance: QSL-2737; contracts-v1.md, Model members.
+#[test]
+fn field_feature_subsets_and_redefines_keep_resolving_transitive_supertype_fields() {
+    for relation in [FieldLink::Subsets, FieldLink::Redefines] {
+        let types = [
+            feature_owner(
+                "Base",
+                &[field(
+                    "ix://acme/pkg/Base/all",
+                    "all",
+                    "ix://filament/native/Integer",
+                )],
+                None,
+            ),
+            feature_owner("Middle", &[], Some("Base")),
+            feature_owner(
+                "Child",
+                &[linked_field("Child", relation, "ix://acme/pkg/Base/all")],
+                Some("Middle"),
+            ),
+        ];
+        assert_eq!(diagnostics("", &types), vec![], "{relation:?}");
+    }
+}
+
+/// Trace: FR-141-AC-3
+/// Provenance: QSL-2737; contracts-v1.md, Model members.
+#[test]
+fn field_feature_subsets_refuse_foreign_unknown_and_non_field_targets_at_the_entry() {
+    for target in [
+        "ix://acme/pkg/Other/all",
+        "ix://acme/pkg/T/unknown",
+        "ix://acme/pkg/T",
+    ] {
+        let types = [
+            feature_owner("T", &[linked_field("T", FieldLink::Subsets, target)], None),
+            feature_owner(
+                "Other",
+                &[field(
+                    "ix://acme/pkg/Other/all",
+                    "all",
+                    "ix://filament/native/Integer",
+                )],
+                None,
+            ),
+        ];
+        assert_eq!(
+            diagnostics("", &types),
+            vec![(
+                "/ir/types/0/fields/0/subsets/0".to_owned(),
+                "agent-ix.semantic-ir.UNRESOLVED_FEATURE_REF"
+            )],
+            "{target}"
+        );
+    }
+}
+
+/// Trace: FR-141-AC-3
+/// Provenance: QSL-2737; contracts-v1.md, Model members.
+#[test]
+fn field_feature_redefines_still_requires_a_supertype_field() {
+    let types = [feature_owner(
+        "T",
+        &[
+            linked_field("T", FieldLink::Redefines, "ix://acme/pkg/T/all"),
+            field("ix://acme/pkg/T/all", "all", "ix://filament/native/Integer"),
+        ],
+        None,
+    )];
+    assert_eq!(
+        diagnostics("", &types),
+        vec![(
+            "/ir/types/0/fields/0/redefines".to_owned(),
+            "agent-ix.semantic-ir.UNRESOLVED_FEATURE_REF"
+        )]
+    );
+}
+
 /// A record `ix://acme/pkg/T` with one field and one operation `op` whose
 /// frame is `frame` (a JSON object text).
 fn framed(frame: &str) -> String {

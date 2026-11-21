@@ -313,7 +313,7 @@ frontend to skip its own half of the check.
 |---|---|---|---|
 | `supertypes` | type | The types this type specializes, of the same kind; the graph is acyclic | `UNRESOLVED_CONSTRUCT_REF`, `CONSTRUCT_TARGET_KIND`, `SUPERTYPE_CYCLE` |
 | `abstract` | type | The type has no direct instances | — |
-| `subsets` | field | Supertype fields whose values include this field's values | `UNRESOLVED_FEATURE_REF` |
+| `subsets` | field | Fields of the owning type or a supertype whose values include this field's values | `UNRESOLVED_FEATURE_REF` |
 | `redefines` | field, operation | The supertype field or operation this member narrows; its multiplicity lies within the redefined bounds (for an operation, its return multiplicity) | `UNRESOLVED_FEATURE_REF`, `INVALID_REDEFINITION` |
 | `textProfile` | field, type | The text profile a text field or a text value type binds: `unicode-scalars`, `nfc`, `nfd`, `nfkc`, `nfkd` or `binary-utf8`; a type carries it only as a scalar of `string` | `SCHEMA_VIOLATION` |
 | `decimal` | field, alias type, `decimal` scalar type | The decimal policy `{precision, scale}` (`1 <= precision <= 38`, `0 <= scale <= precision`) governing a `decimal` subject; exactly one node on each resolution walk carries it (FR-144) | `SCHEMA_VIOLATION`, `DECIMAL_POLICY_MISSING`, `DECIMAL_POLICY_CONFLICT` |
