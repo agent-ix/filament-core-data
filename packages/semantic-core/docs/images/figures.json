@@ -31,7 +31,14 @@
         {"k":"text","at":[480,176],"text":"kernel-scalars.json  {scalars} scalars","size":12},
         {"k":"text","at":[760,176],"text":"lowering.json  {rows} rows","size":12}
       ]
+    },
+    {
+      "id": "inventory",
+      "width": 720, "height": 236,
+      "label": "The AgentIx.Semantic.Core namespace declares {inv_models} {if(inv_models == 1, 'model', 'models')}, {inv_unions} {if(inv_unions == 1, 'union', 'unions')}, {inv_wire} {if(inv_wire == 1, 'wire union', 'wire unions')}, {inv_enums} {if(inv_enums == 1, 'enum', 'enums')}, {inv_scalars} {if(inv_scalars == 1, 'scalar', 'scalars')}, {decls} in all, and each one has a generated JSON Schema document.",
+      "items": [
+        {"k":"columns","at":[0,0,720,236],"values":["inv_models","inv_unions","inv_wire","inv_enums","inv_scalars"],"labels":["models","unions","wire unions","enums","scalars"],"role":"logic","ticks":[0,10,20]}
+      ]
     }
   ]
 }
-
