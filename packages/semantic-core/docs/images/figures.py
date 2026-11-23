@@ -6,6 +6,10 @@ Regenerate from this package directory with the agent-ix/dev-tools skill:
     python3 -m pip install fonttools
     python3 <dev-tools>/skills/docs-figures/scripts/render.py docs/images/figures.py
 
+Only the inventory column chart is defined here; the hero figure is defined in
+docs/images/figures.json and rendered by `make figures` (the columns composite is not yet
+supported by ixd-figures).
+
 Add --check to confirm the committed SVGs are current. Values are read from this
 package: inventory.json, kernel-scalars.json, lowering.json and generated/json-schema/.
 """
@@ -41,37 +45,6 @@ KINDS = [
 ]
 
 
-def hero():
-    """main.tsp compiles to one JSON Schema document per declaration."""
-    n = len(GENERATED)
-    f = Figure(
-        "hero",
-        980,
-        190,
-        f"main.tsp, the TypeSpec source for the AgentIx.Semantic.Core namespace, compiles with the "
-        f"@typespec/json-schema emitter into {n} JSON Schema documents under generated/json-schema/. "
-        f"A JSON Schema validator checks a field declaration against FieldDecl.json and answers true "
-        f"or false. Three tables ship beside them: inventory.json, kernel-scalars.json "
-        f"({len(SCALARS)} scalars) and lowering.json ({len(LOWERING)} rows).",
-    )
-    cy = 62
-    f.box(0, cy - 34, 190, 68, "code", "main.tsp", "AgentIx.Semantic.Core", "declaration grammar")
-    f.box(250, cy - 34, 200, 68, "logic", "tsp compile", "@typespec/json-schema", "emitAllModels")
-    f.box(510, cy - 34, 220, 68, "model", f"{n} JSON Schemas", "generated/json-schema/", "draft 2020-12")
-    f.box(790, cy - 34, 190, 68, "evidence", "true / false", "FieldDecl.json", "checks a field")
-    f.line([(190, cy), (247, cy)], "code")
-    f.line([(450, cy), (507, cy)], "logic")
-    f.note(458, cy - 9, "emits", "logic")
-    f.line([(730, cy), (787, cy)], "model", weight=2.4)
-    f.note(738, cy - 9, "$ref", "model")
-    f.rect(0, 140, 980, 1, "faint", stroke=False, opacity=0.5)
-    f.text(0, 176, "ALSO PUBLISHED", "muted", "mono", SMALL)
-    f.text(180, 176, f"inventory.json  {sum(len(INVENTORY[k]) for k, _ in KINDS)} declarations", "ink", "mono", SMALL)
-    f.text(480, 176, f"kernel-scalars.json  {len(SCALARS)} scalars", "ink", "mono", SMALL)
-    f.text(760, 176, f"lowering.json  {len(LOWERING)} rows", "ink", "mono", SMALL)
-    return f
-
-
 def inventory():
     """A column chart: how many declarations of each kind the namespace holds."""
     values = [len(INVENTORY[k]) for k, _ in KINDS]
@@ -88,4 +61,4 @@ def inventory():
     return f
 
 
-FIGURES = [hero, inventory]
+FIGURES = [inventory]

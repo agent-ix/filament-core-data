@@ -1,0 +1,26 @@
+{
+  "data": {
+    "n": {"from":"count","glob":"semantic/v1/*.schema.json"},
+    "req": {"from":"json","path":"semantic/v1/module-manifest.schema.json","pointer":"/required","join":", "}
+  },
+  "figures": [
+    {
+      "id": "hero",
+      "width": 980, "height": 150,
+      "label": "A module manifest JSON document goes to a draft 2020-12 JSON Schema validator loaded with module-manifest.schema.json, one of {n} schema documents in semantic/v1/. The validator answers true when the document has the required properties {req}, and false with the missing property named when it does not.",
+      "items": [
+        {"k":"box","at":[0,22,220,68],"role":"ink","title":"manifest JSON","subs":["name, version","manifest_version"]},
+        {"k":"box","at":[290,22,250,68],"role":"model","title":"module-manifest","subs":["semantic/v1/","module-manifest.schema.json"]},
+        {"k":"box","at":[610,22,160,68],"role":"logic","title":"validator","subs":["draft 2020-12"]},
+        {"k":"box","at":[840,22,140,68],"role":"evidence","title":"true / false","subs":["names the gap"]},
+        {"k":"line","points":[[220,56],[287,56]]},
+        {"k":"line","points":[[540,56],[607,56]],"role":"model"},
+        {"k":"note","at":[548,47],"text":"loaded","role":"model"},
+        {"k":"line","points":[[770,56],[837,56]],"role":"logic","weight":2.4},
+        {"k":"note","at":[778,47],"text":"verdict","role":"logic"},
+        {"k":"text","at":[0,140],"text":"{n} schema documents + construct-vocabulary.json, all in semantic/v1/","role":"muted","size":12}
+      ]
+    }
+  ]
+}
+
