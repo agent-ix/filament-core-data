@@ -77,6 +77,7 @@ lint-node:
 	node scripts/build-rust-backend-docs.mjs --check
 	node src/compiler/backends/rust-serde/cli.mjs register --check
 	node src/compiler/backends/rust-serde/cli.mjs mutations --check
+	$(MAKE) figures-check
 
 # Issue #23 (SR-105 FND-1191). `ruff` and `black` were pinned dev dependencies
 # that no target ran, so their findings accumulated unseen. `make lint` is the
