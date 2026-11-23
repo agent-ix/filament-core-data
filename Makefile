@@ -21,6 +21,7 @@ install:
 # prerequisite of `make test-node` and not only of `make test-python`. Before
 # this line `make install` provisioned half of what `make test` runs.
 	poetry install
+	@command -v $(IXD) >/dev/null 2>&1 || echo "note: 'make figures-check' needs ixd; install it with: cargo install --git https://github.com/agent-ix/ix-diagrams ix-diagrams"
 
 .PHONY: build
 build:
@@ -77,7 +78,6 @@ lint-node:
 	node scripts/build-rust-backend-docs.mjs --check
 	node src/compiler/backends/rust-serde/cli.mjs register --check
 	node src/compiler/backends/rust-serde/cli.mjs mutations --check
-	$(MAKE) figures-check
 
 # Issue #23 (SR-105 FND-1191). `ruff` and `black` were pinned dev dependencies
 # that no target ran, so their findings accumulated unseen. `make lint` is the
@@ -565,4 +565,5 @@ figures:
 
 .PHONY: figures-check
 figures-check:
+	@command -v $(IXD) >/dev/null 2>&1 || { echo "ixd not found on PATH. Install it with: cargo install --git https://github.com/agent-ix/ix-diagrams ix-diagrams" >&2; exit 1; }
 	$(foreach package,$(FIGURE_PACKAGES),(cd $(package) && $(IXD) build docs/images/figures.json --out docs/images --check) &&) true
