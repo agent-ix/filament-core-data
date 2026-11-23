@@ -552,16 +552,16 @@ extraction-frontend-audit: rust-toolchain-check
 # =============================================================================
 # Documentation figures
 # =============================================================================
-# Each package's docs/images/figures.json is rendered by ixd-figures (agent-ix/ix-diagrams).
-# Install it with: cargo install --git https://github.com/agent-ix/ix-diagrams ixd-figures
+# Each package's docs/images/figures.json is rendered by `ixd build` (agent-ix/ix-diagrams).
+# Install it with: cargo install --git https://github.com/agent-ix/ix-diagrams ix-diagrams
 
-IXD_FIGURES ?= ixd-figures
+IXD ?= ixd
 FIGURE_PACKAGES := schema packages/semantic-core
 
 .PHONY: figures
 figures:
-	$(foreach package,$(FIGURE_PACKAGES),$(IXD_FIGURES) generate --root $(package) &&) true
+	$(foreach package,$(FIGURE_PACKAGES),(cd $(package) && $(IXD) build docs/images/figures.json --out docs/images) &&) true
 
 .PHONY: figures-check
 figures-check:
-	$(foreach package,$(FIGURE_PACKAGES),$(IXD_FIGURES) check --root $(package) &&) true
+	$(foreach package,$(FIGURE_PACKAGES),(cd $(package) && $(IXD) build docs/images/figures.json --out docs/images --check) &&) true
