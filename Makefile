@@ -21,6 +21,7 @@ install:
 # prerequisite of `make test-node` and not only of `make test-python`. Before
 # this line `make install` provisioned half of what `make test` runs.
 	poetry install
+	@command -v $(IXD) >/dev/null 2>&1 || echo "note: 'make figures-check' needs ixd; install it with: cargo install --git https://github.com/agent-ix/ix-diagrams ix-diagrams"
 
 .PHONY: build
 build:
@@ -564,4 +565,5 @@ figures:
 
 .PHONY: figures-check
 figures-check:
+	@command -v $(IXD) >/dev/null 2>&1 || { echo "ixd not found on PATH. Install it with: cargo install --git https://github.com/agent-ix/ix-diagrams ix-diagrams" >&2; exit 1; }
 	$(foreach package,$(FIGURE_PACKAGES),(cd $(package) && $(IXD) build docs/images/figures.json --out docs/images --check) &&) true
