@@ -1,0 +1,44 @@
+{
+  "data": {
+    "n": {"from":"count","glob":"generated/json-schema/*.json"},
+    "scalars": {"from":"json","path":"kernel-scalars.json","pointer":"/scalars","length":true},
+    "rows": {"from":"json","path":"lowering.json","pointer":"/rows","length":true},
+    "inv_models": {"from":"json","path":"inventory.json","pointer":"/models","length":true},
+    "inv_unions": {"from":"json","path":"inventory.json","pointer":"/unions","length":true},
+    "inv_wire": {"from":"json","path":"inventory.json","pointer":"/wireUnions","length":true},
+    "inv_enums": {"from":"json","path":"inventory.json","pointer":"/enums","length":true},
+    "inv_scalars": {"from":"json","path":"inventory.json","pointer":"/scalars","length":true},
+    "decls": {"from":"sum","of":["inv_models","inv_unions","inv_wire","inv_enums","inv_scalars"]}
+  },
+  "figures": [
+    {
+      "id": "hero",
+      "width": 980, "height": 190,
+      "label": "main.tsp, the TypeSpec source for the AgentIx.Semantic.Core namespace, compiles with the @typespec/json-schema emitter into {n} JSON Schema documents under generated/json-schema/. A JSON Schema validator checks a field declaration against FieldDecl.json and answers true or false. Three tables ship beside them: inventory.json, kernel-scalars.json ({scalars} scalars) and lowering.json ({rows} rows).",
+      "items": [
+        {"k":"box","at":[0,28,190,68],"role":"code","title":"main.tsp","subs":["AgentIx.Semantic.Core","declaration grammar"]},
+        {"k":"box","at":[250,28,200,68],"role":"logic","title":"tsp compile","subs":["@typespec/json-schema","emitAllModels"]},
+        {"k":"box","at":[510,28,220,68],"role":"model","title":"{n} JSON Schemas","subs":["generated/json-schema/","draft 2020-12"]},
+        {"k":"box","at":[790,28,190,68],"role":"evidence","title":"true / false","subs":["FieldDecl.json","checks a field"]},
+        {"k":"line","points":[[190,62],[247,62]],"role":"code"},
+        {"k":"line","points":[[450,62],[507,62]],"role":"logic"},
+        {"k":"note","at":[458,53],"text":"emits","role":"logic"},
+        {"k":"line","points":[[730,62],[787,62]],"role":"model","weight":2.4},
+        {"k":"note","at":[738,53],"text":"$ref","role":"model"},
+        {"k":"rect","at":[0,140,980,1],"role":"faint","stroke":false,"opacity":0.5},
+        {"k":"text","at":[0,176],"text":"ALSO PUBLISHED","role":"muted","size":12},
+        {"k":"text","at":[180,176],"text":"inventory.json  {decls} declarations","size":12},
+        {"k":"text","at":[480,176],"text":"kernel-scalars.json  {scalars} scalars","size":12},
+        {"k":"text","at":[760,176],"text":"lowering.json  {rows} rows","size":12}
+      ]
+    },
+    {
+      "id": "inventory",
+      "width": 720, "height": 236,
+      "label": "The AgentIx.Semantic.Core namespace declares {inv_models} {if(inv_models == 1, 'model', 'models')}, {inv_unions} {if(inv_unions == 1, 'union', 'unions')}, {inv_wire} {if(inv_wire == 1, 'wire union', 'wire unions')}, {inv_enums} {if(inv_enums == 1, 'enum', 'enums')}, {inv_scalars} {if(inv_scalars == 1, 'scalar', 'scalars')}, {decls} in all, and each one has a generated JSON Schema document.",
+      "items": [
+        {"k":"columns","at":[0,0,720,236],"values":["inv_models","inv_unions","inv_wire","inv_enums","inv_scalars"],"labels":["models","unions","wire unions","enums","scalars"],"role":"logic","ticks":[0,10,20]}
+      ]
+    }
+  ]
+}

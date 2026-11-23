@@ -548,3 +548,20 @@ extraction-frontend-deny: rust-toolchain-check
 .PHONY: extraction-frontend-audit
 extraction-frontend-audit: rust-toolchain-check
 	cargo audit --file $(EXTRACTION_LOCKFILE) --deny yanked
+
+# =============================================================================
+# Documentation figures
+# =============================================================================
+# Each package's docs/images/figures.json is rendered by `ixd build` (agent-ix/ix-diagrams).
+# Install it with: cargo install --git https://github.com/agent-ix/ix-diagrams ix-diagrams
+
+IXD ?= ixd
+FIGURE_PACKAGES := schema packages/semantic-core
+
+.PHONY: figures
+figures:
+	$(foreach package,$(FIGURE_PACKAGES),(cd $(package) && $(IXD) build docs/images/figures.json --out docs/images) &&) true
+
+.PHONY: figures-check
+figures-check:
+	$(foreach package,$(FIGURE_PACKAGES),(cd $(package) && $(IXD) build docs/images/figures.json --out docs/images --check) &&) true
