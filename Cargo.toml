@@ -15,7 +15,7 @@
 # reaching back into this tree, so a build that only works in place is a
 # failure rather than a convenience.
 #
-# `publish = false` is on every member and on this manifest, because the issue
+# `publish = false` is on every member, because the issue
 # #21 safety gate forbids crate publication until the cross-language
 # compatibility and release-readiness gates pass. `crates/semantic-schema`
 # needs no crates.io publish anyway: consumers pin it by git tag.
@@ -39,7 +39,6 @@ exclude = [
 edition = "2021"
 rust-version = "1.85.0"
 license = "AGPL-3.0-or-later"
-publish = false
 
 [workspace.dependencies]
 serde = { version = "1.0.228", features = ["derive"] }
